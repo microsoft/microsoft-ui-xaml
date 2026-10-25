@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
+#include <VisualTree.h>
 #include "TimeMgr.h"
 
 // Temporary wchar_t mangling compatibility shim for microsoft.internal.winuidetails NuGet package.
@@ -359,6 +362,8 @@ void CTimeManager::UpdateTargetDOs(_In_ WUComp::ICompositor* wucCompositor)
     for (const auto& cdo : m_targetDOs)
     {
         cdo->EnsureWUCAnimationStarted(&context);
+        if (WinUIProfiler::Hooks::FramesEnabled())
+            WinUIProfiler::Hooks::Work(WinUIProfiler::Hooks::AssociatedRoot(cdo.get()), cdo->GetContext(), true);
     }
 
     // TODO_WinRT: Transform3D and projections will also need EnsureWUCAnimationStarted implementations.

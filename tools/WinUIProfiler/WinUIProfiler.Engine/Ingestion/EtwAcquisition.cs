@@ -63,6 +63,7 @@ internal static class EtwAcquisition
         {
             if (worker.StopRequested.IsCancellationRequested) return;
             if (IsForeign(data)) return;
+            if (data.ProviderGuid == EventCatalog.StandardXamlProviderId) { Receive(data); return; }
             var bytes = data.EventData();
             worker.Report(new(IngestionIssue.UnknownSchema, $"Unsupported ETW event: descriptor {(int)data.ID}, version {data.Version}, level {(int)data.Level}, keywords {(ulong)data.Keywords:X16}.",
                 data.ProviderGuid, data.EventName[..Math.Min(data.EventName.Length, 1024)], data.ProcessID > 0 ? (uint)data.ProcessID : null,

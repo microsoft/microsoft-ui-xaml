@@ -13,12 +13,15 @@ public static class ObservationRules
 
     public static bool IsGpuMemory(MetricKind metric) => metric is MetricKind.GpuDedicatedCommittedBytes or MetricKind.GpuSharedCommittedBytes or MetricKind.GpuDedicatedResidentBytes or MetricKind.GpuSharedResidentBytes;
 
-    public static void Metric(MetricKind metric, TypedValue value, TimeRange interval, string source, string sourceVersion, GpuSampleIdentity? gpu)
+    public static void Metric(MetricKind metric, TypedValue value, TimeRange interval, string source, string sourceVersion,
+        GpuSampleIdentity? gpu, MetricSourceObservation? sourceObservation = null)
     {
         Require.Enum(metric); Require.NotNull(value).Validate(); Require.Text(source); Require.Text(sourceVersion);
         var unit = metric switch
         {
-            MetricKind.CpuUtilization or MetricKind.GpuUtilization => ValueUnit.Percent,
+            MetricKind.CpuUtilization or MetricKind.GpuUtilization or MetricKind.SystemCpuUtilization or
+                MetricKind.InterruptCpuUtilization or MetricKind.OtherOrUnattributedCpuUtilization or
+                MetricKind.ProcessCpuUtility => ValueUnit.Percent,
             MetricKind.ConnectedXamlElements or MetricKind.CanonicalCompositionVisuals => ValueUnit.Count,
             _ => ValueUnit.Bytes
         };
@@ -33,6 +36,13 @@ public static class ObservationRules
         gpu?.Validate(metric);
         if (gpu is { Adapter: null } && value.Kind != ValueKind.Missing && value.Quality.Coverage == CoverageState.Complete)
             throw new ArgumentException("Unknown winning adapter identity requires explicit partial coverage.");
+        if (sourceObservation is { } observation)
+        {
+            observation.Validate();
+            if (observation.Status is not (MetricSampleStatus.Measured or MetricSampleStatus.Partial) &&
+                value.Kind != ValueKind.Missing)
+                throw new ArgumentException("A nonmeasured native source status cannot claim a numeric measurement.");
+        }
     }
 
     public static void Property(XamlPropertyKey property, TypedValue previous, TypedValue current)

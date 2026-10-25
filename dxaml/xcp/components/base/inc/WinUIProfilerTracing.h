@@ -161,6 +161,7 @@ namespace WinUIProfiler
         uint64_t SourceSequence = 0;
         Event Definition{};
         bool OwnsInstrumentation = false;
+        int64_t TimestampQpc = 0;
     };
     bool IsEnabled(Event event) noexcept;
     HRESULT BeginEmission(Event event, Emission* emission) noexcept;

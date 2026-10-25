@@ -16,10 +16,12 @@ public sealed partial class SessionStore : IDisposable
     internal readonly object Gate = new();
     private bool disposed;
     private bool writerCreated;
+    private bool immutableReaders;
+    private IReadOnlyList<FileStream>? savedReadLeases;
     private FailureRecord? failureRecord;
     internal bool Failed;
     internal string Path { get; }
-    internal SessionScope Scope { get; }
+    public SessionScope Scope { get; }
     internal byte[] TokenKey { get; }
     public ProfilerQueryService Queries { get; }
 
@@ -152,7 +154,7 @@ public sealed partial class SessionStore : IDisposable
     internal SqliteConnection OpenReader()
     {
         CheckDisposed();
-        return Connect(Path, true);
+        return Connect(Path, true, immutableReaders);
     }
     internal void CheckDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
     private static string Existing(string path)
@@ -175,11 +177,12 @@ public sealed partial class SessionStore : IDisposable
             throw new InvalidDataException("SQLite WAL mode is required.");
         Execute(db, $"PRAGMA synchronous=FULL; PRAGMA max_page_count={maximumPages};");
     }
-    internal static SqliteConnection Connect(string path, bool readOnly)
+    internal static SqliteConnection Connect(string path, bool readOnly, bool immutable = false)
     {
         var db = new SqliteConnection(new SqliteConnectionStringBuilder
         {
-            DataSource = path, Mode = readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWrite,
+            DataSource = immutable ? new Uri(path).AbsoluteUri + "?immutable=1" : path,
+            Mode = readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWrite,
             Pooling = false, DefaultTimeout = 5
         }.ToString());
         try
@@ -358,6 +361,7 @@ public sealed partial class SessionStore : IDisposable
         {
             if (disposed) return;
             disposed = true; WriterConnection?.Dispose(); lease?.Dispose();
+            if (savedReadLeases is not null) foreach (var stream in savedReadLeases) stream.Dispose();
         }
     }
     internal sealed record Checkpoint(CommittedWatermark Watermark, SessionInfo Info, DataQuality Quality);

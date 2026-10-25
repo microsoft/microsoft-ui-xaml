@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{8253F25A-E8DF-4E86-9EBB-3DCB6594B70F}</ProjectGuid>
+    <ProfilerHarnessName>ProfilerLateEnableHarness</ProfilerHarnessName>
+    <ProfilerHarnessSource>ProfilerLifecycleTests.cpp</ProfilerHarnessSource>
+    <ProfilerHostPropertiesName>ProfilerLateEnableHost</ProfilerHostPropertiesName>
+  </PropertyGroup>
+  <Import Project="ProfilerLifecycleHarness.vcxproj" />
+</Project>

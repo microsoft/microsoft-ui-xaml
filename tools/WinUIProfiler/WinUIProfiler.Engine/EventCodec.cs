@@ -26,7 +26,9 @@ public static class EventCodec
             throw new NotSupportedException("Unsupported event schema version.");
         if (envelope.Identity != definition.Identity)
             throw new ArgumentException("Event name, keyword and identity do not match the schema.");
-        if (envelope.Identity.ProviderId == EventCatalog.RuntimeProviderId && envelope.ProducerProcessId != envelope.Process.ProcessId)
+        if ((envelope.Identity.ProviderId == EventCatalog.RuntimeProviderId ||
+            envelope.Identity.ProviderId == EventCatalog.ObservationProviderId) &&
+            envelope.ProducerProcessId != envelope.Process.ProcessId)
             throw new ArgumentException("Runtime events must originate in the semantic target process.");
         var payload = (IEventPayload?)JsonSerializer.Deserialize(envelope.OwnedPayload.Span, definition.PayloadType, WireJson.Options)
             ?? throw new JsonException("A payload cannot be null.");

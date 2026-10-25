@@ -2,6 +2,26 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
+#include <VisualTree.h>
+
+namespace
+{
+    template<typename Children>
+    void ObserveChildOrder(CUIElement* owner, const Children& children)
+    {
+        if (!owner || (!WinUIProfiler::Hooks::TreesEnabled() && !WinUIProfiler::Hooks::FramesEnabled())) return;
+        const auto root = WinUIProfiler::Hooks::AssociatedRoot(owner);
+        WinUIProfiler::Hooks::Work(root, owner->GetContext());
+        if (!WinUIProfiler::Hooks::TreesEnabled()) return;
+        int32_t order = 0;
+        for (auto child : children)
+        {
+            WinUIProfiler::Hooks::Membership(root, owner->GetContext(), owner, child, 1, order++, true, 2);
+        }
+    }
+}
 #include <CDependencyObject.h>
 #include <DependencyObjectTraits.h>
 #include <DependencyObjectTraits.g.h>
@@ -435,6 +455,7 @@ CUIElementCollection::Append(_In_ CDependencyObject *pObject, _Out_opt_ XUINT32 
     GetContext()->BeginWatch();
 
     IFC_RETURN(CDOCollection::Append(pObject, pnIndex));
+    ObserveChildOrder(pOwner, GetCollection());
 
     if (m_toolbarAddedCallback != nullptr)
     {
@@ -474,6 +495,7 @@ _Check_return_ HRESULT CUIElementCollection::Insert(_In_ XUINT32 nIndex, _In_ CD
     GetContext()->BeginWatch();
 
     IFC_RETURN(CDOCollection::Insert(nIndex, pObject));
+    ObserveChildOrder(pOwner, GetCollection());
 
     // create storage for transition pro-actively
     if (CTransition::HasPossibleTransition(pUIElement))
@@ -532,6 +554,7 @@ CUIElementCollection::MoveInternal(_In_ XINT32 nIndex, _In_ XINT32 nPosition)
     IFC(pMover->OnZOrderChanged());
 
     IFC(CDOCollection::MoveInternal(nIndex, nPosition));
+    ObserveChildOrder(static_cast<CUIElement*>(GetOwner()), GetCollection());
 
     {
         auto callback = m_wrChangeCallback.lock();
@@ -1209,6 +1232,10 @@ CUIElementCollection::Remove(_In_ XUINT32 nIndex, _In_ CDependencyObject *pObjec
 
     if (pObject && pOwner)
     {
+        if (WinUIProfiler::Hooks::TreesEnabled())
+            WinUIProfiler::Hooks::Membership(WinUIProfiler::Hooks::AssociatedRoot(pOwner), GetContext(),
+                pOwner, pObject, 1, static_cast<int32_t>(nIndex), false, 2);
+        ObserveChildOrder(pOwner, GetCollection());
         pOwner->InvalidateMeasure();
         OnChildrenChanged(NULL);
     }

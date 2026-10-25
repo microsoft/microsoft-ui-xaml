@@ -13,8 +13,8 @@ P04 adds the fixed new runtime provider and typed, guarded writers for catalog
 IDs 1–16 in optimized and checked native builds, including complete schema-1
 capability/domain vectors and all nine capture state arrays. The concrete
 TDH-visible layouts and private diagnostics ABI are in event-contract.md.
-**No lifecycle, property, membership, frame, device, resource or allocator
-sites in the inventory below are hooked yet.** The supported-event bitmask
+**At the P04 checkpoint, no lifecycle, property, membership, frame, device,
+resource or allocator sites in the inventory below were hooked.** The supported-event bitmask
 describes writers, not observational coverage; runtime capability arrays are
 empty. Capture traversal/reconciliation, weak identity maps, the TAP/pipe,
 collector and listener receipt/absence acquisition are later work; the native
@@ -67,6 +67,116 @@ Use amd64chk/Debug for checked x64 execution, or arm64fre/Release/ARM64
 and arm64chk/Debug/ARM64 for cross-compilation. Building an ARM64 executable
 on an x64 host is not executing its tests.
 
+## P06 allocator working-checkpoint validation
+
+The allocator hooks observe successful heap operations through an optional,
+constant-initialized runtime callback table. The shared allocation library also
+links into build tools without the runtime bridge; with no registered table,
+the wrappers call the original heap APIs directly. Registration introduces no
+allocating global initializer or destructor. Suppression is shared with the
+other profiler observers, not limited to allocator recursion.
+
+The actual matched x64 checked/fre lifecycle host includes an
+`AllocatorTransitions` mode. It constructs and releases real XAML objects with
+allocation observations enabled, performs more churn during a full provider
+disable, then re-enables and repeats. It requires measured/partial quality,
+no fabricated baseline, distinct allocator/producer epochs, renewed epochs
+across the gap, globally unreused allocation lifetime IDs, contiguous
+per-producer allocation sequences, tracked predecessor/size semantics and
+zero ETW transport loss. Foreign-process events are excluded. Build and run
+from the implementation checkout, after building the matching Product:
+
+```powershell
+.\initrun.ps1 -Flavor amd64fre msb /q dxaml\test\native\external\framework\profiler\ProfilerLateEnableHarness.vcxproj /p:UseXamlCompiler=false /p:PGOBuildMode=Off
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -Run -TestMode AllocatorTransitions
+```
+
+Use `amd64chk` for checked execution. Standalone allocator tests separately
+exercise failed operations, capacity, observer suppression and runtime context
+races. Pending coverage retains its original producer epoch and the earliest
+context-acquisition QPC until successful publication. Coverage gaps do not prove
+an exact number of lost events: `LostEvents` remains absent. Deferred old-epoch
+Loss continues that epoch's Loss sequence, including prior nonallocator Loss,
+rather than borrowing the later producer's identity or sequence.
+
+Origin leases and pending evidence use 64 fixed, allocation-free slots. Active
+operations and pending publications pin their origins; acknowledged, unreferenced
+slots can be reused. Capacity exhaustion and saturated accounting explicitly
+fault the provider instead of evicting evidence or reporting success.
+
+```powershell
+.\tools\WinUIProfiler\WinUIProfiler.Native.Tests\Run-AllocatorRuntimeTests.ps1
+dotnet test .\tools\WinUIProfiler\WinUIProfiler.Engine.Tests\WinUIProfiler.Engine.Tests.csproj --no-restore -c Release --filter FullyQualifiedName~Deferred_allocator_loss
+```
+
+The native tests cover actual multi-epoch ETW publication, shared Loss sequence
+continuation, in-flight context retirement, 192 origin renewals, pending-origin
+capacity and counter overflow. The managed test retains a real native ETL,
+decodes and replays deferred Loss under its original domain, rejects an invalid
+clock mapping instead of clipping the interval, and reopens persisted incomplete
+health. These are not proof of complete allocator coverage, graphics/resource
+observations, native ARM64 execution or disabled-path performance; this working
+checkpoint does not complete P06.
+
+## P06 logical graphics working-checkpoint validation
+
+Actual D3D11 device creation/loss/WinUI ownership release and native
+`DCompSurface` initialization/rebind/resize/ownership release/destruction now
+have Resource-keyword producers. Driver-visible `SystemMemoryBitsDriver`
+staging-texture owners now use the same typed logical-resource observer at
+successful factory creation, present-only pool reuse and actual owner destruction.
+Pool return retains ownership and does not create a new lifetime.
+Solid-color composition-brush holders are instrumented at successful activation
+and actual nonempty holder reset/destruction. Their identities name logical
+WinUI ownership slots, not final COM lifetimes; color-only changes preserve
+identity, pixel dimensions are absent and hardware association remains unknown.
+Their Owner field now joins the actual native solid-color brush through the
+existing qualified XamlCore identity registry. Ending records retain that
+established owner; transient address reuse cannot relabel the earlier slot.
+Other resource families still have unknown XAML owners.
+These describe logical wrappers and observed
+device associations, not complete physical allocation accounting. Backing IDs,
+allocation bytes and unknown external device associations are not fabricated.
+The [resource coverage manifest](resource-coverage.md) lists each implemented
+boundary and the still-uncovered texture/bitmap/brush/ownership families.
+
+The standalone owned-ETW suite checks lifecycle reuse, failed operations,
+external-device rebind, shared native device associations, repeated release,
+resource-only/full selection gaps, runtime restart, exact 65,536-entry bounds,
+post-reservation selection/epoch races and termination while another
+thread holds the eligibility lock. The termination test reproduced a blocked
+hook before its state gate was moved ahead of eligibility lookup.
+Retained native ETLs decode/replay and preserve partial quality and unknown
+backing/bytes and known qualified brush owners after SQLite reopen. Owner tests
+also exercise late baseline, address reuse, independent Objects/Resources
+selection gaps and epoch races. Finite ETL enumeration may complete while
+observation coverage remains partial; Completed never means a complete baseline.
+
+The actual matched checked/fre `GraphicsResources` host renders text and
+WriteableBitmaps, changes content, then releases and destroys its wrappers.
+It requires positive creation/ownership-release/destruction observations,
+zero ETW transport loss and no fabricated physical Device Destroy.
+The additional `GraphicsReset` mode uses the matching existing private test
+interface to retire only its own process's device instance and request WinUI
+recovery. It requires actual Lost cleanup, old-device staging-owner destruction,
+successful later replacement-device creation and staging creation associated
+with that replacement's epoch. Both checked/fre actual workloads observe three
+staging-owner creates and two old-owner destroys, with zero transport loss.
+This is controlled WinUI recovery, not physical GPU removal.
+Standalone tests alone do not qualify those actual source sites.
+
+```powershell
+.\tools\WinUIProfiler\WinUIProfiler.Native.Tests\Run-GraphicsObservationTests.ps1
+dotnet test .\tools\WinUIProfiler\WinUIProfiler.Engine.Tests\WinUIProfiler.Engine.Tests.csproj --no-restore -c Debug --filter "FullyQualifiedName~IntegrityTests|FullyQualifiedName~Native_graphics_ETL"
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -Run -TestMode GraphicsResources
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -Run -TestMode GraphicsReset
+```
+
+Build the matching Product/host first; use `amd64chk` for checked validation.
+Full resource families, physical backing/deduplication, physical GPU removal,
+native ARM64 execution and measured overhead remain open. This checkpoint
+does not complete P06.
+
 ## P05a app-local host gate
 
 The separate `ProfilerLifecycleHarness.vcxproj` now provides an unpackaged
@@ -98,6 +208,128 @@ P05a executes XAML initialization and one real Grid construction/teardown, follo
 by WindowsXamlManager teardown. It proves this hosting prerequisite only: it does
 not claim producer-hook correctness, frame semantics, checked/ARM64 execution,
 four-flavor validation, or measured P17 overhead. Those remain separate gates.
+
+## P05 working-checkpoint validation
+
+P05 producer and lifecycle-test changes remain under implementation and review.
+The following results describe selected actual x64 optimized runtime tests, not
+completed hook coverage or an end-to-end profiler. The separate
+`ProfilerLateEnableHarness.vcxproj` reuses the supported self-contained smoke
+host's SDK initialization, complete local Product payload and loaded-module
+verification. Its output directory and evaluated deployment properties are
+separate from the smoke host. Rebuild the selected host after changing Product;
+the verifier rejects a stale deployment rather than silently testing old DLLs.
+
+The current checked and optimized x64 products pass SimultaneousManagers,
+LateEnable, ManagerRestart, OrderedEdges, FailedInsertion, Roots, IdleStartup,
+FrameSubmissions, DetachedLayout, AnimationRoot and DebugCounter, with verified local DLLs
+and zero observed ETW loss. These are qualified working checkpoints, not full
+P05 acceptance or ARM64 execution. Simultaneous-core/root testing exposed a
+real CoreWindow fallback attribution defect: even
+`GetContentRootForElement(...NoFallback)` can supply an unrelated fallback.
+Profiler scope now uses the actually associated no-fallback VisualTree, or
+unknown, without changing the framework's functional lookup behavior.
+Construction before Window.Content attachment must not fabricate a connected
+root; immutable scope, survivor, property and genuine shutdown checks remain.
+
+DetachedLayout performs six real measure and six arrange operations on detached
+content with no window activation or dispatcher pump, observes balanced layout
+boundaries and zero physical submissions despite pending work. AnimationRoot
+uses an actual dependent Width animation in one of two roots and verifies
+qualified attempt containment, root identity and physical timestamps. Completed
+animation and positive primary submissions are required; legitimate work in
+another root is not falsely forbidden. Submission count is observational, not
+an artificial fixed frame target.
+
+DebugCounter uses a real Application.Start host and public
+DebugSettings.EnableFrameRateCounter. Successful extra standalone commits
+have neither Attempt nor SubmittedFrameId, alongside independently qualified
+primary submissions for the tagged root. Parent checked/optimized reruns
+observe four/three standalone commits and two primary submissions respectively,
+with zero ETW loss; these are observations, not fixed test thresholds.
+No-device/no-commit, post-primary failure and resource-specific outcomes remain
+separate qualification gates.
+
+```powershell
+.\initrun.ps1 -Flavor amd64fre msb /q dxaml\test\native\external\framework\profiler\ProfilerLateEnableHarness.vcxproj /p:Configuration=Release /p:Platform=x64 /p:UseXamlCompiler=false /p:PGOBuildMode=Off
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode Lifetime -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode Roots -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode IdleStartup -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode FrameSubmissions -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode FailedInsertion -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode OrderedEdges -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode SimultaneousManagers -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode DetachedLayout -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode AnimationRoot -Run
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -TestMode DebugCounter -Run
+```
+
+| Selected runtime check | Working-checkpoint result | Scope and remaining limitation |
+|---|---|---|
+| Core/peer construction, safe type resolution, association and destruction | Passed with actual hooked local Product | Does not prove every lifetime domain or construction path |
+| Existing Grid first observed after Objects enable | Passed | Actual Width(43) emits Missing previous value, matching Scalar units, baseline-present rather than fabricated birth, type and destruction |
+| Objects disable/reenable with another family listener still enabled | Passed | Selected test preserves identity/epoch continuity and receives a new Objects baseline; not every listener combination |
+| Failed construction and allocator address reuse | Passed | Selected actual factory/parser and transient-object paths; reused addresses receive distinct lifetime IDs |
+| Multiple roots, tree/property observations and core-to-comp-node correlation | Passed in root-only and full Roots modes | Actual framework events include core/comp/visual correlations; complete physical-edge coverage remains under review |
+| Visual property observations | Passed in root-only and full Roots modes after owner-slot wiring | The selected workload emitted 24 actual visual-property observations with non-retaining partial owner-interval identities; no complete COM-lifetime capability is claimed |
+| Shared physical submission ID/timestamp and attempt containment | Passed in isolated FrameSubmissions and full Roots modes | The same actual two-root workload emits submissions sharing one physical ID and exact QPC across roots; submitted attempts remain open through commit. Failed/standalone/no-device commit paths remain separate gates |
+| Idle startup with fewer than ten submissions | Passed in isolated IdleStartup and full Roots modes | The unchanged idle assertion observed one distinct SubmittedFrameId, not a count of Frame-family records or boundaries; this does not prove every commit outcome |
+| Rejected native hand-in insertion | Passed in FailedInsertion mode with rebuilt local Product | The exact ignored native E_INVALIDARG diagnostic occurs within the replacement phase; the original physical parent retains the visual and no successful second-parent edge is emitted |
+| Exact physical sibling order and inter-node edges | Passed in OrderedEdges mode with rebuilt local Product | Fifteen exact qualified-ID/index/phase checks cover hand-in migration and both inter-node child moves. Removal indexes are checked against independently snapshotted physical sibling collections, evolving after each verified removal; a phase-start index is not incorrectly reused after sibling removal |
+
+The actual failing visual returns E_NOINTERFACE for IWeakReferenceSource.
+This unsupported observation now emits a scoped diagnostic without poisoning
+the control protocol or unrelated core-to-comp-node correlations. The native
+regression preserves the original HRESULT and verifies unexpected allocation
+failure still surfaces explicitly. That is not proof of visual lifetime support.
+XAML object
+pointers may be used as non-retaining in-process join keys at authoritative
+owner boundaries, resolved to the existing process/epoch/lifetime-qualified
+object IDs for durable observations. Pointer reuse must not merge lifetimes.
+Visual ownership release alone does not prove final COM-object destruction.
+
+These selected runtime results do not close the owner-scope review. The
+resource-only observation-gap and late correlation enablement regressions pass
+in the native bridge harness; actual exact physical sibling-order, inter-node
+edge and rejected-insertion validation now pass after rebuilding Product.
+Independent owner-scope rereview resolved all four product findings after the
+MatchAll eligibility-generation correction. Six actual bridge/ETW cases cover
+Resource-only slot gaps, renewed correlation announcements and saved edge-context
+invalidation, each with and without a genuinely eligible continuous second
+listener. The rebuilt optimized runtime passes the selected actual-app modes.
+A subsequent late-enable failure was traced to two proven owned debugger ETW
+sessions that kept Objects enabled before test construction, not lost events or
+a product baseline race. After stopping only those proven orphan sessions, the
+independent full Roots rerun passed with zero ETW loss. The fixture now rejects
+an already-enabled local Objects listener before construction and tests that
+precondition with a real owned listener. Its MatchAll predicate also permits
+a genuinely Resource-only listener rather than falsely declaring contamination.
+Checked x64 startup exposed allocation of a global registry before PAL
+initialization. Lazy registry construction now passes actual checked startup,
+LateEnable, all fifteen ordered-edge assertions, rejected native insertion and
+full Roots, with verified rebuilt local DLLs and zero ETW loss. The independent
+lifecycle review required nonblocking process-termination handling and
+reclamation of empty per-thread layout stacks. The c21 interlocked terminal
+gate and stack reclamation now have narrow independent review approval and
+checked/optimized product qualification. Remaining actual-hook, capability and
+architecture gates still block P05 acceptance; successful ordinary teardown
+alone does not prove safe termination while another thread holds an observation lock.
+The owner-scope product review is not full milestone approval.
+Passing nonzero event assertions does not establish those transition/ordering
+properties or complete topology coverage.
+
+`-TestMode LateEnable` selects only the existing-object test;
+`-TestMode IdleStartup` selects only the existing idle-startup test so an
+unrelated Roots failure cannot prevent its execution. `-TestMode FrameSubmissions`
+executes the same two-root workload with its existing layout/frame/submission
+assertions, independently of visual observations. Default Roots still requires
+all original tree/property/correlation/visual/frame assertions; a focused frame
+pass alone cannot establish visual coverage. Omitted TestMode
+still runs the original smoke host. Lifecycle test success does not establish
+popup/content/template coverage, all composition mutation paths, failed or
+standalone commit semantics, checked/ARM64 runtime correctness, or measured
+disabled-path overhead. Those remain open acceptance gates. P04's standalone
+schema harness remains separate and cannot substitute for actual-hook tests.
 
 ## Product requirement matrix
 

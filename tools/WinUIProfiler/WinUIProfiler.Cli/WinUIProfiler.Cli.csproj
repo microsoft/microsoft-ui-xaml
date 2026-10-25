@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WinUIProfiler.Cli.Tests" />
+    <ProjectReference Include="..\WinUIProfiler.Engine\WinUIProfiler.Engine.csproj" />
+  </ItemGroup>
+</Project>

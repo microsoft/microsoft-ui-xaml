@@ -7,6 +7,9 @@
 #include <Microsoft.UI.Xaml.private.h>
 #include "IXamlTestHooks-log.h"
 #include <NamespaceAliases.h>
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+#include "ProfilerPostCommitTest.h"
+#endif
 
 struct IDCompositionDevice2;
 struct IDWriteFontCollection;
@@ -34,6 +37,11 @@ enum XamlInternalCommand : int
     FlyoutBase_GetWindow,
     Popup_GetWindow,
     ToolTip_GetWindow
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+    , Profiler_CommitMainDeviceWithoutDevice
+    , Profiler_ArmPostCommitFailure
+    , Profiler_GetPostCommitState
+#endif
 };
 
 struct JupiterGripperPoint

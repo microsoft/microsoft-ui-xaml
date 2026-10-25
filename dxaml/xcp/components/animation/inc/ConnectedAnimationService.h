@@ -5,6 +5,9 @@
 #include "ConnectedAnimation.h"
 #include "ConnectedAnimationRoot.h"
 #include "CDependencyObject.h"
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+#include "ProfilerPostCommitTest.h"
+#endif
 
 class CEasingFunctionBase;
 
@@ -32,6 +35,10 @@ public:
     _Check_return_ HRESULT PreRenderWalk();
     _Check_return_ HRESULT PreCommit();
     _Check_return_ HRESULT PostCommit();
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+    HRESULT ArmProfilerPostCommitFailure() { return m_profilerPostCommit.Arm(); }
+    unsigned ProfilerPostCommitState() const { return m_profilerPostCommit.State(); }
+#endif
     _Check_return_ HRESULT CancelAllAnimationsAndResetDefaults();
 
     const wf::TimeSpan GetAnimationDuration();
@@ -47,6 +54,9 @@ public:
     bool AnimationStartsAreDelayed() { return m_delayStartOfAnimations; }
 
 private:
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+    WinUIProfiler::FrameTest::PostCommitState m_profilerPostCommit;
+#endif
     _Check_return_ HRESULT CleanupRetainedElements();
 
     std::vector<xref_ptr<CConnectedAnimation>> m_animations;

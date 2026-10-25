@@ -5,6 +5,7 @@ namespace WinUIProfiler.Engine.Ingestion;
 
 public sealed class EventDecoder
 {
+    private static readonly Guid SystemTraceProviderId = new("9e814aad-3204-11d2-9a82-006008a86939");
     private readonly SessionScope scope;
     private readonly QpcMapping clock;
     private ProcessInstanceKey process;
@@ -20,9 +21,14 @@ public sealed class EventDecoder
 
     public DecodedEvent? Decode(NativeRecord record)
     {
+        // ETL partition metadata is transport control, not a selected-process observation.
+        if (record.ProviderId == SystemTraceProviderId && record.DescriptorId == ushort.MaxValue &&
+            record.DescriptorVersion == 2 && record.Opcode == 80 && record.Level == 0 &&
+            record.Keywords == 0 && record.Name == "EventTrace/PartitionInfoExtensionV2") return null;
         if (IsProvablyForeignRuntime(record)) return null;
+        if (record.ProviderId == EventCatalog.StandardXamlProviderId) return StandardXaml(record);
         if (record.ProviderId == EventCatalog.KernelProcessProviderId) return KernelProcessStart(record);
-        // There is no published collector native schema yet. Do not reinterpret runtime bytes as collector bytes.
+        if (record.ProviderId == EventCatalog.CollectorProviderId) return Collector(record);
         if (record.ProviderId != EventCatalog.RuntimeProviderId)
             throw new NotSupportedException("No supported native schema for this provider.");
         var f = new NativeFields(record.Fields);
@@ -73,8 +79,26 @@ public sealed class EventDecoder
         return new(EventCodec.Normalize(envelope, stream), new(original, record.TimestampQpc, SourceClock));
     }
 
+    private DecodedEvent? StandardXaml(NativeRecord record)
+    {
+        if (record.ProducerProcessId != scope.Process.ProcessId) return null;
+        var definition = EventCatalog.Get(EventCatalog.ObservationProviderId, 1);
+        var payload = new ObservedXamlPayload(record.ProviderId, record.Name, record.DescriptorId,
+            record.DescriptorVersion, record.Level, record.Keywords, record.Opcode, record.Task, record.RawPayload,
+            new(MeasurementKind.Measured, CoverageState.Partial,
+                "Standard XAML ETW source bytes; private object lifetime, baseline and submitted-frame semantics are unavailable."));
+        var envelope = new EventEnvelope(scope.SessionId, scope.Process, record.ProducerProcessId, record.ThreadId,
+            clock.Convert(record.TimestampQpc), 1, null, record.ActivityId, definition.Identity,
+            EventCodec.EncodePayload(payload, scope.Process));
+        // This namespace identifies the local observation stream, not a fabricated runtime epoch or sequence.
+        return new(EventCodec.Normalize(envelope, new(definition.Identity.ProviderId, record.ProducerProcessId, scope.SessionId)),
+            new(new(record.ProducerProcessId, null, scope.SessionId), record.TimestampQpc, SourceClock));
+    }
+
     internal bool IsProvablyForeignRuntime(Guid provider, uint producerPid, ReadOnlySpan<byte> prefix)
     {
+        if (provider == EventCatalog.StandardXamlProviderId)
+            return producerPid != 0 && producerPid != scope.Process.ProcessId;
         if (provider != EventCatalog.RuntimeProviderId) return false;
         if (producerPid != scope.Process.ProcessId) return producerPid != 0;
         // Schema-1 common prefix is independent of the semantic body/name.
@@ -124,6 +148,112 @@ public sealed class EventDecoder
         // A trace-local namespace, not an invented producer epoch/sequence or native settlement claim.
         return new(EventCodec.Normalize(envelope, new(record.ProviderId, record.ProducerProcessId, scope.SessionId)),
             new(scope.Process, record.TimestampQpc, SourceClock));
+    }
+
+    private DecodedEvent? Collector(NativeRecord record)
+    {
+        var f = new NativeFields(record.Fields);
+        var id = f.U16("SemanticEventId");
+        if (id is < 1 or > 3 || f.U8("EventSchemaVersion") != 1)
+            throw new NotSupportedException("Only collector Process/Metric/Loss schema 1 is supported.");
+        var definition = EventCatalog.Get(EventCatalog.CollectorProviderId, id);
+        if (record.Name != definition.Identity.Name || record.Level != definition.Level ||
+            record.Keywords != definition.Identity.Keywords)
+            throw new NotSupportedException("Unsupported collector event metadata.");
+        NativeSchema.ValidateCollector(record, id);
+        var original = new ProcessInstanceKey(f.U32("TargetProcessId"), f.I64("TargetCreationTimeFileTime"),
+            f.Guid("TargetInstanceId"));
+        if (f.Guid("SessionId") != scope.SessionId || original != scope.Process) return null;
+        var producerEpoch = Require.Id(f.Guid("ProducerEpoch"));
+        var sequence = Require.Positive(f.U64("SourceSequence"));
+        if (f.I64("QpcFrequency") != clock.SourceFrequency)
+            throw new InvalidDataException("Collector frequency disagrees with the recorded QPC clock.");
+        var producer = new ProducerStreamKey(record.ProviderId, record.ProducerProcessId, producerEpoch);
+        IEventPayload payload = id switch
+        {
+            1 => CollectorProcess(f, record.TimestampQpc),
+            2 => CollectorMetric(f, record.TimestampQpc),
+            3 => CollectorLoss(f, record.TimestampQpc, producer),
+            _ => throw new NotSupportedException("Unsupported collector definition.")
+        };
+        var envelope = new EventEnvelope(scope.SessionId, scope.Process, record.ProducerProcessId, record.ThreadId,
+            clock.Convert(record.TimestampQpc), 1, sequence, record.ActivityId, definition.Identity,
+            EventCodec.EncodePayload(payload, scope.Process));
+        return new(EventCodec.Normalize(envelope, producer),
+            new(original, record.TimestampQpc, SourceClock));
+    }
+
+    private ProcessPayload CollectorProcess(NativeFields f, long timestamp)
+    {
+        var hasCreation = f.Bool("HasCreationQpc");
+        var creation = f.I64("CreationQpc");
+        if (!hasCreation && creation != 0 || creation > timestamp)
+            throw new InvalidDataException("Collector creation QPC is inactive or follows its observation.");
+        return new(f.Enum<ProcessOperation>("Operation"), hasCreation ? clock.Convert(creation) : null,
+            CollectorQuality(f));
+    }
+
+    private LossPayload CollectorLoss(NativeFields f, long timestamp, ProducerStreamKey producer)
+    {
+        var begin = f.I64("IntervalStartQpc");
+        var end = f.I64("IntervalEndQpc");
+        var hasLostEvents = f.Bool("HasLostEvents");
+        var lostEvents = f.U64("LostEvents");
+        var hasDomains = f.Bool("HasDomains");
+        var domains = f.Array("Domains", 256);
+        if (begin > end || end > timestamp || !hasLostEvents && lostEvents != 0 ||
+            f.U32("DomainCount") != domains.Length || !hasDomains && domains.Length != 0)
+            throw new InvalidDataException("Collector loss has inconsistent intervals, counts or optional arms.");
+        return new(producer.ProducerEpoch, new(clock.Convert(begin), clock.Convert(end)),
+            hasLostEvents ? lostEvents : null, f.Text("Reason"), hasDomains
+                ? domains.Select(domain => new SequenceDomainKey(producer, scope.Process,
+                    domain.U16("EventId"), domain.U8("EventVersion"))).ToArray() : null);
+    }
+
+    private static DataQuality CollectorQuality(NativeFields f)
+    {
+        var reason = f.Text("Reason");
+        return new(f.Enum<MeasurementKind>("MeasurementKind"),
+            f.Enum<CoverageState>("Coverage"), reason.Length == 0 ? null : reason);
+    }
+
+    private MetricPayload CollectorMetric(NativeFields f, long timestamp)
+    {
+        var begin = f.I64("AcquisitionBeginQpc");
+        var end = f.I64("AcquisitionEndQpc");
+        if (begin > end || end > timestamp)
+            throw new InvalidDataException("Collector acquisition interval disagrees with the recorded QPC clock.");
+        var kind = f.Enum<ValueKind>("ValueKind");
+        var integer = f.I64("Integer");
+        var number = f.F64("Number");
+        if (kind != ValueKind.Integer && integer != 0 || kind != ValueKind.Number && number != 0)
+            throw new InvalidDataException("Inactive collector value fields must be canonical zeros.");
+        var quality = CollectorQuality(f);
+        var value = new TypedValue(kind, f.Enum<ValueUnit>("ValueUnit"),
+            kind == ValueKind.Integer ? integer : null, kind == ValueKind.Number ? number : null,
+            null, null, quality);
+        var hasGpu = f.Bool("HasGpu");
+        var hasAdapter = f.Bool("HasAdapter");
+        var hasEngine = f.Bool("HasEngine");
+        if (!hasGpu && (f.U8("GpuScope") != 0 || hasAdapter || hasEngine) ||
+            !hasAdapter && (f.U32("AdapterLuidLow") != 0 || f.I32("AdapterLuidHigh") != 0 ||
+                f.U32("PhysicalAdapterIndex") != 0) ||
+            !hasEngine && (f.U32("EngineId") != 0 || f.U8("EngineClass") != 0))
+            throw new InvalidDataException("Inactive collector GPU identities must be canonical defaults.");
+        GpuSampleIdentity? gpu = hasGpu ? new(hasAdapter
+            ? new PhysicalAdapterKey(f.U32("AdapterLuidLow"), f.I32("AdapterLuidHigh"), f.U32("PhysicalAdapterIndex")) : null,
+            f.Enum<GpuMetricScope>("GpuScope"), hasEngine ? new GpuEngineKey(f.U32("EngineId"),
+                f.Enum<GpuEngineClass>("EngineClass")) : null) : null;
+        var observation = new MetricSourceObservation(f.Enum<MetricClock>("NativeClock"),
+            f.I64("NativeFrequency"), f.U64("NativeBegin"), f.U64("NativeEnd"),
+            f.Enum<MetricSampleStatus>("NativeStatus"), f.U64("NativeAcquisitionBegin"),
+            f.U64("NativeAcquisitionEnd"), f.U32("NativeError"),
+            f.Enum<MetricErrorDomain>("NativeErrorDomain"), f.U32("PdhError"));
+        return new(f.Enum<MetricKind>("Metric"), value,
+            new(clock.Convert(begin), clock.Convert(end)), f.Text("Source"), f.Text("SourceVersion"), gpu)
+        {
+            SourceObservation = observation
+        };
     }
 
     private RuntimeCapabilitiesPayload Capabilities(NativeFields f)

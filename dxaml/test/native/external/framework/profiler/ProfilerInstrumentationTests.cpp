@@ -3,6 +3,7 @@
 #include "ProfilerInstrumentationTests.h"
 #include "WinUIProfilerRuntimeBridge.h"
 #include "WinUIProfilerTracing.h"
+#include "WinUIProfilerHooks.h"
 #include <evntrace.h>
 #include <tdh.h>
 #include <cstdio>
@@ -14,6 +15,9 @@
 #include <atomic>
 #include <cstring>
 #include <limits>
+#include <new>
+#include <string>
+#include <weakreference.h>
 
 using namespace WinUIProfiler;
 
@@ -419,6 +423,654 @@ namespace
             }
         }
         catch (...) { decoded.Failed = true; }
+    }
+
+    class NonWeakVisual final : public IUnknown
+    {
+    public:
+        ULONG References = 1;
+        unsigned WeakQueries = 0;
+        unsigned CanonicalQueries = 0;
+        HRESULT CanonicalResult = S_OK;
+        HRESULT WeakResult = E_NOINTERFACE;
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void** value) override
+        {
+            if (!value) return E_POINTER;
+            *value = nullptr;
+            if (iid == __uuidof(IUnknown))
+            {
+                ++CanonicalQueries;
+                if (FAILED(CanonicalResult)) return CanonicalResult;
+                *value = static_cast<IUnknown*>(this);
+                AddRef();
+                return S_OK;
+            }
+            ++WeakQueries;
+            return WeakResult;
+        }
+        ULONG STDMETHODCALLTYPE AddRef() override { return ++References; }
+        ULONG STDMETHODCALLTYPE Release() override { return --References; }
+    };
+    struct VisualIsolationDecoded
+    {
+        bool Failed = false;
+        unsigned CoreLinks = 0;
+        unsigned VisualLinks = 0;
+        unsigned Diagnostics = 0;
+    };
+    void WINAPI OnVisualIsolation(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId ||
+            record->EventHeader.ProcessId != GetCurrentProcessId()) return;
+        auto& state = *static_cast<VisualIsolationDecoded*>(record->UserContext);
+        try
+        {
+            const auto id = Field<uint16_t>(record, {L"SemanticEventId"});
+            if (id == 7)
+            {
+                const auto kind = Field<uint8_t>(record, {L"Kind"});
+                if (kind == 1) ++state.CoreLinks;
+                if (kind == 2) ++state.VisualLinks;
+            }
+            if (id == 15)
+            {
+                PROPERTY_DATA_DESCRIPTOR reason{};
+                reason.PropertyName = reinterpret_cast<ULONGLONG>(L"Reason");
+                reason.ArrayIndex = ULONG_MAX;
+                ULONG size = 0;
+                Check(TdhGetPropertySize(record, 0, nullptr, 1, &reason, &size) == ERROR_SUCCESS,
+                    "unsupported visual diagnostic reason exists");
+                std::vector<BYTE> text(size + 1);
+                Check(TdhGetProperty(record, 0, nullptr, 1, &reason, size, text.data()) == ERROR_SUCCESS,
+                    "unsupported visual diagnostic reason decodes");
+                Check(std::strstr(reinterpret_cast<char*>(text.data()), "0x80004002") != nullptr,
+                    "unsupported visual diagnostic preserves original HRESULT");
+                Check(Field<uint8_t>(record, {L"HasDomains"}) == 1, "unsupported visual diagnostic is domain scoped");
+                ++state.Diagnostics;
+            }
+        }
+        catch (...) { state.Failed = true; }
+    }
+    void UnsupportedVisualIsolationTest()
+    {
+        NonWeakVisual visual;
+        int core = 0, node = 0, otherCore = 0, otherNode = 0;
+        Session session;
+        session.Enable(1 | 2 | 8);
+        Hooks::LinkVisual(&node, &visual);
+        Check(visual.WeakQueries == 1 && visual.References == 1,
+            "unsupported visual is queried without retaining canonical IUnknown");
+        ProtocolInfo info{};
+        Check(GetProtocolInfo(1, sizeof(info), &info) == S_OK,
+            "unsupported weak visual must not poison subsequent protocol info");
+        Hooks::Link(&core, Domain::XamlCore, &node, Domain::CompNode, 1, true);
+        Hooks::Link(&otherCore, Domain::XamlCore, &node, Domain::CompNode, 1, true);
+        Hooks::Link(&core, Domain::XamlCore, &otherNode, Domain::CompNode, 1, true);
+        Hooks::Link(&otherCore, Domain::XamlCore, &otherNode, Domain::CompNode, 1, true);
+        Hooks::Link(&core, Domain::XamlCore, &node, Domain::CompNode, 1, false);
+        VisualIsolationDecoded decoded;
+        session.Read(OnVisualIsolation, &decoded);
+        Check(!decoded.Failed && decoded.CoreLinks == 5,
+            "unsupported visual does not suppress independent many-to-many core/comp links");
+        Check(decoded.VisualLinks == 0 && decoded.Diagnostics == 1,
+            "unsupported visual has explicit partial diagnostic, never fabricated visual identity/link");
+        Session failure;
+        failure.Enable(1 | 2 | 8);
+        NonWeakVisual broken;
+        broken.WeakResult = E_OUTOFMEMORY;
+        Hooks::LinkVisual(&node, &broken);
+        Check(GetProtocolInfo(1, sizeof(info), &info) == E_OUTOFMEMORY,
+            "unexpected weak-source failure remains an explicit fatal protocol error");
+        std::puts("PASS: unsupported weak visual isolation and original HRESULT diagnostic; synthetic native regression, not actual hooks");
+    }
+
+    class VisualAlias final : public IUnknown
+    {
+    public:
+        explicit VisualAlias(NonWeakVisual& target) : m_target(target) {}
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void** value) override { return m_target.QueryInterface(iid, value); }
+        ULONG STDMETHODCALLTYPE AddRef() override { return m_target.AddRef(); }
+        ULONG STDMETHODCALLTYPE Release() override { return m_target.Release(); }
+    private:
+        NonWeakVisual& m_target;
+    };
+    struct SlotDecoded
+    {
+        bool Failed = false;
+        unsigned Baselines = 0, Links = 0, Unlinks = 0, Gaps = 0;
+        std::vector<uint64_t> Properties;
+        std::vector<GUID> Epochs;
+        std::vector<uint64_t> Resources;
+    };
+    void WINAPI OnSlot(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId ||
+            record->EventHeader.ProcessId != GetCurrentProcessId()) return;
+        auto& state = *static_cast<SlotDecoded*>(record->UserContext);
+        try
+        {
+            const auto id = Field<uint16_t>(record, {L"SemanticEventId"});
+            if (id == 2 && Field<uint8_t>(record, {L"Object", L"Domain"}) == static_cast<uint8_t>(Domain::Resource))
+                state.Resources.push_back(Field<uint64_t>(record, {L"Object", L"RuntimeObjectId"}));
+            if (id == 2 && Field<uint8_t>(record, {L"Object", L"Domain"}) == 3)
+            {
+                Check(Field<uint8_t>(record, {L"Operation"}) == 2, "owner interval never fabricates visual birth/destruction");
+                Check(Field<uint8_t>(record, {L"Quality", L"Kind"}) == 0, "owner presence is measured, not guessed");
+                Check(Field<uint8_t>(record, {L"Quality", L"Coverage"}) == 1, "owner interval is explicitly partial");
+                ++state.Baselines;
+            }
+            if (id == 7 && Field<uint8_t>(record, {L"Kind"}) == 2)
+            {
+                if (Field<uint8_t>(record, {L"Linked"})) ++state.Links;
+                else ++state.Unlinks;
+            }
+            if (id == 6)
+            {
+                state.Properties.push_back(Field<uint64_t>(record, {L"Visual", L"RuntimeObjectId"}));
+                state.Epochs.push_back(Field<GUID>(record, {L"Visual", L"ProducerEpoch"}));
+            }
+            if (id == 15) ++state.Gaps;
+            Check(id != 5, "owner retirement does not fake physical visual disconnect");
+        }
+        catch (...) { state.Failed = true; }
+    }
+    void RuntimeLifetimeTest()
+    {
+        Session session;
+        session.Enable(1 | 2 | 8);
+        NonWeakVisual visual;
+        int owner = 0;
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Hooks::VisualProperty(&visual, 0, 1);
+        Hooks::ShutdownRuntime();
+        Hooks::ShutdownRuntime();
+        const auto queries = visual.CanonicalQueries;
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Check(visual.CanonicalQueries == queries, "shutdown rejects observation before canonical QI");
+        Hooks::InitializeRuntime();
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Hooks::VisualProperty(&visual, 0, 2);
+        Hooks::InitializeRuntime();
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Hooks::VisualProperty(&visual, 0, 3);
+        Hooks::ShutdownRuntime();
+        Hooks::InitializeRuntime();
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Hooks::VisualProperty(&visual, 0, 4);
+        SlotDecoded decoded;
+        session.Read(OnSlot, &decoded);
+        Check(!decoded.Failed && decoded.Baselines == 3 && decoded.Links == 3 && decoded.Unlinks == 0,
+            "deterministic runtime cleanup retires observations without fake native destruction/unlinks");
+        Check(decoded.Properties.size() == 4 && decoded.Properties[0] != decoded.Properties[1] &&
+            decoded.Properties[1] == decoded.Properties[2] && decoded.Properties[2] != decoded.Properties[3],
+            "reinit cannot reuse qualified IDs; repeated initialization preserves live registry");
+        Check(decoded.Epochs.size() == 4 && decoded.Epochs[0] == decoded.Epochs[3],
+            "continuous listener retains producer epoch across registry shutdown/reinit");
+        Check(visual.References == 1 && visual.WeakQueries == 0, "runtime lifetime has no diagnostic strong ownership");
+        std::puts("PASS: actual ETW lazy registry teardown/reinit and continuous epoch-qualified IDs");
+    }
+#ifdef WINUI_PROFILER_STANDALONE
+    class CleanupWeak final : public IWeakReference
+    {
+    public:
+        ULONG References = 1;
+        unsigned Released = 0;
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void** out) override
+        {
+            *out = nullptr;
+            if (id != __uuidof(IUnknown) && id != __uuidof(IWeakReference)) return E_NOINTERFACE;
+            *out = this; AddRef(); return S_OK;
+        }
+        ULONG STDMETHODCALLTYPE AddRef() override { return ++References; }
+        ULONG STDMETHODCALLTYPE Release() override
+        {
+            if (--References == 1) { ++Released; Hooks::Born(Domain::XamlCore, this); }
+            return References;
+        }
+        HRESULT STDMETHODCALLTYPE Resolve(REFIID, IInspectable** out) override { *out = nullptr; return S_OK; }
+    };
+    class CleanupVisual final : public IWeakReferenceSource
+    {
+    public:
+        CleanupWeak Weak;
+        ULONG References = 1;
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void** out) override
+        {
+            *out = nullptr;
+            if (id != __uuidof(IUnknown) && id != __uuidof(IWeakReferenceSource)) return E_NOINTERFACE;
+            *out = this; AddRef(); return S_OK;
+        }
+        ULONG STDMETHODCALLTYPE AddRef() override { return ++References; }
+        ULONG STDMETHODCALLTYPE Release() override { return --References; }
+        HRESULT STDMETHODCALLTYPE GetWeakReference(IWeakReference** out) override { *out = &Weak; Weak.AddRef(); return S_OK; }
+    };
+    void OrderlyWeakCleanupTest()
+    {
+        Session session;
+        session.Enable(1 | 2 | 8);
+        CleanupVisual visual;
+        int node = 0;
+        Hooks::LinkVisual(&node, &visual);
+        Check(visual.Weak.References == 2, "registry owns one genuine weak-reference implementation");
+        Hooks::ShutdownRuntime();
+        Check(visual.Weak.References == 1 && visual.Weak.Released == 1 && visual.References == 1,
+            "orderly shutdown releases weak ownership exactly once with reentrant hooks suppressed");
+        Hooks::InitializeRuntime();
+        std::puts("PASS: orderly genuine weak-reference release and recursion suppression");
+    }
+    struct LayoutGapDecoded
+    {
+        bool Failed = false;
+        int64_t UnmatchedStart = 0, UnmatchedEnd = 0, GapStart = 0, GapEnd = 0;
+        unsigned Boundaries = 0, Frames = 0, Extra = 0;
+    };
+    void WINAPI OnLayoutGap(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId || record->EventHeader.ProcessId != GetCurrentProcessId()) return;
+        auto& state = *static_cast<LayoutGapDecoded*>(record->UserContext);
+        try
+        {
+            const auto id = Field<uint16_t>(record, {L"SemanticEventId"});
+            if (id != 8 && id != 9) return;
+            if (id == 8) ++state.Boundaries; else ++state.Frames;
+            const auto time = record->EventHeader.TimeStamp.QuadPart;
+            if ((time >= state.UnmatchedStart && time <= state.UnmatchedEnd) ||
+                (time >= state.GapStart && time <= state.GapEnd)) ++state.Extra;
+        }
+        catch (...) { state.Failed = true; }
+    }
+    void LayoutStackLifetimeTest()
+    {
+        Session continuity;
+        continuity.Enable(32);
+        Session frames;
+        frames.Enable(16);
+        int root = 0, dispatcher = 0, element = 0;
+        LayoutGapDecoded observed;
+        LARGE_INTEGER now{};
+        QueryPerformanceCounter(&now); observed.UnmatchedStart = now.QuadPart;
+        for (unsigned i = 0; i != 128; ++i)
+        {
+            std::thread thread([&] { Hooks::Layout(&root, &dispatcher, &element, 0, false); });
+            thread.join();
+            Check(Hooks::LayoutStackCountForTest() == 0, "unmatched end leaves no empty thread entry");
+        }
+        QueryPerformanceCounter(&now); observed.UnmatchedEnd = now.QuadPart;
+        Hooks::Layout(&root, &dispatcher, &element, 0, true);
+        Check(Hooks::LayoutStackCountForTest() == 1, "observed begin owns one layout stack");
+        frames.Disable();
+        frames.Enable(16);
+        QueryPerformanceCounter(&now); observed.GapStart = now.QuadPart;
+        Hooks::Layout(&root, &dispatcher, &element, 0, false);
+        QueryPerformanceCounter(&now); observed.GapEnd = now.QuadPart;
+        Check(Hooks::LayoutStackCountForTest() == 0, "generation-invalidated end erases its empty stack");
+        frames.Read(OnLayoutGap, &observed);
+        std::printf("LAYOUT_COUNTS: boundaries=%u frames=%u extra=%u\n", observed.Boundaries, observed.Frames, observed.Extra);
+        Check(!observed.Failed && observed.Boundaries == 1 && observed.Frames == 1 && observed.Extra == 0,
+            "actual ETW has exactly one genuine begin/frame and zero unmatched/gap-end boundary/frame records");
+        std::puts("PASS: unmatched/generation-gap ends and128 actual thread lifetimes");
+    }
+    void TerminationChild(const char* mapping)
+    {
+        Check(SetEnvironmentVariableA("WINUI_PROFILER_TERMINATION_STATE", mapping), "child-only mapping environment");
+        wchar_t name[100]{}, path[MAX_PATH]{};
+        swprintf_s(name, L"Local\\WinUIProfiler-Termination-%lu", GetCurrentProcessId());
+        HANDLE ready = CreateEventW(nullptr, TRUE, FALSE, name);
+        Check(ready != nullptr, "create owned child readiness event");
+        Check(GetModuleFileNameW(nullptr, path, ARRAYSIZE(path)) != 0, "child executable identity");
+        auto filename = wcsrchr(path, L'\\');
+        Check(filename != nullptr, "child fixture directory");
+        wcscpy_s(filename + 1, ARRAYSIZE(path) - (filename + 1 - path), L"ProfilerTerminationFixture.dll");
+        Check(LoadLibraryW(path) != nullptr, "load actual owned termination fixture DLL");
+        Check(WaitForSingleObject(ready, 5000) == WAIT_OBJECT_0, "actual DLL registry owner acquired lock");
+        ExitProcess(0);
+    }
+    void TerminationTest()
+    {
+        Session listener;
+        listener.Enable(1 | 2);
+        wchar_t path[MAX_PATH]{};
+        GetModuleFileNameW(nullptr, path, ARRAYSIZE(path));
+        wchar_t mappingName[100]{};
+        swprintf_s(mappingName, L"Local\\WinUIProfiler-Detach-%lu", GetCurrentProcessId());
+        HANDLE mapping = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(LONG), mappingName);
+        auto state = static_cast<LONG*>(MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, sizeof(LONG)));
+        Check(state != nullptr, "owned child detach phase mapping");
+        std::wstring command = L"\"" + std::wstring(path) + L"\" --termination-child " + mappingName;
+        STARTUPINFOW startup{sizeof(startup)};
+        PROCESS_INFORMATION child{};
+        Check(CreateProcessW(path, command.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup, &child),
+            "start exact owned termination child");
+        const DWORD wait = WaitForSingleObject(child.hProcess, 8000);
+        DWORD code = 1;
+        if (wait == WAIT_TIMEOUT) TerminateProcess(child.hProcess, 100);
+        WaitForSingleObject(child.hProcess, 3000);
+        GetExitCodeProcess(child.hProcess, &code);
+        CloseHandle(child.hThread);
+        CloseHandle(child.hProcess);
+        const LONG phase = *state;
+        UnmapViewOfFile(state);
+        CloseHandle(mapping);
+        std::printf("termination wait=%lu exit=%lu detachPhase=%ld\n", wait, code, phase);
+        Check(wait == WAIT_OBJECT_0 && code == 0, "ExitProcess cannot wait on terminated registry owner");
+        Check(phase == 2, "actual DLL detach entered and completed profiler shutdown");
+        std::puts("PASS: actual DLL detach while another terminated thread owns registry lock");
+    }
+#endif
+    void VisualSlotTest()
+    {
+        NonWeakVisual a, b;
+        VisualAlias alias(a);
+        int first = 0, second = 0;
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &a);
+        Check(a.References == 1 && a.WeakQueries == 0 && a.CanonicalQueries == 0,
+            "disabled slots perform no QI/retention");
+        Session session;
+        session.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &a);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &alias);
+        Hooks::VisualSlot(&first, Domain::CompNode, 1, &alias);
+        Hooks::VisualSlot(&second, Domain::CompNode, 0, &a);
+        Hooks::VisualProperty(&a, 0, 43);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &b);
+        Hooks::VisualSlot(&first, Domain::CompNode, 1, nullptr);
+        Hooks::VisualProperty(&a, 0, 44);
+        Hooks::ReleaseVisualOwner(&first, Domain::CompNode);
+        Hooks::ReleaseVisualOwner(&second, Domain::CompNode);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &a);
+        Hooks::VisualProperty(&a, 0, 45);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, nullptr);
+        Check(a.References == 1 && b.References == 1, "slot diagnostics retain no COM references");
+        SlotDecoded decoded;
+        session.Read(OnSlot, &decoded);
+        Check(!decoded.Failed && decoded.Baselines == 3, "three partial visual owner intervals decoded from actual bridge ETW");
+        Check(decoded.Links == 4 && decoded.Unlinks == 4, "aliases and shared slots preserve semantic many-to-many links");
+        Check(decoded.Properties.size() == 3 && decoded.Properties[0] == decoded.Properties[1] &&
+            decoded.Properties[1] != decoded.Properties[2], "shared owner continuity; fresh ID after last-owner gap");
+        Check(decoded.Gaps == 3 && a.WeakQueries == 0 && b.WeakQueries == 0,
+            "owner gaps are explicit and owned visuals never require weak QI");
+        Session renewed;
+        renewed.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &a);
+        Hooks::VisualProperty(&a, 0, 46);
+        Hooks::ReleaseVisualOwner(&first, Domain::CompNode);
+        SlotDecoded next;
+        renewed.Read(OnSlot, &next);
+        Check(!next.Failed && next.Baselines == 1 && next.Links == 1 && next.Unlinks == 1 &&
+            next.Epochs.size() == 1 && next.Epochs[0] != decoded.Epochs[0],
+            "reenable uses a fresh qualified partial baseline, never joins the old epoch");
+        Session continuous;
+        continuous.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &a);
+        Hooks::VisualProperty(&a, 0, 47);
+        Session joining;
+        joining.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &alias);
+        Hooks::VisualProperty(&a, 0, 48);
+        SlotDecoded joined;
+        joining.Read(OnSlot, &joined);
+        continuous.Enable(1 | 8);
+        Hooks::VisualProperty(&a, 0, 49);
+        continuous.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &a);
+        Hooks::VisualProperty(&a, 0, 50);
+        Hooks::ReleaseVisualOwner(&first, Domain::CompNode);
+        SlotDecoded kept;
+        continuous.Read(OnSlot, &kept);
+        Check(!joined.Failed && !kept.Failed && joined.Properties.size() == 1 &&
+            kept.Properties.size() == 4 && kept.Baselines == 2 && kept.Links == 1 &&
+            kept.Unlinks == 1 && joined.Properties[0] == kept.Properties[0],
+            "joining listener and lifetime-family reenable preserve continuous visual identity");
+        for (const auto id : kept.Properties)
+            Check(id == kept.Properties[0], "continuous visual family does not lose its qualified identity");
+        Session grouped;
+        grouped.Enable(1 | 2 | 8);
+        int oldHost = 0, newHost = 0;
+        Hooks::VisualSlot(&first, Domain::XamlCore, 0, &a, &oldHost);
+        Hooks::VisualSlot(&first, Domain::XamlCore, 0, &alias, &newHost);
+        Hooks::VisualSlot(&first, Domain::XamlCore, 1, &b);
+        Hooks::VisualSlot(&second, Domain::CompNode, 0, &b);
+        Hooks::ReleaseVisualSlotGroup(&oldHost);
+        Hooks::VisualProperty(&a, 0, 51);
+        Hooks::ReleaseVisualSlotGroup(&newHost);
+        Hooks::VisualProperty(&b, 0, 52);
+        Hooks::VisualSlot(&first, Domain::XamlCore, 1, nullptr);
+        Hooks::ReleaseVisualOwner(&second, Domain::CompNode);
+        SlotDecoded groups;
+        grouped.Read(OnSlot, &groups);
+        Check(!groups.Failed && groups.Baselines == 2 && groups.Gaps == 2 && groups.Properties.size() == 2,
+            "host-group retirement follows transferred live slot, preserves unrelated owner slots");
+        Session failure;
+        failure.Enable(1 | 2 | 8);
+        NonWeakVisual broken;
+        broken.CanonicalResult = E_OUTOFMEMORY;
+        Hooks::VisualSlot(&first, Domain::CompNode, 0, &broken);
+        ProtocolInfo info{};
+        Check(GetProtocolInfo(1, sizeof(info), &info) == E_OUTOFMEMORY && broken.References == 1,
+            "unexpected canonical identity failure remains explicit and nonretaining");
+        std::puts("PASS: owner-slot partial intervals, aliases/shared owners/replacement/gaps; actual bridge ETW, synthetic native owners");
+    }
+
+    void SlotResourceGapTest()
+    {
+        NonWeakVisual visual;
+        int owner = 0, resource = 0, group = 0;
+        Session session;
+        session.Enable(1 | 2 | 8 | 32);
+        Hooks::Born(Domain::Resource, &resource);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual, &group);
+        Hooks::VisualProperty(&visual, 0, 1);
+        session.Enable(1 | 32);
+        const auto queries = visual.CanonicalQueries;
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, nullptr);
+        Hooks::ReleaseVisualOwner(&owner, Domain::CompNode);
+        Hooks::ReleaseVisualSlotGroup(&group);
+        Check(visual.CanonicalQueries == queries, "disabled slot retirement performs no QI");
+        Hooks::Destroyed(Domain::CompNode, &owner);
+        Hooks::Born(Domain::CompNode, &owner);
+        Check(visual.Release() == 0, "unobserved old visual has no diagnostic strong retention");
+        visual.~NonWeakVisual();
+        new (&visual) NonWeakVisual;
+        session.Enable(1 | 2 | 8 | 32);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual, &group);
+        Hooks::VisualProperty(&visual, 0, 2);
+        Hooks::ReleaseVisualOwner(&owner, Domain::CompNode);
+        Hooks::Destroyed(Domain::Resource, &resource);
+        SlotDecoded decoded;
+        session.Read(OnSlot, &decoded);
+        Check(!decoded.Failed && decoded.Properties.size() == 2 &&
+            decoded.Properties[0] != decoded.Properties[1] && decoded.Epochs[0] == decoded.Epochs[1],
+            "Resource-only gap invalidates visual fragment despite unchanged producer epoch and address reuse");
+        Check(decoded.Resources.size() == 2 && decoded.Resources[0] == decoded.Resources[1],
+            "continuous Resource identity survives slot-only generation reset");
+        Check(decoded.Gaps == 1 && decoded.Unlinks == 1 && visual.References == 1 && visual.WeakQueries == 0,
+            "no ghost owner tokens after disabled owner destruction/reuse; final visual retirement succeeds");
+        std::puts("PASS: Resource-only slot gap/address reuse clears visual fragments/ghosts, preserves Resource identity");
+    }
+    void SlotCorrelationGenerationTest()
+    {
+        NonWeakVisual visual;
+        VisualAlias alias(visual);
+        int owner = 0;
+        Session session;
+        session.Enable(1 | 2);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 1, &alias);
+        session.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &alias);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 1, &visual);
+        Hooks::VisualProperty(&visual, 0, 1);
+        session.Enable(1 | 2);
+        session.Enable(1 | 2 | 8);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 1, &alias);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+        Hooks::VisualProperty(&visual, 0, 2);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 0, nullptr);
+        Hooks::VisualSlot(&owner, Domain::CompNode, 1, nullptr);
+        SlotDecoded decoded;
+        session.Read(OnSlot, &decoded);
+        Check(!decoded.Failed && decoded.Links == 2 && decoded.Unlinks == 1,
+            "late visual enable/reenable announces exactly one semantic link per generation across aliases/slots");
+        Check(decoded.Baselines == 1 && decoded.Properties.size() == 2 &&
+            decoded.Properties[0] == decoded.Properties[1] && decoded.Epochs[0] == decoded.Epochs[1],
+            "continuous lifetime observation preserves qualified visual identity across correlation generation resets");
+        std::puts("PASS: correlation announcement generations are independent, deduplicated and identity-stable");
+    }
+
+    struct EdgeContextDecoded
+    {
+        unsigned Edges = 0, Frames = 0, Losses = 0;
+        GUID Root{};
+        uint64_t Dispatcher = 0;
+        bool Failed = false;
+    };
+    void WINAPI OnEdgeContext(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId) return;
+        auto& value = *static_cast<EdgeContextDecoded*>(record->UserContext);
+        try
+        {
+            const auto id = Field<uint16_t>(record, {L"SemanticEventId"});
+            if (id == 9) ++value.Frames;
+            if (id == 15) ++value.Losses;
+            if (id != 5) return;
+            const auto root = Field<GUID>(record, {L"RootId"});
+            const auto dispatcher = Field<uint64_t>(record, {L"DispatcherId"});
+            if (value.Edges == 0) { value.Root = root; value.Dispatcher = dispatcher; }
+            Check(root == value.Root && root != GUID_NULL && dispatcher == value.Dispatcher && dispatcher != 0,
+                "synchronous removal reuses proven edge root/dispatcher");
+            Check(Field<int32_t>(record, {L"Order"}) == 2 &&
+                Field<uint8_t>(record, {L"Connected"}) == (value.Edges != 1), "exact connected/removal order and pair");
+            ++value.Edges;
+        }
+        catch (...) { value.Failed = true; }
+    }
+    void VisualEdgeContextTest()
+    {
+        NonWeakVisual parent, child;
+        int parentOwner = 0, childOwner = 0, root = 0, dispatcher = 0;
+        Session session;
+        session.Enable(1 | 2 | 4 | 8 | 16);
+        Hooks::VisualSlot(&parentOwner, Domain::CompNode, 0, &parent);
+        Hooks::VisualSlot(&childOwner, Domain::CompNode, 0, &child);
+        {
+            Hooks::RootScope context(&root, &dispatcher, false);
+            Hooks::VisualMembership(&parent, &child, 2, true);
+        }
+        Hooks::VisualMembership(&parent, &child, 2, false);
+        {
+            Hooks::RootScope context(&root, &dispatcher, false);
+            Hooks::VisualMembership(&parent, &child, 2, true);
+        }
+        session.Enable(1 | 2 | 8 | 16);
+        session.Enable(1 | 2 | 4 | 8 | 16);
+        Hooks::VisualMembership(&parent, &child, 2, false);
+        EdgeContextDecoded decoded;
+        session.Read(OnEdgeContext, &decoded);
+        Check(!decoded.Failed && decoded.Edges == 3 && decoded.Losses == 1 && decoded.Frames == 0,
+            "unscoped visual removal retains proven context without creating an attempt/frame");
+        std::puts("PASS: exact visual edge context survives synchronous removal without invented work/frame");
+    }
+
+    void MatchAllGenerationTest(int selected = 0)
+    {
+        for (bool continuous : {false, true})
+        {
+            if (selected == 0 || selected == 1)
+            {
+                NonWeakVisual visual;
+                using NativeOwner = int;
+                NativeOwner owner = 0;
+                int resource = 0, group = 0;
+                Session second, session;
+                constexpr uint64_t keywords = 1 | 2 | 8 | 32;
+                if (continuous) second.Enable(keywords);
+                session.Enable(keywords);
+                Hooks::Born(Domain::Resource, &resource);
+                Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual, &group);
+                Hooks::VisualProperty(&visual, 0, 1);
+                session.Enable(keywords, 4, 32);
+                // No hook/eligibility query executes during the entirely filtered interval.
+                if (!continuous)
+                {
+                    owner.~NativeOwner();
+                    Check(visual.Release() == 0, "MatchAll gap retains no diagnostic COM reference");
+                    visual.~NonWeakVisual();
+                    new (&visual) NonWeakVisual;
+                }
+                session.Enable(keywords);
+                if (!continuous)
+                {
+                    new (&owner) NativeOwner(1);
+                    Hooks::Born(Domain::CompNode, &owner);
+                }
+                Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual, &group);
+                Hooks::VisualProperty(&visual, 0, 2);
+                Hooks::ReleaseVisualOwner(&owner, Domain::CompNode);
+                Hooks::Destroyed(Domain::Resource, &resource);
+                SlotDecoded decoded;
+                session.Read(OnSlot, &decoded);
+                Check(!decoded.Failed && decoded.Properties.size() == 2 &&
+                    (decoded.Properties[0] == decoded.Properties[1]) == continuous &&
+                    decoded.Epochs[0] == decoded.Epochs[1],
+                    "MatchAll Resource gap fresh fragment, or genuine second-listener continuity");
+                Check(decoded.Resources.size() == 2 && decoded.Resources[0] == decoded.Resources[1] &&
+                    decoded.Gaps == 1 && decoded.Unlinks == 1 && visual.WeakQueries == 0 && visual.References == 1,
+                    "MatchAll gap preserves Resource identity and retires all ghost slots without COM retention");
+                std::printf("PASS: MatchAll Resource-only gap continuous=%d\n", continuous);
+            }
+            if (selected == 0 || selected == 2)
+            {
+                NonWeakVisual visual;
+                VisualAlias alias(visual);
+                int owner = 0;
+                Session second, session;
+                constexpr uint64_t keywords = 1 | 2 | 8;
+                if (continuous) second.Enable(keywords);
+                session.Enable(keywords);
+                Hooks::VisualSlot(&owner, Domain::CompNode, 0, &visual);
+                Hooks::VisualSlot(&owner, Domain::CompNode, 1, &alias);
+                Hooks::VisualProperty(&visual, 0, 1);
+                session.Enable(keywords, 4, 2);
+                session.Enable(keywords);
+                Hooks::VisualSlot(&owner, Domain::CompNode, 1, &visual);
+                Hooks::VisualSlot(&owner, Domain::CompNode, 0, &alias);
+                Hooks::VisualProperty(&visual, 0, 2);
+                Hooks::ReleaseVisualOwner(&owner, Domain::CompNode);
+                SlotDecoded decoded;
+                session.Read(OnSlot, &decoded);
+                Check(!decoded.Failed && decoded.Links == (continuous ? 1u : 2u) &&
+                    decoded.Unlinks == 1 && decoded.Baselines == 1 &&
+                    decoded.Properties.size() == 2 && decoded.Properties[0] == decoded.Properties[1] &&
+                    decoded.Epochs[0] == decoded.Epochs[1],
+                    "MatchAll correlation renews exactly once only after actual aggregate gap, stable identity/aliases");
+                std::printf("PASS: MatchAll correlation gap continuous=%d\n", continuous);
+            }
+            if (selected == 0 || selected == 3)
+            {
+                NonWeakVisual parent, child;
+                int a = 0, b = 0, root = 0, dispatcher = 0;
+                Session second, session;
+                constexpr uint64_t keywords = 1 | 2 | 4 | 8 | 16;
+                if (continuous) second.Enable(keywords);
+                session.Enable(keywords);
+                Hooks::VisualSlot(&a, Domain::CompNode, 0, &parent);
+                Hooks::VisualSlot(&b, Domain::CompNode, 0, &child);
+                {
+                    Hooks::RootScope context(&root, &dispatcher, false);
+                    Hooks::VisualMembership(&parent, &child, 2, true);
+                }
+                session.Enable(keywords, 4, 2);
+                session.Enable(keywords);
+                Hooks::VisualMembership(&parent, &child, 2, false);
+                EdgeContextDecoded decoded;
+                session.Read(OnEdgeContext, &decoded);
+                Check(!decoded.Failed && decoded.Edges == (continuous ? 2u : 1u) &&
+                    decoded.Losses == (continuous ? 0u : 1u) && decoded.Frames == 0,
+                    "MatchAll tree gap forgets context, genuine continuously eligible listener preserves exact pair");
+                std::printf("PASS: MatchAll tree gap continuous=%d\n", continuous);
+            }
+        }
     }
 
     void SchemaTest()
@@ -955,8 +1607,32 @@ namespace
 #ifdef WINUI_PROFILER_STANDALONE
 int main(int argc, char** argv)
 {
+    Hooks::InitializeRuntime();
+    struct RuntimeLifetime { ~RuntimeLifetime() { Hooks::ShutdownRuntime(); } } runtimeLifetime;
     try
     {
+        if (argc == 2 && strcmp(argv[1], "--runtime-lifetime") == 0) { RuntimeLifetimeTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--layout-stack-lifetime") == 0) { LayoutStackLifetimeTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--orderly-weak-cleanup") == 0) { OrderlyWeakCleanupTest(); return 0; }
+        if (argc == 3 && strcmp(argv[1], "--termination-child") == 0) { TerminationChild(argv[2]); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--termination") == 0) { TerminationTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--matchall-generations") == 0) { MatchAllGenerationTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--matchall-resource") == 0) { MatchAllGenerationTest(1); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--matchall-correlation") == 0) { MatchAllGenerationTest(2); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--matchall-tree") == 0) { MatchAllGenerationTest(3); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--visual-edge-context") == 0) { VisualEdgeContextTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--slot-resource-gap") == 0) { SlotResourceGapTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--slot-correlation-generations") == 0) { SlotCorrelationGenerationTest(); return 0; }
+        if (argc == 2 && strcmp(argv[1], "--visual-slots") == 0)
+        {
+            VisualSlotTest();
+            return 0;
+        }
+        if (argc == 2 && strcmp(argv[1], "--unsupported-visual") == 0)
+        {
+            UnsupportedVisualIsolationTest();
+            return 0;
+        }
         if ((argc == 3 || (argc == 4 && strcmp(argv[3], "--await-input") == 0)) &&
             (strcmp(argv[1], "--emit-fixtures") == 0 || strcmp(argv[1], "--emit-budget") == 0))
         {

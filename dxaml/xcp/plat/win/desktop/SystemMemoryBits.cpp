@@ -5,6 +5,7 @@
 #include <MUX-ETWEvents.h>
 
 #include "XcpAllocation.h"
+#include "WinUIProfilerResourceHooks.h"
 
 //------------------------------------------------------------------------------
 //
@@ -248,6 +249,12 @@ SystemMemoryBitsDriver::SystemMemoryBitsDriver(
 SystemMemoryBitsDriver::~SystemMemoryBitsDriver()
 {
     ReleaseInterface(m_pTexture);
+    WinUIProfiler::Hooks::GraphicsResourceChanged(static_cast<SystemMemoryBits*>(this), nullptr,
+        WinUIProfiler::Hooks::GraphicsResourceKind::Texture2D,
+        WinUIProfiler::Hooks::GraphicsSurfaceOperation::OwnershipRelease, 0, 0);
+    WinUIProfiler::Hooks::GraphicsResourceChanged(static_cast<SystemMemoryBits*>(this), nullptr,
+        WinUIProfiler::Hooks::GraphicsResourceKind::Texture2D,
+        WinUIProfiler::Hooks::GraphicsSurfaceOperation::Destroy, 0, 0);
     XINT64 size = GetWidth() * GetHeight() * GetPixelStride();
     
     TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(-size));

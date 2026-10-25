@@ -1,0 +1,45 @@
+<Project>
+  <Target Name="ValidateProfilerLocalWinUI" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(ProfilerLocalProduct)' == ''"
+           Text="Supply the evaluated matching WinUI Product directory. Use scripts\Build-App.ps1." />
+    <ItemGroup>
+      <ProfilerRequiredLocalWinUI Include="$(ProfilerLocalProduct)Microsoft.UI.Xaml.dll;$(ProfilerLocalProduct)Microsoft.UI.Xaml.Resources.19H1.dll;$(ProfilerLocalProduct)Microsoft.UI.Xaml.resources.common.dll;$(ProfilerLocalProduct)en-US\Microsoft.UI.Xaml.dll.mui;$(ProfilerLocalProduct)Microsoft.UI.Xaml.Controls.pri" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(ProfilerRequiredLocalWinUI.Identity)')"
+           Text="Incomplete local WinUI Product: missing %(ProfilerRequiredLocalWinUI.Identity). Build the matching runtime, controls, res\common and res\19h1 targets before deployment." />
+  </Target>
+  <Target Name="StageProfilerLocalWinUIComponent" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents"
+          DependsOnTargets="ValidateProfilerLocalWinUI;GetWindowsAppSDKNativePlatform">
+    <PropertyGroup>
+      <ProfilerLocalComponent Condition="'$(ProfilerLocalComponent)' == ''">$(IntermediateOutputPath)LocalWinUIComponent\</ProfilerLocalComponent>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProfilerOriginalWinUIComponent Include="@(WindowsAppSdkComponentPackages)"
+        Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('microsoft.windowsappsdk.winui'))" />
+      <ProfilerLocalPayload Include="$(ProfilerLocalProduct)**\*.dll;$(ProfilerLocalProduct)**\*.pri;$(ProfilerLocalProduct)**\*.winmd;$(ProfilerLocalProduct)**\*.mui;$(ProfilerLocalProduct)**\*.xbf;$(ProfilerLocalProduct)**\*.xaml;$(ProfilerLocalProduct)**\*.png;$(ProfilerLocalProduct)**\*.html;$(ProfilerLocalProduct)**\*.json"
+                            Exclude="$(ProfilerLocalProduct)Microsoft.UI.Xaml.Design.dll" />
+    </ItemGroup>
+    <Error Condition="'@(ProfilerOriginalWinUIComponent->Count())' != '1'"
+           Text="Expected exactly one SDK WinUI component before replacing it with the complete local product." />
+    <Copy SourceFiles="@(ProfilerLocalPayload)"
+          DestinationFiles="@(ProfilerLocalPayload->'$(ProfilerLocalComponent)runtimes-framework\win-$(NativePlatform)\native\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ProfilerOriginalWinUIComponent->'%(Identity)\runtimes-framework\package.appxfragment')"
+          DestinationFiles="$(ProfilerLocalComponent)runtimes-framework\package.appxfragment" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <WindowsAppSdkComponentPackages Remove="@(ProfilerOriginalWinUIComponent)" />
+      <WindowsAppSdkComponentPackages Include="$(ProfilerLocalComponent)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="PreferCompleteLocalProfilerPayload" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents">
+    <ItemGroup>
+      <ProfilerReplacedPackageFile Include="@(MicrosoftWindowsAppSDKFiles);@(MicrosoftWindowsAppSDKFilesRes)"
+        Condition="Exists('$(ProfilerLocalProduct)%(RecursiveDir)%(Filename)%(Extension)') and !$([System.String]::Copy('%(Identity)').Contains('LocalWinUIComponent'))" />
+      <MicrosoftWindowsAppSDKFiles Remove="@(ProfilerReplacedPackageFile)" />
+      <MicrosoftWindowsAppSDKFilesRes Remove="@(ProfilerReplacedPackageFile)" />
+      <MicrosoftWindowsAppSDKDllFiles Remove="@(ProfilerReplacedPackageFile)" />
+      <None Remove="@(ProfilerReplacedPackageFile)" />
+      <ReferenceCopyLocalPaths Remove="@(ProfilerReplacedPackageFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

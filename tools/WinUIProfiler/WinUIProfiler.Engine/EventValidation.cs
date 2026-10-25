@@ -22,6 +22,14 @@ internal static class EventValidation
         void Cause(ChangeCause? cause, Guid? epoch = null) => cause?.Validate(epoch ?? producerEpoch);
         switch (payload)
         {
+            case ObservedXamlPayload p:
+                if (p.ProviderId != EventCatalog.StandardXamlProviderId)
+                    throw new ArgumentException("Only standard XAML ETW source observations are supported.");
+                Require.Text(p.Name); Quality(p.Quality);
+                if (p.RawPayload.Length > Ingestion.NativeRecord.MaximumWireBytes ||
+                    p.Quality.Coverage != CoverageState.Partial)
+                    throw new ArgumentException("XAML source evidence must be bounded and cannot establish complete semantic coverage.");
+                break;
             case RuntimeCapabilitiesPayload p:
                 Require.Id(p.Epoch); Require.Text(p.Build); Require.Enum(p.Architecture); Require.Positive(p.QpcFrequency);
                 if (p.Process != process) throw new ArgumentException("Capability target mismatch.");
@@ -90,6 +98,9 @@ internal static class EventValidation
                 break;
             case DevicePayload p:
                 Require.Id(p.DeviceEpoch); Require.Enum(p.Operation); Require.Text(p.Api); Quality(p.Quality);
+                if (p.Operation is DeviceOperation.BaselinePresent or DeviceOperation.OwnershipRelease &&
+                    p.Quality.Coverage == CoverageState.Complete)
+                    throw new ArgumentException("Device presence or ownership release does not establish complete physical lifetime coverage.");
                 break;
             case ResourcePayload p:
                 Key(p.Resource, IdentityDomain.Resource); Require.Enum(p.Operation); Require.Id(p.DeviceEpoch);
@@ -102,6 +113,8 @@ internal static class EventValidation
                 if (p.SizeProvenance == SizeProvenance.ApiDescriptionEstimate && p.Quality.Kind != MeasurementKind.Estimated ||
                     p.SizeProvenance == SizeProvenance.ActualAllocation && p.Quality.Kind != MeasurementKind.Measured)
                     throw new ArgumentException("Measurement kind must agree with size provenance.");
+                if (p.Operation == ResourceOperation.BaselinePresent && p.Quality.Coverage == CoverageState.Complete)
+                    throw new ArgumentException("Present-time resource observation does not establish a complete lifetime baseline.");
                 break;
             case AllocationPayload p:
                 OptionalId(p.BaselineCaptureId); Quality(p.Quality);
@@ -155,7 +168,7 @@ internal static class EventValidation
                 if (p.Domains is not null) foreach (var affected in p.Domains) Domain(affected);
                 break;
             case MetricPayload p:
-                ObservationRules.Metric(p.Metric, p.Value, p.Interval, p.Source, p.SourceVersion, p.Gpu);
+                ObservationRules.Metric(p.Metric, p.Value, p.Interval, p.Source, p.SourceVersion, p.Gpu, p.SourceObservation);
                 break;
             case XamlPropertyChangedPayload p:
                 Key(p.Object, IdentityDomain.XamlCore); ObservationRules.Property(p.Property, p.Previous, p.Current);

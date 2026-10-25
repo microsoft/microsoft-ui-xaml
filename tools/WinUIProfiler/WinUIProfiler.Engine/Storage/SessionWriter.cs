@@ -69,13 +69,9 @@ public sealed partial class SessionWriter
                 throw new ArgumentException("Provenance must be bounded and unique per source.");
             foreach (var p in provenance)
             {
-                p.Value.OriginalTarget.Validate(); Require.Nonnegative(p.Value.OriginalTimestampQpc);
-                if (!sourceMap.TryGetValue(p.SourceOrdinal, out var source) || p.Value.OriginalTarget.ProcessId != source.Envelope.Process.ProcessId)
+                if (!sourceMap.TryGetValue(p.SourceOrdinal, out var source))
                     throw new ArgumentException("Provenance needs a source and its actual target PID.");
-                if (p.Value.Clock is { } clock &&
-                    (clock.Mapping.SessionFrequency != info.QpcFrequency || clock.Mapping.Convert(p.Value.OriginalTimestampQpc) != source.Envelope.TimestampQpc))
-                    throw new ArgumentException("Provenance clock mapping does not match its normalized source.");
-                bytes += BatchAccounting.JsonBytes(p.Value, 4096);
+                bytes += ValidateProvenance(source, p.Value, info.QpcFrequency);
             }
             bytes += facts.Sum(fact => (long)Encoding.UTF8.GetByteCount(fact.Payload));
             if (bytes > MaximumBatchBytes) throw new ArgumentException("Batch byte bound exceeded.");
@@ -92,10 +88,7 @@ public sealed partial class SessionWriter
                     InsertSource(db, transaction, boundary, source);
                 }
                 foreach (var p in provenance)
-                    Execute(db, "INSERT INTO SourceProvenance VALUES($source,$pid,$creation,$instance,$qpc,$clock)", transaction,
-                        ("$source", p.SourceOrdinal), ("$pid", (long)p.Value.OriginalTarget.ProcessId),
-                        ("$creation", p.Value.OriginalTarget.CreationTimeFileTime), ("$instance", p.Value.OriginalTarget.InstanceId.ToString("N")),
-                        ("$qpc", p.Value.OriginalTimestampQpc), ("$clock", p.Value.Clock?.SourceId.ToString("N")));
+                    InsertProvenance(db, transaction, p.SourceOrdinal, p.Value);
                 foreach (var row in changes)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -133,6 +126,25 @@ public sealed partial class SessionWriter
         SnapshotMetadata row => QueryResultValidation.Freeze(row, context),
         _ => throw new NotSupportedException("Only explicit persisted projections are accepted. Snapshot comparison and retention traversal require later processors.")
     };
+    private static long ValidateProvenance(NormalizedEvent source, Ingestion.SourceProvenance value, long sessionFrequency)
+    {
+        value.OriginalTarget.Validate(); Require.Nonnegative(value.OriginalTimestampQpc);
+        if (value.OriginalTarget.ProcessId != source.Envelope.Process.ProcessId)
+            throw new ArgumentException("Provenance needs a source and its actual target PID.");
+        if (value.Clock is { } clock)
+        {
+            clock.Validate();
+            if (clock.Mapping.SessionFrequency != sessionFrequency || clock.Mapping.Convert(value.OriginalTimestampQpc) != source.Envelope.TimestampQpc)
+                throw new ArgumentException("Provenance clock mapping does not match its normalized source.");
+        }
+        return BatchAccounting.JsonBytes(value, 4096);
+    }
+    private static void InsertProvenance(SqliteConnection db, SqliteTransaction transaction, long ordinal, Ingestion.SourceProvenance value) =>
+        Execute(db, "INSERT INTO SourceProvenance VALUES($source,$pid,$creation,$instance,$qpc,$clock)", transaction,
+            ("$source", ordinal), ("$pid", (long)value.OriginalTarget.ProcessId),
+            ("$creation", value.OriginalTarget.CreationTimeFileTime), ("$instance", value.OriginalTarget.InstanceId.ToString("N")),
+            ("$qpc", value.OriginalTimestampQpc), ("$clock", value.Clock?.SourceId.ToString("N")));
+
     private static void InsertSource(SqliteConnection db, SqliteTransaction transaction, CommittedWatermark boundary, NormalizedEvent source)
     {
         var e = source.Envelope;

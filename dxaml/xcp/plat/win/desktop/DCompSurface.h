@@ -283,6 +283,7 @@ private:
     bool m_isVirtual : 1;
     bool m_isHDR : 1;
     bool m_requestAtlas : 1;
+    bool m_profilerInitializedSurface = false;
 
     // DComp, and SurfaceImageSource both allow calling BeginDraw multiple
     // times while an EndDraw is outstanding (for performance reasons).

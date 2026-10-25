@@ -10,6 +10,26 @@
 #include <DCompTreeHost.h>
 #include <WinRTExpressionConversionContext.h>
 #include "WRLHelper.h"
+#include <WinUIProfilerResourceHooks.h>
+#include <memory>
+
+namespace
+{
+    void ReleaseWUCBrush(wrl::ComPtr<WUComp::ICompositionBrush>& brush)
+    {
+        if (brush != nullptr)
+        {
+            brush.Reset();
+            const auto owner = std::addressof(brush);
+            WinUIProfiler::Hooks::GraphicsResourceChanged(owner, nullptr,
+                WinUIProfiler::Hooks::GraphicsResourceKind::CompositionBrush,
+                WinUIProfiler::Hooks::GraphicsSurfaceOperation::OwnershipRelease, 0, 0);
+            WinUIProfiler::Hooks::GraphicsResourceChanged(owner, nullptr,
+                WinUIProfiler::Hooks::GraphicsResourceKind::CompositionBrush,
+                WinUIProfiler::Hooks::GraphicsSurfaceOperation::Destroy, 0, 0);
+        }
+    }
+}
 
 CSolidColorBrush::CSolidColorBrush(
     _In_ const CSolidColorBrush& original,
@@ -28,6 +48,7 @@ CSolidColorBrush::~CSolidColorBrush()
     {
         GetDCompObjectRegistry()->UnregisterObject(this);
     }
+    ReleaseWUCBrush(m_wucBrush);
 }
 
 void CSolidColorBrush::ReleaseDCompResources()
@@ -39,7 +60,7 @@ void CSolidColorBrush::ReleaseDCompResources()
     SetDCompAnimation(nullptr, KnownPropertyIndex::SolidColorBrush_ColorGAnimation);
     SetDCompAnimation(nullptr, KnownPropertyIndex::SolidColorBrush_ColorBAnimation);
 
-    m_wucBrush.Reset();
+    ReleaseWUCBrush(m_wucBrush);
     m_isWUCBrushDirty = true;
     SetDCompAnimation(nullptr, KnownPropertyIndex::SolidColorBrush_ColorAnimation);
 }
@@ -93,6 +114,10 @@ WUComp::ICompositionBrush* CSolidColorBrush::GetWUCBrush(_In_ WUComp::IComposito
             // start color, then the WUC brush will show its default (transparent black) until the animation starts for real,
             // which will make the element disappear.
             IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(m_rgb)));
+            WinUIProfiler::Hooks::GraphicsResourceChanged(std::addressof(m_wucBrush), nullptr,
+                WinUIProfiler::Hooks::GraphicsResourceKind::CompositionBrush,
+                WinUIProfiler::Hooks::GraphicsSurfaceOperation::Create, 0, 0, S_OK,
+                static_cast<CDependencyObject*>(this));
 
             if (GetDCompObjectRegistry() != nullptr)
             {
@@ -131,6 +156,10 @@ WUComp::ICompositionBrush* CSolidColorBrush::GetWUCBrush(_In_ WUComp::IComposito
         m_isWUCColorAnimationDirty = false;
     }
 
+    WinUIProfiler::Hooks::GraphicsResourceChanged(std::addressof(m_wucBrush), nullptr,
+        WinUIProfiler::Hooks::GraphicsResourceKind::CompositionBrush,
+        WinUIProfiler::Hooks::GraphicsSurfaceOperation::BaselinePresent, 0, 0, S_OK,
+        static_cast<CDependencyObject*>(this));
     return m_wucBrush.Get();
 }
 

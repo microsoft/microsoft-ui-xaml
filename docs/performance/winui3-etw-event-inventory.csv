@@ -1,0 +1,2002 @@
+﻿Event;Provider;What it represents (Max 10 words);Payload;RecentlyAdded;PerfImpact
+AcceleratorKeyActivatedInfo;Microsoft-Windows-XAML;Accelerator Key Activated - state/data;"KeyCode: win:UInt32; RepeatCount: win:UInt32";N;Low
+AccessKeyScopeBuilderConstructScopeBegin / AccessKeyScopeBuilderConstructScopeEnd;Microsoft-Windows-XAML;Access Key Scope Builder Construct Scope;"AccessKeyScopeBuilderConstructScopeBegin:
+No declared payload
+
+AccessKeyScopeBuilderConstructScopeEnd:
+No declared payload";N;Low
+AccessKeyScopeInvokeBegin / AccessKeyScopeInvokeEnd;Microsoft-Windows-XAML;Access Key Scope Invoke;"AccessKeyScopeInvokeBegin:
+No declared payload
+
+AccessKeyScopeInvokeEnd:
+No declared payload";N;Low
+AddToCollectionOnCurrentInstanceBegin / AddToCollectionOnCurrentInstanceEnd;Microsoft-Windows-XAML;Add To Collection On Current Instance;"AddToCollectionOnCurrentInstanceBegin:
+No declared payload
+
+AddToCollectionOnCurrentInstanceEnd:
+No declared payload";N;High
+AnimationInfo;Microsoft-Windows-XAML;Animation - state/data;"ElementId: win:UInt64; PropertyName: win:UnicodeString";N;Medium
+ApiFunctionCallStart / ApiFunctionCallStop;Microsoft-Windows-XAML;Api Function Call;"ApiFunctionCallStart:
+Id: win:UInt64; MethodIndex: win:UInt16
+
+ApiFunctionCallStop:
+Id: win:UInt64; HR: win:UInt32";N;High
+ApiPropertyGetValueStart / ApiPropertyGetValueStop;Microsoft-Windows-XAML;Api Property Get Value;"ApiPropertyGetValueStart:
+ElementId: win:UInt64
+
+ApiPropertyGetValueStop:
+Id: win:UInt64; PropertyIndex: win:UInt16";N;High
+ApiPropertySetValueStart / ApiPropertySetValueStop;Microsoft-Windows-XAML;Api Property Set Value;"ApiPropertySetValueStart:
+ElementId: win:UInt64
+
+ApiPropertySetValueStop:
+Id: win:UInt64; PropertyIndex: win:UInt16";N;High
+ApplicationLoadComponentBegin / ApplicationLoadComponentEnd;Microsoft-Windows-XAML;Application Load Component;"ApplicationLoadComponentBegin:
+ComponentName: win:UnicodeString
+
+ApplicationLoadComponentEnd:
+No declared payload";N;Medium
+ApplicationResumeBegin / ApplicationResumeEnd;Microsoft-Windows-XAML;Application Resume;"ApplicationResumeBegin:
+No declared payload
+
+ApplicationResumeEnd:
+No declared payload";N;Low
+ApplicationStartedInfo;Microsoft-Windows-XAML;Application Started - state/data;No declared payload;N;Low
+ApplicationStartingInfo;Microsoft-Windows-XAML;Application Starting - state/data;No declared payload;N;Medium
+ApplicationStartupInfo;Microsoft-Windows-XAML;Application Startup - state/data;No declared payload;N;Low
+ApplicationSuspendBegin / ApplicationSuspendEnd;Microsoft-Windows-XAML;Application Suspend;"ApplicationSuspendBegin:
+No declared payload
+
+ApplicationSuspendEnd:
+No declared payload";N;Low
+ApplyTemplateBegin / ApplyTemplateEnd;Microsoft-Windows-XAML;Apply Template;"ApplyTemplateBegin:
+ElementId: win:UInt64; ClassName: win:UnicodeString
+
+ApplyTemplateEnd:
+No declared payload";N;Medium
+ArrangeBegin / ArrangeEnd;Microsoft-Windows-XAML;Arrange;"ArrangeBegin:
+No declared payload
+
+ArrangeEnd:
+No declared payload";N;Medium
+ArrangeElementBegin / ArrangeElementEnd;Microsoft-Windows-XAML;Arrange Element;"ArrangeElementBegin:
+ElementId: win:UInt64; Left: win:Float; Top: win:Float; Width: win:Float; Height: win:Float
+
+ArrangeElementEnd:
+ElementId: win:UInt64; VisualOffsetX: win:Float; VisualOffsetY: win:Float; RenderWidth: win:Float; RenderHeight: win:Float";N;High
+AsyncImageDecoderFrameNotReadyInfo;Microsoft-Windows-XAML;Async Image Decoder Frame Not Ready - state/data;No declared payload;N;Medium
+BeginStoryboardInfo;Microsoft-Windows-XAML;Begin Storyboard - state/data;"ElementId: win:UInt64; TargetElementId: win:UInt64";N;Low
+BindEnterpriseIdInfo;Microsoft-Windows-XAML;Bind Enterprise Id - state/data;"ElementId: win:UInt64; Name: win:UnicodeString";N;Medium
+BitmapCacheCreatedInfo;Microsoft-Windows-XAML;Bitmap Cache Created - state/data;CacheId: win:UInt64;N;Medium
+BitmapCacheDestroyedInfo;Microsoft-Windows-XAML;Bitmap Cache Destroyed - state/data;CacheId: win:UInt64;N;Medium
+BitmapCacheUpdatedInfo;Microsoft-Windows-XAML;Bitmap Cache Updated - state/data;"CacheId: win:UInt64; X: win:UInt32; Y: win:UInt32; UpdateWidth: win:UInt32; UpdateHeight: win:UInt32; SurfaceWidth: win:UInt32; SurfaceHeight: win:UInt32";N;Medium
+BlockOnGPUBegin / BlockOnGPUEnd;Microsoft-Windows-XAML;Block On GPU;"BlockOnGPUBegin:
+Device: win:UInt64
+
+BlockOnGPUEnd:
+Device: win:UInt64";N;Medium
+BuildTreeScheduler_OutOfWork;Microsoft-Windows-XAML;Deferred tree work drained;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+CCoreServicesOnResumeInfo;Microsoft-Windows-XAML;C Core Services On Resume - state/data;No declared payload;N;Low
+CCoreServicesOnSuspendInfo;Microsoft-Windows-XAML;C Core Services On Suspend - state/data;Value: win:Boolean;N;Low
+CCoreServicesSetWindowVisibilityInfo;Microsoft-Windows-XAML;C Core Services Set Window Visibility - state/data;Value: win:Boolean;N;Low
+CCoreServicesStartSoftSuspendTimerInfo;Microsoft-Windows-XAML;C Core Services Start Soft Suspend Timer - state/data;No declared payload;N;Low
+CCoreServicesStopSoftSuspendTimerInfo;Microsoft-Windows-XAML;C Core Services Stop Soft Suspend Timer - state/data;No declared payload;N;Low
+CancelTransitionsBegin / CancelTransitionsEnd;Microsoft-Windows-XAML;Cancel Transitions;"CancelTransitionsBegin:
+No declared payload
+
+CancelTransitionsEnd:
+No declared payload";N;Low
+CaptureDrawFrameInfo;Microsoft-Windows-XAML;Capture Draw Frame - state/data;ElementName: win:UnicodeString;N;Medium
+ChangeSelectionBegin / ChangeSelectionEnd;Microsoft-Windows-XAML;Change Selection;"ChangeSelectionBegin:
+No declared payload
+
+ChangeSelectionEnd:
+No declared payload";N;Low
+CheckAutomaticAutomationChangesBegin / CheckAutomaticAutomationChangesEnd;Microsoft-Windows-XAML;Check Automatic Automation Changes;"CheckAutomaticAutomationChangesBegin:
+No declared payload
+
+CheckAutomaticAutomationChangesEnd:
+No declared payload";N;Low
+CheckAutomaticAutomationChangesPopupBegin / CheckAutomaticAutomationChangesPopupEnd;Microsoft-Windows-XAML;Check Automatic Automation Changes Popup;"CheckAutomaticAutomationChangesPopupBegin:
+No declared payload
+
+CheckAutomaticAutomationChangesPopupEnd:
+No declared payload";N;Low
+CheckForStaleDxgiDeviceInfo;Microsoft-Windows-XAML;Check For Stale Dxgi Device - state/data;"Result: win:UInt32; SecondaryCheck: win:Boolean";N;Low
+ChildBoundsStatsInfo;Microsoft-Windows-XAML;Cached Bounds Stats - state/data;"RecalculatedCount: win:UInt32; ReusedCount: win:UInt32";N;Medium
+ClrShutdownBegin / ClrShutdownEnd;Microsoft-Windows-XAML;Clr Shutdown;"ClrShutdownBegin:
+No declared payload
+
+ClrShutdownEnd:
+No declared payload";N;Medium
+ClrStartupBegin / ClrStartupEnd;Microsoft-Windows-XAML;Clr Startup;"ClrStartupBegin:
+No declared payload
+
+ClrStartupEnd:
+No declared payload";N;Medium
+CommitDCompCommandInfo;Microsoft-Windows-XAML;Commit D Comp Command - state/data;"CommandBatchId: win:UInt32; CommandId: win:UInt32; CommandVBlankNumber: win:UInt32";N;Medium
+CommitMainDeviceBegin / CommitMainDeviceEnd;Microsoft-Windows-XAML;Commit Main Device;"CommitMainDeviceBegin:
+No declared payload
+
+CommitMainDeviceEnd:
+No declared payload";N;Medium
+CommitSecondaryDeviceBegin / CommitSecondaryDeviceEnd;Microsoft-Windows-XAML;Commit Secondary Device;"CommitSecondaryDeviceBegin:
+No declared payload
+
+CommitSecondaryDeviceEnd:
+No declared payload";N;Medium
+CompNodeOffsetInfo;Microsoft-Windows-XAML;Comp Node Offset - state/data;"translateX: win:Float; translateY: win:Float";N;Medium
+CompTreeCleanupVisualInfo;Microsoft-Windows-XAML;Comp Tree Cleanup Visual - state/data;"Node: win:UInt64; VisualIndex: win:UInt32";N;Medium
+CompTreeCreateMediaNodeInfo;Microsoft-Windows-XAML;Comp Tree Create Media Node - state/data;CompNode: win:UInt64;N;High
+CompTreeCreateRedirectedNodeInfo;Microsoft-Windows-XAML;Comp Tree Create Redirected Node - state/data;"CompNode: win:UInt64; IsEmulated: win:UInt32";N;Medium
+CompTreeCreateRenderDataNodeInfo;Microsoft-Windows-XAML;Comp Tree Create Render Data Node - state/data;"CompNode: win:UInt64; PrimitiveGroup: win:UInt64; IsEmulated: win:UInt32";N;Medium
+CompTreeCreateSwapChainNodeInfo;Microsoft-Windows-XAML;Comp Tree Create Swap Chain Node - state/data;CompNode: win:UInt64;N;High
+CompTreeCreateTreeNodeInfo;Microsoft-Windows-XAML;Comp Tree Create Tree Node - state/data;"CompNode: win:UInt64; IsEmulated: win:UInt32; IsPlaceholder: win:UInt32";N;High
+CompTreeInsertChildInfo;Microsoft-Windows-XAML;Comp Tree Insert Child - state/data;"Parent: win:UInt64; Child: win:UInt64; ReferenceNode: win:UInt64; InsertAtBeginning: win:UInt32";N;High
+CompTreeRemoveChildInfo;Microsoft-Windows-XAML;Comp Tree Remove Child - state/data;"Parent: win:UInt64; Child: win:UInt64";N;High
+CompTreeRemoveCompositionPeerInfo;Microsoft-Windows-XAML;Comp Tree Remove Composition Peer - state/data;"Element: win:UInt64; CompNode: win:UInt64";N;High
+CompTreeRemoveFromParentBegin / CompTreeRemoveFromParentEnd;Microsoft-Windows-XAML;Comp Tree Remove From Parent;"CompTreeRemoveFromParentBegin:
+Parent: win:UInt64; Child: win:UInt64; RemoveForReparenting: win:UInt32; MergePrimitiveGroups: win:UInt32
+
+CompTreeRemoveFromParentEnd:
+Parent: win:UInt64; Child: win:UInt64; RemoveForReparenting: win:UInt32; MergePrimitiveGroups: win:UInt32";N;High
+CompTreeSetCompositionPeerInfo;Microsoft-Windows-XAML;Comp Tree Set Composition Peer - state/data;"Element: win:UInt64; CompNode: win:UInt64";N;High
+CompTreeSetPrimitiveGroupInfo;Microsoft-Windows-XAML;Comp Tree Set Primitive Group - state/data;"RenderDataNode: win:UInt64; PrimitiveGroup: win:UInt64";N;Medium
+CompTreeSetRedirectionTargetInfo;Microsoft-Windows-XAML;Comp Tree Set Redirection Target - state/data;"RedirectionNode: win:UInt64; RedirectionTargetAncestor: win:UInt64";N;High
+CompositorLockBegin / CompositorLockEnd;Microsoft-Windows-XAML;Compositor Lock;"CompositorLockBegin:
+No declared payload
+
+CompositorLockEnd:
+No declared payload";N;Medium
+CompositorSetMediaInfo;Microsoft-Windows-XAML;Compositor Set Media - state/data;"ContentNodeId: win:UInt64; SwapchainHandle: win:UInt64";N;Medium
+ComputeSnappingModeBegin / ComputeSnappingModeEnd;Microsoft-Windows-XAML;Compute Snapping Mode;"ComputeSnappingModeBegin:
+No declared payload
+
+ComputeSnappingModeEnd:
+No declared payload";N;Low
+ComputeVsisBoundsInfo;Microsoft-Windows-XAML;Compute Vsis Bounds - state/data;"Vsis: win:UInt64; VisibleLeft: win:Int32; VisibleTop: win:Int32; VisibleRight: win:Int32; VisibleBottom: win:Int32; DesiredLeft: win:Int32; DesiredTop: win:Int32; DesiredRight: win:Int32; DesiredBottom: win:Int32; HighPriorityDesiredLeft: win:Int32; HighPriorityDesiredTop: win:Int32; HighPriorityDesiredRight: win:Int32; HighPriorityDesiredBottom: win:Int32; MotionFlags: win:UInt32";N;Low
+ContentBoundsStatsInfo;Microsoft-Windows-XAML;Cached Bounds Stats - state/data;"RecalculatedCount: win:UInt32; ReusedCount: win:UInt32";N;Medium
+ContentOffsetsInfo;Microsoft-Windows-XAML;Content Offsets - state/data;"ContentType: win:Int32; OffsetX: win:Float; OffseY: win:Float";N;Low
+CoreServicesCreateBegin / CoreServicesCreateEnd;Microsoft-Windows-XAML;Core Services Create;"CoreServicesCreateBegin:
+No declared payload
+
+CoreServicesCreateEnd:
+No declared payload";N;Low
+CoreServicesResetBegin / CoreServicesResetEnd;Microsoft-Windows-XAML;Core Services Reset;"CoreServicesResetBegin:
+No declared payload
+
+CoreServicesResetEnd:
+No declared payload";N;Low
+CoreWebViewHostInvokeInfo;Microsoft-Windows-XAML;Core Web View Host Invoke - state/data;InvokeResult: win:UInt32;N;Medium
+CoreWebViewSetWindowlessFocusInfo;Microsoft-Windows-XAML;Core Web View Set Windowless Focus - state/data;"setFocus: win:Boolean; isProcessingTab: win:Boolean; isShiftPressed: win:Boolean";N;Medium
+CreateAcceleratedGraphicsBegin / CreateAcceleratedGraphicsEnd;Microsoft-Windows-XAML;Create Accelerated Graphics;"CreateAcceleratedGraphicsBegin:
+No declared payload
+
+CreateAcceleratedGraphicsEnd:
+No declared payload";N;Low
+CreateDManipSharedTransformInfo;Microsoft-Windows-XAML;Create D Manip Shared Transform - state/data;No declared payload;N;Low
+CreateDesktopWindow;Microsoft-Windows-XAML;Desktop window creation boundaries identifying application startup;"Type: bool
+Name: IsStart
+Type: uint64_t
+Name: ObjectPointer";N;Low
+CreateGraphicsDeviceBegin / CreateGraphicsDeviceEnd;Microsoft-Windows-XAML;Create Graphics Device;"CreateGraphicsDeviceBegin:
+No declared payload
+
+CreateGraphicsDeviceEnd:
+No declared payload";N;Low
+CreateImageCache;Microsoft-Windows-XAML;Create Image Cache.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+CreateImageCacheFromExistingEncodedData;Microsoft-Windows-XAML;Create Image Cache From Existing Encoded Data.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+CreateInstanceBegin / CreateInstanceEnd;Microsoft-Windows-XAML;Create Instance;"CreateInstanceBegin:
+No declared payload
+
+CreateInstanceEnd:
+Runtime: win:UInt64; Type: win:UnicodeString";N;High
+CreateResourceManagerStart / CreateResourceManagerStop;Microsoft-Windows-XAML;Create Resource Manager;"CreateResourceManagerStart:
+No declared payload
+
+CreateResourceManagerStop:
+No declared payload";N;Low
+CreateSwapChainInfo;Microsoft-Windows-XAML;Create Swap Chain - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32; AlphaMode: win:UInt32";N;Medium
+CreateSwipeRecognizerBegin / CreateSwipeRecognizerEnd;Microsoft-Windows-XAML;Create Swipe Recognizer;"CreateSwipeRecognizerBegin:
+No declared payload
+
+CreateSwipeRecognizerEnd:
+No declared payload";N;Medium
+CreateViewportInteraction;Microsoft-Windows-XAML;Create Viewport Interaction - state/data;"UIElement: win:Pointer; OnRootVisual: win:Boolean";N;Low
+CreateWindowBegin / CreateWindowEnd;Microsoft-Windows-XAML;Create Window;"CreateWindowBegin:
+No declared payload
+
+CreateWindowEnd:
+No declared payload";N;Low
+CreatingHardwareCompositorBegin / CreatingHardwareCompositorEnd;Microsoft-Windows-XAML;Creating Hardware Compositor;"CreatingHardwareCompositorBegin:
+No declared payload
+
+CreatingHardwareCompositorEnd:
+No declared payload";N;Medium
+CreatingMetaSurfaceBegin / CreatingMetaSurfaceEnd;Microsoft-Windows-XAML;Creating Meta Surface;"CreatingMetaSurfaceBegin:
+No declared payload
+
+CreatingMetaSurfaceEnd:
+No declared payload";N;Medium
+CurveSegmentInfo;Microsoft-Windows-XAML;Curve Segment - state/data;"Axis: win:UInt32; Curve: win:UInt32; Segment: win:UInt32; Offset: win:Float; Constant: win:Float; Linear: win:Float";N;Medium
+DCompAddPrimitiveToRenderDataListInfo;Microsoft-Windows-XAML;D Comp Add Primitive To Render Data List - state/data;"Primitive: win:UInt64; PCRenderDataList: win:UInt64";N;Medium
+DCompAddToTreeInfo;Microsoft-Windows-XAML;D Comp Add To Tree - state/data;"VisualId: win:UInt64; ZOrder: win:UInt32";N;Medium
+DCompAddTransformToGroupInfo;Microsoft-Windows-XAML;D Comp Add Transform To Group - state/data;"TransformGroup: win:UInt64; Transform: win:UInt64; Index: win:UInt32";N;Medium
+DCompAppendChildInfo;Microsoft-Windows-XAML;D Comp Append Child - state/data;"Parent: win:UInt64; Visual: win:UInt64";N;High
+DCompCreatePrimitiveInfo;Microsoft-Windows-XAML;D Comp Create Primitive - state/data;"Primitive: win:UInt64; Left: win:Float; Top: win:Float; Right: win:Float; Bottom: win:Float; Color: win:UInt32; Opacity: win:Float";N;Medium
+DCompCreateTransformGroupInfo;Microsoft-Windows-XAML;D Comp Create Transform Group - state/data;TransformGroup: win:UInt64;N;Medium
+DCompCreateTransformInfo;Microsoft-Windows-XAML;D Comp Create Transform - state/data;"TransformMainDevice: win:UInt64; TransformSecondaryDevice: win:UInt64";N;Medium
+DCompCreateVisualInfo;Microsoft-Windows-XAML;D Comp Create Visual - state/data;VisualId: win:UInt64;N;Medium
+DCompCreateVisualInfo1;Microsoft-Windows-XAML;D Comp Create Visual - state/data;"CompNode: win:UInt64; VisualIndex: win:UInt32; Visual: win:UInt64";N;High
+DCompInsertChildInfo;Microsoft-Windows-XAML;D Comp Insert Child - state/data;"ParentDCompVisual: win:UInt64; ChildDCompVisual: win:UInt64; PreviousSiblingDCompVisual: win:UInt64";N;Medium
+DCompInsertPrimitiveAtHeadInfo;Microsoft-Windows-XAML;D Comp Insert Primitive At Head - state/data;"Primitive: win:UInt64; PrimitiveGroup: win:UInt64";N;Medium
+DCompLinkPrimitiveInfo;Microsoft-Windows-XAML;D Comp Link Primitive - state/data;"Primitive: win:UInt64; InsertAfter: win:UInt64";N;Medium
+DCompMergePrimitiveGroupInfo;Microsoft-Windows-XAML;D Comp Merge Primitive Group - state/data;"From: win:UInt64; To: win:UInt64";N;Medium
+DCompRemove2DTransformInfo;Microsoft-Windows-XAML;D Comp Remove2 D Transform - state/data;VisualId: win:UInt64;N;Medium
+DCompRemove3DTransformInfo;Microsoft-Windows-XAML;D Comp Remove3 D Transform - state/data;VisualId: win:UInt64;N;Medium
+DCompRemoveChildInfo;Microsoft-Windows-XAML;D Comp Remove Child - state/data;"ParentDCompVisual: win:UInt64; ChildDCompVisual: win:UInt64";N;Medium
+DCompRemoveFromTreeInfo;Microsoft-Windows-XAML;D Comp Remove From Tree - state/data;VisualId: win:UInt64;N;High
+DCompRemovePrimitiveInfo;Microsoft-Windows-XAML;D Comp Remove Primitive - state/data;Primitive: win:UInt64;N;High
+DCompSet2DTransformInfo;Microsoft-Windows-XAML;D Comp Set2 D Transform - state/data;"VisualId: win:UInt64; M11: win:Float; M12: win:Float; M21: win:Float; M22: win:Float; M31: win:Float; M32: win:Float";N;Medium
+DCompSet2DTransformInfo1;Microsoft-Windows-XAML;D Comp Set2 D Transform - state/data;"Visual: win:UInt64; Transform: win:UInt64; IsAnimated: win:UInt32";N;Medium
+DCompSet3DTransformInfo;Microsoft-Windows-XAML;D Comp Set3 D Transform - state/data;VisualId: win:UInt64;N;Medium
+DCompSetClipInfo;Microsoft-Windows-XAML;D Comp Set Clip - state/data;VisualId: win:UInt64;N;Medium
+DCompSetClipInfo1;Microsoft-Windows-XAML;D Comp Set Clip - state/data;"Visual: win:UInt64; Left: win:Float; Top: win:Float; Right: win:Float; Bottom: win:Float";N;Medium
+DCompSetMediaEngineSwapchainHandleInfo;Microsoft-Windows-XAML;D Comp Set Media Engine Swapchain Handle - state/data;"VisualId: win:UInt64; Width: win:UInt32; Height: win:UInt32";N;Medium
+DCompSetOpacityInfo;Microsoft-Windows-XAML;D Comp Set Opacity - state/data;"Visual: win:UInt64; Opacity: win:Float; IsAnimated: win:UInt32";N;Medium
+DCompSetPrimitiveGroupInfo;Microsoft-Windows-XAML;D Comp Set Primitive Group - state/data;"DCompVisual: win:UInt64; PrimitiveGroup: win:UInt64";N;Medium
+DCompSetSwapChainInfo;Microsoft-Windows-XAML;D Comp Set Swap Chain - state/data;"VisualId: win:UInt64; Width: win:UInt32; Height: win:UInt32";N;Medium
+DCompSetTransformValueInfo;Microsoft-Windows-XAML;D Comp Set Transform Value - state/data;"Transform: win:UInt64; M11: win:Float; M12: win:Float; M21: win:Float; M22: win:Float; M31: win:Float; M32: win:Float";N;Medium
+DCompSnapshotBoundsInfo;Microsoft-Windows-XAML;D Comp Snapshot Bounds - state/data;"ElementId: win:UInt64; Left: win:Float; Top: win:Float; Width: win:Float; Height: win:Float";N;High
+DCompSplitPrimitiveGroupInfo;Microsoft-Windows-XAML;D Comp Split Primitive Group - state/data;"SplitAfter: win:UInt64; NewPrimitiveGroup: win:UInt64";N;Medium
+DCompUpdateContentSizeInfo;Microsoft-Windows-XAML;D Comp Update Content Size - state/data;"VisualId: win:UInt64; Width: win:UInt32; Height: win:UInt32";N;Medium
+DecodeGreaterThanRenderSizeInfo;Microsoft-Windows-XAML;Decode Greater Than Render Size - state/data;"ImageId: win:UInt64; RenderWidth: win:UInt32; RenderHeight: win:UInt32; PreviousDecodeWidth: win:UInt32; PreviousDecodeHeight: win:UInt32; DecodeWidth: win:UInt32; DecodeHeight: win:UInt32; NativeWidth: win:UInt32; NativeHeight: win:UInt32; LayoutWidth: win:UInt32; LayoutHeight: win:UInt32";N;Medium
+DecodeResultAvailable;Microsoft-Windows-XAML;Decode Result Available.;"Type: uint64_t
+Name: Id
+Type: uint32_t
+Name: decodeResult";N;Low
+DecodeSizeQueryBegin / DecodeSizeQueryEnd;Microsoft-Windows-XAML;Decode Size Query;"DecodeSizeQueryBegin:
+No declared payload
+
+DecodeSizeQueryEnd:
+No declared payload";N;Medium
+DecodeStreamForImageInfo;Microsoft-Windows-XAML;Image decode size and cache outcome;"ImageId: win:UInt64; DecodeWidth: win:UInt32; DecodeHeight: win:UInt32; NaturalWidth: win:UInt32; NaturalHeight: win:UInt32; RetrievedFromCache: win:Boolean";N;Medium
+DecodeToRenderSizeBegin / DecodeToRenderSizeBegin1 / DecodeToRenderSizeEnd;Microsoft-Windows-XAML;Decode To Render Size;"DecodeToRenderSizeBegin:
+ImageId: win:UInt64; URI: win:UnicodeString
+
+DecodeToRenderSizeBegin1:
+ImageId: win:UInt64; RenderWidth: win:UInt32; RenderHeight: win:UInt32; PreviousDecodeWidth: win:UInt32; PreviousDecodeHeight: win:UInt32; DecodeWidth: win:UInt32; DecodeHeight: win:UInt32; NativeWidth: win:UInt32; NativeHeight: win:UInt32; LayoutWidth: win:UInt32; LayoutHeight: win:UInt32
+
+DecodeToRenderSizeEnd:
+ImageId: win:UInt64; URI: win:UnicodeString";N;Medium
+DecodeToRenderSizeDisabledInfo;Microsoft-Windows-XAML;Decode To Render Size Disabled - state/data;"ImageId: win:UInt64; Reason: win:UnicodeString";N;Medium
+DecodeToRenderSizeDisabledInfo1;Microsoft-Windows-XAML;Decode To Render Size Disabled - state/data;"ImageId: win:UInt64; Reason: win:UnicodeString; ReasonKey: win:UInt32";N;Medium
+DecodeToRenderSizeDisqualified;Microsoft-Windows-XAML;Decode To Render Size Disqualified.;"Type: uint64_t
+Name: Id
+Type: PCSTR
+Name: reason";N;Low
+DecodeToRenderSizeInfo;Microsoft-Windows-XAML;Decode To Render Size - state/data;"ImageId: win:UInt64; RenderWidth: win:UInt32; RenderHeight: win:UInt32; PreviousDecodeWidth: win:UInt32; PreviousDecodeHeight: win:UInt32; DecodeWidth: win:UInt32; DecodeHeight: win:UInt32; NativeWidth: win:UInt32; NativeHeight: win:UInt32; LayoutWidth: win:UInt32; LayoutHeight: win:UInt32";N;Medium
+DecodeToRenderSizeStart / DecodeToRenderSizeStop;Microsoft-Windows-XAML;Decode To Render Size Start.;"DecodeToRenderSizeStart:
+Type: uint64_t
+Name: Id
+Type: uint32_t
+Name: imageSourceWidth
+Type: uint32_t
+Name: imageSourceHeight
+Type: uint32_t
+Name: newWidth
+Type: uint32_t
+Name: newHeight
+Type: uint32_t
+Name: metadataWidth
+Type: uint32_t
+Name: metadataHeight
+
+DecodeToRenderSizeStop:
+Type: uint64_t
+Name: Id";N;Low
+DecodeToSurfaceBegin / DecodeToSurfaceEnd;Microsoft-Windows-XAML;Decode To Surface;"DecodeToSurfaceBegin:
+No declared payload
+
+DecodeToSurfaceEnd:
+No declared payload";N;Medium
+DestroySwipeRecognizerBegin / DestroySwipeRecognizerEnd;Microsoft-Windows-XAML;Destroy Swipe Recognizer;"DestroySwipeRecognizerBegin:
+No declared payload
+
+DestroySwipeRecognizerEnd:
+No declared payload";N;Medium
+DmCompositorContentValuesUpdateBegin / DmCompositorContentValuesUpdateEnd;Microsoft-Windows-XAML;Dm Compositor Content Values Update;"DmCompositorContentValuesUpdateBegin:
+ViewportId: win:UInt64; ContentId: win:UInt64
+
+DmCompositorContentValuesUpdateEnd:
+ViewportId: win:UInt64; ContentId: win:UInt64; ContentType: win:UInt32; TranslationX: win:Float; TranslationY: win:Float; ZoomFactor: win:Float; ZoomFactorX: win:Float; ZoomFactorY: win:Float";N;Medium
+DmCompositorViewportAddedInfo;Microsoft-Windows-XAML;Dm Compositor Viewport Added - state/data;"ViewportId: win:UInt64; CompositorViewportId: win:UInt64; ContainerId: win:UInt64";N;Medium
+DmCompositorViewportRemovedInfo;Microsoft-Windows-XAML;Dm Compositor Viewport Removed - state/data;"ViewportId: win:UInt64; CompositorViewportId: win:UInt64; ContainerId: win:UInt64";N;Medium
+DmCompositorViewportValuesUpdateBegin / DmCompositorViewportValuesUpdateEnd;Microsoft-Windows-XAML;Dm Compositor Viewport Values Update;"DmCompositorViewportValuesUpdateBegin:
+ViewportId: win:UInt64
+
+DmCompositorViewportValuesUpdateEnd:
+ViewportId: win:UInt64; TranslationX: win:Float; TranslationY: win:Float; ZoomFactor: win:Float; ZoomFactorX: win:Float; ZoomFactorY: win:Float";N;Medium
+DmContentValuesUpdateBegin / DmContentValuesUpdateEnd;Microsoft-Windows-XAML;Dm Content Values Update;"DmContentValuesUpdateBegin:
+ViewportId: win:UInt64; ContentId: win:UInt64
+
+DmContentValuesUpdateEnd:
+ViewportId: win:UInt64; ContentId: win:UInt64; ContentType: win:UInt32; TranslationX: win:Float; TranslationY: win:Float; ZoomFactor: win:Float; ZoomFactorX: win:Float; ZoomFactorY: win:Float";N;High
+DmCrossSlideContainerCompletedBegin / DmCrossSlideContainerCompletedEnd;Microsoft-Windows-XAML;Dm Cross Slide Container Completed;"DmCrossSlideContainerCompletedBegin:
+No declared payload
+
+DmCrossSlideContainerCompletedEnd:
+No declared payload";N;Low
+DmInitializeBegin / DmInitializeEnd;Microsoft-Windows-XAML;Dm Initialize;"DmInitializeBegin:
+No declared payload
+
+DmInitializeEnd:
+No declared payload";N;Low
+DmPointerHitTestBegin / DmPointerHitTestEnd;Microsoft-Windows-XAML;Dm Pointer Hit Test;"DmPointerHitTestBegin:
+No declared payload
+
+DmPointerHitTestEnd:
+No declared payload";N;Medium
+DmSetContactInfo;Microsoft-Windows-XAML;Dm Set Contact - state/data;ViewportId: win:UInt64;N;Low
+DmSetCrossSlideContainerBegin / DmSetCrossSlideContainerEnd;Microsoft-Windows-XAML;Dm Set Cross Slide Container;"DmSetCrossSlideContainerBegin:
+No declared payload
+
+DmSetCrossSlideContainerEnd:
+No declared payload";N;Low
+DmStartCrossSlideContainersBegin / DmStartCrossSlideContainersEnd;Microsoft-Windows-XAML;Dm Start Cross Slide Containers;"DmStartCrossSlideContainersBegin:
+No declared payload
+
+DmStartCrossSlideContainersEnd:
+No declared payload";N;Low
+DmViewportStatusInfo;Microsoft-Windows-XAML;Dm Viewport Status - state/data;"ViewportId: win:UInt64; OldStatus: win:UInt32; NewStatus: win:UInt32";N;Low
+DmViewportStatusUpdateBegin / DmViewportStatusUpdateEnd;Microsoft-Windows-XAML;Dm Viewport Status Update;"DmViewportStatusUpdateBegin:
+ViewportId: win:UInt64; OldStatus: win:UInt32; NewStatus: win:UInt32
+
+DmViewportStatusUpdateEnd:
+ViewportId: win:UInt64";N;Low
+DmViewportValuesUpdateBegin / DmViewportValuesUpdateEnd;Microsoft-Windows-XAML;Dm Viewport Values Update;"DmViewportValuesUpdateBegin:
+ViewportId: win:UInt64
+
+DmViewportValuesUpdateEnd:
+ViewportId: win:UInt64; TranslationX: win:Float; TranslationY: win:Float; ZoomFactor: win:Float; ZoomFactorX: win:Float; ZoomFactorY: win:Float";N;High
+DownloadRequestBegin / DownloadRequestEnd;Microsoft-Windows-XAML;Download Request;"DownloadRequestBegin:
+No declared payload
+
+DownloadRequestEnd:
+No declared payload";N;Medium
+DownloadRequestBindingBegin / DownloadRequestBindingEnd;Microsoft-Windows-XAML;Download Request Binding;"DownloadRequestBindingBegin:
+Id: win:UInt64
+
+DownloadRequestBindingEnd:
+Id: win:UInt64; HR: win:UInt32";N;Medium
+DownloadRequestDataAvailableInfo;Microsoft-Windows-XAML;Download Request Data Available - state/data;"Id: win:UInt64; Size: win:Int32";N;Low
+DownloadRequestQueueInfo;Microsoft-Windows-XAML;Download Request Queue - state/data;"Id: win:UInt64; Value: win:UnicodeString";N;Medium
+DrawFrameRateCounterBegin / DrawFrameRateCounterEnd;Microsoft-Windows-XAML;Draw Frame Rate Counter;"DrawFrameRateCounterBegin:
+No declared payload
+
+DrawFrameRateCounterEnd:
+No declared payload";N;Medium
+DynamicTimelineBegin / DynamicTimelineEnd;Microsoft-Windows-XAML;Dynamic Timeline;"DynamicTimelineBegin:
+No declared payload
+
+DynamicTimelineEnd:
+No declared payload";N;Low
+ElementCreatedInfo;Microsoft-Windows-XAML;Element Created - state/data;ElementId: win:UInt64;N;Low
+ElementDestroyedInfo;Microsoft-Windows-XAML;Element Destroyed - state/data;ElementId: win:UInt64;N;Low
+ElementSetNameInfo;Microsoft-Windows-XAML;Element Set Name - state/data;"ElementId: win:UInt64; Name: win:UnicodeString";N;Medium
+ElementStyleChangedInfo;Microsoft-Windows-XAML;Element Style Changed - state/data;"ElementId: win:UInt64; StyleId: win:UInt64";N;Low
+EndStoryboardInfo;Microsoft-Windows-XAML;End Storyboard - state/data;ElementId: win:UInt64;N;Low
+ErrorAdditionalInformation;Microsoft-Windows-XAML;Release diagnostic message mirrored into ETW at error level.;"Type: PCWSTR
+Name: Message";N;Low
+EventCallbackBegin / EventCallbackEnd;Microsoft-Windows-XAML;Event Callback;"EventCallbackBegin:
+CallbackName: win:UnicodeString
+
+EventCallbackEnd:
+No declared payload";N;Medium
+ExportHeapHandleInfo;Microsoft-Windows-XAML;Export Heap Handle - state/data;Handle: win:UInt64;N;Low
+ExtendSelectionRangeBegin / ExtendSelectionRangeEnd;Microsoft-Windows-XAML;Extend Selection Range;"ExtendSelectionRangeBegin:
+No declared payload
+
+ExtendSelectionRangeEnd:
+No declared payload";N;Low
+ExtendToBlockBoundariesBegin / ExtendToBlockBoundariesEnd;Microsoft-Windows-XAML;Extend To Block Boundaries;"ExtendToBlockBoundariesBegin:
+No declared payload
+
+ExtendToBlockBoundariesEnd:
+No declared payload";N;Medium
+ExternalAtlasSizeOverrideInfo;Microsoft-Windows-XAML;External Atlas Size Override - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32";N;Low
+FailureEncounteredInfo;Microsoft-Windows-XAML;Failure HRESULT and caller address;"Id: win:UInt64; HR: win:UInt32";N;Low
+FaultInBehaviorBegin / FaultInBehaviorEnd;Microsoft-Windows-XAML;Fault In Behavior;"FaultInBehaviorBegin:
+FaultInType: win:UnicodeString
+
+FaultInBehaviorEnd:
+No declared payload";N;Medium
+FeedSwipeRecognizerBegin / FeedSwipeRecognizerEnd;Microsoft-Windows-XAML;Feed Swipe Recognizer;"FeedSwipeRecognizerBegin:
+No declared payload
+
+FeedSwipeRecognizerEnd:
+No declared payload";N;Medium
+FeedSwipeRecognizerInfo;Microsoft-Windows-XAML;Feed Swipe Recognizer - state/data;"PointerId: win:UInt32; MsgId: win:UInt32; X: win:Float; Y: win:Float";N;Medium
+FindBackgroundPrimitiveBegin / FindBackgroundPrimitiveEnd;Microsoft-Windows-XAML;Find Background Primitive;"FindBackgroundPrimitiveBegin:
+No declared payload
+
+FindBackgroundPrimitiveEnd:
+No declared payload";N;Medium
+FindObjectsOfTypeBegin / FindObjectsOfTypeEnd;Microsoft-Windows-XAML;Find Objects Of Type;"FindObjectsOfTypeBegin:
+No declared payload
+
+FindObjectsOfTypeEnd:
+No declared payload";N;Medium
+FindTrackerTargetsBegin / FindTrackerTargetsEnd;Microsoft-Windows-XAML;Find Tracker Targets;"FindTrackerTargetsBegin:
+No declared payload
+
+FindTrackerTargetsEnd:
+No declared payload";N;Low
+FireEffectiveViewportChangedBegin / FireEffectiveViewportChangedEnd;Microsoft-Windows-XAML;Fire Effective Viewport Changed;"FireEffectiveViewportChangedBegin:
+No declared payload
+
+FireEffectiveViewportChangedEnd:
+No declared payload";N;Low
+FireLayoutUpdatedBegin / FireLayoutUpdatedEnd;Microsoft-Windows-XAML;Fire Layout Updated;"FireLayoutUpdatedBegin:
+No declared payload
+
+FireLayoutUpdatedEnd:
+No declared payload";N;Medium
+FireSizeChangedBegin / FireSizeChangedEnd;Microsoft-Windows-XAML;Fire Size Changed;"FireSizeChangedBegin:
+No declared payload
+
+FireSizeChangedEnd:
+No declared payload";N;Low
+FlowLayoutAlgorithm_Generate;Microsoft-Windows-XAML;Item generation direction/anchor;"TraceLoggingWideString(layoutId.data(), ""LayoutId"")
+TraceLoggingWideString(direction == GenerateDirection::Forward ? L""Forward"" : L""Backward"", ""Direction"")
+TraceLoggingInt32(anchorIndex, ""Anchor"")";N;Medium
+FlowLayoutAlgorithm_Generate_CurrentBounds;Microsoft-Windows-XAML;Per-item generated layout bounds;"TraceLoggingWideString(layoutId.data(), ""LayoutId"")
+TraceLoggingInt32(currentIndex, ""CurrentIndex"")
+TraceLoggingFloat32(currentBounds.X, ""X"")
+TraceLoggingFloat32(currentBounds.Y, ""Y"")
+TraceLoggingFloat32(currentBounds.Width, ""Width"")
+TraceLoggingFloat32(currentBounds.Height, ""Height"")";N;High
+FlowLayoutAlgorithm_Measure;Microsoft-Windows-XAML;Layout realization rectangle;"TraceLoggingWideString(layoutId.data(), ""LayoutId"")
+TraceLoggingFloat32(realizationRect.X, ""X"")
+TraceLoggingFloat32(realizationRect.Y, ""Y"")
+TraceLoggingFloat32(realizationRect.Width, ""Width"")
+TraceLoggingFloat32(realizationRect.Height, ""Height"")";N;Medium
+FoundCompletedDownload;Microsoft-Windows-XAML;Found Completed Download.;"Type: uint64_t
+Name: Id";N;Low
+FoundImageCache;Microsoft-Windows-XAML;Found Image Cache.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+FrameBegin / FrameEnd;Microsoft-Windows-XAML;Frame;"FrameBegin:
+No declared payload
+
+FrameEnd:
+No declared payload";N;Medium
+FrameInfo;Microsoft-Windows-XAML;Frame - state/data;Value: win:Boolean;N;Medium
+FrameNavigatedInfo;Microsoft-Windows-XAML;Frame Navigated - state/data;"PageDescriptor: win:UnicodeString; NavigationMode: win:UInt8";N;Medium
+FrameNavigatingInfo;Microsoft-Windows-XAML;Frame Navigating - state/data;"PageDescriptor: win:UnicodeString; NavigationMode: win:UInt8";N;Medium
+GenerateContainerBegin / GenerateContainerEnd;Microsoft-Windows-XAML;Generate Container;"GenerateContainerBegin:
+No declared payload
+
+GenerateContainerEnd:
+No declared payload";N;High
+GenerateItemsBegin / GenerateItemsEnd;Microsoft-Windows-XAML;Generate Items;"GenerateItemsBegin:
+No declared payload
+
+GenerateItemsEnd:
+No declared payload";N;Low
+GenerateMCContainerBegin / GenerateMCContainerEnd;Microsoft-Windows-XAML;Generate MC Container;"GenerateMCContainerBegin:
+ItemIndex: win:Int32
+
+GenerateMCContainerEnd:
+No declared payload";N;High
+GetBuiltInStyleBegin / GetBuiltInStyleEnd;Microsoft-Windows-XAML;Get Built In Style;"GetBuiltInStyleBegin:
+No declared payload
+
+GetBuiltInStyleEnd:
+ClassName: win:UnicodeString";N;Medium
+GetCompressedImageSizeBegin / GetCompressedImageSizeEnd;Microsoft-Windows-XAML;Get Compressed Image Size;"GetCompressedImageSizeBegin:
+No declared payload
+
+GetCompressedImageSizeEnd:
+No declared payload";N;Medium
+GetElementCountBegin / GetElementCountEnd;Microsoft-Windows-XAML;Get Element Count;"GetElementCountBegin:
+No declared payload
+
+GetElementCountEnd:
+No declared payload";N;Low
+GetSoundPlayerServiceBegin / GetSoundPlayerServiceEnd;Microsoft-Windows-XAML;Get Sound Player Service;"GetSoundPlayerServiceBegin:
+No declared payload
+
+GetSoundPlayerServiceEnd:
+No declared payload";N;Low
+GraphicsDriverSupportedForVideoDecodeInfo;Microsoft-Windows-XAML;Graphics Driver Supported For Video Decode - state/data;GraphicsDriverSupportType: win:UnicodeString;N;Medium
+HWCompNodeUpdateBegin / HWCompNodeUpdateEnd;Microsoft-Windows-XAML;HW Comp Node Update;"HWCompNodeUpdateBegin:
+ElementId: win:UInt64
+
+HWCompNodeUpdateEnd:
+No declared payload";N;High
+HardwareDecodeFrameBegin / HardwareDecodeFrameEnd;Microsoft-Windows-XAML;Hardware Decode Frame;"HardwareDecodeFrameBegin:
+No declared payload
+
+HardwareDecodeFrameEnd:
+No declared payload";N;Medium
+HitTestBegin / HitTestEnd;Microsoft-Windows-XAML;Hit Test;"HitTestBegin:
+No declared payload
+
+HitTestEnd:
+No declared payload";N;Medium
+HitTestStatsInfo;Microsoft-Windows-XAML;Hit Test Stats - state/data;"M4x4Multiplications: win:UInt32; M3x2AsM4x4Multiplications: win:UInt32; M4x4PointMultiplications: win:UInt32; M4x4TransformBounds: win:UInt32; Count3DBoundsMode: win:UInt32; Projections: win:UInt32";N;Medium
+HubSectionCountInfo;Microsoft-Windows-XAML;Hub Section Count - state/data;CurrentSectionCount: win:UInt32;N;Low
+ImageAnimationEndInfo;Microsoft-Windows-XAML;Image Animation - state/data;No declared payload;N;Medium
+ImageCacheDecodeBegin / ImageCacheDecodeEnd;Microsoft-Windows-XAML;Image Cache Decode;"ImageCacheDecodeBegin:
+URI: win:UnicodeString
+
+ImageCacheDecodeEnd:
+URI: win:UnicodeString";N;Medium
+ImageCacheDownloadBegin / ImageCacheDownloadEnd;Microsoft-Windows-XAML;Image Cache Download;"ImageCacheDownloadBegin:
+URI: win:UnicodeString
+
+ImageCacheDownloadEnd:
+URI: win:UnicodeString";N;Medium
+ImageCopyToVideoMemoryBegin / ImageCopyToVideoMemoryEnd;Microsoft-Windows-XAML;Image Copy To Video Memory;"ImageCopyToVideoMemoryBegin:
+Id: win:UInt64
+
+ImageCopyToVideoMemoryEnd:
+Id: win:UInt64";N;Medium
+ImageDownloadAvailableBegin / ImageDownloadAvailableEnd;Microsoft-Windows-XAML;Image Download Available;"ImageDownloadAvailableBegin:
+ImageId: win:UInt64; URI: win:UnicodeString
+
+ImageDownloadAvailableEnd:
+ImageId: win:UInt64; URI: win:UnicodeString";N;Medium
+ImageDownloadCompleteNotification;Microsoft-Windows-XAML;Image Download Complete Notification.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri
+Type: bool
+Name: decodeToRenderSize";N;Medium
+ImageEnsureAndUpdateHardwareResourcesBegin / ImageEnsureAndUpdateHardwareResourcesEnd;Microsoft-Windows-XAML;Image Ensure And Update Hardware Resources;"ImageEnsureAndUpdateHardwareResourcesBegin:
+ImageId: win:UInt64; URI: win:UnicodeString
+
+ImageEnsureAndUpdateHardwareResourcesEnd:
+ImageId: win:UInt64; URI: win:UnicodeString";N;Medium
+ImageRequestDecodeBegin / ImageRequestDecodeEnd;Microsoft-Windows-XAML;Image Request Decode;"ImageRequestDecodeBegin:
+ImageId: win:UInt64; URI: win:UnicodeString
+
+ImageRequestDecodeEnd:
+ImageId: win:UInt64; URI: win:UnicodeString";N;Medium
+ImageRequestDecodeInfo;Microsoft-Windows-XAML;Image Request Decode - state/data;"ImageId: win:UInt64; URI: win:UnicodeString; ImageState: win:UnicodeString; ImageStateKey: win:UInt32; Width: win:UInt32; Height: win:UInt32";N;Medium
+ImageResetForSourceChangeBegin / ImageResetForSourceChangeEnd;Microsoft-Windows-XAML;Image Reset For Source Change;"ImageResetForSourceChangeBegin:
+ImageId: win:UInt64; URI: win:UnicodeString
+
+ImageResetForSourceChangeEnd:
+ImageId: win:UInt64; URI: win:UnicodeString";N;Medium
+ImageSetSourceBegin / ImageSetSourceEnd;Microsoft-Windows-XAML;Image Set Source;"ImageSetSourceBegin:
+Id: win:UInt64
+
+ImageSetSourceEnd:
+Id: win:UInt64";N;Medium
+ImageSetSourceFromUriBegin / ImageSetSourceFromUriEnd;Microsoft-Windows-XAML;Image Set Source From Uri;"ImageSetSourceFromUriBegin:
+ImageId: win:UInt64; URI: win:UnicodeString
+
+ImageSetSourceFromUriEnd:
+ImageId: win:UInt64; URI: win:UnicodeString";N;Medium
+ImageTaskDispatcher_Execute / ImageTaskDispatcher_Execute_End;Microsoft-Windows-XAML;Image Task Dispatcher Execute.;"ImageTaskDispatcher_Execute:
+Type: uint32_t
+Name: taskCount
+
+ImageTaskDispatcher_Execute_End:
+Type: bool
+Name: WorkQueued
+Type: uint32_t
+Name: taskCount";N;Low
+ImageTaskDispatcher_QueueTask;Microsoft-Windows-XAML;Image Task Dispatcher Queue Task.;"Type: bool
+Name: WorkQueued
+Type: uint32_t
+Name: taskCount";N;Low
+ImageUpdateHardwareResourcesBegin / ImageUpdateHardwareResourcesEnd;Microsoft-Windows-XAML;Image Update Hardware Resources;"ImageUpdateHardwareResourcesBegin:
+Id: win:UInt64
+
+ImageUpdateHardwareResourcesEnd:
+Id: win:UInt64";N;Medium
+ImageUsesColorTransformInfo;Microsoft-Windows-XAML;Image Uses Color Transform - state/data;No declared payload;N;Medium
+IndividualSizeChangedBegin / IndividualSizeChangedEnd;Microsoft-Windows-XAML;Individual Size Changed;"IndividualSizeChangedBegin:
+No declared payload
+
+IndividualSizeChangedEnd:
+ElementId: win:UInt64";N;Low
+InitializeCoreBegin / InitializeCoreEnd;Microsoft-Windows-XAML;Initialize Core;"InitializeCoreBegin:
+No declared payload
+
+InitializeCoreEnd:
+No declared payload";N;Low
+InitializeMediaEffectInfo;Microsoft-Windows-XAML;Initialize Media Effect - state/data;"Id: win:UInt64; EffectId: win:UnicodeString; EffectType: win:UInt32; EffectOptional: win:UInt32";N;Medium
+InitializeMetadataStoreBegin / InitializeMetadataStoreEnd;Microsoft-Windows-XAML;Initialize Metadata Store;"InitializeMetadataStoreBegin:
+No declared payload
+
+InitializeMetadataStoreEnd:
+No declared payload";N;Medium
+InitializeTextStart / InitializeTextStop;Microsoft-Windows-XAML;Initialize Text;"InitializeTextStart:
+No declared payload
+
+InitializeTextStop:
+No declared payload";N;Low
+InnerBoundsStatsInfo;Microsoft-Windows-XAML;Cached Bounds Stats - state/data;"RecalculatedCount: win:UInt32; ReusedCount: win:UInt32";N;Medium
+KeyDownBegin / KeyDownEnd;Microsoft-Windows-XAML;Key Down;"KeyDownBegin:
+KeyCode: win:UInt32; RepeatCount: win:UInt32; CountBeforeSubmitFrame: win:UInt32
+
+KeyDownEnd:
+KeyCode: win:UInt32; RepeatCount: win:UInt32; CountBeforeSubmitFrame: win:UInt32";N;Low
+KeyDownHandlerBegin / KeyDownHandlerEnd;Microsoft-Windows-XAML;Key Down Handler;"KeyDownHandlerBegin:
+RegisteredOn: win:UInt64; KeyCode: win:UInt32; OriginalSource: win:UInt64
+
+KeyDownHandlerEnd:
+Handled: win:Boolean";N;Low
+KeyEventsBegin / KeyEventsEnd;Microsoft-Windows-XAML;Key Event;"KeyEventsBegin:
+No declared payload
+
+KeyEventsEnd:
+No declared payload";N;Medium
+KeyTipsVisualChangingInfo;Microsoft-Windows-XAML;Key Tips Visual Changing - state/data;No declared payload;N;Low
+KeyUpBegin / KeyUpEnd;Microsoft-Windows-XAML;Key Up;"KeyUpBegin:
+KeyCode: win:UInt32; RepeatCount: win:UInt32
+
+KeyUpEnd:
+KeyCode: win:UInt32; RepeatCount: win:UInt32";N;Low
+KeyUpHandlerBegin / KeyUpHandlerEnd;Microsoft-Windows-XAML;Key Up Handler;"KeyUpHandlerBegin:
+RegisteredOn: win:UInt64; KeyCode: win:UInt32; OriginalSource: win:UInt64
+
+KeyUpHandlerEnd:
+Handled: win:Boolean";N;Low
+LayoutBegin / LayoutEnd;Microsoft-Windows-XAML;Layout;"LayoutBegin:
+No declared payload
+
+LayoutEnd:
+No declared payload";N;Medium
+LoadTemplateContentBegin / LoadTemplateContentEnd;Microsoft-Windows-XAML;Load Template Content;"LoadTemplateContentBegin:
+TemplateId: win:UInt64
+
+LoadTemplateContentEnd:
+TemplateId: win:UInt64; ElementId: win:UInt64";N;Low
+ManipulationTransformCreatedInfo;Microsoft-Windows-XAML;Manipulation Transform Created - state/data;address: win:UInt64;N;Medium
+ManipulationTransformDestroyedInfo;Microsoft-Windows-XAML;Manipulation Transform Destroyed - state/data;address: win:UInt64;N;Medium
+ManipulationTransformUpdateInfo;Microsoft-Windows-XAML;Manipulation Transform Update - state/data;"address: win:UInt64; TranslateX: win:Float; TranslateY: win:Float";N;Medium
+MapControl_InitializeWebMap;Microsoft-Windows-XAML;Web map initialization boundary;"IsStart: bool
+ObjectPointer: uint64_t";N;Low
+MapControl_WebMessageReceived_Error;Microsoft-Windows-XAML;Map JavaScript error message;"ObjectPointer: uint64_t
+Message: PCWSTR";N;Medium
+MapControl_WebViewNavigationCompleted;Microsoft-Windows-XAML;Map browser navigation completion;ObjectPointer: uint64_t;N;Low
+MeasureBegin / MeasureEnd;Microsoft-Windows-XAML;Measure;"MeasureBegin:
+No declared payload
+
+MeasureEnd:
+No declared payload";N;Medium
+MeasureChildBegin / MeasureChildEnd;Microsoft-Windows-XAML;Measure Child;"MeasureChildBegin:
+No declared payload
+
+MeasureChildEnd:
+No declared payload";N;High
+MeasureElementBegin / MeasureElementEnd;Microsoft-Windows-XAML;Measure Element;"MeasureElementBegin:
+ElementId: win:UInt64; Width: win:Float; Height: win:Float
+
+MeasureElementEnd:
+ElementId: win:UInt64; DesiredWidth: win:Float; DesiredHeight: win:Float";N;High
+MediaElementLegacyFullScreenInfo;Microsoft-Windows-XAML;Media Element Legacy Full Screen - end;"Id: win:UInt64; IsFullScreen: win:UInt32";N;Medium
+MediaFullScreenStateInfo;Microsoft-Windows-XAML;Media Full Screen State - state/data;"MediaElementID: win:UInt64; InFullScreen: win:UInt32";N;Medium
+MediaOverlapStateInfo;Microsoft-Windows-XAML;Media Overlap State - state/data;"MediaElementID: win:UInt64; HasOverlap: win:UInt32";N;Medium
+MemoryReportPressureToGCInfo;Microsoft-Windows-XAML;Memory Report Pressure To GC - state/data;Size: win:Int32;N;Medium
+MemoryUpdateAllocationDCompSurfaceInfo;Microsoft-Windows-XAML;Memory Update Allocation D Comp Surface - state/data;Size: win:Int32;N;High
+MemoryUpdateAllocationSystemMemoryBitsInfo;Microsoft-Windows-XAML;Memory Update Allocation System Memory Bits - state/data;Size: win:Int32;N;High
+MockDCompDumpInfo;Microsoft-Windows-XAML;Mock D Comp Dump - state/data;"value: win:AnsiString; CRC: win:UInt32; chunk: win:UInt32; numChunks: win:UInt32";N;Medium
+NavigationCacheGetContentInfo;Microsoft-Windows-XAML;Navigation Cache Get Content - state/data;"PageDescriptor: win:UnicodeString; InCache: win:Boolean";N;Medium
+NotifyGripperPositionChangedBegin / NotifyGripperPositionChangedEnd;Microsoft-Windows-XAML;Notify Gripper Position Changed;"NotifyGripperPositionChangedBegin:
+No declared payload
+
+NotifyGripperPositionChangedEnd:
+No declared payload";N;Low
+OffThreadDecodeStart / OffThreadDecodeStop;Microsoft-Windows-XAML;Off Thread Decode Start.;"OffThreadDecodeStart:
+Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri
+Type: bool
+Name: isHardwareDecode
+
+OffThreadDecodeStop:
+Type: uint64_t
+Name: Id";N;Medium
+OfferResourcesBegin / OfferResourcesEnd;Microsoft-Windows-XAML;Offer Resources;"OfferResourcesBegin:
+No declared payload
+
+OfferResourcesEnd:
+IsSurfaceBeingRendered: win:Boolean";N;Low
+OfferSystemMemorySurfaceInfo;Microsoft-Windows-XAML;Offer System Memory Surface - state/data;State: win:UnicodeString;N;Medium
+OfferableSoftwareBitmapAllocInfo;Microsoft-Windows-XAML;Offerable Software Bitmap Alloc - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32";N;High
+OfferableSoftwareBitmapFreeInfo;Microsoft-Windows-XAML;Offerable Software Bitmap Free - state/data;Id: win:UInt64;N;High
+OnActivatedBegin / OnActivatedEnd;Microsoft-Windows-XAML;On Activated;"OnActivatedBegin:
+No declared payload
+
+OnActivatedEnd:
+No declared payload";N;Low
+OnLaunchedProtectedBegin / OnLaunchedProtectedEnd;Microsoft-Windows-XAML;On Launched Protected;"OnLaunchedProtectedBegin:
+No declared payload
+
+OnLaunchedProtectedEnd:
+No declared payload";N;Medium
+OuterBoundsStatsInfo;Microsoft-Windows-XAML;Cached Bounds Stats - state/data;"RecalculatedCount: win:UInt32; ReusedCount: win:UInt32";N;Medium
+PageRotationAnimationStartedInfo;Microsoft-Windows-XAML;Page Rotation Animation Started - state/data;No declared payload;N;Medium
+PageRotationSnapshotTakenInfo;Microsoft-Windows-XAML;Page Rotation Snapshot Taken - state/data;No declared payload;N;Medium
+ParseImageMetadataStart / ParseImageMetadataStop;Microsoft-Windows-XAML;Parse Image Metadata Start.;"ParseImageMetadataStart:
+Type: uint64_t
+Name: Id
+
+ParseImageMetadataStop:
+Type: uint64_t
+Name: Id
+Type: HRESULT
+Name: parseHR";N;Low
+ParseXamlBegin / ParseXamlEnd;Microsoft-Windows-XAML;Parse Xaml;"ParseXamlBegin:
+URI: win:UnicodeString
+
+ParseXamlEnd:
+URI: win:UnicodeString";N;Medium
+PauseStoryboardInfo;Microsoft-Windows-XAML;Pause Storyboard - state/data;ElementId: win:UInt64;N;Low
+PerFrameCallbackBegin / PerFrameCallbackEnd;Microsoft-Windows-XAML;Per Frame Callback;"PerFrameCallbackBegin:
+No declared payload
+
+PerFrameCallbackEnd:
+No declared payload";N;Medium
+PerfTrackDetectionInfo;Microsoft-Windows-XAML;Perf Track Detection - state/data;DummyMetric: win:UInt32;N;Medium
+PerfXamlEvent;Microsoft-Windows-XAML;WPA named operation boundary;"IsStart: bool
+ObjectPointer: uint64_t
+EventName: PCSTR
+IsInteresting: bool
+Additional schema/producer: Type: bool
+Name: IsStart
+Type: uint64_t
+Name: ObjectPointer
+Type: PCSTR
+Name: EventName
+Type: bool
+Name: IsInteresting";N;Low
+PlaceElementBegin / PlaceElementEnd;Microsoft-Windows-XAML;Place Element;"PlaceElementBegin:
+ItemIndex: win:Int32
+
+PlaceElementEnd:
+No declared payload";N;High
+PlaySoundBegin / PlaySoundEnd;Microsoft-Windows-XAML;Play Sound;"PlaySoundBegin:
+No declared payload
+
+PlaySoundEnd:
+No declared payload";N;Low
+PointerCaptureChangedBegin / PointerCaptureChangedEnd;Microsoft-Windows-XAML;Pointer Capture Changed;"PointerCaptureChangedBegin:
+No declared payload
+
+PointerCaptureChangedEnd:
+No declared payload";N;Low
+PointerDownBegin / PointerDownEnd;Microsoft-Windows-XAML;Pointer Down;"PointerDownBegin:
+No declared payload
+
+PointerDownEnd:
+No declared payload";N;Low
+PointerEnterBegin / PointerEnterEnd;Microsoft-Windows-XAML;Pointer Enter;"PointerEnterBegin:
+No declared payload
+
+PointerEnterEnd:
+No declared payload";N;Low
+PointerHWheelBegin / PointerHWheelEnd;Microsoft-Windows-XAML;Pointer H Wheel;"PointerHWheelBegin:
+No declared payload
+
+PointerHWheelEnd:
+No declared payload";N;Low
+PointerInputReentrancyDetected;Microsoft-Windows-XAML;Detect nested/reentrant pointer input processing: previous and incoming message identifiers.;"Type: uint32_t
+Name: SupersededMessageId
+Type: uint32_t
+Name: NewMessageId";N;Low
+PointerLeaveBegin / PointerLeaveEnd;Microsoft-Windows-XAML;Pointer Leave;"PointerLeaveBegin:
+No declared payload
+
+PointerLeaveEnd:
+No declared payload";N;Low
+PointerUpBegin / PointerUpEnd;Microsoft-Windows-XAML;Pointer Up;"PointerUpBegin:
+No declared payload
+
+PointerUpEnd:
+No declared payload";N;Low
+PointerUpdateBegin / PointerUpdateEnd;Microsoft-Windows-XAML;Pointer Update;"PointerUpdateBegin:
+No declared payload
+
+PointerUpdateEnd:
+No declared payload";N;High
+PointerWheelBegin / PointerWheelEnd;Microsoft-Windows-XAML;Pointer Wheel;"PointerWheelBegin:
+No declared payload
+
+PointerWheelEnd:
+No declared payload";N;Low
+PrepareContainerBegin / PrepareContainerEnd;Microsoft-Windows-XAML;Prepare Container;"PrepareContainerBegin:
+No declared payload
+
+PrepareContainerEnd:
+No declared payload";N;High
+PresentBitmapDuringDeviceLoss;Microsoft-Windows-XAML;Present Bitmap During Device Loss.;"Type: uint64_t
+Name: Id";N;Low
+PresentControllerConvertQpcToVBlankNoFrameStatsInfo;Microsoft-Windows-XAML;QPC to VBlank conversion without frame statistics;"ControllerId: win:UInt64; QPCTicks: win:UInt64; VBlank0InQPCTicks: win:UInt64; QPCTicksPerVBlank: win:Float; VBlankCount: win:UInt32";N;Medium
+PresentControllerConvertQpcToVBlankWithFrameStatsInfo;Microsoft-Windows-XAML;QPC to VBlank conversion with frame statistics;"ControllerId: win:UInt64; QPCTicks: win:UInt64; PreviousRefreshVBlankCount: win:UInt32; PreviousRefreshQPCTicks: win:UInt64; QPCTicksPerVBlank: win:Float; VBlankOffset: win:UInt32; VBlankCount: win:UInt32";N;Medium
+PresentControllerFrameOnScreenInfo;Microsoft-Windows-XAML;Present Controller Frame On Screen - state/data;"ControllerId: win:UInt64; PresentId: win:UInt32; StartQPCTicks: win:UInt64; EndQPCTicks: win:UInt64; LatencyInQPCTicks: win:UInt64; QPCTicksPerVBlank: win:Float; LatencyInVBlanks: win:UInt32";N;Medium
+PresentControllerFrameOnScreenMissedInfo;Microsoft-Windows-XAML;Present Controller Frame On Screen Missed - state/data;"ControllerId: win:UInt64; PresentId: win:UInt32";N;Medium
+PresentControllerFrameStatisticsInconsistentVBlankInfo;Microsoft-Windows-XAML;Present Controller Frame Statistics Inconsistent V Blank - state/data;"ControllerId: win:UInt64; PreviousQPC: win:UInt64; PreviousVBlank: win:UInt32; ReportedQPC: win:UInt64; QPCTicksPerVBlank: win:Float; CalculatedVBlank: win:UInt32; ReportedVBlank: win:UInt32";N;Medium
+PresentControllerGetFrameStatisticsDisjointInfo;Microsoft-Windows-XAML;Present Controller Get Frame Statistics Disjoint - state/data;ControllerId: win:UInt64;N;Medium
+PresentControllerGetFrameStatisticsInfo;Microsoft-Windows-XAML;Present Controller Get Frame Statistics - state/data;"ControllerId: win:UInt64; PresentId: win:UInt32; VBlankId: win:UInt32; SyncRefreshCount: win:UInt32; SyncQPCTime: win:UInt64; QueuedPresentCount: win:UInt32";N;Medium
+PresentControllerPresentBlockedInfo;Microsoft-Windows-XAML;Present Controller Present Blocked - state/data;"ControllerId: win:UInt64; PresentId: win:UInt32; PresentQPCTicks: win:UInt64; PostPresentQPCTicks: win:UInt64; PresentTimeInQPCTicks: win:UInt64; QPCTicksPerVBlank: win:Float; PresentTimeInVBlanks: win:Float";N;Medium
+PresentControllerPresentInfo;Microsoft-Windows-XAML;Present Controller Present - state/data;"ControllerId: win:UInt64; PresentId: win:UInt32; BeginPresentQPCTicks: win:UInt64; QueuedPresentCount: win:UInt32; FramesToQueue: win:UInt32";N;Medium
+PresentControllerResetInfo;Microsoft-Windows-XAML;Present Controller Reset - state/data;ControllerId: win:UInt64;N;Medium
+PresentControllerSetLatencyInfo;Microsoft-Windows-XAML;Present Controller Set Latency - state/data;"ControllerId: win:UInt64; LatencyInVBlanks: win:UInt32";N;Medium
+PresentControllerShouldProduceFrameInfo;Microsoft-Windows-XAML;Present Controller Should Produce Frame - state/data;"ControllerId: win:UInt64; ShouldPresent: win:UInt32; VBlanksToSkip: win:UInt32; FramesToQueue: win:UInt32";N;Medium
+PresentControllerShouldProduceMultipleFramesPerVBlankInfo;Microsoft-Windows-XAML;Whether multiple frames should be produced per VBlank;ControllerId: win:UInt64;N;Medium
+PresentControllerSkippedFrameInfo;Microsoft-Windows-XAML;Present Controller Skipped Frame - state/data;ControllerId: win:UInt64;N;Medium
+PresentControllerStateChangeInfo;Microsoft-Windows-XAML;Present Controller State Change - state/data;"ControllerId: win:UInt64; NewState: win:Int32; VBlanksToDrop: win:UInt32; FramesToQueue: win:UInt32";N;Medium
+PrimitiveCompositionDrawBegin / PrimitiveCompositionDrawEnd;Microsoft-Windows-XAML;Primitive Composition Draw;"PrimitiveCompositionDrawBegin:
+No declared payload
+
+PrimitiveCompositionDrawEnd:
+BatchCount: win:UInt32; PrimitivesDrawn: win:UInt32; GeometryGeneratedPrimitivesDrawn: win:UInt32; GeometryGeneratedVerticesDrawn: win:UInt32";N;Medium
+PrimitiveCompositionEnsureHardwareResourcesBegin / PrimitiveCompositionEnsureHardwareResourcesEnd;Microsoft-Windows-XAML;Primitive Composition Ensure Hardware Resources;"PrimitiveCompositionEnsureHardwareResourcesBegin:
+No declared payload
+
+PrimitiveCompositionEnsureHardwareResourcesEnd:
+No declared payload";N;Medium
+PrimitiveCompositionGenerateInstancesBegin / PrimitiveCompositionGenerateInstancesEnd;Microsoft-Windows-XAML;Primitive Composition Generate Instances;"PrimitiveCompositionGenerateInstancesBegin:
+No declared payload
+
+PrimitiveCompositionGenerateInstancesEnd:
+No declared payload";N;Medium
+PrimitiveCompositionTexture8BitExpandBegin / PrimitiveCompositionTexture8BitExpandEnd;Microsoft-Windows-XAML;Primitive Composition Texture8 Bit Expand;"PrimitiveCompositionTexture8BitExpandBegin:
+No declared payload
+
+PrimitiveCompositionTexture8BitExpandEnd:
+SourceSurface: win:UInt64; DestinationSurface: win:UInt64; UpdateType: win:UInt32; SourceX: win:UInt32; SourceY: win:UInt32; SourceWidth: win:UInt32; SourceHeight: win:UInt32; TargetOffsetX: win:UInt32; TargetOffsetY: win:UInt32; Pixels: win:UInt64; BitDepth: win:UInt32";N;Low
+PrimitiveCompositionTextureUpdateBegin / PrimitiveCompositionTextureUpdateEnd;Microsoft-Windows-XAML;Primitive Composition Texture Update;"PrimitiveCompositionTextureUpdateBegin:
+SourceSurface: win:UInt64; DestinationSurface: win:UInt64; UpdateType: win:UInt32; SourceX: win:UInt32; SourceY: win:UInt32; SourceWidth: win:UInt32; SourceHeight: win:UInt32; TargetOffsetX: win:UInt32; TargetOffsetY: win:UInt32; Pixels: win:UInt64; BitDepth: win:UInt32
+
+PrimitiveCompositionTextureUpdateEnd:
+No declared payload";N;Low
+PrimitiveCompositionUpdateSurfacesBegin / PrimitiveCompositionUpdateSurfacesEnd;Microsoft-Windows-XAML;Primitive Composition Update Surfaces;"PrimitiveCompositionUpdateSurfacesBegin:
+No declared payload
+
+PrimitiveCompositionUpdateSurfacesEnd:
+No declared payload";N;Low
+ProcessAlphaModeUpdateBegin / ProcessAlphaModeUpdateEnd;Microsoft-Windows-XAML;Process Alpha Mode Update;"ProcessAlphaModeUpdateBegin:
+Transparent: win:UInt32
+
+ProcessAlphaModeUpdateEnd:
+Transparent: win:UInt32";N;Medium
+ProcessDecodeRequests;Microsoft-Windows-XAML;Process Decode Requests.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri
+Type: uint32_t
+Name: State";N;Medium
+ProcessLayoutForTransitionBegin / ProcessLayoutForTransitionEnd;Microsoft-Windows-XAML;Process Layout For Transition;"ProcessLayoutForTransitionBegin:
+No declared payload
+
+ProcessLayoutForTransitionEnd:
+No declared payload";N;Medium
+ProcessNotifyWindowLayoutCompletedInfo;Microsoft-Windows-XAML;Process Notify Window Layout Completed - state/data;ApplicationViewState: win:UInt32;N;Medium
+ProcessNotifyWindowLayoutCompletedInfo1;Microsoft-Windows-XAML;Process Notify Window Layout Completed - state/data;Window: win:UInt64;N;Medium
+ProcessPointerInputBegin / ProcessPointerInputEnd;Microsoft-Windows-XAML;Process Pointer Input;"ProcessPointerInputBegin:
+PointerId: win:UInt32; MsgId: win:UInt32; X: win:Float; Y: win:Float
+
+ProcessPointerInputEnd:
+No declared payload";N;High
+ProcessRetargetBegin / ProcessRetargetEnd;Microsoft-Windows-XAML;Process Retarget;"ProcessRetargetBegin:
+No declared payload
+
+ProcessRetargetEnd:
+No declared payload";N;Medium
+ProvideStaticResourceReferenceBegin / ProvideStaticResourceReferenceEnd;Microsoft-Windows-XAML;Provide Static Resource Reference;"ProvideStaticResourceReferenceBegin:
+No declared payload
+
+ProvideStaticResourceReferenceEnd:
+Type: win:UnicodeString";N;High
+PublicApiCall;Microsoft-Windows-XAML;Public API entry/exit;"IsStart: bool
+ObjectPointer: uint64_t
+MethodName: PCSTR
+HR: uint32_t
+Additional schema/producer: Type: bool
+Name: IsStart
+Type: uint64_t
+Name: ObjectPointer
+Type: PCSTR
+Name: MethodName
+Type: uint32_t
+Name: HR";N;Medium
+PutRootVisualBegin / PutRootVisualEnd;Microsoft-Windows-XAML;Put Root Visual;"PutRootVisualBegin:
+No declared payload
+
+PutRootVisualEnd:
+No declared payload";N;Low
+PutSourceBegin / PutSourceEnd;Microsoft-Windows-XAML;Put Source;"PutSourceBegin:
+No declared payload
+
+PutSourceEnd:
+No declared payload";N;Low
+QueueDCompCommandInfo;Microsoft-Windows-XAML;Queue D Comp Command - state/data;CommandId: win:UInt32;N;Medium
+QueueDecodeFromImageCache;Microsoft-Windows-XAML;Queue Decode From Image Cache.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+QueueOffThreadDecode;Microsoft-Windows-XAML;Queue Off Thread Decode.;"Type: uint64_t
+Name: Id";N;Low
+QueueProcessDecodeRequests;Microsoft-Windows-XAML;Queue Process Decode Requests.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+QueueProcessDownload;Microsoft-Windows-XAML;Queue Process Download.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+RaiseAllLoadedEventsBegin / RaiseAllLoadedEventsEnd;Microsoft-Windows-XAML;Raise All Loaded Events;"RaiseAllLoadedEventsBegin:
+No declared payload
+
+RaiseAllLoadedEventsEnd:
+No declared payload";N;Low
+RaiseLoadedEventBegin / RaiseLoadedEventEnd;Microsoft-Windows-XAML;Raise Loaded Event;"RaiseLoadedEventBegin:
+ElementId: win:UInt64
+
+RaiseLoadedEventEnd:
+No declared payload";N;Low
+RealizeDeferredElementBegin / RealizeDeferredElementEnd;Microsoft-Windows-XAML;Realize Deferred Element;"RealizeDeferredElementBegin:
+DeferredElementId: win:UInt64
+
+RealizeDeferredElementEnd:
+DeferredElementId: win:UInt64; RealizedElementId: win:UInt64";N;Low
+RealizeTransitionBegin / RealizeTransitionEnd;Microsoft-Windows-XAML;Realize Transition;"RealizeTransitionBegin:
+No declared payload
+
+RealizeTransitionEnd:
+No declared payload";N;Low
+RebuildGraphicsDeviceResourcesBegin / RebuildGraphicsDeviceResourcesEnd;Microsoft-Windows-XAML;Rebuild Graphics Device Resources;"RebuildGraphicsDeviceResourcesBegin:
+No declared payload
+
+RebuildGraphicsDeviceResourcesEnd:
+No declared payload";N;Low
+ReclaimResourcesBegin / ReclaimResourcesEnd;Microsoft-Windows-XAML;Reclaim Resources;"ReclaimResourcesBegin:
+No declared payload
+
+ReclaimResourcesEnd:
+WasDiscarded: win:Boolean";N;Low
+ReclaimSystemMemorySurfaceInfo;Microsoft-Windows-XAML;Reclaim System Memory Surface - state/data;State: win:UnicodeString;N;Medium
+RecordDeviceAsLostInfo;Microsoft-Windows-XAML;Record Device As Lost - state/data;No declared payload;N;Low
+RecursiveInvalidateMeasureInfo;Microsoft-Windows-XAML;Recursive Invalidate Measure - state/data;State: win:UnicodeString;N;High
+ReferenceTrackerCollectedInfo;Microsoft-Windows-XAML;Reference Tracker Collected - state/data;ID: win:Int32;N;Medium
+ReferenceTrackingCleanupInfo;Microsoft-Windows-XAML;Reference Tracking Cleanup - state/data;"Objects: win:Int32; Attempts: win:Int32; Completed: win:Int32";N;Medium
+ReferenceTrackingCompletedBegin / ReferenceTrackingCompletedEnd;Microsoft-Windows-XAML;Reference Tracking Completed;"ReferenceTrackingCompletedBegin:
+No declared payload
+
+ReferenceTrackingCompletedEnd:
+Objects: win:Int32; Sources: win:Int32; Targets: win:Int32; Unreachable: win:Int32";N;Medium
+ReferenceTrackingStartedBegin / ReferenceTrackingStartedEnd;Microsoft-Windows-XAML;Reference Tracking Started;"ReferenceTrackingStartedBegin:
+No declared payload
+
+ReferenceTrackingStartedEnd:
+No declared payload";N;Medium
+RefreshTemplateBindingsBegin / RefreshTemplateBindingsEnd;Microsoft-Windows-XAML;Refresh Template Bindings;"RefreshTemplateBindingsBegin:
+No declared payload
+
+RefreshTemplateBindingsEnd:
+No declared payload";N;Medium
+RegisterInputPaneHandlerBegin / RegisterInputPaneHandlerEnd;Microsoft-Windows-XAML;Register Input Pane Handler;"RegisterInputPaneHandlerBegin:
+No declared payload
+
+RegisterInputPaneHandlerEnd:
+No declared payload";N;Low
+ReleaseDManipSharedTransformInfo;Microsoft-Windows-XAML;Release D Manip Shared Transform - state/data;No declared payload;N;Low
+ReleaseGraphicsDeviceResourcesBegin / ReleaseGraphicsDeviceResourcesEnd;Microsoft-Windows-XAML;Release Graphics Device Resources;"ReleaseGraphicsDeviceResourcesBegin:
+ReleaseDcompDevice: win:Boolean; IsDeviceLost: win:Boolean
+
+ReleaseGraphicsDeviceResourcesEnd:
+No declared payload";N;Low
+ReleaseQueueCleanupBegin / ReleaseQueueCleanupEnd;Microsoft-Windows-XAML;Release Queue Cleanup;"ReleaseQueueCleanupBegin:
+No declared payload
+
+ReleaseQueueCleanupEnd:
+No declared payload";N;Low
+ReleaseSwapChainInfo;Microsoft-Windows-XAML;Release Swap Chain - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32; AlphaMode: win:UInt32";N;Medium
+RenderElementBegin / RenderElementEnd;Microsoft-Windows-XAML;Render Element;"RenderElementBegin:
+ElementId: win:UInt64
+
+RenderElementEnd:
+No declared payload";N;Medium
+RenderTargetBitmapFallbackInfo;Microsoft-Windows-XAML;Render Target Bitmap Fallback - state/data;"Id: win:UInt64; Reason: win:UInt32";N;Medium
+RenderThreadDoNotWaitInfo;Microsoft-Windows-XAML;Render Thread Do Not Wait - state/data;No declared payload;N;Medium
+RenderThreadFrameBegin / RenderThreadFrameEnd;Microsoft-Windows-XAML;Render Thread Frame;"RenderThreadFrameBegin:
+No declared payload
+
+RenderThreadFrameEnd:
+No declared payload";N;Medium
+RenderThreadLogTimeToNextWorkInfo;Microsoft-Windows-XAML;Render Thread Log Time To Next Work - state/data;TimeToNextWorkInMilliseconds: win:UInt32;N;Medium
+RenderThreadPresentBegin / RenderThreadPresentEnd;Microsoft-Windows-XAML;Render Thread Present;"RenderThreadPresentBegin:
+No declared payload
+
+RenderThreadPresentEnd:
+No declared payload";N;Medium
+RenderThreadRenderInfo;Microsoft-Windows-XAML;Render Thread Render - state/data;FrameId: win:UInt64;N;Medium
+RenderThreadSimulateVBlankBegin / RenderThreadSimulateVBlankEnd;Microsoft-Windows-XAML;Render Thread Simulate V Blank;"RenderThreadSimulateVBlankBegin:
+No declared payload
+
+RenderThreadSimulateVBlankEnd:
+No declared payload";N;Medium
+RenderThreadSkipFrameNotDirtyInfo;Microsoft-Windows-XAML;Render Thread Skip Frame Not Dirty - state/data;No declared payload;N;Medium
+RenderThreadWaitForVBlankBegin / RenderThreadWaitForVBlankEnd;Microsoft-Windows-XAML;Render Thread Wait For V Blank;"RenderThreadWaitForVBlankBegin:
+No declared payload
+
+RenderThreadWaitForVBlankEnd:
+No declared payload";N;Medium
+RenderThreadWaitForWorkBegin / RenderThreadWaitForWorkEnd;Microsoft-Windows-XAML;Render Thread Wait For Work;"RenderThreadWaitForWorkBegin:
+No declared payload
+
+RenderThreadWaitForWorkEnd:
+No declared payload";N;Medium
+RenderToSurfaceBegin / RenderToSurfaceEnd;Microsoft-Windows-XAML;Render To Surface;"RenderToSurfaceBegin:
+No declared payload
+
+RenderToSurfaceEnd:
+No declared payload";N;Medium
+RenderWalkBegin / RenderWalkEnd / RenderWalkEnd1;Microsoft-Windows-XAML;Render Walk;"RenderWalkBegin:
+No declared payload
+
+RenderWalkEnd:
+No declared payload
+
+RenderWalkEnd1:
+Visited: win:Int32; Rendered: win:Int32";N;Medium
+RequestDecodeToRenderSize;Microsoft-Windows-XAML;Request Decode To Render Size.;"Type: uint64_t
+Name: Id
+Type: PCSTR
+Name: imageState
+Type: uint32_t
+Name: requestedWidth
+Type: uint32_t
+Name: requestedHeight
+Type: bool
+Name: decodeToRenderSize";N;Low
+RequestFrameReasonInfo;Microsoft-Windows-XAML;Request Frame Reason - state/data;"RequestInMS: win:Int32; NextTickIntervalInMS: win:Int32; Reason: win:UInt32; TotalReasons: win:UInt32";N;Medium
+ResettingMetaSurfacesBegin / ResettingMetaSurfacesEnd;Microsoft-Windows-XAML;Resetting Meta Surfaces;"ResettingMetaSurfacesBegin:
+No declared payload
+
+ResettingMetaSurfacesEnd:
+No declared payload";N;Medium
+ResizeSwapChainInfo;Microsoft-Windows-XAML;Resize Swap Chain - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32; AlphaMode: win:UInt32";N;Medium
+ResourceDictionaryAddInfo;Microsoft-Windows-XAML;Resource Dictionary Add - state/data;"ResourceDictionaryId: win:UInt64; ResourceId: win:UInt64; Key: win:UnicodeString; KeyIsType: win:Boolean";N;Medium
+ResourceDictionaryClearInfo;Microsoft-Windows-XAML;Resource Dictionary Clear - state/data;ResourceDictionaryId: win:UInt64;N;Low
+ResourceDictionaryRemoveInfo;Microsoft-Windows-XAML;Resource Dictionary Remove - state/data;"ResourceDictionaryId: win:UInt64; Key: win:UnicodeString; KeyIsType: win:Boolean";N;Medium
+ResumeStoryboardInfo;Microsoft-Windows-XAML;Resume Storyboard - state/data;ElementId: win:UInt64;N;Low
+ScrollPresenter_TryUpdatePosition;Microsoft-Windows-XAML;Scroll Presenter Try Update Position;"TraceLoggingFloat64(zoomedHorizontalOffset, ""HorizontalOffset"")
+TraceLoggingFloat64(zoomedVerticalOffset, ""VerticalOffset"")";N;Medium
+ScrollPresenter_TryUpdatePositionBy;Microsoft-Windows-XAML;Scroll Presenter Try Update Position By;"TraceLoggingFloat64(zoomedHorizontalOffset, ""HorizontalOffset"")
+TraceLoggingFloat64(zoomedVerticalOffset, ""VerticalOffset"")";N;Medium
+ScrollPresenter_TryUpdatePositionWithAdditionalVelocity;Microsoft-Windows-XAML;Scroll Presenter Try Update Position With Additional Velocity;"TraceLoggingFloat32(offsetsVelocity.x, ""Velocity.X"")
+TraceLoggingFloat32(offsetsVelocity.y, ""Velocity.Y"")";N;Medium
+ScrollPresenter_TryUpdatePositionWithAnimation;Microsoft-Windows-XAML;Scroll Presenter Try Update Position With Animation;"TraceLoggingFloat64(zoomedHorizontalOffset, ""HorizontalOffset"")
+TraceLoggingFloat64(zoomedVerticalOffset, ""VerticalOffset"")";N;Medium
+ScrollPresenter_ValuesChanged;Microsoft-Windows-XAML;Current and previous scroll view;"TraceLoggingFloat64(m_zoomedHorizontalOffset, ""HorizontalOffset"")
+TraceLoggingFloat64(m_zoomedVerticalOffset, ""VerticalOffset"")
+TraceLoggingFloat32(m_zoomFactor, ""ZoomFactor"")
+TraceLoggingFloat64(oldZoomedHorizontalOffset, ""OldHorizontalOffset"")
+TraceLoggingFloat64(oldZoomedVerticalOffset, ""OldVerticalOffset"")
+TraceLoggingFloat32(oldZoomFactor, ""OldZoomFactor"")";N;High
+SendInputScopeToRichEditInfo;Microsoft-Windows-XAML;Update Input Scope - state/data;InputScopeValue: win:UInt32;N;Low
+SetAlphaModeSwapChainInfo;Microsoft-Windows-XAML;Set Alpha Mode Swap Chain - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32; AlphaMode: win:UInt32";N;Medium
+SetConnectionIDBegin / SetConnectionIDEnd;Microsoft-Windows-XAML;Set Connection ID;"SetConnectionIDBegin:
+No declared payload
+
+SetConnectionIDEnd:
+No declared payload";N;High
+SetCustomRuntimeDataForDeferredElementBegin / SetCustomRuntimeDataForDeferredElementEnd;Microsoft-Windows-XAML;Set Custom Runtime Data For Deferred Element;"SetCustomRuntimeDataForDeferredElementBegin:
+No declared payload
+
+SetCustomRuntimeDataForDeferredElementEnd:
+No declared payload";N;High
+SetCustomRuntimeDataForResourceDictionaryBegin / SetCustomRuntimeDataForResourceDictionaryEnd;Microsoft-Windows-XAML;Set Custom Runtime Data For Resource Dictionary;"SetCustomRuntimeDataForResourceDictionaryBegin:
+No declared payload
+
+SetCustomRuntimeDataForResourceDictionaryEnd:
+No declared payload";N;High
+SetCustomRuntimeDataForStyleBegin / SetCustomRuntimeDataForStyleEnd;Microsoft-Windows-XAML;Set Custom Runtime Data For Style;"SetCustomRuntimeDataForStyleBegin:
+No declared payload
+
+SetCustomRuntimeDataForStyleEnd:
+No declared payload";N;High
+SetCustomRuntimeDataForVSMBegin / SetCustomRuntimeDataForVSMEnd;Microsoft-Windows-XAML;Set Custom Runtime Data For VSM;"SetCustomRuntimeDataForVSMBegin:
+No declared payload
+
+SetCustomRuntimeDataForVSMEnd:
+No declared payload";N;High
+SetCustomRuntimeDataOnCurrentInstanceBegin / SetCustomRuntimeDataOnCurrentInstanceEnd;Microsoft-Windows-XAML;Set Custom Runtime Data On Current Instance;"SetCustomRuntimeDataOnCurrentInstanceBegin:
+No declared payload
+
+SetCustomRuntimeDataOnCurrentInstanceEnd:
+No declared payload";N;High
+SetIhmKeyboardSkinInfo;Microsoft-Windows-XAML;Update Input Scope - state/data;IKSkinValue: win:UInt32;N;Low
+SetLoadedImageSurfaceMemory;Microsoft-Windows-XAML;Set Loaded Image Surface Memory.;"Type: uint64_t
+Name: Id";N;Low
+SetLoadedImageSurfaceUri;Microsoft-Windows-XAML;Set Loaded Image Surface Uri.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+SetMaximumFrameLatencyInfo;Microsoft-Windows-XAML;Set Maximum Frame Latency - state/data;FrameCount: win:UInt32;N;Medium
+SetNameOnCurrentInstanceBegin / SetNameOnCurrentInstanceEnd;Microsoft-Windows-XAML;Set Name On Current Instance;"SetNameOnCurrentInstanceBegin:
+Name: win:UnicodeString
+
+SetNameOnCurrentInstanceEnd:
+No declared payload";N;High
+SetSoftwareBitmap;Microsoft-Windows-XAML;Set Software Bitmap.;"Type: uint64_t
+Name: Id";N;Low
+SetStreamSource;Microsoft-Windows-XAML;Set Stream Source.;"Type: uint64_t
+Name: Id";N;Low
+SetTemplateOwnerInfo;Microsoft-Windows-XAML;Set Template Owner - state/data;"TemplateId: win:UInt64; OwnerId: win:UInt64; OwnerIsStyle: win:Boolean";N;Low
+SetUriSource;Microsoft-Windows-XAML;Set Uri Source.;"Type: uint64_t
+Name: Id
+Type: PCWSTR
+Name: Uri";N;Medium
+SetValueOnCurrentInstanceBegin / SetValueOnCurrentInstanceEnd;Microsoft-Windows-XAML;Set Value On Current Instance;"SetValueOnCurrentInstanceBegin:
+No declared payload
+
+SetValueOnCurrentInstanceEnd:
+Type: win:UnicodeString; PropertyType: win:UnicodeString";N;High
+SetViewportInteraction;Microsoft-Windows-XAML;Set Viewport Interaction - state/data;"UIElement: win:Pointer; Interaction: win:Pointer";N;Low
+SetupCCCBegin / SetupCCCEnd;Microsoft-Windows-XAML;Setup CCC;"SetupCCCBegin:
+ItemIndex: win:Int32
+
+SetupCCCEnd:
+No declared payload";N;Low
+ShowWindowBegin / ShowWindowEnd;Microsoft-Windows-XAML;Show Window;"ShowWindowBegin:
+No declared payload
+
+ShowWindowEnd:
+No declared payload";N;Low
+SoftwareBitmapFallbackAfterUploadError;Microsoft-Windows-XAML;Software Bitmap Fallback After Upload Error.;"Type: uint64_t
+Name: Id
+Type: uint32_t
+Name: uploadResult";N;Low
+StopStoryboardInfo;Microsoft-Windows-XAML;Stop Storyboard - state/data;ElementId: win:UInt64;N;Low
+SubmitAlphaModeUpdateBegin / SubmitAlphaModeUpdateEnd;Microsoft-Windows-XAML;Submit Alpha Mode Update;"SubmitAlphaModeUpdateBegin:
+Transparent: win:UInt32
+
+SubmitAlphaModeUpdateEnd:
+Transparent: win:UInt32";N;Medium
+SubmitFrameBegin / SubmitFrameEnd;Microsoft-Windows-XAML;Submit Frame;"SubmitFrameBegin:
+No declared payload
+
+SubmitFrameEnd:
+No declared payload";N;Medium
+SubmitFrameInfo;Microsoft-Windows-XAML;Submit Frame - state/data;FrameId: win:UInt64;N;Medium
+SubmitNotifyWindowLayoutCompletedInfo;Microsoft-Windows-XAML;Submit Notify Window Layout Completed - state/data;ApplicationViewState: win:UInt32;N;Medium
+SubmitNotifyWindowLayoutCompletedInfo1;Microsoft-Windows-XAML;Submit Notify Window Layout Completed - state/data;Window: win:UInt64;N;Medium
+SubmitNotifyWindowResizedInfo;Microsoft-Windows-XAML;Submit Notify Window Resized - state/data;ApplicationViewState: win:UInt32;N;Medium
+SubmitRetargetBegin / SubmitRetargetEnd;Microsoft-Windows-XAML;Submit Retarget;"SubmitRetargetBegin:
+No declared payload
+
+SubmitRetargetEnd:
+No declared payload";N;Medium
+SurfaceImageSourceBeginDrawInfo;Microsoft-Windows-XAML;Surface Image Source Begin Draw - state/data;"SurfaceImageSource: win:UInt64; Left: win:Int32; Top: win:Int32; Right: win:Int32; Bottom: win:Int32";N;Medium
+SurfaceImageSourceEndDrawInfo;Microsoft-Windows-XAML;Surface Image Source End Draw - state/data;SurfaceImageSource: win:UInt64;N;Medium
+SwipeUnrecognizedInfo;Microsoft-Windows-XAML;Swipe Unrecognized - state/data;No declared payload;N;Medium
+SwipingBegin / SwipingEnd;Microsoft-Windows-XAML;Swiping;"SwipingBegin:
+No declared payload
+
+SwipingEnd:
+No declared payload";N;Medium
+SystemMemorySurfaceAllocateInfo;Microsoft-Windows-XAML;System Memory Surface Allocate - state/data;"SurfaceId: win:UInt64; Width: win:UInt32; Height: win:UInt32; PixelSize: win:UInt32; IsDriverVisible: win:UInt32";N;High
+SystemMemorySurfaceFreeInfo;Microsoft-Windows-XAML;System Memory Surface Free - state/data;SurfaceId: win:UInt64;N;High
+TextureAtlasAllocateInfo;Microsoft-Windows-XAML;Texture Atlas Allocate - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32; BitDepth: win:UInt32";N;Medium
+TextureAtlasEntryAllocateInfo;Microsoft-Windows-XAML;Texture Atlas Entry Allocate - state/data;"AtlasId: win:UInt64; X: win:UInt32; Y: win:UInt32; Width: win:UInt32; Height: win:UInt32";N;Medium
+TextureAtlasEntryFreeInfo;Microsoft-Windows-XAML;Texture Atlas Entry Free - state/data;"AtlasId: win:UInt64; X: win:UInt32; Y: win:UInt32; Width: win:UInt32; Height: win:UInt32";N;Medium
+TextureAtlasFreeInfo;Microsoft-Windows-XAML;Texture Atlas Free - state/data;Id: win:UInt64;N;Medium
+TextureAtlasUtilizationInfo;Microsoft-Windows-XAML;Texture Atlas Utilization - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32; BitDepth: win:UInt32; PercentUsed: win:Float";N;Medium
+ThemeChangedStart / ThemeChangedStop;Microsoft-Windows-XAML;Theme Changed;"ThemeChangedStart:
+No declared payload
+
+ThemeChangedStop:
+No declared payload";N;Low
+ThreadedJobQueueInactivityInfo;Microsoft-Windows-XAML;Threaded Job Queue Inactivity - state/data;Id: win:UInt64;N;Medium
+ThreadedJobQueueJobBegin / ThreadedJobQueueJobEnd;Microsoft-Windows-XAML;Threaded Job Queue Job;"ThreadedJobQueueJobBegin:
+ParentId: win:UInt64; ChildId: win:UInt64
+
+ThreadedJobQueueJobEnd:
+ParentId: win:UInt64; ChildId: win:UInt64";N;Medium
+ThreadedJobQueueShutdownWaitBegin / ThreadedJobQueueShutdownWaitEnd;Microsoft-Windows-XAML;Threaded Job Queue Shutdown Wait;"ThreadedJobQueueShutdownWaitBegin:
+Id: win:UInt64
+
+ThreadedJobQueueShutdownWaitEnd:
+Id: win:UInt64; HR: win:UInt32";N;Medium
+ThreadedJobQueueSubmitJobInfo;Microsoft-Windows-XAML;Threaded Job Queue Submit Job - state/data;"ParentId: win:UInt64; ChildId: win:UInt64";N;Medium
+ThreadedJobQueueThreadLifetimeBegin / ThreadedJobQueueThreadLifetimeEnd;Microsoft-Windows-XAML;Threaded Job Queue Thread Lifetime;"ThreadedJobQueueThreadLifetimeBegin:
+Id: win:UInt64
+
+ThreadedJobQueueThreadLifetimeEnd:
+Id: win:UInt64";N;Medium
+ThreadedJobQueueThreadWaitBegin / ThreadedJobQueueThreadWaitEnd;Microsoft-Windows-XAML;Threaded Job Queue Wait;"ThreadedJobQueueThreadWaitBegin:
+Id: win:UInt64
+
+ThreadedJobQueueThreadWaitEnd:
+Id: win:UInt64";N;Medium
+ThreadedJobQueueUpdateExternalRefInfo;Microsoft-Windows-XAML;Threaded Job Queue Update External Ref - state/data;"Id: win:UInt64; Value: win:UInt64";N;Medium
+TickInfo;Microsoft-Windows-XAML;Tick - state/data;IsHighPriority: win:UInt32;N;Medium
+TickPausedAnimationInfo;Microsoft-Windows-XAML;Tick Paused Animation - state/data;"TargetId: win:UInt64; TargetName: win:UnicodeString; TargetProperty: win:UnicodeString";N;Medium
+TouchHitTestingBegin / TouchHitTestingEnd;Microsoft-Windows-XAML;Touch Hit Testing;"TouchHitTestingBegin:
+No declared payload
+
+TouchHitTestingEnd:
+X: win:Float; Y: win:Float; Width: win:Float; Height: win:Float";N;Medium
+TouchSelectionGripperHideBeginInfo;Microsoft-Windows-XAML;Touch Selection Gripper Hide - state/data;"IsSelectionStartGripper: win:UInt32; CenterX: win:UInt32; CenterY: win:UInt32";N;Low
+TouchSelectionGripperHideEndInfo;Microsoft-Windows-XAML;Touch Selection Gripper Hide - state/data;"IsSelectionStartGripper: win:UInt32; CenterX: win:UInt32; CenterY: win:UInt32";N;Low
+TouchSelectionGripperRepositionInfo;Microsoft-Windows-XAML;Touch Selection Gripper Reposition - state/data;"IsSelectionStartGripper: win:UInt32; CenterX: win:UInt32; CenterY: win:UInt32";N;Low
+TouchSelectionGripperShowBeginInfo;Microsoft-Windows-XAML;Touch Selection Gripper Show - state/data;"IsSelectionStartGripper: win:UInt32; CenterX: win:UInt32; CenterY: win:UInt32";N;Low
+TouchSelectionGripperShowEndInfo;Microsoft-Windows-XAML;Touch Selection Gripper Show - state/data;"IsSelectionStartGripper: win:UInt32; CenterX: win:UInt32; CenterY: win:UInt32";N;Low
+TouchSelectionGripperTetherBeginInfo;Microsoft-Windows-XAML;Touch Selection Gripper Tether - state/data;No declared payload;N;Medium
+TouchSelectionGripperTetherEndInfo;Microsoft-Windows-XAML;Touch Selection Gripper Tether - state/data;No declared payload;N;Medium
+TryUpdateScale;Microsoft-Windows-XAML;Try Update Scale;"TraceLoggingFloat32(zoomFactor, ""ZoomFactor"")
+TraceLoggingFloat32(centerPoint.x, ""Center.X"")
+TraceLoggingFloat32(centerPoint.y, ""Center.Y"")";N;Medium
+TryUpdateScaleWithAdditionalVelocity;Microsoft-Windows-XAML;Try Update Scale With Additional Velocity;"TraceLoggingFloat32(zoomFactorVelocity, ""Velocity"")
+TraceLoggingFloat32(centerPoint.x, ""Center.X"")
+TraceLoggingFloat32(centerPoint.y, ""Center.Y"")";N;Medium
+TryUpdateScaleWithAnimation;Microsoft-Windows-XAML;Try Update Scale With Animation;"TraceLoggingFloat32(zoomFactor, ""ZoomFactor"")
+TraceLoggingFloat32(centerPoint.x, ""Center.X"")
+TraceLoggingFloat32(centerPoint.y, ""Center.Y"")";N;Medium
+UIThreadCallbackBegin / UIThreadCallbackEnd;Microsoft-Windows-XAML;UI Thread Callback;"UIThreadCallbackBegin:
+No declared payload
+
+UIThreadCallbackEnd:
+No declared payload";N;Medium
+UIThreadSoftwareRasterizeWaitBegin / UIThreadSoftwareRasterizeWaitEnd;Microsoft-Windows-XAML;UI Thread Software Rasterize Wait;"UIThreadSoftwareRasterizeWaitBegin:
+No declared payload
+
+UIThreadSoftwareRasterizeWaitEnd:
+No declared payload";N;Medium
+UIThreadTextRasterizeWaitBegin / UIThreadTextRasterizeWaitEnd;Microsoft-Windows-XAML;UI Thread Text Rasterize Wait;"UIThreadTextRasterizeWaitBegin:
+No declared payload
+
+UIThreadTextRasterizeWaitEnd:
+No declared payload";N;Low
+UIThreadWaitGPUWorkBegin / UIThreadWaitGPUWorkEnd;Microsoft-Windows-XAML;UI Thread Wait GPU Work;"UIThreadWaitGPUWorkBegin:
+No declared payload
+
+UIThreadWaitGPUWorkEnd:
+No declared payload";N;Medium
+UpdateDependencyPropertiesForSCRInfo;Microsoft-Windows-XAML;Update Dependency Properties For SCR - state/data;No declared payload;N;High
+UpdateFocusBegin / UpdateFocusEnd;Microsoft-Windows-XAML;Update Focus;"UpdateFocusBegin:
+No declared payload
+
+UpdateFocusEnd:
+ElementId: win:UInt64";N;Low
+UpdateLogicalScrollDataBegin / UpdateLogicalScrollDataEnd;Microsoft-Windows-XAML;Update Logical Scroll Data;"UpdateLogicalScrollDataBegin:
+No declared payload
+
+UpdateLogicalScrollDataEnd:
+No declared payload";N;Low
+VideoCaptureFrameInfo;Microsoft-Windows-XAML;Video Capture Frame - state/data;No declared payload;N;Medium
+VideoStreamSizeInfo;Microsoft-Windows-XAML;Video Stream Size - state/data;"Id: win:UInt64; Width: win:UInt32; Height: win:UInt32";N;Medium
+VirtualSurfaceImageSourceUpdatePriorityInfo;Microsoft-Windows-XAML;Virtual Surface Image Source Update Priority - state/data;HighPriority: win:UInt32;N;Medium
+VirtualizationAddBegin / VirtualizationAddEnd;Microsoft-Windows-XAML;Virtualization Add;"VirtualizationAddBegin:
+No declared payload
+
+VirtualizationAddEnd:
+No declared payload";N;Medium
+VirtualizationCleanupBegin / VirtualizationCleanupEnd;Microsoft-Windows-XAML;Virtualization Cleanup;"VirtualizationCleanupBegin:
+No declared payload
+
+VirtualizationCleanupEnd:
+No declared payload";N;Medium
+VirtualizationIsEnabledByLayoutInfo;Microsoft-Windows-XAML;Virtualization Is Enabled By Layout - state/data;IsEnabled: win:Boolean;N;Medium
+VirtualizationIsEnabledByLayoutInfo1;Microsoft-Windows-XAML;Virtualization Is Enabled By Layout - state/data;"IsEnabled: win:Boolean; ElementId: win:UInt64; Name: win:UnicodeString; ClassType: win:UnicodeString; PropertyType: win:UnicodeString";N;Medium
+VirtualizationIsEnabledByModernPanelUsageInfo;Microsoft-Windows-XAML;Virtualization Is Enabled By Modern Panel Usage - state/data;IsEnabled: win:Boolean;N;Medium
+VirtualizationIsEnabledByModernPanelUsageInfo1;Microsoft-Windows-XAML;Virtualization Is Enabled By Modern Panel Usage - state/data;"IsEnabled: win:Boolean; ElementId: win:UInt64; Name: win:UnicodeString; ClassType: win:UnicodeString; PropertyType: win:UnicodeString";N;Medium
+VirtualizationMeasureBegin / VirtualizationMeasureEnd;Microsoft-Windows-XAML;Virtualization Measure;"VirtualizationMeasureBegin:
+No declared payload
+
+VirtualizationMeasureEnd:
+No declared payload";N;Medium
+VirtualizedCollectionBoundsInfo;Microsoft-Windows-XAML;Virtualized Collection Bounds - state/data;"ScrollViewerId: win:UInt64; Left: win:Float; Top: win:Float; Width: win:Float; Height: win:Float";N;Low
+VirtualizedCollectionUpdatedInfo;Microsoft-Windows-XAML;Virtualized Collection Updated - state/data;"ScrollViewerId: win:UInt64; Left: win:Float; Top: win:Float; Width: win:Float; Height: win:Float; ViewportWidth: win:Float; ViewportHeight: win:Float; ExtentWidth: win:Float; ExtentHeight: win:Float; HasPlaceholders: win:Boolean";N;Low
+VirtualizedItemAddedInfo;Microsoft-Windows-XAML;Virtualized Item Added - state/data;"ElementId: win:UInt64; ScrollViewerId: win:UInt64; ItemIndex: win:Int32; IsPlaceholder: win:Boolean";N;High
+VirtualizedItemRemovedInfo;Microsoft-Windows-XAML;Virtualized Item Removed - state/data;ElementId: win:UInt64;N;High
+VirtualizedItemUpdatedInfo;Microsoft-Windows-XAML;Virtualized Item Updated - state/data;"ElementId: win:UInt64; Phase: win:UInt32";N;High
+WaitForDownloadInProgress;Microsoft-Windows-XAML;Wait For Download In Progress.;"Type: uint64_t
+Name: Id";N;Low
+WebView2_CreateCoreObjects;Microsoft-Windows-XAML;Core WebView creation boundary;"IsStart: bool
+ObjectPointer: uint64_t";N;Low
+WebView2_DragStartingCallback_Exception;Microsoft-Windows-XAML;Web View2 Drag Starting Callback Exception;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+WebView2_DragStartingCallback_Failed;Microsoft-Windows-XAML;Web View2 Drag Starting Callback Failed;"HR: HRESULT
+ErrorMessage: PCWSTR";N;Low
+WebView2_DragStartingCallback_WithContentType_Failed;Microsoft-Windows-XAML;Web View2 Drag Starting Callback With Content Type Failed;"HR: HRESULT
+ContentType: uint32_t
+ErrorMessage: PCWSTR";N;Low
+WebView2_FireNavigationCompleted;Microsoft-Windows-XAML;Navigation completion handler presence;"ObjectPointer: uint64_t
+hasEventHandlers: bool";N;Low
+WebView2_MoveFocus_Failed;Microsoft-Windows-XAML;Web View2 Move Focus Failed;"TraceLoggingHResult(error.code().value, ""HRESULT"")
+TraceLoggingInt32(static_cast<int32_t>(reason), ""Reason"")";Y;Low
+WebView2_RegisterDragStartingHandler_Exception;Microsoft-Windows-XAML;Web View2 Register Drag Starting Handler Exception;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+WebView2_RegisterDragStartingHandler_Failed;Microsoft-Windows-XAML;Web View2 Register Drag Starting Handler Failed;"TraceLoggingHResult(hr, ""HRESULT"")
+TraceLoggingWideString(L""Failed to add DragStarting handler"", ""ErrorMessage"")";N;Low
+WebView2_TryCompleteInitialization;Microsoft-Windows-XAML;WebView initialization completion boundary;"IsStart: bool
+ObjectPointer: uint64_t";N;Low
+WebView2_UnRegisterDragStartingHandler_Exception;Microsoft-Windows-XAML;Web View2 Un Register Drag Starting Handler Exception;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+WebView2_UnRegisterDragStartingHandler_Failed;Microsoft-Windows-XAML;Web View2 Un Register Drag Starting Handler Failed;"TraceLoggingHResult(hrRemove, ""HRESULT"")
+TraceLoggingWideString(L""Failed to remove DragStarting handler"", ""ErrorMessage"")";N;Low
+WindowSizeChangedInfo;Microsoft-Windows-XAML;Window Size Changed - state/data;"Width: win:UInt32; Height: win:UInt32";N;Low
+XYFocusCandidateCacheHit;Microsoft-Windows-XAML;XY Focus Candidate Cache Hit - state/data;Direction: win:UnicodeString;N;Medium
+XYFocusEnteredBegin / XYFocusEnteredEnd;Microsoft-Windows-XAML;XY Focus Entered;"XYFocusEnteredBegin:
+Direction: win:UnicodeString
+
+XYFocusEnteredEnd:
+No declared payload";N;Medium
+XYFocusNotFoundInfo;Microsoft-Windows-XAML;XY Focus Not Found - state/data;"ElementId: win:UInt64; Direction: win:UnicodeString";N;Medium
+XYFocusWalkBegin / XYFocusWalkEnd;Microsoft-Windows-XAML;XY Focus Walk;"XYFocusWalkBegin:
+Direction: win:UnicodeString
+
+XYFocusWalkEnd:
+No declared payload";N;Medium
+AppBarClosedBegin / AppBarClosedEnd;Microsoft-Windows-XAML-Diagnostics;App Bar Closed;"AppBarClosedBegin:
+AppBarType: win:UInt32
+
+AppBarClosedEnd:
+No declared payload";N;Low
+AppBarOpenBegin / AppBarOpenEnd;Microsoft-Windows-XAML-Diagnostics;App Bar Open;"AppBarOpenBegin:
+AppBarType: win:UInt32
+
+AppBarOpenEnd:
+No declared payload";N;Low
+AppWindowReadyForPresentationInfo;Microsoft-Windows-XAML-Diagnostics;App Window Ready For Presentation - state/data;No declared payload;N;Medium
+ArrangeOverrideBegin / ArrangeOverrideEnd;Microsoft-Windows-XAML-Diagnostics;Arrange Override;"ArrangeOverrideBegin:
+ElementId: win:UInt64
+
+ArrangeOverrideEnd:
+ElementId: win:UInt64";N;High
+AssociateActivationContextInfo;Microsoft-Windows-XAML-Diagnostics;Associate Activation Context - state/data;"Context: win:UInt32; ViewId: win:UInt32";N;Medium
+BeginStoryboardWithSourceInfo;Microsoft-Windows-XAML-Diagnostics;Begin Storyboard With Source - state/data;"ElementId: win:UInt64; TargetElementId: win:UInt64; FileURI: win:UnicodeString; LineNumber: win:UInt32; ColumnNumber: win:UInt32; FileHash: win:UnicodeString";N;Medium
+ClearAnimationBegin / ClearAnimationEnd;Microsoft-Windows-XAML-Diagnostics;Clear Animation;"ClearAnimationBegin:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString
+
+ClearAnimationEnd:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString";N;Medium
+CueRemoved;Microsoft-Windows-XAML-Diagnostics;Cue Removed - state/data;No declared payload;N;Low
+DesignerActivationEnd;Microsoft-Windows-XAML-Diagnostics;Designer Activation - end;"Result: win:UInt32; ProcessId: win:UInt32";N;Medium
+DesignerActivationStart;Microsoft-Windows-XAML-Diagnostics;Designer Activation - begin;No declared payload;N;Medium
+DesignerAppViewCloseInfo;Microsoft-Windows-XAML-Diagnostics;Designer App View Close - state/data;"Result: win:UInt32; ViewId: win:UInt32";N;Medium
+DoubleTappedBegin / DoubleTappedEnd;Microsoft-Windows-XAML-Diagnostics;Double Tapped;"DoubleTappedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+DoubleTappedEnd:
+Handled: win:Boolean";N;Low
+DragEnterBegin / DragEnterEnd;Microsoft-Windows-XAML-Diagnostics;Drag Enter;"DragEnterBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64
+
+DragEnterEnd:
+Handled: win:Boolean";N;Low
+DragLeaveBegin / DragLeaveEnd;Microsoft-Windows-XAML-Diagnostics;Drag Leave;"DragLeaveBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64
+
+DragLeaveEnd:
+Handled: win:Boolean";N;Low
+DragOverBegin / DragOverEnd;Microsoft-Windows-XAML-Diagnostics;Drag Over;"DragOverBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64
+
+DragOverEnd:
+Handled: win:Boolean";N;Low
+DropBegin / DropEnd;Microsoft-Windows-XAML-Diagnostics;Drop;"DropBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64
+
+DropEnd:
+Handled: win:Boolean";N;Low
+ElementAccessibilityInfo;Microsoft-Windows-XAML-Diagnostics;Accessibility identity during render walk;"ElementId: win:UInt64; ParentId: win:UInt64; Name: win:UnicodeString; Type: win:UnicodeString";N;High
+ElementAddedInfo;Microsoft-Windows-XAML-Diagnostics;Element Added - state/data;"ElementId: win:UInt64; ParentId: win:UInt64";N;Low
+ElementCreatedWithSourceInfo;Microsoft-Windows-XAML-Diagnostics;Element Created With Source - state/data;"ElementId: win:UInt64; FileURI: win:UnicodeString; LineNumber: win:UInt32; ColumnNumber: win:UInt32; FileHash: win:UnicodeString";N;Medium
+ElementCreatedWithSourceInfo1;Microsoft-Windows-XAML-Diagnostics;Element creation with source coordinates;"ElementId: win:UInt64; ClassName: win:UnicodeString; FileURI: win:UnicodeString; LineNumber: win:UInt32; ColumnNumber: win:UInt32; FileHash: win:UnicodeString";N;High
+ElementRemovedInfo;Microsoft-Windows-XAML-Diagnostics;Element Removed - state/data;"ElementId: win:UInt64; ParentId: win:UInt64";N;Low
+FrameworkElementLoadingBegin / FrameworkElementLoadingEnd;Microsoft-Windows-XAML-Diagnostics;Framework Element Loading;"FrameworkElementLoadingBegin:
+No declared payload
+
+FrameworkElementLoadingEnd:
+No declared payload";N;Medium
+GetActivationContextInfo;Microsoft-Windows-XAML-Diagnostics;Get Activation Context - end;"Context: win:UInt32; ViewId: win:UInt32";N;Medium
+HoldingBegin / HoldingEnd;Microsoft-Windows-XAML-Diagnostics;Holding;"HoldingBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+HoldingEnd:
+Handled: win:Boolean";N;Low
+ImageSourceRelationInfo;Microsoft-Windows-XAML-Diagnostics;Image source to UIElement ancestry;"ElementId: win:UInt64; ParentId: win:UInt64; Name: win:UnicodeString";N;High
+InitializeInfo;Microsoft-Windows-XAML-Diagnostics;Initialize - end;AppId: win:UnicodeString;N;Medium
+InputEventsBegin / InputEventsEnd;Microsoft-Windows-XAML-Diagnostics;Input Event;"InputEventsBegin:
+No declared payload
+
+InputEventsEnd:
+No declared payload";N;Medium
+InvalidateArrangeInfo;Microsoft-Windows-XAML-Diagnostics;Invalidate Arrange - state/data;"ElementId: win:UInt64; ParentId: win:UInt64";N;High
+InvalidateMeasureInfo;Microsoft-Windows-XAML-Diagnostics;Invalidate Measure - state/data;"ElementId: win:UInt64; ParentId: win:UInt64";N;High
+ManipulationCompletedBegin / ManipulationCompletedEnd;Microsoft-Windows-XAML-Diagnostics;Manipulation Completed;"ManipulationCompletedBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64; Container: win:UInt64; IsInertial: win:Boolean
+
+ManipulationCompletedEnd:
+Handled: win:Boolean";N;Low
+ManipulationDeltaBegin / ManipulationDeltaEnd;Microsoft-Windows-XAML-Diagnostics;Manipulation Delta;"ManipulationDeltaBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64; Container: win:UInt64; IsInertial: win:Boolean
+
+ManipulationDeltaEnd:
+Handled: win:Boolean";N;High
+ManipulationInertiaStartingBegin / ManipulationInertiaStartingEnd;Microsoft-Windows-XAML-Diagnostics;Manipulation Inertia Starting;"ManipulationInertiaStartingBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64; Container: win:UInt64
+
+ManipulationInertiaStartingEnd:
+Handled: win:Boolean";N;Low
+ManipulationStartedBegin / ManipulationStartedEnd;Microsoft-Windows-XAML-Diagnostics;Manipulation Started;"ManipulationStartedBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64; Container: win:UInt64
+
+ManipulationStartedEnd:
+Handled: win:Boolean";N;Low
+ManipulationStartingBegin / ManipulationStartingEnd;Microsoft-Windows-XAML-Diagnostics;Manipulation Starting;"ManipulationStartingBegin:
+RegisterdOn: win:UInt64; OriginalSource: win:UInt64; Container: win:UInt64; Mode: win:UInt32
+
+ManipulationStartingEnd:
+Handled: win:Boolean";N;Low
+MeasureOverrideBegin / MeasureOverrideEnd;Microsoft-Windows-XAML-Diagnostics;Measure Override;"MeasureOverrideBegin:
+ElementId: win:UInt64
+
+MeasureOverrideEnd:
+ElementId: win:UInt64";N;High
+PeerCreatedInfo;Microsoft-Windows-XAML-Diagnostics;Peer Created - state/data;"ElementId: win:UInt64; ParentId: win:UInt64";N;Low
+PointerCanceledBegin / PointerCanceledEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Canceled;"PointerCanceledBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerCanceledEnd:
+Handled: win:Boolean";N;Low
+PointerCaptureLostBegin / PointerCaptureLostEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Capture Lost;"PointerCaptureLostBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerCaptureLostEnd:
+Handled: win:Boolean";N;Low
+PointerEnteredBegin / PointerEnteredEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Entered;"PointerEnteredBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerEnteredEnd:
+Handled: win:Boolean";N;Low
+PointerExitedBegin / PointerExitedEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Exited;"PointerExitedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerExitedEnd:
+Handled: win:Boolean";N;Low
+PointerMovedBegin / PointerMovedEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Moved;"PointerMovedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerMovedEnd:
+Handled: win:Boolean";N;High
+PointerPressedBegin / PointerPressedEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Pressed;"PointerPressedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerPressedEnd:
+Handled: win:Boolean";N;Low
+PointerReleasedBegin / PointerReleasedEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Released;"PointerReleasedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerReleasedEnd:
+Handled: win:Boolean";N;Low
+PointerWheelChangedBegin / PointerWheelChangedEnd;Microsoft-Windows-XAML-Diagnostics;Pointer Wheel Changed;"PointerWheelChangedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+PointerWheelChangedEnd:
+Handled: win:Boolean";N;Low
+PropertyChangedInfo;Microsoft-Windows-XAML-Diagnostics;Property Changed - state/data;"ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString; PropertyEffect: win:UInt32";N;Medium
+PropertyChangedInfo1;Microsoft-Windows-XAML-Diagnostics;Layout/render-affecting property change;"ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString; PropertyEffect: win:UInt32; ValueInt: win:UInt64; ValueString: win:UnicodeString; ValueDouble: win:Double";N;High
+ResourceDictionaryAddWithSourceInfo;Microsoft-Windows-XAML-Diagnostics;Resource insertion with source coordinates;"ResourceDictionaryId: win:UInt64; ResourceId: win:UInt64; FileURI: win:UnicodeString; LineNumber: win:UInt32; ColumnNumber: win:UInt32; FileHash: win:UnicodeString";N;High
+ResourceUsingXNameInfo;Microsoft-Windows-XAML-Diagnostics;Resource Using X Name - state/data;"ElementId: win:UInt64; ParentId: win:UInt64; Name: win:UnicodeString; Type: win:UnicodeString";N;Medium
+RightTappedBegin / RightTappedEnd;Microsoft-Windows-XAML-Diagnostics;Right Tapped;"RightTappedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+RightTappedEnd:
+Handled: win:Boolean";N;Low
+SetAnimationBegin / SetAnimationEnd;Microsoft-Windows-XAML-Diagnostics;Set Animation;"SetAnimationBegin:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString
+
+SetAnimationEnd:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString";N;Medium
+SetHostedAppInfo;Microsoft-Windows-XAML-Diagnostics;Set Hosted App - state/data;No declared payload;N;Medium
+SetHostedAppWindowInfo;Microsoft-Windows-XAML-Diagnostics;Set Hosted App Window - state/data;ViewId: win:Int32;N;Medium
+TappedBegin / TappedEnd;Microsoft-Windows-XAML-Diagnostics;Tapped;"TappedBegin:
+RegisterdOn: win:UInt64; PointerDeviceType: win:UInt32; OriginalSource: win:UInt64
+
+TappedEnd:
+Handled: win:Boolean";N;Low
+TextFormatterCreatedInfo;Microsoft-Windows-XAML-Diagnostics;Text Formatter Created - state/data;No declared payload;N;Low
+TimedTextCueBegin / TimedTextCueEnd;Microsoft-Windows-XAML-Diagnostics;Timed Text Cue;"TimedTextCueBegin:
+No declared payload
+
+TimedTextCueEnd:
+No declared payload";N;Low
+TimedTextInfo;Microsoft-Windows-XAML-Diagnostics;Timed Text Trace - state/data;PropertyName: win:UnicodeString;N;Medium
+TimedTextTrackBegin / TimedTextTrackEnd;Microsoft-Windows-XAML-Diagnostics;Timed Text Track;"TimedTextTrackBegin:
+No declared payload
+
+TimedTextTrackEnd:
+No declared payload";N;Medium
+UnusedTextFormatterDeletedInfo;Microsoft-Windows-XAML-Diagnostics;Unused Text Formatter Deleted - state/data;No declared payload;N;Low
+UpdateLayoutInfo;Microsoft-Windows-XAML-Diagnostics;Update Layout - state/data;"ElementId: win:UInt64; ParentId: win:UInt64";N;Medium
+UpdateSourceBindingBegin / UpdateSourceBindingEnd;Microsoft-Windows-XAML-Diagnostics;Update Source Binding;"UpdateSourceBindingBegin:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString; ModelTypeName: win:UnicodeString; ModelPropertyName: win:UnicodeString
+
+UpdateSourceBindingEnd:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString";N;High
+UpdateTargetBindingBegin / UpdateTargetBindingBegin1 / UpdateTargetBindingEnd;Microsoft-Windows-XAML-Diagnostics;Update Target Binding;"UpdateTargetBindingBegin:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString; ModelTypeName: win:UnicodeString; ModelPropertyName: win:UnicodeString
+
+UpdateTargetBindingBegin1:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString; ModelTypeName: win:UnicodeString; ModelPropertyName: win:UnicodeString; IsPropertyTemplateBound: win:Boolean; EffectiveSourceType: win:UInt32
+
+UpdateTargetBindingEnd:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString";N;High
+UpdateViewSizeInfo;Microsoft-Windows-XAML-Diagnostics;Update View Size - state/data;"ViewId: win:UInt32; Width: win:Float; Height: win:Float";N;Medium
+UpdateViewStateInfo;Microsoft-Windows-XAML-Diagnostics;Update View State - state/data;"ViewId: win:UInt32; State: win:UnicodeString";N;Medium
+VisualStateManagerGoToStateBegin / VisualStateManagerGoToStateEnd;Microsoft-Windows-XAML-Diagnostics;Visual State Manager Go To State;"VisualStateManagerGoToStateBegin:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString
+
+VisualStateManagerGoToStateEnd:
+ElementId: win:UInt64; ParentId: win:UInt64; PropertyName: win:UnicodeString";N;Medium
+ChildAdded;Microsoft-Windows-XAML-Profiler;Child Added.;"Type: uint64_t
+Name: ParentId
+Type: uint64_t
+Name: ChildId
+Type: uint32_t
+Name: Index
+Type: PCWSTR
+Name: ChildLabel
+Type: bool
+Name: IsTemplateChild
+Type: uint64_t
+Name: ChildPeerHandle";Y;Medium
+ChildInserted;Microsoft-Windows-XAML-Profiler;Child Inserted.;"Type: uint64_t
+Name: ParentId
+Type: uint64_t
+Name: ChildId
+Type: uint32_t
+Name: Index
+Type: PCWSTR
+Name: ChildLabel
+Type: bool
+Name: IsTemplateChild
+Type: uint64_t
+Name: ChildPeerHandle";Y;Medium
+ChildRemoved;Microsoft-Windows-XAML-Profiler;Child Removed.;"Type: uint64_t
+Name: ParentId
+Type: uint64_t
+Name: ChildId";Y;Medium
+CompNodeChildInserted;Microsoft-Windows-XAML-Profiler;Comp Node Child Inserted.;"Type: uint64_t
+Name: ParentCompNodeId
+Type: uint64_t
+Name: ChildCompNodeId";Y;Medium
+CompNodeChildRemoved;Microsoft-Windows-XAML-Profiler;Comp Node Child Removed.;"Type: uint64_t
+Name: ParentCompNodeId
+Type: uint64_t
+Name: ChildCompNodeId";Y;Medium
+CompPeerLinked;Microsoft-Windows-XAML-Profiler;Comp Peer Linked.;"Type: uint64_t
+Name: UIElementId
+Type: uint64_t
+Name: CompNodeId
+Type: uint64_t
+Name: ParentCompNodeId
+Type: PCWSTR
+Name: ElementLabel
+Type: uint64_t
+Name: UIElementPeerHandle";Y;Medium
+CompPeerUnlinked;Microsoft-Windows-XAML-Profiler;Comp Peer Unlinked.;"Type: uint64_t
+Name: UIElementId
+Type: uint64_t
+Name: CompNodeId";Y;Medium
+ContentChanged;Microsoft-Windows-XAML-Profiler;Content Changed.;"Type: uint64_t
+Name: ParentId
+Type: uint64_t
+Name: OldContentId
+Type: uint64_t
+Name: NewContentId
+Type: PCWSTR
+Name: NewContentLabel
+Type: uint64_t
+Name: NewContentPeerHandle";Y;Medium
+DCompSurfaceMemoryChanged;Microsoft-Windows-XAML-Profiler;DComp surface allocation/release estimated texture byte dimensions/stride/virtual state.;"Type: uint64_t
+Name: SurfaceId
+Type: bool
+Name: IsAllocation
+Type: uint64_t
+Name: EstimatedSizeBytes
+Type: uint32_t
+Name: Width
+Type: uint32_t
+Name: Height
+Type: uint32_t
+Name: PixelStride
+Type: bool
+Name: IsVirtual";Y;Medium
+DCompSurfaceTextureObserved;Microsoft-Windows-XAML-Profiler;Texture identity/description observed from BeginDraw backing update object.;"Type: uint64_t
+Name: SurfaceId
+Type: uint64_t
+Name: ResourceId
+Type: uint32_t
+Name: Width
+Type: uint32_t
+Name: Height
+Type: uint32_t
+Name: MipLevels
+Type: uint32_t
+Name: ArraySize
+Type: uint32_t
+Name: Format
+Type: uint32_t
+Name: SampleCount
+Type: int32_t
+Name: OffsetX
+Type: int32_t
+Name: OffsetY";Y;Medium
+ElementEnteredTree;Microsoft-Windows-XAML-Profiler;Element tree entry, label, identity, size and source coordinates;"Type: uint64_t
+Name: ElementId
+Type: uint64_t
+Name: ParentId
+Type: bool
+Name: IsLive
+Type: PCWSTR
+Name: Label
+Type: bool
+Name: IsTemplateChild
+Type: uint64_t
+Name: PeerHandle
+Type: uint64_t
+Name: CoreSize
+Type: PCWSTR
+Name: SourceFileUri
+Type: uint32_t
+Name: SourceLine
+Type: uint32_t
+Name: SourceColumn";Y;High
+ElementLeftTree;Microsoft-Windows-XAML-Profiler;Element Left Tree.;"Type: uint64_t
+Name: ElementId
+Type: uint64_t
+Name: ParentId
+Type: bool
+Name: IsLive";Y;Medium
+GpuMemorySnapshot;Microsoft-Windows-XAML-Profiler;DXGI adapter memory budgets and usage during surface changes;"Type: uint64_t
+Name: LocalCurrentUsage
+Type: uint64_t
+Name: LocalBudget
+Type: bool
+Name: LocalAvailable
+Type: uint64_t
+Name: NonLocalCurrentUsage
+Type: uint64_t
+Name: NonLocalBudget
+Type: bool
+Name: NonLocalAvailable";Y;High
+PeerAssociated;Microsoft-Windows-XAML-Profiler;Peer Associated.;"Type: uint64_t
+Name: ElementId
+Type: uint64_t
+Name: PeerHandle";Y;Medium
+PopupClosed;Microsoft-Windows-XAML-Profiler;Popup Closed.;"Type: uint64_t
+Name: PopupId
+Type: uint64_t
+Name: ChildId";Y;Medium
+PopupOpened;Microsoft-Windows-XAML-Profiler;Popup Opened.;"Type: uint64_t
+Name: PopupId
+Type: uint64_t
+Name: ChildId
+Type: PCWSTR
+Name: PopupLabel
+Type: PCWSTR
+Name: ChildLabel
+Type: uint64_t
+Name: ChildPeerHandle";Y;Medium
+VisualSurfaceChanged;Microsoft-Windows-XAML-Profiler;Visual-to-brush/mask surface association change.;"Type: uint64_t
+Name: VisualId
+Type: uint64_t
+Name: SurfaceId
+Type: uint32_t
+Name: Role";Y;Medium
+WucVisualChildInserted;Microsoft-Windows-XAML-Profiler;Inserted composition visual identity, properties and owner node;"Type: uint64_t
+Name: ParentVisualId
+Type: uint64_t
+Name: ChildVisualId
+Type: uint64_t
+Name: OwnerCompNodeId
+Type: int32_t
+Name: Index
+Type: PCWSTR
+Name: VisualType
+Type: PCWSTR
+Name: Properties";Y;High
+WucVisualChildRemoved;Microsoft-Windows-XAML-Profiler;Wuc Visual Child Removed.;"Type: uint64_t
+Name: ParentVisualId
+Type: uint64_t
+Name: ChildVisualId";Y;Medium
+WucVisualChildrenCleared;Microsoft-Windows-XAML-Profiler;Wuc Visual Children Cleared.;"Type: uint64_t
+Name: ParentVisualId";Y;Medium
+WucVisualRootCleared;Microsoft-Windows-XAML-Profiler;Wuc Visual Root Cleared.;"Type: uint64_t
+Name: TargetId";Y;Medium
+WucVisualRootSet;Microsoft-Windows-XAML-Profiler;Composition target/island root identity and full COM visual-property snapshot.;"Type: uint64_t
+Name: VisualId
+Type: uint64_t
+Name: TargetId
+Type: uint64_t
+Name: OwnerCompNodeId
+Type: PCWSTR
+Name: VisualType
+Type: PCWSTR
+Name: Properties";Y;High
+XamlHeapSnapshot;Microsoft-Windows-XAML-Profiler;Allocator-owned CPU heap counters, excluding GPU and process-wide walks;"Type: uint64_t
+Name: HeapHandle
+Type: bool
+Name: IsPrivateHeap
+Type: uint64_t
+Name: OutstandingBytes
+Type: uint64_t
+Name: OutstandingAllocationCount
+Type: uint64_t
+Name: CumulativeAllocatedBytes
+Type: uint64_t
+Name: CumulativeAllocationCount
+Type: uint64_t
+Name: CumulativeDeallocationCount";Y;Medium
+ASBSuggestionListOpened;Microsoft.UI.Xaml;AutoSuggestBox suggestion-popup opened activity.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+ASBSuggestionSelectionChanged;Microsoft.UI.Xaml;AutoSuggestBox keyboard suggestion-selection-change activity.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+ActivityStoppedAutomatically;Microsoft.UI.Xaml;Automatic stop of a started AutoSuggestBox scoped activity;"No user payload; activity GUID metadata; opcode STOP (2).";N;Low
+ConnectedAnimation_TryStart;Microsoft.UI.Xaml;Connected animation start attempt with animation-enabled setting.;"TraceLoggingBool(isAnimationEnabled, ""isAnimationEnabled"")";N;Low
+ConnectedAnimation_TryStart_CoordinatedElements;Microsoft.UI.Xaml;Connected-animation coordinated element count.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+ContainerRecyclingLifetimeStats;Microsoft.UI.Xaml;Panel lifetime totals of requested versus created containers.;"TraceLoggingValue(m_containerRequestedCount, ""ContainerRequestedCount"")
+TraceLoggingValue(m_containerCreatedCount, ""ContainerCreatedCount"")";N;Low
+DesktopWindowXamlSource-LoadedFrameworks;Microsoft.UI.Xaml;Loaded managed UI framework module bitmask, reported when changed.;"TraceLoggingUInt32(((UINT32)fdwLoadedFrameworkMask), ""LoadedFrameworkMask"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")";N;Medium
+DesktopWindowXamlSource-NewMaxActive;Microsoft.UI.Xaml;New maximum concurrent active DesktopWindowXamlSource instances.;"TraceLoggingUInt32(((UINT32)cCurrent), ""NewMaxValue"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")";N;Low
+FirstUiThreadFrameEnd;Microsoft.UI.Xaml;First pending UI frame completion correlated to XAML session/app/process ids.;"TraceLoggingValue(traceSession->GetSessionId(), ""XamlSessionId"")
+TraceLoggingValue(traceSession->GetAppId(), ""XamlAppId"")
+TraceLoggingValue(traceSession->GetProcessId(), ""XamlProcessId"")";N;Low
+GCDuration;Microsoft.UI.Xaml;Aggregated GC tree-walk/UI-finalizer duration statistics at telemetry interval.;"TraceLoggingValue(m_ulMeasureId, ""DurationType"")
+TraceLoggingValue(m_nMaxGCSize, ""Max"")
+TraceLoggingValue(m_nLatestGCSize, ""Latest"")
+TraceLoggingValue(m_nSinceLastCounter, ""Count"")
+TraceLoggingValue(m_nLogCount, ""LogCount"")
+TraceLoggingValue(m_nFrequency, ""TickFrequency"")";N;Low
+ListViewBaseSerializationInvalidWrite;Microsoft.UI.Xaml;Detect mismatch between expected and written serialization string code units.;"TraceLoggingUInt32(serializationKeyCodeUnitCount, ""serializationKeyCodeUnitCount"")
+TraceLoggingWideString(serializationData.serializationKey.GetRawBuffer(&serializationKeyCodeUnitCount), ""serializationKey"")
+TraceLoggingUInt32(serializationKeyCodeUnitCountWritten, ""serializationKeyCodeUnitCountWritten"")";N;Low
+MediaTransportControlsStatistics;Microsoft.UI.Xaml;Aggregated media transport-control action counts, HRESULTs and control-panel/closed-caption state.;"TraceLoggingGuid(m_MEInstanceGuid, ""ElementInstanceId"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::MuteClick].lastErrorcode, ""HRESULTMuteClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::VolumeClick].lastErrorcode, ""HRESULTVolumeClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::PlayPauseClick].lastErrorcode, ""HRESULTPlayPauseClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::FullWindowClick].lastErrorcode, ""HRESULTFullWindowClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::ZoomClick].lastErrorcode, ""HRESULTZoomClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::SizeChanged].lastErrorcode, ""HRESULTSizeChanged"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::PositionSliderPressed].lastErrorcode, ""HRESULTPositionSliderPressed"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::ScrubbingMode].lastErrorcode, ""HRESULTScrubbingMode"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::CastButtonClick].lastErrorcode, ""HRESULTCastingClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::CCButtonClick].lastErrorcode, ""HRESULTClosedCaptionsClick"")
+TraceLoggingHResult(m_actions[(int)MTCTelemetryType::CCTrackClick].lastErrorcode, ""HRESULTClosedCaptionsTrackSelect"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::MuteClick].ActionsPressed, ""NumMuteClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::VolumeClick].ActionsPressed, ""NumVolumeClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::PlayPauseClick].ActionsPressed, ""NumPlayPauseClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::FullWindowClick].ActionsPressed, ""NumFullWindowClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::ZoomClick].ActionsPressed, ""NumZoomClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::SizeChanged].ActionsPressed, ""NumSizeChanged"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::PositionSliderPressed].ActionsPressed, ""NumPositionSliderPressed"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::ScrubbingMode].ActionsPressed, ""NumScrubbingMode"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::CastButtonClick].ActionsPressed, ""NumCastingClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::CCButtonClick].ActionsPressed, ""NumClosedCaptionsClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::CCTrackClick].ActionsPressed, ""NumClosedCaptionsTrackSelect"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::MuteClick].ActionsFailed, ""NumFailedMuteClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::VolumeClick].ActionsFailed, ""NumFailedVolumeClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::PlayPauseClick].ActionsFailed, ""NumFailedPlayPauseClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::FullWindowClick].ActionsFailed, ""NumFailedFullWindowClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::ZoomClick].ActionsFailed, ""NumFailedZoomClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::SizeChanged].ActionsFailed, ""NumFailedSizeChanged"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::PositionSliderPressed].ActionsFailed, ""NumFailedPositionSliderPressed"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::ScrubbingMode].ActionsFailed, ""NumFailedScrubbingMode"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::CastButtonClick].ActionsFailed, ""NumFailedCastingClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::CCButtonClick].ActionsFailed, ""NumFailedClosedCaptionsClick"")
+TraceLoggingUInt32(m_actions[(int)MTCTelemetryType::CCTrackClick].ActionsFailed, ""NumFailedClosedCaptionsTrackSelect"")
+TraceLoggingInt32(m_CurrentCCTrack, ""CurrentCCTrack"")
+TraceLoggingUInt32(m_NumCCTurnedoff, ""NumCCTurnedOff"")
+TraceLoggingUInt32(m_NumCCTrackChanged, ""NumCCTrackChanged"")
+TraceLoggingBoolean(m_bIsControlPanelVisible, ""IsControlPanelVisible"")
+TraceLoggingUInt32(m_NumControlPanelTransistions, ""NumControlPanelTransitions"")";N;Low
+ModernPanelGuard;Microsoft.UI.Xaml;Panel invariant/guard failure reason string.;"TraceLoggingWideString(failureReason, ""FailureReason"")";N;Low
+NoColorGlyphRendering;Microsoft.UI.Xaml;Color glyph rendering fallback for non-default font palettes;"TraceLoggingUInt32(m_colorFontPaletteIndex, ""ColorFontPaletteIndex"")";N;Medium
+PasswordBoxShowPassword;Microsoft.UI.Xaml;Password reveal user interaction telemetry (does not record password).;"TraceLoggingValue(bIsRevealed, ""OnPasswordRevealedChanged"")";N;Low
+ResourceLookup_Start / ResourceLookup_Stop;Microsoft.UI.Xaml;Beginning resource-key diagnostic lookup region.;"ResourceLookup_Start:
+TraceLoggingValue(resourceKey.GetBuffer(), ""ResourceKey"")
+
+ResourceLookup_Stop:
+TraceLoggingValue(resourceKey.GetBuffer(), ""ResourceKey"")";N;Medium
+RuntimeProfiler;Microsoft.UI.Xaml;Aggregated runtime class/method hit counts encoded in chunkable ApiCounts string.;"TraceLoggingString(gFileVersion, ""BinaryVersion"")
+TraceLoggingString(pszAPICounts, ""ApiCounts"")
+TraceLoggingUInt32(uGroupId, ""ProfileGroupId"")
+TraceLoggingUInt32(cMethods,""TotalCount"")
+TraceLoggingBoolean(bSuspend, ""OnSuspend"")
+TraceLoggingBoolean(bOverflow, ""Overflow"")
+TraceLoggingBoolean(bStringOverflow, ""StringOverflow"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")";N;Medium
+SeZoZoom;Microsoft.UI.Xaml;SemanticZoom direction and zoom-type telemetry.;"TraceLoggingBoolean(changingToZoomedOutView, ""IsZoomingOut"")
+TraceLoggingInt16(zoomType, ""Type"")";N;Low
+SharedD3DDevice_CreateShared;Microsoft.UI.Xaml;Shared D3DDevice Create Shared.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SharedD3DDevice_CreateUnShared;Microsoft.UI.Xaml;Shared D3DDevice Create Un Shared.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SharedD3DDevice_NonSharedLost;Microsoft.UI.Xaml;Shared D3DDevice Non Shared Lost.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SharedD3DDevice_PreviouslySharedLost;Microsoft.UI.Xaml;Shared D3DDevice Previously Shared Lost.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SharedD3DDevice_SharedLost;Microsoft.UI.Xaml;Shared D3DDevice Shared Lost.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SharedD3DDevice_UseShared;Microsoft.UI.Xaml;Shared D3DDevice Use Shared.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SplitMenuFlyoutItem-PrimaryButtonClicked;Microsoft.UI.Xaml;SplitMenuFlyoutItem primary-button interaction.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+SplitMenuFlyoutItem-SubMenuOpened;Microsoft.UI.Xaml;SplitMenuFlyoutItem submenu opened interaction.;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+TextBox_Clear_Event;Microsoft.UI.Xaml;TextBox clear-button interaction.;"TraceLoggingValue(""OnDeleteButtonClick"")";N;Low
+XAMLHCColor;Microsoft.UI.Xaml;Suspicious high-contrast foreground/background color during parser-owned visible-element property setup.;"TraceLoggingValue((int)theme, ""Theme"")
+TraceLoggingWideString(element->GetClassName().GetBuffer(), ""ClassName"")
+TraceLoggingBool(isBackground, ""IsBackground"")
+TraceLoggingValue(rgbColor, ""rgbValue"")";N;Low
+XamlConditionEvaluated;Microsoft.UI.Xaml;Cached conditional-XAML predicate evaluation result and custom-condition flag.;"TraceLoggingBoolean(isCustomCondition, ""IsCustomCondition"")
+TraceLoggingBoolean(result, ""Result"")";N;Low
+XamlFailFast;Microsoft.UI.Xaml;HRESULT telemetry immediately before fail-fast when provider registered.;"TraceLoggingInt32(errorCode, ""ErrorCode"")";N;Low
+XamlIslandRoot-NewMaxArea;Microsoft.UI.Xaml;Island reaches a new maximum area, with type/size/uptime telemetry.;"TraceLoggingPointer((this), ""IslandInstance"")
+TraceLoggingUInt32(((UINT32)uType), ""IslandType"")
+TraceLoggingFloat32(((float)width), ""Width"")
+TraceLoggingFloat32(((float)height), ""Height"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")";N;Low
+CreateGuidError;Microsoft.UI.Xaml.Controls;Provider session GUID failure;TraceLoggingHResult(hr);N;Low
+InkCanvas_Initialization;Microsoft.UI.Xaml.Controls;Canvas activation start/outcome;"TraceLoggingUInt64(state.id, ""InkCanvasId"")
+TraceLoggingUInt32(static_cast<uint32_t>(Result::Started), ""Result"")
+TraceLoggingUInt32(static_cast<uint32_t>(result), ""Result"")
+TraceLoggingUInt32(static_cast<uint32_t>(state.stage), ""FailureStage"")
+TraceLoggingHResult(hr, ""HResult"")
+TraceLoggingUInt32(static_cast<uint32_t>(engine), ""CompositorEngine"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+InkCanvas_InitializationLatency;Microsoft.UI.Xaml.Controls;Successful canvas activation duration;"TraceLoggingUInt64(state.id, ""InkCanvasId"")
+TraceLoggingFloat64(elapsedMicroseconds / 1000.0, ""ElapsedMs"")
+TraceLoggingUInt32(static_cast<uint32_t>(engine), ""CompositorEngine"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+InkCanvas_SessionSummary;Microsoft.UI.Xaml.Controls;Aggregated canvas session usage;"TraceLoggingUInt64(state.id, ""InkCanvasId"")
+TraceLoggingUInt32(static_cast<uint32_t>(engine), ""CompositorEngine"")
+TraceLoggingUInt32(state.activationCount, ""ActivationCount"")
+TraceLoggingUInt32(CountBucket(state.strokesCollected), ""StrokesCollectedBucket"")
+TraceLoggingUInt32(CountBucket(state.strokesErased), ""StrokesErasedBucket"")
+TraceLoggingUInt32(state.errorCount, ""ErrorCount"")
+TraceLoggingBoolean(state.strokesCollected > 0, ""ReceivedInk"")
+TraceLoggingFloat64(timeToFirstInkMs, ""TimeToFirstInkMs"")
+TraceLoggingFloat64(activeMilliseconds, ""ActiveDurationMs"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+InkCanvas_UsageSummary;Microsoft.UI.Xaml.Controls;Once-per-canvas usage dimensions;"TraceLoggingUInt64(state.id, ""InkCanvasId"")
+TraceLoggingUInt32(static_cast<uint32_t>(engine), ""CompositorEngine"")
+TraceLoggingUInt32(inputDeviceTypes, ""InputDeviceTypes"")
+TraceLoggingUInt32(highContrastAdjustment, ""HighContrastAdjustment"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+InkPresenter_CustomDryingActivation;Microsoft.UI.Xaml.Controls;Custom drying activation outcome;"TraceLoggingUInt32(static_cast<uint32_t>(result), ""Result"")
+TraceLoggingHResult(hr, ""HResult"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+InkToolbar_SessionSummary;Microsoft.UI.Xaml.Controls;Aggregated toolbar session usage;"TraceLoggingUInt64(state.id, ""InkToolbarId"")
+TraceLoggingUInt32(CountBucket(state.toolSwitchCount), ""ToolSwitchCountBucket"")
+TraceLoggingUInt32(distinctTools, ""DistinctToolsUsed"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+InkToolbar_UsageSummary;Microsoft.UI.Xaml.Controls;Once-per-toolbar usage dimensions;"TraceLoggingUInt64(state.id, ""InkToolbarId"")
+TraceLoggingUInt32(initialControls, ""InitialControls"")
+TraceLoggingUInt32(orientation, ""Orientation"")
+TraceLoggingUInt32(activeToolKind, ""ActiveToolKind"")
+TraceLoggingBoolean(targetsCanvas, ""TargetsInkCanvas"")
+TraceLoggingBoolean(targetsPresenter, ""TargetsInkPresenter"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+Ink_ControlError;Microsoft.UI.Xaml.Controls;Recoverable canvas/control failure;"TraceLoggingUInt64(state ? state->id : 0, ""InkCanvasId"")
+TraceLoggingUInt32(static_cast<uint32_t>(category), ""ErrorCategory"")
+TraceLoggingUInt32(static_cast<uint32_t>(operation), ""Operation"")
+TraceLoggingBoolean(isRecoverable, ""IsRecoverable"")
+TraceLoggingHResult(hr, ""HResult"")
+INK_TELEMETRY_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, AppSessionId";Y;Low
+NavigationViewItem_SkippedDeferredFlyoutShow;Microsoft.UI.Xaml.Controls;Obsolete deferred flyout skipped;"TraceLoggingBoolean(IsExpanded(), ""IsExpanded"")
+TraceLoggingBoolean(ShouldRepeaterShowInFlyout(), ""ShouldRepeaterShowInFlyout"")
+TraceLoggingBoolean(m_rootGrid.get() && winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()) != nullptr, ""HasAttachedFlyout"")";Y;Low
+NavigationView_DisableBackUI;Microsoft.UI.Xaml.Controls;Developer disabled back button;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+RuntimeProfiler;Microsoft.UI.Xaml.Controls;Aggregated API usage counts;"TraceLoggingString(gFileVersion, ""BinaryVersion"")
+TraceLoggingWideString(OutputBuffer, ""ApiCounts"")
+TraceLoggingUInt32(((UINT32)m_group), ""ProfileGroupId"")
+TraceLoggingUInt32(((UINT32)cMethods),""TotalCount"")
+TraceLoggingBoolean(bSuspend, ""OnSuspend"")
+TraceLoggingBoolean(bOverflow, ""Overflow"")
+TraceLoggingBoolean(bStringOverflow, ""StringOverflow"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")";N;Medium
+WebView2_DragOperation_Failed;Microsoft.UI.Xaml.Controls;Web View2 Drag Operation Failed;"TraceLoggingHResult(hr, ""HRESULT"")
+TraceLoggingUInt32(contentType, ""ContentType"")";N;Low
+WebView2_DragOperation_Successful;Microsoft.UI.Xaml.Controls;Web View2 Drag Operation Successful;"TraceLoggingWideString(statusStr, ""Status"")
+TraceLoggingUInt32(contentType, ""ContentType"")";N;Low
+WebView2_DragStartingCallback_Failed;Microsoft.UI.Xaml.Controls;Web View2 Drag Starting Callback Failed;"TraceLoggingHResult(hr, ""HRESULT"")";N;Low
+WebView2_DragStartingCallback_WithContentType_Failed;Microsoft.UI.Xaml.Controls;Web View2 Drag Starting Callback With Content Type Failed;"TraceLoggingHResult(hr, ""HRESULT"")
+TraceLoggingUInt32(contentType, ""ContentType"")";N;Low
+WebView2_DragStarting_ContentType;Microsoft.UI.Xaml.Controls;Web View2 Drag Starting Content Type;"TraceLoggingUInt32(contentType, ""ContentType"")";N;Low
+WebView2_DragStarting_Start;Microsoft.UI.Xaml.Controls;Web View2 Drag Starting Start;"No explicitly declared payload fields; activity/provider metadata may still be present.";N;Low
+WebView2_QueryDragInterface_Failed;Microsoft.UI.Xaml.Controls;Web View2 Query Drag Interface Failed;"TraceLoggingHResult(hr, ""HRESULT"")";N;Low
+AnnotatedScrollBarInfo;Microsoft.UI.Xaml.Controls.Debug;AnnotatedScrollBar information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+AnnotatedScrollBarVerbose;Microsoft.UI.Xaml.Controls.Debug;AnnotatedScrollBar verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+CommandBarFlyoutInfo;Microsoft.UI.Xaml.Controls.Debug;CommandBarFlyout information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+CommandBarFlyoutVerbose;Microsoft.UI.Xaml.Controls.Debug;CommandBarFlyout verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+CreateGuidError;Microsoft.UI.Xaml.Controls.Debug;Provider session GUID failure;TraceLoggingHResult(hr);N;Low
+InkToolbarInfo;Microsoft.UI.Xaml.Controls.Debug;InkToolbar information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";Y;Medium
+InkToolbarVerbose;Microsoft.UI.Xaml.Controls.Debug;InkToolbar verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";Y;Medium
+ItemContainerInfo;Microsoft.UI.Xaml.Controls.Debug;ItemContainer information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+ItemContainerVerbose;Microsoft.UI.Xaml.Controls.Debug;ItemContainer verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+ItemsRepeaterInfo;Microsoft.UI.Xaml.Controls.Debug;ItemsRepeater information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+ItemsRepeaterVerbose;Microsoft.UI.Xaml.Controls.Debug;ItemsRepeater verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+ItemsViewInfo;Microsoft.UI.Xaml.Controls.Debug;ItemsView information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+ItemsViewVerbose;Microsoft.UI.Xaml.Controls.Debug;ItemsView verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+LinedFlowLayoutInfo;Microsoft.UI.Xaml.Controls.Debug;LinedFlowLayout information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+LinedFlowLayoutVerbose;Microsoft.UI.Xaml.Controls.Debug;LinedFlowLayout verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+MuxActivationBypass;Microsoft.UI.Xaml.Controls.Debug;Activation bypass resolution result;"TraceLoggingValue(failureReason == nullptr, ""IsActive"")
+TraceLoggingWideString(failureReason ? failureReason : L"""", ""FailureReason"")
+TraceLoggingWideString(expectedPath, ""ExpectedPath"")";Y;Low
+NavigationViewInfo;Microsoft.UI.Xaml.Controls.Debug;NavigationView information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+NavigationViewVerbose;Microsoft.UI.Xaml.Controls.Debug;NavigationView verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+PTRInfo;Microsoft.UI.Xaml.Controls.Debug;PTR information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+PTRVerbose;Microsoft.UI.Xaml.Controls.Debug;PTR verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+ScrollPresenterInfo;Microsoft.UI.Xaml.Controls.Debug;ScrollPresenter information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+ScrollPresenterVerbose;Microsoft.UI.Xaml.Controls.Debug;ScrollPresenter verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+ScrollViewInfo;Microsoft.UI.Xaml.Controls.Debug;ScrollView information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+ScrollViewVerbose;Microsoft.UI.Xaml.Controls.Debug;ScrollView verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;High
+SelectorBarInfo;Microsoft.UI.Xaml.Controls.Debug;SelectorBar information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+SelectorBarVerbose;Microsoft.UI.Xaml.Controls.Debug;SelectorBar verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+SwipeControlInfo;Microsoft.UI.Xaml.Controls.Debug;SwipeControl information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+SwipeControlVerbose;Microsoft.UI.Xaml.Controls.Debug;SwipeControl verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+TabViewInfo;Microsoft.UI.Xaml.Controls.Debug;TabView information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+TabViewVerbose;Microsoft.UI.Xaml.Controls.Debug;TabView verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+TitleBarInfo;Microsoft.UI.Xaml.Controls.Debug;TitleBar information diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+TitleBarVerbose;Microsoft.UI.Xaml.Controls.Debug;TitleBar verbose diagnostics;"TraceLoggingWideString(buffer, ""Message"")";N;Medium
+AnnotatedScrollBarPerf;Microsoft.UI.Xaml.Controls.Perf;AnnotatedScrollBar performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+CreateGuidError;Microsoft.UI.Xaml.Controls.Perf;Provider session GUID failure;TraceLoggingHResult(hr);N;Low
+ItemContainerPerf;Microsoft.UI.Xaml.Controls.Perf;ItemContainer performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+ItemsRepeaterPerf;Microsoft.UI.Xaml.Controls.Perf;ItemsRepeater performance marker;"TraceLoggingWideString(info, ""Info"")";N;High
+ItemsViewPerf;Microsoft.UI.Xaml.Controls.Perf;ItemsView performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+LinedFlowLayoutPerf;Microsoft.UI.Xaml.Controls.Perf;LinedFlowLayout performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+NavigationViewPerf;Microsoft.UI.Xaml.Controls.Perf;NavigationView performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+PTRPerf;Microsoft.UI.Xaml.Controls.Perf;PTR performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+ScrollPresenterPerf;Microsoft.UI.Xaml.Controls.Perf;ScrollPresenter performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+ScrollViewPerf;Microsoft.UI.Xaml.Controls.Perf;ScrollView performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+SelectorBarPerf;Microsoft.UI.Xaml.Controls.Perf;SelectorBar performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+SwipeControlPerf;Microsoft.UI.Xaml.Controls.Perf;SwipeControl performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+TabViewPerf;Microsoft.UI.Xaml.Controls.Perf;TabView performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+TitleBarPerf;Microsoft.UI.Xaml.Controls.Perf;TitleBar performance marker;"TraceLoggingWideString(info, ""Info"")";N;Medium
+CreateGuidError;Microsoft.UI.Xaml.Controls.Tabular;Provider session GUID failure;TraceLoggingHResult(hr);Y;Low
+RuntimeProfiler;Microsoft.UI.Xaml.Controls.Tabular;Aggregated API usage counts;"TraceLoggingString(gFileVersion, ""BinaryVersion"")
+TraceLoggingWideString(OutputBuffer, ""ApiCounts"")
+TraceLoggingUInt32(((UINT32)m_group), ""ProfileGroupId"")
+TraceLoggingUInt32(((UINT32)cMethods),""TotalCount"")
+TraceLoggingBoolean(bSuspend, ""OnSuspend"")
+TraceLoggingBoolean(bOverflow, ""Overflow"")
+TraceLoggingBoolean(bStringOverflow, ""StringOverflow"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")";Y;Medium
+TableView_SessionSummary;Microsoft.UI.Xaml.Controls.Tabular;Table session operation counters;"TraceLoggingUInt32(5, ""SessionSummaryVersion"")
+TraceLoggingUInt32(session.counts[1], ""ReplaceSourceCount"")
+TraceLoggingUInt32(session.counts[2], ""SortCount"")
+TraceLoggingUInt32(session.counts[5], ""FilterCount"")
+TraceLoggingUInt32(session.counts[6], ""GroupConfigurationCount"")
+TraceLoggingUInt32(session.counts[8], ""SelectionCount"")
+TraceLoggingUInt32(session.counts[9], ""BeginEditCount"")
+TraceLoggingUInt32(session.counts[10], ""CommitEditCount"")
+TraceLoggingUInt32(session.counts[11], ""CancelEditCount"")
+TraceLoggingUInt32(session.deferredCount, ""DeferredCount"")
+TraceLoggingUInt32(session.overflowMask, ""CounterOverflowMask"")
+TraceLoggingBoolean(TRUE, ""UTCReplace_AppSessionGuid"")
+TABLEVIEW_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, ProviderSessionId, ProviderSessionIdAvailable";Y;Low
+CreateGuidError;Microsoft.UI.Xaml.Controls.Tabular.Debug;Provider session GUID failure;TraceLoggingHResult(hr);Y;Low
+MuxActivationBypass;Microsoft.UI.Xaml.Controls.Tabular.Debug;Activation bypass resolution result;"TraceLoggingValue(failureReason == nullptr, ""IsActive"")
+TraceLoggingWideString(failureReason ? failureReason : L"""", ""FailureReason"")
+TraceLoggingWideString(expectedPath, ""ExpectedPath"")";Y;Low
+TableView_Error;Microsoft.UI.Xaml.Controls.Tabular.Debug;Deduplicated table operation error;"TraceLoggingUInt32(static_cast<uint32_t>(operation), ""Operation"")
+TraceLoggingUInt32(static_cast<uint32_t>(stage), ""FailureStage"")
+TraceLoggingUInt32(static_cast<uint32_t>(attribution), ""Attribution"")
+TraceLoggingHResult(error.value_or(S_OK), ""HResult"")
+TraceLoggingBoolean(error.has_value(), ""HResultAvailable"")
+TraceLoggingUInt32(static_cast<uint32_t>(kind), ""AppFaultKind"")
+TraceLoggingBoolean(recoverable, ""IsRecoverable"")
+TABLEVIEW_COMMON_FIELDS: SchemaVersion, ControlType, ControlVersion, ProviderSessionId, ProviderSessionIdAvailable";Y;Low
+CreateGuidError;Microsoft.UI.Xaml.Controls.Tabular.Perf;Provider session GUID failure;TraceLoggingHResult(hr);Y;Low

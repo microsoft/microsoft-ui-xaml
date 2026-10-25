@@ -28,6 +28,7 @@
 
 #include "Control_Partial.h"
 #include "XamlTelemetry.h"
+#include <WinUIProfilerHooks.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -329,10 +330,14 @@ DependencyObject::DependencyObject()
     , m_ulPegRefCountShutDownException(0)
 #endif
 {
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Born(WinUIProfiler::Domain::XamlPeer, this);
 }
 
 DependencyObject::~DependencyObject()
 {
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Destroyed(WinUIProfiler::Domain::XamlPeer, this);
     // Release any tearoff objects associated with this DependencyObject. Order doesn't matter
     TearoffMemoryInfoPrivate::Discard(this);
     TearoffSourceInfoPrivate::Discard(this);

@@ -9,7 +9,7 @@ internal static class NativeSchema
 {
     private sealed record Node(char Kind, (string Name, Node Type)[]? Fields = null, Node? Element = null, int Maximum = 0);
     private static readonly Node U8 = new('b'), U16 = new('h'), U32 = new('u'), I32 = new('i'), I64 = new('l'),
-        U64 = new('q'), F64 = new('d'), Bool = new('B'), Guid = new('g'), Text = new('s');
+        U64 = new('q'), F64 = new('d'), Bool = new('B'), Guid = new('g'), Text = new('s'), UnicodeText = new('w');
     private static Node S(params (string Name, Node Type)[] fields) => new('S', fields);
     private static Node A(Node element, int maximum = 4096) => new('A', Element: element, Maximum: maximum);
     private static Node O(Node value) => S(("Present", Bool), ("Value", value));
@@ -64,25 +64,60 @@ internal static class NativeSchema
         S(("Interval", S(("StartQpc", I64), ("EndQpc", I64))), ("LostEvents", O(U64)), ("Reason", Text), ("HasDomains", Bool), ("Domains", A(Domain, 256))),
         S(("Object", Object), ("Property", S(("PropertyId", U64), ("DeclaringType", Text), ("Name", Text))), ("Previous", Value), ("Current", Value), ("Cause", Cause))
     ];
+    private static readonly Node CollectorMetric = S(
+        ("SemanticEventId", U16), ("EventSchemaVersion", U8), ("SessionId", Guid),
+        ("ProducerEpoch", Guid), ("SourceSequence", U64), ("TargetProcessId", U32),
+        ("TargetCreationTimeFileTime", I64), ("TargetInstanceId", Guid),
+        ("AcquisitionBeginQpc", I64), ("AcquisitionEndQpc", I64), ("QpcFrequency", I64),
+        ("Metric", U8), ("ValueKind", U8), ("ValueUnit", U8), ("Integer", I64), ("Number", F64),
+        ("MeasurementKind", U8), ("Coverage", U8), ("Reason", UnicodeText),
+        ("Source", UnicodeText), ("SourceVersion", UnicodeText),
+        ("HasGpu", Bool), ("GpuScope", U8), ("HasAdapter", Bool), ("AdapterLuidLow", U32),
+        ("AdapterLuidHigh", I32), ("PhysicalAdapterIndex", U32), ("HasEngine", Bool),
+        ("EngineId", U32), ("EngineClass", U8), ("NativeClock", U8), ("NativeFrequency", I64),
+        ("NativeBegin", U64), ("NativeEnd", U64), ("NativeStatus", U8),
+        ("NativeAcquisitionBegin", U64), ("NativeAcquisitionEnd", U64), ("NativeError", U32),
+        ("NativeErrorDomain", U8), ("PdhError", U32));
+    private static readonly Node CollectorProcess = CollectorLayout(
+        ("Operation", U8), ("HasCreationQpc", Bool), ("CreationQpc", I64),
+        ("MeasurementKind", U8), ("Coverage", U8), ("Reason", UnicodeText));
+    private static readonly Node CollectorLoss = CollectorLayout(
+        ("IntervalStartQpc", I64), ("IntervalEndQpc", I64), ("HasLostEvents", Bool),
+        ("LostEvents", U64), ("Reason", UnicodeText), ("HasDomains", Bool),
+        ("DomainCount", U32), ("Domains", A(Domain, 256)));
+    private static Node CollectorLayout(params (string Name, Node Type)[] body) => S(
+        [("SemanticEventId", U16), ("EventSchemaVersion", U8), ("SessionId", Guid),
+        ("ProducerEpoch", Guid), ("SourceSequence", U64), ("TargetProcessId", U32),
+        ("TargetCreationTimeFileTime", I64), ("TargetInstanceId", Guid), ("QpcFrequency", I64),
+        .. body]);
     private static Node Layout(ushort id) => S(
         [("SemanticEventId", U16), ("EventSchemaVersion", U8), ("ProducerEpoch", Guid), ("SourceSequence", U64),
         ("TargetProcess", S(("ProcessId", U32), ("HasCreationTimeFileTime", Bool), ("CreationTimeFileTime", I64), ("InstanceId", Guid))),
         .. Bodies[id].Fields!]);
 
-    internal static void Validate(NativeRecord record, ushort semanticId)
+    internal static void Validate(NativeRecord record, ushort semanticId) =>
+        Validate(record, Layout(semanticId), EventCatalog.RuntimeProviderName);
+    internal static void ValidateCollector(NativeRecord record, ushort semanticId) =>
+        Validate(record, semanticId switch
+        {
+            1 => CollectorProcess,
+            2 => CollectorMetric,
+            3 => CollectorLoss,
+            _ => throw new NotSupportedException("Unsupported collector definition.")
+        }, EventCatalog.CollectorProviderName);
+    private static void Validate(NativeRecord record, Node schema, string providerName)
     {
-        var schema = Layout(semanticId);
         var raw = record.RawPayload;
         var reader = new WireReader(raw.Span);
         Check(schema, record.Fields, ref reader, raw.Length != 0);
         if (raw.Length != 0 && !reader.AtEnd) throw new InvalidDataException("Unexpected trailing native payload bytes.");
         var metadata = 3 + Encoding.UTF8.GetByteCount(record.Name) + 1 + FieldMetadata(schema) +
-            2 + Encoding.UTF8.GetByteCount(EventCatalog.RuntimeProviderName) + 1;
+            2 + Encoding.UTF8.GetByteCount(providerName) + 1;
         if (raw.Length + metadata > NativeRecord.MaximumWireBytes)
             throw new InvalidDataException("Approved native schema metadata plus data exceeds 48 KiB.");
     }
     private static int FieldMetadata(Node schema) => schema.Fields!.Sum(field =>
-        Encoding.UTF8.GetByteCount(field.Name) + 1 + (field.Type.Kind is 'B' or 's' or 'S' or 'A' ? 2 : 1) +
+        Encoding.UTF8.GetByteCount(field.Name) + 1 + (field.Type.Kind is 'B' or 's' or 'w' or 'S' or 'A' ? 2 : 1) +
         (field.Type.Kind == 'S' ? FieldMetadata(field.Type) : field.Type.Kind == 'A' ? FieldMetadata(field.Type.Element!) : 0));
 
     private static void Check(Node schema, object value, ref WireReader reader, bool hasRaw)
@@ -106,7 +141,7 @@ internal static class NativeSchema
         {
             'b' => value is byte, 'h' => value is int i && i is >= 0 and <= ushort.MaxValue || value is ushort,
             'u' => value is int or uint, 'i' => value is int, 'l' => value is long, 'q' => value is long or ulong,
-            'd' => value is double d && double.IsFinite(d), 'B' => value is bool, 'g' => value is System.Guid, 's' => value is string,
+            'd' => value is double d && double.IsFinite(d), 'B' => value is bool, 'g' => value is System.Guid, 's' or 'w' => value is string,
             _ => false
         };
         if (!valid) throw new InvalidDataException("Native primitive type does not match the supported layout.");
@@ -142,6 +177,17 @@ internal static class NativeSchema
                     try { _ = new UTF8Encoding(false, true).GetCharCount(Take(end)); }
                     catch (DecoderFallbackException error) { throw new InvalidDataException("Invalid native UTF-8.", error); }
                     Take(1); break;
+                case 'w':
+                    var length = 0;
+                    while (length + 1 < remaining.Length && (remaining[length] != 0 || remaining[length + 1] != 0))
+                    {
+                        length += 2;
+                        if (length > 2048) throw new InvalidDataException("Oversized UTF-16 field.");
+                    }
+                    if (length + 1 >= remaining.Length) throw new InvalidDataException("Unterminated UTF-16 field.");
+                    try { _ = new UnicodeEncoding(false, false, true).GetCharCount(Take(length)); }
+                    catch (DecoderFallbackException error) { throw new InvalidDataException("Invalid native UTF-16.", error); }
+                    Take(2); break;
                 default: throw new InvalidDataException("Unsupported wire primitive.");
             }
         }

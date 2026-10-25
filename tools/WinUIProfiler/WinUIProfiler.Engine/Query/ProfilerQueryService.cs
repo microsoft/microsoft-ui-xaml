@@ -153,11 +153,27 @@ public sealed class ProfilerQueryService : IProfilerQueryService
             availability.Add("r.ObjectKey=$root");
             filters.Add($"""
                 r.ObjectKey IN (
-                    WITH RECURSIVE descendants(k) AS (
-                        SELECT $root UNION
-                        SELECT r.ObjectKey FROM ProjectionRows r JOIN descendants d ON r.ParentKey=d.k
-                        WHERE {latest} AND r.TimestampQpc<=$at
+                    WITH RECURSIVE descendants(k,Expand) AS (
+                        SELECT $root,1 UNION
+                        SELECT r.ObjectKey,{(dataset == "Xaml" ? "json_extract(r.PayloadJson,'$.connected')" : "1")}
+                        FROM ProjectionRows r JOIN descendants d ON r.ParentKey=d.k
+                        WHERE d.Expand=1 AND {latest} AND r.TimestampQpc<=$at
+                        {(dataset == "Xaml" ? """
+                        AND NOT EXISTS(SELECT 1 FROM ObjectLifetimes l JOIN ProjectionRows h ON h.Id=l.ProjectionId
+                            WHERE (l.ObjectKey=r.ObjectKey OR l.ObjectKey=r.ParentKey) AND l.Operation=1
+                            AND h.CommitOrdinal<=$boundary AND h.TimestampQpc<=$at)
+                        """ : "")}
                     ) SELECT k FROM descendants)
+                """);
+        }
+        if (dataset == "Xaml")
+        {
+            // A qualified object cannot be reborn after destruction. Late topology must not
+            // resurrect it, even when the destruction arrived before its first tree edge.
+            filters.Add("""
+                NOT EXISTS(SELECT 1 FROM ObjectLifetimes l JOIN ProjectionRows h ON h.Id=l.ProjectionId
+                    WHERE (l.ObjectKey=r.ObjectKey OR l.ObjectKey=r.ParentKey) AND l.Operation=1
+                    AND h.CommitOrdinal<=$boundary AND h.TimestampQpc<=$at)
                 """);
         }
         using var observed = Command(db, "SELECT EXISTS(SELECT 1 FROM ProjectionRows r WHERE r.Dataset=$dataset AND r.CommitOrdinal<=$boundary" +
@@ -171,23 +187,127 @@ public sealed class ProfilerQueryService : IProfilerQueryService
             {(filters.Count == 0 ? "" : " AND " + string.Join(" AND ", filters))}
             ORDER BY r.TimestampQpc,r.SourceOrdinal,r.RowKey LIMIT $limit OFFSET $offset
             """, transaction, parameters.ToArray());
-        using var rows = command.ExecuteReader();
         var items = new List<T>(page.Limit);
         var hasMore = false;
         long bytes = 0;
-        while (rows.Read())
+        using (var rows = command.ExecuteReader())
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (items.Count == page.Limit) { hasMore = true; break; }
-            if (rows.GetInt32(1) != 1) throw new InvalidDataException("Unsupported projection payload version.");
-            var length = rows.GetInt64(2);
-            if (length > ContractVersions.MaximumPayloadBytes) throw new InvalidDataException("Projection exceeds its payload bound.");
-            bytes += length;
-            if (bytes > MaximumMaterializedBytes) throw new QueryMaterializationLimitException("Page exceeds the 16 MiB materialization budget. Reduce the requested limit.");
-            items.Add(Json<T>(rows.GetString(0)));
+            while (rows.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (items.Count == page.Limit) { hasMore = true; break; }
+                if (rows.GetInt32(1) != 1) throw new InvalidDataException("Unsupported projection payload version.");
+                var length = rows.GetInt64(2);
+                if (length > ContractVersions.MaximumPayloadBytes) throw new InvalidDataException("Projection exceeds its payload bound.");
+                bytes += length;
+                if (bytes > MaximumMaterializedBytes) throw new QueryMaterializationLimitException("Page exceeds the 16 MiB materialization budget. Reduce the requested limit.");
+                items.Add(Json<T>(rows.GetString(0)));
+            }
+        }
+        if (dataset == "Xaml")
+        {
+            var losses = ReadXamlLosses(db, transaction, checkpoint.Watermark, cancellationToken, ref bytes);
+            for (var i = 0; i < items.Count; i++)
+                items[i] = (T)(IQueryValue)EnrichXaml(db, transaction, (TreeEntry)(IQueryValue)items[i],
+                    at!.Value, checkpoint.Watermark, losses, cancellationToken, ref bytes);
         }
         cancellationToken.ThrowIfCancellationRequested();
         return new(context, items, new(page.Limit, page.Offset, hasMore ? page.Offset + page.Limit : null, hasMore));
+    }
+
+    private sealed record XamlGap(Guid? Epoch, long? StartQpc, long? EndQpc);
+    private static IReadOnlyList<XamlGap> ReadXamlLosses(SqliteConnection db, SqliteTransaction transaction,
+        CommittedWatermark watermark, CancellationToken cancellationToken, ref long bytes)
+    {
+        using var command = Command(db, """
+            SELECT Envelope,length(Envelope),ProviderId FROM SourceEvents
+            WHERE CommitOrdinal<=$boundary AND
+            ((ProviderId=$runtime AND EventId=15) OR (ProviderId=$collector AND EventId=3))
+            """, transaction, ("$boundary", watermark.IngestOrdinal),
+            ("$runtime", EventCatalog.RuntimeProviderId.ToString("N")), ("$collector", EventCatalog.CollectorProviderId.ToString("N")));
+        var result = new List<XamlGap>();
+        using (var rows = command.ExecuteReader())
+        {
+            while (rows.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                bytes += rows.GetInt64(1);
+                if (bytes > MaximumMaterializedBytes) throw new QueryMaterializationLimitException("Tree continuity evidence exceeds the materialization budget.");
+                var envelope = EventCodec.Decode((byte[])rows[0]);
+                var loss = EventCodec.ReadPayload<LossPayload>(envelope);
+                var collector = rows.GetString(2) == EventCatalog.CollectorProviderId.ToString("N");
+                if (collector || loss.Domains is null || loss.Domains.Count == 0 ||
+                    loss.Domains.Any(d => d.EventId is 2 or 3 or 4 or 5 or 16))
+                    result.Add(new(collector ? null : loss.ProducerEpoch, loss.Interval.StartQpc, loss.Interval.EndQpc));
+            }
+        }
+        // Final invalidation may have no subsequent source on which to hang a revision.
+        // Persisted diagnostics have optional real timestamps; unknown intervals stay unknown.
+        using var diagnostics = Command(db, """
+            SELECT SampleJson,length(CAST(SampleJson AS BLOB)) FROM IngestionDiagnostics
+            WHERE CommittedOrdinal<=$boundary
+            """, transaction, ("$boundary", watermark.IngestOrdinal));
+        using (var rows = diagnostics.ExecuteReader())
+        {
+            while (rows.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                bytes += rows.GetInt64(1);
+                if (bytes > MaximumMaterializedBytes) throw new QueryMaterializationLimitException("Tree diagnostic evidence exceeds the materialization budget.");
+                var diagnostic = Json<IngestionDiagnostic>(rows.GetString(0));
+                if (diagnostic.Issue is not (IngestionIssue.IdentityPartial or IngestionIssue.MissingMetadata or IngestionIssue.ProducerLoss))
+                    result.Add(new(null, diagnostic.TimestampQpc, null));
+            }
+        }
+        return result;
+    }
+
+    private static TreeEntry EnrichXaml(SqliteConnection db, SqliteTransaction transaction, TreeEntry tree,
+        long at, CommittedWatermark watermark, IReadOnlyList<XamlGap> losses,
+        CancellationToken cancellationToken, ref long bytes)
+    {
+        using var metadata = Command(db, """
+            SELECT PayloadJson,length(CAST(PayloadJson AS BLOB)) FROM ProjectionRows
+            WHERE Id IN (
+                (SELECT Id FROM ProjectionRows
+                    WHERE Dataset='History' AND ObjectKey=$object AND CommitOrdinal<=$boundary AND TimestampQpc<=$at
+                    AND json_extract(PayloadJson,'$.observation.kind') IN ('type','lifetime')
+                    AND coalesce(json_extract(PayloadJson,'$.observation.name'),
+                        json_extract(PayloadJson,'$.observation.typeName')) IS NOT NULL
+                    ORDER BY TimestampQpc DESC,SourceOrdinal DESC LIMIT 1),
+                (SELECT Id FROM ProjectionRows
+                    WHERE Dataset='History' AND ObjectKey=$object AND CommitOrdinal<=$boundary AND TimestampQpc<=$at
+                    AND json_extract(PayloadJson,'$.observation.kind') IN ('type','lifetime')
+                    AND json_extract(PayloadJson,'$.observation.classification') IS NOT NULL
+                    ORDER BY TimestampQpc DESC,SourceOrdinal DESC LIMIT 1))
+            ORDER BY TimestampQpc,SourceOrdinal
+            """, transaction, ("$object", ObjectId(tree.Object)), ("$boundary", watermark.IngestOrdinal), ("$at", at));
+        using (var row = metadata.ExecuteReader())
+            while (row.Read())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                bytes += row.GetInt64(1);
+                if (bytes > MaximumMaterializedBytes) throw new QueryMaterializationLimitException("Tree type evidence exceeds the materialization budget.");
+                var history = Json<ObjectHistoryEntry>(row.GetString(0));
+                tree = history.Observation switch
+                {
+                    TypeObservation t => tree with { TypeName = t.Name, Classification = t.Classification ?? tree.Classification },
+                    LifetimeObservation l => tree with { TypeName = l.TypeName ?? tree.TypeName, Classification = l.Classification ?? tree.Classification },
+                    _ => tree
+                };
+            }
+        using var observed = Command(db, """
+            SELECT TimestampQpc FROM ProjectionRows WHERE Dataset='Xaml' AND ObjectKey=$object
+            AND CommitOrdinal<=$boundary AND TimestampQpc<=$at
+            AND RowKey=$key
+            ORDER BY TimestampQpc DESC,SourceOrdinal DESC LIMIT 1
+            """, transaction, ("$object", ObjectId(tree.Object)), ("$boundary", watermark.IngestOrdinal),
+            ("$at", at), ("$key", $"{ObjectId(tree.Object)}:{(int)tree.Relationship}:{(int)tree.Membership}"));
+        var timestamp = Convert.ToInt64(observed.ExecuteScalar());
+        if (losses.Any(l => (l.Epoch is null || l.Epoch == tree.Object.ProducerEpoch) &&
+            (l.StartQpc is null || l.StartQpc <= at) && (l.EndQpc is null || l.EndQpc >= timestamp)))
+            tree = tree with { Quality = Processing.ProjectionSupport.Uncertain("Membership is unknown across a reported loss interval; a fresh observation is required.") };
+        return tree;
     }
 
     private void Validate(object request, CancellationToken cancellationToken)

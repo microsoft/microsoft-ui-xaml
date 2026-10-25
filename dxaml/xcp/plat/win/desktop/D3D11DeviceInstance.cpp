@@ -12,6 +12,8 @@
 #include "D3D11DeviceInstance.h"
 #include "D3D11SharedDeviceGuard.h"
 #include "XamlTraceLogging.h"
+#include "WinUIProfilerGraphicsHooks.h"
+#include "WinUIProfilerResourceHooks.h"
 #include <XcpAllocation.h>
 
 #include <d3d11_1.h>
@@ -153,6 +155,7 @@ CD3D11DeviceInstance::~CD3D11DeviceInstance()
 
     ReleaseInterface(m_pDXGIDevice2);
     ReleaseInterface(m_pD2DDevice);
+    WinUIProfiler::Hooks::GraphicsDeviceReleased(this, false);
 }
 
 //------------------------------------------------------------------------------
@@ -331,6 +334,7 @@ void CD3D11DeviceInstance::ReleaseResourcesOnDeviceLost()
     ReleaseInterface(m_pDXGIDevice2);
     // m_pD2DFactory doesn't hold any device-dependent resources. It can be left alone.
     m_wasLostDeviceReleased = true;
+    WinUIProfiler::Hooks::GraphicsDeviceReleased(this, true);
 }
 
 void CD3D11DeviceInstance::UnregisterDeviceRemovedEvent()
@@ -505,6 +509,8 @@ CD3D11DeviceInstance::CreateGraphicsDeviceFromAdapter(_In_ IDXGIAdapter1* adapte
         &m_featureLevel,
         &m_pDeviceContext
         ));
+
+    WinUIProfiler::Hooks::GraphicsDeviceCreated(this);
 
 Cleanup:
     return hr;
@@ -1329,6 +1335,11 @@ CD3D11DeviceInstance::AllocateFromSysMemBitsPool(
                 &pResult
                 ));
 
+            WinUIProfiler::Hooks::GraphicsResourceChanged(pResult, this,
+                WinUIProfiler::Hooks::GraphicsResourceKind::Texture2D,
+                WinUIProfiler::Hooks::GraphicsSurfaceOperation::Create,
+                pResult->GetWidth(), pResult->GetHeight());
+
             // At this point, there are no available textures in the pool that we can reuse. Usually the Map call
             // won't block because the texture was newly created, but some drivers may still block here. If it
             // blocks, we have to wait.
@@ -1336,6 +1347,13 @@ CD3D11DeviceInstance::AllocateFromSysMemBitsPool(
             // bug here.
             IFC(static_cast<SystemMemoryBitsDriver *>(pResult)->EnsureMapped(TRUE /* allowWait */));
         }
+    }
+    else if (pResult->IsDriverVisible())
+    {
+        WinUIProfiler::Hooks::GraphicsResourceChanged(pResult, this,
+            WinUIProfiler::Hooks::GraphicsResourceKind::Texture2D,
+            WinUIProfiler::Hooks::GraphicsSurfaceOperation::BaselinePresent,
+            pResult->GetWidth(), pResult->GetHeight());
     }
 
     // Transfer reference to *ppOut

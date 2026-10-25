@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Heading.Text" xml:space="preserve"><value>WinUI Profiler</value></data>
+  <data name="ReadOnlyNotice.Text" xml:space="preserve"><value>Saved-session inspection is read-only. Recorded mode and status do not establish a live connection. Pages stay at one committed watermark until Refresh. Timestamp values are raw QPC ticks, not process-relative time.</value></data>
+  <data name="SessionPath.Header" xml:space="preserve"><value>Saved session database</value></data>
+  <data name="SessionPath.PlaceholderText" xml:space="preserve"><value>Full path to a profiler .sqlite session</value></data>
+  <data name="SessionPath.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Saved session database path</value></data>
+  <data name="Open.Content" xml:space="preserve"><value>Open</value></data>
+  <data name="Refresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="ReadError.Title" xml:space="preserve"><value>Session query failed</value></data>
+  <data name="SessionId.Text" xml:space="preserve"><value>Session identity</value></data>
+  <data name="ProcessId.Text" xml:space="preserve"><value>PID / canonical process instance</value></data>
+  <data name="CreationTime.Text" xml:space="preserve"><value>Process creation FILETIME (UTC, 100 ns)</value></data>
+  <data name="RecordedState.Text" xml:space="preserve"><value>Recorded mode / state / stop reason</value></data>
+  <data name="Frequency.Text" xml:space="preserve"><value>QPC frequency (ticks per second)</value></data>
+  <data name="Watermark.Text" xml:space="preserve"><value>Committed ordinal / QPC / metric coverage</value></data>
+  <data name="Metrics.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Metric samples: QPC, kind, value, units, quality, reason and source</value></data>
+  <data name="Previous.Content" xml:space="preserve"><value>Previous page</value></data>
+  <data name="Next.Content" xml:space="preserve"><value>Next page</value></data>
+  <data name="Offset.Text" xml:space="preserve"><value>Page offset</value></data>
+  <data name="LiveHeading.Text" xml:space="preserve"><value>Live target connection</value></data>
+  <data name="LiveMode.Header" xml:space="preserve"><value>Target mode</value></data>
+  <data name="LiveMode.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Launch or attach mode</value></data>
+  <data name="LiveUnpackaged.Content" xml:space="preserve"><value>Launch unpackaged</value></data>
+  <data name="LivePackaged.Content" xml:space="preserve"><value>Launch packaged</value></data>
+  <data name="LiveAttach.Content" xml:space="preserve"><value>Attach to process ID</value></data>
+  <data name="LiveTarget.Header" xml:space="preserve"><value>Executable path / AUMID / PID</value></data>
+  <data name="LiveTarget.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
+  <data name="LiveArguments.Header" xml:space="preserve"><value>Launch arguments</value></data>
+  <data name="LiveWorkingDirectory.Header" xml:space="preserve"><value>Working directory (optional)</value></data>
+  <data name="LiveTrust.Content" xml:space="preserve"><value>Trust local runtime, injector and TAP</value></data>
+  <data name="LiveDetailed.Content" xml:space="preserve"><value>Detailed events (high volume)</value></data>
+  <data name="LiveCaptureNotice.Text" xml:space="preserve"><value>Default capture: XAML capabilities, layout and frame source observations, plus committed CPU/GPU/process-memory samples after hello. Detailed capture adds high-volume source events and may stop at queue limits. Tree snapshots are separate; no private producer baseline or unrealized state is inferred.</value></data>
+  <data name="LiveTargetSettings.Header" xml:space="preserve"><value>Target selection and capture settings</value></data>
+  <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
+  <data name="SavedSessionTab.Header" xml:space="preserve"><value>Saved session</value></data>
+  <data name="LiveMetricsNotice.Text" xml:space="preserve"><value>Last 2 minutes of committed samples; approximately 1-second acquisition. CPU is processor-time utilization (not frequency-adjusted utility); GPU is the busiest engine. Memory is MiB (1,048,576 bytes); commit is not resident RAM. Gaps mean unavailable or interrupted collection. Final graphs remain after disconnect; reconnect starts a new history.</value></data>
+  <data name="LiveCpuChart.Title" xml:space="preserve"><value>CPU - processor time</value></data>
+  <data name="LiveGpuChart.Title" xml:space="preserve"><value>GPU - busiest engine</value></data>
+  <data name="LiveWorkingSetChart.Title" xml:space="preserve"><value>Working set</value></data>
+  <data name="LivePrivateWorkingSetChart.Title" xml:space="preserve"><value>Private working set</value></data>
+  <data name="LiveCommitChart.Title" xml:space="preserve"><value>Private commit</value></data>
+  <data name="LiveCpuChart.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live CPU graph</value></data>
+  <data name="LiveGpuChart.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live GPU graph</value></data>
+  <data name="LiveWorkingSetChart.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live working set graph</value></data>
+  <data name="LivePrivateWorkingSetChart.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live private working set graph</value></data>
+  <data name="LiveCommitChart.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live private commit graph</value></data>
+  <data name="LiveChartEarlier.Text" xml:space="preserve"><value>-2 minutes</value></data>
+  <data name="LiveChartNow.Text" xml:space="preserve"><value>Latest committed observation</value></data>
+  <data name="LiveChartUnavailable.Text" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="LiveChartWaiting.Text" xml:space="preserve"><value>Waiting for committed samples</value></data>
+  <data name="LiveTrust.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Trust local injection binaries</value></data>
+  <data name="LiveEndpoint.Header" xml:space="preserve"><value>Diagnostics endpoint</value></data>
+  <data name="LiveConnect.Content" xml:space="preserve"><value>Launch and connect</value></data>
+  <data name="LiveDisconnect.Content" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="LiveSnapshot.Content" xml:space="preserve"><value>Take snapshot</value></data>
+  <data name="LiveSnapshot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Take tree snapshot</value></data>
+  <data name="LiveSnapshotStatus.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Tree snapshot status</value></data>
+  <data name="LiveSnapshotPath.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Tree snapshot file</value></data>
+  <data name="LiveState.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live connection status</value></data>
+  <data name="LiveStatistics.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live event statistics</value></data>
+  <data name="LiveDatabase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live session database</value></data>
+  <data name="LiveError.Title" xml:space="preserve"><value>Target operation failed</value></data>
+  <data name="LiveBrowse.Content" xml:space="preserve"><value>Browse...</value></data>
+  <data name="LiveBrowse.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Browse or select target</value></data>
+  <data name="TargetPicker.Title" xml:space="preserve"><value>Select a target</value></data>
+  <data name="TargetPicker.PrimaryButtonText" xml:space="preserve"><value>Select</value></data>
+  <data name="TargetPicker.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+  <data name="TargetPickerNotice.Text" xml:space="preserve"><value>Select an installed application or running process. Selection does not launch or connect. Unavailable entries show the access or discovery error. WinUI compatibility is checked when connecting.</value></data>
+  <data name="TargetPickerSearch.PlaceholderText" xml:space="preserve"><value>Search name, application AUMID or PID</value></data>
+  <data name="TargetPickerSearch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Search targets</value></data>
+  <data name="TargetPickerRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
+  <data name="TargetPickerList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Available targets</value></data>
+  <data name="TargetPickerEmpty.Text" xml:space="preserve"><value>No matching targets. Change the search or refresh the list.</value></data>
+  <data name="TargetPickerError.Title" xml:space="preserve"><value>Target discovery failed</value></data>
+  <data name="SnapshotHistoryHeading.Text" xml:space="preserve"><value>Snapshots</value></data>
+  <data name="SnapshotHistoryNotice.Text" xml:space="preserve"><value>Select a capture to inspect its trees. This list remains available after disconnect.</value></data>
+  <data name="SnapshotHistory.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot history</value></data>
+  <data name="SnapshotHeading.Text" xml:space="preserve"><value>Snapshot viewer</value></data>
+  <data name="SnapshotMetrics.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot overall metrics</value></data>
+  <data name="SnapshotIdentity.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot capture identity</value></data>
+  <data name="SnapshotScope.Text" xml:space="preserve"><value>Read-only public realized trees. Depth counts levels (root = 1); display groups are excluded. Highlights represent direct stored object links, not geometry. GetElementVisual may have materialized visuals during capture.</value></data>
+  <data name="SnapshotLoadError.Title" xml:space="preserve"><value>Snapshot could not be displayed</value></data>
+  <data name="SnapshotXamlCountLabel.Text" xml:space="preserve"><value>XAML nodes</value></data>
+  <data name="SnapshotVisualCountLabel.Text" xml:space="preserve"><value>Composition visuals</value></data>
+  <data name="SnapshotXamlDepthLabel.Text" xml:space="preserve"><value>XAML depth (levels)</value></data>
+  <data name="SnapshotVisualDepthLabel.Text" xml:space="preserve"><value>Composition depth (levels)</value></data>
+  <data name="SnapshotRootCountLabel.Text" xml:space="preserve"><value>XAML roots</value></data>
+  <data name="SnapshotLinkCountLabel.Text" xml:space="preserve"><value>Object-to-visual links</value></data>
+  <data name="SnapshotXamlCount.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot XAML node count</value></data>
+  <data name="SnapshotVisualCount.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot composition visual count</value></data>
+  <data name="SnapshotXamlDepth.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot XAML tree depth</value></data>
+  <data name="SnapshotVisualDepth.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot composition tree depth</value></data>
+  <data name="SnapshotRootCount.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot root count</value></data>
+  <data name="SnapshotLinkCount.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot mapping count</value></data>
+  <data name="SnapshotTypes.Header" xml:space="preserve"><value>Composition visuals by type</value></data>
+  <data name="SnapshotTypeCounts.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Composition visual type counts</value></data>
+  <data name="SnapshotXamlHeading.Text" xml:space="preserve"><value>XAML visual tree</value></data>
+  <data name="SnapshotVisualHeading.Text" xml:space="preserve"><value>Composition visual tree</value></data>
+  <data name="SnapshotXamlTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot XAML tree</value></data>
+  <data name="SnapshotCompositionTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot composition tree</value></data>
+  <data name="SnapshotMappingStatus.Text" xml:space="preserve"><value>Select a node to inspect its direct object mappings.</value></data>
+  <data name="SnapshotMappingStatus.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot mapping status</value></data>
+  <data name="SnapshotMatches.PlaceholderText" xml:space="preserve"><value>Direct mapped nodes</value></data>
+  <data name="SnapshotMatches.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Mapped snapshot nodes</value></data>
+  <data name="SnapshotXamlDetails.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Selected XAML object details</value></data>
+  <data name="SnapshotCompositionDetails.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Selected composition visual details</value></data>
+</root>

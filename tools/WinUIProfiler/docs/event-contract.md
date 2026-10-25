@@ -69,10 +69,26 @@ does not authorize 1 MiB ETW writes.
 
 ## P04 native runtime wire mapping
 
+Standard XAML observations are a separate source-only compatibility boundary,
+not this private producer schema. `ObservedXaml` has local normalization provider
+`c558a4ad-4e42-4ea1-b547-c406a47f9409`, ID/version 1/1, and stores original
+`Microsoft-Windows-XAML` provider `531a35ab-63ce-4bcf-aa98-f88c7a89e455`,
+name, ID, descriptor version, level, keywords, opcode, task, and up to 48 KiB
+of complete source bytes. PID/TID/activity/QPC stay in the envelope/provenance.
+Source descriptor version zero is valid; no typed native payload schema is
+invented. SourceSequence is null, original creation FILETIME is unavailable,
+the stream namespace is trace-local, and semantic coverage must be Partial.
+The wrapper is not an ETW emission or a private runtime capability. Admission
+copies bounded bytes without decoding arbitrary manifest fields; normalization
+and SQLite serialization run off the listener. Frequency follows the enabled
+manifest events: verbose capture may be expensive and reach finite queue limits.
+See [ingestion](ingestion.md) for live/offline support and profile masks.
+
 P03 consumes these exact layouts; its additional, explicitly supported platform
 ProcessStart v4 mapping, canonical identity binding, clock conversion and
 unsupported-schema diagnostic policy are documented in [ingestion](ingestion.md).
-No native collector schema is defined by the runtime layouts below.
+No collector schema is implied by the runtime layouts below; the separate
+[collector Metric wire schema](#collector-metric-wire-schema-1) is defined later.
 
 The fre/chk foundation is `WinUIProfilerProtocol.h`,
 `WinUIProfilerTracing.h` and `WinUIProfilerRuntimeBridge.cpp`. It registers
@@ -156,6 +172,33 @@ After the common prefix, these are the concrete schema-1 payloads:
 | CaptureChunk / 14 | CaptureId:GUID, ChunkIndex:u32, RootId:GUID, DispatcherId:u64, nine typed state arrays followed by five typed shared tables, below |
 | Loss / 15 | Interval:{StartQpc:i64, EndQpc:i64}, LostEvents:Optional<u64>, Reason:utf8z, HasDomains:bool8, Domains:DomainReference[] |
 | XamlPropertyChanged / 16 | Object:Object, Property:{PropertyId:u64, DeclaringType:utf8z, Name:utf8z}, Previous:Value, Current:Value, Cause:Cause |
+
+### Device and logical resource operation semantics
+
+Device Operation codes are Create=0, Lost=1, Destroy=2, BaselinePresent=3,
+OwnershipRelease=4. Resource codes are Create=0, Destroy=1, OwnershipRelease=2,
+Close=3, Rebind=4, Resize=5, Share=6, BaselinePresent=7. The last two Device
+codes and Resource BaselinePresent are additive enum values in this unpublished
+schema-1 contract; the payload layouts are unchanged. Readers reject unknown
+codes rather than guessing a lifecycle.
+
+BaselinePresent establishes current presence, never historical creation or a
+complete lifetime baseline. Device OwnershipRelease ends WinUI ownership,
+not proven final external COM/GPU destruction. Both Device operations and
+Resource BaselinePresent reject Complete coverage. Resource Destroy describes
+the classified object's lifetime; for a logical composition wrapper it does
+not prove physical backing destruction. Dimensions do not imply allocation
+bytes. Null backing/bytes remain null during normalization and persistence.
+For CompositionBrush observations classified as logical ownership slots, Destroy
+ends that WinUI holder, not the externally shareable COM brush. Pixel dimensions
+are absent, and neither slot identity nor brush color establishes physical backing.
+The solid-color holder's optional Owner is the native brush's qualified XamlCore
+key, not an address or a complete list of consuming elements. It shares the
+resource's process/producer epoch and remains unchanged on release/destruction.
+Late owner observation proves presence, not historical creation; resource and
+identity selection gaps must not silently join reused addresses.
+See [resource coverage](resource-coverage.md) for authoritative hook sites,
+unknown-device scope semantics and the explicit unimplemented inventory.
 
 RuntimeCapabilities.Epoch must equal the prefix epoch; its normalized Process
 is TargetProcess. TypeResolved/Loss's payload ProducerEpoch is the prefix
@@ -246,7 +289,8 @@ within TDH's 128-property limit, while preserving every P01 state field.
 Native validation covers shape, units/quality, source epochs, nested topology
 scope and bounded pointers/counts before encoding. Actual capture requests
 still return E_NOTIMPL: schema writers do not traverse, capture, reconcile or
-advertise any observational capability. No collector provider is implemented.
+advertise any observational capability. This native P04 foundation does not
+implement a collector provider; the managed Metric producer is specified below.
 
 Native text is validated UTF-8, at most 1,024 bytes excluding its terminating
 zero per field. Factories run only after definition/keyword enablement and
@@ -435,6 +479,11 @@ Tree relationships: Root/Child/Content/Template/Popup for XamlCore,
 CompRoot/CompChild for CompNode, VisualRoot/VisualChild for CompositionVisual.
 Root relationships have no parent; other relationships require one.
 Parent and child share process/domain, cannot be equal, and order is explicit.
+Visual Child order is the observed collection index, never the `IndexOf`
+not-found sentinel. Live Enter may precede collection insertion; in that case
+the successful collection Append/Insert hook publishes the indexed edge.
+Template-owner associations are unordered and use order 0 consistently with
+the templated-parent setter, not a descendant's visual sibling index.
 Connected=false removes membership; it is never a destruction event.
 Membership is independently Logical/Visual/Composition/Unknown. XAML edges
 cannot claim Composition membership, and composition edges cannot claim
@@ -505,7 +554,7 @@ framework hooks or startup processing implement every path.
 ### Resources and allocation
 
 Resource operations: Create, Destroy, OwnershipRelease, Close, Rebind,
-Resize, Share. Rebind/resize close the previous backing association and open
+Resize, Share, BaselinePresent. Rebind/resize close the previous backing association and open
 the next at the observed time. A shared BackingAllocationId identifies unique
 storage within device lifetime, including aliases across owners/resources.
 OwnershipRelease/Close do not prove final external COM destruction.
@@ -744,7 +793,7 @@ positive reconciliation or explicit failure/loss is finalized.
 | ID / name | Keyword | Typed payload |
 |---|---|---|
 | 1 Process | Capabilities | Operation Start/Exit/Attach, CreationQpc i64? session ticks, Quality |
-| 2 Metric | Metrics | Metric enum, Value TypedValue, Interval TimeRange, Source string, SourceVersion string, Gpu GpuSampleIdentity? |
+| 2 Metric | Metrics | Metric enum, Value TypedValue, Interval TimeRange, Source string, SourceVersion string, Gpu GpuSampleIdentity?, SourceObservation MetricSourceObservation? |
 | 3 Loss | Capabilities | Same LossPayload fields as runtime, collector producer epoch |
 
 Collector semantic process is the selected instance even though the emitting
@@ -752,7 +801,9 @@ PID is the profiler. Attach with unknown creation QPC uses null. Collection
 source/version/interval are mandatory; missing GPU support does not erase
 CPU or memory samples.
 
-Metrics/units: CpuUtilization and GpuUtilization in Percent; ProcessPrivateWorkingSet,
+Metrics/units: CpuUtilization, SystemCpuUtilization, InterruptCpuUtilization,
+OtherOrUnattributedCpuUtilization, ProcessCpuUtility and GpuUtilization in
+Percent; ProcessPrivateWorkingSet,
 ProcessPrivateCommit, ProcessWorkingSet, XamlBytes, GpuDedicatedCommittedBytes,
 GpuSharedCommittedBytes, GpuDedicatedResidentBytes and GpuSharedResidentBytes in Bytes;
 ConnectedXamlElements and CanonicalCompositionVisuals in Count.
@@ -772,8 +823,150 @@ An unavailable winning adapter makes coverage partial. Memory requires
 adapter and no engine; commitment/residency and dedicated/shared are
 distinct kinds, not display strings. Nonmissing GPU values require typed
 scope; Missing GPU values may lack it. Non-GPU samples cannot claim GPU
-identity. Collectors/capability gating and busiest-engine aggregation are not
-implemented in P01.
+identity. P01 defined these contracts without collectors. P07 now implements
+CPU/memory/GPU acquisition and maximum measured engine utilization. Optional
+configured DXCore physical-adapter memory gauges are distinct from still-missing
+process-wide GPU memory totals. CPU utility remains independently unavailable,
+and hardware/parity gates
+are not satisfied by interop or synthetic normalization tests.
+
+### Collector Metric wire schema 1
+
+`CollectorMetricEmitter` uses the fixed collector provider above with managed
+self-describing EventSource writes: exact name `Metric`, semantic ID 2, schema
+1, level 4 and keyword `0x100`. Its forty ordered fields are:
+
+| # | Field | Wire type |
+|---|---|---|
+| 1 | SemanticEventId | u16 |
+| 2 | EventSchemaVersion | u8 |
+| 3 | SessionId | GUID |
+| 4 | ProducerEpoch | GUID |
+| 5 | SourceSequence | u64 |
+| 6 | TargetProcessId | u32 |
+| 7 | TargetCreationTimeFileTime | i64 |
+| 8 | TargetInstanceId | GUID |
+| 9 | AcquisitionBeginQpc | i64 |
+| 10 | AcquisitionEndQpc | i64 |
+| 11 | QpcFrequency | i64 |
+| 12 | Metric | u8 |
+| 13 | ValueKind | u8 |
+| 14 | ValueUnit | u8 |
+| 15 | Integer | i64 |
+| 16 | Number | f64 |
+| 17 | MeasurementKind | u8 |
+| 18 | Coverage | u8 |
+| 19 | Reason | NUL-terminated UTF-16 |
+| 20 | Source | NUL-terminated UTF-16 |
+| 21 | SourceVersion | NUL-terminated UTF-16 |
+| 22 | HasGpu | bool8 |
+| 23 | GpuScope | u8 |
+| 24 | HasAdapter | bool8 |
+| 25 | AdapterLuidLow | u32 |
+| 26 | AdapterLuidHigh | i32 |
+| 27 | PhysicalAdapterIndex | u32 |
+| 28 | HasEngine | bool8 |
+| 29 | EngineId | u32 |
+| 30 | EngineClass | u8 |
+| 31 | NativeClock | u8 |
+| 32 | NativeFrequency | i64 |
+| 33 | NativeBegin | u64 |
+| 34 | NativeEnd | u64 |
+| 35 | NativeStatus | u8 |
+| 36 | NativeAcquisitionBegin | u64 |
+| 37 | NativeAcquisitionEnd | u64 |
+| 38 | NativeError | u32 |
+| 39 | NativeErrorDomain | u8 |
+| 40 | PdhError | u32 |
+
+These are EventSource UTF-16/bool8 fields, not the native runtime writer's
+UTF-8/bool32 layout. The schema reader requires this exact shape. Inactive
+numeric and GPU identity backing arms are canonical zero; nonfinite numbers,
+invalid enums/units/quality and inconsistent identities are rejected.
+
+Payload session and the complete target key (PID, creation FILETIME, instance
+GUID) select the semantic session/process. The collector header PID is not the
+target PID; its PID/thread/activity/raw QPC remain provenance. Each emitter owns
+a new epoch and serialized, monotonically increasing source sequence. Payload
+QPC frequency must match the actual transport clock, acquisition must be
+monotonic and its end cannot exceed the event header timestamp. The decoder
+converts this acquisition bracket into session ticks without converting native
+counter timestamps into QPC.
+
+`SourceObservation` retains native clock 2 (boot 100 ns) or 3 (UTC FILETIME
+100 ns), explicit frequency 10,000,000, original begin/end/status and a separate
+monotonic boot-clock acquisition bracket. Reversed native endpoints are valid
+only for a UTC FILETIME counter reset. Native error is zero exactly when its
+error domain is None; other domains are Win32 (1), NTSTATUS (2) or raw HRESULT
+bits (3, additive for DXCore memory). PDH status is retained
+separately. Nonmeasured native statuses cannot carry a numeric measurement.
+Older/synthetic normalized records may omit SourceObservation; null is omitted
+from JSON to preserve legacy payload bytes, not filled with guessed clocks.
+
+The emitter validates a complete batch before writing, refuses a different
+target or acquisition frequency and returns false when the provider is not
+enabled. Polling admission must treat that rejection as failure, not successful
+delivery. Provider registration precedes emitter construction, and owned
+transports explicitly request bounded synchronous enablement before capture.
+This is not a delivery acknowledgment or a replacement for ETW loss accounting.
+Process and Loss use the separate layouts below and the same emitter stream.
+`LiveMetricRecording` now invokes these operations as part of its owned
+native/ETW lifecycle: Attach precedes sampling, accepted native TargetMissing
+permits Exit, and acquisition failure emits Metric-domain Loss when transport
+is still available. IdentityChanged and generic exceptions never imply Exit.
+Lost-event count remains unknown rather than invented. Polling quiesces before
+transport drain and terminal health persistence. Complete runtime capability/
+baseline orchestration is still absent; wire publication is not delivery proof.
+
+Windows may include transport metadata in otherwise valid collector ETLs.
+Only this exact descriptor is ignored as nonsemantic metadata: provider
+`9e814aad-3204-11d2-9a82-006008a86939`, name
+`EventTrace/PartitionInfoExtensionV2`, ID 65535, version 2, opcode 80, level 0
+and keywords 0. Changed opcode/version/name remains unsupported; there is no
+broad provider-level suppression.
+
+### Collector Process and Loss wire schema 1
+
+Both events begin with these ordered fields: SemanticEventId u16,
+EventSchemaVersion u8, SessionId GUID, ProducerEpoch GUID, SourceSequence u64,
+TargetProcessId u32, TargetCreationTimeFileTime i64, TargetInstanceId GUID,
+QpcFrequency i64. This frequency is the actual transport QPC frequency.
+They use the same payload identity routing and independent header provenance
+as Metric, not runtime-header PID filtering.
+
+Process has exact name `Process`, semantic ID 1, level 4 and keyword `0x1`.
+Its remaining ordered fields are Operation u8, HasCreationQpc bool8,
+CreationQpc i64, MeasurementKind u8, Coverage u8 and Reason UTF-16 NUL.
+The operation is Start/Exit/Attach. Unknown creation QPC has HasCreationQpc
+false and zero backing storage; it normalizes to null, not an invented QPC
+from creation FILETIME. Known creation is converted with the recorded QPC
+mapping and cannot follow the event header timestamp. Empty quality reason
+represents null.
+
+Loss has exact name `Loss`, semantic ID 3, level 3 and keyword `0x1`.
+Its remaining ordered fields are IntervalStartQpc i64, IntervalEndQpc i64,
+HasLostEvents bool8, LostEvents u64, Reason UTF-16 NUL, HasDomains bool8,
+DomainCount u32 and Domains vector. Each vector entry is EventId u16 then
+EventVersion u8; the vector has its TraceLogging u16 element-count prefix and
+at most 256 entries. DomainCount must agree with that vector. Domain stream,
+epoch and target are reconstructed from the common prefix, then checked
+against the catalog. They cannot identify another emitter or target.
+
+Loss interval endpoints use recorded QPC, are monotonic and cannot extend
+past the header timestamp. An unknown lost count uses HasLostEvents false
+and zero backing storage; a known count is positive. Absent domains require
+HasDomains false, DomainCount zero and empty vector. An explicitly present
+empty domain list remains distinct from absent domains. Input domain count
+is checked before copying/enumerating, then the owned snapshot is validated.
+
+All collector text must be valid Unicode, NUL-free and at most 1,024 UTF-8
+bytes, even though its wire encoding is UTF-16. Invalid lifecycle input is
+rejected before reserving a sequence or writing. Loss has a nonempty reason;
+noncomplete process quality retains its required reason. A decoded Loss
+persists ProducerLoss health and prevents a finite artifact from claiming
+complete, uninterrupted capture. Real ETL tests verify typed array decoding,
+one continuous Process/Metric/Loss sequence, committed metrics and durable
+loss health without disguising the discontinuity as successful completion.
 
 ## Snapshot and committed query publication
 

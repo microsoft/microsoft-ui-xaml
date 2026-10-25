@@ -1,0 +1,49 @@
+<ContentDialog
+    x:Class="WinUIProfiler.App.Views.TargetSelectionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:WinUIProfiler.App.ViewModels"
+    x:Uid="TargetPicker"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanSelect, Mode=OneWay}"
+    Loaded="Dialog_Loaded" Closed="Dialog_Closed">
+    <Grid MinWidth="480" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Uid="TargetPickerNotice" TextWrapping="Wrap" />
+        <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Uid="TargetPickerSearch" x:Name="Search"
+                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Grid.Column="1" x:Uid="TargetPickerRefresh" Click="Refresh_Click"
+                    IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" />
+        </Grid>
+        <ProgressBar Grid.Row="2" IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                     Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+        <TextBlock Grid.Row="3" x:Uid="TargetPickerEmpty" Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
+        <ListView Grid.Row="4" x:Uid="TargetPickerList" Height="280"
+                  ItemsSource="{x:Bind ViewModel.Candidates, Mode=OneWay}"
+                  SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}" SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:TargetCandidate">
+                    <StackPanel Spacing="2" AutomationProperties.Name="{x:Bind DisplayName}">
+                        <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap"
+                                   Style="{ThemeResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <InfoBar Grid.Row="5" x:Uid="TargetPickerError" IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Severity="Error" IsClosable="False" />
+    </Grid>
+</ContentDialog>

@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
 #include "MetadataAPI.h"
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
@@ -72,6 +74,23 @@ using namespace DirectUI;
 using namespace DCompHelpers;
 using namespace Focus;
 using namespace Theming;
+
+namespace
+{
+    enum : uint32_t { ProfilerCachedHandOff = 0, ProfilerCachedHandIn = 1 };
+    bool ProfilerCachedVisualsEnabled() noexcept
+    {
+        using namespace WinUIProfiler;
+        return IsEnabled(Event::ObjectLifetime) || IsEnabled(Event::VisualDelta) ||
+            IsEnabled(Event::Correlation) || IsEnabled(Event::TreeEdge) || IsEnabled(Event::CaptureChunk);
+    }
+    void TraceProfilerCachedVisualSlot(CUIElement* owner, uint32_t slot, IUnknown* visual) noexcept
+    {
+        if (!ProfilerCachedVisualsEnabled()) return;
+        WinUIProfiler::Hooks::VisualSlot(owner, WinUIProfiler::Domain::XamlCore, slot, visual,
+            visual ? owner->GetDCompTreeHost() : nullptr);
+    }
+}
 
 #ifdef XAMLPROFILER_ENABLED
 #if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
@@ -492,7 +511,12 @@ void CUIElement::ForceCloseHandInAndHandOffVisuals()
         // animation targets outside the visual tree, and it is cleaned up later than DCompTreeHost in core shutdown.
         // In this case, the compositor is also about to be destroyed, which will clean up any hand-ins/handoffs,
         // so we don't need to take any action here.
-        if ((GetContext()->NWGetWindowRenderTarget() == nullptr) || (GetDCompTreeHost() == nullptr)) { return; }
+        if ((GetContext()->NWGetWindowRenderTarget() == nullptr) || (GetDCompTreeHost() == nullptr))
+        {
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, nullptr);
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, nullptr);
+            return;
+        }
 
         auto& handOffVisualDataMap = GetDCompTreeHost()->GetHandOffVisualDataMap();
         auto& handInVisualsMap = GetDCompTreeHost()->GetHandInVisualsMap();
@@ -501,6 +525,7 @@ void CUIElement::ForceCloseHandInAndHandOffVisuals()
         if (handOffPair != handOffVisualDataMap.end())
         {
             Microsoft::WRL::ComPtr<WUComp::IVisual> handOffVisual = handOffPair->second.handOffVisual;
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, handOffVisual.Get());
 
             if (handOffVisual != nullptr)
             {
@@ -514,6 +539,7 @@ void CUIElement::ForceCloseHandInAndHandOffVisuals()
                 }
             }
 
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, nullptr);
             handOffVisualDataMap.erase(handOffPair);
         }
 
@@ -521,6 +547,7 @@ void CUIElement::ForceCloseHandInAndHandOffVisuals()
         auto handInPair = handInVisualsMap.find(this);
         if (handInPair != handInVisualsMap.end())
         {
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, handInPair->second.Get());
             Microsoft::WRL::ComPtr<wf::IClosable> handInVisualAsClosable;
 
             if (handInPair->second != nullptr)
@@ -528,8 +555,10 @@ void CUIElement::ForceCloseHandInAndHandOffVisuals()
                 // Unlike the case above for handoffs, the QI here should always succeed since IXamlDCompInteropInteropPrivate does not allow creation of hand-in visuals.
                 IFCFAILFAST(handInPair->second.As(&handInVisualAsClosable));
                 IGNOREHR(handInVisualAsClosable->Close());
+                TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, nullptr);
                 handInPair->second.Reset();
             }
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, nullptr);
             handInVisualsMap.erase(handInPair);
         }
     }
@@ -1441,6 +1470,24 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
 
     // Pass updated params to children.
     IFC_RETURN(CDependencyObject::EnterImpl(pNamescopeOwner, params));
+    if (params.fIsLive && (WinUIProfiler::Hooks::TreesEnabled() || WinUIProfiler::Hooks::FramesEnabled()))
+    {
+        const auto root = WinUIProfiler::Hooks::AssociatedRoot(this);
+        WinUIProfiler::Hooks::Work(root, core);
+        if (WinUIProfiler::Hooks::TreesEnabled())
+        {
+            auto parent = GetUIElementParentInternal();
+            XINT32 order = 0;
+            const auto children = parent ? parent->GetChildren() : nullptr;
+            // Enter can precede insertion. The collection hook publishes its
+            // actual indexed membership after Append/Insert completes.
+            if (!parent || (children && SUCCEEDED(children->IndexOf(this, &order)) && order >= 0))
+                WinUIProfiler::Hooks::Membership(root, core, parent, this,
+                    parent ? 1 : 0, order, true, 2);
+            if (const auto templatedParent = GetTemplatedParent())
+                WinUIProfiler::Hooks::Membership(root, core, templatedParent, this, 3, 0, true, 1);
+        }
+    }
 
     if (OptionalChangeState::IsDeferContextFlyoutInitEnabled())
     {
@@ -1921,6 +1968,17 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
         }
     }
 
+    if (params.fIsLive && (WinUIProfiler::Hooks::TreesEnabled() || WinUIProfiler::Hooks::FramesEnabled()))
+    {
+        const auto root = WinUIProfiler::Hooks::AssociatedRoot(this);
+        WinUIProfiler::Hooks::Work(root, core);
+        if (WinUIProfiler::Hooks::TreesEnabled())
+        {
+            WinUIProfiler::Hooks::Membership(root, core, GetUIElementParentInternal(), this, 1, 0, false, 2);
+            if (const auto templatedParent = GetTemplatedParent())
+                WinUIProfiler::Hooks::Membership(root, core, templatedParent, this, 3, 0, false, 1);
+        }
+    }
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 
     if (OptionalChangeState::IsDeferContextFlyoutInitEnabled())
@@ -7295,6 +7353,7 @@ CUIElement::GetStoredHandOffVisual(_Outptr_result_maybenull_ WUComp::IVisual** p
     if (entry != handOffVisualDataMap.end())
     {
         handOffVisual = entry->second.handOffVisual;
+        TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, handOffVisual.Get());
     }
 
     *ppHandOffVisual = handOffVisual.Detach();
@@ -7341,6 +7400,8 @@ void CUIElement::StartHandOffVisualCaching(_In_ WUComp::IVisual* pHandOffVisual)
     data.dcompPropertyChangedListener = listener;
     auto emplaceResult = handOffVisualDataMap.emplace(this, data);
     ASSERT(emplaceResult.second == true);
+    if (emplaceResult.second)
+        TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, emplaceResult.first->second.handOffVisual.Get());
 
     m_hasEverStoredHandoffOrHandinVisual = true;
 }
@@ -7365,6 +7426,7 @@ void CUIElement::StopHandOffVisualCaching()
         listener->DetachFromPrependVisual();
         listener->DetachFromWUCClip();
     }
+    TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, nullptr);
     handOffVisualDataMap.erase(iter);
 }
 
@@ -7378,6 +7440,7 @@ void CUIElement::GetStoredHandInVisual(_Outptr_result_maybenull_ WUComp::IVisual
     if (entry != handInVisualsMap.end())
     {
         handInVisual = entry->second;
+        TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, handInVisual.Get());
     }
 
     *ppChildVisual = handInVisual.Detach();
@@ -7395,6 +7458,7 @@ void CUIElement::SetStoredHandInVisual(_In_opt_ WUComp::IVisual* pChildVisual)
     auto& handInVisualsMap = GetDCompTreeHost()->GetHandInVisualsMap();
 
     auto emplaceResult = handInVisualsMap.emplace(this, handInVisual);
+    TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, handInVisual.Get());
 
     // If insertion failed and this UIE already has a Hand-in visual, replace it.
     // Note that hand-in visuals are provided by the app and hence can be arbitrarily replaced.
@@ -7403,9 +7467,14 @@ void CUIElement::SetStoredHandInVisual(_In_opt_ WUComp::IVisual* pChildVisual)
         // Replacing the hand-in visual. Note we don't force Close() here as we do in the destructor.
         // If the app is sophisticated enough to replace the visual, we'll trust it to promptly release it.
         // This also keeps our internal Close policy simple.
+        auto retireFailedCache = wil::scope_exit([&]()
+        {
+            TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, nullptr);
+        });
         handInVisualsMap.erase(this);
         auto retryEmplaceResult = handInVisualsMap.emplace(this, handInVisual);
         ASSERT(retryEmplaceResult.second == true);
+        if (retryEmplaceResult.second) retireFailedCache.release();
     }
 
     m_hasEverStoredHandoffOrHandinVisual = true;
@@ -11329,6 +11398,21 @@ CUIElement::RemoveCompositionPeer()
 
         if (hasRenderTarget)
         {
+            if (ProfilerCachedVisualsEnabled() && m_hasEverStoredHandoffOrHandinVisual)
+            {
+                auto* host = GetDCompTreeHost();
+                if (host)
+                {
+                    const auto& handOffs = host->GetHandOffVisualDataMap();
+                    const auto handOff = handOffs.find(this);
+                    if (handOff != handOffs.end())
+                        TraceProfilerCachedVisualSlot(this, ProfilerCachedHandOff, handOff->second.handOffVisual.Get());
+                    const auto& handIns = host->GetHandInVisualsMap();
+                    const auto handIn = handIns.find(this);
+                    if (handIn != handIns.end())
+                        TraceProfilerCachedVisualSlot(this, ProfilerCachedHandIn, handIn->second.Get());
+                }
+            }
             // Cancel any ongoing implicit Show animations before we tear down the CompNode.
             CancelImplicitAnimation(ImplicitAnimationType::Show);
             if (!IsKeepVisible())

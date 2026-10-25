@@ -124,7 +124,7 @@ public:
 
     _Check_return_ HRESULT PreCommitMainDevice();
 
-    _Check_return_ HRESULT CommitMainDevice();
+    _Check_return_ HRESULT CommitMainDevice(const void* primaryDispatcher = nullptr);
 
     uint32_t GetMaxTextureSize() const;
 

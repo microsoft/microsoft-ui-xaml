@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <InternalsVisibleTo Include="WinUIProfiler.Engine.Tests" />
+    <InternalsVisibleTo Include="WinUIProfiler.IntegrationTests" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
     <EmbeddedResource Include="Storage\Migrations\001_Initial.sql" />

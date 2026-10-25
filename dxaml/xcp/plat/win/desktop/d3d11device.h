@@ -79,6 +79,7 @@ public:
     _Ret_notnull_ ID3D11Device *GetDevice(_In_ const CD3D11SharedDeviceGuard* guard) const;
 
     ID3D11Device *TestHook_GetDevice() const;
+    const void* GetProfilerDeviceOwner() const noexcept { return m_deviceInstance.get(); }
 
     CLockedGraphicsPointer<ID3D11DeviceContext> GetLockedDeviceContext(_In_ const CD3D11SharedDeviceGuard* guard);
 

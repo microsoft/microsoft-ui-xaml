@@ -3,12 +3,15 @@
 param(
     [ValidateSet('amd64fre', 'amd64chk', 'arm64fre', 'arm64chk')]
     [string]$Flavor = 'amd64fre',
-    [switch]$Run
+    [switch]$Run,
+    [ValidateSet('Smoke', 'LateEnable', 'Lifetime', 'Roots', 'RootDiagnostic', 'IdleStartup', 'FrameSubmissions', 'DetachedLayout', 'AnimationRoot', 'DebugCounter', 'NoDevice', 'PostCommit', 'OrderedEdges', 'FailedInsertion', 'ManagerRestart', 'SimultaneousManagers', 'AllocatorTransitions', 'GraphicsResources', 'GraphicsReset')]
+    [string]$TestMode = 'Smoke'
 )
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..\..\..')).Path
 $properties = @{}
-Get-Content "$root\BuildOutput\ProfilerHost.$Flavor.properties" | ForEach-Object {
+$propertiesName = if ($TestMode -ne 'Smoke') { 'ProfilerLateEnableHost' } else { 'ProfilerHost' }
+Get-Content "$root\BuildOutput\$propertiesName.$Flavor.properties" | ForEach-Object {
     $key, $value = $_ -split '=', 2
     $properties[$key] = $value
 }
@@ -47,7 +50,28 @@ if ($Flavor.StartsWith('arm64') -and $env:PROCESSOR_ARCHITECTURE -ne 'ARM64') {
 }
 $stdout = "$output\ProfilerHostRuntime.log"
 $stderr = "$output\ProfilerHostRuntime.err.log"
-$process = Start-Process $executable -ArgumentList '--verify-deployment' -WorkingDirectory $output `
+$hostArguments = switch ($TestMode) {
+    'LateEnable' { @('--late-enable', '--verify-deployment') }
+    'Lifetime' { @('--lifetime', '--verify-deployment') }
+    'Roots' { @('--roots', '--verify-deployment') }
+    'RootDiagnostic' { @('--root-diagnostic', '--verify-deployment') }
+    'IdleStartup' { @('--idle-startup', '--verify-deployment') }
+    'FrameSubmissions' { @('--frame-submissions', '--verify-deployment') }
+    'DetachedLayout' { @('--detached-layout', '--verify-deployment') }
+    'AnimationRoot' { @('--animation-root', '--verify-deployment') }
+    'DebugCounter' { @('--debug-counter', '--verify-deployment') }
+    'NoDevice' { @('--no-device', '--verify-deployment') }
+    'PostCommit' { @('--post-commit', '--verify-deployment') }
+    'OrderedEdges' { @('--ordered-edges', '--verify-deployment') }
+    'FailedInsertion' { @('--failed-insertion', '--verify-deployment') }
+    'ManagerRestart' { @('--manager-restart', '--verify-deployment') }
+    'SimultaneousManagers' { @('--simultaneous-managers', '--verify-deployment') }
+    'AllocatorTransitions' { @('--allocator-transitions', '--verify-deployment') }
+    'GraphicsResources' { @('--graphics-resources', '--verify-deployment') }
+    'GraphicsReset' { @('--graphics-reset', '--verify-deployment') }
+    default { @('--verify-deployment') }
+}
+$process = Start-Process $executable -ArgumentList $hostArguments -WorkingDirectory $output `
     -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
 try {
     $deadline = [DateTime]::UtcNow.AddSeconds(30)

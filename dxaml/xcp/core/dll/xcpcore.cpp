@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
 
 #include "xcptypes.h"
 #include "DependencyObjectTraits.g.h"
@@ -6910,6 +6912,7 @@ CCoreServices::NWDrawTree(
     }
 
 Cleanup:
+    if (WinUIProfiler::Hooks::FramesEnabled()) WinUIProfiler::Hooks::CompleteBatch(this, hr);
     if (pLayoutManager)
     {
         pLayoutManager->SetAllowTransitionsToRunUnderCurrentSubtree(TRUE);
@@ -7077,6 +7080,11 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                 // Don't try to render them.
                 if (xamlIslandRoot->IsActive())
                 {
+                    WinUIProfiler::Hooks::RootScope profilerRoot(
+                        (WinUIProfiler::Hooks::IdentitiesEnabled() || WinUIProfiler::Hooks::FramesEnabled()) ?
+                            xamlIslandRoot->GetVisualTreeNoRef()->GetContentRootNoRef() : nullptr, this,
+                        WinUIProfiler::Hooks::FramesEnabled() && (xamlIslandRoot->NWNeedsRendering() || forceRedraw));
+                    WinUIProfiler::Hooks::BoundaryScope profilerRender(4);
                     IFC_RETURN(pHWWalk->RenderRoot(
                         xamlIslandRoot,
                         pRenderTarget,
@@ -7130,6 +7138,11 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
 
     if (GetInitializationType() != InitializationType::IslandsOnly)
     {
+        WinUIProfiler::Hooks::RootScope profilerRoot(
+            pVisualRoot && (WinUIProfiler::Hooks::IdentitiesEnabled() || WinUIProfiler::Hooks::FramesEnabled()) ?
+                WinUIProfiler::Hooks::AssociatedRoot(pVisualRoot) : nullptr, this,
+            WinUIProfiler::Hooks::FramesEnabled() && pVisualRoot && (pVisualRoot->NWNeedsRendering() || forceRedraw));
+        WinUIProfiler::Hooks::BoundaryScope profilerRender(4);
         IFC_RETURN(pHWWalk->RenderRoot(
             pVisualRoot,
             pRenderTarget,
@@ -7262,7 +7275,7 @@ CCoreServices::SubmitPrimitiveCompositionCommands(
     // If the UI thread holds the lock this entire time, it prevents the render thread from ticking any active
     // animations or manipulations. It is more preferable to allow for de-synchronization at this point than to glitch
     // the render thread for the duration.
-    IFC_RETURN(dcompTreeHost->CommitMainDevice());
+    IFC_RETURN(dcompTreeHost->CommitMainDevice(this));
 
     // Ignore any errors that get returned. This call goes through DwmSetWindowAttribute, which does a IsShellManagedWindow
     // check on the hwnd. LogonUI runs outside the shell and will fail the check, and this call will return E_INVALIDARG.

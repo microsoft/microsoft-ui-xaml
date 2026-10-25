@@ -52,6 +52,7 @@
                 <PrecompiledHeader>NotUsing</PrecompiledHeader>
                 <PrecompiledHeaderFile />
                 <PrecompiledHeaderOutputFile />
+                <ExceptionHandling>Sync</ExceptionHandling>
             </ClCompile>
         </ItemGroup>
     </Target>

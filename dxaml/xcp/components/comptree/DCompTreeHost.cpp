@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
 #include "DCompTreeHost.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
@@ -163,6 +164,9 @@ DCompTreeHost::DCompTreeHost(
 DCompTreeHost::~DCompTreeHost()
 {
     VERIFYHR(ReleaseResources(false /* shouldDeferClosingInteropCompositor */));
+    // Cache keys are non-owning UIElement pointers and may already be stale.
+    // Retire only tokens registered from this live host's actual cache slots.
+    WinUIProfiler::Hooks::ReleaseVisualSlotGroup(this);
 }
 
 // In the device loss recovery case, do this after DCompTreeHost::ReleaseResources to allow the DebugDeviceFinalReleaseAsserter
@@ -1127,7 +1131,7 @@ DCompTreeHost::PreCommitMainDevice()
 //      Commit DComp device.
 //
 //----------------------------------------------------------------------------
-_Check_return_ HRESULT DCompTreeHost::CommitMainDevice()
+_Check_return_ HRESULT DCompTreeHost::CommitMainDevice(const void* primaryDispatcher)
 {
     if (m_spMainDevice)
     {
@@ -1135,7 +1139,10 @@ _Check_return_ HRESULT DCompTreeHost::CommitMainDevice()
 
         TraceCommitMainDeviceBegin();
 
-        IFC_RETURN(m_spMainDevice->Commit());
+        const HRESULT commitResult = m_spMainDevice->Commit();
+        if (WinUIProfiler::Hooks::FramesEnabled())
+            WinUIProfiler::Hooks::Commit(primaryDispatcher, commitResult, primaryDispatcher != nullptr);
+        IFC_RETURN(commitResult);
 
         TraceCommitMainDeviceEnd();
 

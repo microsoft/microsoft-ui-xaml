@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
 #include "Timemgr.h"
 #include "Animation.h"
 #include "Storyboard.h"
@@ -738,6 +740,8 @@ _Check_return_ HRESULT CTimeManager::UpdateIATarget(
             CompositionRequirement::IndependentAnimation,
             animType);
     }
+    if (hasThisFrame != hasPrevFrame && WinUIProfiler::Hooks::FramesEnabled())
+        WinUIProfiler::Hooks::Work(WinUIProfiler::Hooks::AssociatedRoot(pTarget), pTarget->GetContext(), true);
 
     return S_OK;
 }

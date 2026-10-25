@@ -1,0 +1,104 @@
+<UserControl
+    x:Class="WinUIProfiler.App.Views.LiveConnectionPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:WinUIProfiler.App.ViewModels">
+    <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+        <StackPanel Spacing="8">
+            <TextBlock x:Uid="LiveHeading" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <Expander x:Uid="LiveTargetSettings" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                      IsExpanded="{x:Bind ViewModel.CanConnect, Mode=OneWay}">
+                <StackPanel Spacing="8">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="Mode" x:Uid="LiveMode" SelectedIndex="0" HorizontalAlignment="Stretch"
+                          IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" SelectionChanged="Mode_SelectionChanged">
+                    <ComboBoxItem x:Uid="LiveUnpackaged" />
+                    <ComboBoxItem x:Uid="LivePackaged" />
+                    <ComboBoxItem x:Uid="LiveAttach" />
+                </ComboBox>
+                <Grid Grid.Column="1" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="Target" x:Uid="LiveTarget" TextChanged="Target_TextChanged"
+                             IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+                    <Button Grid.Column="1" x:Uid="LiveBrowse" Click="Browse_Click" VerticalAlignment="Bottom"
+                            IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+                </Grid>
+                <TextBox Grid.Column="2" x:Name="Arguments" x:Uid="LiveArguments"
+                         IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+                <TextBox Grid.Column="3" x:Name="WorkingDirectory" x:Uid="LiveWorkingDirectory"
+                         IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <CheckBox x:Name="Trust" x:Uid="LiveTrust"
+                          IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+                <CheckBox x:Name="Detailed" x:Uid="LiveDetailed"
+                          IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+                <NumberBox x:Name="Endpoint" x:Uid="LiveEndpoint" Value="1" Minimum="1" Maximum="65535"
+                           Width="150" SmallChange="1" SpinButtonPlacementMode="Inline"
+                           IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+            </StackPanel>
+            <TextBlock x:Uid="LiveCaptureNotice" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                </StackPanel>
+            </Expander>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button x:Uid="LiveConnect" Click="Connect_Click"
+                        IsEnabled="{x:Bind ViewModel.CanConnect, Mode=OneWay}" />
+                <Button x:Uid="LiveDisconnect" Click="Disconnect_Click"
+                        IsEnabled="{x:Bind ViewModel.CanDisconnect, Mode=OneWay}" />
+                <Button x:Uid="LiveSnapshot" Click="Snapshot_Click"
+                        IsEnabled="{x:Bind ViewModel.CanTakeSnapshot, Mode=OneWay}" />
+                <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Width="24" Height="24" />
+                <ProgressRing IsActive="{x:Bind ViewModel.IsTakingSnapshot, Mode=OneWay}" Width="24" Height="24" />
+            </StackPanel>
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="ConnectionState" x:Uid="LiveState" Text="{x:Bind ViewModel.State, Mode=OneWay}"
+                               FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite"
+                               AutomationProperties.ItemStatus="{x:Bind ViewModel.State, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind ViewModel.Detail, Mode=OneWay}" TextWrapping="Wrap" />
+                    <TextBlock x:Uid="LiveStatistics" Text="{x:Bind ViewModel.Statistics, Mode=OneWay}" TextWrapping="Wrap"
+                               AutomationProperties.ItemStatus="{x:Bind ViewModel.Statistics, Mode=OneWay}" />
+                    <TextBlock x:Uid="LiveDatabase" Text="{x:Bind ViewModel.DatabasePath, Mode=OneWay}"
+                               IsTextSelectionEnabled="True" TextWrapping="Wrap"
+                               AutomationProperties.ItemStatus="{x:Bind ViewModel.DatabasePath, Mode=OneWay}" />
+                    <TextBlock x:Uid="LiveSnapshotStatus" Text="{x:Bind ViewModel.SnapshotStatus, Mode=OneWay}" TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite"
+                               AutomationProperties.ItemStatus="{x:Bind ViewModel.SnapshotStatus, Mode=OneWay}" />
+                    <TextBlock x:Uid="LiveSnapshotPath" Text="{x:Bind ViewModel.SnapshotPath, Mode=OneWay}"
+                               IsTextSelectionEnabled="True" TextWrapping="Wrap"
+                               AutomationProperties.ItemStatus="{x:Bind ViewModel.SnapshotPath, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock x:Uid="SnapshotHistoryHeading" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="SnapshotHistoryNotice" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                    <ListView x:Uid="SnapshotHistory" ItemsSource="{x:Bind ViewModel.Snapshots.Entries}"
+                              MaxHeight="170" IsItemClickEnabled="True" ItemClick="SnapshotEntry_Click"
+                              SelectionMode="Single" HorizontalContentAlignment="Stretch"
+                              AutomationProperties.ItemStatus="{x:Bind ViewModel.Snapshots.Entries.Count, Mode=OneWay}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SnapshotHistoryEntry">
+                                <StackPanel Spacing="2" Padding="4,6" ToolTipService.ToolTip="{x:Bind Saved.Path}">
+                                    <TextBlock Text="{x:Bind Title}" />
+                                    <TextBlock Text="{x:Bind Summary}" />
+                                    <TextBlock Text="{x:Bind CaptureId}" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Grid>
+            <InfoBar x:Uid="LiveError" IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                     Severity="Error" IsClosable="False" Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+        </StackPanel>
+    </Border>
+</UserControl>

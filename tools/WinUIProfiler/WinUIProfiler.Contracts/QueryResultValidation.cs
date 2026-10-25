@@ -81,7 +81,7 @@ public static class QueryResultValidation
     {
         Timestamp(row.TimestampQpc, context); Range(row.Interval, context);
         if (row.Interval.EndQpc > row.TimestampQpc) throw new ArgumentException("Sample cannot precede the end of its observation interval.");
-        ObservationRules.Metric(row.Metric, row.Value, row.Interval, row.Source, row.SourceVersion, row.Gpu);
+        ObservationRules.Metric(row.Metric, row.Value, row.Interval, row.Source, row.SourceVersion, row.Gpu, row.SourceObservation);
         return row;
     }
 

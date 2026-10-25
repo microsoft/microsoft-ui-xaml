@@ -8,8 +8,12 @@ public sealed class ProjectionBudget
 {
     public const int MaximumRecordBytes = 64 * 1024;
     public long RemainingBytes { get; private set; }
-    public int RemainingRecords { get; private set; } = Storage.SessionWriter.MaximumBatchRecords;
-    internal ProjectionBudget(long remainingBytes) => RemainingBytes = remainingBytes;
+    public int RemainingRecords { get; private set; }
+    internal ProjectionBudget(long remainingBytes, int remainingRecords = Storage.SessionWriter.MaximumBatchRecords)
+    {
+        RemainingBytes = remainingBytes;
+        RemainingRecords = remainingRecords;
+    }
     internal void Consume(long bytes)
     {
         if (bytes > RemainingBytes || RemainingRecords == 0) throw new ProcessingLimitException();

@@ -89,23 +89,28 @@ namespace WinUIProfiler::Wire
             m_metadataEnabled = metadata;
             m_dataEnabled = data;
         }
-        HRESULT Send(REGHANDLE handle, const BYTE* traits, ULONG traitsBytes, uint64_t keyword, UCHAR level) noexcept
+        HRESULT Send(REGHANDLE handle, const BYTE* traits, ULONG traitsBytes, uint64_t keyword, UCHAR level, int64_t timestampQpc = 0) noexcept
         {
             if (m_error) return HRESULT_FROM_WIN32(m_error);
             if (m_metadataSize + m_dataSize + traitsBytes > MaximumWireBytes) return HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW);
             m_buffer[0] = static_cast<BYTE>(m_metadataSize);
             m_buffer[1] = static_cast<BYTE>(m_metadataSize >> 8);
-            EVENT_DATA_DESCRIPTOR data[3]{};
+            EVENT_DATA_DESCRIPTOR data[4]{};
             EventDataDescCreate(&data[0], traits, traitsBytes);
             data[0].Reserved = EVENT_DATA_DESCRIPTOR_TYPE_PROVIDER_METADATA;
             EventDataDescCreate(&data[1], m_buffer, m_metadataSize);
             data[1].Reserved = EVENT_DATA_DESCRIPTOR_TYPE_EVENT_METADATA;
             EventDataDescCreate(&data[2], m_buffer + MetadataCapacity, m_dataSize);
+            if (timestampQpc)
+            {
+                EventDataDescCreate(&data[3], &timestampQpc, sizeof(timestampQpc));
+                data[3].Reserved = EVENT_DATA_DESCRIPTOR_TYPE_TIMESTAMP_OVERRIDE;
+            }
             EVENT_DESCRIPTOR descriptor{};
             descriptor.Channel = 11;
             descriptor.Level = level;
             descriptor.Keyword = keyword;
-            return HRESULT_FROM_WIN32(EventWriteTransfer(handle, &descriptor, nullptr, nullptr, 3, data));
+            return HRESULT_FROM_WIN32(EventWriteTransfer(handle, &descriptor, nullptr, nullptr, timestampQpc ? 4 : 3, data));
         }
     private:
         static constexpr uint32_t MetadataCapacity = 8192;

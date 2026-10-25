@@ -1,4 +1,4 @@
-# WinUI Profiler foundation (P01–P04)
+# WinUI Profiler foundation and in-progress runtime/metric integration
 
 ## Scope and build
 
@@ -8,9 +8,36 @@ P02 adds transactional SQLite persistence and bounded, read-only typed queries.
 P03 adds real live/offline ETW ingestion, typed native decoding, bounded
 dedicated processing/writer threads and durable diagnostic/stop control.
 P04 supplies the native typed writers/private protocol foundation.
-There is no UI, target injection/control transport, metric collector,
-CLI implementation or framework observation hooks here. Automatic runtime
-capabilities remain empty and capture is unsupported. See [ingestion](ingestion.md).
+P05 adds selected framework observation hooks and actual local-runtime tests;
+P07 adds native metric sources, managed CPU/memory/GPU interop and independent
+CPU/memory/GPU polling, typed collector Process/Metric/Loss emission/decoding,
+an owned live metric recording coordinator and persisted live/offline queries.
+P06 has guarded allocator foundations and actual heap-boundary hooks. Matched
+x64 checked/fre hosts qualify actual allocator ETW transitions and a full
+disable/re-enable gap. Graphics resource coverage, loss accounting acceptance,
+remaining allocator runtime scenarios and overhead remain unfinished.
+These milestones remain incomplete. `WinUIProfiler.App` supplies a real
+saved-session/metric inspection UI, not the full exploration or capture UI.
+P08 now includes architecture-matched native injection, a COM TAP, authenticated
+named-pipe transport and managed client. Runtime capture/rundown is still
+unsupported; this is not a complete attach/baseline implementation. P09-P11
+projections now form the default five-processor ordinary pipeline: ObjectState,
+Frame (composing metrics), XamlTree, CompositionTree and ResourceUsage.
+An explicitly supplied empty processor list retains input-only recording.
+The bounded `BaselineCoordinator` validates capture assembly and domain receipts;
+delta reconciliation and atomic owner publication are not yet integrated.
+`SessionWriter.CommitBaseline` supplies bounded, paged single-transaction
+storage beyond the ordinary batch limit, preserving original End provenance and
+clock metadata transactionally. Owner-affine immutable aggregate page production
+is also available; reconciliation, all-five End routing and recording integration
+remain separate gates.
+`WinUIProfiler.Cli` supplies the bounded P16 read-only saved-session query
+foundation, with typed routing, bounded JSON and focused subprocess tests;
+see [CLI contract and limitations](cli.md). P12/P13/P14 and end-to-end data
+producers remain open; this does not complete P16 or the overall plan.
+Automatic runtime capability
+coverage and capture traversal remain unfinished. See [TAP and injection](tap.md), [ingestion](ingestion.md),
+[event coverage](event-coverage.md) and [metrics](metrics.md).
 No other profiler is a source, project, package, binary or design dependency.
 
 The complete suite includes Windows ETW integration tests, which require
@@ -22,10 +49,174 @@ permission or missing-harness failures are not silently skipped.
 Then, from `tools\WinUIProfiler`:
 
 ```powershell
-dotnet restore WinUIProfiler.sln --locked-mode
+dotnet restore WinUIProfiler.Engine.Tests\WinUIProfiler.Engine.Tests.csproj --locked-mode
 dotnet test WinUIProfiler.Engine.Tests\WinUIProfiler.Engine.Tests.csproj -c Release --no-restore
-dotnet build WinUIProfiler.sln -c Release --no-restore
 ```
+
+The solution includes the C# WinUI app and a real C++ DLL and requires **Visual Studio MSBuild**.
+`dotnet build` or `dotnet restore` of the mixed solution cannot evaluate the
+Visual C++ defaults; building only managed projects does not validate native
+integration. The build entry below evaluates the matching local WinUI Product
+through the repository's build environment, selects an installed native toolset,
+and builds the mixed solution using full Visual Studio MSBuild:
+
+```powershell
+.\scripts\Build.ps1 -Configuration Release -Architecture x64
+```
+
+`Build.ps1` always selects the full mixed solution, including the native metric,
+TAP and injector projects. It reuses `Build-App.ps1` for evaluated Product
+discovery, native toolset selection, self-contained staging and deployment
+verification rather than maintaining a second build path. Add `-Restore` only
+when dependency manifests changed or a build reports missing restored assets.
+Both entry points propagate build/deployment failures. The wrapper's parameter,
+solution-selection and failure behavior can be checked without rebuilding:
+
+```powershell
+.\scripts\Tests\Test-BuildEntryPoint.ps1
+```
+
+The app is unpackaged, Windows App SDK self-contained and .NET self-contained.
+Its deployment manifest records the verified matched local runtime payloads;
+an incomplete runtime/resource Product is a build error, not an SDK fallback.
+See [application build and verification](app.md) for the satellite prerequisites,
+launch command, actual UI smoke test and intentionally absent functionality.
+
+For actual native interop tests, build both architecture DLLs: the wrong-
+architecture rejection test deliberately needs the other artifact and does not
+silently skip it. The native scripts discover the installed compiler toolset.
+From `tools\WinUIProfiler`:
+
+```powershell
+.\WinUIProfiler.Native\Build-NativeDll.ps1 -Architecture x64
+.\WinUIProfiler.Native\Build-NativeDll.ps1 -Architecture ARM64
+dotnet restore WinUIProfiler.IntegrationTests\WinUIProfiler.IntegrationTests.csproj --locked-mode
+dotnet test WinUIProfiler.IntegrationTests\WinUIProfiler.IntegrationTests.csproj -c Release --no-restore
+```
+
+Interop tests choose the DLL matching the actual .NET process architecture,
+load it by an explicit local absolute path with constrained dependency search,
+and invoke real exports. ARM64 cross-compilation on x64 is not ARM64 execution.
+The native sampler tests can run independently using
+`WinUIProfiler.Native.Tests\Run-NativeTests.ps1` and
+`WinUIProfiler.Native.Tests\Run-NativeDllTests.ps1`; these do not require product
+ETW sessions. The complete Engine suite does use ETW: run it separately from
+framework lifecycle/instrumentation sessions to preserve enablement isolation.
+The IntegrationTests suite also creates real collector ETW sessions and needs
+the same session permissions and isolation.
+
+`NativeMetricSession` retains a selected-target handle with query-limited and
+synchronize rights and polls CPU/memory/GPU on `MetricPollingWorker`, not a UI or
+ETW-decoding thread. Each batch retains native boot-clock acquisition/sample
+intervals, GPU's original PDH FILETIME timestamps, and a separate actual QPC
+bracket around the three sequential calls;
+the bracket is not an atomic snapshot or an invented boot-to-QPC conversion.
+The configured delay is between acquisitions, so consumers must use actual
+recorded intervals rather than assuming an exact timer period.
+
+Publication uses a nonblocking admission callback intended for bounded ingress.
+A rejected sample faults polling instead of silently dropping it. A missing
+target or changed identity publishes its final missing batch and then stops.
+Callers must observe `Completion`; acquisition, publication and native ABI
+errors propagate through it. Stop/disposal waits for any in-flight call before
+closing native modules and the target handle. No new capture starts after
+stopping. Its typed terminal status is set only after the final batch is accepted;
+identity mismatch and authoritative target exit remain distinct.
+A GPU capture with no
+selected-process engine rows remains unavailable, never measured zero. The GPU
+normalizer reports the busiest measured engine, not the sum of engine percentages.
+GPU-engine source version 1 leaves its process-wide committed/resident memory
+unavailable. The optional independent DXCore source supplies configured physical
+adapter gauges without inventing an aggregate.
+The current host exposes only Basic Render Driver adapters: interop and missing
+data behavior are tested, but hardware GPU qualification is not claimed.
+
+`NativeMetricPayloads` maps an acquired batch into distinct selected-process CPU,
+system/interrupt/other-or-unattributed CPU aggregates, explicitly unavailable CPU
+utility, three separate memory gauges, busiest-engine and per-engine GPU
+utilization, and four independently unavailable process-wide GPU memory measures.
+An immutable explicit physical-adapter selection, or a fresh graphics-visible
+DXGI inventory when selection is null, adds four independent DXCore
+committed/resident dedicated/shared gauges per scope, including honest missing
+observations. These queries share polling ownership and target termination checks;
+they do not derive adapter coverage from active engine rows. New CPU
+metric identifiers are appended, preserving existing numeric identifiers.
+The GPU winning physical adapter/engine is retained; engine class stays unknown
+unless the source supplies authoritative classification.
+Inventory partial/error/software/selection coverage and its compute/NPU limits
+are retained in the collector Attach quality reason; individual known-scope
+gauges do not claim complete global inventory or process-wide byte aggregation.
+
+Metric event/query records now have an **optional additive**
+`SourceObservation`. Missing metadata in older/synthetic records stays null,
+not a guessed clock mapping. It retains the original boot or UTC FILETIME
+clock, explicit 10 MHz units, native interval/status, separate monotonic
+boot-clock acquisition bracket and native error domains/PDH error. A reversed
+FILETIME interval is allowed only for an explicitly recorded counter reset.
+Nonmeasured source statuses cannot accompany numeric values. `MetricPayload.Interval`
+is the independently recorded session-QPC acquisition bracket, not a conversion
+of that native observation interval.
+
+The stateless `MetricProcessor` runs on the common bounded owner and persists
+these records through the existing single SQLite writer and typed query path.
+The optional field survives envelope serialization, committed projection JSON
+and read-only reopen; this requires no reinterpretation of fixed runtime bytes
+or database-column migration. Actual native polling through typed ingress,
+processing, SQLite and reopen is tested independently of the transport.
+
+`CollectorMetricEmitter` additionally writes the fixed collector provider's
+schema-1 Metric event as forty flat typed fields, not JSON. Its explicit static
+initialization registers the provider before constructing an emitter. Owned
+live sessions and the ETL conformance capture explicitly set a bounded 10-second
+synchronous provider-enable timeout: TraceEvent 3.2.8's observed default is zero
+(asynchronous), despite its XML documentation describing a 10-second default.
+Provider enablement must complete before the first metric is published.
+The decoder routes by payload session and canonical target identity, not the
+collector's header PID, and preserves producer/header provenance separately.
+See [the wire contract](event-contract.md#collector-metric-wire-schema-1).
+
+Real ETL replay and simultaneous live-session tests verify isolation, clock
+preservation and committed queries. An additional integration test acquires
+actual CPU/memory/GPU samples through the native DLL, emits collector ETW and
+persists/reopens the results through the common owner and SQLite writer.
+Only the exact known Windows PartitionInfoExtensionV2 transport descriptor is
+ignored; neighboring unknown descriptors remain diagnostic observations.
+Collector Process and Loss now have separate strict typed schema-1 writers and
+decoders using the same session/target/epoch and serialized sequence. Real ETL
+conformance verifies all three collector events, loss-domain reconstruction
+and durable ProducerLoss health after reopening.
+These tests retain MissingMetadata health rather than claiming a complete
+runtime baseline.
+
+`LiveMetricRecording` composes these components under one acquisition lease.
+`Start` is one-shot; `Started` completes only after synchronous provider
+enablement, Attach publication and the first accepted native metric batch.
+Publication is not a delivery acknowledgment or a durable commit barrier.
+`Completion` returns the terminal processing result. User stop, caller
+cancellation and worker stop all quiesce polling and its in-flight call before
+stopping/draining ETW. Only then does the coordinator seal ingress and release
+the lease, allowing terminal health persistence. The internal component mode
+does not acquire a second lease, complete the worker or stop ETW directly on
+worker cancellation. Statistics-query failure signals the coordinator rather
+than stopping still-usable transport; native calls finish and Loss can be
+published before ETW closes. Standalone `LiveEtwSource` behavior is unchanged.
+An ingress limit can seal the bounded queue earlier; the acquisition lease
+still prevents premature health finalization while components quiesce.
+
+Native/transport failures become durable SourceFailure health and Failed state.
+If transport is still available, acquisition failure also emits an explicit
+Metric-domain Loss with unknown lost-event count. Accepted native TargetMissing
+is a normal authoritative exit: the final missing metrics and Process Exit are
+drained without fabricating failure. IdentityChanged remains failure, never Exit.
+No process-creation QPC is inferred from FILETIME. Stop/disposal before Start and
+precanceled Start open neither native modules nor transport. Eight actual
+integration cases initially covered normal drain/reopen, startup failure, identity mismatch,
+owned child exit, stop-before-start, precancellation, live cancellation and
+processing failure. Three additional cases verify a statistics-query failure
+with native publication held in flight, explicit ingress-byte-limit shutdown,
+and concurrent stop/disposal. The control-failure ordering correction has
+narrow independent review approval. Complete producer capability/baseline reconciliation,
+runtime control/injection and hardware/parity qualification remain unfinished.
 
 The local `global.json` pins installed .NET LTS SDK **10.0.402**. Build
 props/targets terminate discovery without importing product build machinery.
@@ -271,8 +462,9 @@ available raw values and an explicit reason; their delta is Missing, not zero.
 `IProfilerQueryService` defines twelve typed operations (no SQL/chat/MCP):
 session, metrics, startup timeline, frames, object history, XAML tree,
 composition tree, correlations, resource usage, snapshots, snapshot comparison
-and retention paths. The future CLI will expose these operations, not arbitrary
-SQL. There are no target commands on this interface.
+and retention paths. The saved-session [CLI](cli.md) routes these operations,
+not arbitrary SQL; comparison/retention currently report the engine's explicit
+unsupported status. There are no target commands on this interface.
 
 `QueryValidation.Validate` is mandatory at the service boundary and checks the
 caller cancellation token before work. Paged limits are **1–4096**; offsets

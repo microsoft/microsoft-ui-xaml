@@ -74,7 +74,11 @@ public sealed record CompareSnapshotsRequest(SessionScope Scope, Guid BaselineId
 public sealed record GetRetentionPathsRequest(SessionScope Scope, Guid SnapshotId, ObjectKey Object, int MaximumDepth, PageRequest Page);
 
 public sealed record SessionInfo(SessionMode Mode, SessionStatus Status, long QpcFrequency, long? ProcessCreationQpc, IReadOnlyList<ProducerInfo> Producers, string? StopReason, IReadOnlyList<ListenerDomainInterval>? ListenerIntervals = null) : IQueryValue;
-public sealed record MetricSample(long TimestampQpc, MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, GpuSampleIdentity? Gpu = null) : IQueryValue;
+public sealed record MetricSample(long TimestampQpc, MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, GpuSampleIdentity? Gpu = null) : IQueryValue
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MetricSourceObservation? SourceObservation { get; init; }
+}
 public sealed record StartupEntry(string Phase, TimeRange Range, ulong? SubmittedFrameId, DataQuality Quality) : IQueryValue;
 public enum FrameAttemptStatus { InProgress, Completed, Failed }
 public sealed record FrameSubmission(ulong SubmittedFrameId, long SubmittedQpc, Guid ProducerEpoch);

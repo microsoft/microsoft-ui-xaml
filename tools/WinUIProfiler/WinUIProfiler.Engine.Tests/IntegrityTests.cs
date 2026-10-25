@@ -8,6 +8,36 @@ namespace WinUIProfiler.Engine.Tests;
 
 public sealed class IntegrityTests
 {
+    [Theory]
+    [InlineData(DeviceOperation.BaselinePresent)]
+    [InlineData(DeviceOperation.OwnershipRelease)]
+    public void Device_presence_and_ownership_release_cannot_claim_complete_physical_lifetime(DeviceOperation operation)
+    {
+        var payload = new DevicePayload(CoreTests.Epoch, operation, "D3D11", DataQuality.Complete);
+        Assert.Throws<ArgumentException>(() => EventCodec.Capture(BoundaryTests.Envelope(payload)));
+        var partial = new DataQuality(MeasurementKind.Measured, CoverageState.Partial, "external lifetime is unknown");
+        Assert.Equal(partial, EventCodec.ReadPayload<DevicePayload>(
+            EventCodec.Capture(BoundaryTests.Envelope(payload with { Quality = partial }))).Quality);
+    }
+
+    [Fact]
+    public void Present_time_logical_surface_does_not_claim_complete_baseline_or_physical_bytes()
+    {
+        var payload = new ResourcePayload(new(CoreTests.Process, IdentityDomain.Resource, CoreTests.Epoch, 1),
+            ResourceOperation.BaselinePresent, CoreTests.Session, null, null, SizeProvenance.Unknown, null, 64, 32,
+            DataQuality.Complete, new(ResourceKind.CompositionSurface, ResourceKindEvidence.RuntimeBridge, "logical wrapper"));
+        Assert.Throws<ArgumentException>(() => EventCodec.Capture(BoundaryTests.Envelope(payload)));
+        var partial = new DataQuality(MeasurementKind.Measured, CoverageState.Partial, "physical backing is unknown");
+        var decoded = EventCodec.ReadPayload<ResourcePayload>(
+            EventCodec.Capture(BoundaryTests.Envelope(payload with { Quality = partial })));
+        Assert.Equal(ResourceOperation.BaselinePresent, decoded.Operation);
+        Assert.Null(decoded.BackingAllocationId);
+        Assert.Null(decoded.AllocationBytes);
+        Assert.Equal(SizeProvenance.Unknown, decoded.SizeProvenance);
+        Assert.Throws<ArgumentException>(() => EventCodec.Capture(BoundaryTests.Envelope(
+            decoded with { AllocationBytes = 64 * 32 * 4 })));
+    }
+
     [Fact]
     public void Visual_property_units_and_correlation_domains_are_enforced()
     {
@@ -89,5 +119,26 @@ public sealed class IntegrityTests
         Assert.Equal(1UL, EventCodec.ReadPayload<FramePayload>(EventCodec.Capture(BoundaryTests.Envelope(submitted))).SubmittedFrameId);
         Assert.Equal(FrameOutcome.Failed, EventCodec.ReadPayload<FramePayload>(EventCodec.Capture(BoundaryTests.Envelope(failedAfterCommit))).Outcome);
         EventCodec.Capture(BoundaryTests.Envelope(new FramePayload(null, null, FrameOutcome.StandaloneCommit, 0)));
+    }
+
+    [Fact]
+    public void Multiple_root_attempts_can_share_one_physical_submission_without_counting_twice()
+    {
+        var roots = new[] { CoreTests.Session, Guid.Parse("3544c192-28c8-43f0-b4b6-cd4d47ec774c") };
+        var attempts = roots.Select((root, index) => new AttemptReference(CoreTests.Epoch, (ulong)index + 1, root, 1)).ToArray();
+        var events = attempts.Select(attempt => EventCodec.Capture(BoundaryTests.Envelope(
+            new FramePayload(attempt, 7, FrameOutcome.Submitted, 0)))).ToArray();
+        var payloads = events.Select(EventCodec.ReadPayload<FramePayload>).ToArray();
+        Assert.Equal(2, payloads.Select(payload => payload.Attempt!.Value.RootId).Distinct().Count());
+        Assert.Single(events.Select((e, index) => (e.Process, payloads[index].Attempt!.Value.ProducerEpoch,
+            payloads[index].SubmittedFrameId)).Distinct());
+        Assert.Single(events.Select(e => e.TimestampQpc).Distinct());
+
+        var context = new ResultContext(new(CoreTests.Session, CoreTests.Process), new(2, 200), DataQuality.Complete);
+        var frames = attempts.Select(attempt => new FrameInfo(attempt, new(50, 150), FrameAttemptStatus.Completed,
+            new(7, 100, CoreTests.Epoch), 0, [])).ToArray();
+        var page = new QueryPage<FrameInfo>(context, frames, new(2, 0, null, false));
+        Assert.Equal(2, page.Items.Count);
+        Assert.Single(page.Items.Select(frame => (frame.Attempt.ProducerEpoch, frame.Submission!.SubmittedFrameId)).Distinct());
     }
 }

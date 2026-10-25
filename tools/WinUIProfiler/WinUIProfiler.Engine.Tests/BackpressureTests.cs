@@ -67,9 +67,10 @@ public sealed class BackpressureTests
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public async Task Owner_input_boundary_includes_exact_metadata_provenance_and_header_bytes(int adjustment)
+    [InlineData(0, false)]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    public async Task Owner_input_boundary_includes_exact_metadata_provenance_and_header_bytes(int adjustment, bool useDefaultProjections)
     {
         using var f = new StoreFixture();
         using var store = f.Create();
@@ -82,12 +83,14 @@ public sealed class BackpressureTests
         int Bytes(object value) => System.Text.Encoding.UTF8.GetByteCount(System.Text.Json.JsonSerializer.Serialize(value, value.GetType(), WireJson.Options));
         var exact = 32 + EventCodec.Encode(envelope).Length + Bytes(provenance) + Bytes(f.Info) + Bytes(quality);
         Assert.True(exact >= 1024);
-        await using var worker = new ProcessingWorker(store, f.Info, new(BatchBytes: exact + adjustment));
+        await using var worker = new ProcessingWorker(store, f.Info, new(BatchBytes: exact + adjustment),
+            processors: useDefaultProjections ? null : []);
         Assert.True(worker.TryEnqueue(new(source, provenance)));
         worker.Complete(SourceCompletion.FiniteEnd);
         var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
-        Assert.Equal(adjustment == 0 ? 1 : 0, result.DurableBoundary.IngestOrdinal);
-        Assert.Equal(adjustment == 0 ? SessionStatus.Completed : SessionStatus.StoppedAtLimit, result.Status);
+        var fits = adjustment == 0 && !useDefaultProjections;
+        Assert.Equal(fits ? 1 : 0, result.DurableBoundary.IngestOrdinal);
+        Assert.Equal(fits ? SessionStatus.Completed : SessionStatus.StoppedAtLimit, result.Status);
     }
 
     [Fact]

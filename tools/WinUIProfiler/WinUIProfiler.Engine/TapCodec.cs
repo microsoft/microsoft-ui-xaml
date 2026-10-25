@@ -26,6 +26,18 @@ public static class TapCodec
     public static TapMessage Decode(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length < TapProtocol.HeaderBytes) throw new ArgumentException("Truncated TAP header.");
+        var header = DecodeHeader(bytes[..TapProtocol.HeaderBytes]);
+        if (bytes.Length != TapProtocol.HeaderBytes + header.BodyLength)
+            throw new ArgumentException("Exactly one complete TAP message is required.");
+        var body = (ITapBody?)JsonSerializer.Deserialize(bytes[TapProtocol.HeaderBytes..], BodyType(header.Type), WireJson.Options)
+            ?? throw new JsonException("Command body cannot be null.");
+        Validate(body);
+        return new(header, body);
+    }
+
+    public static TapHeader DecodeHeader(ReadOnlySpan<byte> bytes)
+    {
+        if (bytes.Length != TapProtocol.HeaderBytes) throw new ArgumentException("Exactly one TAP header is required.");
         var length = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
         var version = BinaryPrimitives.ReadUInt16LittleEndian(bytes[4..]);
         var type = (TapMessageType)BinaryPrimitives.ReadUInt16LittleEndian(bytes[6..]);
@@ -33,18 +45,20 @@ public static class TapCodec
         var schema = BinaryPrimitives.ReadUInt32LittleEndian(bytes[24..]);
         if (version != TapProtocol.Version || schema != ContractVersions.Schema)
             throw new NotSupportedException("Unsupported TAP protocol/body schema version.");
-        if (length is 0 or > TapProtocol.MaximumBodyBytes || bytes.Length != TapProtocol.HeaderBytes + length)
-            throw new ArgumentException("Invalid bounded body length; exactly one complete message is required.");
+        if (length is 0 or > TapProtocol.MaximumBodyBytes)
+            throw new ArgumentException("Invalid bounded TAP body length.");
         Require.Id(id);
-        var body = (ITapBody?)JsonSerializer.Deserialize(bytes[TapProtocol.HeaderBytes..], BodyType(type), WireJson.Options)
-            ?? throw new JsonException("Command body cannot be null.");
-        Validate(body);
-        return new(new(length, version, type, id, schema), body);
+        _ = BodyType(type);
+        return new(length, version, type, id, schema);
     }
 
     private static Type BodyType(TapMessageType type) => type switch
     {
         TapMessageType.Handshake => typeof(HandshakeBody),
+        TapMessageType.Hello => typeof(HelloBody),
+        TapMessageType.TakeSnapshot => typeof(TakeSnapshotBody),
+        TapMessageType.SnapshotChunk => typeof(SnapshotChunkBody),
+        TapMessageType.SnapshotResult => typeof(SnapshotResultBody),
         TapMessageType.Capabilities => typeof(CapabilitiesRequestBody),
         TapMessageType.CapabilitiesResult => typeof(CapabilitiesBody),
         TapMessageType.Rundown => typeof(RundownBody),
@@ -65,6 +79,28 @@ public static class TapCodec
         }
         switch (body)
         {
+            case TakeSnapshotBody p:
+                Require.Id(p.CaptureId);
+                break;
+            case SnapshotChunkBody p:
+                Require.Id(p.CaptureId);
+                if (p.Index is < 0 or >= TapProtocol.MaximumSnapshotChunks || p.DataBase64 is null ||
+                    p.DataBase64.Length > (TapProtocol.SnapshotChunkBytes + 2) / 3 * 4)
+                    throw new ArgumentException("Snapshot chunk exceeds its bound.");
+                var chunk = Convert.FromBase64String(p.DataBase64);
+                if (chunk.Length is 0 or > TapProtocol.SnapshotChunkBytes ||
+                    Convert.ToBase64String(chunk) != p.DataBase64)
+                    throw new ArgumentException("Snapshot chunks require bounded canonical base64.");
+                break;
+            case SnapshotResultBody p:
+                Require.Id(p.CaptureId);
+                if (p.ChunkCount is < 1 or > TapProtocol.MaximumSnapshotChunks ||
+                    p.ByteCount is < 1 or > TapProtocol.MaximumSnapshotBytes)
+                    throw new ArgumentException("Snapshot result exceeds its bound.");
+                break;
+            case HelloBody p:
+                if (p.Message != "hello") throw new ArgumentException("TAP hello message must be exactly 'hello'.");
+                break;
             case HandshakeBody p:
                 Require.Id(p.SessionId); p.Process.Validate();
                 if (p.SchemaVersion != ContractVersions.Schema) throw new NotSupportedException("Unsupported handshake schema.");
@@ -73,9 +109,11 @@ public static class TapCodec
                     throw new ArgumentException("Handshake nonce must be exactly 32 bytes.");
                 break;
             case CapabilitiesBody p:
-                Require.Id(p.Epoch);
+                if (p.Epoch is { } epoch) Require.Id(epoch);
                 if (p.SchemaVersion != ContractVersions.Schema) throw new NotSupportedException("Unsupported capability schema.");
                 EventValidation.ValidateCapabilities(p.Capabilities);
+                if (p.Epoch is null && p.Capabilities.Count != 0)
+                    throw new ArgumentException("A TAP without a private runtime epoch cannot advertise private runtime capabilities.");
                 break;
             case CapabilitiesRequestBody p:
                 if (p.SchemaVersion != ContractVersions.Schema) throw new NotSupportedException("Unsupported capability request schema.");

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace WinUIProfiler.Contracts;
 
 [Flags]
@@ -9,16 +11,18 @@ public enum VisualProperty { OffsetX, OffsetY, Width, Height, Opacity, IsVisible
 public enum BoundaryKind { Initialization, DeviceCreation, LayoutMeasure, LayoutArrange, Render }
 public enum BoundaryPhase { Begin, End }
 public enum FrameOutcome { Attempt, Submitted, Failed, StandaloneCommit, AttemptCompleted }
-public enum ResourceOperation { Create, Destroy, OwnershipRelease, Close, Rebind, Resize, Share }
+public enum ResourceOperation { Create, Destroy, OwnershipRelease, Close, Rebind, Resize, Share, BaselinePresent }
 public enum SizeProvenance { ActualAllocation, ApiDescriptionEstimate, Unknown }
 public enum AllocationOperation { Allocate, Free, Reallocate }
 public enum CaptureKind { Baseline, LightweightSnapshot, OwnershipGraph }
 public enum CapturePhase { Begin, End }
-public enum MetricKind { CpuUtilization, GpuUtilization, ProcessPrivateWorkingSet, ProcessPrivateCommit, ProcessWorkingSet, XamlBytes, ConnectedXamlElements, CanonicalCompositionVisuals, GpuDedicatedCommittedBytes, GpuSharedCommittedBytes, GpuDedicatedResidentBytes, GpuSharedResidentBytes }
-public enum DeviceOperation { Create, Lost, Destroy }
+public enum MetricKind { CpuUtilization, GpuUtilization, ProcessPrivateWorkingSet, ProcessPrivateCommit, ProcessWorkingSet, XamlBytes, ConnectedXamlElements, CanonicalCompositionVisuals, GpuDedicatedCommittedBytes, GpuSharedCommittedBytes, GpuDedicatedResidentBytes, GpuSharedResidentBytes, SystemCpuUtilization, InterruptCpuUtilization, OtherOrUnattributedCpuUtilization, ProcessCpuUtility }
+public enum DeviceOperation { Create, Lost, Destroy, BaselinePresent, OwnershipRelease }
 public enum ProcessOperation { Start, Exit, Attach }
 
 public interface IEventPayload;
+public sealed record ObservedXamlPayload(Guid ProviderId, string Name, ushort EventId, byte Version,
+    byte Level, ulong Keywords, byte Opcode, ushort Task, ReadOnlyMemory<byte> RawPayload, DataQuality Quality) : IEventPayload;
 public sealed record RuntimeCapabilitiesPayload(Guid Epoch, string Build, HostArchitecture Architecture, ProcessInstanceKey Process, long QpcFrequency, IReadOnlyList<CapabilityInfo> Capabilities) : IEventPayload;
 public sealed record ProcessPayload(ProcessOperation Operation, long? CreationQpc, DataQuality Quality) : IEventPayload;
 public sealed record ObjectLifetimePayload(ObjectKey Object, LifetimeOperation Operation, ulong? TypeId, ulong? Address, DataQuality Quality, XamlTypeClassification? Classification = null, ChangeCause? Cause = null) : IEventPayload;
@@ -40,7 +44,11 @@ public sealed record CaptureChunkPayload(Guid CaptureId, uint ChunkIndex, Guid R
     IReadOnlyList<AssociationPayload> Associations, IReadOnlyList<TypeResolvedPayload> Types,
     IReadOnlyList<AllocationPayload> Allocations) : IEventPayload;
 public sealed record LossPayload(Guid ProducerEpoch, TimeRange Interval, ulong? LostEvents, string Reason, IReadOnlyList<SequenceDomainKey>? Domains = null) : IEventPayload;
-public sealed record MetricPayload(MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, GpuSampleIdentity? Gpu) : IEventPayload;
+public sealed record MetricPayload(MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, GpuSampleIdentity? Gpu) : IEventPayload
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MetricSourceObservation? SourceObservation { get; init; }
+}
 
 public sealed record EventDefinition(EventIdentity Identity, byte Level, EventKeyword Keyword, Type PayloadType);
 
@@ -49,6 +57,8 @@ public static class EventCatalog
     public static readonly Guid RuntimeProviderId = Guid.Parse("43a73524-bc37-4f6e-9ba8-84b5346f61c2");
     public static readonly Guid CollectorProviderId = Guid.Parse("b58fa3ac-f7e8-4a24-88cd-478ab589de21");
     public static readonly Guid KernelProcessProviderId = Guid.Parse("22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716");
+    public static readonly Guid StandardXamlProviderId = Guid.Parse("531a35ab-63ce-4bcf-aa98-f88c7a89e455");
+    public static readonly Guid ObservationProviderId = Guid.Parse("c558a4ad-4e42-4ea1-b547-c406a47f9409");
     public const string RuntimeProviderName = "WinUIProfiler-Runtime";
     public const string CollectorProviderName = "WinUIProfiler-Collector";
     public const byte Version = 1;
@@ -77,7 +87,8 @@ public static class EventCatalog
     public static IReadOnlyList<EventDefinition> Platform { get; } = Array.AsReadOnly(new[]
     {
         new EventDefinition(new(KernelProcessProviderId, "ProcessStart/Start", 1, 4, 0x8000000000000010), 4,
-            (EventKeyword)0x8000000000000010, typeof(ProcessPayload))
+            (EventKeyword)0x8000000000000010, typeof(ProcessPayload)),
+        Define<ObservedXamlPayload>(ObservationProviderId, 1, "ObservedXaml", EventKeyword.Capabilities)
     });
     private static EventDefinition Define<T>(Guid provider, ushort id, string name, EventKeyword keyword, byte level = 4) where T : IEventPayload =>
         new(new(provider, name, id, Version, (ulong)keyword), level, keyword, typeof(T));

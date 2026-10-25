@@ -2,6 +2,26 @@
 
 ## Entry points and wire support
 
+`TargetConnection` uses `BufferedRuntimeEvents` for its live connection feature:
+a dedicated listener owns TraceEvent callbacks, a long-running decoder drains
+an owned queue bounded to **16384 records / 64 MiB retained-byte accounting**,
+and the existing owner/writer persists input-only session batches. The callback
+copies schema data but does not decode typed observations or call SQLite/UI.
+`NativeRecord.RetainedBytes` conservatively accounts for retained payload,
+field/container and string/array data; it is not a GC working-set measurement.
+The listener starts before target selection, then filters by target header PID;
+the private-runtime decoder verifies full PID/creation identity. Standard XAML
+headers have only PID evidence; their original creation time remains null and
+their semantic coverage is partial. Overflow, failed ingress and
+ETW loss surface as incomplete acquisition, never successful silent eviction.
+Default private connection keywords are `0x11`; explicit detailed capture uses `0x3f`.
+The connection also enables standard XAML Core/Layout/Rendering (`0x1044`,
+informational), or all standard keywords at verbose level for detailed capture.
+The callback copies standard payload bytes without interpreting arbitrary TDH
+field shapes; the decoder persists the original descriptor as source evidence.
+This is distinct from the lower-level `LiveEtwSource` adapter described below.
+See [live controls and scope](app.md#launch-or-connect-to-a-target).
+
 Create a new `SessionStore`, then a `ProcessingWorker(store, recordingInfo,
 options, processors)`. Keep the store alive until the worker has completed.
 `LiveEtwSource.RunAsync(worker)` and `OfflineEtlSource.RunAsync(worker)` each
@@ -52,7 +72,22 @@ actual Windows event. PID and creation FILETIME come from `ProcessID` and
 `CreateTime` in the payload; the header PID is the creator/emitter. Exact
 creation QPC is unavailable, not inferred from arrival. The stream namespace
 is trace-local and SourceSequence is null: no native epoch/sequence settlement
-is invented. Other platform versions/families are explicit unsupported-schema
+is invented.
+
+Standard `Microsoft-Windows-XAML` (`531a35ab-63ce-4bcf-aa98-f88c7a89e455`)
+events use an explicit local `ObservedXaml` wrapper, provider
+`c558a4ad-4e42-4ea1-b547-c406a47f9409`, ID/version 1/1. This GUID is a local
+normalization namespace, not an enabled ETW provider or a target producer epoch.
+The typed payload preserves original provider/name/ID/version/level/keywords/
+opcode/task and all raw bytes up to 48 KiB, including empty payloads and native
+descriptor version zero. Header PID/TID/activity/QPC and source clock are retained.
+Target filtering precedes payload capture. SourceSequence remains null and the
+stream is trace-local. Original creation FILETIME remains unavailable rather
+than being copied from the selected live process. These events establish source
+evidence only, never private lifetimes, submitted frames or baseline completeness.
+The live connection enables this provider; offline decoding accepts it when present.
+
+Other platform versions/families are explicit unsupported-schema
 diagnostics. The normal live adapter does not enable global kernel families.
 `EventCatalog.All` remains the fixed new-profiler schema-1 catalog; the explicit
 platform definitions reside in `EventCatalog.Platform` and share codec lookup.
@@ -108,12 +143,77 @@ The worker starts two named, dedicated threads:
 
 * The state owner assigns contiguous selected-session ordinals, preserves late
   QPC timestamps, invalidates on health changes and calls every registered
-  processor for the same immutable ordered batch. Up to five future projection
-  processors are supported. It freezes changes before publication.
+  processor for the same immutable ordered batch. The default five projections
+  are ObjectState, Frame (composing metrics), XamlTree, CompositionTree and
+  ResourceUsage. It freezes changes before publication.
 * The single SQLite writer calls P02's synchronous writer API. Normalized
   sources, original provenance and associated derived changes commit in one
   transaction. The durable watermark advances only after `Commit` succeeds.
   Readers continue to use durable database checkpoints, never owner memory.
+
+Passing no processor list selects all five, including through
+`LiveMetricRecording`. An explicitly supplied list replaces that default; `[]`
+selects input-only recording. Verified capture End routing and atomic baseline
+page delivery are not yet integrated, and raw capture events cannot establish
+baseline completeness.
+
+### Owner-side baseline page preparation (bounded P08 building block)
+
+`BaselinePagePreparer` is constructed and invoked synchronously on the calling
+state-owner thread. The caller must provide the actual next-canonical validated
+runtime baseline End, its preceding canonical watermark, and already-reconciled,
+owned chunks. `PreparedBaseline` assembly/delivery evidence alone is **not**
+reconciliation or permission to invoke this operation. Neither this component
+nor `CommitBaseline` establishes controller publication authority.
+
+The preparer accepts the complete bounded ordinary processor set (at most five).
+It exhausts `PublishBaseline` for each `IVerifiedBaselineProcessor` and ordinary
+`Process` on the singleton actual End for every other supplied processor, on
+that owner, freezing and checking each candidate incrementally. No processor is
+silently filtered. The returned
+`BaselineProjectionPages` contains only immutable End/info/quality/provenance
+and read-only frozen pages, never a deferred processor iterator, chunks, or
+processor state. The writer may later pass those values to `CommitBaseline`;
+there is no writer queue/control integration or automatic raw-End routing here.
+
+The aggregate allowance is shared across all supplied processors: at most
+131,072 derived records and 64 MiB of logical encoded accounting. Each page
+contains at most 4,096 rows and 16 MiB of changes, and each derived serialized
+value is at most 64 KiB. Optional smaller aggregate allowances cannot exceed
+those hard limits. Header/row validation and freezing are shared with
+`CommitBaseline`: encoded original End, frozen info/quality, original provenance
+including clock mapping, one 32-byte header, and 16 bytes per change are counted
+exactly once. Pages do not introduce additional logical headers. These limits
+do not increase ordinary `Commit`'s 4,096-row/16-MiB bounds and are not a total
+CLR allocation bound. Composition's local emission allowance is independent;
+only the preparer consumes the shared output budget.
+
+Preparation is single-attempt. Validation failure, output overflow, processor
+failure or cancellation returns no result; disposal stops enumeration and no
+storage publication occurs. Discard **all involved processor state** after a
+failed attempt: partial state mutation is terminal, not rollback or retry.
+Successful preparation is still not a durable commit or publication permission.
+The writer revalidates the actual durable predecessor and immutable session
+mode/frequency when it commits.
+
+**All-five End preparation prerequisite is implemented:** the exact ordinary
+default set remains ObjectState, Frame, XamlTree, CompositionTree and
+ResourceUsage, with a single resource correlation owner and no sixth metric
+processor. Frame does not read CaptureBoundary as a frame fact, but its ordinary
+`Process([End], context)` preserves retained frame/startup revisions when quality
+changes or invalidation is pending. These revisions reference the real canonical
+End ordinal; their historical ranges, submission timestamps and change
+provenance retain Frame's existing semantics. No Frame fact is invented for an
+empty history or an unchanged context.
+
+`CommitBaseline` admits `FrameInfo` and `StartupEntry` in addition to object,
+tree, composition, correlation and resource rows. Both preparation routes share
+the same aggregate budget, cancellation, source/key validation, ordinary row
+freezing and immutable pages. All rows and original End target/QPC/clock commit
+atomically or not at all. `MetricSample` remains rejected for a baseline End;
+snapshot/session results are not newly admitted. This closes the fifth-processor
+preparation/storage gap, not the remaining coordinator/reconciliation, raw-End
+routing or owner/writer queue integration gates, and does not claim P08 completion.
 
 Default logical queue bounds (both independently enforced):
 
@@ -150,7 +250,7 @@ marked incomplete and acquisition stops at the preceding queued/durable source
 boundary; earlier queued batches still drain. Zero remaining output allowance
 conservatively stops rather than invoking more projection code to guess whether
 it would yield nothing. A full input-only batch with no processors can commit
-at the exact byte boundary.
+at the exact byte boundary; default projections require additional output allowance.
 The owner may wait up to five seconds for persistence capacity; the ETW callback
 never waits for the writer. A configured bound/deadline breach stops acquisition
 and marks an explicitly incomplete tail. Producer metadata retains at most 128

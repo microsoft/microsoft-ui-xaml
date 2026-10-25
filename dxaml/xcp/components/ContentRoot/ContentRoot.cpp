@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
 
 #include <corep.h>
 #include "InputServices.h"
@@ -70,6 +71,7 @@ CContentRoot::CContentRoot(_In_ CContentRoot::Type type, _In_ XUINT32 background
 
 CContentRoot::~CContentRoot()
 {
+    WinUIProfiler::Hooks::ForgetRoot(this);
     VERIFYHR(Close());
 
     if (m_type == CContentRoot::Type::CoreWindow)

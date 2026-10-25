@@ -72,7 +72,9 @@ public sealed class ProcessingWorker : IAsyncDisposable
             throw new InvalidOperationException("A fresh processing owner requires a new recording. Recovery needs explicit processor/continuity reconstruction, not blind resume.");
         this.info = QueryResultValidation.Freeze(info, new(store.Scope, store.Watermark, Partial("No complete runtime baseline or projection coverage has been established.")));
         if (info.Status != SessionStatus.Recording || !store.UnfinishedRecording) throw new InvalidOperationException("Worker needs an unfinished writable recording.");
-        this.processors = processors?.ToArray() ?? [];
+        this.processors = processors?.ToArray() ??
+            [new ObjectStateProcessor(), new FrameProcessor(), new XamlTreeProcessor(),
+                new CompositionTreeProcessor(), new ResourceUsageProcessor()];
         if (this.processors.Length > 5 || this.processors.Any(p => p is null)) throw new ArgumentException("At most five owner-thread projections are supported.");
         ingress = new(this.options.IngressItems, this.options.IngressBytes);
         persistence = new(this.options.PersistenceItems, this.options.PersistenceBytes);
