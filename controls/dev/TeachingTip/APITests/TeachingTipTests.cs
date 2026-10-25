@@ -34,7 +34,7 @@ using Microsoft.UI.Xaml.Shapes;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class TeachingTipTests : ApiTestBase
+    public partial class TeachingTipTests : ApiTestBase
     {
         // Scenario: open a normal tip and a light-dismiss tip (the light-dismiss one has a blue Background set before
         //           it is shown), set Background on the normal tip through its property and its identifier, then turn
