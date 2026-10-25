@@ -409,6 +409,11 @@ bool TableView::ClearSort()
 
 bool TableView::IsActiveSourceOwnedByOther() const
 {
+    // A refused reclaim leaves no active source while it waits for the owner to let go.
+    if (m_awaitedSource.get())
+    {
+        return true;
+    }
     auto const source = ShapingSourceInternal();
     return source && m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
 }

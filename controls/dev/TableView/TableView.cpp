@@ -3588,6 +3588,11 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
         {
             QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
             {
+                // A source sort the app declared since the opt-out is newer: adopt it before clearing.
+                if (m_sortReconcileQueued)
+                {
+                    ReconcileSortStateWithSource();
+                }
                 if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort() && !IsSortLitOnlyByApp())
                 {
                     SortByColumnInternal(optedOut, winrt::SortDirection::None, false, false);

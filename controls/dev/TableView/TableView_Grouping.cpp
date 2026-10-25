@@ -812,6 +812,8 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // Older deferred work runs first, so a provider it replaces does not make this request look stale.
+    FlushDeferredEditReshapes();
     const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {

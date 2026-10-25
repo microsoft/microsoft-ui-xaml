@@ -1149,7 +1149,11 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
     {
         // Work deferred past an earlier forced close is older than this request.
         FlushDeferredEditReshapes();
-        return true;
+        // A handler run by that work may have opened an edit; end it like any other.
+        if (m_editState == EditState::None)
+        {
+            return true;
+        }
     }
 
     // Already inside a transition (a consumer callback, or a deferral in flight): the reshape
