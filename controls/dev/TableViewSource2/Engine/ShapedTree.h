@@ -33,8 +33,9 @@
 //     never through a group.
 //   - Applying or removing GroupBy rebuilds GroupNodes (O(n) bucketing); the source tree is
 //     untouched. Engine state for records lives in each record's ShapeState slot.
-//   - ShapedRef and GroupNode stay inside the engine and the flattener. Consumers see VisibleRows
-//     and the TableViewRowInfo / TableViewGroupInfo derived from them.
+//   - ShapedRef and GroupNode stay native: the engine, the flattener (whose visible list is a
+//     vector of ShapedRef), the WinRT visible list and the row metadata provider. TableView sees
+//     items and the TableViewRowInfo / TableViewGroupInfo derived from them.
 //   - UI-thread affine, like SourceTable. GroupNodes are owned by the engine in a container with
 //     stable addresses, so GroupNode* and ShapedRef stay valid until the engine drops the group.
 
@@ -58,9 +59,18 @@ struct ShapedRef
     GroupNode* Group() const noexcept;
     SourceRecord* Record() const noexcept;
 
+    // Parent in the shaped tree, O(1). Null only for the shaped root (and a null ref):
+    //   group: GroupNode::Parent
+    //   nested record: Record()->Parent (source parent)
+    //   top-level record: Record()->Shape.Group (bottom-level group, or the shaped root when
+    //   ungrouped)
+    // The one upward walk used by the flattener (IndexOf, IsShown, count propagation), set size,
+    // parent identity and "go to parent". Not stored in the visible list.
+    ShapedRef ShapedParent() const noexcept;
+
     // Children this node has in the shaped tree, O(1). The single rule for expandability
     // (IsExpandable = ShapedChildCount() > 0), ChildCount on a record row, SizeOfSet (called on
-    // Parent) and the flattener's Expandable state (count went 0 <-> 1):
+    // ShapedParent()) and the flattener's Expandable state (count went 0 <-> 1):
     //   group or shaped root: Group()->Children.size()
     //   record, ChildrenShaped set: Record()->Shape.ShapedChildren.size()
     //   record otherwise: Record()->Children.size()
@@ -68,7 +78,13 @@ struct ShapedRef
     // every child is filtered out. Not stored; derived on demand.
     uint32_t ShapedChildCount() const noexcept;
 
+    // Same node (same tagged pointer).
+    bool operator==(ShapedRef const& other) const noexcept;
+    bool operator!=(ShapedRef const& other) const noexcept;
+
 private:
+    friend struct ShapedRefHash;
+
     static constexpr uintptr_t c_groupTag = 1;
 
     uintptr_t m_bits{ 0 };
@@ -117,6 +133,12 @@ struct GroupNode
     uint32_t VisibleDescendantCount{ 0 };
 
     bool IsRoot() const noexcept { return Parent == nullptr; }
+};
+
+// Hash of the tagged pointer, for ShapedRef-keyed maps (the flattener's dirty set).
+struct ShapedRefHash
+{
+    size_t operator()(ShapedRef const& ref) const noexcept;
 };
 
 static_assert(alignof(SourceRecord) >= 2, "ShapedRef uses the low pointer bit as the group tag");

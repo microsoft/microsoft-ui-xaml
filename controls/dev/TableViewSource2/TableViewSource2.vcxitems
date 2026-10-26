@@ -21,6 +21,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapedEdit.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapedTree.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapeState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\ShapingManager.h" />
@@ -31,6 +32,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Spec\ShapeDelegates.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Spec\ShapeSpec.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)View\FlatDelta.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)View\Flattener.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)View\GroupExpansion.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource2.properties.cpp" />

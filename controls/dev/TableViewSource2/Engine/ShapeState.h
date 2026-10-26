@@ -11,6 +11,7 @@
 
 #include "tracker_ref.h"
 
+struct GroupNode;
 struct SourceRecord;
 
 // Engine state stored inline on every SourceRecord (declarations only).
@@ -24,7 +25,7 @@ struct SourceRecord;
 // record when shaping starts, a pointer hop and null check on every access, and a rule for when to
 // free. Revisit if the fixed size grows.
 //
-// Written only by the engine (and the flattener for VisibleDescendantCount). The source tree links
+// Written only by the engine (and the flattener for VisibleDescendantCount and Expanded). The source tree links
 // (SourceRecord::Parent/Children) are never written here. UI-thread affine.
 enum class ShapeFlags : uint8_t
 {
@@ -46,7 +47,7 @@ enum class ShapeFlags : uint8_t
 
     // The record's rows are expanded. Records keep their own expansion (they survive reshapes and,
     // through Reconcile, Resets); only groups need the expansion model. Default clear (collapsed).
-    // Written by ShapingManager on Expand/Collapse, read by the flattener.
+    // Written and read by the flattener (Expand/Collapse, ExpandAllRows/CollapseAllRows).
     Expanded = 0x10,
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeFlags);
@@ -73,6 +74,14 @@ struct ShapeState
     // expanded or not, so expansion never runs app code and every edit has a shaped index.
     std::vector<SourceRecord*> ShapedChildren;
 
-    // Group membership is not stored here: the engine maps top-level records to their GroupNode
-    // (m_groupOf, see the shaped tree section), and the group key lives on GroupNode::Key.
+    // Top-level records only: the GroupNode holding this record in the shaped tree, i.e. its shaped
+    // parent: the bottom-level group while GroupBy is active, the shaped root otherwise. Null for
+    // nested records (their shaped parent is SourceRecord::Parent) and for a top-level record not in
+    // the shaped tree (filtered out). The source tree has no group links (a top-level record's
+    // Parent is null), so this is the only upward link from a record to a GroupNode. Non-owning.
+    // Written by the engine when it places or moves a top-level record (bucketing, re-bucketing, a
+    // GroupBy change); read by the engine to find the old group on remove or a group-key change,
+    // and through ShapedRef::ShapedParent() by the flattener's ancestor walks. Replaces a
+    // record -> group map. The group key is not cached here: it lives on GroupNode::Key.
+    GroupNode* Group{ nullptr };
 };

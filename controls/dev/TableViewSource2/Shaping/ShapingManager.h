@@ -13,6 +13,8 @@
 #include "Spec/ShapeSpec.h"
 #include "Spec/ShapeDelegates.h"
 #include "Spec/PathEvaluator.h"
+#include "View/Flattener.h"
+#include "View/GroupExpansion.h"
 
 // The shaping coordinator (declarations only). See
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "6. Coordinator".
@@ -24,7 +26,8 @@
 //          PathEvaluator, the ItemsSourceView handed to TableView; later the engine (applied spec,
 //          shaped tree), the flattener and the visible list.
 //   Runs:  verb -> Diff(applied, desired) -> engine apply -> flat delta -> publish to the
-//          visible list.
+//          visible list. Local changes go engine -> IShapedEditSink (m_flattener) as ShapedEdits;
+//          reshapes go through Reapply() and publish a stable Reset ("Change pipeline").
 //   Hears: SourceTable::SourceChanged and ItemChanged; it is their only subscriber.
 //
 // Unlike v1 ShapedItemsSource it is plain C++, not the WinRT collection the repeater binds to.
@@ -84,7 +87,8 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Teardown: SourceTable::Clear() (detach, handlers nulled), ShapeDelegates::Clear(),
+    // Teardown: Flattener::Clear() first (it holds raw record pointers), then SourceTable::Clear()
+    // (detach, handlers nulled, records destroyed), ShapeDelegates::Clear(),
     // PathEvaluator::Clear(), m_view.reset(). Must run on the UI thread while m_trackerOwner is alive. Idempotent.
     void Clear();
 
@@ -101,6 +105,11 @@ private:
     // dropped-ItemChanged recovery.
     void Reapply();
 
+    // The single path from a FlatDelta to consumers, whatever produced it (an engine commit,
+    // Expand / Collapse, or an expand-all verb): splices to the visible list's CollectionChanged,
+    // then RowStateEdits to the owner. An empty delta raises nothing.
+    void Publish(FlatDelta const& delta);
+
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
     // Shared because consumers may hold it past this object's lifetime; Clear() detaches it.
@@ -115,8 +124,22 @@ private:
     // resets it while the owner is alive.
     std::optional<tracker_ref<winrt::ItemsSourceView>> m_view;
 
+    // A source notification with more than this many items (a range event, or an insert adopting
+    // several orphans under ParentBy) goes through Reapply() and one stable Reset instead of
+    // ShapedEdits. Descendants carried by an item do not count. 1 matches v1 ShapedItemsSource.
+    static constexpr uint32_t c_bulkThreshold = 1;
+
     // Re-entrancy guard: a verb or Refresh while an apply runs throws.
     bool m_isApplying{ false };
 
-    // Not declared yet: the engine (Phase 4), the flattener and the visible list.
+    // Group expansion, keyed by GroupNode::Identity. Read and written by m_flattener; pruned on
+    // regroup (RetainOnly with the new groups' identities before the old tree is released), on a
+    // dropped group (Erase) and cleared when GroupBy gets a new selector. Declared before
+    // m_flattener, which references it.
+    GroupExpansion m_groupExpansion;
+
+    // Shaped tree -> visible list; the engine's IShapedEditSink.
+    Flattener m_flattener{ m_groupExpansion };
+
+    // Not declared yet: the engine (Phase 4) and the visible list (the WinRT collection).
 };
