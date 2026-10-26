@@ -5,6 +5,12 @@
 
 namespace TableViewDetails
 {
+    inline bool IsKeyDown(winrt::Windows::System::VirtualKey key)
+    {
+        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
+            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    }
+
     // One step up that crosses popup boundaries. A popup's content (a ComboBox dropdown, a flyout)
     // is not a visual descendant of the element that owns it, so a plain VisualTreeHelper walk from
     // a dropdown item never reaches the editor that opened it.

@@ -55,6 +55,11 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     return textBlock;
 }
 
+bool TableViewTextColumn::CanGenerateEditingElementCore()
+{
+    return CellEditingTemplate() || m_binding.get();
+}
+
 winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const winrt::IInspectable& dataItem)
 {
     // An explicit CellEditingTemplate wins: a text column is a convenience over the template path,

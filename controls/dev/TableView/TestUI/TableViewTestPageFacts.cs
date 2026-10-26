@@ -49,6 +49,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
+        internal const string VetoCommitCheckBox = "VetoCommitCheckBox";
+        internal const string SortOnCommitCheckBox = "SortOnCommitCheckBox";
+        internal const string FocusAwayOnCommitCheckBox = "FocusAwayOnCommitCheckBox";
+        internal const string FocusHeaderOnCommitCheckBox = "FocusHeaderOnCommitCheckBox";
+        internal const string CancelAgeBeginEditCheckBox = "CancelAgeBeginEditCheckBox";
+        internal const string AllowSecondaryTableEditingCheckBox = "AllowSecondaryTableEditingCheckBox";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
         internal const string ResetHierarchyButton = "ResetHierarchy";
