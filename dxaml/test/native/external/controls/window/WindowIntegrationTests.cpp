@@ -189,6 +189,61 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     // Test Cases
     //
+#ifdef MUX_PRERELEASE
+    void WindowIntegrationTests::WindowTransparencyOptions()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            auto options = ref new xaml::WindowOptions();
+            options->SupportsTransparency = true;
+            auto transparentWindow = ref new xaml::Window(options);
+            auto closeTransparent = wil::scope_exit([&]() { transparentWindow->Close(); });
+            const HWND transparentHandle = GetWindowHandle(transparentWindow);
+            VERIFY_IS_TRUE((::GetWindowLongPtrW(transparentHandle, GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0);
+
+            // The options can be reused without changing a window already created from them.
+            options->SupportsTransparency = false;
+            auto opaqueWindow = ref new xaml::Window(options);
+            auto closeOpaque = wil::scope_exit([&]() { opaqueWindow->Close(); });
+            auto defaultWindow = ref new xaml::Window();
+            auto closeDefault = wil::scope_exit([&]() { defaultWindow->Close(); });
+            VERIFY_IS_TRUE((::GetWindowLongPtrW(transparentHandle, GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0);
+            VERIFY_ARE_EQUAL(static_cast<LONG_PTR>(0),
+                ::GetWindowLongPtrW(GetWindowHandle(opaqueWindow), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP);
+            VERIFY_ARE_EQUAL(static_cast<LONG_PTR>(0),
+                ::GetWindowLongPtrW(GetWindowHandle(defaultWindow), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP);
+
+            const auto transparentColors = GetColorsForEraseBackgroundMessage(transparentHandle);
+            VERIFY_ARE_EQUAL(RGB(255, 0, 255), transparentColors.first);
+            VERIFY_ARE_EQUAL(RGB(255, 0, 255), transparentColors.second);
+            const auto opaqueColors = GetColorsForEraseBackgroundMessage(GetWindowHandle(opaqueWindow));
+            const auto defaultColors = GetColorsForEraseBackgroundMessage(GetWindowHandle(defaultWindow));
+            VERIFY_ARE_EQUAL(defaultColors.first, opaqueColors.first);
+            VERIFY_ARE_EQUAL(defaultColors.second, opaqueColors.second);
+            VERIFY_ARE_NOT_EQUAL(RGB(255, 0, 255), defaultColors.second);
+        });
+    }
+
+    void WindowIntegrationTests::WindowTransparencyRejectsNullOptions()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            try
+            {
+                auto window = ref new xaml::Window(nullptr);
+                window->Close();
+                VERIFY_FAIL(L"Window must reject null options.");
+            }
+            catch (Platform::Exception^ exception)
+            {
+                VERIFY_ARE_EQUAL(E_INVALIDARG, exception->HResult);
+            }
+        });
+    }
+#endif
+
     void WindowIntegrationTests::CanHideAndShowWindow()
     {
         TestCleanupWrapper cleanup;

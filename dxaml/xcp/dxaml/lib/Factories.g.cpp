@@ -48,6 +48,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_DragEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_FrameworkView();
     _Check_return_ IActivationFactory* CreateActivationFactory_TriggerAction();
+    _Check_return_ IActivationFactory* CreateActivationFactory_WindowOptions();
     _Check_return_ IActivationFactory* CreateActivationFactory_Pointer();
     _Check_return_ IActivationFactory* CreateActivationFactory_Run();
     _Check_return_ IActivationFactory* CreateActivationFactory_Grid();
@@ -705,6 +706,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DragEventArgs"), &DirectUI::CreateActivationFactory_DragEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.FrameworkView"), &DirectUI::CreateActivationFactory_FrameworkView)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.TriggerAction"), &DirectUI::CreateActivationFactory_TriggerAction)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowOptions"), &DirectUI::CreateActivationFactory_WindowOptions)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Input.Pointer"), &DirectUI::CreateActivationFactory_Pointer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Documents.Run"), &DirectUI::CreateActivationFactory_Run)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Grid"), &DirectUI::CreateActivationFactory_Grid)

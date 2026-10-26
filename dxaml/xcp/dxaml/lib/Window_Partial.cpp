@@ -26,6 +26,7 @@
 #include "host.h"
 #include <XamlOneCoreTransforms.h>
 #include <Windows.UI.Composition.h>
+#include <CWindow.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -34,6 +35,53 @@ using namespace RuntimeFeatureBehavior;
 // Work around disruptive max/min macros
 #undef max
 #undef min
+
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT WindowFactory::CreateInstanceWithOptionsImpl(
+    _In_ xaml::IWindowOptions* options,
+    _In_opt_ IInspectable* outer,
+    _Outptr_ IInspectable** inner,
+    _Outptr_ xaml::IWindow** instance)
+{
+    *instance = nullptr;
+    if (inner)
+    {
+        *inner = nullptr;
+    }
+    IFCEXPECT_RETURN(outer == nullptr || inner != nullptr);
+    IFC_RETURN(CheckActivationAllowed());
+
+    BOOLEAN supportsTransparency = FALSE;
+    IFC_RETURN(options->get_SupportsTransparency(&supportsTransparency));
+
+    auto core = DXamlCore::GetCurrent();
+    CREATEPARAMETERS createParameters(core->GetHandle());
+    xref_ptr<CDependencyObject> coreWindow;
+    IFC_RETURN(CWindow::Create(coreWindow.ReleaseAndGetAddressOf(), &createParameters));
+    static_cast<CWindow*>(coreWindow.get())->SetSupportsTransparency(!!supportsTransparency);
+
+    ctl::ComPtr<DependencyObject> peer;
+    IFC_RETURN(core->GetPeer(outer, coreWindow.get(), &peer));
+
+    ctl::ComPtr<IInspectable> innerInstance;
+    if (outer)
+    {
+        innerInstance.Attach(reinterpret_cast<IInspectable*>(peer->AsNonDelegatingInspectable()));
+        peer.Detach();
+    }
+    else
+    {
+        innerInstance.Attach(ctl::iinspectable_cast(peer.Detach()));
+    }
+
+    IFC_RETURN(innerInstance.Get()->QueryInterface(__uuidof(xaml::IWindow), reinterpret_cast<void**>(instance)));
+    if (inner)
+    {
+        *inner = innerInstance.Detach();
+    }
+    return S_OK;
+}
+#endif
 
 // ----------------------------------------------------------------------
 //                             IWindowStatic
@@ -107,10 +155,18 @@ Window::Window()
         }
         m_spWindowImpl = std::make_shared<UWPWindowImpl>(this);
     }
-    else
+}
+
+_Check_return_ HRESULT Window::Initialize()
+{
+    IFC_RETURN(DependencyObject::Initialize());
+    if (!m_spWindowImpl)
     {
-        m_spWindowImpl = std::make_shared<DesktopWindowImpl>(this);
+        // Options live on the core object so they are available before the HWND is created.
+        const bool supportsTransparency = static_cast<CWindow*>(GetHandle())->SupportsTransparency();
+        m_spWindowImpl = std::make_shared<DesktopWindowImpl>(this, supportsTransparency);
     }
+    return S_OK;
 }
 
 _Check_return_ HRESULT Window::get_BoundsImpl(_Out_ wf::Rect* pValue)
@@ -959,4 +1015,3 @@ _Check_return_ HRESULT Window::put_HeightImpl(DOUBLE value)
     IFC_RETURN(m_spWindowImpl->put_HeightImpl(value));
     return S_OK;
 }
-

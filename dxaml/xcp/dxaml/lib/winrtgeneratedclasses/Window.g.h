@@ -175,15 +175,22 @@ namespace DirectUI
        public ctl::BetterAggregableCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::IWindowFactory
         , public ABI::Microsoft::UI::Xaml::IWindowStatics
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::IWindowFactoryFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(WindowFactory, ctl::BetterAggregableCoreObjectActivationFactory)
             INTERFACE_ENTRY(WindowFactory, ABI::Microsoft::UI::Xaml::IWindowFactory)
             INTERFACE_ENTRY(WindowFactory, ABI::Microsoft::UI::Xaml::IWindowStatics)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(WindowFactory, ABI::Microsoft::UI::Xaml::IWindowFactoryFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(WindowFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IWindow** ppInstance);
+        IFACEMETHOD(CreateInstanceWithOptions)(_In_ ABI::Microsoft::UI::Xaml::IWindowOptions* pOptions, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IWindow** ppInstance);
 
         // Static properties.
         IFACEMETHOD(get_Current)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindow** ppValue) override;
@@ -216,6 +223,7 @@ namespace DirectUI
 
 
     private:
+        _Check_return_ HRESULT CreateInstanceWithOptionsImpl(_In_ ABI::Microsoft::UI::Xaml::IWindowOptions* pOptions, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IWindow** ppInstance);
 
         // Customized static properties.
          _Check_return_ HRESULT get_CurrentImpl(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindow** ppValue); 

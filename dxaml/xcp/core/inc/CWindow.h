@@ -23,6 +23,9 @@ protected:
 public:
     DECLARE_CREATE(CWindow);
 
+    bool SupportsTransparency() const { return m_supportsTransparency; }
+    void SetSupportsTransparency(bool value) { m_supportsTransparency = value; }
+
     KnownTypeIndex GetTypeIndex() const override
     {
         return KnownTypeIndex::Window;
@@ -33,5 +36,6 @@ public:
         return PARTICIPATES_IN_MANAGED_TREE;
     }
 
+private:
+    bool m_supportsTransparency = false;
 };
-

@@ -20,6 +20,7 @@ namespace DirectUI
     public:
         // public Window API: IWindow
         Window();
+        _Check_return_ HRESULT Initialize() override;
         _Check_return_ HRESULT get_BoundsImpl(_Out_ wf::Rect* pValue);
         _Check_return_ HRESULT get_VisibleImpl(_Out_ BOOLEAN* pValue);
         _Check_return_ HRESULT get_ContentImpl(_Outptr_result_maybenull_ xaml::IUIElement** pValue);
@@ -136,4 +137,3 @@ namespace DirectUI
         bool m_peggedForHWNDLifetime{ false };
     };
 }
-

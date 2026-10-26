@@ -77,7 +77,9 @@ static int GetClampedWindowSizeInPixels(double clientSizeDips, double scale, int
 // created, and DXamlCore will outlive any Microsoft::UI::XAML::Window instances.
 // DXamlCore::GetCurrent() will always return a valid DXamlCore instance when
 // called from a non-static Microsoft::UI::XAML::Window method.
-DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow) : m_dxamlWindowInstance(parentWindow)
+DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow, bool supportsTransparency) :
+    m_supportsTransparency(supportsTransparency),
+    m_dxamlWindowInstance(parentWindow)
 {
     XamlTelemetry::CreateDesktopWindow(true, reinterpret_cast<uint64_t>(this));
 
@@ -143,13 +145,12 @@ void DesktopWindowImpl::OnCreate() noexcept
                 wrl::Callback<TakeFocusRequestedHandler>(this, &DesktopWindowImpl::OnDesktopWindowXamlSourceTakeFocusRequested).Get(),
                 &m_takeFocusRequestedEventToken));
 
-    // Turn off transparent islands by default. We'll turn them back on on a per-window/per-island basis as system
-    // backdrop brushes are used (see put_SystemBackdrop).
+    // Other windows remain opaque unless a system backdrop is used (see put_SystemBackdrop).
     ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
     ctl::ComPtr<xaml_hosting::IXamlIslandRoot> ixamlIslandRoot = m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
     IFCFAILFAST(ixamlIslandRoot.As(&xamlIslandRoot));
     CXamlIslandRoot* cXamlIslandRoot = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
-    cXamlIslandRoot->SetHasTransparentBackground(false);
+    cXamlIslandRoot->SetHasTransparentBackground(m_supportsTransparency);
 
     // Keep a reference to the IslandInputSite so that we can compare focus HWNDs on losing activation.
     m_islandInputSite = cXamlIslandRoot->GetIslandInputSite();
@@ -1434,6 +1435,11 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:
         {
+            if (m_supportsTransparency)
+            {
+                return 1;
+            }
+
             Theming::Theme appTheme = Theming::Theme::None;
             ctl::ComPtr<xaml::IUIElement> content;
             if(!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
@@ -1870,7 +1876,7 @@ void DesktopWindowImpl::RegisterDesktopWindowClass()
 void DesktopWindowImpl::CreateDesktopWindow()
 {
     _CreateWindow(
-        0,                                 // Extended Style
+        m_supportsTransparency ? WS_EX_NOREDIRECTIONBITMAP : 0,
         s_windowClassName,                 // name of window class
         s_defaultWindowTitle,              // title-bar string
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,  // top-level window
@@ -2607,8 +2613,8 @@ _Check_return_ HRESULT DesktopWindowImpl::SetXamlIslandRootBackground(_In_opt_ A
     }
     else
     {
-        // Restore solid color background - we need an opaque background for in-app acrylic to blend against.
-        cXamlIslandRoot->SetHasTransparentBackground(false);
+        // Restore the creation-time background choice. Ordinary windows stay opaque for in-app acrylic.
+        cXamlIslandRoot->SetHasTransparentBackground(m_supportsTransparency);
     }
 
     return S_OK;

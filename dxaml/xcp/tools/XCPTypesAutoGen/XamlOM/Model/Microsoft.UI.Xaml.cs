@@ -3331,6 +3331,18 @@ namespace Microsoft.UI.Xaml
         Windows.Foundation.Rect GetWindowContentBoundsForElement(Microsoft.UI.Xaml.DependencyObject element);
     }
 
+    [FrameworkTypePattern]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [DXamlIdlGroup("coretypes2")]
+    [Guids(ClassGuid = "4e58945e-5490-4735-9928-3a447ed5c751")]
+    public sealed class WindowOptions
+    {
+        public WindowOptions() { }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public bool SupportsTransparency { get; set; }
+    }
+
     [CodeGen(partial: true)]
     [TypeTable(IsExcludedFromCore = true)]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]
@@ -3511,6 +3523,10 @@ namespace Microsoft.UI.Xaml
         public event Windows.Foundation.TypedEventHandler<Object, Microsoft.UI.Xaml.WindowVisibilityChangedEventArgs> VisibilityChanged;
 
         public Window() { }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [FactoryMethodName("CreateInstanceWithOptions")]
+        public Window(WindowOptions options) { }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public void Activate()

@@ -861,8 +861,10 @@ namespace Microsoft.UI.Xaml
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
+        [constructor_name("Microsoft.UI.Xaml.IWindowFactoryFeature_ExperimentalApi")]
         [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
         {
+            [method_name("CreateInstanceWithOptions")] Window(Microsoft.UI.Xaml.WindowOptions options);
             Double Width;
             Double Height;
             Double MinWidth;
@@ -893,6 +895,15 @@ namespace Microsoft.UI.Xaml
     runtimeclass WindowEventArgs
     {
         Boolean Handled;
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    runtimeclass WindowOptions
+    {
+        WindowOptions();
+        Boolean SupportsTransparency;
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

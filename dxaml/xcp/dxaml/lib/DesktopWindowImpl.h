@@ -20,7 +20,7 @@ namespace DirectUI
     {
 
     public:
-        DesktopWindowImpl(Window* parentWindow);
+        DesktopWindowImpl(Window* parentWindow, bool supportsTransparency);
         ~DesktopWindowImpl() override;
 
         // ---------------------------------------------------------------
@@ -212,6 +212,7 @@ namespace DirectUI
         //     Desktop-specific State
         // ------------------------------------
         bool m_bIsClosed = false;
+        const bool m_supportsTransparency;
         bool m_bIsClosing = false;
         Window* m_dxamlWindowInstance = nullptr;
         // Captured from the controlling owner when an event handler is registered.

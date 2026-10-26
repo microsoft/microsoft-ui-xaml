@@ -62,6 +62,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
 #ifdef MUX_PRERELEASE
+        BEGIN_TEST_METHOD(WindowTransparencyOptions)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates transparent window creation, options snapshotting, and unchanged opaque backgrounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowTransparencyRejectsNullOptions)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window rejects null creation options.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the experimental Width/Height properties on Window can be read and written in DIPs.")

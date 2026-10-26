@@ -548,6 +548,12 @@ HRESULT DirectUI::WindowFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ vo
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowStatics*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowFactoryFeature_ExperimentalApi)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowFactoryFeature_ExperimentalApi*>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -581,6 +587,15 @@ IFACEMETHODIMP DirectUI::WindowFactory::CreateInstance(_In_opt_ IInspectable* pO
     const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
     IFC_RETURN(hr);
     return S_OK;
+}
+IFACEMETHODIMP DirectUI::WindowFactory::CreateInstanceWithOptions(_In_ ABI::Microsoft::UI::Xaml::IWindowOptions* pOptions, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IWindow** ppInstance)
+{
+    HRESULT hr = S_OK;
+    ARG_NOTNULL(pOptions, "options");
+    ARG_VALIDRETURNPOINTER(ppInstance);
+    IFC(CreateInstanceWithOptionsImpl(pOptions, pOuter, ppInner, ppInstance));
+Cleanup:
+    return hr;
 }
 
 // Dependency properties.
