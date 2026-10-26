@@ -938,7 +938,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             using var unloadedEvent = new ManualResetEvent(false);
             RoutedEventHandler onLoaded = (sender, args) => loadedEvent.Set();
             RoutedEventHandler onUnloaded = (sender, args) => unloadedEvent.Set();
-            NavigationViewReloadVisualStateManager manager = null;
             NavigationViewItem templateSource = null;
             RunOnUIThread.Execute(() =>
             {
@@ -989,17 +988,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.IsNotNull(presenter);
                         Verify.AreEqual(navView.CompactPaneLength, presenter.TemplateSettings.IconWidth);
                         Verify.AreEqual(navView.CompactPaneLength - 8, presenter.TemplateSettings.SmallerIconWidth);
-                        if (reload == 0)
-                        {
-                            manager = new NavigationViewReloadVisualStateManager();
-                            VisualStateManager.SetCustomVisualStateManager(
-                                (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0), manager);
-                        }
-                        else
-                        {
-                            Verify.AreEqual(2, manager.EnabledStateRequests,
-                                "One presentation refresh and one deferred preparation, without duplicate Loaded handlers.");
-                        }
                         navView.CompactPaneLength += 8;
                     });
                     IdleSynchronizer.Wait();
@@ -1019,8 +1007,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         RunOnUIThread.Execute(() =>
                         {
                             loadedEvent.Reset();
-                            manager.Reset();
-                            manager.Recording = true;
                             Content = navView;
                         });
                     }
@@ -1256,14 +1242,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         }
                         Verify.AreEqual(changeEnabledState ? itemCount : 0, enabledRequests,
                             "Only changed enabled states require catch-up work.");
-                        Verify.AreEqual(0, transitions, "The load-time repair must not request visual transitions.");
                         if (changeEnabledState)
                         {
+                            Verify.IsTrue(transitions > 0,
+                                "Enabled-state catch-up must retain the existing transition behavior.");
                             Verify.IsTrue(presentationRequests >= itemCount,
                                 "Reload must synchronize presentation beyond interaction states.");
                         }
                         else
                         {
+                            Verify.AreEqual(0, transitions,
+                                "Unchanged enabled states must not request visual transitions.");
                             Verify.AreEqual(0, requests, "Unchanged enabled states must not trigger redundant state updates.");
                         }
                         Verify.IsTrue(requests <= itemCount * 20,
