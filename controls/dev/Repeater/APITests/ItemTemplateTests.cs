@@ -313,9 +313,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Text = "DataSource"
                 };
 
-                // MyItemsRepeater is declared in TestUI and referenced from compiled XAML, so like an app-defined subclass it is
-                // known to XAML metadata under its own name (bug 52456662).
-                itemsRepeater = useDerivedRepeater ? new MUXControlsTestApp.Samples.MyItemsRepeater() : new ItemsRepeater();
+                itemsRepeater = useDerivedRepeater ? new DerivedItemsRepeater() : new ItemsRepeater();
                 itemsRepeater.Name = "itemsRepeater";
                 itemsRepeater.ItemsSource = Enumerable.Range(0, numItems).Select(i => i.ToString());
                 itemsRepeater.Layout = new StackLayout();
@@ -1061,5 +1059,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return (((int)item) % 2 == 0) ? TemplateEven : TemplateOdd;
         }
 
+    }
+
+    // An app-style ItemsRepeater subclass. ElementName lookup in its ItemTemplate must work as it does for ItemsRepeater.
+    public partial class DerivedItemsRepeater : ItemsRepeater
+    {
     }
 }
