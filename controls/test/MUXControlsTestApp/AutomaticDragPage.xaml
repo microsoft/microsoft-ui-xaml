@@ -33,13 +33,14 @@
                     <TextBlock x:Name="TouchHandle" Text="Child handles touch"
                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Border>
-                <ListView x:Name="DragList" CanDragItems="True" CanReorderItems="True" AllowDrop="True"
-                          Height="80" Visibility="Collapsed">
-                    <ListViewItem x:Name="ListDragItem" AutomationProperties.AutomationId="ListDragItem" Content="ListView drag source"/>
-                    <ListViewItem Content="Second item"/>
-                </ListView>
             </Grid>
         </Border>
+        <!-- Sibling of DragSource: collapsing DragSource must not hide the ListView. -->
+        <ListView x:Name="DragList" CanDragItems="True" CanReorderItems="True" AllowDrop="True"
+                  Height="80" Visibility="Collapsed">
+            <ListViewItem x:Name="ListDragItem" AutomationProperties.AutomationId="ListDragItem" Content="ListView drag source"/>
+            <ListViewItem Content="Second item"/>
+        </ListView>
         <Border x:Name="DropTarget" AllowDrop="True" Background="LightGreen" Height="120"
                 DragOver="DropTarget_DragOver" Drop="DropTarget_Drop">
             <TextBlock x:Name="DropHandle" Text="Drop here"
