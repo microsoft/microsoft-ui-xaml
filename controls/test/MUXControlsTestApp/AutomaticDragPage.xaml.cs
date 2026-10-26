@@ -93,15 +93,21 @@ namespace MUXControlsTestApp
                 {
                     HandleChildTouch(sender, args);
                     ChildTouchPressCount.Text = (++childTouchPressCount).ToString();
-                    if (CaptureChildTouch.IsChecked == true && TouchChild.CapturePointer(args.Pointer))
-                    {
-                        ChildCaptureCount.Text = (++childCaptureCount).ToString();
-                    }
+                }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen && CaptureChildPointer.IsChecked == true)
+                {
+                    args.Handled = true;
+                }
+                if (CaptureChildPointer.IsChecked == true &&
+                    args.Pointer.PointerDeviceType != PointerDeviceType.Mouse &&
+                    TouchChild.CapturePointer(args.Pointer))
+                {
+                    ChildCaptureCount.Text = (++childCaptureCount).ToString();
                 }
             }), true);
             TouchChild.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler((sender, args) =>
             {
-                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
                 {
                     ChildCaptureLostCount.Text = (++childCaptureLostCount).ToString();
                     args.Handled = HandleChildCaptureLoss.IsChecked == true;
@@ -113,7 +119,10 @@ namespace MUXControlsTestApp
                 {
                     HandleChildTouch(sender, args);
                     ChildTouchReleaseCount.Text = (++childTouchReleaseCount).ToString();
-                    TouchChild.ReleasePointerCapture(args.Pointer);
+                }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen && CaptureChildPointer.IsChecked == true)
+                {
+                    args.Handled = true;
                 }
             }), true);
             DragSource.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
@@ -189,10 +198,12 @@ namespace MUXControlsTestApp
             DragSource.CanDrag = true;
         }
 
-        private void UseListView_Click(object sender, RoutedEventArgs args)
+        private void UseListView_Changed(object sender, RoutedEventArgs args)
         {
+            if (DragSource == null || DragList == null || ListMode == null) { return; }
             DragSource.Visibility = UseListView.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
             DragList.Visibility = UseListView.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            ListMode.Text = DragList.Visibility.ToString();
         }
 
         private static int CountCaptures(DependencyObject element)

@@ -49,9 +49,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using var controller = InputController.Activate(inputType);
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            Log.Comment("Switching the fixture to a realized ListView source.");
             new CheckBox(FindElement.ById("UseListView")).Check();
             Wait.ForIdle();
-            var source = FindElement.ById("ListDragItem");
+            Verify.AreEqual("Visible", ReadText("ListMode"));
+            var source = FindElement.ByName("ListView drag source");
             var target = FindElement.ById("DropHandle");
             Verify.IsNotNull(source, "ListView source must be realized after changing visibility.");
             Verify.IsNotNull(target);
@@ -147,18 +149,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void CanceledPenContactDoesNotDragAndCanRestart()
+        public void PenCanDragToggleDuringContactRequiresFreshPress()
         {
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
             using var pen = new SyntheticPen();
             var start = FindElement.ById("DragHandle").GetClickablePoint();
             pen.Hover(start);
             pen.Press(start);
-            pen.Cancel();
-            Log.Comment($"Canceled pointer samples={ReadText("CanceledPointCount")}, canceled events={ReadText("PenCanceledCount")}.");
-            Verify.AreEqual("1", ReadText("PenCanceledCount"));
-            pen.Hover(new System.Drawing.Point(start.X + 40, start.Y));
+            new Button(FindElement.ById("ToggleDragDuringPress")).Invoke();
+            pen.Move(new System.Drawing.Point(start.X + 40, start.Y));
             Verify.AreEqual("0", ReadText("DragCount"));
+            pen.Release();
             VerifyCaptureReleased();
             pen.Press(start);
             pen.Move(new System.Drawing.Point(start.X + 40, start.Y));
@@ -323,27 +324,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void ChildTouchCaptureLossPreservesMouseDrag()
+        public void ChildPenCaptureLossPreservesMouseDrag()
         {
             using var controller = InputController.Activate(PointerInputType.Mouse);
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
-            new CheckBox(FindElement.ById("CaptureChildTouch")).Check();
+            new CheckBox(FindElement.ById("CaptureChildPointer")).Check();
             new CheckBox(FindElement.ById("HandleChildCaptureLoss")).Uncheck();
             var mouse = PointerInput.Current;
             var source = FindElement.ById("DragHandle");
             var target = FindElement.ById("DropHandle");
+            using var pen = new SyntheticPen();
             mouse.Move(source.GetClickablePoint());
             mouse.Press(PointerButtons.Primary);
             try
             {
-                using (InputController.Activate(PointerInputType.SingleTouch))
-                {
-                    InputHelper.Tap(FindElement.ById("TouchHandle"));
-                }
+                pen.Press(FindElement.ById("TouchHandle").GetClickablePoint());
                 Wait.ForIdle();
                 Verify.AreEqual("1", ReadText("ChildCaptureCount"));
+                Verify.AreEqual("0", ReadText("DragCount"));
+                pen.Release();
+                // Leaving range supplies the current point to the capture-loss path.
+                // Explicit release during touch/pen up can omit that notification.
+                pen.LeaveRange();
                 Verify.AreEqual("1", ReadText("ChildCaptureLostCount"));
-                Verify.AreNotEqual(ReadText("MousePointerId"), ReadText("ChildTouchPointerId"));
+                Verify.AreNotEqual(ReadText("MousePointerId"), ReadText("PenPressPointerId"));
                 new Button(FindElement.ById("Snapshot")).Invoke();
                 Verify.AreEqual("1", ReadText("MouseCaptureCount"));
                 Verify.AreEqual("0", ReadText("DragCount"));

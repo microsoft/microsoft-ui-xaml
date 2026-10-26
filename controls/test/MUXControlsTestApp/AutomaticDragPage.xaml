@@ -16,10 +16,10 @@
             <CheckBox x:Name="ReleaseOnPress" Content="Release capture on press"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="12">
-            <CheckBox x:Name="CaptureChildTouch" Content="Child captures touch"/>
+            <CheckBox x:Name="CaptureChildPointer" Content="Child captures pointer"/>
             <CheckBox x:Name="HandleChildCaptureLoss" Content="Handle child capture loss" IsChecked="True"/>
             <Button x:Name="ToggleDragDuringPress" Content="Disable and reenable drag" Click="ToggleDragDuringPress_Click"/>
-            <CheckBox x:Name="UseListView" Content="ListView source" Click="UseListView_Click"/>
+            <CheckBox x:Name="UseListView" Content="ListView source" Checked="UseListView_Changed" Unchecked="UseListView_Changed"/>
         </StackPanel>
         <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
             <Grid>
@@ -79,6 +79,7 @@
                 <TextBlock x:Name="ChildCaptureCount" Text="0"/>
                 <TextBlock x:Name="ChildCaptureLostCount" Text="0"/>
                 <TextBlock x:Name="ListCaptureCount" Text="0"/>
+                <TextBlock x:Name="ListMode" Text="Collapsed"/>
                 <TextBlock x:Name="ChildTouchReleaseCount" Text="0"/>
             </StackPanel>
         </StackPanel>
