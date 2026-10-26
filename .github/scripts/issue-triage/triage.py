@@ -641,7 +641,11 @@ def plain_text(value: str) -> str:
 
 def render(result: dict, evidence: dict, mapping: dict) -> str:
     decision = routing_decision(result, evidence, mapping)
-    lines = [MARKER, "", "## \U0001f9ed Triage summary", ""]
+    lines = [
+        MARKER, "",
+        "Thank you for taking the time to file this issue and help improve WinUI.", "",
+        "## \U0001f9ed Triage summary", "",
+    ]
     if result["missing_information"] != "None":
         lines.extend([
             "### \U0001f64b For the issue author", "",

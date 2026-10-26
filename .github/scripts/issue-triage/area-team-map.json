@@ -564,7 +564,7 @@
     "match": ["TextBox", "RichEditBox", "text input", "caret", "selection", "spell check"]
   },
   "area-TitleBar": {
-    "team": "team-Reach",
+    "team": "team-Controls",
     "confidence": "low",
     "match": ["TitleBar", "custom title bar", "caption buttons", "ExtendsContentIntoTitleBar", "drag region"],
     "overrides": [{"id": "pointer-handling", "when": "hit testing, drag region input or caption button pointer handling", "team": "team-CompInput"}]

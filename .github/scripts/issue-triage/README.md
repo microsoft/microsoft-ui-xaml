@@ -75,6 +75,9 @@ author's comment cannot make the publisher edit it.
 
 The canonical comment uses a compact, decorated triage-summary layout:
 
+- A brief thank-you is the first visible line, before the triage heading. The
+  wording applies to bugs, feature proposals, and questions without mentioning
+  the author or making commitments.
 - An **issue-author** section appears only when there is an actual information
   request. The request stays visible outside collapsed details, without adding
   new mention/notification behavior.
@@ -185,6 +188,10 @@ a version-specific exception or inherited Rendering/Core labels. Area selection
 must still distinguish WinUI control/integration defects from evidenced external
 browser-runtime failures. These distinctions use report evidence without adding
 product/app-model labels.
+
+`area-TitleBar` defaults to `team-Controls`; its existing `pointer-handling`
+exception still routes evidenced hit-testing, drag-region input, or caption-button
+pointer handling to `team-CompInput`. Existing human team labels are preserved.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
 changes. An absent entry or a `null` default team means "do not auto-assign a

@@ -120,8 +120,10 @@ class AssessmentRecoveryTests(unittest.TestCase):
         plan = t.publish(self.client, result, evidence, self.mapping, write=False)
         self.assertEqual(result["area_confidence"], "HIGH")
         self.assertEqual(
-            plan["add_labels"], ["area-TitleBar", "team-Core", "team-Reach"],
+            plan["add_labels"], ["area-TitleBar", "team-Controls"],
         )
+        self.assertNotIn("team-Reach", plan["comment"])
+        self.assertNotIn("team-Core", plan["comment"])
         self.assertIn(reason, plan["comment"])
         self.assertIn("unverified", plan["comment"])
         self.assertIn("needs-triage", plan["comment"])
@@ -135,6 +137,21 @@ class AssessmentRecoveryTests(unittest.TestCase):
         plan = t.publish(self.client, result, evidence, self.mapping, write=False)
         self.assertEqual(plan["add_labels"], [])
         self.assertIn("No automatic team assignment", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_titlebar_default_correction_preserves_existing_human_owner(self):
+        self.client.issue["labels"] += [
+            {"name": "area-TitleBar"}, {"name": "team-Reach"}, {"name": "team-Core"},
+        ]
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-TitleBar",
+            routing_reason="The report diagnoses stale TitleBar activation tracking.",
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], [])
+        self.assertIn("`team-Reach`", plan["comment"])
+        self.assertNotIn("team-Controls", plan["comment"])
         self.assertEqual(self.client.writes, [])
 
     def test_all_observed_rejection_shapes_are_recoverable(self):
