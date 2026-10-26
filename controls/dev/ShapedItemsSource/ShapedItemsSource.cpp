@@ -14,6 +14,7 @@
 #include "ShapedGroup.h"
 
 #include <cmath>
+#include <optional>
 #include <algorithm>
 #include <string_view>
 #include <unordered_set>
@@ -53,7 +54,7 @@ ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
 ShapedItemsSource::~ShapedItemsSource()
 {
     UnsubscribeFromSourceCollectionChanges();
-    RevokeRetentionSubscriptions();
+    ResetStructureCache();
 }
 
 void ShapedItemsSource::Start()
@@ -152,6 +153,9 @@ void ShapedItemsSource::SetChildren(
     m_childrenSelector = children;
     m_hasChildrenSelector = hasChildren;
 
+    // A new selector may map the same item to a different collection; nothing cached under the
+    // old one is trustworthy.
+    ResetStructureCache();
     // The hierarchy axis lives here, NOT in the pipeline spec: it does not filter, bucket or sort,
     // it re-projects. So the spec diff cannot see it, and without this flag a children verb
     // declared against an otherwise unchanged shape commits a no-op delta and returns, leaving the
@@ -177,6 +181,7 @@ void ShapedItemsSource::ClearChildren()
 
     m_childrenSelector = nullptr;
     m_hasChildrenSelector = nullptr;
+    ResetStructureCache();
     m_hierarchyAxisDirty = true;
     ApplyShapingChange();
 }
@@ -235,6 +240,13 @@ void ShapedItemsSource::ApplyShapingChange()
     // the baseline the NEXT verb diffs against, so skipping it would make that diff report a
     // change that has already been applied.
     auto const delta = m_pipeline.CommitSpec();
+
+    // Sibling lists are shaped by filter and sort only; grouping buckets the roots and never
+    // reaches them, so a grouping-only change keeps every cached shaped list.
+    if ((delta.FilterChanged || delta.SortChanged) && m_structureCache)
+    {
+        m_structureCache->InvalidateShapedChildren();
+    }
 
     // Consumed here regardless of the spec delta: the hierarchy axis is invisible to the diff, so
     // this flag is the only record that the projection kind must change.
@@ -1128,6 +1140,26 @@ void ShapedItemsSource::Refresh()
         auto const authoritativeSource = m_source;
         auto rows = Materialize(authoritativeSource);
 
+        // One structure pass across the retention pre-walk and the adapter's emit walk, so each
+        // node's children are validated (selector call, and enumeration if changed) once per
+        // refresh rather than once per walk.
+        std::optional<HierarchyStructureCache::Pass> structurePass;
+        if (m_childrenSelector)
+        {
+            EnsureStructureCache();
+            structurePass.emplace(m_structureCache);
+
+            // The full, unfiltered root set: reachability is measured from it, so a root a filter
+            // hides keeps its cached subtree.
+            m_structureCache->Roots(rows);
+
+            // A refresh inside a shaping batch shapes with verbs the batch has not committed yet.
+            if (m_shapingBatchHasShapingChange)
+            {
+                m_structureCache->InvalidateShapedChildren();
+            }
+        }
+
         if (!HasAnyShapingVerb())
         {
             // Nothing is being shaped, so this is a plain mirror of the source. Identity buys
@@ -1658,13 +1690,18 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
     }
 
     ClearFilterRetention();
+    ResetStructureCache();
     m_hierarchyGroups.clear();
     m_rootBucketIndex.clear();
 }
 
 void ShapedItemsSource::ClearFilterRetention()
 {
-    RevokeRetentionSubscriptions();
+    // The cached shaped lists were filtered by the kept set; without it they filter by predicate.
+    if (m_filterRetentionActive && m_structureCache)
+    {
+        m_structureCache->InvalidateShapedChildren();
+    }
     m_filterRetentionActive = false;
     m_filterKept.clear();
     m_filterContext.clear();
@@ -1691,47 +1728,32 @@ bool ShapedItemsSource::IsFilterContext(winrt::IInspectable const& item) const
 
 void ShapedItemsSource::ComputeFilterRetention(std::vector<winrt::IInspectable> const& roots)
 {
-    ClearFilterRetention();
+    // The previous kept set decides whether the cached shaped lists, which were filtered by it,
+    // survive. Its keep-alive is held until the comparison is done so none of its pointers can be
+    // recycled by a new object in the meantime.
+    const bool wasActive = m_filterRetentionActive;
+    auto const previousKept = std::move(m_filterKept);
+    auto const previousKeepAlive = std::move(m_filterKeepAlive);
+    m_filterKept.clear();
+    m_filterContext.clear();
+    m_filterKeepAlive.clear();
     m_filterRetentionActive = true;
 
     std::unordered_map<void*, bool> memo;
     std::unordered_set<void*> onPath;
-    std::unordered_set<void*> subscribed;
-    std::weak_ptr<ShapedItemsSource> weakThis = weak_from_this();
 
-    const auto subscribe = [&](winrt::IInspectable const& collection)
-    {
-        if (!collection || !subscribed.insert(winrt::get_abi(collection)).second)
-        {
-            return;
-        }
-        RetentionSubscription sub;
-        sub.Collection = collection;
-        auto handler = [weakThis](auto&&, auto&&)
-        {
-            if (auto strongThis = weakThis.lock()) { strongThis->OnRetentionChildrenChanged(); }
-        };
-        if (auto incc = collection.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
-        {
-            sub.CollectionToken = incc.CollectionChanged(handler);
-        }
-        else if (auto obs = collection.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
-        {
-            sub.Token = obs.VectorChanged(handler);
-        }
-        else if (auto bobs = collection.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
-        {
-            sub.BindableToken = bobs.VectorChanged(handler);
-        }
-        if (sub.CollectionToken.value != 0 || sub.Token.value != 0 || sub.BindableToken.value != 0)
-        {
-            m_retentionSubscriptions.push_back(std::move(sub));
-        }
-    };
+    // Children come from the shared structure cache, inside the pass Refresh holds, so the
+    // adapter's emit walk that follows reuses every selector call and enumeration made here, and
+    // the cache keeps observing every collection read here, hidden or not.
+    auto& structure = EnsureStructureCache();
 
+    // Shaped lists filtered by the previous kept set are dropped unless the new set turns out to be
+    // identical -- including when the walk below does not complete.
+    auto invalidateShaped = wil::scope_exit([&structure]() noexcept { structure.InvalidateShapedChildren(); });
     // Post-order: a node is kept when it matches or any child is kept. Every child is visited (no
-    // short-circuit) so the whole subtree is memoized and its collections observed. A cycle or an
-    // over-deep chain stops the descent here; the adapter's walk reports it if it becomes visible.
+    // short-circuit) so the whole subtree is memoized and its collections observed by the cache.
+    // A cycle or an over-deep chain stops the descent here; the adapter's walk reports it if it
+    // becomes visible.
     std::function<bool(winrt::IInspectable const&, int32_t)> visit =
         [&](winrt::IInspectable const& item, int32_t depth) -> bool
     {
@@ -1745,21 +1767,11 @@ void ShapedItemsSource::ComputeFilterRetention(std::vector<winrt::IInspectable> 
         bool descendantKept = false;
         if (depth < HierarchicalSourceAdapter::c_maxHierarchyDepth && onPath.insert(abi).second)
         {
-            winrt::IInspectable collection{ nullptr };
-            std::vector<winrt::IInspectable> children;
-            try
-            {
-                collection = m_childrenSelector(item);
-                children = ShapingHelpers::EnumerateInspectableItems(collection);
-            }
-            catch (...)
-            {
-                collection = nullptr;
-                children.clear();
-            }
-            subscribe(collection);
+            // Shared, not copied: nothing here shapes it, and the cache never mutates a published
+            // set in place.
+            auto const children = structure.ChildrenOf(item, m_childrenSelector);
 
-            for (auto const& child : children)
+            for (auto const& child : *children)
             {
                 if (child && visit(child, depth + 1))
                 {
@@ -1790,43 +1802,213 @@ void ShapedItemsSource::ComputeFilterRetention(std::vector<winrt::IInspectable> 
             visit(root, 0);
         }
     }
+
+    if (wasActive && previousKept == m_filterKept)
+    {
+        invalidateShaped.release();
+    }
 }
 
-void ShapedItemsSource::OnRetentionChildrenChanged()
+HierarchyStructureCache& ShapedItemsSource::EnsureStructureCache()
 {
-    // Retention is a property of the whole tree, so any child set changing re-derives it.
+    if (!m_structureCache)
+    {
+        m_structureCache = std::make_shared<HierarchyStructureCache>();
+        std::weak_ptr<ShapedItemsSource> weakThis = weak_from_this();
+        m_structureCache->ChangedHandler(
+            [weakThis]()
+            {
+                if (auto strongThis = weakThis.lock()) { strongThis->OnStructureChanged(); }
+            });
+        m_structureCache->ItemChangedHandler(
+            [weakThis](winrt::IInspectable const& item, winrt::hstring const& propertyName)
+            {
+                if (auto strongThis = weakThis.lock()) { strongThis->OnHierarchyItemChanged(item, propertyName); }
+            });
+        m_structureCache->TrackItemChanges(m_liveShaping);
+    }
+    return *m_structureCache;
+}
+
+void ShapedItemsSource::ResetStructureCache()
+{
+    // Reset rather than dropped: a pass in flight holds the cache, and the adapter may still hold
+    // it until the next declaration re-injects it.
+    if (m_structureCache)
+    {
+        m_structureCache->Reset();
+    }
+}
+
+void ShapedItemsSource::OnStructureChanged()
+{
     if (m_shapingBatchDepth > 0)
     {
         m_shapingBatchHasRefresh = true;
         return;
     }
-    Refresh();
+
+    // Retention is a property of the whole tree, so any child set changing re-derives it -- and
+    // the Refresh rebuilds the adapter too. Without retention only the visible rows can change,
+    // and the adapter alone re-walks them (its subscriptions used to call it directly).
+    if (m_filterRetentionActive || !m_hierarchicalAdapter)
+    {
+        Refresh();
+        return;
+    }
+    m_hierarchicalAdapter->OnStructureChanged();
 }
 
-void ShapedItemsSource::RevokeRetentionSubscriptions()
+void ShapedItemsSource::SetLiveShaping(bool enabled)
 {
-    for (auto& sub : m_retentionSubscriptions)
+    if (m_liveShaping == enabled)
     {
+        return;
+    }
+    m_liveShaping = enabled;
+
+    if (enabled && !m_liveShapingQueue)
+    {
+        m_liveShapingQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+    }
+    if (!enabled)
+    {
+        m_liveShapingNeedsRefresh = false;
+        m_liveShapingNeedsRebuild = false;
+    }
+
+    if (m_structureCache)
+    {
+        m_structureCache->TrackItemChanges(enabled);
+        if (enabled)
+        {
+            // Lists shaped while nobody was watching may already be out of order; the next pass
+            // re-shapes them against current values.
+            m_structureCache->InvalidateShapedChildren();
+        }
+    }
+}
+
+bool ShapedItemsSource::IsShapeAffectedBy(winrt::hstring const& propertyName, bool isRoot) const
+{
+    // Predicates and group keys are opaque delegates, so any property may feed them.
+    if (m_pipeline.HasFilter() || (isRoot && m_groupSelector))
+    {
+        return true;
+    }
+
+    const std::wstring_view name{ propertyName };
+    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+    {
+        const std::wstring_view path{ axis.SortMemberPath };
+        if (name.empty() || path.empty())
+        {
+            return true;
+        }
+        if (path.size() >= name.size() && path.compare(0, name.size(), name) == 0 &&
+            (path.size() == name.size() || path[name.size()] == L'.'))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ShapedItemsSource::OnHierarchyItemChanged(winrt::IInspectable const& item, winrt::hstring const& propertyName)
+{
+    if (!m_liveShaping || !m_childrenSelector || !m_structureCache)
+    {
+        return;
+    }
+
+    const bool isRoot = m_structureCache->IsRoot(item);
+    if (IsShapeAffectedBy(propertyName, isRoot))
+    {
+        // The root set and filter retention are both derived by Refresh; a deeper list only needs
+        // re-shaping, which the adapter's next walk does once the list is invalidated.
+        if (isRoot || m_filterRetentionActive)
+        {
+            m_liveShapingNeedsRefresh = true;
+        }
+        if (m_structureCache->InvalidateShapeOfParents(item))
+        {
+            m_liveShapingNeedsRebuild = true;
+        }
+    }
+
+    // Always scheduled: the cache has also marked the node for selector revalidation.
+    ScheduleLiveShapingFlush();
+}
+
+void ShapedItemsSource::ScheduleLiveShapingFlush()
+{
+    if (m_liveShapingFlushPosted)
+    {
+        return;
+    }
+
+    // One flush per burst of property changes: an edit that raises several notifications, or a
+    // bulk update touching many items, re-projects once.
+    bool queued = false;
+    if (m_liveShapingQueue)
+    {
+        m_liveShapingFlushPosted = true;
+        std::weak_ptr<ShapedItemsSource> weakThis = weak_from_this();
         try
         {
-            if (sub.CollectionToken.value != 0)
-            {
-                sub.Collection.as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>().CollectionChanged(sub.CollectionToken);
-            }
-            else if (sub.Token.value != 0)
-            {
-                sub.Collection.as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>().VectorChanged(sub.Token);
-            }
-            else if (sub.BindableToken.value != 0)
-            {
-                sub.Collection.as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>().VectorChanged(sub.BindableToken);
-            }
+            queued = m_liveShapingQueue.TryEnqueue(
+                [weakThis]()
+                {
+                    if (auto strongThis = weakThis.lock()) { strongThis->FlushLiveShaping(); }
+                });
         }
         catch (...)
         {
+            queued = false;
         }
     }
-    m_retentionSubscriptions.clear();
+
+    if (!queued)
+    {
+        // No queue to defer to (shutting down, or no dispatcher on this thread): apply now.
+        m_liveShapingFlushPosted = false;
+        FlushLiveShaping();
+    }
+}
+
+void ShapedItemsSource::FlushLiveShaping()
+{
+    m_liveShapingFlushPosted = false;
+    const bool needsRefresh = std::exchange(m_liveShapingNeedsRefresh, false);
+    bool needsRebuild = std::exchange(m_liveShapingNeedsRebuild, false);
+
+    if (!m_liveShaping || !m_childrenSelector || !m_structureCache)
+    {
+        return;
+    }
+
+    // A changed item may now hand back a different children collection (its Children property was
+    // replaced): that is a structure change, exactly like the old collection raising one.
+    if (m_structureCache->RevalidateItemChanges(m_childrenSelector))
+    {
+        needsRebuild = true;
+    }
+
+    if (needsRefresh)
+    {
+        if (m_shapingBatchDepth > 0)
+        {
+            m_shapingBatchHasRefresh = true;
+            return;
+        }
+        Refresh();
+        return;
+    }
+
+    if (needsRebuild)
+    {
+        OnStructureChanged();
+    }
 }
 
 void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectable> const& roots, bool shapeRoots)
@@ -1853,6 +2035,11 @@ void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectabl
     // when this projection actually needs it, and a stale one would re-slice groups that this
     // rebuild is in the middle of replacing.
     m_hierarchicalAdapter->ProjectionChanged(nullptr);
+
+    // Shared with the retention pre-walk. Installed before any setter below, each of which
+    // rebuilds, so the adapter never mints a private cache of its own.
+    EnsureStructureCache();
+    m_hierarchicalAdapter->StructureCache(m_structureCache);
 
     // Per-level shaping. This runs INSIDE the adapter's walk, so it must touch nothing but the
     // vector it is handed -- see the re-entrancy contract on ShapeSiblingsFn. Filtering and sorting

@@ -15,6 +15,7 @@
 #include <winrt/Microsoft.UI.Dispatching.h>
 
 #include "HierarchyContract.h"
+#include "HierarchyStructureCache.h"
 #include "RowExpansionModel.h"
 
 // Single-responsibility hierarchical adapter -- the sibling of GroupedSourceAdapter on the other
@@ -76,6 +77,23 @@ public:
     void ChildrenSelector(ShapingHelpers::ChildrenFn fn);
     void HasChildrenSelector(ShapingHelpers::HasChildrenFn fn);
     void ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn);
+
+    // The per-node structure cache the walk reads children and identities through, and which owns
+    // the subscriptions to every children collection the walk has realized. See
+    // HierarchyStructureCache.h.
+    //
+    // An owner that runs its own walk over the same tree (ShapedItemsSource's filter-retention
+    // pre-walk) injects a shared cache so both walks reuse one enumeration and one subscription set
+    // per node; the owner then also owns the change handler, and is expected to call
+    // OnStructureChanged when a change needs only this adapter's rows rebuilt. Without an injected
+    // cache the adapter creates a private one on first use whose handler rebuilds directly. Does not
+    // rebuild.
+    void StructureCache(HierarchyStructureCachePtr cache);
+    HierarchyStructureCachePtr const& StructureCache() const { return m_structure; }
+
+    // A children collection somewhere in the tree changed. Full Rebuild; the cache has already
+    // marked the node stale, so the walk re-enumerates it.
+    void OnStructureChanged() { Rebuild(); }
 
     // Filter context rows: rows kept only because a descendant matches the filter (ancestor
     // retention). A context row is presented expanded by default, from an overlay that never
@@ -189,17 +207,6 @@ public:
     static bool IsNodePathKey(winrt::hstring const& key);
 
 private:
-    // One expanded node's subscription to its own children collection. Declared here rather than
-    // beside m_nodeSubscriptions because the walk takes a vector of these by reference -- see Emit.
-    struct NodeSubscription
-    {
-        winrt::hstring PathKey;
-        winrt::IInspectable ItemsForRevocation{ nullptr };
-        winrt::event_token CollectionToken{};
-        winrt::event_token Token{};
-        winrt::event_token BindableToken{};
-    };
-
     void Rebuild();
     bool OnUiThread() const;
     void AssertRebuildOnUiThread() const;
@@ -214,12 +221,12 @@ private:
     // `enumeratedPrefixes` accumulates the path keys whose child sets this walk saw IN FULL. It
     // exists only to make pruning safe -- see PruneExpansionIntent.
     //
-    // Every output, INCLUDING the node subscriptions, is a caller-owned local. Emit can throw
-    // partway through (cycle, over-deep chain, a duplicate path key), and nothing it has produced
-    // may have touched published state by then: the caller discards the locals, revokes the
-    // subscriptions it accumulated, and the previously published projection is still intact and
-    // self-consistent. Subscribing straight into m_nodeSubscriptions would leave live handlers for
-    // rows that were never published.
+    // Every output is a caller-owned local. Emit can throw partway through (cycle, over-deep chain,
+    // a duplicate path key), and nothing it has produced may have touched published state by then:
+    // the caller discards the locals and the previously published projection is still intact and
+    // self-consistent. Children and identities come from the structure cache, which may have
+    // gained nodes and subscriptions on the way -- harmless, since the cache is a cache and those
+    // subscriptions observe real collections and the nodes are released once unreachable.
     void Emit(
         winrt::IInspectable const& item,
         int32_t depth,
@@ -228,8 +235,7 @@ private:
         std::vector<winrt::IInspectable>& built,
         std::vector<NodeRow>& descriptors,
         std::unordered_set<winrt::hstring>& liveKeys,
-        std::unordered_set<winrt::hstring>& enumeratedPrefixes,
-        std::vector<NodeSubscription>& subscriptions);
+        std::unordered_set<winrt::hstring>& enumeratedPrefixes);
 
     // Drop intent for nodes that no longer exist -- but NOT by retaining only the visible keys.
     //
@@ -267,23 +273,16 @@ private:
     void AttachToSource();
     void DetachFromSource();
 
-    // Subscriptions are keyed by the owning node's path so a collapse can revoke exactly the run it
-    // removes. Rebuild drops them wholesale; a splice cannot, and an orphaned subscription would
-    // both pin its collection alive and force a pointless Rebuild on any change inside a subtree
-    // the user has collapsed.
-    //
-    // `into` is the caller's accumulator, never m_nodeSubscriptions directly, so a walk that throws
-    // leaves no live handler behind. See Emit.
-    void SubscribeToNode(winrt::hstring const& pathKey, winrt::IInspectable const& childrenCollection, std::vector<NodeSubscription>& into);
-    void UnsubscribeUnder(winrt::hstring const& pathKey);
-    void UnsubscribeFromAllNodes();
-    static void RevokeAll(std::vector<NodeSubscription>& subscriptions);
+    // Returns the structure cache, creating the adapter's private one if no owner injected one.
+    HierarchyStructureCachePtr const& EnsureStructure();
 
     // ShapeSiblings is app/layer-2 code that runs INSIDE the walk -- a hazard the grouped adapter
     // does not have, because a group's members arrive already shaped. The contract is that it must
     // not call back into the adapter; this wrapper makes the contract checkable instead of merely
     // documented, by publishing "a callback is on the stack" for the mutators to assert on.
     void InvokeShapeSiblings(std::vector<winrt::IInspectable>& siblings);
+    // The node's children shaped by ShapeSiblings, through the structure cache's shaped-list cache.
+    HierarchyStructureCache::Children ShapedChildren(winrt::IInspectable const& item);
     void AssertNotInShapeSiblings() const;
 
     // The three structures below are only correct AS A SET, the same way RowIdentity's identity
@@ -296,14 +295,12 @@ private:
     void RaiseProjectionChanged();
 
     // pathKey = "node:" + "/" + id(root) + "/" + ... + "/" + id(node), where id(x) is the canonical
-    // IUnknown pointer -- the same primitive flat and grouped rows already use. A root's parent path
-    // is the bare prefix "node:", which doubles as the sentinel for "the root sibling set" in
-    // enumeratedPrefixes.
-    static winrt::hstring ObjectIdentity(winrt::IInspectable const& item);
-
+    // IUnknown pointer -- the same primitive flat and grouped rows already use, minted once per
+    // object by HierarchyStructureCache::Identity. A root's parent path is the bare prefix "node:",
+    // which doubles as the sentinel for "the root sibling set" in enumeratedPrefixes.
+    //
     // Takes the item's already-computed identity rather than the item. Every caller needs that
-    // identity for something else too -- Emit uses it for path-local cycle detection -- and
-    // recomputing it here would QI for IUnknown and mint a second string per emitted node.
+    // identity for something else too -- Emit uses it for path-local cycle detection.
     static winrt::hstring MakePathKey(winrt::hstring const& parentPath, winrt::hstring const& itemIdentity);
     static winrt::hstring ParentPathOf(winrt::hstring const& pathKey);
 
@@ -388,14 +385,11 @@ private:
     winrt::event_token m_outerVectorChangedToken{};
     winrt::event_token m_outerBindableVectorChangedToken{};
 
-    // One subscription per EXPANDED, VISIBLE node's children collection, dropped wholesale at the
-    // top of Rebuild. Subscription count is therefore bounded by visible rows, not by tree size --
-    // a recursive per-node subscription over the whole tree would both leak and scale with the
-    // tree rather than the viewport.
-    std::vector<NodeSubscription> m_nodeSubscriptions;
-
-    static void RevokeSubscription(NodeSubscription& sub);
-
+    // Children, identities, shaped sibling lists and the per-node collection subscriptions. Kept
+    // across rebuilds, splices and collapses, and released when a removal leaves the node
+    // unreachable from the roots. See HierarchyStructureCache.h.
+    HierarchyStructureCachePtr m_structure;
+    bool m_ownsStructure{ false };
     // Simple re-entrancy guard: a change notification raised synchronously inside ReplaceAll, or a
     // ShapeSiblings implementation that violates its contract, must not start a nested Rebuild.
     // The re-entrant request is remembered and run once after unwind. Plain bool, not atomic: the

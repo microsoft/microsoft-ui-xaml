@@ -58,6 +58,8 @@ public:
     winrt::TableViewSource WithChildren(winrt::TableViewChildrenSelector const& childrenSelector);
     winrt::TableViewSource WithChildren(winrt::TableViewChildrenSelector const& childrenSelector, winrt::TableViewHasChildrenPredicate const& hasChildrenSelector);
     winrt::TableViewSource ClearChildren();
+    bool IsLiveShaping() const;
+    void IsLiveShaping(bool value);
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
     // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
     // app declared through the fluent Sort verb (which is untokenized and so unaddressable by

@@ -133,6 +133,13 @@ runtimeclass TableViewSource
 
     TableViewSource ClearChildren();
 
+    // Opt-in: reshapes a WithChildren hierarchy when a node's sort key, group key, filter result or
+    // children changes (PropertyChanged), coalesced to one reshape per dispatcher turn. Only the
+    // nodes that raised a change are re-read, and only their sibling lists are re-shaped. Off by
+    // default: an in-place edit then keeps its old position until its sibling list changes or the
+    // shape is redeclared. Has no effect on a source without WithChildren.
+    Boolean IsLiveShaping{ get; set; };
+
 }
 
 }

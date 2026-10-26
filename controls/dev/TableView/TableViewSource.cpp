@@ -116,6 +116,16 @@ winrt::TableViewSource TableViewSource::ClearChildren()
     return *this;
 }
 
+bool TableViewSource::IsLiveShaping() const
+{
+    return m_engine->IsLiveShapingEnabled();
+}
+
+void TableViewSource::IsLiveShaping(bool value)
+{
+    m_engine->SetLiveShaping(value);
+}
+
 winrt::TableViewSource TableViewSource::ClearSort()
 {
     m_engine->ClearSorts();

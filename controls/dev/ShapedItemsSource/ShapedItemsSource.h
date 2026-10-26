@@ -12,6 +12,7 @@
 #include "pch.h"
 #include "common.h"
 
+#include <winrt/Microsoft.UI.Dispatching.h>
 #include "ShapingPipeline.h"
 #include "ShapingHelpers.h"
 #include "RowIdentity.h"
@@ -19,6 +20,7 @@
 
 class GroupedSourceAdapter;
 class HierarchicalSourceAdapter;
+class HierarchyStructureCache;
 class ShapedGroup;
 
 // Layer 2 of the shaping stack: the LIVE PROJECTION.
@@ -144,6 +146,17 @@ public:
         ShapingHelpers::ChildrenFn const& children,
         ShapingHelpers::HasChildrenFn const& hasChildren);
     void ClearChildren();
+
+    // Live shaping for the children-selector hierarchy. On, every item the hierarchy has cached is
+    // observed through INotifyPropertyChanged: a change that can affect the filter or the sort
+    // re-shapes the sibling list the item belongs to (and re-derives filter retention or the root
+    // set when those depend on it), and a change after which the children selector returns a
+    // different collection re-projects that node. Changes are coalesced into one update per
+    // dispatcher turn. Off (the default), no item is observed, and child-collection change
+    // notifications are the only thing that invalidates the cached tree: an item property edit
+    // leaves its row where it is until its sibling list changes or the shape is re-declared.
+    void SetLiveShaping(bool enabled);
+    bool IsLiveShapingEnabled() const noexcept { return m_liveShaping; }
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
@@ -258,30 +271,44 @@ private:
     // Filter ancestor retention over a children-selector hierarchy. A node is KEPT when it matches
     // the filter or any descendant does; a kept node that does not match is a CONTEXT row. Deciding
     // that needs every descendant, so an active filter pre-walks the whole tree through the children
-    // selector -- the price of retention over a lazy contract. Keyed by ABI pointer, valid because a
-    // node's subtree is a function of the object; m_filterKeepAlive pins the objects so a pointer
-    // cannot be reused by a different object while the sets are live.
+    // selector -- the price of retention over a lazy contract. The pre-walk reads children through
+    // the shared structure cache (m_structureCache), so the adapter's emit walk in the same refresh
+    // reuses its selector calls and enumerations, and the cache's subscriptions observe every
+    // collection it read -- even under a collapsed node -- so a change re-derives retention. Keyed
+    // by ABI pointer, valid because a node's subtree is a function of the object; m_filterKeepAlive
+    // pins the objects so a pointer cannot be reused by a different object while the sets are live.
     void ComputeFilterRetention(std::vector<winrt::IInspectable> const& roots);
     void ClearFilterRetention();
     void ResetFilterContextOverlay();
     bool IsFilterKept(winrt::IInspectable const& item) const;
     bool IsFilterContext(winrt::IInspectable const& item) const;
-    void OnRetentionChildrenChanged();
     bool m_filterRetentionActive{ false };
     std::unordered_set<void*> m_filterKept;
     std::unordered_set<void*> m_filterContext;
     std::vector<winrt::IInspectable> m_filterKeepAlive;
-    // Every child collection the pre-walk read, observed so a change anywhere -- even under a
-    // collapsed node -- re-derives retention (Refresh), not just the adapter's visible walk.
-    struct RetentionSubscription
-    {
-        winrt::IInspectable Collection{ nullptr };
-        winrt::event_token CollectionToken{};
-        winrt::event_token Token{};
-        winrt::event_token BindableToken{};
-    };
-    std::vector<RetentionSubscription> m_retentionSubscriptions;
-    void RevokeRetentionSubscriptions();
+
+    // Per-node children, identities and children-collection subscriptions for the declared
+    // hierarchy, shared by the retention pre-walk and the hierarchical adapter. Created with the
+    // first hierarchical refresh, reset whenever the hierarchy is re-declared or retracted (a new
+    // selector may map an item to a different collection). See HierarchyStructureCache.h.
+    std::shared_ptr<HierarchyStructureCache> m_structureCache;
+    HierarchyStructureCache& EnsureStructureCache();
+    void ResetStructureCache();
+    // A cached children collection changed. Retention is a property of the whole tree, so under an
+    // active filter it re-derives through Refresh; otherwise only the adapter's rows are stale.
+    void OnStructureChanged();
+
+    // Live shaping: a tracked item raised PropertyChanged. Records what the change invalidates and
+    // schedules the coalesced flush that applies it.
+    void OnHierarchyItemChanged(winrt::IInspectable const& item, winrt::hstring const& propertyName);
+    bool IsShapeAffectedBy(winrt::hstring const& propertyName, bool isRoot) const;
+    void ScheduleLiveShapingFlush();
+    void FlushLiveShaping();
+    bool m_liveShaping{ false };
+    bool m_liveShapingFlushPosted{ false };
+    bool m_liveShapingNeedsRefresh{ false };
+    bool m_liveShapingNeedsRebuild{ false };
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_liveShapingQueue{ nullptr };
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
     bool IsIdentityRequired() const;
     // True when any of Filter / Sort / GroupBy is in force. Distinct from IsIdentityRequired,

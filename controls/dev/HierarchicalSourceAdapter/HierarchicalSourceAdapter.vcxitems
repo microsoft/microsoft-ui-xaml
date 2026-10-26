@@ -17,8 +17,10 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyContract.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyStructureCache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HierarchyStructureCache.cpp" />
   </ItemGroup>
 </Project>
