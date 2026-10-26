@@ -535,24 +535,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             new CheckBox(FindElement.ById("CancelDrag")).Uncheck();
             Wait.ForIdle();
-            InputHelper.MouseDragToTarget(source, target);
-            Wait.RetryUntilEvalFuncSuccessOrTimeout(
-                () => ReadText("CopyCompletionCount") == "1",
-                retryTimoutByMilliseconds: 10000);
-            Verify.AreEqual("3", ReadText("DragCount"));
-            Verify.AreEqual("1", ReadText("DropCount"));
-            Verify.AreEqual("1", ReadText("CopyCompletionCount"));
-            Verify.AreEqual("AutomaticDragSource", ReadText("DroppedText"));
-            Verify.AreEqual("Copy", ReadText("CompletionResult"));
-            VerifyCaptureReleased();
+            for (int completed = 1; completed <= 2; ++completed)
+            {
+                InputHelper.MouseDragToTarget(source, target);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => ReadText("CopyCompletionCount") == completed.ToString(),
+                    retryTimoutByMilliseconds: 10000);
+                Verify.AreEqual((completed + 2).ToString(), ReadText("DragCount"));
+                Verify.AreEqual(completed.ToString(), ReadText("DropCount"));
+                Verify.AreEqual(completed.ToString(), ReadText("CopyCompletionCount"));
+                Verify.AreEqual("AutomaticDragSource", ReadText("DroppedText"));
+                Verify.AreEqual("Copy", ReadText("CompletionResult"));
+                VerifyCaptureReleased();
+            }
 
-            // Detection must restart after a completed drop. Cancel this one at DragStarting:
-            // a second consecutive injected pen drop does not reliably complete on the test machine.
+            // Both transfers must complete before checking another canceled restart.
             new CheckBox(FindElement.ById("CancelDrag")).Check();
             Wait.ForIdle();
             InputHelper.MouseDragToTarget(source, target);
-            Verify.AreEqual("4", ReadText("DragCount"));
-            Verify.AreEqual("1", ReadText("DropCount"));
+            Verify.AreEqual("5", ReadText("DragCount"));
+            Verify.AreEqual("2", ReadText("DropCount"));
             VerifyCaptureReleased();
         }
 
