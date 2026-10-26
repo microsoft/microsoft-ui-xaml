@@ -1212,6 +1212,477 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationViewItems placed directly in PaneFooter/PaneCustomContent are not clipped when the pane is closed in compact mode (#10415, #11108).")]
+        public void VerifyPaneFooterItemIsNotClippedInClosedCompactPane()
+        {
+            NavigationView navView = null;
+            NavigationViewItem menuItem = null;
+            NavigationViewItem footerItem = null;
+            NavigationViewItem customContentItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                menuItem = new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) };
+                footerItem = new NavigationViewItem() { Content = "Exit", Icon = new SymbolIcon(Symbol.Home) };
+                customContentItem = new NavigationViewItem() { Content = "Custom", Icon = new SymbolIcon(Symbol.Home) };
+                navView.MenuItems.Add(menuItem);
+                navView.PaneFooter = footerItem;
+                navView.PaneCustomContent = customContentItem;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(menuItem), "Menu item state");
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "PaneFooter item state");
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(customContentItem), "PaneCustomContent item state");
+
+                VerifyContentGridIsNotClipped(menuItem, "Menu item");
+                VerifyContentGridIsNotClipped(footerItem, "PaneFooter item");
+                VerifyContentGridIsNotClipped(customContentItem, "PaneCustomContent item");
+
+                navView.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // When the pane is open, the items should go back to the regular (non compact) layout.
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(menuItem), "Menu item state (pane open)");
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "PaneFooter item state (pane open)");
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(customContentItem), "PaneCustomContent item state (pane open)");
+
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "PaneFooter item state (pane closed again)");
+                VerifyContentGridIsNotClipped(footerItem, "PaneFooter item (pane closed again)");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a PaneFooter/PaneCustomContent NavigationViewItem follows runtime changes that switch the pane in and out of closed compact (thresholds, PaneDisplayMode, moving the item).")]
+        public void VerifyPaneFooterItemClosedCompactStateFollowsRuntimeChanges()
+        {
+            NavigationView navView = null;
+            NavigationViewItem footerItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Auto;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.ExpandedModeThresholdWidth = 500.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // PaneFooter is set after the NavigationView is loaded.
+                footerItem = new NavigationViewItem() { Content = "Exit", Icon = new SymbolIcon(Symbol.Home) };
+                navView.PaneFooter = footerItem;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode);
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Expanded");
+
+                // Auto mode: raising ExpandedModeThresholdWidth at runtime switches to compact.
+                navView.ExpandedModeThresholdWidth = 1000.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Compact, navView.DisplayMode);
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Compact via ExpandedModeThresholdWidth");
+                VerifyContentGridIsNotClipped(footerItem, "Compact via ExpandedModeThresholdWidth");
+
+                // Raising CompactModeThresholdWidth at runtime switches to minimal (overlay, not compact).
+                navView.CompactModeThresholdWidth = 900.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Minimal via CompactModeThresholdWidth");
+
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "LeftCompact set at runtime");
+
+                // Move the item from PaneFooter to PaneCustomContent.
+                navView.PaneFooter = null;
+                navView.PaneCustomContent = footerItem;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Moved to PaneCustomContent");
+                VerifyContentGridIsNotClipped(footerItem, "Moved to PaneCustomContent");
+
+                // Move the item out of the pane into the content area.
+                navView.PaneCustomContent = null;
+                navView.Content = footerItem;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Moved to the content area");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an item first realized in MenuItems and then reused as PaneFooter and in Content gets its closed compact state recomputed on every move.")]
+        public void VerifyItemReusedFromMenuItemsRefreshesClosedCompactStateOnEveryHost()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                item = new NavigationViewItem() { Content = "Reused", Icon = new SymbolIcon(Symbol.Home), InfoBadge = new InfoBadge() { Value = 5 } };
+                navView.MenuItems.Add(item);
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "In MenuItems");
+
+                navView.MenuItems.Remove(item);
+                Content.UpdateLayout();
+                navView.PaneFooter = item;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "Moved to PaneFooter");
+                VerifyContentGridIsNotClipped(item, "Moved to PaneFooter");
+
+                navView.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "PaneFooter, pane open");
+
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "PaneFooter, pane closed again");
+                Verify.AreEqual(0, Grid.GetColumn(GetInfoBadgePresenter(item)), "PaneFooter, pane closed: InfoBadge uses the compact overlay");
+
+                navView.PaneFooter = null;
+                Content.UpdateLayout();
+                navView.Content = item;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "Moved to the content area");
+                var infoBadgePresenter = GetInfoBadgePresenter(item);
+                Verify.AreEqual(2, Grid.GetColumn(infoBadgePresenter), "Content area: InfoBadge is in its normal column");
+                Verify.AreEqual(VerticalAlignment.Center, infoBadgePresenter.VerticalAlignment, "Content area: InfoBadge is not in the compact overlay position");
+            });
+        }
+
+        private static FrameworkElement GetInfoBadgePresenter(NavigationViewItem item)
+        {
+            var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+            return (FrameworkElement)VisualTreeUtils.FindVisualChildByName(presenter, "InfoBadgePresenter");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an item first loaded in NavigationView.Content and then moved into MenuItems gets the closed compact state of a top-level menu item.")]
+        public void VerifyItemMovedFromContentToMenuItemsGetsClosedCompactState()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                item = new NavigationViewItem() { Content = "Moved", Icon = new SymbolIcon(Symbol.Home) };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                navView.Content = item;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "In Content");
+
+                navView.Content = null;
+                Content.UpdateLayout();
+                navView.MenuItems.Add(item);
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "Moved to MenuItems");
+                VerifyContentGridIsNotClipped(item, "Moved to MenuItems");
+
+                navView.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "MenuItems, pane open");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an item moved from one NavigationView to another follows the closed compact state of the new NavigationView.")]
+        public void VerifyItemMovedToAnotherNavigationViewFollowsItsPane()
+        {
+            NavigationView navViewA = null;
+            NavigationView navViewB = null;
+            NavigationViewItem item = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navViewA = new NavigationView() { IsSettingsVisible = false, PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact, IsPaneOpen = false, Width = 400.0, Height = 600.0 };
+                navViewB = new NavigationView() { IsSettingsVisible = false, PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact, IsPaneOpen = true, Width = 400.0, Height = 600.0 };
+                navViewA.MenuItems.Add(new NavigationViewItem() { Content = "A menu", Icon = new SymbolIcon(Symbol.Home) });
+                navViewB.MenuItems.Add(new NavigationViewItem() { Content = "B menu", Icon = new SymbolIcon(Symbol.Home) });
+                item = new NavigationViewItem() { Content = "Moved", Icon = new SymbolIcon(Symbol.Home) };
+                navViewA.PaneFooter = item;
+                var panel = new StackPanel() { Orientation = Orientation.Horizontal };
+                panel.Children.Add(navViewA);
+                panel.Children.Add(navViewB);
+                Content = panel;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "A PaneFooter, A closed");
+
+                navViewB.IsPaneOpen = true;
+                navViewA.PaneFooter = null;
+                Content.UpdateLayout();
+                navViewB.PaneFooter = item;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(navViewB.IsPaneOpen, "B pane is open");
+                Verify.IsFalse(navViewA.IsPaneOpen, "A pane is closed");
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B PaneFooter, B open");
+
+                navViewB.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B PaneFooter, B closed");
+
+                // The item now follows B's pane state: its NavigationView reference switched to B, so A's pane doesn't change it.
+                // (This doesn't prove A's callbacks were revoked, since a leaked callback would also re-read B's SplitView. The revoker
+                // assignment in PrepNavigationViewItem drops them.)
+                navViewA.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B PaneFooter, B closed, A opened");
+
+                navViewB.PaneFooter = null;
+                Content.UpdateLayout();
+                navViewB.MenuItems.Add(item);
+                navViewB.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B MenuItems, B open");
+
+                navViewB.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B MenuItems, B closed");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem with children in PaneFooter gets the closed compact layout and its icon is not clipped.")]
+        public void VerifyHierarchicalPaneFooterItemIsNotClippedInClosedCompactPane()
+        {
+            NavigationView navView = null;
+            NavigationViewItem footerItem = null;
+            NavigationViewItem footerChildItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                footerChildItem = new NavigationViewItem() { Content = "Child", Icon = new SymbolIcon(Symbol.Home) };
+                footerItem = new NavigationViewItem() { Content = "Account", Icon = new SymbolIcon(Symbol.Home) };
+                footerItem.MenuItems.Add(footerChildItem);
+                navView.PaneFooter = footerItem;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Hierarchical PaneFooter item state");
+                VerifyContentGridIsNotClipped(footerItem, "Hierarchical PaneFooter item");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem in NavigationView.Content does not switch to the closed compact layout when the pane is closed in compact mode.")]
+        public void VerifyContentAreaItemKeepsLayoutInClosedCompactPane()
+        {
+            NavigationView navView = null;
+            NavigationViewItem contentItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                contentItem = new NavigationViewItem() { Content = "Row in content", Icon = new SymbolIcon(Symbol.Home) };
+                var contentPanel = new StackPanel();
+                contentPanel.Children.Add(contentItem);
+                navView.Content = contentPanel;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(contentItem), "Content area item state (pane closed)");
+
+                navView.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(contentItem), "Content area item state (pane closed again)");
+            });
+        }
+
+        private static string GetPaneAndTopLevelItemState(NavigationViewItem item)
+        {
+            var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+            var presenterLayoutRoot = VisualTreeHelper.GetChild(presenter, 0) as FrameworkElement;
+            foreach (var visualStateGroup in VisualStateManager.GetVisualStateGroups(presenterLayoutRoot))
+            {
+                if (visualStateGroup.Name == "PaneAndTopLevelItemStates")
+                {
+                    return visualStateGroup.CurrentState?.Name;
+                }
+            }
+            return null;
+        }
+
+        private static void VerifyContentGridIsNotClipped(NavigationViewItem item, string description)
+        {
+            var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+            var contentRootGrid = VisualTreeUtils.FindVisualChildByName(presenter, "PresenterContentRootGrid");
+            var contentGrid = VisualTreeUtils.FindVisualChildByName(presenter, "ContentGrid");
+            var iconColumn = VisualTreeUtils.FindVisualChildByName(presenter, "IconColumn");
+
+            // The layout slot that ContentGrid gets is its parent's width minus its own margins. If the grid is
+            // larger than that slot, the right side (and with it part of the icon) gets clipped.
+            double availableWidth = contentRootGrid.ActualWidth - contentGrid.Margin.Left - contentGrid.Margin.Right;
+            Log.Comment($"{description}: ContentGrid margin={contentGrid.Margin}, available={availableWidth}, IconColumn width={iconColumn.ActualWidth}");
+            Verify.IsLessThanOrEqual(iconColumn.ActualWidth, availableWidth, $"{description}: the icon column should fit in the item without being clipped");
+        }
+
 
         [TestMethod]
         public void VerifyNavigationItemUIAType()

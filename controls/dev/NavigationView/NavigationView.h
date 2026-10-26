@@ -98,6 +98,9 @@ public:
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
+    // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
+    bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
+
 private:
 
     void OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
