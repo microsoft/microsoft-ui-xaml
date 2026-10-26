@@ -3303,13 +3303,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // like a compiled x:Bind template, so ItemsRepeater runs ProcessBindings instead of setting DataContext.
         private partial class SharedPoolCompiledBindingFactory : ElementFactory
         {
-            private readonly Stack<Border> _pool = new Stack<Border>();
+            private const string PoolKey = "Item";
+            private readonly RecyclePool _pool = new RecyclePool();
 
             protected override UIElement GetElementCore(ElementFactoryGetArgs args)
             {
-                if (_pool.Count > 0)
+                // RecyclePool hands out an element recycled by another repeater by removing it from that repeater.
+                if (_pool.TryGetElement(PoolKey, args.Parent) is UIElement recycled)
                 {
-                    return _pool.Pop();
+                    return recycled;
                 }
                 var button = new Button() { Width = 100, Height = 40 };
                 var element = new Border() { Child = button };
@@ -3319,12 +3321,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
             {
-                var element = (Border)args.Element;
-                if (args.Parent is Panel parent)
-                {
-                    parent.Children.Remove(element);
-                }
-                _pool.Push(element);
+                _pool.PutElement(args.Element, PoolKey, args.Parent);
             }
         }
 
