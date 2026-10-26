@@ -129,6 +129,8 @@ Write-Host 'Credential saved! This window will close.' -ForegroundColor Green
 Start-Sleep -Seconds 2
 '@ | Set-Content $helperPath -Encoding UTF8
 
+    # Resolve helperPath to its expanded path; expansion doesn't happen as a process parameter
+    $helperPath = (Resolve-Path $helperPath).Path
     Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $helperPath, "-VMName", $VMName, "-CredFile", $credFile -Wait
     Remove-Item $helperPath -ErrorAction SilentlyContinue
 
