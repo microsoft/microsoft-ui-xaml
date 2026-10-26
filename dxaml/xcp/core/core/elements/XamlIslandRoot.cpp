@@ -73,6 +73,9 @@ void CXamlIslandRoot::DisconnectUIA()
 //  3. Composition
 void CXamlIslandRoot::Dispose()
 {
+    // UIA providers survive ContentIsland replacement, but must disconnect before final teardown.
+    DisconnectUIA();
+
     IGNOREHR(ReleaseContentIslandResources());
 
     if (m_contentRoot)
@@ -93,8 +96,6 @@ _Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIslandResources()
     m_rootVisual = nullptr;
 
     UnsubscribeToInputEvents();
-
-    DisconnectUIA();
 
     CCoreServices* coreServices = GetContext();
     // Clear out the IslandInputSite set on InputServices to facilitate a clean shutdown of DManip.
