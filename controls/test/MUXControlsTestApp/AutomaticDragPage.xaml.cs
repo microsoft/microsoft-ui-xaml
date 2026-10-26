@@ -141,8 +141,7 @@ namespace MUXControlsTestApp
                     PenMoveCount.Text = (++penMoveCount).ToString();
                     PenMovePointerId.Text = args.Pointer.PointerId.ToString();
                 }
-                // Count hover from any device: the test input stack cannot inject pen hover,
-                // so pen tests hover with the mouse.
+                // Count both cross-device legacy guards and native same-pen hover cases.
                 if (!point.IsInContact && !point.Properties.IsLeftButtonPressed)
                 {
                     HoverMoveCount.Text = (++hoverMoveCount).ToString();
