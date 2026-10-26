@@ -16,7 +16,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         private const uint InRange = 0x2;
         private const uint InContact = 0x4;
         private const uint FirstButton = 0x10;
-        private const uint Canceled = 0x8000;
         private const uint Down = 0x10000;
         private const uint Update = 0x20000;
         private const uint Up = 0x40000;
@@ -61,11 +60,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
         }
 
-        public void Cancel()
+        public void LeaveRange()
         {
-            if (!pressed) { throw new InvalidOperationException("There is no pen contact to cancel."); }
-            Inject(position, InRange | InContact | FirstButton | Update | Canceled);
-            pressed = false;
+            if (pressed) { throw new InvalidOperationException("Release the pen before leaving range."); }
+            Inject(position, Update);
         }
 
         private void Inject(Point point, uint flags)
@@ -102,9 +100,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         {
             if (device != IntPtr.Zero)
             {
-                // Destroying our device also cancels an outstanding contact after a failed assertion.
-                DestroySyntheticPointerDevice(device);
-                device = IntPtr.Zero;
+                try
+                {
+                    Release();
+                }
+                finally
+                {
+                    DestroySyntheticPointerDevice(device);
+                    device = IntPtr.Zero;
+                }
             }
         }
 

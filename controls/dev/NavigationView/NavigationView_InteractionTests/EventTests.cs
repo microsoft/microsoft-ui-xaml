@@ -89,18 +89,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
-        public void NavigationViewItemCanceledPenContactCanRestart()
+        public void NavigationViewItemPenDisableDuringPressCanRestart()
         {
             using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
             using var pen = new SyntheticPen();
             var start = FindElement.ById("DragItem").GetClickablePoint();
             pen.Hover(start);
             pen.Press(start);
-            pen.Cancel();
-            pen.Hover(new System.Drawing.Point(start.X + 24, start.Y));
+            new Button(FindElement.ById("DisableDragItem")).Invoke();
+            pen.Move(new System.Drawing.Point(start.X + 24, start.Y));
+            pen.Release();
             Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
             Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
             VerifyNavigationViewDragStateReset();
+            new Button(FindElement.ById("EnableDragItem")).Invoke();
             pen.Press(start);
             pen.Move(new System.Drawing.Point(start.X + 24, start.Y));
             pen.Release();
