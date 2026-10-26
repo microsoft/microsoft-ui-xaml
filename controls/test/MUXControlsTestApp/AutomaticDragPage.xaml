@@ -82,6 +82,12 @@
                 <TextBlock x:Name="ListMode" Text="Collapsed"/>
                 <TextBlock x:Name="ChildTouchReleaseCount" Text="0"/>
             </StackPanel>
+            <StackPanel>
+                <TextBlock x:Name="PressUpdateKind" Text="None"/>
+                <TextBlock x:Name="PressPrimaryDown" Text="False"/>
+                <TextBlock x:Name="PressPointerCaptured" Text="False"/>
+                <TextBlock x:Name="PenCaptureLostCount" Text="0"/>
+            </StackPanel>
         </StackPanel>
         <Button x:Name="Snapshot" Content="Read capture state" Click="Snapshot_Click"/>
     </StackPanel>
