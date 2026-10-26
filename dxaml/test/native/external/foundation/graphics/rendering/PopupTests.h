@@ -87,6 +87,11 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(WindowedPopupInputScaleAtOrigin)
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // The popup input adapter misses scale compensation when its offset remains (0, 0) on first open.
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(NoXamlRoot)
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
