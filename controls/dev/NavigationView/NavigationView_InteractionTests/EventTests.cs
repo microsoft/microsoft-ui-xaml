@@ -328,7 +328,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                         Verify.AreEqual(attempt.ToString(), new TextBlock(FindElement.ById("InvocationCount")).GetText());
 
                         int hoverMoves = int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText());
-                        // The test input stack cannot inject pen hover, so hover with the mouse.
+                        // This legacy-wrapper guard uses mouse hover; SyntheticPen tests cover same-pen hover.
                         using (InputController.Activate(PointerInputType.Mouse))
                         {
                             foreach (double fraction in new[] { 0.7, 0.3 })
@@ -379,7 +379,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 var end = new System.Drawing.Point((int)(right + scale), start.Y);
                 PointerInput.Move(start);
                 Wait.ForIdle();
-                // The test input stack cannot inject pen hover, so the hover state before the
+                // The legacy PointerInput wrapper cannot inject pen hover, so the hover state before the
                 // press is not checked; the press itself enters the item.
 
                 // Pen injection supports whole gestures but not separate press/release.

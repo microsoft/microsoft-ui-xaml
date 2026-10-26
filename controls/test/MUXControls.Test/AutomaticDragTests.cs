@@ -197,7 +197,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(attempt.ToString(), ReadText("ReleaseCount"));
 
                 int hoverMoves = int.Parse(ReadText("HoverMoveCount"));
-                // The test input stack cannot inject pen hover, so hover with the mouse.
+                // This legacy-wrapper guard uses mouse hover; SyntheticPen tests cover same-pen hover.
                 using (InputController.Activate(PointerInputType.Mouse))
                 {
                     foreach (double fraction in new[] { 0.7, 0.3 })
