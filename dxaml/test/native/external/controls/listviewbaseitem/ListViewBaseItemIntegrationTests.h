@@ -150,6 +150,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the chrome animation commands' lifetime is handled correctly in case the ListViewItemPresenter instance uses a selection indicator.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifySelectionIndicatorAfterPopupReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Selects an item in a popup-hosted ItemsPresenter, then reopens, hovers and presses the selected item.")
+            TEST_METHOD_PROPERTY(L"RegressionBug", L"https://github.com/microsoft/microsoft-ui-xaml/issues/10756")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyLVIPWorksWithVSM)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ListViewItemPresenter goes to visual states declared in the template.")
         END_TEST_METHOD()     
