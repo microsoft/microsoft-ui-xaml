@@ -3517,7 +3517,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // String list with key/index mapping, so ItemsRepeater keeps elements in its unique-id reset pool on Reset.
-        private partial class KeyedStringCollection : System.Collections.ObjectModel.ObservableCollection<string>, IKeyIndexMapping
+        private partial class KeyedStringCollection : global::System.Collections.ObjectModel.ObservableCollection<string>, IKeyIndexMapping
         {
             public string KeyFromIndex(int index) => this[index];
 
@@ -3530,7 +3530,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Items.Add(item);
                 }
-                OnCollectionChanged(new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
+                OnCollectionChanged(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(global::System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
             }
         }
 
