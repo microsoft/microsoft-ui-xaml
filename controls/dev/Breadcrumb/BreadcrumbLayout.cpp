@@ -5,7 +5,6 @@
 #include "common.h"
 #include "BreadcrumbLayout.h"
 #include "BreadcrumbBar.h"
-#include "BreadcrumbBarItem.h"
 
 BreadcrumbLayout::BreadcrumbLayout()
 {
@@ -30,42 +29,87 @@ winrt::UIElement BreadcrumbLayout::GetElementAt(winrt::NonVirtualizingLayoutCont
     return context.Children().GetAt(index);
 }
 
-// Measuring is performed in a single step, every element is measured, including the ellipsis
-// item, but the total amount of space needed is only composed of the non-ellipsis breadcrumbs
+// Measure natural widths before choosing the visible suffix, then constrain
+// visible items to the space left by the ellipsis and preceding items.
 winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
-    m_availableSize = availableSize;
-
     winrt::Size accumulatedCrumbsSize(0, 0);
+    const auto children = context.Children();
+    const int itemCount = static_cast<int>(children.Size());
 
-    for (uint32_t i = 0; i < GetItemCount(context); ++i)
+    // Keep a stable measure constraint across resizes, including repeated zero-width layouts.
+    const winrt::Size naturalSize(
+        availableSize.Width > 0 ? std::numeric_limits<float>::infinity() : 0,
+        availableSize.Height);
+    int itemToConstrain = -1;
+    float lastItemWidth{};
+    float ellipsisWidth{};
+
+    for (int i = 0; i < itemCount; ++i)
     {
-        auto breadcrumbItem = GetElementAt(context, i).as<BreadcrumbBarItem>();
-        breadcrumbItem->Measure(availableSize);
+        const auto item = children.GetAt(i);
+        item.Measure(naturalSize);
+        auto desiredSize = item.DesiredSize();
 
-        if (i != 0)
+        // The first item is the overflow button; measure it separately without
+        // counting its width when deciding whether the breadcrumbs fit.
+        if (i == 0)
         {
-            accumulatedCrumbsSize.Width += breadcrumbItem->DesiredSize().Width;
-            accumulatedCrumbsSize.Height = std::max(accumulatedCrumbsSize.Height, breadcrumbItem->DesiredSize().Height);
+            m_ellipsisButton = item;
+
+            if (desiredSize.Width > availableSize.Width)
+            {
+                item.Measure(availableSize);
+                desiredSize = item.DesiredSize();
+            }
+
+            ellipsisWidth = desiredSize.Width;
+        }
+        else
+        {
+            // A single oversized item should trim without showing the overflow button.
+            accumulatedCrumbsSize.Width += std::min(desiredSize.Width, availableSize.Width);
+            accumulatedCrumbsSize.Height = std::max(accumulatedCrumbsSize.Height, desiredSize.Height);
+            lastItemWidth = desiredSize.Width;
+
+            if (desiredSize.Width > availableSize.Width)
+            {
+                itemToConstrain = i;
+            }
         }
     }
 
-    // Save a reference to the ellipsis button to avoid querying for it multiple times
-    if (GetItemCount(context) > 0)
+    m_ellipsisIsRendered = accumulatedCrumbsSize.Width > availableSize.Width;
+    m_firstRenderedItemIndexAfterEllipsis = itemCount > 0 ? itemCount - 1 : 0;
+    float constrainedWidth = availableSize.Width;
+
+    if (m_ellipsisIsRendered)
     {
-        if (const auto& ellipsisButton = GetElementAt(context, 0).try_as<winrt::BreadcrumbBarItem>())
+        // Keep this selection for arrange: constrained items must not make
+        // additional ancestors appear to fit.
+        m_firstRenderedItemIndexAfterEllipsis = GetFirstBreadcrumbBarItemToArrange(children, availableSize.Width);
+
+        // Match the suffix selection's addition order, avoiding rounding-induced
+        // remeasurement (and trimming) of items that already fit.
+        if (std::min(lastItemWidth, availableSize.Width) + ellipsisWidth > availableSize.Width)
         {
-            m_ellipsisButton = ellipsisButton;
+            itemToConstrain = itemCount - 1;
+            constrainedWidth = std::max(0.0f, availableSize.Width - ellipsisWidth);
+        }
+        else if (itemToConstrain < static_cast<int>(m_firstRenderedItemIndexAfterEllipsis))
+        {
+            itemToConstrain = -1;
         }
     }
 
-    if (accumulatedCrumbsSize.Width > availableSize.Width)
+    // At positive widths, at most one visible item needs a smaller constraint.
+    // Remeasure it so its content can trim or wrap within its actual layout slot,
+    // and account for any increased height. Other items retain their cached natural sizes.
+    if (itemToConstrain >= 0)
     {
-        m_ellipsisIsRendered = true;
-    }
-    else
-    {
-        m_ellipsisIsRendered = false;
+        const auto item = children.GetAt(itemToConstrain);
+        item.Measure(winrt::Size(constrainedWidth, availableSize.Height));
+        accumulatedCrumbsSize.Height = std::max(accumulatedCrumbsSize.Height, item.DesiredSize().Height);
     }
 
     return accumulatedCrumbsSize;
@@ -98,19 +142,21 @@ void BreadcrumbLayout::HideItem(const winrt::NonVirtualizingLayoutContext& conte
     HideItem(element);
 }
 
-int BreadcrumbLayout::GetFirstBreadcrumbBarItemToArrange(winrt::NonVirtualizingLayoutContext const& context)
+int BreadcrumbLayout::GetFirstBreadcrumbBarItemToArrange(winrt::IVectorView<winrt::UIElement> const& children, float availableWidth)
 {
-    const int itemCount = GetItemCount(context);
-    float accumLength = GetElementAt(context, itemCount - 1).DesiredSize().Width +
+    const int itemCount = static_cast<int>(children.Size());
+    float accumLength = std::min(children.GetAt(itemCount - 1).DesiredSize().Width, availableWidth) +
         m_ellipsisButton.DesiredSize().Width;
 
     for (int i = itemCount - 2; i >= 0; --i)
     {
-        float newAccumLength = accumLength + GetElementAt(context, i).DesiredSize().Width;
-        if (newAccumLength > m_availableSize.Width)
+        float newAccumLength = accumLength + std::min(children.GetAt(i).DesiredSize().Width, availableWidth);
+
+        if (newAccumLength > availableWidth)
         {
             return i + 1;
         }
+
         accumLength = newAccumLength;
     }
 
@@ -140,16 +186,13 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
 {
     const int itemCount = GetItemCount(context);
     int firstElementToRender{};
-    m_firstRenderedItemIndexAfterEllipsis = itemCount - 1;
     m_visibleItemsCount = 0;
 
-    // If the ellipsis must be drawn, then we find the index (x) of the first element to be rendered, any element with
-    // a lower index than x will be hidden (except for the ellipsis button) and every element after x (including x) will
-    // be drawn. At the very least, the ellipis and the last item will be rendered
+    // Use the visible suffix selected during measure. At least the ellipsis and
+    // the last item are rendered when the leading items overflow.
     if (m_ellipsisIsRendered)
     {
-        firstElementToRender = GetFirstBreadcrumbBarItemToArrange(context);
-        m_firstRenderedItemIndexAfterEllipsis = firstElementToRender;
+        firstElementToRender = m_firstRenderedItemIndexAfterEllipsis;
     }
 
     float accumulatedWidths{};
