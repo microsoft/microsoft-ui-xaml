@@ -64,7 +64,7 @@ that passes no keywords (MatchAnyKeyword 0) receives every group.
 
 | Keyword | Value | Events | Work behind the group |
 | --- | --- | --- | --- |
-| `XamlTree` | `0x01` | `ChildAdded`, `ChildInserted`, `ChildRemoved`, `ElementEnteredTree`, `ElementTypeInfo`, `ElementLeftTree`, `PeerAssociated`, `ContentChanged`, `PopupOpened`, `PopupClosed` | Labels and peer handles on the child, content and popup events; type name and core size once per type |
+| `XamlTree` | `0x01` | `ChildAdded`, `ChildInserted`, `ChildRemoved`, `ElementEnteredTree`, `ElementTypeInfo`, `ElementLeftTree`, `PeerAssociated`, `ContentChanged`, `PopupOpened`, `PopupClosed` | Labels and peer handles on the child, content and popup events; type name and core size per type, re-sent when a session starts |
 | `CompTree` | `0x02` | `CompPeerLinked`, `CompPeerUnlinked`, `CompNodeChildInserted`, `CompNodeChildRemoved` | Pick-overlay marking |
 | `WucTree` | `0x04` | `WucVisualCreated`, `WucVisualChildInserted`, `WucVisualChildRemoved`, `WucVisualChildrenCleared`, `WucVisualRootSet`, `WucVisualRootCleared`, `WucVisualPropertyChanged`, `WucVisualTransformChanged`, `WucVisualObjectChanged` | `IVisual` QI for identity and a QI ladder for the visual's kind; one event per property value XAML sets; a full property read for app-provided visuals |
 | `Surfaces` | `0x08` | `DCompSurfaceMemoryChanged`, `VisualSurfaceChanged` | Surface size and id reads |
@@ -103,7 +103,7 @@ No `.wprp`/manifest change is required for new payload fields.
 | `ChildInserted` | `ParentId, ChildId, Index, ChildLabel, IsTemplateChild, ChildPeerHandle` | `CUIElement::InsertChild` | Child inserted at an index |
 | `ChildRemoved` | `ParentId, ChildId` | `CUIElement::RemoveChild` | Child removed (no label — consumer already has it) |
 | `ElementEnteredTree` | `ElementId, ParentId, IsLive, IsTemplateChild, TypeIndex` | `CUIElement::EnterImpl` | Element entered the live tree (authoritative parent source). `TypeIndex` is the core object's `KnownTypeIndex`, the key into `ElementTypeInfo` |
-| `ElementTypeInfo` | `TypeIndex, TypeName, CoreSize` | `CUIElement::EnterImpl`, before the first `ElementEnteredTree` of each type in a session | The core class name (what `GetDebugLabel()` falls back to without an `x:Name`) and the core object's allocation size in bytes, which is fixed per type. `CoreSize` is measured in Debug builds and is 0 (unknown) in other builds. Best-effort: it can repeat, or arrive after the first enters of its type (see below) |
+| `ElementTypeInfo` | `TypeIndex, TypeName, CoreSize` | `CUIElement::EnterImpl`, before the first `ElementEnteredTree` of each type; re-sent by the provider's enable callback when a session starts | The core class name (what `GetDebugLabel()` falls back to without an `x:Name`) and the core object's allocation size in bytes, which is fixed per type. `CoreSize` is measured in Debug builds and is 0 (unknown) in other builds. It can repeat, and around a session start it can arrive after the first enters of its type (see below) |
 | `ElementLeftTree` | `ElementId, ParentId, IsLive` | `CUIElement::LeaveImpl` | Element left the live tree |
 | `PeerAssociated` | `ElementId, PeerHandle` | `DXamlCore::GetPeerPrivate` (peer creation, after the PeerTable lock is released) | A DXaml peer was just bound to a core UIElement. The only source of an `ElementEnteredTree` node's peer handle: it fires before the enter for elements whose peer exists first, and **lazily back-fills** elements whose peer is created later |
 | `ContentChanged` | `ParentId, OldContentId, NewContentId, NewContentLabel, NewContentPeerHandle` | `CContentControl` content set | `ContentControl.Content` replaced |
@@ -113,13 +113,20 @@ No `.wprp`/manifest change is required for new payload fields.
 `ElementEnteredTree` fires for every element, so it carries no label, peer handle or
 source location. Consumers join those back by `ElementId` from granular events:
 
-- **Class name and core size:** `ElementTypeInfo`, by `TypeIndex`. The runtime keeps a
-  per-session table of the types it has described, which resets whenever a session
-  enables or disables the provider, so every session gets the rows for the types it
-  sees. A type is marked only after its row is written, so UI threads racing on a new
-  type may each write one. Delivery is best-effort: when a session starts while
-  elements are entering, the first enters of a type can arrive before its row, so
-  consumers apply a late row to the nodes they already hold with that `TypeIndex`.
+- **Class name and core size:** `ElementTypeInfo`, by `TypeIndex`. The runtime writes a
+  type's row before the first enter of that type, then marks the type (one bit per
+  `KnownTypeIndex`, never cleared), so later enters cost one bit test. When a session
+  enables the provider, changes its level or keywords, or requests capture state, the
+  provider's enable callback re-sends the row of every marked type, so a session that
+  starts later still gets the rows for the types that entered before it. A UI thread
+  that writes a row while a session starts checks, after it marks the type, whether a
+  re-send began meanwhile, and if so writes the row again: either the re-send saw the
+  mark or the thread saw the re-send. So a session gets the row of every type it sees
+  enter, unless ETW drops it (a capture-state request sends it again). Rows can repeat,
+  because re-sends also reach the sessions already listening and UI threads racing on a
+  new type may each write one. Around a session start, the first enters of a type can
+  arrive before its row, so consumers apply a late row to the nodes they already hold
+  with that `TypeIndex`.
 - **`x:Name`:** the `Microsoft-Windows-XAML` manifest provider
   (`{531a35ab-63ce-4bcf-aa98-f88c7a89e455}`, keyword `0x1`): `ElementSetNameInfo`
   (event 213) when a name is set, and `ElementCreatedInfo` (event 61), which clears
@@ -186,7 +193,7 @@ name — e.g. `"RefreshButton"`, `"Grid"`), zero-allocation in the common path.
 - Added a trailing `PCWSTR` to **5 introduce events** (`ChildAdded`,
   `ChildInserted`, `ContentChanged`, `PopupOpened` ×2, `CompPeerLinked`).
 - `ElementEnteredTree` fires for every element, so instead of a label it carries a
-  `TypeIndex`: the class name arrives once per type in `ElementTypeInfo`, and the
+  `TypeIndex`: the class name arrives per type in `ElementTypeInfo`, and the
   `x:Name` from `Microsoft-Windows-XAML` `ElementSetNameInfo` (§3).
 - Null-guarded call sites (`pNewContent`, `m_pChild`) pass `L""`.
 - The comp node borrows its owning UIElement's label via `CompPeerLinked`.
@@ -379,7 +386,7 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 | File | Role in the change |
 | --- | --- |
 | `dxaml/Xaml.Cpp.Props` | `XamlProfilerEnabled` master switch (on for every configuration; see `activateframework.md`) |
-| `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | Provider declaration, keyword groups, inline `IsEnabled(keywords)` gate, emitter declarations (**all** event schemas); `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` declarations; the `ElementTypeInfo` type table (`IsTypeDescribed` / `MarkTypeDescribed`) and the enable callback that resets it; inline `XamlProfilerTraceHeapSnapshot` (Debug builds) |
+| `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | Provider declaration, keyword groups, inline `IsEnabled(keywords)` gate, emitter declarations (**all** event schemas); `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` declarations; the `ElementTypeInfo` type table (`DescribeType`, which takes the core's `TypeRowWriter`) and the enable callback that re-sends its rows when a session starts; inline `XamlProfilerTraceHeapSnapshot` (Debug builds) |
 | `dxaml/xcp/components/base/XamlProfilerTracing.cpp` | **New.** Provider definition, the out-of-line emitters, the type table and its enable callback |
 | `dxaml/xcp/components/base/lib/Microsoft.UI.Xaml.Base.vcxproj` | Registered `XamlProfilerTracing.cpp` in `ClCompile` |
 | `dxaml/xcp/dxaml/dllsrv/winrt/dllentry.cpp` | Registers the provider (with the enable callback) and unregisters it with the DLL |
@@ -391,7 +398,7 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 | `dxaml/xcp/core/hw/hwwalk.cpp` | WUC sprite/leaf visual insert chokepoints |
 | `dxaml/xcp/core/hw/hwcompnode.h` | Per-node pick-overlay suppression bit (`MarkProfilerSuppressed` / `IsProfilerSuppressed`) |
 | `dxaml/xcp/core/hw/hwcompnode.cpp` | Async comp-node events; render-data node bulk clear; creation and property events for media and swap-chain visuals |
-| `dxaml/xcp/core/core/elements/uielement.cpp` | `ChildAdded`/`ChildInserted`/`ElementEnteredTree` (with `ElementTypeInfo`)/`CompPeerLinked` call sites and their out-of-line argument helpers; `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` definitions; hand-off visual creation events; pick-overlay suppression hooks |
+| `dxaml/xcp/core/core/elements/uielement.cpp` | `ChildAdded`/`ChildInserted`/`ElementEnteredTree` (with `DescribeType` and the `ElementTypeInfo` row writer)/`CompPeerLinked` call sites and their out-of-line argument helpers; `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` definitions; hand-off visual creation events; pick-overlay suppression hooks |
 | `dxaml/xcp/core/core/elements/ContentControl.cpp` | `ContentChanged` call site |
 | `dxaml/xcp/core/core/elements/Popup.cpp` | `PopupOpened`/`PopupClosed`; windowed-popup island WUC root tree and its creation and property events |
 | `dxaml/xcp/core/core/elements/SwapChainPanel.cpp` | Creation event for the swap-chain sprite visual |
@@ -418,8 +425,9 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
   changes — only ETW events are added.
 - **Cost with a session:** the events that fire on every tree change
   (`ElementEnteredTree`, `WucVisualChildInserted`, `WucVisualRootSet`) carry scalars
-  only. Type details are emitted once per type; names, peers, source locations and
-  visual properties are emitted when they're set, not on every tree change.
+  only. Type details are emitted once per type, and re-sent when a session starts;
+  names, peers, source locations and visual properties are emitted when they're set,
+  not on every tree change.
 - **Release data:** builds without allocator counters never emit `XamlHeapSnapshot`
   and report `ElementTypeInfo.CoreSize` 0 (unknown) instead of reading the heap with
   a base-class pointer.

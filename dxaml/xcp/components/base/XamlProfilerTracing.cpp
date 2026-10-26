@@ -22,8 +22,17 @@ TRACELOGGING_DEFINE_PROVIDER(
 
 namespace
 {
-    // IsTypeDescribed's set: one bit per KnownTypeIndex below c_typeTableCapacity.
-    std::atomic<uint64_t> s_typesDescribed[XamlProfilerTracing::c_typeTableCapacity / 64] {};
+    // DescribeType's marks: one bit per KnownTypeIndex below c_typeTableCapacity, set once the
+    // type's ElementTypeInfo row has been written. They're never cleared; a session that starts
+    // later gets the rows from ProviderEnableCallback instead.
+    constexpr uint32_t c_typeTableWords = XamlProfilerTracing::c_typeTableCapacity / 64;
+    std::atomic<uint64_t> s_typesDescribed[c_typeTableWords] {};
+
+    // Advanced by ProviderEnableCallback before each re-send of the rows.
+    std::atomic<uint32_t> s_typeRowResends { 0 };
+
+    // The writer DescribeType was given, for ProviderEnableCallback to re-send rows with.
+    std::atomic<XamlProfilerTracing::TypeRowWriter> s_typeRowWriter { nullptr };
 }
 
 namespace XamlProfilerTracing
@@ -37,39 +46,70 @@ namespace XamlProfilerTracing
         _In_opt_ PEVENT_FILTER_DESCRIPTOR /* filterData */,
         _Inout_opt_ PVOID /* callbackContext */) noexcept
     {
-        // EVENT_CONTROL_CODE_DISABLE_PROVIDER / ENABLE_PROVIDER / CAPTURE_STATE from evntrace.h,
-        // which TraceLoggingProvider.h doesn't pull in. Resetting on disable too means a session
-        // that starts later normally finds the table already empty.
-        constexpr ULONG c_disableProvider = 0;
+        // EVENT_CONTROL_CODE_ENABLE_PROVIDER / CAPTURE_STATE from evntrace.h, which
+        // TraceLoggingProvider.h doesn't pull in. Disabling needs nothing: the sessions that
+        // remain already have their rows.
         constexpr ULONG c_enableProvider = 1;
         constexpr ULONG c_captureState = 2;
-        if (controlCode == c_disableProvider || controlCode == c_enableProvider || controlCode == c_captureState)
+        if (controlCode != c_enableProvider && controlCode != c_captureState)
         {
-            for (std::atomic<uint64_t>& word : s_typesDescribed)
+            return;
+        }
+
+        // Pairs with DescribeType, which sets a type's mark and then re-reads this counter. Both
+        // sides are sequentially consistent, so at least one of them sees the other's write:
+        // either the scan below sees the mark and re-sends the row, or DescribeType sees the
+        // increment and writes the row again. Either way the row is written after the session
+        // that triggered this callback was enabled.
+        s_typeRowResends.fetch_add(1, std::memory_order_seq_cst);
+
+        for (uint32_t word = 0; word < c_typeTableWords; ++word)
+        {
+            const uint64_t bits = s_typesDescribed[word].load(std::memory_order_seq_cst);
+            if (bits == 0)
             {
-                word.store(0, std::memory_order_relaxed);
+                continue;
+            }
+
+            // Not null: DescribeType stores the writer before it sets a mark.
+            const TypeRowWriter writer = s_typeRowWriter.load(std::memory_order_acquire);
+            for (uint32_t bit = 0; bit < 64; ++bit)
+            {
+                if ((bits & (uint64_t{ 1 } << bit)) != 0)
+                {
+                    writer(word * 64 + bit);
+                }
             }
         }
     }
 
-    bool IsTypeDescribed(uint32_t typeIndex) noexcept
+    void DescribeType(uint32_t typeIndex, TypeRowWriter writer) noexcept
     {
         if (typeIndex >= c_typeTableCapacity)
         {
-            return false;
+            writer(typeIndex);
+            return;
         }
 
+        std::atomic<uint64_t>& word = s_typesDescribed[typeIndex / 64];
         const uint64_t bit = uint64_t{ 1 } << (typeIndex % 64);
-        return (s_typesDescribed[typeIndex / 64].load(std::memory_order_acquire) & bit) != 0;
-    }
 
-    void MarkTypeDescribed(uint32_t typeIndex) noexcept
-    {
-        if (typeIndex < c_typeTableCapacity)
+        // Pairs with the fetch_or below: a thread that sees the mark writes its ElementEnteredTree
+        // after the row.
+        if ((word.load(std::memory_order_acquire) & bit) != 0)
         {
-            // Pairs with the acquire in IsTypeDescribed: a thread that sees the bit writes its
-            // ElementEnteredTree after this thread's ElementTypeInfo.
-            s_typesDescribed[typeIndex / 64].fetch_or(uint64_t{ 1 } << (typeIndex % 64), std::memory_order_release);
+            return;
+        }
+
+        s_typeRowWriter.store(writer, std::memory_order_release);
+        const uint32_t resends = s_typeRowResends.load(std::memory_order_seq_cst);
+        writer(typeIndex);
+        word.fetch_or(bit, std::memory_order_seq_cst);
+        if (s_typeRowResends.load(std::memory_order_seq_cst) != resends)
+        {
+            // A session started while the row was being written, and its re-send may have
+            // scanned the marks before this one was set.
+            writer(typeIndex);
         }
     }
 }

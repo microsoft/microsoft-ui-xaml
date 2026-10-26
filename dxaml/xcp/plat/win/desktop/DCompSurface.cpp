@@ -28,9 +28,10 @@ bool DCompSurface::s_traceDCompSurfaceUpdates = false;
 // them. The work is in the noinline ...Impl functions further down.
 __forceinline void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
 {
+    // HeapSnapshots counts only in builds that count allocations; the others never take a snapshot.
     if (XamlProfilerTracing::IsEnabled(
             XamlProfilerKeywords::Surfaces |
-            XamlProfilerKeywords::HeapSnapshots |
+            (XCP_COUNT_OUTSTANDING_ALLOC ? XamlProfilerKeywords::HeapSnapshots : 0) |
             XamlProfilerKeywords::GpuSnapshots))
     {
         TraceProfilerMemoryChangeImpl(isAllocation);
@@ -1440,8 +1441,8 @@ __declspec(noinline) void DCompSurface::TraceProfilerTextureObservedImpl(
         static_cast<int32_t>(offset.y));
 }
 
-// Called when any of the Surfaces, HeapSnapshots or GpuSnapshots groups is on; each part checks
-// its own group.
+// Called when any of the Surfaces, HeapSnapshots (in builds that count allocations) or
+// GpuSnapshots groups is on; each part checks its own group.
 __declspec(noinline) void DCompSurface::TraceProfilerMemoryChangeImpl(bool isAllocation)
 {
     if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::Surfaces))

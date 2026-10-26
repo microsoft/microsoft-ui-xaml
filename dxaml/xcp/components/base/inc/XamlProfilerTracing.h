@@ -19,10 +19,10 @@
 //
 // Cost with a session: the per-change tree events ElementEnteredTree, WucVisualChildInserted and
 // WucVisualRootSet carry scalar payloads only. Anything that is a property of a type rather than
-// an instance (type name, core size) is emitted once per type per session (ElementTypeInfo), and
-// per-instance details (x:Name, DXaml peer, XAML source location, WUC visual properties) come from
-// granular events emitted when that detail changes. The consumer joins them back into the same
-// trees.
+// an instance (type name, core size) is emitted once per type, and again for each session that
+// starts later (ElementTypeInfo), and per-instance details (x:Name, DXaml peer, XAML source
+// location, WUC visual properties) come from granular events emitted when that detail changes.
+// The consumer joins them back into the same trees.
 #ifdef XAMLPROFILER_ENABLED
 
 #include <cstdint>
@@ -106,10 +106,15 @@ namespace XamlProfilerTracing
         return TraceLoggingProviderEnabled(g_hXamlProfilerProvider, WINEVENT_LEVEL_VERBOSE, keywords) != 0;
     }
 
-    // ETW enable callback, passed to TraceLoggingRegisterEx in dllentry.cpp (runs on an ETW
-    // thread, after TraceLogging has updated the state IsEnabled reads). It only resets the
-    // session-scoped type table below, whenever a session enables or disables the provider or
-    // requests capture state, so every session receives ElementTypeInfo for the types it sees.
+    // ETW enable callback, passed to TraceLoggingRegisterEx in dllentry.cpp. ETW calls it on its
+    // notification thread after TraceLogging has updated the state IsEnabled reads. When a
+    // session enables the provider (or changes its level or keywords) or requests capture state,
+    // it re-sends the ElementTypeInfo row of every type described so far (see DescribeType), so
+    // that session gets the rows of the types that entered the tree before it started, and a
+    // session that lost rows can get them back. Disabling needs nothing. If a session already has
+    // the provider enabled when the DLL loads, TraceLoggingRegisterEx calls this synchronously
+    // from DllMain, before the /GS cookie is initialized; no type has been described then, so it
+    // only advances a counter.
     void NTAPI ProviderEnableCallback(
         _In_ LPCGUID sourceId,
         ULONG controlCode,
@@ -119,19 +124,25 @@ namespace XamlProfilerTracing
         _In_opt_ PEVENT_FILTER_DESCRIPTOR filterData,
         _Inout_opt_ PVOID callbackContext) noexcept;
 
-    // Session-scoped set of the KnownTypeIndex values whose ElementTypeInfo has been written (a
-    // bitset of this many entries). ElementEnteredTree carries only a TypeIndex; the first enter
-    // of each type in a session is preceded by an ElementTypeInfo row.
+    // Writes typeIndex's ElementTypeInfo row. The core, which owns the type metadata, passes one
+    // to DescribeType. It's called on UI threads and, to re-send rows, on ETW's notification
+    // thread, so it must not throw and must only read data that lives as long as the provider is
+    // registered.
+    using TypeRowWriter = void (*)(uint32_t typeIndex);
+
+    // The KnownTypeIndex values DescribeType tracks, one bit each (256 bytes).
     constexpr uint32_t c_typeTableCapacity = 2048;
 
-    // True when typeIndex's ElementTypeInfo has been written since the table was last reset, and
-    // always false for an index beyond the table. When it's false, the caller writes
-    // ElementTypeInfo and then calls MarkTypeDescribed, so a type is marked only after its row is
-    // written. UI threads that race on a new type may each write the row.
-    bool IsTypeDescribed(uint32_t typeIndex) noexcept;
-
-    // Records that typeIndex's ElementTypeInfo has been written. No-op for an index beyond the table.
-    void MarkTypeDescribed(uint32_t typeIndex) noexcept;
+    // Called before each ElementEnteredTree. The first call for a type writes the type's row with
+    // 'writer' and then marks the type; later calls only test the mark (one load). Marks are never
+    // cleared: ProviderEnableCallback re-sends the rows of the marked types to each session that
+    // starts later. A session that starts while a row is being written gets the row either from
+    // that re-send or from this function, which writes the row again if a session started during
+    // the write. So a session receives the row of every type it sees enter, unless ETW drops it.
+    // Rows can repeat (racing UI threads, and re-sends also reach the sessions already listening),
+    // and around a session start a type's first enters can reach the session before its row. An
+    // index at or beyond c_typeTableCapacity is written on every call.
+    void DescribeType(uint32_t typeIndex, TypeRowWriter writer) noexcept;
 
     // Out-of-line emitters, defined in XamlProfilerTracing.cpp. Event names, field names, field
     // types and field order are the wire contract with the profiler tools.
@@ -173,7 +184,7 @@ namespace XamlProfilerTracing
     // Fired when a UIElement enters the tree (live or non-live). Scalar-only by design, since it
     // fires for every element: the consumer resolves the remaining node details from granular
     // events that are emitted once, when the detail is established:
-    //   - type name and core size: ElementTypeInfo (below), normally once per TypeIndex per session;
+    //   - type name and core size: ElementTypeInfo (below), by TypeIndex;
     //   - x:Name: Microsoft-Windows-XAML ElementSetNameInfo (CDependencyObject::SetName);
     //   - DXaml peer InstanceHandle: PeerAssociated (below);
     //   - XAML source location: Microsoft-Windows-XAML-Diagnostics ElementCreatedWithSourceInfo1;
@@ -187,14 +198,14 @@ namespace XamlProfilerTracing
         bool isTemplateChild,
         uint32_t typeIndex) noexcept;
 
-    // Emitted before the first ElementEnteredTree of each TypeIndex in a session (see
-    // IsTypeDescribed). Delivery is best-effort: a type can be described more than once (racing
-    // UI threads, overlapping sessions), and when a session starts while elements are entering,
-    // the first enters of a type can precede its row. Consumers therefore apply a late row to the
-    // nodes they already hold with that TypeIndex. TypeName is the core class name (what
-    // GetDebugLabel() falls back to when there's no x:Name). CoreSize is the heap-block size of
-    // the concrete core object, which is fixed per type (0 when unknown, see
-    // XamlProfilerGetCoreSize); sparse properties and the DXaml peer are separate allocations.
+    // A TypeIndex's class name and core size, written before the first ElementEnteredTree of the
+    // type and re-sent to each session that starts later (see DescribeType). A session receives the
+    // row of every type it sees enter, but rows can repeat, and around a session start the first
+    // enters of a type can precede its row, so consumers apply a late row to the nodes they already
+    // hold with that TypeIndex. TypeName is the core class name (what GetDebugLabel() falls back to
+    // when there's no x:Name). CoreSize is the heap-block size of the concrete core object, which
+    // is fixed per type (0 when unknown, see XamlProfilerGetCoreSize); sparse properties and the
+    // DXaml peer are separate allocations.
     void ElementTypeInfo(
         uint32_t typeIndex,
         PCWSTR typeName,

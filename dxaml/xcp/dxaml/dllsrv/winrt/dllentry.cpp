@@ -119,7 +119,8 @@ BOOL InitializeDll()
     TraceLoggingRegister(g_hTraceProvider);
 
 #ifdef XAMLPROFILER_ENABLED
-    // The enable callback resets the profiler's per-session type table.
+    // The enable callback re-sends the profiler's ElementTypeInfo rows when a session starts. If a
+    // session is already listening, TraceLoggingRegisterEx calls it before returning.
     TraceLoggingRegisterEx(g_hXamlProfilerProvider, XamlProfilerTracing::ProviderEnableCallback, nullptr);
 #endif
 

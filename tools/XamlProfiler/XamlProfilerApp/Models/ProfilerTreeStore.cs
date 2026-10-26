@@ -433,7 +433,8 @@ public class ProfilerTreeStore
 
     /// <summary>
     /// Label element <paramref name="id"/>'s logical and visual nodes with its class name when the
-    /// name arrives after the element entered the tree (<c>ElementTypeInfo</c> is best-effort).
+    /// name arrives after the element entered the tree (around a session start,
+    /// <c>ElementTypeInfo</c> can trail the first enters of its type).
     /// The label is provisional, and nodes that already have a label keep it.
     /// </summary>
     public void SetLateTypeName(ulong id, string? typeName)

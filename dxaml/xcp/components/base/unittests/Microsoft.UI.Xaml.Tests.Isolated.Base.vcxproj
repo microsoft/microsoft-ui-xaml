@@ -26,12 +26,15 @@
         <ClInclude Include="SmartPointerUnitTests.h"/>
         <ClInclude Include="ThreadLocalStorageUnitTests.h"/>
         <ClInclude Include="VectorTreeUnitTests.h"/>
+        <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="XamlProfilerTypeTableUnitTests.h"/>
 
         <ClCompile Include="CompactInlineVectorUnitTests.cpp"/>
         <ClCompile Include="SmartPointerUnitTests.cpp"/>
         <ClCompile Include="ThreadLocalStorageUnitTests.cpp"/>
         <ClCompile Include="VectorTreeUnitTests.cpp"/>
         <ClCompile Include="BitVectorUnitTests.cpp"/>
+        <!-- The type table it tests is in the base library only when the XAML Profiler is compiled in. -->
+        <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="XamlProfilerTypeTableUnitTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>

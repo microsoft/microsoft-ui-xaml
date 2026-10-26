@@ -66,6 +66,7 @@
 
 #ifdef XAMLPROFILER_ENABLED
 #include <XcpAllocation.h>
+#include <atomic>
 #endif
 
 using namespace DirectUI;
@@ -126,6 +127,41 @@ uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 #endif
 }
 
+#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
+// Each type's core size, taken from the type's elements as they enter the tree until one gives a
+// size, so the rows ProviderEnableCallback re-sends (with no element at hand) carry it too.
+static std::atomic<uint64_t> s_profilerCoreSizes[KnownTypeCount] {};
+
+static void XamlProfilerMeasureTypeCoreSize(uint32_t typeIndex, _In_ const CUIElement* element) noexcept
+{
+    if (typeIndex < KnownTypeCount && s_profilerCoreSizes[typeIndex].load(std::memory_order_relaxed) == 0)
+    {
+        s_profilerCoreSizes[typeIndex].store(XamlProfilerGetCoreSize(element), std::memory_order_relaxed);
+    }
+}
+
+static uint64_t XamlProfilerGetTypeCoreSize(uint32_t typeIndex) noexcept
+{
+    return typeIndex < KnownTypeCount ? s_profilerCoreSizes[typeIndex].load(std::memory_order_relaxed) : 0;
+}
+#else
+// Other builds don't measure the core size (see XamlProfilerGetCoreSize).
+static void XamlProfilerMeasureTypeCoreSize(uint32_t, _In_ const CUIElement*) noexcept {}
+static uint64_t XamlProfilerGetTypeCoreSize(uint32_t) noexcept { return 0; }
+#endif
+
+// The XamlProfilerTracing::TypeRowWriter for ElementTypeInfo. It runs on UI threads and, when a
+// session starts, on ETW's notification thread. A UIElement's type index is always a known index,
+// so the class name is static metadata: no lock, no allocation.
+static void TraceProfilerTypeRow(uint32_t typeIndex) noexcept
+{
+    XamlProfilerTracing::ElementTypeInfo(
+        typeIndex,
+        // CDependencyObject::GetClassName(): what GetDebugLabel() falls back to without an x:Name.
+        MetadataAPI::GetClassInfoByIndex(static_cast<KnownTypeIndex>(typeIndex))->GetName().GetBuffer(),
+        XamlProfilerGetTypeCoreSize(typeIndex));
+}
+
 // Out-of-line argument work for the hot instrumented sites below. Each site is an inline
 // keyword gate plus one call, so labels and peer handles are only computed while a session has
 // the group enabled, and none of that code is in the hot functions.
@@ -134,23 +170,13 @@ static __declspec(noinline) void TraceProfilerElementEnteredTree(
     bool isLive)
 {
     // Scalar-only per-enter event. The class name and core size depend only on the type, so
-    // they're emitted once per type per session (ElementTypeInfo). x:Name, the DXaml peer handle
+    // they're emitted per type (ElementTypeInfo, see DescribeType). x:Name, the DXaml peer handle
     // and the XAML source location come from their own granular events (see XamlProfilerTracing.h).
     static_assert(KnownTypeCount <= XamlProfilerTracing::c_typeTableCapacity, "The XAML Profiler type table must cover every KnownTypeIndex");
     const uint32_t typeIndex = static_cast<uint32_t>(element->GetTypeIndex());
-    if (!XamlProfilerTracing::IsTypeDescribed(typeIndex))
-    {
-        XamlProfilerTracing::ElementTypeInfo(
-            typeIndex,
-            // Same name GetDebugLabel() falls back to when there's no x:Name.
-            element->CDependencyObject::GetClassName().GetBuffer(),
-            // Core block size (bytes) of the concrete object. It's fixed per type, so it's
-            // measured once per type, whether the element first enters live or non-live.
-            XamlProfilerGetCoreSize(element));
-        // Marked only after the row is written: another UI thread entering this type either sees
-        // the mark, so the row is already written, or writes the row itself.
-        XamlProfilerTracing::MarkTypeDescribed(typeIndex);
-    }
+    // Fixed per type, so it's cached per type, whether the type first enters live or non-live.
+    XamlProfilerMeasureTypeCoreSize(typeIndex, element);
+    XamlProfilerTracing::DescribeType(typeIndex, &TraceProfilerTypeRow);
 
     XamlProfilerTracing::ElementEnteredTree(
         reinterpret_cast<uint64_t>(element),
@@ -189,7 +215,8 @@ static __declspec(noinline) void TraceProfilerChildInserted(
 }
 
 // Marks the comp node of the profiler's pick-mode capture overlay, and of everything under it,
-// so that none of the overlay's comp-tree or WUC events are emitted (see EnsureCompositionPeer).
+// so that none of the overlay's comp-tree or WUC structure events are emitted (see
+// EnsureCompositionPeer).
 static __declspec(noinline) void TraceProfilerMarkOverlay(
     _In_opt_ const CUIElement* element,
     _In_opt_ const HWCompTreeNode* parentNode,
@@ -11175,7 +11202,7 @@ CUIElement::EnsureCompositionPeer(
 
     // XAML Profiler: detect the profiler pick-mode capture overlay (a Popup/Border the tap
     // injects, identified by the Name it stamped) BEFORE inserting its comp peer, so none of
-    // the overlay's comp-node-tree or WUC-visual events are ever emitted. The mark must be
+    // the overlay's comp-node-tree or WUC-visual structure events are emitted. The mark must be
     // set before InsertChildSynchronous below (which fires those events) and propagates down:
     // any comp node whose parent is a suppressed overlay node is itself suppressed. Without
     // this the profiler's own pick overlay surfaces as phantom nodes in the trees it inspects.

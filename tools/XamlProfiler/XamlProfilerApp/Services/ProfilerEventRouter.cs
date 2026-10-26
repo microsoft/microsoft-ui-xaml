@@ -30,8 +30,8 @@ public sealed class ProfilerEventRouter
     private readonly Dictionary<ulong, ulong> _peers = new();
     private readonly Dictionary<ulong, WucVisualPropertyBag> _bags = new();
     // Elements that entered the tree before their type's ElementTypeInfo arrived, with the TypeIndex
-    // they entered with. ElementTypeInfo is best-effort (around a session start it can trail the
-    // first enter of its type), so the type name is applied when it arrives.
+    // they entered with. Around a session start, ElementTypeInfo can trail the first enters of its
+    // type, so the type name is applied when it arrives.
     private readonly Dictionary<ulong, uint> _untyped = new();
 
     public ProfilerEventRouter(ProfilerTreeStore store) => _store = store;
@@ -258,9 +258,9 @@ public sealed class ProfilerEventRouter
     // Element details (ElementTypeInfo + Microsoft-Windows-XAML events)
     // =====================================================================
 
-    // Normally once per TypeIndex per session, before the first enter of that type:
-    // [0]typeIndex u32, [1]typeName str, [2]coreSize u64 (unused). It's best-effort, so elements
-    // of the type that entered before it get their label now.
+    // Written before the first enter of a TypeIndex and re-sent when a session starts, so it can
+    // repeat: [0]typeIndex u32, [1]typeName str, [2]coreSize u64 (unused). Around a session start
+    // it can trail the first enters of its type, so those elements get their label now.
     private void HandleElementTypeInfo(in EtwEvent e)
     {
         var typeIndex = e.U32(0);

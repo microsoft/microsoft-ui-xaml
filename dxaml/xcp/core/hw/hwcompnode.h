@@ -67,8 +67,9 @@ public:
     bool UsesPlaceholderVisual() const { return m_usesPlaceholderVisual; }
 
     // XAML Profiler: true when this comp node belongs to (or descends from) the profiler's own
-    // pick-mode overlay, so none of its comp-node-tree or WUC-visual events are emitted. Marked once
-    // by CUIElement::EnsureCompositionPeer and never cleared. The bit lives and dies with this node,
+    // pick-mode overlay, so none of its comp-node-tree or WUC-visual structure events are emitted
+    // (WUC property events aren't gated; see WucVisualTreeProfiler.h). Marked once by
+    // CUIElement::EnsureCompositionPeer and never cleared. The bit lives and dies with this node,
     // so a later node reusing this address can't inherit it and teardown needs no bookkeeping.
     bool IsProfilerSuppressed() const { return m_isProfilerSuppressed; }
     void MarkProfilerSuppressed() { m_isProfilerSuppressed = true; }

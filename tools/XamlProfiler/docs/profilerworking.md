@@ -179,10 +179,10 @@ the logical tree via `FindNearestLogicalAncestor`; finally `SetPeerHandle`.
 (`ElementId, ParentId, IsLive, IsTemplateChild, TypeIndex`), so the router keeps the
 rest itself:
 
-- `ElementTypeInfo(TypeIndex, TypeName, CoreSize)`, normally emitted once per type
-  before that type's first enter, fills `_types`. It's best-effort: around a session
-  start it can arrive after enters of its type. Such elements are held in `_untyped`
-  and get the type name as a label when it arrives (`SetLateTypeName`).
+- `ElementTypeInfo(TypeIndex, TypeName, CoreSize)`, emitted before that type's first
+  enter and re-sent when a session starts, fills `_types`. It can repeat, and around a
+  session start it can arrive after enters of its type. Such elements are held in
+  `_untyped` and get the type name as a label when it arrives (`SetLateTypeName`).
 - `ElementSetName(ElementId, Name)` fills `_names`; an empty name (x:Name cleared) is
   stored too.
 - `ElementCreated(ElementId)` drops what `_names`, `_peers` and `_untyped` hold for
