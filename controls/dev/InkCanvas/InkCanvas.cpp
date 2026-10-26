@@ -535,11 +535,14 @@ void InkCanvas::AttachToSystemCompositor()
     auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
     auto mucRootVisual = compositor.CreateContainerVisual();
 
-    if (!TryAttachInkOnXamlDevice(compositor, mucRootVisual))
+    if (StartAttachInkOnXamlDevice(compositor, mucRootVisual))
     {
-        AttachInkThroughSplice(compositor, mucRootVisual);
+        // The bind finishes asynchronously (OnXamlDeviceBindCompleted); the canvas visual can go in now.
+        winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+        return;
     }
 
+    AttachInkThroughSplice(compositor, mucRootVisual);
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
 }
 
@@ -576,13 +579,15 @@ void InkCanvas::AttachInkThroughSplice(winrt::Microsoft::UI::Composition::Compos
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
 }
 
-// Creates the ink visual on XAML's own device and puts it under mucRootVisual. On the system engine XAML's
-// compositor and visuals are backed by system Windows.UI.Composition objects (GetForSystemEngine), and that
-// compositor is also an IDCompositionDesktopDevice. The ink visual is created on it, bound to the OS presenter with
-// that device (so the OS's custom-dry wet removal is committed by XAML, in XAML's frame), and added as a child of
-// mucRootVisual's system visual. No IDCompositionTarget is needed: the ink visual is a normal child visual.
-// Returns false, with nothing attached, if any piece is unavailable; the caller then uses the splice.
-bool InkCanvas::TryAttachInkOnXamlDevice(winrt::Microsoft::UI::Composition::Compositor const& compositor, winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
+// Creates the ink visual on XAML's own device and starts binding it to the OS presenter. On the system engine XAML's
+// compositor and visuals are backed by system Windows.UI.Composition objects (GetForSystemEngine), and that compositor
+// is also an IDCompositionDesktopDevice. The ink visual is created on it and bound to the OS presenter with that device,
+// so the OS's custom-dry wet removal is committed by XAML, in XAML's frame. It becomes a normal child of
+// mucRootVisual's system visual, so no IDCompositionTarget is needed.
+// The bind runs on the shared ink thread without blocking the UI thread: another canvas's ink-thread work (for example
+// a SaveAsync whose stream completes on the UI thread) could otherwise wait on this UI thread while it waits on the ink
+// thread. Returns false, with nothing started, if XAML's device is not available; the caller then uses the splice.
+bool InkCanvas::StartAttachInkOnXamlDevice(winrt::Microsoft::UI::Composition::Compositor const& compositor, winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
 {
     auto systemCompositor = winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor);
     auto systemParent = winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(mucRootVisual)
@@ -594,43 +599,80 @@ bool InkCanvas::TryAttachInkOnXamlDevice(winrt::Microsoft::UI::Composition::Comp
     }
 
     winrt::com_ptr<IDCompositionVisual2> inkVisual;
-    if (FAILED(xamlDevice->CreateVisual(inkVisual.put())))
-    {
-        return false;
-    }
-    auto inkVisualAsWuc = inkVisual.try_as<winrt::Windows::UI::Composition::Visual>();
-    if (!inkVisualAsWuc)
+    if (FAILED(xamlDevice->CreateVisual(inkVisual.put())) || !inkVisual.try_as<winrt::Windows::UI::Composition::Visual>())
     {
         return false;
     }
 
-    // Bind on the ink thread and wait for the result, so a device the OS rejects falls back to the splice.
-    // RunInkPresenterWorkItemSync rethrows an error from the ink thread here.
-    auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
     auto uiQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+    auto weakCanvas = winrt::make_weak(static_cast<winrt::InkCanvas>(*this));
+    const uint32_t generation = m_attachGeneration;
     m_isDetached.store(false, std::memory_order_release);
-    try
-    {
-        presenterSelf->RunInkPresenterWorkItemSync(
-            [&](inking::InkPresenter const& presenter)
+
+    auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
+    presenterSelf->QueueInkPresenterWorkItem(
+        [uiQueue, weakCanvas, generation, inkVisual, xamlDevice, systemParent, compositor, mucRootVisual](inking::InkPresenter const& presenter)
+        {
+            HRESULT bindResult = S_OK;
+            try
             {
                 auto commitHandler = winrt::make_self<XamlFrameCommitRequestHandler>(xamlDevice.as<IDCompositionDevice>(), uiQueue);
                 BindInkVisualToOsPresenter(presenter, inkVisual.get(), xamlDevice.get(), commitHandler.as<IInkCommitRequestHandler>().get());
-            },
-            /* pumpMessages */ false);
+            }
+            catch (winrt::hresult_error const& e)
+            {
+                bindResult = e.code();
+            }
+            uiQueue.TryEnqueue([weakCanvas, generation, bindResult, inkVisual, systemParent, compositor, mucRootVisual]()
+                {
+                    if (auto canvas = weakCanvas.get())
+                    {
+                        winrt::get_self<InkCanvas>(canvas)->OnXamlDeviceBindCompleted(
+                            generation, bindResult, inkVisual, systemParent, compositor, mucRootVisual);
+                    }
+                });
+        });
+    return true;
+}
+
+// UI thread. Finishes StartAttachInkOnXamlDevice: shows the bound ink visual, or falls back to the splice if the OS did not
+// accept XAML's device. A result for an attach that has since been detached or replaced is ignored.
+void InkCanvas::OnXamlDeviceBindCompleted(
+    uint32_t generation,
+    HRESULT bindResult,
+    winrt::com_ptr<IDCompositionVisual2> const& inkVisual,
+    winrt::Windows::UI::Composition::ContainerVisual const& systemParent,
+    winrt::Microsoft::UI::Composition::Compositor const& compositor,
+    winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
+{
+    if (generation != m_attachGeneration)
+    {
+        return;
+    }
+
+    if (SUCCEEDED(bindResult))
+    {
+        systemParent.Children().InsertAtTop(inkVisual.as<winrt::Windows::UI::Composition::Visual>());
+        m_inkRootVisual = inkVisual.as<IDCompositionVisual>();
+        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->SetDryHandoffInXamlFrame(true);
+        return;
+    }
+
+    wchar_t message[128];
+    swprintf_s(message, L"InkCanvas: ink on XAML's device failed (hr=0x%08X); using the splice.\n", static_cast<uint32_t>(bindResult));
+    ::OutputDebugStringW(message);
+    try
+    {
+        AttachInkThroughSplice(compositor, mucRootVisual);
     }
     catch (winrt::hresult_error const& e)
     {
-        wchar_t message[128];
-        swprintf_s(message, L"InkCanvas: ink on XAML's device failed (hr=0x%08X); using the splice.\n", static_cast<uint32_t>(e.code()));
+        // Same outcome as a failed attach in OnLoaded, which this async step continues: report it and render no ink.
+        swprintf_s(message, L"InkCanvas: attach to the composition tree failed (hr=0x%08X); rendering no ink.\n", static_cast<uint32_t>(e.code()));
         ::OutputDebugStringW(message);
-        return false;
+        InkTelemetry::ReportError(
+            InkTelemetry::ErrorCategory::Initialization, InkTelemetry::Operation::AttachToCompositor, false /* isRecoverable */, e.code(), &m_telemetryState);
     }
-
-    systemParent.Children().InsertAtTop(inkVisualAsWuc);
-    m_inkRootVisual = inkVisual.as<IDCompositionVisual>();
-    presenterSelf->SetDryHandoffInXamlFrame(true);
-    return true;
 }
 
 // Lifted compositor path: ContentExternalOutputLink produces a lifted PlacementVisual (backed by a
@@ -673,6 +715,8 @@ void InkCanvas::DetachFromVisualLink()
     // ink-thread lambdas observe the detached state and short-circuit instead of touching
     // the OS presenter / system-visual resources mid-teardown. Cheap acquire/release pair.
     m_isDetached.store(true, std::memory_order_release);
+    // Any XAML-device bind still in flight belongs to this attach; its result is now ignored.
+    ++m_attachGeneration;
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
 
