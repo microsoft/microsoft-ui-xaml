@@ -1857,6 +1857,23 @@ namespace
         }
         return nullptr;
     }
+
+    // The value the button gets for the property without a local value. Literal style setters are read from the style,
+    // which doesn't depend on when the style's setters are applied. Setters such as {ThemeResource} don't expose a
+    // resolved value, so for those the local value is cleared and the effective value is read.
+    template <typename T>
+    T GetValueWithoutLocalValue(const winrt::Button& button, const winrt::DependencyProperty& property, T fallback)
+    {
+        if (const auto value = GetStyleSetterValue(button.Style(), property))
+        {
+            if (const auto typed = value.try_as<winrt::IReference<T>>())
+            {
+                return typed.Value();
+            }
+        }
+        button.ClearValue(property);
+        return winrt::unbox_value_or<T>(button.GetValue(property), fallback);
+    }
 }
 
 // Lets the back button be clicked at the window corner (Fitts's law). If the button's template supports the
@@ -1885,9 +1902,8 @@ void NavigationView::UpdateBackButtonHitTarget()
         return;
     }
 
-    const auto style = backButton.Style();
-    const auto styleMargin = winrt::unbox_value_or<winrt::Thickness>(GetStyleSetterValue(style, winrt::FrameworkElement::MarginProperty()), winrt::Thickness{});
-    const auto styleHeight = winrt::unbox_value_or<double>(GetStyleSetterValue(style, winrt::FrameworkElement::HeightProperty()), std::numeric_limits<double>::quiet_NaN());
+    const auto styleMargin = GetValueWithoutLocalValue<winrt::Thickness>(backButton, winrt::FrameworkElement::MarginProperty(), winrt::Thickness{});
+    const auto styleHeight = GetValueWithoutLocalValue<double>(backButton, winrt::FrameworkElement::HeightProperty(), std::numeric_limits<double>::quiet_NaN());
     winrt::Thickness containerMargin{};
     if (const auto container = winrt::VisualTreeHelper::GetParent(backButton).try_as<winrt::FrameworkElement>())
     {
