@@ -193,7 +193,8 @@ bool TableView::IsSortClearStillValid() const
 // columns keep their state for the reconcile that follows.
 bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort) const
 {
-    if (m_awaitedSource.get())
+    // Unadopted after an unload, too, which no longer awaits it.
+    if (m_awaitedSource.get() || (!ShapingSourceInternal() && IsActiveSourceOwnedByOther()))
     {
         return false;
     }

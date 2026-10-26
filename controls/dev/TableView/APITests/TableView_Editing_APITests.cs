@@ -1258,12 +1258,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(3, GetProjectedElements(tableView).OfType<TableViewRow>().Count(), "The group collapse must not run under the open edit.");
             });
         }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a sort opt-out deferred while another table owns the source still waits when this table's reclaim is refused, also once the table unloads again and a sort request flushes deferred work, and clears the sort once the reclaim succeeds.")]
-        [TestProperty("data:Unload", "{StayLoaded, UnloadBeforeRelease}")]
+        [TestProperty("data:Unload", "{StayLoaded, UnloadBeforeRelease, SortWhileUnloaded}")]
         public void VerifyDeferredSortOptOutWaitsForRefusedReclaim()
         {
-            var unload = ((string)TestContext.DataRow["Unload"]).Trim() == "UnloadBeforeRelease";
+            var mode = ((string)TestContext.DataRow["Unload"]).Trim();
+            var unload = mode != "StayLoaded";
+            int sortedCount = 0;
+            bool countingSorted = false;
             TableView first = null;
             TableView second = null;
             TableViewSource shared = null;
@@ -1331,12 +1335,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             SettleLayout(second);
 
-            // A sort request flushes older deferred work; this one is refused by the column itself.
+            // A sort request flushes older deferred work; with no adopted source it must be refused.
             Action requestRefusedSort = () =>
             {
-                first.Columns[1].CanSort = false;
-                Verify.IsFalse(first.SortByColumn(first.Columns[1], SortDirection.Ascending), "Precondition: the opted-out column does not sort.");
+                first.Columns[1].CanSort = mode == "SortWhileUnloaded";
+                if (!countingSorted)
+                {
+                    countingSorted = true;
+                    first.Sorted += (s, e) => sortedCount++;
+                }
+                Verify.IsFalse(first.SortByColumn(first.Columns[1], SortDirection.Ascending), "A sort request must be refused while the source is not adopted.");
+                Verify.AreEqual(SortDirection.None, first.Columns[1].SortDirection, "The refused request must not light its column.");
                 Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "The deferred clear must wait while the source is not adopted.");
+                Verify.AreEqual(0, sortedCount, "Neither the request nor the deferred clear may raise Sorted yet.");
             };
 
             RunOnUIThread.Execute(() =>
