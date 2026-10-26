@@ -11,6 +11,8 @@
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Windows.Foundation.h>
 
+#include "ShapingHelpers.h"
+
 // Per-item INotifyPropertyChanged subscriptions for live shaping. Items are held weakly so dropped
 // items are not pinned; the weak ref also lets Subscribe detect a recycled ABI address. Items
 // without weak ref support are held strongly and revoked by token.
@@ -27,7 +29,7 @@ public:
     void Subscribe(winrt::IInspectable const& item);
     void Unsubscribe(winrt::IInspectable const& item);
     // Revokes every subscription whose item is not in `live`.
-    void RetainOnly(std::unordered_set<void const*> const& live);
+    void RetainOnly(std::unordered_set<ShapingHelpers::ObjectAddress> const& live);
     void UnsubscribeAll() noexcept;
     bool Empty() const noexcept { return m_subscriptions.empty(); }
 
@@ -55,8 +57,6 @@ private:
         void Revoke() noexcept;
     };
 
-    static void const* Identity(winrt::IInspectable const& item);
-
-    std::unordered_map<void const*, Subscription> m_subscriptions;
+    std::unordered_map<ShapingHelpers::ObjectAddress, Subscription> m_subscriptions;
     ChangeHandler m_changeHandler;
 };

@@ -74,7 +74,10 @@ ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
 ShapedItemsSource::~ShapedItemsSource()
 {
     UnsubscribeFromSourceCollectionChanges();
+    ClearFlatItemPropertyChangedTracking();
+    ClearFlatRowIdentityTracking();
     ClearLiveShapingSubscriptions();
+    m_rootBucketIndex.clear();
 }
 
 void ShapedItemsSource::Start()
@@ -137,9 +140,9 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
         // structure and post one restore to catch up.
         InvalidateRetainedHierarchyStructure();
         ResubscribeLiveShapingFromSource();
-        if (m_liveItemChangedHook)
+        if (auto const hook = m_liveItemChangedHook)
         {
-            m_liveItemChangedHook(nullptr, true);
+            hook(nullptr, true);
         }
 
         MarkLiveShapingDirty();
@@ -371,7 +374,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
     // An unshaped mirror is not a shaped projection at all; re-sorting it in place would apply
     // shaping that Refresh deliberately refuses to apply. The m_shapingState.HasProjection test
     // above already rejects that case, and identity is never the blocker now --
-    // EffectiveIdentitySelector always yields one -- so no further gate is needed here.
+    // IdentitySelector always yields one -- so no further gate is needed here.
 
     // Prove the retained state still describes the live projection instead of trusting that every
     // mutation site remembered to invalidate it. The invalidation calls are the cheap first line
@@ -419,12 +422,12 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
 void ShapedItemsSource::InvalidateShapingState()
 {
     ++m_projectionGeneration;
+    ClearFlatItemPropertyChangedTracking();
     m_shapingState.HasProjection = false;
     m_shapingState.FilteredSource.clear();
     m_shapingState.Items.clear();
     m_shapingState.Buckets.clear();
     m_shapingState.IsGrouped = false;
-    ClearFlatItemPropertyChangedTracking();
 }
 
 void ShapedItemsSource::SubscribeToSourceCollectionChanges()
@@ -603,9 +606,13 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 
 void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-    // Subscription DELTA from the args, here rather than per splice site, so every branch is
-    // covered at cost proportional to the change.
-    ApplyLiveShapingDelta(args);
+    const auto generation = m_projectionGeneration;
+    ApplySourceItemStateDelta(args);
+    if (m_projectionGeneration != generation)
+    {
+        Refresh();
+        return;
+    }
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
@@ -664,6 +671,11 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
     // The paths below mutate m_rows outside Refresh, which would leave the retained layer-1 state
     // stale, so drop it (Refresh repopulates it). The sorted path above keeps it in lockstep instead.
+    if (m_sourceItems.size() != m_rows.Size())
+    {
+        Refresh();
+        return;
+    }
     InvalidateShapingState();
 
     // UNSHAPED flat projection: mirrors the source 1:1, so a single-item change maps directly
@@ -695,6 +707,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
                         break; // stale identity/index tracking -> Refresh() reseeds it
                     }
                 }
+                m_sourceItems.insert(m_sourceItems.begin() + index, item);
                 m_rows.InsertAt(index, item);
                 return;
             }
@@ -721,6 +734,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
                     m_flatRowIdentityToIndex.erase(identity);
                     ShiftTrackedFlatRowIndicesForRemove(index);
                 }
+                m_sourceItems.erase(m_sourceItems.begin() + index);
                 m_rows.RemoveAt(index);
                 return;
             }
@@ -767,6 +781,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
                         break; // stale identity/index tracking -> Refresh() reseeds it
                     }
                 }
+                m_sourceItems[index] = newItem;
                 m_rows.SetAt(index, newItem);
                 return;
             }
@@ -795,13 +810,14 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
     // to flat 1:1 projections, where the source index is the projection index and the current
     // source/projection can provide the one item needed to splice m_rows and identity tracking.
     if (m_isRefreshing || m_groupSelector || m_parentKeySelector || HasActiveSort() || m_pipeline.HasFilter() ||
-        !m_rows || m_kind == ProjectionKind::None)
+        !m_rows || m_kind == ProjectionKind::None || m_sourceItems.size() != m_rows.Size())
     {
         Refresh();
         return;
     }
 
     const uint32_t index = args.Index();
+    const auto generation = m_projectionGeneration;
     const bool identityRequired = IsIdentityRequired() && m_kind != ProjectionKind::Unshaped;
     switch (args.CollectionChange())
     {
@@ -834,8 +850,14 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
             }
         }
 
-        m_rows.InsertAt(index, item);
+        m_sourceItems.insert(m_sourceItems.begin() + index, item);
         AddLiveShapingSubscription(item);
+        if (m_projectionGeneration != generation)
+        {
+            Refresh();
+            return;
+        }
+        m_rows.InsertAt(index, item);
         return;
     }
     case CollectionChange::ItemRemoved:
@@ -862,8 +884,14 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
             ShiftTrackedFlatRowIndicesForRemove(index);
         }
 
+        RemoveSourceItemState(item);
+        if (m_projectionGeneration != generation)
+        {
+            Refresh();
+            return;
+        }
+        m_sourceItems.erase(m_sourceItems.begin() + index);
         m_rows.RemoveAt(index);
-        RemoveLiveShapingSubscription(item);
         return;
     }
     case CollectionChange::ItemChanged:
@@ -907,10 +935,22 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
         }
 
         auto const outgoing = m_rows.GetAt(index);
-        m_rows.SetAt(index, newItem);
         // Remove before add, so reassigning the SAME object stays subscribed.
-        RemoveLiveShapingSubscription(outgoing);
+        RemoveSourceItemState(outgoing,
+            ShapingHelpers::GetObjectAddress(outgoing) == ShapingHelpers::GetObjectAddress(newItem));
+        if (m_projectionGeneration != generation)
+        {
+            Refresh();
+            return;
+        }
+        m_sourceItems[index] = newItem;
         AddLiveShapingSubscription(newItem);
+        if (m_projectionGeneration != generation)
+        {
+            Refresh();
+            return;
+        }
+        m_rows.SetAt(index, newItem);
         return;
     }
     case CollectionChange::Reset:
@@ -940,7 +980,7 @@ bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
         return !m_liveShapingDirty;
     }
 
-    std::unordered_set<uintptr_t> dirtyRows;
+    std::unordered_set<ShapingHelpers::ObjectAddress> dirtyRows;
     dirtyRows.swap(m_sortDirtyRows);
     const bool overflow = std::exchange(m_sortDirtyOverflow, false);
 
@@ -1055,11 +1095,19 @@ void ShapedItemsSource::UpdateSortKeyPropertyFilter()
     m_anyPropertyMayAffectSort = anyProperty;
 }
 
-void ShapedItemsSource::OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName)
+void ShapedItemsSource::OnFlatItemPropertyChanged(
+    ShapingHelpers::ObjectAddress itemAddress,
+    uint64_t subscriptionId,
+    winrt::hstring const& propertyName)
 {
     // Beyond this, one linear check is cheaper than per-row lookups.
     constexpr size_t c_maxIndividuallyTrackedDirtyRows = 256;
 
+    auto const subscription = m_flatItemPropertyChangedRevokers.find(itemAddress);
+    if (subscription == m_flatItemPropertyChangedRevokers.end() || subscription->second.Id != subscriptionId)
+    {
+        return;
+    }
 
     // An empty name is INotifyPropertyChanged's "all properties changed".
     if (!propertyName.empty() &&
@@ -1093,19 +1141,20 @@ void ShapedItemsSource::TrackFlatItemPropertyChanged(winrt::IInspectable const& 
         return;
     }
 
-    auto const address = RowIdentity::GetObjectAddress(item);
+    auto const address = ShapingHelpers::GetObjectAddress(item);
     if (m_flatItemPropertyChangedRevokers.find(address) != m_flatItemPropertyChangedRevokers.end())
     {
         return;
     }
 
     auto weakThis = weak_from_this();
+    const auto subscriptionId = ++m_nextFlatItemSubscriptionId;
     m_flatItemPropertyChangedRevokers.emplace(
         address,
         FlatItemPropertyChangedSubscription{
-            item,
+            subscriptionId,
             propertyChangedItem.PropertyChanged(winrt::auto_revoke,
-                [weakThis, address, queue = m_ownerQueue, ownerThreadId = m_ownerThreadId](
+                [weakThis, address, subscriptionId, queue = m_ownerQueue, ownerThreadId = m_ownerThreadId](
                     auto&&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
                 {
                     // Never lock off-thread: that lock could be the last strong reference, running
@@ -1113,11 +1162,11 @@ void ShapedItemsSource::TrackFlatItemPropertyChanged(winrt::IInspectable const& 
                     // marshalling as the live-shaping handler in Start().
                     if (queue && !queue.HasThreadAccess())
                     {
-                        queue.TryEnqueue([weakThis, address, propertyName = args.PropertyName()]()
+                        queue.TryEnqueue([weakThis, address, subscriptionId, propertyName = args.PropertyName()]()
                             {
                                 if (auto const strongThis = weakThis.lock())
                                 {
-                                    strongThis->OnFlatItemPropertyChanged(address, propertyName);
+                                    strongThis->OnFlatItemPropertyChanged(address, subscriptionId, propertyName);
                                 }
                             });
                         return;
@@ -1132,16 +1181,18 @@ void ShapedItemsSource::TrackFlatItemPropertyChanged(winrt::IInspectable const& 
 
                     if (auto const strongThis = weakThis.lock())
                     {
-                        strongThis->OnFlatItemPropertyChanged(address, args.PropertyName());
+                        strongThis->OnFlatItemPropertyChanged(address, subscriptionId, args.PropertyName());
                     }
                 }) });
 }
 
 void ShapedItemsSource::UntrackFlatItemPropertyChanged(winrt::IInspectable const& item)
 {
-    if (item && !m_flatItemPropertyChangedRevokers.empty())
+    if (item)
     {
-        m_flatItemPropertyChangedRevokers.erase(RowIdentity::GetObjectAddress(item));
+        auto const address = ShapingHelpers::GetObjectAddress(item);
+        m_sortDirtyRows.erase(address);
+        auto subscription = m_flatItemPropertyChangedRevokers.extract(address);
     }
 }
 
@@ -1153,7 +1204,7 @@ void ShapedItemsSource::ClearSortDirtyRows()
 
 void ShapedItemsSource::ClearFlatItemPropertyChangedTracking()
 {
-    m_flatItemPropertyChangedRevokers.clear();
+    auto previous = std::exchange(m_flatItemPropertyChangedRevokers, {});
     m_flatItemPropertyChangedTrackingActive = false;
     m_flatItemsMayChangeSortWithoutNotification = false;
     ClearSortDirtyRows();
@@ -1176,7 +1227,7 @@ void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt
     {
         if (item && !previous.empty())
         {
-            if (auto const it = previous.find(RowIdentity::GetObjectAddress(item)); it != previous.end())
+            if (auto const it = previous.find(ShapingHelpers::GetObjectAddress(item)); it != previous.end())
             {
                 m_flatItemPropertyChangedRevokers.insert(previous.extract(it));
                 continue;
@@ -1198,7 +1249,8 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         m_pipeline.HasFilter() ||
         !m_shapingState.HasProjection ||
         m_shapingState.IsGrouped ||
-        m_shapingState.Items.size() != m_rows.Size())
+        m_shapingState.Items.size() != m_rows.Size() ||
+        m_sourceItems.size() != m_shapingState.FilteredSource.size())
     {
         return false;
     }
@@ -1315,7 +1367,7 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
     };
 
     // m_rows is mutated last so all other state is consistent when listeners are notified.
-    auto const commitRemove = [&](RowChange const& removal) -> bool
+    auto const commitRemove = [&](RowChange const& removal, bool preserveOwnerState = false) -> bool
     {
         if (!isPlanCurrent() ||
             removal.SourceIndex >= filteredSource.size() ||
@@ -1325,16 +1377,23 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
             return false;
         }
 
+        // Staleness checks and insert planning may have read the outgoing row's key again.
+        if (auto const remove = m_sourceItemRemoved; remove && !preserveOwnerState)
+        {
+            remove(removal.Item, m_sourceItems);
+            if (!isPlanCurrent())
+            {
+                return false;
+            }
+        }
+
         m_flatRowIdentities.erase(removal.Identity);
         m_flatRowIdentityToIndex.erase(removal.Identity);
         ShiftTrackedFlatRowIndicesForRemove(removal.RowIndex);
+        UntrackFlatItemPropertyChanged(removal.Item);
         filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
         m_shapingState.Items.erase(m_shapingState.Items.begin() + removal.RowIndex);
-        UntrackFlatItemPropertyChanged(removal.Item);
-        if (m_rowsReleasedHook)
-        {
-            m_rowsReleasedHook(removal.Item, {});
-        }
+        m_sourceItems.erase(m_sourceItems.begin() + removal.SourceIndex);
         m_rows.RemoveAt(removal.RowIndex);
         return true;
     };
@@ -1354,6 +1413,7 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         m_flatRowIdentityToIndex.insert_or_assign(insertion.Identity, insertion.RowIndex);
         filteredSource.insert(filteredSource.begin() + insertion.SourceIndex, insertion.Item);
         m_shapingState.Items.insert(m_shapingState.Items.begin() + insertion.RowIndex, insertion.Item);
+        m_sourceItems.insert(m_sourceItems.begin() + insertion.SourceIndex, insertion.Item);
         if (m_flatItemPropertyChangedTrackingActive)
         {
             TrackFlatItemPropertyChanged(insertion.Item);
@@ -1407,7 +1467,7 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
             }
             // The removal's m_rows notification can rebuild before the insert lands; if it did, the
             // insert refuses and the caller's rebuild supersedes the half-applied replace.
-            return commitRemove(removal) && commitInsert(insertion);
+            return commitRemove(removal, removal.Identity == insertion.Identity) && commitInsert(insertion);
         }
         case NotifyCollectionChangedAction::Move:
         {
@@ -1452,6 +1512,8 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
 
             filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
             filteredSource.insert(filteredSource.begin() + newSourceIndex, moved);
+            m_sourceItems.erase(m_sourceItems.begin() + removal.SourceIndex);
+            m_sourceItems.insert(m_sourceItems.begin() + newSourceIndex, moved);
             return true;
         }
         default:
@@ -1499,14 +1561,14 @@ bool ShapedItemsSource::TryGetRequiredRowIdentity(
     winrt::hstring& identity,
     wchar_t const*& reason) const
 {
-    return RowIdentity::TryGetRequiredRowIdentity(item, EffectiveIdentitySelector(), identity, reason);
+    return RowIdentity::TryGetRequiredRowIdentity(item, IdentitySelector(), identity, reason);
 }
 
 bool ShapedItemsSource::ValidateRowIdentities(
     std::vector<winrt::IInspectable> const& rows,
     wchar_t const*& reason) const
 {
-    return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason);
+    return RowIdentity::ValidateRowIdentities(rows, IdentitySelector(), reason);
 }
 
 bool ShapedItemsSource::CanProjectWithRowIdentity() const
@@ -1544,7 +1606,7 @@ void ShapedItemsSource::RebuildFlatRowIdentityTracking(std::vector<winrt::IInspe
     RowIdentity::RebuildFlatRowIdentityTracking(
         rows,
         IsIdentityRequired(),
-        EffectiveIdentitySelector(),
+        IdentitySelector(),
         m_flatRowIdentities,
         m_flatRowIdentityToIndex);
 }
@@ -1554,7 +1616,7 @@ bool ShapedItemsSource::TryGetTrackedFlatRowIndex(winrt::hstring const& identity
     return RowIdentity::TryGetTrackedFlatRowIndex(
         identity,
         m_rows,
-        EffectiveIdentitySelector(),
+        IdentitySelector(),
         m_flatRowIdentityToIndex,
         index);
 }
@@ -1735,6 +1797,7 @@ void ShapedItemsSource::ReleaseGroupedProjection()
         m_groupSource.Clear();
     }
     m_groupCache.clear();
+    m_groupedAdapter.reset();
 }
 
 void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason)
@@ -1793,10 +1856,11 @@ void ShapedItemsSource::Refresh()
         // Cleared before the re-read: an off-thread change dropped while the items are being read
         // keeps the flag set, so the next live change still forces a rebuild.
         m_liveShapingChangeDropped->store(false);
-        auto rows = Materialize(authoritativeSource);
-        if (m_rowsReleasedHook)
+        auto previousSourceItems = std::exchange(m_sourceItems, Materialize(authoritativeSource));
+        auto rows = m_sourceItems;
+        if (auto const retain = m_sourceItemsRetained)
         {
-            m_rowsReleasedHook(nullptr, rows);
+            retain(rows);
         }
         RefreshLiveShapingSubscriptions(rows);
 
@@ -2166,7 +2230,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     orderedRoots.reserve(roots.size());
     std::vector<size_t> segments;
     segments.reserve(keyedBuckets.size());
-    std::unordered_map<void*, size_t> rootBucketIndex;
+    std::unordered_map<ShapingHelpers::ObjectAddress, size_t> rootBucketIndex;
 
     for (size_t bucketIndex = 0; bucketIndex < keyedBuckets.size(); ++bucketIndex)
     {
@@ -2174,8 +2238,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
         ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         for (auto const& root : bucket.Items)
         {
-            // Keyed by raw COM pointer: the re-slice looks up the same objects.
-            rootBucketIndex[winrt::get_abi(root)] = bucketIndex;
+            rootBucketIndex[ShapingHelpers::GetObjectAddress(root)] = bucketIndex;
             orderedRoots.push_back(root);
         }
         segments.push_back(bucket.Items.size());
@@ -2321,6 +2384,7 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
     }
 
     // Silent sources can change too; O(n) pointer compares are cheaper than selector calls.
+    // Same source vector: raw ABI equality avoids per-row QI; a mismatch only forces a rebuild.
     for (size_t i = 0; i < rows.size(); ++i)
     {
         if (winrt::get_abi(structure->Rows[i]) != winrt::get_abi(rows[i]))
@@ -2405,9 +2469,6 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
         m_hierarchicalAdapter->ProjectionChanged(nullptr);
         // Also detaches: we may be inside its own notification, which must stop here.
         m_hierarchicalAdapter->ClearIndex();
-
-        // A still-bound provider must not act on retracted intent.
-        m_hierarchicalAdapter->ResetIntentQuietly();
 
         // Don't pin rows; a still-bound provider shares ownership until the swap.
         m_hierarchicalAdapter.reset();
@@ -2518,7 +2579,7 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
 
             if (node->Depth == 0)
             {
-                auto const it = m_rootBucketIndex.find(winrt::get_abi(node->Item));
+                auto const it = m_rootBucketIndex.find(ShapingHelpers::GetObjectAddress(node->Item));
                 if (it == m_rootBucketIndex.end())
                 {
                     // Unknown root (source mutated; rebuild queued): drop its subtree.
@@ -2673,17 +2734,6 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
 
-void const* ShapedItemsSource::LiveShapingKeyFor(winrt::IInspectable const& item)
-{
-    if (!item)
-    {
-        return nullptr;
-    }
-
-    auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
-    return winrt::get_abi(unknown);
-}
-
 ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot(
     winrt::IInspectable const& item) const
 {
@@ -2765,11 +2815,11 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
     }
 
     // Mark-and-sweep: only arrivals subscribe and departures revoke, avoiding per-row COM churn.
-    std::unordered_set<void const*> live;
+    std::unordered_set<ShapingHelpers::ObjectAddress> live;
     live.reserve(items.size());
 
     // Snapshots are rebuilt, not reconciled: the committed spec may have changed.
-    std::unordered_map<void const*, LiveShapeSnapshot> snapshots;
+    std::unordered_map<ShapingHelpers::ObjectAddress, LiveShapeSnapshot> snapshots;
     snapshots.reserve(items.size());
 
     // Comparing fresh edge keys with previous ones validates the retained structure for free,
@@ -2784,10 +2834,15 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
             continue;
         }
 
-        auto const key = LiveShapingKeyFor(item);
+        auto const key = ShapingHelpers::GetObjectAddress(item);
         live.insert(key);
         m_liveShaping->Subscribe(item);
         auto const& snapshot = snapshots[key] = CaptureLiveShapeSnapshot(item);
+        if (!IsLiveShapingEnabled())
+        {
+            ClearLiveShapingSubscriptions();
+            return;
+        }
 
         if (checkEdges && !edgeMoved)
         {
@@ -2808,8 +2863,8 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
         InvalidateRetainedHierarchyStructure();
     }
 
-    m_liveShaping->RetainOnly(live);
     m_liveShapeSnapshots = std::move(snapshots);
+    m_liveShaping->RetainOnly(live);
 }
 
 void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& item)
@@ -2820,12 +2875,12 @@ void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& it
     }
 
     m_liveShaping->Subscribe(item);
-    m_liveShapeSnapshots[LiveShapingKeyFor(item)] = CaptureLiveShapeSnapshot(item);
+    m_liveShapeSnapshots[ShapingHelpers::GetObjectAddress(item)] = CaptureLiveShapeSnapshot(item);
 
     // A re-inserted item may still hold a rank from before it was edited while out of the source.
-    if (m_liveItemChangedHook)
+    if (auto const hook = m_liveItemChangedHook)
     {
-        m_liveItemChangedHook(item, true);
+        hook(item, true);
     }
 }
 
@@ -2838,21 +2893,27 @@ void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const&
         return;
     }
 
+    m_liveShapeSnapshots.erase(ShapingHelpers::GetObjectAddress(item));
     m_liveShaping->Unsubscribe(item);
-    m_liveShapeSnapshots.erase(LiveShapingKeyFor(item));
 }
 
-void ShapedItemsSource::ApplyLiveShapingDelta(
+void ShapedItemsSource::RemoveSourceItemState(winrt::IInspectable const& item, bool preserveOwnerState)
+{
+    UntrackFlatItemPropertyChanged(item);
+    RemoveLiveShapingSubscription(item);
+    if (auto const remove = m_sourceItemRemoved; remove && !preserveOwnerState)
+    {
+        remove(item, m_sourceItems);
+    }
+}
+
+void ShapedItemsSource::ApplySourceItemStateDelta(
     winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-    if (!IsLiveShapingEnabled())
-    {
-        return;
-    }
-
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
-    auto const unsubscribeAll = [this](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items)
+    auto const unsubscribeAll = [this](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items,
+        winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& replacements = nullptr)
     {
         if (!items)
         {
@@ -2860,7 +2921,18 @@ void ShapedItemsSource::ApplyLiveShapingDelta(
         }
         for (uint32_t i = 0; i < items.Size(); ++i)
         {
-            RemoveLiveShapingSubscription(items.GetAt(i));
+            auto const item = items.GetAt(i);
+            auto const address = ShapingHelpers::GetObjectAddress(item);
+            bool survives = false;
+            for (uint32_t j = 0; replacements && j < replacements.Size(); ++j)
+            {
+                if (address == ShapingHelpers::GetObjectAddress(replacements.GetAt(j)))
+                {
+                    survives = true;
+                    break;
+                }
+            }
+            RemoveSourceItemState(item, survives);
         }
     };
 
@@ -2886,7 +2958,7 @@ void ShapedItemsSource::ApplyLiveShapingDelta(
         break;
     case NotifyCollectionChangedAction::Replace:
         // Remove before add, so a replace that reuses the same object ends up subscribed.
-        unsubscribeAll(args.OldItems());
+        unsubscribeAll(args.OldItems(), args.NewItems());
         subscribeAll(args.NewItems());
         break;
     case NotifyCollectionChangedAction::Move:
@@ -2901,13 +2973,13 @@ void ShapedItemsSource::ApplyLiveShapingDelta(
 
 void ShapedItemsSource::ClearLiveShapingSubscriptions()
 {
-    m_liveShaping->UnsubscribeAll();
     m_liveShapeSnapshots.clear();
     // Nothing tracked, so nothing live is pending: a posted restore finds the flag clear and
     // returns, and a later re-enable starts from a fresh restore.
     m_liveShapingDirty = false;
     m_liveShapingHeld = false;
     m_liveShapingChangeDropped->store(false);
+    m_liveShaping->UnsubscribeAll();
 }
 
 void ShapedItemsSource::ResubscribeLiveShapingFromSource()
@@ -2918,7 +2990,44 @@ void ShapedItemsSource::ResubscribeLiveShapingFromSource()
         return;
     }
 
-    RefreshLiveShapingSubscriptions(Materialize(m_source));
+    if (m_isRefreshing || m_reslicingGroups || m_isApplyingIncrementalChange)
+    {
+        m_pendingRefresh = true;
+        return;
+    }
+
+    bool runPendingRefresh = false;
+    try
+    {
+        m_isRefreshing = true;
+        auto guard = wil::scope_exit([this, &runPendingRefresh]() noexcept
+        {
+            m_isRefreshing = false;
+            runPendingRefresh = std::exchange(m_pendingRefresh, false);
+        });
+
+        auto const items = Materialize(m_source);
+        auto previousSourceItems = std::exchange(m_sourceItems, items);
+        if (auto const retain = m_sourceItemsRetained)
+        {
+            retain(items);
+        }
+        RefreshLiveShapingSubscriptions(items);
+    }
+    catch (...)
+    {
+        if (runPendingRefresh)
+        {
+            ScheduleRefreshReplay();
+        }
+        CompleteDeferredHierarchyTeardown();
+        throw;
+    }
+
+    if (runPendingRefresh)
+    {
+        Refresh();
+    }
 }
 
 void ShapedItemsSource::OnLiveShapedItemChanged(
@@ -2937,8 +3046,14 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         MarkLiveShapingDirty();
     }
 
+    auto const key = ShapingHelpers::GetObjectAddress(item);
+    if (m_liveShapeSnapshots.find(key) == m_liveShapeSnapshots.end())
+    {
+        return;
+    }
+
     // Before the coalescing early-out: the owner must see every changed item.
-    if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
+    if (auto const hook = m_liveItemChangedHook; hook && hook(item, m_liveShapingDirty))
     {
         MarkLiveShapingDirty();
         return;
@@ -2955,10 +3070,15 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
 
     // Discards changes no verb reads. Compare, don't store: the cached snapshot must keep matching
     // the projection until the restore runs.
-    auto const key = LiveShapingKeyFor(item);
     auto const existing = m_liveShapeSnapshots.find(key);
-    if (existing != m_liveShapeSnapshots.end() &&
-        !LiveShapeSnapshotsDiffer(existing->second, CaptureLiveShapeSnapshot(item)))
+    if (existing == m_liveShapeSnapshots.end())
+    {
+        return;
+    }
+    auto const previous = existing->second;
+    auto const current = CaptureLiveShapeSnapshot(item);
+    if (!IsLiveShapingEnabled() || m_liveShapeSnapshots.find(key) == m_liveShapeSnapshots.end() ||
+        !LiveShapeSnapshotsDiffer(previous, current))
     {
         return;
     }

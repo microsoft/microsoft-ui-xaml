@@ -1790,6 +1790,15 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         tableViewSource = nullptr;
     }
 
+    if (!tableViewSource && !m_awaitedSource.get())
+    {
+        ClearPendingSelection();
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
+        m_pendingGroupFocusIdentity.clear();
+        m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    }
+
     // Publish the new source before releasing the previous one: the release synchronously runs
     // other tables' waiters, and an app handler reached from there can assign this table's
     // ItemsSource again. That nested adoption must see coherent state and must win.
@@ -1838,13 +1847,21 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             auto strongThis = weakThis.get();
             return strongThis && strongThis->RepositionCustomSortItem(item, reshapePending);
         });
-        sourceImpl->SetRowsReleasedHook([weakThis](winrt::IInspectable const& item, std::vector<winrt::IInspectable> const& liveRows)
-        {
-            if (auto strongThis = weakThis.get())
+        sourceImpl->SetSourceItemLifetimeHandlers(
+            [weakThis](std::vector<winrt::IInspectable> const& items)
             {
-                strongThis->ReleaseCustomSortRows(item, liveRows);
-            }
-        });
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->RetainSourceItemState(items);
+                }
+            },
+            [weakThis](winrt::IInspectable const& item, std::vector<winrt::IInspectable> const& sourceItems)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->RemoveSourceItemState(item, sourceItems);
+                }
+            });
 
         if (IsLoaded())
         {

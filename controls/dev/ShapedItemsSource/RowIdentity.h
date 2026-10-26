@@ -32,11 +32,10 @@ namespace RowIdentity
     // that rebuilds its item objects gets fresh identities and therefore a full rebuild rather than
     // a surgical update. There is no app-supplied alternative: this is the only source of row
     // identity.
+    // Logical row identity; may later use an app key. Do not use for physical bookkeeping.
     ShapingHelpers::KeySelector MakeObjectIdentitySelector();
 
-    // The IUnknown address object identity is formatted from, so an address alone names the same row.
-    uintptr_t GetObjectAddress(winrt::IInspectable const& item);
-    winrt::hstring FormatObjectIdentity(uintptr_t address);
+    winrt::hstring FormatObjectIdentity(ShapingHelpers::ObjectAddress address);
     bool TryGetRequiredRowIdentity(
         winrt::IInspectable const& item,
         ShapingHelpers::KeySelector const& keySelector,

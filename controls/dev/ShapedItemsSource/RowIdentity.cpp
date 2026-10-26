@@ -42,23 +42,9 @@ namespace RowIdentity
         }
     }
 
-    uintptr_t GetObjectAddress(winrt::IInspectable const& item)
+    winrt::hstring FormatObjectIdentity(ShapingHelpers::ObjectAddress address)
     {
-        if (!item)
-        {
-            return 0;
-        }
-
-        // QI'd IUnknown is the canonical COM identity; boxed copies of one value are distinct rows.
-        auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
-        return reinterpret_cast<uintptr_t>(winrt::get_abi(unknown));
-    }
-
-    winrt::hstring FormatObjectIdentity(uintptr_t address)
-    {
-        wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
-        swprintf_s(buffer, L"0x%zx", static_cast<size_t>(address));
-        return winrt::hstring{ buffer };
+        return ShapingHelpers::FormatObjectAddress(address);
     }
 
     ShapingHelpers::KeySelector MakeObjectIdentitySelector()
@@ -70,7 +56,7 @@ namespace RowIdentity
                 return nullptr;
             }
 
-            return winrt::box_value(FormatObjectIdentity(GetObjectAddress(item)));
+            return winrt::box_value(FormatObjectIdentity(ShapingHelpers::GetObjectAddress(item)));
         };
     }
 
@@ -315,9 +301,9 @@ namespace RowIdentity
             return aIdentity == bIdentity;
         }
 
-        auto aUnknown = a.try_as<::IUnknown>();
-        auto bUnknown = b.try_as<::IUnknown>();
-        return aUnknown && bUnknown && aUnknown.get() == bUnknown.get();
+        auto const aAddress = ShapingHelpers::GetObjectAddress(a);
+        auto const bAddress = ShapingHelpers::GetObjectAddress(b);
+        return aAddress != ShapingHelpers::ObjectAddress::Null && aAddress == bAddress;
     }
 
     winrt::hstring StringifyKey(winrt::IInspectable const& key)

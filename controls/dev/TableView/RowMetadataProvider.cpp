@@ -396,7 +396,7 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
         info.IsExpandable = node->HasChildren;
         info.IsExpanded = node->IsExpanded;
         info.ChildCount = node->ChildCount;
-        info.ParentIdentity = node->ParentKey;
+        info.ParentIdentity = node->ParentIdentity;
         info.PositionInSet = static_cast<uint32_t>(node->SiblingIndex);
         info.SizeOfSet = static_cast<uint32_t>(node->SiblingCount);
     }
@@ -430,12 +430,12 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
 
     case SourceKind::Hierarchical:
     {
-        // Node key, matching what expand/collapse takes; survives item re-creation.
+        // Object identity, matching what expand/collapse takes.
         if (m_hierarchicalAdapter)
         {
             if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(index))
             {
-                return node->NodeKey;
+                return node->Identity;
             }
         }
         throw winrt::hresult_out_of_bounds();
@@ -449,16 +449,16 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
             return GetGroupExpansionKey(entry->Group());
         }
 
-        // Node key so identity matches Toggle's addressing. Falls back to the item key mid-reshape.
+        // Same cached object identity as the hierarchy axis.
         auto const item = GetGroupedRow(index);
         if (m_hierarchicalAdapter)
         {
             if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRowForItem(item))
             {
-                return node->NodeKey;
+                return node->Identity;
             }
         }
-        return GetItemKey(item);
+        throw winrt::hresult_out_of_bounds();
     }
     }
 
@@ -506,8 +506,7 @@ bool RowMetadataProvider::Toggle(winrt::hstring const& key)
     return SetGroupExpandedCore(ResolveGroupFromKey(key), std::nullopt);
 }
 
-// Under GroupedHierarchical both "group:" and "node:" keys arrive here; route on the key
-// (disjoint prefixes), not SourceKind.
+// Under GroupedHierarchical both group keys and row identities arrive here; route by membership.
 bool RowMetadataProvider::IsNodeExpansionKey(winrt::hstring const& key) const
 {
     if (!m_hierarchicalAdapter || key.empty())
@@ -515,23 +514,22 @@ bool RowMetadataProvider::IsNodeExpansionKey(winrt::hstring const& key) const
         return false;
     }
 
-    // Positive prefix test, so a stale or foreign identity cannot become node intent.
-    return HierarchicalSourceAdapter::IsNodeKey(key);
+    return m_hierarchicalAdapter->ContainsIdentity(key);
 }
 
-bool RowMetadataProvider::SetNodeExpandedCore(winrt::hstring const& nodeKey, std::optional<bool> desired)
+bool RowMetadataProvider::SetNodeExpandedCore(winrt::hstring const& identity, std::optional<bool> desired)
 {
-    if (!m_hierarchicalAdapter || nodeKey.empty())
+    if (!m_hierarchicalAdapter || identity.empty())
     {
         return false;
     }
 
     auto const adapter = m_hierarchicalAdapter;
-    const bool before = adapter->IsNodeExpanded(nodeKey);
-    adapter->SetNodeExpanded(nodeKey, desired.value_or(!before));
+    const bool before = adapter->IsNodeExpanded(identity);
+    adapter->SetNodeExpanded(identity, desired.value_or(!before));
 
     // Reports any change (collapse included), not the resulting state.
-    return adapter->IsNodeExpanded(nodeKey) != before;
+    return adapter->IsNodeExpanded(identity) != before;
 }
 
 winrt::IInspectable RowMetadataProvider::GetGroupedRow(int32_t index) const

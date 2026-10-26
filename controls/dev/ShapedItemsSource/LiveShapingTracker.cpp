@@ -5,17 +5,6 @@
 #include "common.h"
 #include "LiveShapingTracker.h"
 
-void const* LiveShapingTracker::Identity(winrt::IInspectable const& item)
-{
-    if (!item)
-    {
-        return nullptr;
-    }
-
-    auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
-    return winrt::get_abi(unknown);
-}
-
 void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
 {
     if (!item || !m_changeHandler)
@@ -29,15 +18,15 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
         return;
     }
 
-    auto const identity = Identity(item);
-    if (!identity)
+    auto const identity = ShapingHelpers::GetObjectAddress(item);
+    if (identity == ShapingHelpers::ObjectAddress::Null)
     {
         return;
     }
 
     if (auto const existing = m_subscriptions.find(identity); existing != m_subscriptions.end())
     {
-        // Key is a raw ABI pointer that a dead item's address may have been recycled into; an entry
+        // Key is a COM address that a dead item's address may have been recycled into; an entry
         // resolving to a different object is stale. Strongly held entries cannot be recycled.
         if (!existing->second.CanResolveItem || existing->second.Item.get() == item)
         {
@@ -92,7 +81,7 @@ void LiveShapingTracker::Subscription::Revoke() noexcept
 
 void LiveShapingTracker::Unsubscribe(winrt::IInspectable const& item)
 {
-    if (auto const it = m_subscriptions.find(Identity(item)); it != m_subscriptions.end())
+    if (auto const it = m_subscriptions.find(ShapingHelpers::GetObjectAddress(item)); it != m_subscriptions.end())
     {
         m_subscriptions.extract(it).mapped().Revoke();
     }
@@ -100,7 +89,7 @@ void LiveShapingTracker::Unsubscribe(winrt::IInspectable const& item)
 
 // Revoking runs app code that may re-enter; entries leave the map before revoke so no
 // m_subscriptions iterator is live meanwhile.
-void LiveShapingTracker::RetainOnly(std::unordered_set<void const*> const& live)
+void LiveShapingTracker::RetainOnly(std::unordered_set<ShapingHelpers::ObjectAddress> const& live)
 {
     std::vector<Subscription> departed;
     for (auto it = m_subscriptions.begin(); it != m_subscriptions.end();)

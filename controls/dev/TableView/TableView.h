@@ -690,6 +690,8 @@ private:
     bool ShouldDeferSelectionRequest();
     void ClearPendingSelection();
     bool DrainPendingSelection();
+    void RetainSourceItemState(std::vector<winrt::IInspectable> const& items);
+    void RemoveSourceItemState(winrt::IInspectable const& item, std::vector<winrt::IInspectable> const& sourceItems);
 
     winrt::SelectionModel m_selectionModel{ nullptr };
     winrt::SelectionModel::SelectionChanged_revoker m_selectionModelChangedRevoker{};
@@ -713,8 +715,8 @@ private:
     // "restored".
     tracker_ref<winrt::IInspectable> m_stickySelectedItem{ this };
 
-    // Tree sources only: node key of m_stickySelectedItem, so a re-created row keeps selection
-    // across the Reset. Used only for Reset restore, never across a source swap.
+    // Tree sources only: object identity of m_stickySelectedItem for indexed Reset restore.
+    // A replacement object does not inherit selection, even when its app key matches.
     winrt::hstring m_stickySelectedIdentity;
     winrt::hstring m_pendingSelectedIdentity;
     winrt::hstring HierarchyIdentityForIndex(int32_t index) const;
@@ -1151,9 +1153,6 @@ private:
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
     // Re-places a live-tracked item among CustomSortComparer ranks. True if any sort key moved.
     bool RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending);
-    // Drops CustomSortComparer ranks for rows that left the source: `item` when non-null,
-    // otherwise every ranked row not in `liveRows`.
-    void ReleaseCustomSortRows(const winrt::IInspectable& item, const std::vector<winrt::IInspectable>& liveRows);
     // Re-ranks the control's CustomSortComparer axis after a reclaim; see m_rerankCustomSortOnReconcile.
     void RerankCustomSortAfterReclaim();
     bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
