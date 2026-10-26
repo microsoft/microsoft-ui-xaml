@@ -6,11 +6,13 @@
 #include "pch.h"
 #include "common.h"
 
+#include <functional>
 #include <memory>
+#include <optional>
 
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
-#include "TableViewTip.h"
+#include "TableViewTipTypes.h"
 
 class ShapedItemsSource;
 
@@ -93,6 +95,15 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    // What the app declared on this source, not the projection in effect (unlike IsGrouped), read without calling
+    // app code (TableView_Instance).
+    bool HasFilter() const;
+    bool HasGroupBy() const;
+    bool HasParentBy() const;
+    // Rows before the filter (every node for a tree), and data rows after it, without group headers and whatever is
+    // expanded. Neither reads app code.
+    uint32_t SourceRowCount() const;
+    uint32_t DataRowCount() const;
     // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
     // node expansion. Header rows never match.
     bool ContainsShapedItem(winrt::IInspectable const& item) const;
@@ -128,7 +139,8 @@ public:
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
     using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t, bool failed,
-        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind)>;
+        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind,
+        TableViewTip::ContainedFaults)>;
     void SetShapingTipHandlers(
         winrt::IInspectable const& owner,
         std::function<uint64_t(TableViewTip::Operation, bool)> begin,
@@ -143,6 +155,9 @@ public:
     // Lets the owner drop comparer ranks for rows that left the source (see
     // ShapedItemsSource::SetRowsReleasedHook).
     void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook);
+    // Lets the owner learn that live shaping reacted to an item change (see
+    // ShapedItemsSource::SetLiveItemReshapeHandler).
+    void SetLiveItemReshapeHandler(std::function<void()> handler);
     // False when sorting would fail because the rows include a null item or one object twice.
     bool CanApplySort() const;
 
@@ -177,8 +192,6 @@ private:
     ShapingTip* m_shapingTip{};
     uint64_t m_ownerGeneration{};
     uint32_t m_notificationDepth{};
-    bool m_hasFilter{};
-    bool m_hasGroup{};
     struct OwnerReleasedWaiter
     {
         winrt::weak_ref<winrt::IInspectable> Waiter;

@@ -546,6 +546,149 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 - **`TableViewRowTemplateSelector`** — picks the container kind for an entry in the projection: a `TableViewGroupHeader` for a group entry, a `TableViewRow` for a data row.
 - **`RowExpansionModel`** — internal layer-1 store of expand/collapse *intent*, keyed by group identity and holding only the exceptions to a default. Carries no XAML or tabular vocabulary, so hierarchy can reuse it unchanged.
 
+# Telemetry and TiP
+
+TableView reports whether its own work succeeded (seven TiP tests) and how it is used (three events), on the
+Tabular providers. It collects no item data and no per-row or per-cell counts (see *Not collected* under
+*Events*), and it blames the app only when app code decided an outcome (see *Who is blamed*).
+
+On success an operation with a TiP test pays for its TiP start and stop and for reading the flow direction and the
+source's row counts for its metrics; a sort, filter or edit commit, or a request to expand or collapse one group or
+tree node, also sets a used-feature bit. Each shaping verb resets and reads a count of app delegates that threw,
+each call into `SelectionModel` clears a one-entry note, and while a loaded session is active an expansion request
+first looks up whether it changes its group or node. Shaping also keeps two counts for the metrics: the rows the
+last refresh read and, for a tree, the nodes the filter keeps. Attribution work runs only when something throws.
+
+## TiP tests
+
+| Test | Runs | Fails when TableView's own code throws (the HRESULT is included) |
+|---|---|---|
+| `TableViewInitializationTest` (64477764) | Once per template application, from the template applied with a source attached (whichever comes later) to the layout pass of the first row or group header, or at once for an empty view | `template_setup_failed` in `OnApplyTemplate`, `source_attach_failed` while attaching the source |
+| `TableViewSortTest` (64745033) | An accepted sort (column header, `SortByColumn`, `ClearSort`, or a `TableViewSource` sort verb), until the sorted rows are published and TableView has finished reacting on that turn (for a column sort, restoring selection, raising `Sorted` and the announcement) | `sort_failed` |
+| `TableViewEditBeginTest` (64745034) | A request to edit an editable cell, until its editor is ready | `edit_begin_failed` |
+| `TableViewEditCommitTest` (64745035) | A commit, until the value is written and the editor is closed | `edit_commit_failed`, also when TableView's own column cannot rebuild the cell's display after the commit |
+| `TableViewFilterTest` (64745036) | `Filter` or `ClearFilter` on the table's `TableViewSource`, until the rows are published and TableView has finished reacting on that turn | `filter_failed` |
+| `TableViewGroupExpansionTest` (64745037) | Expanding or collapsing one group, on the turn TableView applies the request | `group_expansion_failed` |
+| `TableViewHierarchyExpansionTest` (64745038) | Expanding or collapsing one tree node, on the turn TableView applies the request | `hierarchy_expansion_failed` |
+
+The operation tests share one implementation and report under their own measures (`OperationTestIdentity` in
+`TableViewTipTests.h`). Initialize closes Ignored with `app_template_incomplete` when a custom template lacks
+`PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost`, and with `unloaded_before_render` when the table is
+unloaded while Initialize waits on rows to show and a non-zero body viewport (a realization fault, or a navigation
+faster than the first layout); any other unload closes a running test with `unloaded`. Every test's metrics bucket is the
+flow direction and size when it started: 0 left-to-right, 1 left-to-right with a source of at least 1,000 rows
+before the filter (every node for a tree), 2 right-to-left, 3 right-to-left with at least 1,000; the result's metrics
+carry `rightToLeft`, `largeData`, and the `SourceRowsBucket` and `DataRowsBucket` counts as `sourceRowsBucket` and
+`dataRowsBucket`. A source swap before Initialize has its verdict is part of Initialize.
+
+A source swap after Initialize's verdict, selection, a cancelled edit, group configuration, a subtree expansion and an
+expansion request that changes nothing (its group or node is already in that state, or is gone) run no TiP test; a
+failure in one still writes `TableView_Error` while a loaded session is active (a source swap also before the first
+`Loaded`). Measure/arrange, cell realization, and expanding or collapsing all groups or rows are not tracked. A clear
+verb, or a `Sort` with `SortDirection.None`, that has nothing to remove is not measured either. Scrolling is not
+measured in the field; scroll performance is left to a lab benchmark.
+Internal pipeline builds (`IsInternalWinUIBuild` and `TF_BUILD`) fail when Tabular falls back to the public TiP stub;
+`UseTestInProductionStub=true` chooses the stub on purpose.
+
+A process exit while a test runs is reported by TiP as that test's failure (`process_shutdown`). On Windows builds
+whose Error Reporting recovers TiP results, so is a crash or hang (`crash_observed`, `hang_observed`; these come from
+the OS runtime, not the TiP package TableView builds with). These bypass the test's rules, so TableView cannot
+reclassify them. `Unloaded` and the destructor close a running test when they run before the exit.
+
+## Who is blamed
+
+- App code is blamed only when it decided the outcome: its exception left the operation, or its write
+  stopped it. The test closes Ignored with `application_fault`; the `TableView_Error` diagnostic carries
+  the category (callback, validation, write, factory or data).
+- An app fault TableView recovers from (a throwing `BeginningEdit` or `CellEditEnding` handler,
+  validation read, editing template or display factory) is reported, and the outcome stays TableView's.
+- The exception carries the blame. Each call into app code rethrows the app's exception tagged with the category,
+  as a `CallerError` with the same HRESULT and error info (running out of memory stays a `std::bad_alloc`), and the
+  shaping engine throws the app's collection and contract failures the same way; the catch that decides an outcome
+  reads the type. A swallowed app exception, or another exception with the same HRESULT, is never blamed on the app.
+  `SelectionModel` calls TableView back across the ABI, which keeps an exception's error object but not its C++
+  type, so the call into `SelectionModel` tags the exception again when its error object is the one that left
+  TableView's handler.
+- A column's display factory and sort member path are the app's code only when the app derived the column class
+  (it can override `GenerateElementCore` and `GetSortMemberPathCore`). The editing hooks are TableView's code for
+  every column (they are internal), so their failure fails the test, except where they realize or focus a
+  `CellEditingTemplate`'s content: that is the app's code, and a throw there is the app's. A write that does not land (a
+  converter throws, or the editor has no binding TableView can write through) is still the app's.
+- An app filter predicate, sort or group key selector, or custom comparer that throws is contained by design: the
+  row is filtered out, the key is null, the pair compares equal. The verb's outcome stands, and `TableView_Error`
+  reports a recovered callback fault with the first HRESULT and how many threw, also when the verb then fails. A verb
+  that a delegate starts inside another counts only its own.
+- An app fault never overrides TableView's own failure in the same operation; each is reported, subject to
+  the diagnostic's once-per-session limit.
+- An app-supplied collection that throws when read, and broken caller contracts (one object on two rows, a
+  row without an identity, invalid group or parent identities), are data faults. TableView's own invalid
+  arguments, and failures reading collections TableView builds (such as the group list), stay TableView's.
+
+Known gaps: app code TableView calls without tagging it (for example a header's `ToString`) counts as
+TableView's if it throws inside a measured operation, and so does an element from a column factory that
+XAML refuses because a container outside the visual tree holds it. An app exception that reaches TableView
+back across any other ABI call loses its tag and counts as TableView's, and so does an app `SelectionChanged`
+handler that runs out of memory inside a `SelectionModel` call, since that failure has no error object to match. For
+the display factory and the sort member path the column class decides, so a built-in method that throws on an
+app-derived column without an override counts as the app's, and a built-in text column's binding converter that
+throws while the column builds a cell counts as TableView's. TableView's own layout or focus code that runs inside the
+calls that realize or focus a `CellEditingTemplate`'s content counts as the app's if it throws. Running out of memory
+while walking an enumeration-only source counts as TableView's, because
+TableView's own allocation may be what failed. App delegates that throw outside a shaping verb (live shaping, a
+source change) are not reported, nor is a `ParentBy` parent key selector that throws (its row becomes a root).
+A source setter that throws during a `{Binding}` write never reaches TableView (`UpdateSource` returns normally),
+so that commit counts as completed although the value did not land.
+
+## Events
+
+| Event | When | Contents |
+|---|---|---|
+| `TableView_Loaded` | First `Loaded` in a process while a listener is enabled (a later `Loaded` retries) | `LoadedVersion`, control version, `UTCReplace_AppSessionGuid` |
+| `TableView_Instance` | Unloaded or destruction, once per loaded session, at most 64 per process | `InstanceVersion` and the fields below, `UTCReplace_AppSessionGuid` |
+| `TableView_Error` | A TableView failure, an app fault, or a caught header-rebuild error | Operation, stage, attribution, category, `HResult` with `HResultAvailable`, `FaultCount` (more than 1 only for contained app delegates), `IsRecoverable` (true when TableView carried on). Logging provider, VERBOSE, `KEYWORD_TABLEVIEW`, no telemetry keyword; the first per operation, attribution and recoverability in a session (within an edit or selection, an app fault that decided the outcome comes first) |
+
+Every event also carries `SchemaVersion`.
+
+`TableView_Instance` fields:
+
+| Field | Values |
+|---|---|
+| `IsFirstLoad` | True for the instance's first loaded session |
+| `ContentShown` | Across the instance's loads: 0 nothing yet; 1 a row or group header was shown; 2 no row was shown and a sample saw a source with no data rows |
+| `EnabledFeatures`, `UsedFeatures` | Sorting 1, editing 2, filtering 4, grouping 8, hierarchy 16, live shaping 32 |
+| `SourceRowsBucket` | Rows before the filter: every source row, or for a tree every node |
+| `DataRowsBucket` | Data rows after the filter, without group headers and whatever is expanded; for a tree, the nodes the filter keeps |
+| `PeakRealizedRowsBucket` | Containers the rows repeater has created since the template was applied. It creates one only when none is free and keeps them across loads, so this is the most rows realized at once, plus the most group headers, over the instance's loads |
+| `ColumnKinds` | Text 1, template 2, app-derived 4 (a column class that is not TableView's) |
+| `SourceKinds` | A collection TableView projected 1, the app's own `TableViewSource` 2 |
+| `IsRightToLeft` | The table flows right to left |
+| `TemplateIncomplete` | The applied template lacks `PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost` |
+
+TableView samples at `Loaded` and `Unloaded` while the event can still be written. An event carries the union of
+the bits and the larger count, as a bucket: 0 for none, k for 2^(k-1) up to 2^k - 1. A session that ends by
+destruction without `Unloaded` carries the `Loaded` sample alone.
+
+Enabled means allowed by the table for sorting (`CanUserSortColumns` and a column that can sort) and editing (not
+`IsReadOnly`, and an editable column), and declared on the `TableViewSource` for the other four. Used counts only
+after the instance has shown rows: a sort, filter or edit commit that ran; a request to expand or collapse one
+group or tree node (expand-all and subtree requests do not count); or an item change that live shaping had to
+reshape for. A used feature is always reported enabled.
+
+Three counts answer different questions and are never divided into one another: constructions
+(RuntimeProfiler), instances (`TableView_Instance` with `IsFirstLoad`), and TiP results.
+
+Not collected: action counts, cosmetic settings (density, grid lines, header visibility, row height),
+tooltips, keyboard paging, column add or remove, automation peers, whether an `EmptyTemplate` is set, and
+per-row or per-cell counters.
+
+## Versions
+
+Each starts at 1, the first release.
+
+- A TiP test's data version: when its outcome rules or its data change.
+- `InstanceVersion` and `LoadedVersion`: when that event's fields or their meaning change.
+- `SchemaVersion`: when any TableView event changes.
+
 # Appendix
 
 ## Non-goals

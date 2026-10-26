@@ -536,6 +536,9 @@ winrt::Brush TableView::GetGridLineBrush()
 TableView::~TableView()
 {
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
+    // Unloaded can run after the window is destroyed, or not at all; TableView_Instance goes out at most once
+    // either way.
+    TableViewTelemetry::EndSession(m_telemetrySession);
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
     // Destructor runs off the reference tracker's teardown path (e.g. UIAffinityReleaseQueue),
@@ -704,7 +707,10 @@ TableView::TableView()
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     TableViewTelemetry::BeginSession(m_telemetrySession);
+    TableViewTelemetry::ReportFirstLoad();
     ReclaimItemsSource();
+    // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
+    SampleInstanceTelemetry();
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
@@ -786,7 +792,12 @@ try
 {
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTip(TableViewTip::IgnoreReason::Retemplated);
-    TableViewTip::StartSetup(m_tip);
+    RevokeTipInitializationLayout();
+    TableViewTip::ResetInitialization(m_tip);
+    m_templateApplied = true;
+    m_templateIncomplete = false;
+    // The template is expanded before this runs, so with a source attached Initialize's inputs are ready.
+    if (m_activeSource.get()) { StartTipInitialization(); }
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
@@ -895,6 +906,15 @@ try
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
+    // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
+    // has all three, so a missing one is the app's template.
+    if (!m_rowsRepeater.get() || !m_headerRow.get() || !m_headerHost.get())
+    {
+        m_templateIncomplete = true;
+        TVDiag::LogRetailF(L"[TableView] The control template lacks PART_RowsRepeater, PART_HeaderRow or PART_HeaderHost.");
+        StartTipInitialization();
+        TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::AppTemplateIncomplete);
+    }
     auto weakThis = get_weak();
 
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
@@ -1073,13 +1093,13 @@ try
                 }
             });
     }
-    TableViewTip::CompleteSetup(m_tip);
+    CompleteTipInitializationIfEmpty();
 }
 catch (...)
 {
-    // The control, row and cell templates are expanded outside this method, and a tagged app callout
-    // here has already closed the run as an application fault; any other throw counts as a setup failure.
-    TableViewTip::FailSetup(m_tip, winrt::to_hresult());
+    // The control, row and cell templates are expanded outside this method; an exception from app code is the
+    // app's, and any other throw fails Initialize unless it has its verdict.
+    FailTipInitialization(TableViewTip::Stage::Template, TableViewTip::CurrentFault());
     throw;
 }
 
@@ -1150,6 +1170,16 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
     }
 }
 
+bool TableView::HasRowsViewport()
+{
+    // The scroller is resolved when the rows repeater loads, which a repeater in a collapsed body never does.
+    auto scroller = m_bodyScroller.get();
+    auto const repeater = m_rowsRepeater.get();
+    if (!scroller && repeater) { scroller = FindScrollViewerAncestor(repeater, *this); }
+    return scroller ? scroller.ViewportWidth() > 0 && scroller.ViewportHeight() > 0 :
+        repeater && repeater.ActualWidth() > 0 && repeater.ActualHeight() > 0;
+}
+
 void TableView::OnBodyScrollerViewChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::ScrollViewerViewChangedEventArgs& /*args*/)
@@ -1216,55 +1246,72 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         return;
     }
 
-    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource);
+    // Until Initialize has its verdict, attaching a source is part of initialization rather than a tracked swap.
+    auto const initializing = !m_tip.initializationDone;
+    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource, !initializing);
     bool completed = false;
-    auto tipCompletion = wil::scope_exit([this, tipGeneration, &completed]() noexcept
+    std::optional<TableViewTip::Fault> failure;
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, initializing, &completed, &failure]() noexcept
     {
-        if (!completed)
+        if (initializing)
         {
-            FailTipOperation(tipGeneration, TableViewTip::Stage::Source, {});
+            if (completed) { NoteTipInitializationSource(); }
+            else { FailTipInitialization(TableViewTip::Stage::Source, failure.value_or(TableViewTip::Fault{})); }
+        }
+        else if (!completed)
+        {
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Source, failure);
         }
         else { CompleteTipOperation(tipGeneration); }
         EndTipOperation();
     });
 
-    // The edited item is about to leave the control. Forced, because the data set is already gone
-    // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
-    // a dependency-property change callback, and moving focus from one re-enters the framework.
-    if (IsEditing())
+    try
     {
-        TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
+        // The edited item is about to leave the control. Forced, because the data set is already gone
+        // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
+        // a dependency-property change callback, and moving focus from one re-enters the framework.
+        if (IsEditing())
+        {
+            TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
+        }
+
+        // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item
+        // that is not in the new source, BeginEdit fails with no diagnostic, and the discarded item
+        // stays rooted by the tracker. WPF DataGrid likewise resets CurrentItem/CurrentCell here.
+        //
+        // Per-row begin-edit press state needs no reset: it is compared by item identity, so an entry
+        // left over from the previous data set can never match an item from the new one.
+        SetCurrentCell(nullptr, nullptr);
+
+        // The column set changed; reset the shared cursor so first header entry does not skip an
+        // unvisited column.
+        ResetColumnCursorInternal();
+
+        // New data set: clear the grow-only Auto accumulators so widths recompute from scratch. The next
+        // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
+        // stale content no longer pins the columns.
+        ResetColumnDesiredWidths();
+
+        // A different collection invalidates any projection we synthesized over the old one, so the
+        // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
+        // (the active source is still available to it as the previous source to detach), and
+        // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
+        // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
+
+        // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
+        // projection, so the reported sort state and the chevron go with it - otherwise they describe
+        // an order the new rows are not in.
+        ResetSortStateForNewItemsSource();
+        AdoptItemsSource();
+        RefreshRowsPipeline();
     }
-
-    // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item
-    // that is not in the new source, BeginEdit fails with no diagnostic, and the discarded item
-    // stays rooted by the tracker. WPF DataGrid likewise resets CurrentItem/CurrentCell here.
-    //
-    // Per-row begin-edit press state needs no reset: it is compared by item identity, so an entry
-    // left over from the previous data set can never match an item from the new one.
-    SetCurrentCell(nullptr, nullptr);
-
-    // The column set changed; reset the shared cursor so first header entry does not skip an
-    // unvisited column.
-    ResetColumnCursorInternal();
-
-    // New data set: clear the grow-only Auto accumulators so widths recompute from scratch. The next
-    // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
-    // stale content no longer pins the columns.
-    ResetColumnDesiredWidths();
-
-    // A different collection invalidates any projection we synthesized over the old one, so the
-    // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
-    // (the active source is still available to it as the previous source to detach), and
-    // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
-    // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
-
-    // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
-    // projection, so the reported sort state and the chevron go with it - otherwise they describe
-    // an order the new rows are not in.
-    ResetSortStateForNewItemsSource();
-    AdoptItemsSource();
-    RefreshRowsPipeline();
+    catch (...)
+    {
+        // App code's exceptions (the new collection, its contract, a callout) carry their kind.
+        failure = TableViewTip::CurrentFault();
+        throw;
+    }
     completed = true;
 }
 
@@ -1754,6 +1801,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     if (!tableViewSource)
     {
         tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
+        m_telemetrySourceKinds = tableViewSource ? TableViewTelemetry::SourceKind::AppSupplied : 0u;
     }
 
     // Normalize the source. When the app hands us a plain collection, project it through a
@@ -1771,6 +1819,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         // ItemsSourceView does, so a source it refuses is one XAML cannot project either, and
         // ItemsRepeater raises that as an error rather than degrading. Let it surface.
         tableViewSource = winrt::TableViewSource::From(itemsSource);
+        m_telemetrySourceKinds = TableViewTelemetry::SourceKind::Projected;
     }
 
     StopAwaitingSource();
@@ -1843,6 +1892,14 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             if (auto strongThis = weakThis.get())
             {
                 strongThis->ReleaseCustomSortRows(item, liveRows);
+            }
+        });
+        sourceImpl->SetLiveItemReshapeHandler([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                TableViewTelemetry::MarkUsed(strongThis->m_telemetrySession, strongThis->m_telemetrySession.generation,
+                    TableViewTelemetry::Feature::LiveShaping);
             }
         });
 
@@ -2509,6 +2566,7 @@ void TableView::OnRowElementPrepared(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
+    TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Rows);
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto rowImpl = winrt::get_self<TableViewRow>(row);
@@ -2536,6 +2594,7 @@ void TableView::OnRowElementPrepared(
         InvalidateMeasure();
         QueueTerminalGridLineRefresh();
     }
+    if (m_tip.initializationPending && !m_tipInitializationLayoutToken.value) { ArmTipInitializationLayout(); }
 }
 
 void TableView::OnRowElementClearing(
@@ -3599,6 +3658,8 @@ void TableView::ReclaimItemsSource()
     {
         RefreshRowsPipeline();
     }
+    // A source refused while another table owned it arrives here.
+    NoteTipInitializationSource();
 }
 
 void TableView::OnTableViewUnloaded()
@@ -3611,7 +3672,9 @@ void TableView::OnTableViewUnloaded()
     }
 
     m_headerSortSpaceArmedColumn = nullptr;
+    IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
+    SampleInstanceTelemetry();
     TableViewTelemetry::EndSession(m_telemetrySession);
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
@@ -3619,6 +3682,7 @@ void TableView::OnTableViewUnloaded()
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
     CancelHeaderFocusRestore();
+    RevokeTipInitializationLayout();
 
     if (m_pendingGroupFocusLayoutToken.value)
     {
