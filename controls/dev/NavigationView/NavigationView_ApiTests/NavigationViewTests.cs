@@ -1467,8 +1467,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
-                navView.IsPaneOpen = true;
                 Content = navView;
+                Content.UpdateLayout();
+                navView.IsPaneOpen = true;
                 Content.UpdateLayout();
 
                 var closeButton = (VisualTreeHelper.GetChild(navView, 0) as Grid).FindName("NavigationViewCloseButton") as Button;
