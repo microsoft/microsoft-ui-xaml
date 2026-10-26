@@ -22,7 +22,8 @@
 // an instance (type name, core size) is emitted once per type, and again for each session that
 // starts later (ElementTypeInfo), and per-instance details (x:Name, DXaml peer, XAML source
 // location, WUC visual properties) come from granular events emitted when that detail changes.
-// The consumer joins them back into the same trees.
+// A WUC visual property value the sessions already have isn't written again (see
+// RecordVisualProperty). The consumer joins them back into the same trees.
 #ifdef XAMLPROFILER_ENABLED
 
 #include <cstdint>
@@ -107,14 +108,16 @@ namespace XamlProfilerTracing
     }
 
     // ETW enable callback, passed to TraceLoggingRegisterEx in dllentry.cpp. ETW calls it on its
-    // notification thread after TraceLogging has updated the state IsEnabled reads. When a
-    // session enables the provider (or changes its level or keywords) or requests capture state,
-    // it re-sends the ElementTypeInfo row of every type described so far (see DescribeType), so
-    // that session gets the rows of the types that entered the tree before it started, and a
-    // session that lost rows can get them back. Disabling needs nothing. If a session already has
+    // notification thread after TraceLogging has updated the state IsEnabled reads. Every call
+    // forgets the WUC visual values recorded so far (see RecordVisualProperty), so a session that
+    // starts gets each value the next time XAML sets it, and the records are freed when the
+    // sessions stop. When a session enables the provider (or changes its level or keywords) or
+    // requests capture state, it also re-sends the ElementTypeInfo row of every type described so
+    // far (see DescribeType), so that session gets the rows of the types that entered the tree
+    // before it started, and a session that lost rows can get them back. If a session already has
     // the provider enabled when the DLL loads, TraceLoggingRegisterEx calls this synchronously
-    // from DllMain, before the /GS cookie is initialized; no type has been described then, so it
-    // only advances a counter.
+    // from DllMain, before the /GS cookie is initialized; nothing has been recorded or described
+    // then, so it only advances a counter.
     void NTAPI ProviderEnableCallback(
         _In_ LPCGUID sourceId,
         ULONG controlCode,
@@ -143,6 +146,40 @@ namespace XamlProfilerTracing
     // and around a session start a type's first enters can reach the session before its row. An
     // index at or beyond c_typeTableCapacity is written on every call.
     void DescribeType(uint32_t typeIndex, TypeRowWriter writer) noexcept;
+
+    // WucVisualPropertyChanged, WucVisualTransformChanged and WucVisualObjectChanged skip values
+    // the sessions already have: XAML sets most visual properties again, unchanged, each time it
+    // updates a visual, and the consumers keep only the latest value of each property. Each of
+    // these emitters calls its Record function first. It returns false, so the emitter writes
+    // nothing, when the value equals, bit for bit, the one recorded last for that visual and
+    // property; otherwise it records the value and returns true. WucVisualCreated forgets one
+    // visual's values (the consumers reset that VisualId's property bag at the same event), and
+    // ProviderEnableCallback forgets them all, so a session that starts gets each value the next
+    // time XAML sets it after ETW calls the callback. Values are recorded while a session listens
+    // to WucTree, for at most c_visualValuesCapacity visuals (about 4 MB); one more forgets them
+    // all, so their next values are written again. A value ETW drops reaches the session only
+    // once it changes. The emitters use these; they're declared here for the unit tests.
+
+    // RecordVisualProperty keeps the values of the property ids below this: the scalar and vector
+    // properties (WucVisualTreeProfiler::VisualProperty 1-18). It returns true for other ids.
+    constexpr uint32_t c_visualScalarPropertyCount = 19;
+
+    constexpr uint32_t c_visualValuesCapacity = 8192;
+
+    bool RecordVisualProperty(
+        uint64_t visualId,
+        uint32_t property,
+        float x,
+        float y,
+        float z,
+        float w) noexcept;
+
+    bool RecordVisualTransform(uint64_t visualId, _In_reads_(16) const float* matrix) noexcept;
+
+    // Skips only a repeated clear (objectId 0). An object is written every time: its ObjectId can
+    // belong to a different object, with another TypeName, by then. Returns true for property ids
+    // of 32 and above.
+    bool RecordVisualObject(uint64_t visualId, uint32_t property, uint64_t objectId) noexcept;
 
     // Out-of-line emitters, defined in XamlProfilerTracing.cpp. Event names, field names, field
     // types and field order are the wire contract with the profiler tools.
@@ -322,16 +359,18 @@ namespace XamlProfilerTracing
     //
     // Visual properties are not carried on the insert/root events. XAML reports each property
     // it sets on a visual through WucVisualPropertyChanged / WucVisualTransformChanged /
-    // WucVisualObjectChanged at the setter, so the consumer keeps a per-visual property bag
-    // that is current (an insert-time snapshot was stale: most spine visuals are inserted
-    // before their properties are pushed). Properties can be reported before the visual is
-    // inserted. WucVisualCreated resets a VisualId's bag, because a new visual can reuse the
-    // address of a destroyed one. Visuals whose properties the app sets (hand-in visuals, and
-    // hand-off visuals XAML adopts as a primary visual) are read in full when XAML takes them.
+    // WucVisualObjectChanged at the setter, unless the sessions already have that value (see
+    // RecordVisualProperty), so the consumer keeps a per-visual property bag that is current
+    // (an insert-time snapshot was stale: most spine visuals are inserted before their
+    // properties are pushed). Properties can be reported before the visual is inserted.
+    // WucVisualCreated resets a VisualId's bag, because a new visual can reuse the address of a
+    // destroyed one. Visuals whose properties the app sets (hand-in visuals, and hand-off
+    // visuals XAML adopts as a primary visual) are read in full when XAML takes them.
     // =====================================================================
 
     // Fired when XAML creates a WUC visual. The consumer resets that VisualId's property bag to
-    // the WUC defaults (the per-address reset ElementCreatedInfo gives element ids).
+    // the WUC defaults (the per-address reset ElementCreatedInfo gives element ids), and XAML
+    // forgets the values it recorded for that VisualId.
     void WucVisualCreated(
         uint64_t visualId,
         uint32_t visualKind) noexcept;
@@ -371,8 +410,9 @@ namespace XamlProfilerTracing
         uint64_t targetId) noexcept;
 
     // Fired when XAML sets a scalar or vector property on a WUC visual (or when an app-owned
-    // visual is read). Property is a WucVisualTreeProfiler::VisualProperty value; X/Y/Z/W carry
-    // its components (unused ones are 0; booleans are 0/1; enums are their numeric value).
+    // visual is read), unless the value is the one last written for that visual and property.
+    // Property is a WucVisualTreeProfiler::VisualProperty value; X/Y/Z/W carry its components
+    // (unused ones are 0; booleans are 0/1; enums are their numeric value).
     void WucVisualPropertyChanged(
         uint64_t visualId,
         uint32_t property,
@@ -381,15 +421,16 @@ namespace XamlProfilerTracing
         float z,
         float w) noexcept;
 
-    // Fired when XAML sets a visual's TransformMatrix. 'matrix' is row-major M11..M44, emitted
-    // as the fields M11..M44.
+    // Fired when XAML sets a visual's TransformMatrix, unless the matrix is the one last written
+    // for that visual. 'matrix' is row-major M11..M44, emitted as the fields M11..M44.
     void WucVisualTransformChanged(
         uint64_t visualId,
         _In_reads_(16) const float* matrix) noexcept;
 
-    // Fired when XAML sets an object-valued property (clip, brush, shadow, ...) on a WUC visual.
-    // ObjectId is the object's identity (0 when cleared). For Source it is the source visual's
-    // VisualId. TypeName is the object's runtime class name without its namespace.
+    // Fired when XAML sets an object-valued property (clip, brush, shadow, ...) on a WUC visual,
+    // except a clear of a property whose last write was a clear. ObjectId is the object's
+    // identity (0 when cleared). For Source it is the source visual's VisualId. TypeName is the
+    // object's runtime class name without its namespace.
     void WucVisualObjectChanged(
         uint64_t visualId,
         uint32_t property,

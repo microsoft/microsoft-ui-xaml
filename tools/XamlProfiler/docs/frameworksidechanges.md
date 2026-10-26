@@ -171,6 +171,14 @@ everything by pointer identity. Property events are keyed by `VisualId` alone an
 can arrive before the visual is inserted, so the consumer keeps a property bag per
 visual and attaches it when the visual enters the tree.
 
+**Property events carry changes only.** The producer skips a scalar, vector or
+transform value, or a clear, that repeats the last one it wrote for that visual;
+object-valued sets are always written. It forgets what it wrote when the visual's
+`WucVisualCreated` fires and whenever a trace session starts, stops or requests a
+capture state, so a new session gets each value the next time XAML sets it. The
+consumer keeps the latest value of each property, so the skipped repeats change
+nothing it shows.
+
 ### Surfaces and memory — `Surfaces`, `SurfaceTextures`, `HeapSnapshots`, `GpuSnapshots`
 
 | Event | Keyword | Params | Meaning |

@@ -11,6 +11,7 @@
 
 #include "XamlProfilerTracing.h"
 #include <atomic>
+#include <wil/resource.h>
 
 // "Microsoft-Windows-XAML-Profiler" -> {26f28a5c-7d30-54c5-40f4-fff6d3beda7d}, the EventSource name
 // hash of the provider name. No provider-group option: only sessions that enable this provider
@@ -33,6 +34,117 @@ namespace
 
     // The writer DescribeType was given, for ProviderEnableCallback to re-send rows with.
     std::atomic<XamlProfilerTracing::TypeRowWriter> s_typeRowWriter { nullptr };
+
+    // Allocates from the process heap. XAML's operator new would count the profiler's records as
+    // XAML memory: in the allocator counters XamlHeapSnapshot reports, and in g_allocatedMemory,
+    // which TriggerCollectionForOrphanedObjects (FxCallbacks.cpp) watches to decide when to force
+    // a GC. Profiling must change neither. ErrorContext and DependencyLocator's raw_allocator use
+    // the process heap for the same kind of reason.
+    template <typename T>
+    struct ProcessHeapAllocator
+    {
+        using value_type = T;
+
+        ProcessHeapAllocator() noexcept = default;
+
+        template <typename U>
+        ProcessHeapAllocator(const ProcessHeapAllocator<U>&) noexcept
+        {
+        }
+
+        T* allocate(size_t count)
+        {
+            void* memory = (count <= SIZE_MAX / sizeof(T))
+                ? HeapAlloc(GetProcessHeap(), 0, count * sizeof(T))
+                : nullptr;
+            IFCOOMFAILFAST(memory);
+            return static_cast<T*>(memory);
+        }
+
+        void deallocate(_In_ T* memory, size_t) noexcept
+        {
+            HeapFree(GetProcessHeap(), 0, memory);
+        }
+
+        template <typename U>
+        bool operator==(const ProcessHeapAllocator<U>&) const noexcept
+        {
+            return true;
+        }
+
+        template <typename U>
+        bool operator!=(const ProcessHeapAllocator<U>&) const noexcept
+        {
+            return false;
+        }
+    };
+
+    // The values written for one visual since its WucVisualCreated or the last session change.
+    // Value-initialized, so nothing is recorded until a bit is set.
+    struct VisualValues
+    {
+        uint32_t scalarsRecorded; // Bit n: scalars[n] holds the last value of property n.
+        uint32_t clearsRecorded;  // Bit n: the last object written for property n was a clear.
+        bool transformRecorded;
+        float scalars[XamlProfilerTracing::c_visualScalarPropertyCount][4];
+        float transform[16];
+    };
+
+    using VisualValuesMap = std::unordered_map<
+        uint64_t,
+        VisualValues,
+        std::hash<uint64_t>,
+        std::equal_to<uint64_t>,
+        ProcessHeapAllocator<std::pair<const uint64_t, VisualValues>>>;
+
+    // Created when the first value is recorded and discarded by ProviderEnableCallback. Whatever
+    // is still recorded when the DLL unloads is left to the process heap.
+    SRWLOCK s_visualValuesLock = SRWLOCK_INIT;
+    VisualValuesMap* s_visualValues = nullptr;
+
+    // Returns visualId's record, creating it (and the map) if needed. Call with
+    // s_visualValuesLock held.
+    VisualValues& GetVisualValues(uint64_t visualId)
+    {
+        if (s_visualValues == nullptr)
+        {
+            void* memory = ProcessHeapAllocator<VisualValuesMap>().allocate(1);
+            s_visualValues = new (memory) VisualValuesMap();
+        }
+        else if (s_visualValues->size() >= XamlProfilerTracing::c_visualValuesCapacity &&
+                 s_visualValues->find(visualId) == s_visualValues->end())
+        {
+            // Forgetting costs only re-sent values; growing has no bound.
+            s_visualValues->clear();
+        }
+
+        return (*s_visualValues)[visualId];
+    }
+
+    void ForgetVisualValues(uint64_t visualId) noexcept
+    {
+        auto lock = wil::AcquireSRWLockExclusive(&s_visualValuesLock);
+        if (s_visualValues != nullptr)
+        {
+            s_visualValues->erase(visualId);
+        }
+    }
+
+    void ForgetAllVisualValues() noexcept
+    {
+        VisualValuesMap* values = nullptr;
+        {
+            auto lock = wil::AcquireSRWLockExclusive(&s_visualValuesLock);
+            std::swap(values, s_visualValues);
+        }
+
+        // Outside the lock, so a UI thread recording a value doesn't wait for this.
+        if (values != nullptr)
+        {
+            values->~VisualValuesMap();
+            ProcessHeapAllocator<VisualValuesMap>().deallocate(values, 1);
+        }
+    }
 }
 
 namespace XamlProfilerTracing
@@ -46,8 +158,12 @@ namespace XamlProfilerTracing
         _In_opt_ PEVENT_FILTER_DESCRIPTOR /* filterData */,
         _Inout_opt_ PVOID /* callbackContext */) noexcept
     {
+        // On every call, disabling included: a session that starts needs each visual's values
+        // again, and once sessions stop the records only hold memory.
+        ForgetAllVisualValues();
+
         // EVENT_CONTROL_CODE_ENABLE_PROVIDER / CAPTURE_STATE from evntrace.h, which
-        // TraceLoggingProvider.h doesn't pull in. Disabling needs nothing: the sessions that
+        // TraceLoggingProvider.h doesn't pull in. Disabling needs nothing more: the sessions that
         // remain already have their rows.
         constexpr ULONG c_enableProvider = 1;
         constexpr ULONG c_captureState = 2;
@@ -111,6 +227,74 @@ namespace XamlProfilerTracing
             // scanned the marks before this one was set.
             writer(typeIndex);
         }
+    }
+
+    bool RecordVisualProperty(
+        uint64_t visualId,
+        uint32_t property,
+        float x,
+        float y,
+        float z,
+        float w) noexcept
+    {
+        if (property >= c_visualScalarPropertyCount)
+        {
+            return true;
+        }
+
+        const float value[4] = { x, y, z, w };
+        const uint32_t bit = 1u << property;
+        auto lock = wil::AcquireSRWLockExclusive(&s_visualValuesLock);
+        VisualValues& values = GetVisualValues(visualId);
+        if ((values.scalarsRecorded & bit) != 0 &&
+            memcmp(values.scalars[property], value, sizeof(value)) == 0)
+        {
+            return false;
+        }
+
+        memcpy(values.scalars[property], value, sizeof(value));
+        values.scalarsRecorded |= bit;
+        return true;
+    }
+
+    bool RecordVisualTransform(uint64_t visualId, _In_reads_(16) const float* matrix) noexcept
+    {
+        auto lock = wil::AcquireSRWLockExclusive(&s_visualValuesLock);
+        VisualValues& values = GetVisualValues(visualId);
+        if (values.transformRecorded &&
+            memcmp(values.transform, matrix, sizeof(values.transform)) == 0)
+        {
+            return false;
+        }
+
+        memcpy(values.transform, matrix, sizeof(values.transform));
+        values.transformRecorded = true;
+        return true;
+    }
+
+    bool RecordVisualObject(uint64_t visualId, uint32_t property, uint64_t objectId) noexcept
+    {
+        if (property >= 32)
+        {
+            return true;
+        }
+
+        const uint32_t bit = 1u << property;
+        auto lock = wil::AcquireSRWLockExclusive(&s_visualValuesLock);
+        VisualValues& values = GetVisualValues(visualId);
+        if (objectId != 0)
+        {
+            values.clearsRecorded &= ~bit;
+            return true;
+        }
+
+        if ((values.clearsRecorded & bit) != 0)
+        {
+            return false;
+        }
+
+        values.clearsRecorded |= bit;
+        return true;
     }
 }
 
@@ -321,6 +505,10 @@ namespace XamlProfilerTracing
         uint64_t visualId,
         uint32_t visualKind) noexcept
     {
+        // A new visual can reuse a destroyed one's address. Its values start over, as the
+        // consumer's property bag does at this event.
+        ForgetVisualValues(visualId);
+
         TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualCreated",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
@@ -397,6 +585,12 @@ namespace XamlProfilerTracing
         float z,
         float w) noexcept
     {
+        // The sessions already have this value (see RecordVisualProperty).
+        if (!RecordVisualProperty(visualId, property, x, y, z, w))
+        {
+            return;
+        }
+
         TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualPropertyChanged",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
@@ -412,6 +606,11 @@ namespace XamlProfilerTracing
         uint64_t visualId,
         _In_reads_(16) const float* matrix) noexcept
     {
+        if (!RecordVisualTransform(visualId, matrix))
+        {
+            return;
+        }
+
         TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualTransformChanged",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
@@ -440,6 +639,11 @@ namespace XamlProfilerTracing
         uint64_t objectId,
         PCWSTR typeName) noexcept
     {
+        if (!RecordVisualObject(visualId, property, objectId))
+        {
+            return;
+        }
+
         TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualObjectChanged",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingKeyword(XamlProfilerKeywords::WucTree),

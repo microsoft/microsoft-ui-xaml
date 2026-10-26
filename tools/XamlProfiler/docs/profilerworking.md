@@ -282,7 +282,10 @@ the consumer half of `resources/addingisvisualtree.md`.
 The visual's tree node shares its bag, so the node shows the latest values, not a
 snapshot taken at insert. A property the producer never reported keeps the
 composition default. Bags outlive nodes, so a removed visual that is re-inserted keeps
-its properties.
+its properties. The producer writes only changes: it skips a value that repeats the
+last one it wrote for that visual since its `WucVisualCreated` (or since a session
+started or stopped). The bag already holds that value, so nothing the router shows
+changes.
 
 `TreeNode.VisualProperties` renders the bag as the `key="value"` attribute string the
 insert events used to carry (the `DCompTreeHelper` format), and
