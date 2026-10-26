@@ -158,6 +158,15 @@ default rule requires a supporting explanation for HIGH area confidence.
 An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
 without discarding the summary, reproduction assessment, or duplicate handling.
 This checks for a missing rationale, not its semantic correctness.
+First-level routing does not require independently verifying the root cause.
+A clear reporter diagnosis identifying the failing component, operation, or
+boundary can support HIGH area confidence and the configured team route.
+The rationale attributes the diagnosis to the reporter rather than presenting
+it as a verified finding. Unverified root cause alone is not a reason to lower
+routing confidence; contradictory observations or unresolved competing areas
+still require an advisory assessment. A bare label request or unsupported guess
+is not diagnostic evidence, and human labels and configured routing rules remain
+authoritative. This is model guidance, not a publisher-side confidence promotion.
 Unknown rule IDs remain errors. A cross-area rule can be normalized
 to `default` only if the selected area has no conditional rules and its fixed
 default owner exactly matches the unambiguous owner of that known rule. This

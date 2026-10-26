@@ -100,6 +100,43 @@ class AssessmentRecoveryTests(unittest.TestCase):
         self.assertIn("`team-CompInput`", body)
         self.assertNotIn("`team-Core`", body)
 
+    def test_reporter_diagnosis_can_route_titlebar_without_claiming_a_verified_root_cause(self):
+        self.client.issue.update(
+            title="TitleBar stays deactivated on a foreground window",
+            body="The reporter diagnoses stale TitleBar activation tracking: the listener "
+                 "does not re-evaluate after WM_NCACTIVATE without WM_ACTIVATE. "
+                 "The supplied steps show active caption buttons but deactivated title text.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        reason = (
+            "The reporter diagnoses stale TitleBar activation tracking, distinguishing "
+            "the control's visual state from native window positioning. Root cause is unverified."
+        )
+        result = t.validate(agent_output(
+            evidence, area="area-TitleBar", routing_reason=reason,
+            summary="TitleBar retains its deactivated appearance on a foreground window; "
+                    "the reporter's activation-listener diagnosis is unverified.",
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(result["area_confidence"], "HIGH")
+        self.assertEqual(
+            plan["add_labels"], ["area-TitleBar", "team-Core", "team-Reach"],
+        )
+        self.assertIn(reason, plan["comment"])
+        self.assertIn("unverified", plan["comment"])
+        self.assertIn("needs-triage", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_unresolved_titlebar_diagnosis_remains_advisory(self):
+        result, evidence = self.validate(
+            area="area-TitleBar", area_confidence="MEDIUM",
+            routing_reason="The report does not distinguish stale TitleBar state from native activation failure.",
+        )
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], [])
+        self.assertIn("No automatic team assignment", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
     def test_all_observed_rejection_shapes_are_recoverable(self):
         cases = [
             (708, "OTHER", dict(issue_kind="OTHER", reproduction="SUFFICIENT",

@@ -297,6 +297,17 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertNotIn("team-parent-map.json", self.source)
         self.assertIn("Never emit a team name.", self.source)
 
+    def test_reporter_diagnosis_supports_provisional_routing_without_claiming_verification(self):
+        routing = self.source.split("## Routing\n", 1)[1].split("## Reproduction", 1)[0]
+        self.assertIn("This is first-level triage, not root-cause verification.", routing)
+        self.assertIn("do not downgrade solely because you have not independently verified", routing)
+        self.assertIn("Attribute the diagnosis to the reporter in `routing_reason`", routing)
+        self.assertIn("support HIGH `area-TitleBar` routing", routing)
+        self.assertIn("A bare label request or unsupported guess is not a technical diagnosis.", routing)
+        self.assertIn("areas unresolved, use MEDIUM/LOW and explain the uncertainty.", routing)
+        self.assertIn("Existing area and team labels always take", routing)
+        self.assertIn("Never emit a team name.", routing)
+
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)
         self.assertRegex(self.source, r"user-rate-limit:\n  max-runs-per-window: 5\n  window: 60")
