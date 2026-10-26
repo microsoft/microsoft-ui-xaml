@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <functional>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <winrt/Microsoft.UI.Dispatching.h>
@@ -93,9 +94,60 @@ namespace ShapingHelpers
         static bool UsesFallbackKey(winrt::IInspectable const& value);
     };
 
+    // Whose collection is read. A read of the caller's collection that throws is rethrown tagged as the caller's
+    // (RethrowAsCallerError), except running out of memory while enumerating a collection with no indexed read, which
+    // may be shaping's own allocation; a read of shaping's own collections, such as the group list it builds, never is.
+    enum class CollectionOwner { Shaping, Caller };
+
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
-        bool throwIfUnsupported = false);
+        bool throwIfUnsupported = false,
+        CollectionOwner owner = CollectionOwner::Shaping);
+
+    // The kind a CallerError carries when the caller's collection or contract failed. An owner maps kinds onto its own
+    // fault vocabulary; TableViewTip::AppFaultKind::Data is this value.
+    constexpr uint32_t c_callerDataFault = 6;
+
+    // An exception that left the caller's code: its collection, a broken contract, or a callback an owner ran. It
+    // keeps the original HRESULT and error info, so the caller sees the same error, and records whose fault it was,
+    // so an owner attributes a failure by the exception's type instead of by matching HRESULTs.
+    struct CallerError final : winrt::hresult_error
+    {
+        CallerError(winrt::hresult_error const& error, uint32_t kind) noexcept : winrt::hresult_error(error), m_kind(kind) {}
+        uint32_t Kind() const noexcept { return m_kind; }
+
+    private:
+        uint32_t m_kind;
+    };
+
+    // The caller's code ran out of memory (C++/WinRT throws std::bad_alloc for E_OUTOFMEMORY). Still a std::bad_alloc,
+    // so it leaves as E_OUTOFMEMORY without allocating, and records whose fault it was like CallerError.
+    struct CallerOutOfMemory final : std::bad_alloc
+    {
+        explicit CallerOutOfMemory(uint32_t kind) noexcept : m_kind(kind) {}
+        uint32_t Kind() const noexcept { return m_kind; }
+
+    private:
+        uint32_t m_kind;
+    };
+
+    // In a catch: rethrows the current exception tagged with `kind`, as a CallerError, or a CallerOutOfMemory when the
+    // caller's code ran out of memory. A tagged exception keeps its kind; any other exception leaves unchanged.
+    [[noreturn]] void RethrowAsCallerError(uint32_t kind);
+    // In a catch: the current exception's kind when it is tagged, else 0.
+    uint32_t CurrentCallerErrorKind() noexcept;
+
+    // Caller delegates that threw and were contained by design (a predicate excludes its row, a key selector yields a
+    // null key, a comparer calls the pair equal): how many, and the first one's HRESULT. An owner takes the tally
+    // after a verb, so it can report the caller's fault without failing the verb.
+    struct SwallowedFaults
+    {
+        uint32_t count{};
+        HRESULT firstError{ S_OK };
+
+        // In a catch. Reads only the first fault's HRESULT.
+        void Note() noexcept;
+    };
 
     // Resolves ONCE what a collection is and how to read it.
     //
@@ -113,7 +165,7 @@ namespace ShapingHelpers
     {
     public:
         CollectionAccessor() = default;
-        explicit CollectionAccessor(winrt::IInspectable const& source);
+        explicit CollectionAccessor(winrt::IInspectable const& source, CollectionOwner owner);
 
         // True when Count/GetAt are a direct call rather than an enumeration. An enumerable-only
         // source reports false; callers that need indexed access degrade instead of materializing
@@ -141,6 +193,7 @@ namespace ShapingHelpers
         winrt::IInspectable GetAtUnchecked(uint32_t index) const;
 
         winrt::IInspectable m_source{ nullptr };
+        bool m_callerOwned{};
 
         // Read: at most one of these is set, in IVector > IVectorView > IBindableVector order.
         winrt::Windows::Foundation::Collections::IVector<winrt::IInspectable> m_vector{ nullptr };
@@ -157,9 +210,11 @@ namespace ShapingHelpers
     // Canonical predicate filter shared by Tabular shaping engines. Retains items for which
     // predicate(item) returns true; a predicate that throws is treated as "exclude", which is the
     // fail-safe every caller wants: a broken predicate hides rows rather than failing the shape. In-place; preserves relative order of kept items.
+    // `contained`, when given, counts the predicates that threw.
     void ApplyPredicateFilter(
         std::vector<winrt::IInspectable>& items,
-        std::function<bool(winrt::IInspectable const& item)> const& predicate);
+        std::function<bool(winrt::IInspectable const& item)> const& predicate,
+        SwallowedFaults* contained = nullptr);
 
     // Canonical multi-axis stable sort shared by every Tabular shaping engine.
     // The caller supplies key extraction
@@ -275,6 +330,9 @@ namespace ShapingHelpers
         void Forget(winrt::IInspectable const& item);
         void RetainOnly(std::vector<winrt::IInspectable> const& liveRows);
 
+        // The comparer calls that threw since the last take (SafeCompare); resets the tally.
+        SwallowedFaults TakeSwallowedFaults() noexcept { return std::exchange(m_swallowedFaults, {}); }
+
     private:
         struct RankEntry
         {
@@ -290,7 +348,8 @@ namespace ShapingHelpers
         void InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank);
 
         // App code, so it never escapes: a throwing comparer degrades to "equal", which keeps the
-        // merge stable rather than random. Also normalizes the result to -1 / 0 / 1.
+        // merge stable rather than random, and is counted (TakeSwallowedFaults). Also normalizes the
+        // result to -1 / 0 / 1.
         int32_t SafeCompare(winrt::IInspectable const& left, winrt::IInspectable const& right) const;
 
         // Orders two row indices under the comparer, breaking ties by source index so the sort is
@@ -354,6 +413,7 @@ namespace ShapingHelpers
         // comparer is an app bug (a sort predicate must be a pure function of its inputs), so fail
         // fast in chk and no-op safely in fre. WinUI is single-threaded, so a plain bool suffices.
         bool m_comparerActive{ false };
+        mutable SwallowedFaults m_swallowedFaults;
     };
 
 }

@@ -363,6 +363,7 @@ void BuildParentKeyIndex(
     for (size_t i = 0; i < n; ++i)
     {
         if (!state[i]) continue;
+        ++result.KeptNodeCount;
         if (state[i] == 2) result.ContextKeys.insert(*s.NodeKeys[i]);
         std::vector<winrt::IInspectable> kids;
         for (size_t c : s.ChildIndices[i]) if (state[c]) kids.push_back(s.Rows[c]);

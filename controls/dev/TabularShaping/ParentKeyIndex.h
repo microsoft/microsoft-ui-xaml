@@ -43,6 +43,8 @@ struct ParentKeyIndex
     // parent nodeKey -> children. Keys view strings owned by Structure.
     std::unordered_map<std::wstring_view, std::vector<winrt::IInspectable>> Children;
     std::unordered_set<std::wstring> ContextKeys; // kept only because a descendant matched the filter
+    // Nodes the filter keeps: the matches and the ancestors that give them context.
+    size_t KeptNodeCount{};
     // Owns the keys all lookups resolve against; its key set is complete and unfiltered.
     std::shared_ptr<const ParentStructure> Structure;
 

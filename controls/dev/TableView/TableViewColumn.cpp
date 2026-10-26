@@ -37,6 +37,22 @@ namespace
         return false;
     }
 
+    // Realizing and focusing a CellEditingTemplate's content runs the app's code, so a throw there leaves tagged as the
+    // app's; the rest of the editing hooks is TableView's own code.
+    template <class Call>
+    auto RunEditorContent(bool appContent, Call&& call)
+    {
+        try
+        {
+            return call();
+        }
+        catch (...)
+        {
+            if (appContent) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Factory); }
+            throw;
+        }
+    }
+
 }
 
 TableViewColumn::TableViewColumn()
@@ -102,12 +118,15 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
         return nullptr;
     }
 
+    // A CellEditingTemplate's content is the app's (see GenerateEditingElementCore); TableView's own editor is not.
+    bool const appContent = CellEditingTemplate() != nullptr;
+
     // Focus so typing goes straight into the editor; otherwise the row keeps focus and the user has
     // to click the editor they just opened. The editing root is not necessarily focusable - a
     // template column produces a ContentPresenter - so fall back to its first focusable descendant.
     auto const root = editingElement.XamlRoot();
     auto const initialFocus = root ? winrt::FocusManager::GetFocusedElement(root) : nullptr;
-    if (!TryFocusEditor(editingElement))
+    if (!RunEditorContent(appContent, [&] { return TryFocusEditor(editingElement); }))
     {
         if (root && winrt::FocusManager::GetFocusedElement(root) != initialFocus)
         {
@@ -129,7 +148,7 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
 
         // The editing ContentPresenter may not have instantiated its DataTemplate.
         // Realize it before returning from F2 so the first keystroke has a target.
-        editingElement.UpdateLayout();
+        RunEditorContent(appContent, [&] { editingElement.UpdateLayout(); });
 
         // Layout can run application code and recycle the row or end the edit.
         if (owner && (GetOwningTableView() != owner ||
@@ -145,7 +164,7 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
             // A Loaded/focus handler chose another target; preserve that choice.
             return nullptr;
         }
-        if (!TryFocusEditor(editingElement))
+        if (!RunEditorContent(appContent, [&] { return TryFocusEditor(editingElement); }))
         {
             TVDiag::LogRetailF(L"[TableView] The realized cell editor has no available keyboard focus target.");
         }
