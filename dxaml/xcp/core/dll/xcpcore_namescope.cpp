@@ -47,7 +47,16 @@ CCoreServices::SetNamedObject(
 
     if (nameScopeType == Jupiter::NameScoping::NameScopeType::TemplateNameScope)
     {
-        m_nameScopeRoot.SetNamedObject(strName, pNamescopeOwner, nameScopeType, xref::get_weakref(pObject));
+        if (pObject->GetTypeIndex() == KnownTypeIndex::String)
+        {
+            // String-valued properties retain the wrapped string content, not the named CString itself.
+            // Take a strong-ref so the CString can be returned later by `FindName()`
+            m_nameScopeRoot.SetNamedObject(strName, pNamescopeOwner, nameScopeType, xref_ptr<CDependencyObject>(pObject));
+        }
+        else
+        {
+            m_nameScopeRoot.SetNamedObject(strName, pNamescopeOwner, nameScopeType, xref::get_weakref(pObject));
+        }
     }
     else
     {
