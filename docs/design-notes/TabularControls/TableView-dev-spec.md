@@ -196,12 +196,12 @@ Shaping is declared on the **source**, never on the control. `TableView` renders
 
 **Single owner.** A `TableViewSource` has one owning `TableView`. A second table bound to it is refused without an error and renders empty, and cannot sort, until the owner releases it by changing `ItemsSource` or unloading. Tables release on `Unloaded` and reclaim on `Loaded`, so page navigation resolves on its own.
 
-**Row identity** is the item's object identity (under `ParentBy`, its node key). Selection, and `Tab` re-entry into the body, follow the item across a reshape. Focus already in the body stays at its row index (see [Keyboard navigation](#keyboard-navigation)). With no shaping verb, a null item or one object on two rows still displays, but control sorts return `false`; with a verb in force, the same data throws `E_INVALIDARG`.
+**Row identity** is the item's object identity (under `ParentBy`, its node key). Selection, and `Tab` re-entry into the body from outside the table, follow the item across a reshape. Focus already in the body stays at its row index (see [Keyboard navigation](#keyboard-navigation)). With no shaping verb, a null item or one object on two rows still displays, but control sorts return `false`; with a verb in force, the same data throws `E_INVALIDARG`.
 
 **One control sort axis in force.** The two front-ends reconcile instead of stacking:
 
 - `TableView.SortByColumn`, `ToggleSortDirection` and header clicks declare the control's axis, keyed on column identity so columns sharing a `SortMemberPath` stay separate. The column's read-only `SortDirection` draws the chevron.
-- `TableViewSource.Sort(path, …)` lights the column whose sort path matches. `Sort(keySelector, …)` is keyed on the delegate's COM identity and shows no chevron.
+- `TableViewSource.Sort(path, …)` lights the column whose sort path matches. `Sort(keySelector, …)` is keyed on the delegate instance and shows no chevron: the same instance re-sorts or, with `None`, removes its axis, while any other instance with `None` changes nothing and with a direction adds a tie-breaker.
 - Sorting through the control clears app-declared axes, and a source sort clears the control's axis. Otherwise an older axis could outrank a newer one while the chevron showed the loser.
 - `TableViewSource` may declare several ordered source axes; the first declared is primary, as in WPF `SortDescriptions`.
 
@@ -209,7 +209,7 @@ A sort declared before `GroupBy` orders the groups; one declared after orders ro
 
 **Group identity fails fast.** Each group key needs a stable, non-empty string identity. Boxed scalars (`IPropertyValue`) have a built-in one; other keys need `GroupBy(keySelector, groupIdentitySelector)`. A null, empty or throwing identity, or two keys colliding without a selector, throws `E_INVALIDARG` when the projection is built. Row identity degrades instead, deliberately: it comes from app data the app may not control, while a bad group identity comes from a selector the app just wrote, and a silently ungrouped table gives no diagnostic.
 
-**Expansion is intent keyed by identity.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` are O(1), new groups take the current default, and a collapse survives a re-sort, filter or regroup. `RetainOnly` prunes identities that no longer exist.
+**Expansion is intent keyed by identity.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` just move the default, new groups take the current default, and a collapse survives a re-sort, filter or regroup. Each such move still runs a synchronous projection rebuild over all groups and rows on the UI thread. `RetainOnly` prunes identities that no longer exist.
 
 **Toggle.** The whole group band is the toggle target. Re-publishing destroys the realized header, so `TableView` queues the expansion by identity with a generation stamp, and restores focus by identity so a collapse does not drop focus to the top. A header's `Content` is a `TableViewGroupInfo` updated in place.
 
@@ -259,7 +259,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Row, cell | `F2` | Begin edit. |
 | Row, cell | `Space` / `Ctrl+Space` | Select / toggle the row. `Ctrl` with a navigation key moves without selecting. |
 
-- **Re-entry.** `Tab`/`Shift+Tab` into the body returns to the item that last had focus, even after a sort or filter, at the same level. If it is not available, entry lands on the first or last enabled row in the viewport, never a cache row.
+- **Re-entry.** `Tab`/`Shift+Tab` into the body from outside the table returns to the item that last had focus, even after a sort or filter, at the same level. If it is not available, entry lands on the first or last enabled row in the viewport, never a cache row. From the header band, entry lands on the first or last row (or group header) in the viewport.
 - **Re-shape while focused.** When a sort or filter reshapes rows while focus is in the body, focus stays at the same row index. Focus elsewhere, including on the header that triggered the sort, stays put.
 - **Focus scrolling.** A keyboard-focused row scrolls fully into view. `OnBodyBringIntoViewRequested` drops XAML's 20 DIP vertical padding, so a visible row does not nudge the viewport.
 - Gamepad and XY focus navigation are not supported.
@@ -276,8 +276,8 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 
 The column-header peer implements `ITransformProvider`, though the IDL lists only `IInvokeProvider`.
 
-- **Visible-column model.** UIA counts only visible columns in `ColumnCount`, `GetItem`, header sets and column indices, unlike WPF, so a zero-width column is never an addressable cell.
-- **Header context from one source.** A cell's header comes from `GetColumnHeaderItems` or its name, never both, so it is not announced twice. With headers hidden, the name becomes "{header}, {value}". An empty cell is "blank".
+- **Visible-column model.** UIA counts only columns with `Visibility.Visible` in `ColumnCount`, `GetItem`, header sets and column indices, unlike WPF, so a collapsed column is never an addressable cell; a visible zero-width column still counts.
+- **Header context from one source.** A cell's header comes from `GetColumnHeaderItems` or its name, never both, so it is not announced twice. With headers hidden, the name becomes "{header}, {value}". An empty cell is "blank". Exception: a cell holding a focusable control (e.g. a Delete `Button`) is named after its column header even while headers are shown, since the control names itself.
 - **Header names** come from a string `Header` or the realized content, never the gridline, glyph or gripper.
 - **Unknown values.** `PositionInSet`, `SizeOfSet` and `Level` report `0` when unknown, and app-set `AutomationProperties` win. The group-header peer computes no `Level`.
 - **Stale items.** A `GridItem` whose row, item or column is gone throws `UIA_E_ELEMENTNOTAVAILABLE` rather than reporting a wrong coordinate.
@@ -343,11 +343,11 @@ Code comments link here; keep the reasons intact.
 These contracts are documented only here; they belong in the [API spec](../../api-specs/TableView/TableView-spec.md).
 
 - **Sort methods.** `SortByColumn(column, None)` clears, even when `CanSort` is `false`. `ToggleSortDirection` walks the column's `SortCycle`. Both return `false`, changing nothing, when `Sorting` is canceled, an edit will not close, the column cannot sort (`CanSort=False`, or no sort path and no `CustomSortComparer`), rows lack identity, or the source is refused. `CanUserSortColumns=False` gates only header clicks. `TableView.ClearSort()` returns `false` when only an app delegate axis is active; use `TableViewSource.ClearSort()`.
-- **Sort events.** `Sorting` is raised first and is cancellable, letting the app own the order and light the chevron with `TableViewSource.Sort(path, …)`. `Sorted` follows. A null `Column` means clear-all. Setting `CanSort=False` on the sorted column clears it with both events.
+- **Sort events.** `Sorting` is raised first and is cancellable, letting the app own the order and light the chevron with `TableViewSource.Sort(path, …)`. `Sorted` follows. A null `Column` means clear-all. Setting `CanSort=False` on a column sorted by the control clears that sort with both events; a column lit only by `TableViewSource.Sort(...)` keeps the app's sort and raises neither.
 - **`SortCycle`** is per column. Its first direction is the opening one; the `*None` variants add a step back to source order.
 - **`SortMemberPath`.** When empty, `TableViewTextColumn` uses `Binding.Path.Path` if the binding targets the row item (no `Source`, `RelativeSource` or `ElementName`), through the overridable `GetSortMemberPathCore()`. `CustomSortComparer` wins over the path and must be a pure function.
 - **`TableViewSource`.** `From` accepts `IVector<Object>`, `IBindableVector`, `IIterable<Object>` or `IBindableIterable`. Null items, predicate or key selector throw `E_INVALIDARG`; `groupIdentitySelector` may be null. Use `ClearFilter()` to remove a filter. `ParentBy` errors are in the [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md).
-- **Context flyouts.** First match wins. Cell: a `ContextFlyout` in the cell content, `CellContextFlyout`, the row's `ContextFlyout`, `TableView.ContextFlyout`. Header: a `ContextFlyout` in the header content, `HeaderContextFlyout`, `TableView.ContextFlyout`. Opening one focuses its target and does not change selection.
+- **Context flyouts.** First match wins. Cell: a `ContextFlyout` in the cell content, `CellContextFlyout`, the row's `ContextFlyout`, `TableView.ContextFlyout`. Header: a `ContextFlyout` in the header content, `HeaderContextFlyout`, `TableView.ContextFlyout`. Opening one focuses its target and does not change selection. When the table resolves the request (keyboard, or pointer on padding), a text control inside the content counts only with a locally set `ContextFlyout` (not a Style setter), and nested `TableView`s and items inside a nested items host are skipped.
 - **`TableViewRow.Level`** is 1-based for tree rows and `0` otherwise, matching `AutomationProperties.Level`.
 
 ## Known limitations
