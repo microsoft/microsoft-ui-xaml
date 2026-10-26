@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="WindowTitle" xml:space="preserve"><value>Online XAML Profiler</value></data>
+  <data name="Executable.Header" xml:space="preserve"><value>Executable path</value></data>
+  <data name="Executable.PlaceholderText" xml:space="preserve"><value>C:\Apps\MyApp.exe</value></data>
+  <data name="Arguments.Header" xml:space="preserve"><value>Launch arguments</value></data>
+  <data name="LaunchExe.Content" xml:space="preserve"><value>Launch executable</value></data>
+  <data name="Aumid.Header" xml:space="preserve"><value>Packaged application ID</value></data>
+  <data name="Aumid.PlaceholderText" xml:space="preserve"><value>PackageFamilyName!ApplicationId</value></data>
+  <data name="LaunchPackage.Content" xml:space="preserve"><value>Launch package</value></data>
+  <data name="ProcessId.Header" xml:space="preserve"><value>Running process ID</value></data>
+  <data name="Attach.Content" xml:space="preserve"><value>Attach</value></data>
+  <data name="TapPath.Header" xml:space="preserve"><value>TAP DLL path (same architecture as target)</value></data>
+  <data name="Capture.Content" xml:space="preserve"><value>Take snapshot</value></data>
+  <data name="Disconnect.Content" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Cancel.Content" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Snapshots.Header" xml:space="preserve"><value>Captured snapshots</value></data>
+  <data name="Snapshots.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Captured snapshots</value></data>
+  <data name="ExpandAll.Content" xml:space="preserve"><value>Expand all trees</value></data>
+  <data name="Error.Title" xml:space="preserve"><value>Profiler diagnostic</value></data>
+  <data name="XamlHeading.Text" xml:space="preserve"><value>XAML visual tree</value></data>
+  <data name="CompHeading.Text" xml:space="preserve"><value>WinUI HWCompNode tree</value></data>
+  <data name="VisualHeading.Text" xml:space="preserve"><value>Composition IVisual tree</value></data>
+  <data name="XamlTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>XAML visual tree</value></data>
+  <data name="CompTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>WinUI HWCompNode tree</value></data>
+  <data name="VisualTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Composition IVisual tree</value></data>
+  <data name="PropertiesHeading.Text" xml:space="preserve"><value>Captured properties</value></data>
+  <data name="Properties.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Captured node properties and cross-tree IDs</value></data>
+  <data name="LinkXaml.Content" xml:space="preserve"><value>Show XAML</value></data>
+  <data name="LinkComp.Content" xml:space="preserve"><value>Show HWCompNode</value></data>
+  <data name="LinkVisual.Content" xml:space="preserve"><value>Show IVisual</value></data>
+  <data name="Ready" xml:space="preserve"><value>Launch an application or attach to its PID. The target must load the modified WinUI runtime.</value></data>
+  <data name="NoLink" xml:space="preserve"><value>No captured node is available for this cross-tree link.</value></data>
+  <data name="InvalidPid" xml:space="preserve"><value>Enter a positive decimal process ID.</value></data>
+  <data name="Connecting" xml:space="preserve"><value>Connecting to the target's WinUI diagnostics...</value></data>
+  <data name="Connected" xml:space="preserve"><value>Connected to PID</value></data>
+  <data name="Capturing" xml:space="preserve"><value>Capturing live trees on the target's UI threads...</value></data>
+  <data name="NotConnected" xml:space="preserve"><value>No target is connected.</value></data>
+  <data name="Captured" xml:space="preserve"><value>Captured nodes:</value></data>
+  <data name="Threads" xml:space="preserve"><value>UI threads:</value></data>
+  <data name="Disconnected" xml:space="preserve"><value>Disconnected. Captured snapshots are retained; the target remains running.</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>The operation was cancelled or exceeded its time limit.</value></data>
+  <data name="Failed" xml:space="preserve"><value>The operation did not complete. See the diagnostic above.</value></data>
+  <data name="StatisticsPanel.Header" xml:space="preserve"><value>Process statistics - last 60 seconds</value></data>
+  <data name="StatisticsPanel.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Live process statistics</value></data>
+  <data name="RamGraphTitle.Text" xml:space="preserve"><value>RAM: working set / private</value></data>
+  <data name="CommitGraphTitle.Text" xml:space="preserve"><value>Private commit</value></data>
+  <data name="GpuMemoryGraphTitle.Text" xml:space="preserve"><value>GPU memory: dedicated / shared</value></data>
+  <data name="GpuEngineGraphTitle.Text" xml:space="preserve"><value>GPU: busiest engine</value></data>
+  <data name="StatisticsCaption.Text" xml:space="preserve"><value>Host-side sampling every second; no ETW. RAM/GPU memory: first series solid, second dashed. Dashed vertical lines mark capture midpoints. Process totals, not XAML attribution; tree and memory samples are not atomic.</value></data>
+  <data name="StatisticsIdle" xml:space="preserve"><value>Attach to start process statistics.</value></data>
+  <data name="StatisticsStarting" xml:space="preserve"><value>Starting process statistics...</value></data>
+  <data name="StatisticsLive" xml:space="preserve"><value>Live process statistics | PID {0} | sample {1:HH:mm:ss.fff}</value></data>
+  <data name="StatisticsStopped" xml:space="preserve"><value>Process statistics stopped. The last graph history and captured readings are retained.</value></data>
+  <data name="StatisticsTargetExited" xml:space="preserve"><value>The target exited. Process statistics stopped; captured readings are retained.</value></data>
+  <data name="StatisticsFailed" xml:space="preserve"><value>Process statistics unavailable:</value></data>
+  <data name="StatisticsUnavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="StatisticsNoEngine" xml:space="preserve"><value>No engine sample</value></data>
+  <data name="StatisticsNoSamples" xml:space="preserve"><value>No samples</value></data>
+  <data name="StatisticsMiB" xml:space="preserve"><value>{0:N1} MiB</value></data>
+  <data name="StatisticsScale" xml:space="preserve"><value>0 to {0} | 60 s</value></data>
+  <data name="RamReading" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="GpuMemoryReading" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="WorkingSetPeak" xml:space="preserve"><value>OS lifetime working-set peak: {0}</value></data>
+  <data name="CommitPeak" xml:space="preserve"><value>OS lifetime commit peak: {0}</value></data>
+  <data name="ObservedPeak" xml:space="preserve"><value>Observed total peak since attach: {0}</value></data>
+  <data name="StatisticsNoSnapshot" xml:space="preserve"><value>Take a tree snapshot to retain its nearest process statistics sample.</value></data>
+  <data name="StatisticsSnapshotMissing" xml:space="preserve"><value>{0}: no process sample within 2 seconds of the capture midpoint.</value></data>
+  <data name="StatisticsSnapshotReading" xml:space="preserve"><value>{0}: sample {1:HH:mm:ss.fff} ({2:+0;-0;0} ms from capture midpoint) | RAM/private {3} / {4} | Commit {5} | GPU dedicated/shared {6} / {7} | GPU {8} | OS RAM/commit peaks {9} / {10} | Observed GPU peak since attach {11}</value></data>
+</root>

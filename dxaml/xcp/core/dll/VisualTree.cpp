@@ -1273,6 +1273,28 @@ _Check_return_ HRESULT VisualTree::ResetRoots( _Out_opt_ bool *pReleasePopup)
     return S_OK;
 }
 
+void VisualTree::GetExistingRootsNoRef(_Inout_ std::vector<CUIElement*>& roots) const
+{
+    CUIElement* existing[] =
+    {
+        m_rootElement,
+        m_popupRoot.get(),
+        m_visualDiagnosticsRoot.get(),
+        m_printRoot.get(),
+        m_transitionRoot.get(),
+        m_fullWindowMediaRoot.get(),
+        m_renderTargetBitmapRoot.get(),
+        m_connectedAnimationRoot.get()
+    };
+    for (auto root : existing)
+    {
+        if (root)
+        {
+            roots.push_back(root);
+        }
+    }
+}
+
 void VisualTree::GetAllVisibleRootsNoRef(_Out_writes_(3) CDependencyObject** roots)
 {
     auto contentRoot = GetContentRootNoRef();

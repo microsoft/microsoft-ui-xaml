@@ -1,0 +1,4 @@
+LIBRARY OnlineXamlProfilerTap
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE
