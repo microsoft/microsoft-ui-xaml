@@ -2292,6 +2292,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ::Windows::UI::Color darkSecondary)
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800.0f, 600.0f));
 
         xaml_controls::Primitives::SelectorItem^ item = nullptr;
         xaml_controls::Panel^ rootPanel = nullptr;

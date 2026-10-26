@@ -5,7 +5,6 @@
 
 #include "palgfx.h"
 #ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
 #include "WucVisualTreeProfiler.h"
 #endif // XAMLPROFILER_ENABLED
 

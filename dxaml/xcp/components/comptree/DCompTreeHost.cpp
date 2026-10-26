@@ -5,7 +5,6 @@
 #include "DCompTreeHost.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
-#include "XamlProfilerTracing.h"
 #endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>

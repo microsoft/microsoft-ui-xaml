@@ -8,9 +8,6 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <PixelFormat.h>
-#ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
-#endif
 
 #include "XcpAllocation.h"
 

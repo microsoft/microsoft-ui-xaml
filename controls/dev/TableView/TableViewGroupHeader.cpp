@@ -37,6 +37,19 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
 {
+    auto const desired = MeasureBand(availableSize);
+
+    // The base measure realizes the content template, so a header created disabled, or given a new
+    // content template while disabled, is handled here.
+    if (!IsEnabled() && ContentTemplateRoot() != m_inspectedContentRoot.get())
+    {
+        UpdateDefaultCountOpacity();
+    }
+    return desired;
+}
+
+winrt::Size TableViewGroupHeader::MeasureBand(winrt::Size const& availableSize)
+{
     // Same sum TableViewCellsPanel uses for a row, evaluated at the same point in the layout
     // pass, so the band and the rows can never disagree.
     double columnsTotal = 0.0;
@@ -109,11 +122,53 @@ void TableViewGroupHeader::OnApplyTemplate()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->UpdateVisualStates(true /* useTransitions */);
+                strongThis->UpdateDefaultCountOpacity();
             }
         });
 
     UpdateVisualStates(false /* useTransitions */);
     UpdateTerminalBottomGridLineSuppression();
+}
+
+void TableViewGroupHeader::UpdateDefaultCountOpacity()
+{
+    // The disabled brush already dims the default count; its Style opacity would dim it twice.
+    if (IsEnabled())
+    {
+        if (auto const count = m_defaultCount.get())
+        {
+            count.ClearValue(winrt::UIElement::OpacityProperty());
+        }
+        return;
+    }
+
+    TrackDefaultCount(ContentTemplateRoot());
+    if (auto const count = m_defaultCount.get())
+    {
+        count.Opacity(1.0);
+    }
+}
+
+void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
+{
+    if (root == m_inspectedContentRoot.get())
+    {
+        return;
+    }
+
+    if (auto const previous = m_defaultCount.get())
+    {
+        previous.ClearValue(winrt::UIElement::OpacityProperty());
+        m_defaultCount.set(nullptr);
+    }
+    m_inspectedContentRoot = root ? winrt::make_weak(root) : nullptr;
+
+    // Only the built-in template is touched: an app template's same-named element keeps its Opacity.
+    auto const rootElement = root.try_as<winrt::FrameworkElement>();
+    if (rootElement && rootElement.Name() == L"TableViewDefaultGroupHeaderContentRoot")
+    {
+        m_defaultCount.set(rootElement.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>());
+    }
 }
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)

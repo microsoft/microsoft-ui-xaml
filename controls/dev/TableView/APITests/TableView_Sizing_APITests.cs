@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Windows.Foundation;
 using Windows.System;
 
@@ -977,6 +979,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // ProtectedCursor is protected, so it is read by reflection.
+        private static InputSystemCursor GetGripperCursor(ResizeGripper gripper)
+        {
+            var property = typeof(UIElement).GetProperty("ProtectedCursor", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            Verify.IsNotNull(property, "UIElement.ProtectedCursor must be reachable by reflection.");
+            return property.GetValue(gripper) as InputSystemCursor;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the resize gripper holds one size cursor matching its drag axis, keeps it across pointer states and drags, and drops it while disabled.")]
+        public void VerifyResizeGripperHoldsResizeCursor()
+        {
+            TableView tableView = null;
+            ResizeGripper standalone = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = FindGripper(GetHeaderCell(tableView, 0));
+                Verify.IsNotNull(gripper, "A resizable column must have a gripper.");
+
+                var cursor = GetGripperCursor(gripper);
+                Verify.IsNotNull(cursor, "A loaded column gripper must carry a resize cursor.");
+                Verify.AreEqual(InputSystemCursorShape.SizeWestEast, cursor.CursorShape,
+                    "A column gripper drags horizontally, so it must show the west-east size cursor.");
+
+                foreach (var state in new[] { "PointerOver", "Pressed", "Normal" })
+                {
+                    VisualStateManager.GoToState(gripper, state, false);
+                }
+                gripper.BeginDrag();
+                gripper.TryDrag(10);
+                gripper.EndDrag(true /* canceled */);
+                Verify.AreSame(cursor, GetGripperCursor(gripper),
+                    "The cursor must be held, not recreated, across pointer states and a drag.");
+
+                standalone = new ResizeGripper { Width = 8, Height = 24 };
+                LoadContent(standalone);
+            });
+
+            IdleSynchronizer.Wait();
+
+            // IsEnabledChanged is raised asynchronously; the gripper's own handler was attached first.
+            using (var enabledChanged = new global::System.Threading.AutoResetEvent(false))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(InputSystemCursorShape.SizeWestEast, GetGripperCursor(standalone)?.CursorShape,
+                        "A standalone gripper defaults to a horizontal drag.");
+
+                    standalone.DragOrientation = Orientation.Vertical;
+                    Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
+                        "A vertical drag must switch to the north-south size cursor.");
+
+                    standalone.IsEnabledChanged += (s, e) => SetIfNotDisposed(enabledChanged);
+                    standalone.IsEnabled = false;
+                });
+
+                Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(GetGripperCursor(standalone), "A disabled gripper must not advertise resizing.");
+                    standalone.IsEnabled = true;
+                });
+
+                Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
+                        "Re-enabling must restore the size cursor for the current axis.");
+                });
+            }
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a drag applies the total offset against the width captured when the drag started.")]
         public void VerifyResizeDragUpdatesColumnWidth()
@@ -1205,6 +1292,205 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "The original drag must survive the rejected one, so Escape can still reach it.");
 
                 firstGripper.EndDrag(true);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies disabling a gripper mid-drag cancels the drag, reverts the width and lets another column resize.")]
+        public void VerifyDisablingGripperMidDragCancelsResize()
+        {
+            TableView tableView = null;
+            ResizeGripper gripper = null;
+            using (var enabledChanged = new global::System.Threading.AutoResetEvent(false))
+            {
+                var completions = new List<bool>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateResizableTable(
+                        ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                        ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    gripper = RequireGripper(tableView, 0);
+                    gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
+                    gripper.IsEnabledChanged += (s, e) => SetIfNotDisposed(enabledChanged);
+
+                    gripper.BeginDrag();
+                    gripper.TryDrag(40.0);
+                    Verify.AreEqual(190.0, tableView.Columns[0].Width.Value, "Precondition: the drag wrote a width.");
+
+                    gripper.IsEnabled = false;
+                });
+
+                Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(gripper.IsDragging, "Disabling the gripper must end its drag.");
+                    Verify.AreEqual(1, completions.Count, "The drag must complete exactly once.");
+                    Verify.IsTrue(completions.Count == 1 && completions[0], "A drag ended by disabling is canceled, not committed.");
+                    Verify.AreEqual(150.0, tableView.Columns[0].Width.Value, "The canceled drag must revert the width.");
+
+                    var second = RequireGripper(tableView, 1);
+                    second.BeginDrag();
+                    Verify.IsTrue(second.IsDragging, "Another column must accept a resize once the disabled drag has ended.");
+                    second.TryDrag(30.0);
+                    second.EndDrag(false);
+                    Verify.IsGreaterThan(tableView.Columns[1].Width.Value, 150.0, "The subsequent resize must apply.");
+
+                    gripper.IsEnabled = true;
+                    gripper.EndDrag(true /* canceled */);
+                    Verify.AreEqual(1, completions.Count, "EndDrag after the drag ended must not raise DragCompleted again.");
+                });
+            }
+        }
+
+        // IsEnabledChanged is raised asynchronously, so it can arrive after the test disposed its event.
+        private static void SetIfNotDisposed(global::System.Threading.EventWaitHandle handle)
+        {
+            try
+            {
+                handle.Set();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies re-parenting a gripper mid-drag keeps the drag: the stale Unloaded after the new Loaded must not cancel it.")]
+        public void VerifyReparentingGripperMidDragKeepsDrag()
+        {
+            ResizeGripper gripper = null;
+            StackPanel first = null;
+            StackPanel second = null;
+            var completions = new List<bool>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gripper = new ResizeGripper { Width = 8, Height = 24 };
+                gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
+                first = new StackPanel();
+                second = new StackPanel();
+                first.Children.Add(gripper);
+                var root = new StackPanel();
+                root.Children.Add(first);
+                root.Children.Add(second);
+                LoadContent(root);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gripper.BeginDrag();
+                Verify.IsTrue(gripper.IsDragging, "Precondition: the drag starts.");
+                first.Children.Remove(gripper);
+                second.Children.Add(gripper);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(gripper.IsLoaded, "Precondition: the gripper is loaded in its new parent.");
+                Verify.IsTrue(gripper.IsDragging, "A re-parent must not end the drag.");
+                Verify.AreEqual(0, completions.Count, "A re-parent must not raise DragCompleted.");
+
+                second.Children.Remove(gripper);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(gripper.IsDragging, "A real unload must end the drag.");
+                Verify.IsTrue(completions.Count == 1 && completions[0], "A real unload cancels the drag once.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a drag on a gripper that was never loaded completes without touching pointer capture.")]
+        public void VerifyEndDragOnUnloadedGripperRaisesDragCompleted()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = new ResizeGripper();
+                var completions = new List<bool>();
+                gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
+
+                gripper.BeginDrag();
+                Verify.IsTrue(gripper.IsDragging, "Precondition: an enabled gripper accepts BeginDrag before it is loaded.");
+                gripper.TryDrag(20.0);
+                gripper.EndDrag(false);
+
+                Verify.IsFalse(gripper.IsDragging, "EndDrag must end the drag.");
+                Verify.AreEqual(1, completions.Count, "EndDrag must raise DragCompleted once.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing a TableView from the tree mid-drag cancels the resize and leaves it resizable when reloaded.")]
+        public void VerifyRemovingTableMidDragCancelsResize()
+        {
+            TableView tableView = null;
+            ResizeGripper gripper = null;
+            var completions = new List<bool>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gripper = RequireGripper(tableView, 0);
+                gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
+
+                gripper.BeginDrag();
+                gripper.TryDrag(40.0);
+                Verify.AreEqual(190.0, tableView.Columns[0].Width.Value, "Precondition: the drag wrote a width.");
+
+                Content = new Grid();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(gripper.IsDragging, "Unloading must end the drag.");
+                Verify.AreEqual(1, completions.Count, "The drag must complete exactly once.");
+                Verify.IsTrue(completions.Count == 1 && completions[0], "A drag ended by unloading is canceled.");
+                Verify.AreEqual(150.0, tableView.Columns[0].Width.Value, "The canceled drag must revert the width.");
+
+                gripper.EndDrag(true /* canceled */);
+                Verify.AreEqual(1, completions.Count, "EndDrag on the detached gripper must not complete again.");
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var second = RequireGripper(tableView, 1);
+                second.BeginDrag();
+                Verify.IsTrue(second.IsDragging, "Another column must accept a resize after the unloaded drag ended.");
+                second.TryDrag(30.0);
+                second.EndDrag(false);
+                Verify.AreEqual(180.0, tableView.Columns[1].Width.Value, "The subsequent resize must apply.");
             });
         }
 
@@ -1581,6 +1867,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a template without its own scrollers does not latch onto an app ScrollViewer above the TableView.")]
+        public void VerifyScrollerLookupStopsAtTheTableView()
+        {
+            TableView tableView = null;
+            ScrollViewer appScroller = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                tableView = CreateScrollableTable(columnCount: 5);
+                tableView.Width = 800;
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                tableView.Template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                        TargetType='tabular:TableView'>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height='Auto' />
+                                <RowDefinition Height='*' />
+                            </Grid.RowDefinitions>
+                            <Border x:Name='PART_HeaderRow'>
+                                <tabular:TableViewCellsPanel x:Name='PART_HeaderHost' HorizontalAlignment='Left' />
+                            </Border>
+                            <ItemsRepeater x:Name='PART_RowsRepeater' Grid.Row='1'>
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation='Vertical' />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </Grid>
+                    </ControlTemplate>");
+
+                appScroller = new ScrollViewer
+                {
+                    Width = 300,
+                    Height = 300,
+                    HorizontalScrollMode = ScrollMode.Enabled,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Visible,
+                    Content = tableView,
+                };
+                LoadContent(appScroller);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(appScroller.ScrollableWidth, c_scrollOffset,
+                    "Precondition: the app scroller must be able to scroll the table horizontally.");
+                appScroller.ChangeView(c_scrollOffset, null, null, true);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(appScroller.HorizontalOffset, 0.0, "Precondition: the app scroller must have scrolled.");
+
+                // Pinning against the app's scroller would counter-translate the frozen cell by its offset.
+                Verify.AreEqual(0.0f, GetHeaderCell(tableView, 0).Translation.X,
+                    "A frozen header cell must not be pinned against an app-owned scroller.");
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "At least one row should be realized.");
+                foreach (var row in rows)
+                {
+                    Verify.AreEqual(0.0f, GetRowCell(row, 0).Translation.X,
+                        "A frozen row cell must not be pinned against an app-owned scroller.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies several leading frozen columns stay pinned side by side, including after a sibling is collapsed.")]
         public void VerifyMultipleLeadingFrozenColumnsStayPinnedInOrder()
         {
@@ -1858,7 +2219,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var cellRight = GetVisualRight(headerCell, wrapper);
                 Log.Comment($"Header cell spans {cellLeft}..{cellRight}.");
 
-                var gridLine = headerCell.FindVisualChildByName("TableViewHeaderGridLine");
+                var gridLine = headerCell.FindVisualChildByName("PART_GridLine");
                 Verify.IsNotNull(gridLine, "The header cell must contain its vertical grid line.");
                 Verify.AreEqual(Visibility.Visible, gridLine.Visibility,
                     "Precondition: a non-terminal header grid line must be visible with GridLinesVisibility.All.");

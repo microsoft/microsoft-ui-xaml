@@ -130,8 +130,8 @@ namespace
     void LogRevertUnavailable(wchar_t const* reason)
     {
         TVDiag::LogRetailF(
-            L"[TableView] Cancel cannot revert this edit (%ls). Implement ITableViewEditableItem "
-            L"on the data item to make rollback reliable.",
+            L"[TableView] Cancel cannot revert this edit (%ls). Buffer the editing binding with "
+            L"UpdateSourceTrigger=Explicit so a cancelled value never reaches the data item.",
             reason);
     }
 
@@ -1149,6 +1149,14 @@ void TableView::QueueCoalescedEditReshape(std::function<void()> operation)
     }
 }
 
+void TableView::QueueReshapeAfterEditCloses(std::function<void()> operation)
+{
+    if (operation)
+    {
+        m_reshapesAfterEditCloses.push_back(std::move(operation));
+    }
+}
+
 void TableView::ClearCoalescedEditReshape()
 {
     m_pendingEditReshapes.clear();
@@ -1175,6 +1183,13 @@ void TableView::DrainCoalescedEditReshape()
         return;
     }
 
+    if (!IsEditing() && !m_reshapesAfterEditCloses.empty())
+    {
+        m_pendingEditReshapes.insert(m_pendingEditReshapes.begin(),
+            std::make_move_iterator(m_reshapesAfterEditCloses.begin()), std::make_move_iterator(m_reshapesAfterEditCloses.end()));
+        m_reshapesAfterEditCloses.clear();
+    }
+
     if (m_isApplyingCoalescedEditReshape || m_pendingEditReshapes.empty())
     {
         return;
@@ -1194,6 +1209,15 @@ void TableView::DrainCoalescedEditReshape()
             operation();
         }
     }
+}
+
+void TableView::ResetPendingBeginEdit()
+{
+    m_currentEditItem.set(nullptr);
+    m_currentEditColumn.set(nullptr);
+    m_editUneditedValue.set(nullptr);
+    m_editState = EditState::None;
+    m_abandonPendingBeginEdit = false;
 }
 
 bool TableView::BeginEdit()
@@ -1224,8 +1248,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     if (m_editState == EditState::Editing)
     {
         // Moving commits the open edit. WPF parity: leaving the *row* is what ends the row-level
-        // transaction, so moving to a different item commits with unit Row - which is what raises
-        // RowEditEnding and calls ITableViewEditableItem.EndEdit at row scope. Moving between cells
+        // transaction, so moving to a different item commits with unit Row. Moving between cells
         // of the same row stays a Cell-unit commit.
         //
         // A veto, a validation failure or a deferral all leave the existing edit open, so the move
@@ -1247,12 +1270,45 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     const auto generation = m_editGeneration;
     m_currentEditItem.set(item);
     m_currentEditColumn.set(column);
+    m_currentEditRow.set(nullptr);
     m_editState = EditState::Beginning;
     m_abandonPendingBeginEdit = false;
     m_editSourceWritten = false;
 
+    // Only a throw reaches here still Beginning; without this unwind IsEditing would stay true and
+    // every later edit would be rejected as reentrant.
+    auto unwindOnThrow = wil::scope_exit([this]() noexcept
+    {
+        if (m_editState != EditState::Beginning)
+        {
+            return;
+        }
+        try
+        {
+            // Not a layout pass, so unlike AbandonCellEdit this may hand focus back to the cell.
+            if (auto const row = m_currentEditRow.get())
+            {
+                winrt::get_self<TableViewRow>(row)->EndCellEdit(winrt::TableViewEditAction::Cancel);
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Abandoning a failed BeginEdit could not restore the display cell.");
+        }
+        m_currentEditRow.set(nullptr);
+        ResetPendingBeginEdit();
+        try
+        {
+            DrainCoalescedEditReshape();
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] A reshape queued during a failed BeginEdit threw while draining.");
+        }
+    });
+
     // Everything from here to the promotion below runs app code - a BeginningEdit handler, the
-    // editing binding's getter, ITableViewEditableItem.BeginEdit - any of which can mutate the
+    // editing binding's getter, PrepareCellForEdit - any of which can mutate the
     // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
     // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
     // the checks below unwind rather than promoting to Editing over a recycled row.
@@ -1267,11 +1323,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         // The item transaction is deliberately NOT touched: a cell commit keeps the row
         // transaction open, so anything held here belongs to a previous cell in the same row and
         // is still legitimately live. Clearing it would leave the item with an unpaired BeginEdit.
-        m_currentEditItem.set(nullptr);
-        m_currentEditColumn.set(nullptr);
-        m_editUneditedValue.set(nullptr);
-        m_editState = EditState::None;
-        m_abandonPendingBeginEdit = false;
+        ResetPendingBeginEdit();
         DrainCoalescedEditReshape();
         return false;
     }
@@ -1300,11 +1352,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     if (m_abandonPendingBeginEdit || !m_currentEditRow.get())
     {
         tip.Ignore(TableViewTip::IgnoreReason::Stale);
-        m_abandonPendingBeginEdit = false;
-        m_currentEditItem.set(nullptr);
-        m_currentEditColumn.set(nullptr);
-        m_editUneditedValue.set(nullptr);
-        m_editState = EditState::None;
+        ResetPendingBeginEdit();
         DrainCoalescedEditReshape();
         return false;
     }
