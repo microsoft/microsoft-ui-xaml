@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -7,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using WinUIProfiler.App.Services;
 using WinUIProfiler.App.ViewModels;
+using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.App;
@@ -15,10 +17,13 @@ public sealed partial class MainWindow : Window
 {
     private readonly LiveSessionViewModel model = new();
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
-    private readonly DispatcherTimer refresh = new() { Interval = TimeSpan.FromMilliseconds(500) };
+    private MetricHistory? renderedHistory;
+    private long renderedSamples = -1;
+    private int refreshQueued;
     private long? selectedCreationTime;
     private long connectionGeneration;
-    private bool closing, closeAllowed, refreshing;
+    private volatile bool closing;
+    private bool closeAllowed, refreshing;
 
     public MainWindow()
     {
@@ -26,8 +31,7 @@ public sealed partial class MainWindow : Window
         Title = Text("AppTitle");
         AppWindow.Resize(new SizeInt32(1280, 1050));
         SetNames();
-        refresh.Tick += (_, _) => Refresh();
-        refresh.Start();
+        model.PropertyChanged += Model_PropertyChanged;
         AppWindow.Closing += async (_, args) =>
         {
             if (closeAllowed) return;
@@ -35,7 +39,7 @@ public sealed partial class MainWindow : Window
             if (closing) return;
             closing = true;
             connectionGeneration++;
-            refresh.Stop();
+            model.PropertyChanged -= Model_PropertyChanged;
             await model.DisconnectAsync();
             closeAllowed = true;
             Close();
@@ -65,13 +69,27 @@ public sealed partial class MainWindow : Window
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
     }
 
+    private void Model_PropertyChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (closing || Interlocked.Exchange(ref refreshQueued, 1) != 0) return;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            // Updates arriving during rendering must be able to schedule another pass.
+            Interlocked.Exchange(ref refreshQueued, 0);
+            Refresh();
+        }))
+        {
+            Interlocked.Exchange(ref refreshQueued, 0);
+            if (!closing) Trace.TraceError("The UI dispatcher rejected a profiler state-change notification.");
+        }
+    }
+
     private void Refresh()
     {
         if (closing || refreshing) return;
         refreshing = true;
         try
         {
-            model.Refresh();
             var idle = model.CanConnect;
             foreach (var control in new Control[] { Mode, TargetText, Browse, Endpoint, Trust })
                 control.IsEnabled = idle;
@@ -99,8 +117,15 @@ public sealed partial class MainWindow : Window
             }));
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
-            UtilizationChart.ShowSeries(model.History, true, Stopwatch.Frequency);
-            MemoryChart.ShowSeries(model.History, false, Stopwatch.Frequency);
+            var history = model.History;
+            var samples = history?.TotalSamples ?? 0;
+            if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
+            {
+                UtilizationChart.ShowSeries(history, true, Stopwatch.Frequency);
+                MemoryChart.ShowSeries(history, false, Stopwatch.Frequency);
+                renderedHistory = history;
+                renderedSamples = samples;
+            }
         }
         finally { refreshing = false; }
     }
@@ -129,14 +154,11 @@ public sealed partial class MainWindow : Window
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy) return;
                 model.ReportProgress(value);
-                Refresh();
             }));
-            var pending = model.ConnectAsync(options, progress);
-            Refresh();
-            await pending;
+            await model.ConnectAsync(options, progress);
         }
         catch (Exception error) { model.ReportError(error); }
-        finally { connectionGeneration++; Refresh(); }
+        finally { connectionGeneration++; }
     }
 
     private async void Disconnect_Click(object sender, RoutedEventArgs args)
@@ -144,7 +166,6 @@ public sealed partial class MainWindow : Window
         connectionGeneration++;
         DisconnectButton.IsEnabled = false;
         await model.DisconnectAsync();
-        Refresh();
     }
 
     private async void Browse_Click(object sender, RoutedEventArgs args)
@@ -164,7 +185,7 @@ public sealed partial class MainWindow : Window
                 selectedCreationTime = selected.CreationTimeFileTime;
             }
         }
-        catch (Exception error) { model.ReportError(error); Refresh(); }
+        catch (Exception error) { model.ReportError(error); }
     }
 
     private async Task<TargetCandidate?> PickTargetAsync(TargetLaunchKind kind)

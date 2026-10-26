@@ -19,7 +19,10 @@ two live graphs:
 | CPU and GPU | CPU %, GPU % | NT process/system CPU snapshots with processor-group normalization; English PDH GPU Engine counters, using the busiest process engine, not their sum. |
 | Process memory | Working set, private working set, private commit (MiB) | `NtQuerySystemInformation(SystemProcessInformation)` process snapshots. Commit is not resident memory. |
 
-Polling and UI refresh are independent. Each series retains at most 121 points
+Metric polling and UI updates are independent. Connection-state, heartbeat and
+new-sample notifications schedule coalesced updates on the UI dispatcher; there
+is no periodic UI refresh timer. State-only notifications do not redraw unchanged
+metric histories. Each series retains at most 121 points
 and two minutes; disconnect freezes the final history and does not terminate the
 target. Reconnecting starts a new metric scope. Closing the profiler cancels
 connection work, joins polling and disconnects the TAP without killing the target.

@@ -16,6 +16,7 @@ public sealed class MetricHistory
     private readonly Dictionary<ProcessMetric, Queue<MetricPoint>> points =
         Enum.GetValues<ProcessMetric>().ToDictionary(metric => metric, _ => new Queue<MetricPoint>());
     private long totalSamples, lastQpc = -1;
+    public event EventHandler? Changed;
 
     public MetricHistory(ProcessInstanceKey process, long qpcFrequency)
     {
@@ -62,6 +63,7 @@ public sealed class MetricHistory
             lastQpc = reading.TimestampQpc;
             totalSamples++;
         }
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public IReadOnlyList<MetricSeries> Snapshot()

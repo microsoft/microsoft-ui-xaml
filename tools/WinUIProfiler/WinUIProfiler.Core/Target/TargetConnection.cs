@@ -28,6 +28,7 @@ public sealed class TargetConnection : IAsyncDisposable
     private volatile string state = "Preparing";
     private volatile string detail = "";
     private long lastHelloTicks;
+    public event EventHandler? Changed;
     public SessionScope? Scope { get; private set; }
     public MetricHistory? History { get; private set; }
     public string RuntimePath { get; private set; } = "";
@@ -130,6 +131,7 @@ public sealed class TargetConnection : IAsyncDisposable
         if (await tap.HelloAsync(TimeSpan.FromSeconds(5), token).ConfigureAwait(false) != "hello")
             throw new InvalidDataException("The target TAP did not reply hello.");
         Interlocked.Exchange(ref lastHelloTicks, DateTime.UtcNow.Ticks);
+        Changed?.Invoke(this, EventArgs.Empty);
         History = new(Scope.Process, Stopwatch.Frequency);
         sampling = new(Path.GetFullPath(Path.Combine(options.PayloadDirectory, "..", "WinUIProfiler.Native.dll")),
             Scope.Process, History);
@@ -167,6 +169,7 @@ public sealed class TargetConnection : IAsyncDisposable
                 await delay.ConfigureAwait(false);
                 await tap!.HelloAsync(TimeSpan.FromSeconds(5), stop.Token).ConfigureAwait(false);
                 Interlocked.Exchange(ref lastHelloTicks, DateTime.UtcNow.Ticks);
+                Changed?.Invoke(this, EventArgs.Empty);
             }
         }
         catch (OperationCanceledException) when (stop.IsCancellationRequested) { }
@@ -239,6 +242,7 @@ public sealed class TargetConnection : IAsyncDisposable
         this.detail = detail;
         state = value;
         progress?.Report(new(value, detail));
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private static bool IsDiagnosticsReady(uint pid)
