@@ -3,7 +3,9 @@
 
 using Common;
 using System;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.Windows.Apps.Test.Automation;
@@ -135,12 +137,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             var start = FindElement.ById("DragHandle").GetClickablePoint();
             pen.Hover(start);
             pen.Press(start);
+            Log.Comment($"Pen press: kind={ReadText("PressUpdateKind")}, primary={ReadText("PressPrimaryDown")}, captured in press={ReadText("PressPointerCaptured")}.");
+            new Button(FindElement.ById("Snapshot")).Invoke();
+            Log.Comment($"Before mouse hover: captures={ReadText("CaptureCount")}, pen capture losses={ReadText("PenCaptureLostCount")}.");
+            Verify.AreEqual("1", ReadText("CaptureCount"), "The pen must own capture before the unrelated mouse move.");
             int hoverCount = int.Parse(ReadText("HoverMoveCount"));
-            PointerInput.Move(new System.Drawing.Point(start.X + 40, start.Y));
+            if (!SetCursorPos(start.X + 40, start.Y))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "SetCursorPos during pen contact");
+            }
             Wait.ForIdle();
             Verify.IsTrue(int.Parse(ReadText("HoverMoveCount")) > hoverCount);
             Verify.AreEqual("0", ReadText("DragCount"));
             new Button(FindElement.ById("Snapshot")).Invoke();
+            Log.Comment($"After mouse hover: captures={ReadText("CaptureCount")}, pen capture losses={ReadText("PenCaptureLostCount")}.");
             Verify.AreEqual("1", ReadText("CaptureCount"));
             pen.Move(new System.Drawing.Point(start.X + 60, start.Y));
             pen.Release();
@@ -593,6 +603,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             return new TextBlock(FindElement.ById(id)).GetText();
         }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetCursorPos(int x, int y);
 
         private static void VerifyCaptureReleased()
         {
