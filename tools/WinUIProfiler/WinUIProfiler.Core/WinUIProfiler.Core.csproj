@@ -2,7 +2,4 @@
   <PropertyGroup>
     <RootNamespace>WinUIProfiler.Engine</RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="WinUIProfiler.Core.Tests" />
-  </ItemGroup>
 </Project>

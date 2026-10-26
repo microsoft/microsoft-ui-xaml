@@ -58,33 +58,7 @@ The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
 silently elevated.
 
-## Validation
-
-```powershell
-dotnet test .\WinUIProfiler.Core.Tests\WinUIProfiler.Core.Tests.csproj -c Release
-.\scripts\Tests\Test-BuildEntry.ps1 -Configuration Release -Platform x64
-$msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\amd64\MSBuild.exe' | Select-Object -First 1
-& $msbuild .\WinUIProfiler.Tap.Tests\WinUIProfiler.Tap.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /nologo /v:quiet
-if ($LASTEXITCODE) { throw 'Native test build failed.' }
-& .\WinUIProfiler.Tap.Tests\bin\x64\Release\WinUIProfiler.Tap.Tests.exe
-if ($LASTEXITCODE) { throw 'Native protocol tests failed.' }
-.\scripts\Tests\Test-PlaceholderUi.ps1 -Target 'C:\path\Sample.exe' -ObserveSeconds 130 -ExerciseErrors -Reconnect
-.\scripts\Tests\Test-PlaceholderUi.ps1 -Mode Packaged -Target 'PackageFamilyName!App' -ObserveSeconds 15
-.\scripts\Tests\Test-PlaceholderUi.ps1 -Mode Attach -Target '1234' -ObserveSeconds 15 -CloseWhileConnected
-.\scripts\Tests\Test-PlaceholderPickers.ps1 -ApplicationId 'PackageFamilyName!App' -TargetProcessId 1234
-```
-
-The UI test starts and closes its own profiler, validates real hello/identity,
-both combined graphs, bounds, source/quality, an independent K32 process-memory
-comparison and target-preserving shutdown. It closes newly launched targets,
-but preserves attach targets. `-ProfilerProcessId` transfers shutdown ownership
-of that profiler to the test; never supply a user-owned instance. The optional
-error/cancellation checks require the default unpackaged test mode. Reconnect
-also exercises active-connection shutdown.
-The build-entry regression runs actual builds under PowerShell 7 and Windows
-PowerShell 5.1, checking BOM-less UTF-8 manifests and deployed payload hashes.
-The picker test checks installed-package and running-process discovery, search,
-selection reset on refresh, selection transfer and cancel preservation.
+## Limitations
 
 CPU uses processor-time utilization, not Task Manager's frequency-adjusted
 utility. Aligned hardware parity with Task Manager and native ARM64 execution

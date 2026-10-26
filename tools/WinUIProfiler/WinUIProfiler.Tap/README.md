@@ -51,7 +51,7 @@ The helper loads caller-approved native binaries. `--trust-local-binaries` is
 an explicit opt-in to that trust boundary, not a signature check. Keep the
 bootstrap secret; never include it in diagnostic logging.
 
-## Build and tests
+## Build
 
 Use VS 18 MSBuild (`v145`), or VS 17 MSBuild (`v143`), with SDK
 `10.0.26100.0`. Each project supports x64/ARM64, Debug/Release, and static CRT.
@@ -63,12 +63,4 @@ From the repository root, for each project:
 ```powershell
 & 'C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe' tools\WinUIProfiler\WinUIProfiler.Tap\WinUIProfiler.Tap.vcxproj /nologo /v:minimal /p:Configuration=Release /p:Platform=x64
 & 'C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe' tools\WinUIProfiler\WinUIProfiler.Injector\WinUIProfiler.Injector.vcxproj /nologo /v:minimal /p:Configuration=Release /p:Platform=x64
-& 'C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe' tools\WinUIProfiler\WinUIProfiler.Tap.Tests\WinUIProfiler.Tap.Tests.vcxproj /nologo /v:minimal /p:Configuration=Release /p:Platform=x64
-& .\tools\WinUIProfiler\WinUIProfiler.Tap.Tests\bin\x64\Release\WinUIProfiler.Tap.Tests.exe
 ```
-
-Tests cover framing/bootstrap, authentication and nonce mismatch, malformed
-commands, 100,000 replay-guard identities, 5,000 live pipe hello requests,
-unsupported commands, client PID/creation ownership, delivered disconnect
-acknowledgement, and overlapped connection/partial-read cancellation. These
-do not qualify injection into a real packaged or unpackaged WinUI app.
