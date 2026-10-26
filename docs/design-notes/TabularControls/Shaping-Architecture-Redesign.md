@@ -552,10 +552,10 @@ tree (below).
 | `SourceRecord* Parent` | Source parent; `nullptr` for top-level records | Reparent, ancestor walk for filter-with-ancestors |
 | `std::vector<SourceRecord*> Children` | Non-owning, source order | Shaped tree reads it directly when no filter or sort is active (no copy) |
 | `uint16_t Depth` | Top level = 0; never changed by grouping | Indent = spacer offset + per-level indent × `Depth`; `ShapedDepth()` |
-| `HasChildren()` | Derived from `Children` | Expandability of a source parent (`ShapedRef` row, not a group) |
+| `HasChildren()` | Derived from `Children` | Source-tree checks only. Not expandability: under a filter it stays true when every child is filtered out; rows use `ShapedRef::ShapedChildCount()` |
 
-Not in the source tree (decided by the shaped tree section): expanded state (expansion model keyed
-by identity), group membership and group level (`GroupNode`), visible flag (presence in the visible
+Not in the source tree (decided by the shaped tree section): expanded state (`ShapeFlags::Expanded`
+on the record's engine slot; the group expansion model keyed by `GroupNode::Identity`), group membership and group level (`GroupNode`), visible flag (presence in the visible
 list), shaped depth (`ShapedDepth()` getter). Filtered and sorted children, filter flags, cached keys
 and the visible-descendant count live in the engine-owned `ShapeState` slot on the record (see
 "Engine state storage").
@@ -684,6 +684,7 @@ struct ShapedRef
     bool IsGroup() const noexcept;
     GroupNode* Group() const noexcept;      // null if this slot holds a record
     SourceRecord* Record() const noexcept;  // null if this slot holds a group
+    uint32_t ShapedChildCount() const noexcept;  // shaped children, O(1); see below
 private:
     uintptr_t m_bits;
 };
@@ -692,11 +693,12 @@ private:
 struct GroupNode                       // engine-owned; headers exist only while grouping is active
 {
     optional<tracker_ref<IInspectable>> Key;  // empty on the shaped root
+    hstring Identity;                  // group key path (parent's Identity + this Key); empty on the root
     GroupNode* Parent;                 // nullptr only on the shaped root
     uint16_t GroupLevel;               // top-level groups = 0; the header's ShapedDepth()
     std::vector<ShapedRef> Children;   // subgroups, or top-level records after filter and sort
     uint32_t ItemCount;                // bucketed top-level records (descendants not counted)
-    uint32_t VisibleDescendantCount;   // maintained by the flattener
+    uint32_t VisibleDescendantCount;   // own subtree's rows, ignoring ancestors; 0 when collapsed
     bool IsRoot() const noexcept;      // Parent == nullptr
 };
 ```
@@ -726,8 +728,11 @@ struct GroupNode                       // engine-owned; headers exist only while
   no grouped/ungrouped mode: the same walk handles both.
 - **Children of a source parent, after filter and sort:**
   - With no filter and no sort, they are read straight from `SourceRecord::Children` (no copy).
-  - Otherwise they live in the parent's `ShapeState` (`vector<SourceRecord*>`), built only for
-    parents that are expanded or have matches, and dropped when the verbs are cleared.
+  - Otherwise they live in the parent's `ShapeState` (`vector<SourceRecord*>`), built **eagerly**
+    for every parent, expanded or not, and dropped when the verbs are cleared (decided). Lazy
+    shaping would make expansion run the comparer (app code that can throw) and leave adds under a
+    never-expanded parent without a shaped index. Cost: every child list is sorted on each verb,
+    O(n log n) overall, the same order as the top-level sort. Matches *Eager materialization*.
 - **Engine state storage (decided: on the record).** Survey: side maps (Qt, JavaFX, Glazed
   Lists, WPF `_internalList`) stay simple only for flat data; with hierarchy they become a second
   tree held in a hash (Qt's per-parent `Mapping` with `mapped_children` and parent links). State on
@@ -760,7 +765,14 @@ struct GroupNode                       // engine-owned; headers exist only while
     `tracker_ref`), so `Source/` depends on it and not on the engine. Revisit if the fixed size
     grows.
 - **Group vs. source node:** `ShapedRef::IsGroup()`.
-  - A source parent (`Record()->HasChildren()`) is expandable but is not a group.
+  - A source parent (`ShapedChildCount() > 0`) is expandable but is not a group.
+  - **`ShapedRef::ShapedChildCount()` (decided).** The node's child count in the shaped tree, O(1),
+    derived and never stored: `Group()->Children.size()` for a group or the shaped root;
+    `Record()->Shape.ShapedChildren.size()` when the record's `ChildrenShaped` flag is set;
+    `Record()->Children.size()` otherwise. It is the single rule for `IsExpandable`
+    (`ShapedChildCount() > 0`), a record row's `ChildCount`, `SizeOfSet` (on `Parent`) and the
+    flattener's `Expandable` state. `Record()->HasChildren()` is not used for these: it reads the
+    source tree, so a parent whose children are all filtered out would show an empty expander.
   - This avoids AG Grid's mix-up, where `rowNode.group` is also true for tree-data parents and
     user rows need a separate `sourceRowIndex >= 0` check.
 - **`SourceRecord` and `SourceTable` are unchanged by grouping.** No record stores its group or
@@ -785,12 +797,55 @@ struct VisibleRow
   row.
 - **The owning group is not stored.** It is found through `m_groupOf` (see "Record → group map");
   only group-scoped actions need it.
-- **Set size is not stored.** It is the shaped child count of `Parent`, O(1): `Children.size()` of
-  the group or shaped root, the side-table entry size, or `Record()->Children.size()` with no filter
-  or sort. Storing it would mean rewriting every visible sibling on each insert or remove.
+- **Set size is not stored.** It is `Parent.ShapedChildCount()` (the shaped root when `Parent` is
+  null), O(1). Storing it would mean rewriting every visible sibling on each insert or remove.
 - **`IndexInParent` is stored** because it is not O(1) to derive (it would need a sibling search).
   The cost is accepted: an insert or remove updates the later siblings' entries during the splice.
 - Only visible rows have entries; a collapsed node's descendants have none.
+
+**Expansion (decided).**
+- **Records:** expansion is `ShapeFlags::Expanded` on the record's `ShapeState`. Records survive
+  reshapes and `Reapply()`, and `Reconcile` reuses them across `Reset`/`Refresh`, so the flag needs
+  no side model. A new record starts collapsed. A record that leaves takes its state with it.
+- **Groups: an expansion model, for groups only.** `GroupNode`s are rebuilt on every `GroupKey`
+  change, so their state is kept outside the node, keyed by `GroupNode::Identity`. Owned by
+  `ShapingManager`, read by the flattener.
+- **`GroupNode::Identity`** is the group key path: the parent group's `Identity` concatenated with
+  this group's key in string form, top level down. Two groups with the same key under different
+  parents differ. It is set when the engine creates the group.
+  - **Segment form (decided):** v1 `ValueKey::ToObjectLookupKey(key)`: `value:<typed value>`
+    (`value:i32:5`, `value:s:Eng`; the type prefix keeps `5` and `"5"` apart), `object:<IUnknown
+    address>` for reference keys, `null:` for a null key. Each segment is length-prefixed so a
+    value containing the separator cannot collide.
+  - **Reference keys use the address (decided).** Bucketing already groups reference keys by
+    `IUnknown` address (as v1), so the address is stable whenever grouping works: a selector
+    returning an existing object (`item.Department`) returns the same object on every call, and
+    CsWinRT keeps one CCW per managed object. A selector that creates a new object per call
+    already gives one group per record, so identity cannot make it worse.
+  - **Not the header text.** The header shows `StringifyGroupKey` (`IStringable`, culture-formatted
+    `IPropertyValue`, `ICustomPropertyProvider` `Key`, else "(group)"), which collides (every
+    `Dept` without a `ToString` override shows its type name) and changes with culture. v1 keeps
+    the same split (`StringifyGroupKey` vs `GetGroupKeyIdentity`).
+- **Group expansion entries are pruned (decided).** The model holds entries only for groups that
+  exist:
+  - Full regroup: build the new groups while the old tree still holds its keys, carry over the
+    entries whose `Identity` matches a new group, drop the rest, then release the old tree.
+    Holding the old keys until the swap means a freed key address cannot be reused mid-rebuild,
+    which closes the address-reuse hazard.
+  - Incremental: a group that empties and is dropped erases its entry.
+  - `GroupBy` with a new selector clears every entry (old identities mean other keys).
+  - Consequence: a group that disappears and returns (a filter hides all its rows, or live
+    shaping empties it) comes back in the default state.
+  - Rejected: keep entries past their group with a `weak_ref` to object keys (state survives a
+    group vanishing and returning), because entries for value keys never expire and need a cap,
+    keys without `IWeakReferenceSource` need a fallback, and it adds cleanup. Can be added later
+    without changing `Identity`.
+- **`VisibleDescendantCount`** (records and groups): the rows a node's own subtree contributes
+  below it, given its own and its descendants' expansion and ignoring its ancestors'. 0 when the
+  node is collapsed. A hidden node keeps its count, so toggling it updates counts only up to the
+  first collapsed ancestor and publishes nothing, and re-showing an ancestor costs one read.
+- **Expansion never involves the engine.** Child lists are shaped eagerly, so expand and collapse
+  are flattener-only: they cannot run app code or throw.
 
 **`VisibleRow` vs. `TableViewRowInfo`.** They are not the same thing:
 - `VisibleRow` is the stored entry of the visible list: three pointer-sized fields into the shaped
@@ -804,17 +859,17 @@ struct VisibleRow
 |---|---|
 | Kind | `Ref.IsGroup()` |
 | Level | `ShapedDepth()` |
-| IsExpandable | group header, or `Record()->HasChildren()` (shaped children for filtered views) |
-| IsExpanded | expansion model, by identity |
-| ChildCount | `GroupNode::ItemCount`, or the record's shaped child count |
+| IsExpandable | `Ref.ShapedChildCount() > 0` (always true for a group header: empty groups are dropped) |
+| IsExpanded | record: `ShapeFlags::Expanded`; group: expansion model, by `GroupNode::Identity` |
+| ChildCount | `GroupNode::ItemCount`, or `Ref.ShapedChildCount()` for a record |
 | ParentIdentity | `Parent.Record()->Identity()` when the shaped parent is a record; empty otherwise |
 | PositionInSet | `IndexInParent + 1` |
-| SizeOfSet | shaped child count of `Parent` (the shaped root when `Parent` is null) |
+| SizeOfSet | `Parent.ShapedChildCount()` (the shaped root when `Parent` is null) |
 
 Everything else is read through `Ref`:
 - Kind comes from the tag.
 - `Depth` and expandability come from the record or group.
-- Expanded comes from the expansion model, by identity.
+- Expanded comes from the record's `ShapeFlags::Expanded`, or the group expansion model by `GroupNode::Identity`.
 - Indent = spacer offset (group-level count) + per-level indent × `Depth`.
 - `ShapedDepth()` (getter, never stored) = depth in the shaped tree, 0-based below the shaped root:
   - Group header: `GroupNode::GroupLevel` (top-level groups = 0).
@@ -1172,6 +1227,7 @@ Decisions and open questions:
   still alive.
 - **Re-entrancy.** `m_isApplying`: a verb or `Refresh` while an apply runs throws (§5).
 - **Testability.** Plain C++, so it can be tested without WinRT activation.
+
 
 ## 7. Implementation plan
 

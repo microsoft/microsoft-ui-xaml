@@ -42,7 +42,7 @@ struct GroupNode;
 
 // One slot in a shaped child list: a GroupNode or a SourceRecord, distinguished by the low pointer
 // bit (1 = group; both pointees are at least 2-byte aligned). Non-owning; one pointer wide.
-// IsGroup() is the only group test: a source parent (Record()->HasChildren()) is expandable but is
+// IsGroup() is the only group test: a source parent (ShapedChildCount() > 0) is expandable but is
 // not a group.
 struct ShapedRef
 {
@@ -57,6 +57,16 @@ struct ShapedRef
     // Null if this slot holds the other kind.
     GroupNode* Group() const noexcept;
     SourceRecord* Record() const noexcept;
+
+    // Children this node has in the shaped tree, O(1). The single rule for expandability
+    // (IsExpandable = ShapedChildCount() > 0), ChildCount on a record row, SizeOfSet (called on
+    // Parent) and the flattener's Expandable state (count went 0 <-> 1):
+    //   group or shaped root: Group()->Children.size()
+    //   record, ChildrenShaped set: Record()->Shape.ShapedChildren.size()
+    //   record otherwise: Record()->Children.size()
+    // Not Record()->HasChildren(): under a filter that reads the source tree and stays true when
+    // every child is filtered out. Not stored; derived on demand.
+    uint32_t ShapedChildCount() const noexcept;
 
 private:
     static constexpr uintptr_t c_groupTag = 1;
@@ -73,6 +83,13 @@ struct GroupNode
     // owning TableViewSource2 (an object key may reference the VM; see SourceTable's Reference
     // tracking). Optional so the engine can drop it while the owner is alive.
     std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>> Key;
+
+    // Stable identity: the group key path from the top level down, one length-prefixed segment
+    // per level (the parent's Identity plus this Key's ValueKey::ToObjectLookupKey form:
+    // "value:<typed value>", "object:<IUnknown address>" or "null:"). Survives a regroup, unlike
+    // GroupNode*, so the expansion model keys group expansion on it. Empty on the shaped root.
+    // Not the header text (that is StringifyGroupKey, culture-formatted and possibly colliding).
+    winrt::hstring Identity;
 
     // Containing group; nullptr only on the shaped root.
     GroupNode* Parent{ nullptr };
@@ -92,9 +109,10 @@ struct GroupNode
     // Children.size() for a bottom-level group; the sum over subgroups otherwise.
     uint32_t ItemCount{ 0 };
 
-    // Rows below this node currently in the visible list (headers and data rows, honouring
-    // expansion). Lets the flattener find a node's visible position in O(depth) and splice only
-    // the affected range. Maintained by the flattener.
+    // Rows this node's own subtree contributes below it (headers and data rows), given its own and
+    // its descendants' expansion and ignoring its ancestors': 0 when collapsed. Lets the flattener
+    // find a node's visible position and splice only the affected range. Maintained by the
+    // flattener.
     // For source parents the same count lives in the record's ShapeState slot.
     uint32_t VisibleDescendantCount{ 0 };
 

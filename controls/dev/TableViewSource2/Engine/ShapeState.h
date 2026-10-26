@@ -38,11 +38,16 @@ enum class ShapeFlags : uint8_t
     HasPassingDescendant = 0x2,
 
     // ShapedChildren is current. When clear, the shaped children are SourceRecord::Children as-is
-    // (no filter and no sort active, or the record is not expanded and has no matches yet).
+    // (no filter and no sort active). Never depends on expansion: shaping is eager.
     ChildrenShaped = 0x4,
 
     // SortKeys is current for the applied spec. Cleared on ItemChanged and on a ShapeDelta::Sort.
     SortKeysValid = 0x8,
+
+    // The record's rows are expanded. Records keep their own expansion (they survive reshapes and,
+    // through Reconcile, Resets); only groups need the expansion model. Default clear (collapsed).
+    // Written by ShapingManager on Expand/Collapse, read by the flattener.
+    Expanded = 0x10,
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeFlags);
 
@@ -50,9 +55,10 @@ struct ShapeState
 {
     ShapeFlags Flags{ ShapeFlags::None };
 
-    // Visible rows below this record in the visible list (honouring expansion). Lets the flattener
-    // find a row's visible position in O(depth) and splice only the affected range. Matches
-    // GroupNode::VisibleDescendantCount for groups. Maintained by the flattener.
+    // Rows this record's own subtree contributes below it, given its own and its descendants'
+    // expansion and ignoring its ancestors': 0 when collapsed. A hidden record keeps its count, so
+    // re-showing it costs one read. Toggling updates counts only up to the first collapsed
+    // ancestor. Same meaning as GroupNode::VisibleDescendantCount. Maintained by the flattener.
     uint32_t VisibleDescendantCount{ 0 };
 
     // One cached key per SortSpec of the applied spec, in level order. Path and Key levels hold the
@@ -63,7 +69,8 @@ struct ShapeState
     std::vector<std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>>> SortKeys;
 
     // Source children after filter and sort, in shaped order. Non-owning. Valid only while
-    // ChildrenShaped is set; built only for parents that are expanded or have matches.
+    // ChildrenShaped is set. Built eagerly for every parent whenever a filter or sort is active,
+    // expanded or not, so expansion never runs app code and every edit has a shaped index.
     std::vector<SourceRecord*> ShapedChildren;
 
     // Group membership is not stored here: the engine maps top-level records to their GroupNode
