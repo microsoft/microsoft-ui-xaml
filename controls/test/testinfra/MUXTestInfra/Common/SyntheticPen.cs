@@ -64,7 +64,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         public void Cancel()
         {
             if (!pressed) { throw new InvalidOperationException("There is no pen contact to cancel."); }
-            Inject(position, Up | Canceled);
+            Inject(position, InRange | InContact | FirstButton | Update | Canceled);
             pressed = false;
         }
 

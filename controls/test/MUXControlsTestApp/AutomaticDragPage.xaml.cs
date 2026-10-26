@@ -28,6 +28,8 @@ namespace MUXControlsTestApp
         private int penMoveCount;
         private int penHoverCount;
         private int penCanceledCount;
+        private int canceledPointCount;
+        private int dragOverCount;
         private int childCaptureCount;
         private int childCaptureLostCount;
 
@@ -116,6 +118,10 @@ namespace MUXControlsTestApp
             }), true);
             DragSource.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
             {
+                if (args.GetCurrentPoint(DragSource).Properties.IsCanceled)
+                {
+                    CanceledPointCount.Text = (++canceledPointCount).ToString();
+                }
                 ReleaseCount.Text = (++releaseCount).ToString();
                 if (HandleRelease.IsChecked == true)
                 {
@@ -126,6 +132,10 @@ namespace MUXControlsTestApp
             DragSource.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((sender, args) =>
             {
                 var point = args.GetCurrentPoint(DragSource);
+                if (point.Properties.IsCanceled)
+                {
+                    CanceledPointCount.Text = (++canceledPointCount).ToString();
+                }
                 if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
                 {
                     PenMoveCount.Text = (++penMoveCount).ToString();
@@ -198,6 +208,7 @@ namespace MUXControlsTestApp
 
         private void DropTarget_DragOver(object sender, DragEventArgs args)
         {
+            DragOverCount.Text = (++dragOverCount).ToString();
             args.AcceptedOperation = DataPackageOperation.Copy;
             args.Handled = true;
         }

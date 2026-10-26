@@ -35,7 +35,7 @@
                 </Border>
                 <ListView x:Name="DragList" CanDragItems="True" CanReorderItems="True" AllowDrop="True"
                           Height="80" Visibility="Collapsed">
-                    <ListViewItem x:Name="ListDragItem" Content="ListView drag source"/>
+                    <ListViewItem x:Name="ListDragItem" AutomationProperties.AutomationId="ListDragItem" Content="ListView drag source"/>
                     <ListViewItem Content="Second item"/>
                 </ListView>
             </Grid>
@@ -56,12 +56,14 @@
                 <TextBlock x:Name="PenHoverCount" Text="0"/>
                 <TextBlock x:Name="PenHoverPointerId" Text="0"/>
                 <TextBlock x:Name="PenCanceledCount" Text="0"/>
+                <TextBlock x:Name="CanceledPointCount" Text="0"/>
                 <TextBlock x:Name="MouseDragThreshold" Text="0"/>
                 <TextBlock x:Name="RasterizationScale" Text="1"/>
             </StackPanel>
             <StackPanel>
                 <TextBlock x:Name="DragCount" Text="0"/>
                 <TextBlock x:Name="DropCount" Text="0"/>
+                <TextBlock x:Name="DragOverCount" Text="0"/>
                 <TextBlock x:Name="CopyCompletionCount" Text="0"/>
                 <TextBlock x:Name="MousePointerId" Text="0"/>
                 <TextBlock x:Name="MouseCaptureCount" Text="0"/>

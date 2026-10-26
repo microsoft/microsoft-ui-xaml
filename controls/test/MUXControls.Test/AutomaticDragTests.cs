@@ -50,8 +50,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using var controller = InputController.Activate(inputType);
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
             new CheckBox(FindElement.ById("UseListView")).Check();
+            Wait.ForIdle();
             var source = FindElement.ById("ListDragItem");
             var target = FindElement.ById("DropHandle");
+            Verify.IsNotNull(source, "ListView source must be realized after changing visibility.");
+            Verify.IsNotNull(target);
             for (int attempt = 1; attempt <= 2; ++attempt)
             {
                 if (inputType == PointerInputType.Mouse)
@@ -152,6 +155,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             pen.Hover(start);
             pen.Press(start);
             pen.Cancel();
+            Log.Comment($"Canceled pointer samples={ReadText("CanceledPointCount")}, canceled events={ReadText("PenCanceledCount")}.");
             Verify.AreEqual("1", ReadText("PenCanceledCount"));
             pen.Hover(new System.Drawing.Point(start.X + 40, start.Y));
             Verify.AreEqual("0", ReadText("DragCount"));
@@ -444,7 +448,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using var controller = InputController.Activate(PointerInputType.Mouse);
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
             new CheckBox(FindElement.ById("CancelDrag")).Uncheck();
-            InputHelper.MouseDragToTarget(FindElement.ById("DragHandle"), FindElement.ById("DropHandle"));
+            var mouse = PointerInput.Current;
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            var target = FindElement.ById("DropHandle").GetClickablePoint();
+            mouse.Move(start);
+            mouse.Press(PointerButtons.Primary);
+            try
+            {
+                mouse.Move(new System.Drawing.Point(start.X + 40, start.Y));
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => ReadText("DragCount") == "1", retryTimoutByMilliseconds: 10000);
+                Verify.AreEqual("1", ReadText("DragCount"));
+                mouse.Move(target);
+                Wait.ForIdle();
+                mouse.Move(new System.Drawing.Point(target.X + 1, target.Y));
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => int.Parse(ReadText("DragOverCount")) > 0, retryTimoutByMilliseconds: 10000);
+                Verify.IsTrue(int.Parse(ReadText("DragOverCount")) > 0, "Hold the mouse until the system drag reaches the target.");
+            }
+            finally
+            {
+                mouse.Release(PointerButtons.Primary);
+            }
             Wait.RetryUntilEvalFuncSuccessOrTimeout(
                 () => ReadText("CopyCompletionCount") == "1",
                 retryTimoutByMilliseconds: 10000);
