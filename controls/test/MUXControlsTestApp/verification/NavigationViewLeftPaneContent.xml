@@ -74,18 +74,19 @@
         [Microsoft.UI.Xaml.Controls.Button]
             Background=#00FFFFFF
             BorderBrush=Microsoft.UI.Xaml.Media.LinearGradientBrush
-            BorderThickness=0,0,0,0
+            BorderThickness=1,1,1,1
             CornerRadius=4,4,4,4
             FocusVisualPrimaryBrush=#E4000000
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualSecondaryThickness=1,1,1,1
             Foreground=#E4000000
-            Margin=0,-4,0,0
-            MinWidth=48
+            Height=42
+            Margin=-0,-4,4,2
+            MinWidth=44
             Name=NavigationViewBackButton
-            Padding=4,6,4,2
-            RenderSize=48,44
+            Padding=4,6,0,0
+            RenderSize=44,42
             Visibility=Visible
             Width=40
           [Microsoft.UI.Xaml.Controls.Grid]
@@ -100,7 +101,7 @@
               Margin=0,0,0,0
               Name=HitTargetGrid
               Padding=0,0,0,0
-              RenderSize=48,44
+              RenderSize=44,42
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.Grid]
                 Background=#00FFFFFF
@@ -111,8 +112,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualSecondaryThickness=1,1,1,1
-                Height=36
-                Margin=4,6,4,2
+                Margin=4,6,0,0
                 Name=RootGrid
                 Padding=0,0,0,0
                 RenderSize=40,36
@@ -164,7 +164,7 @@
             Height=36
             Margin=4,2,4,2
             Name=NavigationViewCloseButton
-            Padding=11,5,11,6
+            Padding=0,0,0,0
             RenderSize=0,0
             Visibility=Collapsed
             Width=40
