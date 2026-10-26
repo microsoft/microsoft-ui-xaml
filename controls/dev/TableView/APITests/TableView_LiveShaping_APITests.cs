@@ -549,8 +549,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a parent-key edit stays stale with live shaping off and is picked up by a re-sort.")]
-        public void VerifyLiveOffReparentStaysStaleUntilResort()
+        [TestProperty("Description", "Verifies a parent-key edit stays stale with live shaping off, even across a re-sort.")]
+        public void VerifyLiveOffReparentStaysStaleAcrossResort()
         {
             var staleList = MakeLiveTree();
             var staleTable = Place(MakeSource(staleList, s => s.ParentBy(LiveById, LiveByParent), live: false), expandRows: true);
@@ -566,7 +566,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 source.Sort(LiveByScore, SortDirection.Ascending);
             });
 
-            Verify.AreEqual("Dee1 Ann1- Eli2 Cat2 Bob2", actual, "A re-sort must re-read parent keys.");
+            // Only a source change or a re-declared relation re-reads keys; a re-sort re-sorts the
+            // retained tree.
+            Verify.AreEqual("Dee1- Eli2 Ann1- Cat2 Bob2", actual, "A re-sort must not re-read parent keys.");
         }
 
         [TestMethod]

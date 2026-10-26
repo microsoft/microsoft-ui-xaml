@@ -86,6 +86,14 @@ namespace ShapingHelpers
         }
     }
 
+    void RowExpansionModel::RetainIf(std::function<bool(winrt::hstring const&)> const& isLive)
+    {
+        for (auto it = m_nonDefault.begin(); it != m_nonDefault.end();)
+        {
+            it = isLive(*it) ? std::next(it) : m_nonDefault.erase(it);
+        }
+    }
+
     void RowExpansionModel::RaiseChanged(Change change) const
     {
         if (m_changed)

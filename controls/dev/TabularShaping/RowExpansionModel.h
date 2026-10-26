@@ -72,6 +72,9 @@ namespace ShapingHelpers
         // source, so intent hidden behind a collapse or a filter survives.
         void RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys);
 
+        // RetainOnly by predicate: O(stored intent) rather than O(live keys) per prune.
+        void RetainIf(std::function<bool(winrt::hstring const&)> const& isLive);
+
     private:
         void SetDefaultExpanded(bool expanded);
 

@@ -98,9 +98,11 @@ configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`
 - **Turning it on** subscribes every item and posts one catch-up reshape, because edits made while
   it was off were not tracked. Turning it off revokes every subscription.
 - **Cost.** One subscription and one snapshot per item, kept in step with collection changes, plus
-  one snapshot capture per changed item while no reshape is pending. Each reshape is a full refresh:
-  it re-reads every item and recaptures every snapshot (O(n) in the source size), however few items
-  changed.
+  one snapshot capture per changed item while no reshape is pending. A reshape recaptures only the
+  snapshots of the items that raised a change; it re-reads every item only after a reset, a
+  `VectorChanged`-only source change, a spec change, or a change it could not attribute to an item.
+  Under `ParentBy` it also re-shapes only the sibling sets those items sort in (§6.2); a flat or
+  grouped reshape still re-filters and re-sorts the whole source.
 
 ## 3. Key semantics
 
@@ -128,10 +130,9 @@ An enum declared in app code that is not a WinRT type (a plain C# `enum`) is not
 `IPropertyValue`; it reaches the control as an opaque object and is therefore compared by reference
 identity, which a fresh box never satisfies. Apps convert such keys to their integer value.
 
-Every key object is held for the whole index build. An object key's lookup form is its address, and
-a released temporary's address could otherwise be reused by the next selector result and alias it.
-Object keys are also held for as long as the built structure is current, because the node key
-outlives the build as expansion intent and selection identity (§5).
+Every key object is held for as long as its node is in the retained structure. An object key's
+lookup form is its address, and a released temporary's address could otherwise be reused by a later
+selector result and alias it.
 
 ### 3.2 Roots, orphans, and invalid data
 
@@ -231,20 +232,25 @@ roots within each bucket. Descendant sibling sets keep the full sort (§4.1).
 
 ## 5. Expansion
 
-### 5.1 Node identity is the app key
+### 5.1 Node identity is the item object
 
 ```
-nodeKey = "node:" + <lookup form of keySelector(item)>   // §3.1
+nodeId       = canonical IUnknown of the item
+row identity = "node:0x" + <hex address of nodeId>
 ```
 
-Every item has exactly one parent, and the app supplies the key, so no path key is needed:
+The key selector only resolves parent keys to parent items; it is not the row identity:
 
-- The node key is flat, O(1) in size, and computed once per item.
-- It survives re-sort, re-filter and regroup, **and** the app re-creating the item object with the
-  same key.
-- It survives **reparenting**. A node the user expanded stays expanded when it moves.
+- The node id is flat, O(1) in size, and costs no selector call.
+- It survives re-sort, re-filter, regroup and **reparenting**. A node the user expanded stays
+  expanded when it moves.
+- It does **not** survive the app re-creating the item object, even with the same key: the new
+  object is a new, collapsed, unselected row. This is the flat and grouped contract too.
 - It is also the row identity for the metadata provider (`GetIdentity`), so selection re-anchors on
   it too.
+- The address is meaningful only while the item is alive. The structure holds every indexed item,
+  and intent is pruned against it on every publish (§5.3), so a recycled address never inherits a
+  departed node's intent.
 - Selection follows the presented row. When a collapse hides the selected row, the selection is
   cleared rather than held for the hidden row, and neither expanding again nor a later reshape
   restores it. Collapsing a group behaves the same way.
@@ -262,18 +268,19 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
   cleared with it. A different relation is a different tree: "Bob is expanded" in the org chart
   says nothing about Bob in the mentoring tree.
 
-### 5.3 Pruning: the key set is complete
+### 5.3 Pruning: the node set is complete
 
-A flat source always produces the full set of keys, so intent is pruned with a plain whole-set
-retain. After a publish over a new `ParentStructure` (§6.1):
+A flat source always produces the full set of nodes, so intent is pruned with a plain whole-set
+retain. After every publish (§6.1):
 
 ```
-m_expansion.RetainOnly(index->Structure->KeyByItem values)
+m_expansion.RetainIf(key -> index->ContainsNode(TryParseNodeIdentity(key)))
 ```
 
 The prune set is the **unfiltered** source, so a node hidden by a filter keeps its intent. This is
-the grouping rule, and it is correct for the same reason: the live-key set is complete. A reshape
-that reuses the same structure has the same key set, so it skips the prune.
+the grouping rule, and it is correct for the same reason: the live-node set is complete. The prune
+runs on every publish, not only for a new structure, because a patched structure (§6.2) can lose a
+node whose address a later item may reuse.
 
 ## 6. Architecture
 
@@ -289,61 +296,75 @@ Layer 4  RowMetadataProvider / TableView / TableViewRow / peers   read row metad
 ### 6.1 Layer 1 — `ParentStructure` and `ParentKeyIndex`
 
 Two stages. The **structure** is the validated tree over the unfiltered source and is independent
-of filter and sort, so reshapes reuse it. The **index** is one filtered, sorted reading of it.
+of filter and sort, so reshapes reuse it, and source changes patch it. The **index** is one
+filtered, sorted reading of it, assembled from a cache of shaped sibling lists.
 
 ```cpp
 namespace ShapingHelpers
 {
+    using NodeId = void*;                                               // canonical IUnknown of the item
+
     struct ParentStructure
     {
-        static constexpr size_t Root = SIZE_MAX;
         std::vector<winrt::IInspectable> Rows;                          // unfiltered, source order
-        std::unordered_map<void*, std::wstring> KeyByItem;              // item ABI -> node key (complete)
-        std::unordered_map<std::wstring_view, size_t> IndexByKey;       // node key -> position in Rows
-        std::vector<std::wstring const*> NodeKeys;                      // per row
-        std::vector<size_t> ParentIndex;                                // per row; Root for roots/orphans
-        std::vector<std::vector<size_t>> ChildIndices;                  // per row, source order
-        std::vector<size_t> RootIndices;
+        std::unordered_map<NodeId, ParentNode> Nodes;                   // item, key objects, lookup keys, Parent, Rank
+        std::unordered_map<std::wstring, NodeId> NodeByKey;             // lookup key -> node (parent resolution only)
+        std::unordered_map<std::wstring, std::vector<NodeId>> Orphans;  // unknown parent key -> waiting roots
+        std::unordered_map<NodeId, std::vector<NodeId>> Children;       // per parent, Rank order
+        std::vector<NodeId> Roots;
+        uint64_t Epoch;                                                 // unique per build
+        // Change log consumed by the next index build: DirtyLists, DirtyNodes, RemovedItems, EdgesChanged.
     };
 
     struct ParentKeyIndex
     {
-        std::vector<winrt::IInspectable> Roots;                                          // shaped order
-        std::unordered_map<std::wstring_view, std::vector<winrt::IInspectable>> Children; // parent node key -> shaped children
-        std::unordered_set<std::wstring> ContextKeys;                                    // filter-retained ancestors (§4.2)
-        std::shared_ptr<const ParentStructure> Structure;                                // owns the keys
+        std::vector<winrt::IInspectable> Roots;                              // shaped order
+        std::shared_ptr<const ListMap> Children;                             // parent node -> shaped children (shared with the cache)
+        std::shared_ptr<const std::unordered_set<NodeId>> ContextNodes;      // filter-retained ancestors (§4.2)
+        std::shared_ptr<const ParentStructure> Structure;
     };
 
     // Runs both selectors once per row. False with `error` on duplicate/null key, self-parent or cycle.
     bool BuildParentStructure(rows, keySelector, parentKeySelector, ParentStructure& out, winrt::hstring& error);
 
-    // Re-runs the selectors over structure.Rows; true when every key and parent is unchanged.
-    // Object (reference-identity) keys always return false.
-    bool ParentStructureStillMatches(structure, keySelector, parentKeySelector);
+    // Patches mirroring a source change; run no selector (callers resolve new items first with
+    // ResolveParentNode). False = the structure is unusable and must be rebuilt.
+    bool InsertParentNodes(structure, index, resolvedNodes);
+    bool RemoveParentNodes(structure, index, count, expectedItems);
+    bool MoveParentNodes(structure, oldIndex, newIndex, count);
+    bool UpdateParentNode(structure, resolvedNode);                     // live shaping: re-read one item's edge
 
-    // Runs no selector. Empty filter/sort = none. Sort orders each sibling list (roots only if sortRoots).
-    void BuildParentKeyIndex(shared_ptr<const ParentStructure>, ParentKeyFilter, SiblingSorter, bool sortRoots, ParentKeyIndex& out);
+    // Runs no selector. Rebuilds only what the change log and the filter/sort generations invalidate.
+    void BuildParentKeyIndex(structure, ParentShapeCache&, filter, filterGeneration, sort, sortGeneration, bool sortRoots, ParentKeyIndex& out);
 }
 ```
 
 `BuildParentStructure`, all O(n):
 
-1. Evaluate the key selector once per item, holding every returned key object until the build ends
-   (§3.1). Reject a null or duplicate key.
-2. Evaluate the parent selector; resolve it to a row position, or `Root` for a null, empty or
-   orphan parent key. Reject a self-parent.
+1. Evaluate the key selector once per item, holding every returned key object (§3.1). Reject a
+   null or duplicate key.
+2. Evaluate the parent selector; resolve it to a node, or leave the node a root for a null or empty
+   parent key, or an orphan root (recorded in `Orphans`) for an unknown one. Reject a self-parent.
 3. Bucket child lists in source order, then check reachability from the roots (§3.2). Reject cycles.
 
-`BuildParentKeyIndex`:
+Patches keep the same semantics. An inserted node adopts the orphans waiting for its key (a lookup,
+not a scan) and links to its parent; a removed node's children become orphan roots waiting for its
+key. A new edge is checked for a cycle by walking up from the new parent only. `Rank` (the row's
+source position) is the sibling tiebreak and is renumbered from the change point.
 
-1. If there is a filter, compute the kept set as matches plus ancestors, and record `ContextKeys`.
-2. Emit the kept roots and each kept child list in source order, then sort each list of two or more
-   with the `SiblingSorter` callback, stably (§4.1). Roots are left in source order when
-   `sortRoots` is false, so layer 2 can bucket them for grouping (§4.3).
+`BuildParentKeyIndex` keeps a `ParentShapeCache` per structure epoch:
 
-Both are **immutable once built**. The index is handed to the adapter as
-`std::shared_ptr<const ParentKeyIndex>` and keeps its structure alive, so the adapter can splice
-against it later without calling back into layer 2 or app code.
+1. If there is a filter, re-read the verdict of every node when the filter generation moved, else
+   of the dirty nodes only. Recompute the kept set (matches plus ancestors) and `ContextNodes` in
+   one flat pass only when a verdict, an edge or the filter moved; a node entering or leaving the
+   kept set dirties its parent's list.
+2. Re-emit and re-sort (stably, through the `SiblingSorter` callback, §4.1) only the dirty sibling
+   lists, or all of them when the sort generation, filter presence or `sortRoots` changed. The list
+   map is copied on write, so a published index never sees a later build. Roots are left in source
+   order when `sortRoots` is false, so layer 2 can bucket them for grouping (§4.3).
+
+A published index is immutable; its structure is patched in place between publications, on the UI
+thread only and never during a refresh, so it can run ahead of the index until the next publish.
 
 This is the testable core of the feature and has no dependency on XAML, a dispatcher or the adapter.
 
@@ -364,26 +385,28 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
 - `RebuildGroupedHierarchical(rows)`: the same, with `sortRoots = false`; the roots are then
   bucketized as `GroupBy` does and the bucket-ordered roots replace `index.Roots` before the index
   is handed over.
-- **Source changes.** Layer 2 already observes the source. v1 answers every change with a full
-  `Refresh()` while a hierarchy is declared. **The flat incremental fast paths
-  (`ApplyIncrementalChange`, `ApplyIncrementalVectorChange`) bail out when a parent relation is
-  declared**, including the unsorted, unfiltered case: a single-row delta cannot re-derive
-  parentage. Incremental leaf add/remove is a later optimization (§11).
+- **Source changes.** Layer 2 already observes the source. Every change re-indexes the tree (the
+  flat incremental fast paths bail out while a parent relation is declared), but an
+  `INotifyCollectionChanged` Add, Remove, Replace or Move first **patches** the retained structure
+  (§6.1), calling the selectors for the new items only. A Reset, a `VectorChanged`-only change, a
+  change deferred behind a running refresh, or a patch that would leave the tree invalid drops the
+  structure; the next refresh rebuilds it and reports any error.
 - **Retained tree structure.** The resolved parent structure (keys, parents, child lists) is kept
-  across reshapes. It is dropped by any source collection change and by re-declaring the relation.
-  A sort, filter or group change over an unchanged source reuses it once every row's key and parent
-  key is shown unchanged; the key table, duplicate/cycle validation and identity validation are not
-  redone. How "unchanged" is shown depends on live shaping:
-  - **Live shaping on**: every `Refresh` recaptures each row's snapshot, node and parent key
-    included (in the tree's own key form, so two distinct key objects never compare equal), and
-    compares them with the previous pass. Any difference drops the structure. No selector runs
-    beyond the snapshot capture that live shaping performs anyway. Turning live shaping on also
-    drops it, because edits made while it was off were never tracked, and posts one reshape so
-    those edits show without waiting for the next change.
-  - **Live shaping off**: the reshape re-runs the key and parent selectors once per row
-    (`ParentStructureStillMatches`) and rebuilds on the first difference.
-  - Either way, object (reference-identity) keys cannot be proven unchanged by address, so they
-    always rebuild.
+  across reshapes and source changes, and dropped by re-declaring the relation or by the cases
+  above. A refresh reuses it when it saw every source change and the materialized rows are the same
+  objects in the same order (an O(n) pointer compare that catches sources without change
+  notifications; no selector runs). Keys are otherwise **trusted**:
+  - **Live shaping off**: an item whose key or parent key is edited in place keeps its position,
+    even across a re-sort or re-filter, until a source change touches it or the relation is
+    re-declared. The same holds for sort and filter inputs of sibling lists the reshape does not
+    otherwise touch.
+  - **Live shaping on**: each item that raised a `PropertyChanged` is re-read on the next reshape
+    (`UpdateParentNode`): a moved key or parent key re-links that one node, with a local cycle
+    check, and its sibling list is re-shaped. A reshape that reconciles every snapshot instead (see
+    §2) compares each node and parent key with the previous pass and drops the structure on any
+    difference. Turning live shaping on drops the structure, because edits made while it was off
+    were never tracked, and posts one reshape so those edits show without waiting for the next
+    change.
 - **Property changes.** With `IsLiveShaping` on, an item's
   key and parent key are observed and a change reparents the row on the next dispatcher turn. A
   change raised on another thread is handed to the source's own thread first. While a cell editor
@@ -413,8 +436,8 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   `RemoveRows` keep those structures consistent as a set. `ProjectionChanged` is raised once per
   coherent publish; rebuilds requested during a publish are coalesced (`m_rebuildInFlight`). The
   baseline is collapsed.
-- **Pruning.** After a publish over a structure it has not pruned against yet, the adapter retains
-  only the keys in `index->Structure->KeyByItem` (§5.3).
+- **Pruning.** After every publish, the adapter retains only the intent of nodes in
+  `index->Structure` (§5.3).
 - **Threading.** The adapter owns an `ItemsSourceView` and must be created on a thread with a
   `DispatcherQueue` (`RPC_E_WRONG_THREAD` otherwise); unlike layer 1 it is not headless.
 
@@ -576,8 +599,10 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
   needs a child-provider seam behind the adapter: an interface the adapter asks for a node's
   children (and whether it has any) when the node is expanded, with the eager index as one
   implementation.
-- **Incremental source changes.** Add or remove of a leaf whose parent is collapsed can skip the
-  rebuild. v1 always rebuilds, as grouping does.
+- **Incremental source changes.** The structure and the shaped sibling lists are patched per change
+  (§6.1, §6.2), but every change still re-materializes the source, re-ranks rows after the change
+  point and re-walks the visible axis. A leaf added or removed below a collapsed parent could skip
+  the walk.
 - **Grouped toggle cost.** Under `GroupBy`, one node toggle re-slices every group, and each
   `ShapedGroup::SetItems` makes the grouped adapter rebuild the grouped axis. Batch the re-slice:
   update only the slices that changed, then rebuild once.
@@ -611,7 +636,7 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
   by expanding that ancestor. Expanding every ancestor of a match would also expand the whole tree
   under a broad filter; a filter mode (above) is the place to offer that.
 - **Observing key property changes without live shaping** (without `IsLiveShaping`, an in-place
-  reparent waits for the next reshape or collection change; §6).
+  reparent waits for a collection change that touches the item, a reset or a re-declaration; §6.2).
 - Also not covered: declarative aggregation, nested grouping, cascading selection, drag-reparent,
   and a keyed data source for container preservation.
 
@@ -633,7 +658,8 @@ through the public API rather than headless):
    descendants are excluded; an empty result.
 3. **Adapter**: visible order, `Level == Depth + 1`, `ChildCount`, `SiblingIndex` / `SiblingCount`,
    and the key map exact after each splice. Collapse a grandchild, collapse its parent, expand the
-   parent: the grandchild stays collapsed. Intent survives re-sort, re-filter and regroup. Intent
+   parent: the grandchild stays collapsed. Intent survives re-sort, re-filter and regroup, but not a
+   same-key replacement of the item. Intent
    is cleared by redeclaration. `SetIndex` causes exactly one Reset.
 4. **Layer 2**: add, remove, replace and move on the flat source with the hierarchy on (including
    the unsorted, unfiltered case, which must not take the flat incremental path); a sort does not
@@ -651,6 +677,8 @@ through the public API rather than headless):
 | 3 | Filter default | Matches plus their ancestors, the majority default (§4.2). |
 | 4 | Auto-expand on filter | On. While a filter is active, context ancestors are expanded as a temporary overlay; the user can collapse or re-expand them, but those toggles are overlay-only. The user's prior state is restored when the filter changes or clears, which avoids DevExtreme's reset (§4.2). |
 | 5 | Second `ParentBy` call | Replaces the previous relation (last writer wins) and clears its expansion intent (§5.2). |
+| 6 | Row identity | The item object, as in flat and grouped sources. A same-key replacement is a new row and loses expansion and selection (§5.1). |
+| 7 | Key edits with live shaping off | Trusted: only a source change touching the item, a reset or a re-declaration re-reads keys (§6.2). |
 
 ## 14. Prior art behind decisions 2–4
 

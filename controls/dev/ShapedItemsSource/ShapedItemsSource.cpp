@@ -136,6 +136,7 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
         // Untracked in-place edits are invisible to the fresh snapshots, so drop the retained
         // structure and post one restore to catch up.
         InvalidateRetainedHierarchyStructure();
+        InvalidateLiveShapingSnapshots();
         ResubscribeLiveShapingFromSource();
         if (m_liveItemChangedHook)
         {
@@ -298,6 +299,17 @@ void ShapedItemsSource::ApplyShapingChange()
     auto const delta = m_pipeline.CommitSpec();
     UpdateSortKeyPropertyFilter();
 
+    // Cached hierarchy sibling lists re-shape against a new filter or sort. Grouping only buckets
+    // the roots, which are re-bucketed every build, so it leaves the lists alone.
+    if (delta.FilterChanged)
+    {
+        ++m_hierarchyFilterGeneration;
+    }
+    if (delta.SortChanged)
+    {
+        ++m_hierarchySortGeneration;
+    }
+
     // Consumed regardless of delta: the diff cannot see the hierarchy axis.
     const bool hierarchyChanged = m_hierarchyAxisDirty;
     m_hierarchyAxisDirty = false;
@@ -310,6 +322,9 @@ void ShapedItemsSource::ApplyShapingChange()
         // description id, so a re-declaration always reads as a change.
         return;
     }
+
+    // Snapshots capture the committed spec's inputs (sort axes, group, filter), so re-read them all.
+    InvalidateLiveShapingSnapshots();
 
     // In-place paths cannot switch flat <-> hierarchical; a hierarchy change always rebuilds.
     if (!hierarchyChanged && TryApplyShapingDeltaInPlace(delta))
@@ -502,6 +517,7 @@ void ShapedItemsSource::OnSourceCollectionChanged()
     // control binds to, and the identity index must stay in lockstep with it. A background-thread
     // notification is app misuse and is not supported.
     ++m_sourceChangeStamp;
+    InvalidateLiveShapingSnapshots();
     Refresh();
 }
 
@@ -516,6 +532,8 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     // follow-up rebuild after the outer rebuild unwinds.
     if (m_isRefreshing)
     {
+        // The deferred rebuild sees no delta, so it must reconcile live subscriptions in full.
+        InvalidateLiveShapingSnapshots();
         m_pendingRefresh = true;
         return;
     }
@@ -528,6 +546,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     // producing a consistent final projection.
     if (m_isApplyingIncrementalChange)
     {
+        InvalidateLiveShapingSnapshots();
         m_pendingRefresh = true;
         return;
     }
@@ -568,6 +587,8 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 {
     // See the UI-thread contract on OnSourceCollectionChanged().
     ++m_sourceChangeStamp;
+    // VectorChanged names no items, so live subscriptions cannot follow it item by item.
+    InvalidateLiveShapingSnapshots();
 
     if (m_isRefreshing)
     {
@@ -608,6 +629,13 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
     ApplyLiveShapingDelta(args);
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    // A hierarchy re-indexes, but patches its retained structure first so only the changed items'
+    // keys are read. Not while refreshing: that Refresh may be reading the structure.
+    if (m_parentKeySelector && !m_isRefreshing)
+    {
+        PatchHierarchyStructure(args);
+    }
 
     // Full rebuild unless there is a live flat projection. A hierarchy always re-indexes: any
     // change can move rows anywhere in the tree.
@@ -788,6 +816,12 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
     // Same reasoning as ApplyIncrementalChange: the retained membership stops describing m_rows
     // the moment this splices it.
     InvalidateShapingState();
+
+    // As in ApplyIncrementalChange: a hierarchy patches its retained structure before re-indexing.
+    if (m_parentKeySelector && !m_isRefreshing)
+    {
+        PatchHierarchyStructure(args);
+    }
 
     using winrt::Windows::Foundation::Collections::CollectionChange;
 
@@ -1791,16 +1825,20 @@ void ShapedItemsSource::Refresh()
         m_refreshSourceStamp = m_sourceChangeStamp;
 
         // Cleared before the re-read: an off-thread change dropped while the items are being read
-        // keeps the flag set, so the next live change still forces a rebuild.
-        m_liveShapingChangeDropped->store(false);
+        // keeps the flag set, so the next live change still forces a rebuild. One dropped before
+        // names no item, so every item is re-read.
+        if (m_liveShapingChangeDropped->exchange(false))
+        {
+            InvalidateLiveShapingSnapshots();
+        }
         auto rows = Materialize(authoritativeSource);
         if (m_rowsReleasedHook)
         {
             m_rowsReleasedHook(nullptr, rows);
         }
-        RefreshLiveShapingSubscriptions(rows);
+        auto const liveChanged = RefreshLiveShapingSubscriptions(rows);
 
-        // All snapshots were just recaptured, so any pending live restore is satisfied -- unless
+        // Every snapshot is current again, so any pending live restore is satisfied -- unless
         // the rebuild below throws, in which case the catch re-marks it.
         m_liveShapingDirty = false;
 
@@ -1824,7 +1862,7 @@ void ShapedItemsSource::Refresh()
             // always requires identity, so there is nothing to gate on.
             // A reused hierarchy structure was already validated.
             auto structure = m_parentKeySelector
-                ? TryReuseHierarchyStructure(rows, m_parentDeclarationGeneration, m_refreshSourceStamp)
+                ? TryReuseHierarchyStructure(rows, liveChanged, m_parentDeclarationGeneration, m_refreshSourceStamp)
                 : nullptr;
             wchar_t const* reason = nullptr;
             if (!structure && !ValidateRowIdentities(rows, reason))
@@ -1882,6 +1920,8 @@ void ShapedItemsSource::Refresh()
         if (IsLiveShapingEnabled())
         {
             m_liveShapingDirty = true;
+            // The changed items this pass consumed are not shown yet; re-read everything next time.
+            InvalidateLiveShapingSnapshots();
         }
         m_validatedSourceStamp = ~uint64_t{ 0 };
 
@@ -2103,7 +2143,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     PublishProjection();
 }
 
-void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure)
+void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<ShapingHelpers::ParentStructure> structure)
 {
     // `rows` is UNFILTERED, in source order: the index build filters and sorts per sibling list.
     // Capture the generation before any selector (app code) can re-declare the relation.
@@ -2143,7 +2183,7 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
 // Both axes. Row stream:
 //   [Header A] [rootA1] [rootA1's expanded subtree...] [rootA2] ... [Header B] [rootB1] ...
 // The group key applies to ROOTS only; a descendant keeps its depth under its parent.
-void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure)
+void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<ShapingHelpers::ParentStructure> structure)
 {
     // Roots stay in source order for bucketing; sibling sets below are fully sorted.
     const uint64_t declarationGeneration = m_parentDeclarationGeneration;
@@ -2241,7 +2281,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
 
 std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarchyIndex(
     std::vector<winrt::IInspectable> const& rows,
-    std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
+    std::shared_ptr<ShapingHelpers::ParentStructure> structure,
     bool sortRoots,
     uint64_t declarationGeneration)
 {
@@ -2278,6 +2318,8 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
         m_hierarchyStructure = structure;
         m_hierarchyStructureGeneration = declarationGeneration;
         m_hierarchyStructureSourceStamp = m_refreshSourceStamp;
+        // A new epoch would reset the cache anyway; release the old lists' rows now.
+        m_hierarchyShapeCache.Clear();
     }
 
     ShapingHelpers::ParentKeyFilter filter;
@@ -2293,7 +2335,15 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
     }
 
     auto index = std::make_shared<ShapingHelpers::ParentKeyIndex>();
-    ShapingHelpers::BuildParentKeyIndex(structure, filter, sort, sortRoots, *index);
+    ShapingHelpers::BuildParentKeyIndex(
+        structure,
+        m_hierarchyShapeCache,
+        filter,
+        m_hierarchyFilterGeneration,
+        sort,
+        m_hierarchySortGeneration,
+        sortRoots,
+        *index);
 
     if (declarationGeneration != m_parentDeclarationGeneration)
     {
@@ -2305,10 +2355,11 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
     return index;
 }
 
-std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReuseHierarchyStructure(
+std::shared_ptr<ShapingHelpers::ParentStructure> ShapedItemsSource::TryReuseHierarchyStructure(
     std::vector<winrt::IInspectable> const& rows,
+    std::vector<winrt::IInspectable> const& liveChanged,
     uint64_t declarationGeneration,
-    uint64_t sourceChangeStamp) const
+    uint64_t sourceChangeStamp)
 {
     // Strong ref: selectors below may re-declare the relation and drop the member.
     auto const structure = m_hierarchyStructure;
@@ -2320,23 +2371,46 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
         return nullptr;
     }
 
-    // Silent sources can change too; O(n) pointer compares are cheaper than selector calls.
+    // Silent sources (no INCC) can change too: O(n) pointer compares, no selector calls. A
+    // projection can hand back a different interface of the same object, so confirm by identity.
     for (size_t i = 0; i < rows.size(); ++i)
     {
-        if (winrt::get_abi(structure->Rows[i]) != winrt::get_abi(rows[i]))
+        if (winrt::get_abi(structure->Rows[i]) != winrt::get_abi(rows[i]) &&
+            ShapingHelpers::GetNodeId(structure->Rows[i]) != ShapingHelpers::GetNodeId(rows[i]))
         {
             return nullptr;
         }
     }
 
-    // Live shaping already compared every edge this Refresh; otherwise re-read the keys (cheaper
-    // than a rebuild). Copy selectors: a re-declaring selector reassigns the members.
-    auto const keySelector = m_keySelector;
-    auto const parentKeySelector = m_parentKeySelector;
-    if (!IsLiveShapingEnabled() &&
-        !ShapingHelpers::ParentStructureStillMatches(*structure, keySelector, parentKeySelector))
+    // Keys are otherwise trusted (see the declaration). Live shaping names the items whose
+    // properties changed; re-read only their edges. Copy selectors: a re-declaring selector
+    // reassigns the members.
+    if (!liveChanged.empty())
     {
-        return nullptr;
+        auto const keySelector = m_keySelector;
+        auto const parentKeySelector = m_parentKeySelector;
+        std::vector<ShapingHelpers::ResolvedNode> resolved;
+        resolved.reserve(liveChanged.size());
+        for (auto const& item : liveChanged)
+        {
+            resolved.push_back(ShapingHelpers::ResolveParentNode(item, keySelector, parentKeySelector));
+        }
+
+        if (declarationGeneration != m_parentDeclarationGeneration ||
+            m_hierarchyStructure != structure)
+        {
+            return nullptr;
+        }
+
+        for (auto const& node : resolved)
+        {
+            if (!ShapingHelpers::UpdateParentNode(*structure, node))
+            {
+                // Invalid edit (duplicate key, cycle...): the rebuild reports it.
+                InvalidateRetainedHierarchyStructure();
+                return nullptr;
+            }
+        }
     }
 
     // Re-declared while selectors ran; let the rebuild queue the replay.
@@ -2345,6 +2419,187 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
         return nullptr;
     }
     return structure;
+}
+
+void ShapedItemsSource::PatchHierarchyStructure(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    auto const ToVector = [](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items)
+    {
+        std::vector<winrt::IInspectable> result;
+        if (items)
+        {
+            const uint32_t size = items.Size();
+            result.reserve(size);
+            for (uint32_t i = 0; i < size; ++i)
+            {
+                result.push_back(items.GetAt(i));
+            }
+        }
+        return result;
+    };
+
+    HierarchyPatch patch;
+    try
+    {
+        patch.Action = args.Action();
+        patch.OldItems = ToVector(args.OldItems());
+        patch.NewItems = ToVector(args.NewItems());
+        patch.OldIndex = args.OldStartingIndex();
+        patch.NewIndex = args.NewStartingIndex();
+        patch.OldCount = patch.OldItems.size();
+    }
+    catch (...)
+    {
+        InvalidateRetainedHierarchyStructure();
+        return;
+    }
+    PatchHierarchyStructure(patch);
+}
+
+void ShapedItemsSource::PatchHierarchyStructure(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+    using winrt::Windows::Foundation::Collections::CollectionChange;
+
+    // VectorChanged names an index only: a removed item is known only from the structure's Rows,
+    // and an inserted or changed one is read back from the source, which already reflects it.
+    HierarchyPatch patch;
+    try
+    {
+        const int32_t index = static_cast<int32_t>(args.Index());
+        winrt::IInspectable item{ nullptr };
+        switch (args.CollectionChange())
+        {
+        case CollectionChange::ItemInserted:
+            if (m_sourceAccessor.TryGetAt(args.Index(), item))
+            {
+                patch.Action = NotifyCollectionChangedAction::Add;
+                patch.NewIndex = index;
+                patch.NewItems.push_back(std::move(item));
+            }
+            break;
+
+        case CollectionChange::ItemRemoved:
+            patch.Action = NotifyCollectionChangedAction::Remove;
+            patch.OldIndex = index;
+            patch.OldCount = 1;
+            break;
+
+        case CollectionChange::ItemChanged:
+            if (m_sourceAccessor.TryGetAt(args.Index(), item))
+            {
+                patch.Action = NotifyCollectionChangedAction::Replace;
+                patch.OldIndex = index;
+                patch.NewIndex = index;
+                patch.OldCount = 1;
+                patch.NewItems.push_back(std::move(item));
+            }
+            break;
+
+        case CollectionChange::Reset:
+        default:
+            break;
+        }
+    }
+    catch (...)
+    {
+        patch = {};
+    }
+    PatchHierarchyStructure(patch);
+}
+
+void ShapedItemsSource::PatchHierarchyStructure(HierarchyPatch const& patch)
+{
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    // Strong ref: selectors below may re-declare the relation and drop the member.
+    auto const structure = m_hierarchyStructure;
+    const uint64_t declarationGeneration = m_parentDeclarationGeneration;
+    const uint64_t sourceChangeStamp = m_sourceChangeStamp;
+
+    // Patchable only if the structure saw every earlier change: this one is the only one missing.
+    if (!structure ||
+        m_isRefreshing ||
+        m_hierarchyStructureGeneration != declarationGeneration ||
+        m_hierarchyStructureSourceStamp + 1 != sourceChangeStamp)
+    {
+        InvalidateRetainedHierarchyStructure();
+        return;
+    }
+
+    try
+    {
+        auto const action = patch.Action;
+        auto const& oldItems = patch.OldItems;
+        auto const& newItems = patch.NewItems;
+        const int32_t oldIndex = patch.OldIndex;
+        const int32_t newIndex = patch.NewIndex;
+        const size_t oldCount = patch.OldCount;
+
+        // Selectors first (app code, may re-enter); nothing is mutated until they all ran.
+        std::vector<ShapingHelpers::ResolvedNode> resolved;
+        if (action == NotifyCollectionChangedAction::Add || action == NotifyCollectionChangedAction::Replace)
+        {
+            auto const keySelector = m_keySelector;
+            auto const parentKeySelector = m_parentKeySelector;
+            resolved.reserve(newItems.size());
+            for (auto const& item : newItems)
+            {
+                resolved.push_back(ShapingHelpers::ResolveParentNode(item, keySelector, parentKeySelector));
+            }
+        }
+
+        if (m_hierarchyStructure != structure ||
+            m_parentDeclarationGeneration != declarationGeneration ||
+            m_sourceChangeStamp != sourceChangeStamp)
+        {
+            InvalidateRetainedHierarchyStructure();
+            return;
+        }
+
+        bool patched = false;
+        switch (action)
+        {
+        case NotifyCollectionChangedAction::Add:
+            patched = newIndex >= 0 && !newItems.empty() &&
+                ShapingHelpers::InsertParentNodes(*structure, static_cast<size_t>(newIndex), resolved);
+            break;
+
+        case NotifyCollectionChangedAction::Remove:
+            patched = oldIndex >= 0 && oldCount != 0 &&
+                ShapingHelpers::RemoveParentNodes(*structure, static_cast<size_t>(oldIndex), oldCount, oldItems);
+            break;
+
+        case NotifyCollectionChangedAction::Replace:
+            patched = oldIndex >= 0 && oldIndex == newIndex && oldCount != 0 && oldCount == newItems.size() &&
+                ShapingHelpers::RemoveParentNodes(*structure, static_cast<size_t>(oldIndex), oldCount, oldItems) &&
+                ShapingHelpers::InsertParentNodes(*structure, static_cast<size_t>(newIndex), resolved);
+            break;
+
+        case NotifyCollectionChangedAction::Move:
+            patched = oldIndex >= 0 && newIndex >= 0 && oldCount != 0 &&
+                ShapingHelpers::MoveParentNodes(*structure, static_cast<size_t>(oldIndex), static_cast<size_t>(newIndex), oldCount);
+            break;
+
+        case NotifyCollectionChangedAction::Reset:
+        default:
+            break;
+        }
+
+        if (!patched)
+        {
+            // Reset, malformed args, or a change that would leave the tree invalid: the rebuild
+            // re-reads every row (and reports any error).
+            InvalidateRetainedHierarchyStructure();
+            return;
+        }
+        m_hierarchyStructureSourceStamp = sourceChangeStamp;
+    }
+    catch (...)
+    {
+        // Possibly half-patched; never reuse it.
+        InvalidateRetainedHierarchyStructure();
+    }
 }
 
 void ShapedItemsSource::PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments)
@@ -2417,7 +2672,7 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
     ++m_hierarchyGeneration;
     m_rootBucketIndex.clear();
     // Holds every source row alive; a later relation rebuilds it anyway.
-    m_hierarchyStructure.reset();
+    InvalidateRetainedHierarchyStructure();
 }
 
 std::vector<winrt::IInspectable> ShapedItemsSource::HierarchyFallbackRows() const
@@ -2742,6 +2997,13 @@ void ShapedItemsSource::InvalidateRetainedHierarchyStructure() noexcept
 {
     // Drops only the cache; an in-flight Refresh holds its own reference.
     m_hierarchyStructure.reset();
+    m_hierarchyShapeCache.Clear();
+}
+
+void ShapedItemsSource::InvalidateLiveShapingSnapshots() noexcept
+{
+    m_liveSnapshotsCurrent = false;
+    m_livePendingItems.clear();
 }
 
 bool ShapedItemsSource::LiveShapeSnapshotsDiffer(
@@ -2755,16 +3017,40 @@ bool ShapedItemsSource::LiveShapeSnapshotsDiffer(
         left.SortKeys != right.SortKeys;
 }
 
-void ShapedItemsSource::RefreshLiveShapingSubscriptions(
+std::vector<winrt::IInspectable> ShapedItemsSource::RefreshLiveShapingSubscriptions(
     std::vector<winrt::IInspectable> const& items)
 {
     if (!IsLiveShapingEnabled())
     {
         ClearLiveShapingSubscriptions();
-        return;
+        return {};
     }
 
-    // Mark-and-sweep: only arrivals subscribe and departures revoke, avoiding per-row COM churn.
+    std::vector<winrt::IInspectable> changed;
+
+    // Trusted only for an INCC source (whose deltas the subscriptions followed) that still holds as
+    // many items as are tracked; anything else reconciles in full.
+    if (m_liveSnapshotsCurrent &&
+        static_cast<bool>(m_sourceCollectionChangedRevoker) &&
+        items.size() == m_liveShapeSnapshots.size())
+    {
+        // Subscriptions followed every collection change, so only the items that raised a change
+        // are re-read. They are returned so the retained structure re-reads their edges too.
+        auto pending = std::exchange(m_livePendingItems, {});
+        changed.reserve(pending.size());
+        for (auto& [key, item] : pending)
+        {
+            if (auto const snapshot = m_liveShapeSnapshots.find(key); snapshot != m_liveShapeSnapshots.end())
+            {
+                snapshot->second = CaptureLiveShapeSnapshot(item);
+                changed.push_back(std::move(item));
+            }
+        }
+        return changed;
+    }
+
+    // Full reconcile. Mark-and-sweep: only arrivals subscribe and departures revoke, avoiding
+    // per-row COM churn.
     std::unordered_set<void const*> live;
     live.reserve(items.size());
 
@@ -2791,25 +3077,33 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
 
         if (checkEdges && !edgeMoved)
         {
-            // Object-keyed edges prove nothing (see IsObjectNodeKey); always rebuild.
-            if (ShapingHelpers::IsObjectNodeKey(snapshot.NodeKey) || ShapingHelpers::IsObjectNodeKey(snapshot.ParentKey))
+            // An arrival has no previous snapshot; the source change stamp covers it.
+            if (auto const previous = m_liveShapeSnapshots.find(key); previous != m_liveShapeSnapshots.end())
             {
-                edgeMoved = true;
-            }
-            else if (auto const previous = m_liveShapeSnapshots.find(key); previous != m_liveShapeSnapshots.end())
-            {
-                edgeMoved = previous->second.NodeKey != snapshot.NodeKey || previous->second.ParentKey != snapshot.ParentKey;
+                edgeMoved = previous->second.NodeKey != snapshot.NodeKey ||
+                    previous->second.ParentKey != snapshot.ParentKey;
             }
         }
     }
 
-    if (edgeMoved)
+    if (checkEdges)
     {
-        InvalidateRetainedHierarchyStructure();
+        // Edges may have moved untracked, and any sort or filter input may have too.
+        if (edgeMoved)
+        {
+            InvalidateRetainedHierarchyStructure();
+        }
+        else
+        {
+            m_hierarchyShapeCache.Clear();
+        }
     }
 
     m_liveShaping->RetainOnly(live);
     m_liveShapeSnapshots = std::move(snapshots);
+    m_livePendingItems.clear();
+    m_liveSnapshotsCurrent = true;
+    return changed;
 }
 
 void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& item)
@@ -2839,7 +3133,9 @@ void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const&
     }
 
     m_liveShaping->Unsubscribe(item);
-    m_liveShapeSnapshots.erase(LiveShapingKeyFor(item));
+    auto const key = LiveShapingKeyFor(item);
+    m_liveShapeSnapshots.erase(key);
+    m_livePendingItems.erase(key);
 }
 
 void ShapedItemsSource::ApplyLiveShapingDelta(
@@ -2895,6 +3191,7 @@ void ShapedItemsSource::ApplyLiveShapingDelta(
     case NotifyCollectionChangedAction::Reset:
     default:
         // Callers route resets to Refresh(), which reconciles.
+        InvalidateLiveShapingSnapshots();
         break;
     }
 }
@@ -2903,6 +3200,7 @@ void ShapedItemsSource::ClearLiveShapingSubscriptions()
 {
     m_liveShaping->UnsubscribeAll();
     m_liveShapeSnapshots.clear();
+    InvalidateLiveShapingSnapshots();
     // Nothing tracked, so nothing live is pending: a posted restore finds the flag clear and
     // returns, and a later re-enable starts from a fresh restore.
     m_liveShapingDirty = false;
@@ -2934,12 +3232,25 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
     // the full restore, which re-reads every item.
     if (m_liveShapingChangeDropped->exchange(false))
     {
+        InvalidateLiveShapingSnapshots();
         MarkLiveShapingDirty();
     }
+
+    // Recorded on every path that may restore, so the restore re-reads this item (and only the
+    // recorded ones). A spurious entry costs one re-read.
+    auto const key = LiveShapingKeyFor(item);
+    auto const markPending = [&]()
+    {
+        if (m_liveSnapshotsCurrent)
+        {
+            m_livePendingItems.try_emplace(key, item);
+        }
+    };
 
     // Before the coalescing early-out: the owner must see every changed item.
     if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
     {
+        markPending();
         MarkLiveShapingDirty();
         return;
     }
@@ -2949,13 +3260,13 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
     // that has since lifted.
     if (m_liveShapingDirty)
     {
+        markPending();
         EnsureLiveShapingRestore();
         return;
     }
 
     // Discards changes no verb reads. Compare, don't store: the cached snapshot must keep matching
     // the projection until the restore runs.
-    auto const key = LiveShapingKeyFor(item);
     auto const existing = m_liveShapeSnapshots.find(key);
     if (existing != m_liveShapeSnapshots.end() &&
         !LiveShapeSnapshotsDiffer(existing->second, CaptureLiveShapeSnapshot(item)))
@@ -2963,6 +3274,7 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
+    markPending();
     MarkLiveShapingDirty();
 }
 

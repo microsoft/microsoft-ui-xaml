@@ -216,29 +216,57 @@ private:
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
-    void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
+    void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<ShapingHelpers::ParentStructure> structure);
     // Both axes: buckets the roots, one adapter segment and one group per bucket.
-    void RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
+    void RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<ShapingHelpers::ParentStructure> structure);
 
-    // Builds the index over UNFILTERED rows (builds and retains `structure` if null). Throws
-    // E_INVALIDARG before mutating anything. Returns null and queues a Refresh when a selector
-    // changed the relation mid-build; caller then publishes nothing.
+    // Builds the index over UNFILTERED rows (builds and retains `structure` if null), reusing
+    // every shaped sibling list the change since the last build left intact. Throws E_INVALIDARG
+    // before mutating anything. Returns null and queues a Refresh when a selector changed the
+    // relation mid-build; caller then publishes nothing.
     std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(
         std::vector<winrt::IInspectable> const& rows,
-        std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
+        std::shared_ptr<ShapingHelpers::ParentStructure> structure,
         bool sortRoots,
         uint64_t declarationGeneration);
 
-    // Retained structure if it still describes `rows` (same declaration, no source change, same
-    // rows/order, keys and parents unchanged per live snapshots or re-run selectors); else null.
-    std::shared_ptr<const ShapingHelpers::ParentStructure> TryReuseHierarchyStructure(
+    // The retained structure if it still describes `rows`: same declaration, every source change
+    // since it was built patched in (PatchHierarchyStructure), same rows in the same order. Then
+    // re-reads the edges of `liveChanged` items only. Else null.
+    //
+    // Keys and parent keys are otherwise TRUSTED: with live shaping off, an item edited in place
+    // keeps its old position until a source change or a re-declaration rebuilds the tree.
+    std::shared_ptr<ShapingHelpers::ParentStructure> TryReuseHierarchyStructure(
         std::vector<winrt::IInspectable> const& rows,
+        std::vector<winrt::IInspectable> const& liveChanged,
         uint64_t declarationGeneration,
-        uint64_t sourceChangeStamp) const;
-    // The tree structure last built, and what it was built from.
-    std::shared_ptr<const ShapingHelpers::ParentStructure> m_hierarchyStructure;
+        uint64_t sourceChangeStamp);
+    // Applies one source change to the retained structure, running the selectors for the new
+    // items only. Drops the structure (the next Refresh rebuilds) when it cannot.
+    struct HierarchyPatch
+    {
+        winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction Action{ winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction::Reset };
+        int32_t OldIndex{ -1 };
+        int32_t NewIndex{ -1 };
+        // Rows removed (Remove/Replace) or moved; OldItems, when non-empty, must match them.
+        size_t OldCount{ 0 };
+        std::vector<winrt::IInspectable> OldItems;
+        std::vector<winrt::IInspectable> NewItems;
+    };
+    void PatchHierarchyStructure(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    void PatchHierarchyStructure(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+    void PatchHierarchyStructure(HierarchyPatch const& patch);
+    // The tree structure last built, and what it was built from. Mutated in place only by the
+    // patches above: PatchHierarchyStructure outside any Refresh, TryReuseHierarchyStructure before
+    // its Refresh reads the structure.
+    std::shared_ptr<ShapingHelpers::ParentStructure> m_hierarchyStructure;
     uint64_t m_hierarchyStructureGeneration{ 0 };
     uint64_t m_hierarchyStructureSourceStamp{ 0 };
+    // Shaped sibling lists of m_hierarchyStructure, reused across reshapes.
+    ShapingHelpers::ParentShapeCache m_hierarchyShapeCache;
+    // Bumped when the filter (resp. sort) changes, so cached sibling lists know to re-shape.
+    uint64_t m_hierarchyFilterGeneration{ 0 };
+    uint64_t m_hierarchySortGeneration{ 0 };
     // Bumped by every source change notification, including ones deferred behind a rebuild.
     uint64_t m_sourceChangeStamp{ 0 };
     // Stamp captured when the current Refresh materialized the source.
@@ -335,8 +363,13 @@ private:
         LiveShapeSnapshot const& left,
         LiveShapeSnapshot const& right);
     static void const* LiveShapingKeyFor(winrt::IInspectable const& item);
-    // Mark-and-sweep reconcile; surviving items keep their subscription.
-    void RefreshLiveShapingSubscriptions(std::vector<winrt::IInspectable> const& items);
+    // Brings subscriptions and snapshots up to date for a Refresh over `items`. While they are
+    // current (see m_liveSnapshotsCurrent) only the items that raised a change are recaptured, and
+    // those are returned; otherwise a mark-and-sweep over `items` re-reads everything, returns
+    // nothing, and leaves the hierarchy shape cache to start over.
+    std::vector<winrt::IInspectable> RefreshLiveShapingSubscriptions(std::vector<winrt::IInspectable> const& items);
+    // Forces the next Refresh to reconcile every item (a change it was not told about item by item).
+    void InvalidateLiveShapingSnapshots() noexcept;
     void ClearLiveShapingSubscriptions();
     void ResubscribeLiveShapingFromSource();
     // O(1) per-item delta for incremental paths.
@@ -436,6 +469,12 @@ private:
     std::shared_ptr<std::atomic<bool>> m_liveShapingChangeDropped{ std::make_shared<std::atomic<bool>>(false) };
     bool m_liveShapingEnabled{ false };
     std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
+    // Subscriptions and snapshots describe the source, except for m_livePendingItems: kept so by
+    // the collection-change deltas, so a Refresh recaptures only the items that changed. Cleared
+    // by anything that changes the source or the snapshot shape without an item-level delta.
+    bool m_liveSnapshotsCurrent{ false };
+    // Items that raised a shape-relevant change since the last Refresh, keyed as the snapshots.
+    std::unordered_map<void const*, winrt::IInspectable> m_livePendingItems;
     // Pending live reshape: the projection may not reflect the captured snapshots.
     bool m_liveShapingDirty{ false };
     // A restore is queued on m_ownerQueue (so it implies m_ownerQueue is set). Separate from dirty

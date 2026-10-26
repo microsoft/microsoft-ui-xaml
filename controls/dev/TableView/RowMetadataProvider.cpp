@@ -430,7 +430,8 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
 
     case SourceKind::Hierarchical:
     {
-        // Node key, matching what expand/collapse takes; survives item re-creation.
+        // Node identity (object identity), matching what expand/collapse takes; a re-created item
+        // is a new row.
         if (m_hierarchicalAdapter)
         {
             if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(index))

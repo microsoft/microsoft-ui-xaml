@@ -67,8 +67,9 @@ public:
     struct NodeRow
     {
         winrt::IInspectable Item{ nullptr };
+        // The item's object identity (ShapingHelpers::FormatNodeIdentity), not its ParentBy key.
         winrt::hstring NodeKey;
-        // Node key of the parent row; empty for roots.
+        // Node identity of the parent row; empty for roots.
         winrt::hstring ParentKey;
 
         // 0-based (roots render flush); TableViewRowInfo::Level is Depth + 1.
@@ -99,7 +100,7 @@ public:
     bool IndexContainsItem(winrt::IInspectable const& item) const;
     bool HasIndex() const noexcept { return m_index != nullptr; }
 
-    // Positive prefix test, so a stale or foreign key cannot become node intent.
+    // Parses as a node identity, so a stale or foreign key cannot become node intent.
     static bool IsNodeKey(winrt::hstring const& key);
 
 private:
@@ -145,8 +146,6 @@ private:
     bool MutateExpansionQuietly(Fn&& fn);
 
     std::shared_ptr<const ShapingHelpers::ParentKeyIndex> m_index;
-    // Structure intent was last pruned against (see SetIndex).
-    std::weak_ptr<const ShapingHelpers::ParentStructure> m_prunedForStructure;
     std::vector<size_t> m_rootSegments;
 
     // Context rows collapsed under the current filter; cleared on filter change, never intent.

@@ -30,9 +30,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TableViewHierarchyTests : TableViewApiTestBase
     {
-        // PENDING DECISION (not implemented): L01 SelectionSurvivesSameKeyReplace.
-        // Flat sources do not re-anchor selection to a re-created item (VerifySelectionIsNotReanchoredAcrossItemRecreation),
-        // but hierarchical sources re-anchor by node key. Add this test once the contract is documented or aligned.
+        // Rows are identified by object identity under ParentBy as everywhere else: a same-key
+        // replacement is a new row, so it loses expansion and selection (see VerifyReplacedNodeLosesExpansion).
 
         private const string Roots = "Ada1+ Eve1+ Gus1";
         private const string AdaBenExpanded = "Ada1- Ben2- Dan3 Cy2 Eve1+ Gus1";
@@ -302,8 +301,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies expansion intent is keyed by node key, not object identity.")]
-        public void VerifyKeySurvivesRecreate()
+        [TestProperty("Description", "Verifies expansion intent is keyed by object identity, so a same-key replacement starts collapsed.")]
+        public void VerifyReplacedNodeLosesExpansion()
         {
             ObservableCollection<TreeEmployee> list = null;
             TableViewSource source = null;
@@ -318,7 +317,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => list[0] = new TreeEmployee { Id = 1, Name = "Ada", Dept = "Eng" });
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2+ Cy2 Eve1+ Gus1", "Ada replaced by a same-key object"));
+            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "Ada replaced by a same-key object is a new row"));
         }
 
         #endregion
@@ -713,6 +712,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, "Ben1+ Cy1 Eve1+ Gus1", "after removing Ada"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an added parent adopts the orphan roots waiting for its key.")]
+        public void VerifyAddParentAdoptsOrphans()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() =>
+            {
+                list = MakeTree();
+                source = Tree(list);
+            });
+            var tableView = Place(source);
+
+            // Gus waits for manager 99.
+            RunOnUIThread.Execute(() => list.Add(new TreeEmployee { Id = 99, Name = "Zed", Dept = "Ops" }));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1+ Eve1+ Zed1+", "Zed adopted Gus"));
+
+            Toggle(tableView, "Zed", true);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1+ Eve1+ Zed1- Gus2", "Zed expanded"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a removed parent re-added re-adopts its children in source order, collapsed.")]
+        public void VerifyReaddedParentReadoptsChildren()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() =>
+            {
+                list = MakeTree();
+                source = Tree(list);
+            });
+            var tableView = Place(source);
+
+            TreeEmployee ada = null;
+            Toggle(tableView, "Ada", true);
+            RunOnUIThread.Execute(() =>
+            {
+                ada = list[0];
+                list.RemoveAt(0);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ben1+ Cy1 Eve1+ Gus1", "after removing Ada"));
+
+            RunOnUIThread.Execute(() => list.Insert(0, ada));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "Ada re-added; its expansion went with its removal"));
+
+            Toggle(tableView, "Ada", true);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2+ Cy2 Eve1+ Gus1", "Ada expanded"));
         }
 
         [TestMethod]
