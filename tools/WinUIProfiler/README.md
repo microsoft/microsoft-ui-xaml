@@ -1,0 +1,96 @@
+# WinUI Profiler executable baseline
+
+A standalone, unpackaged, Windows App SDK and .NET self-contained WinUI 3
+application. Launch a packaged application by AUMID, launch an unpackaged
+executable, or attach to a running process. Browse buttons supplement manual
+entry. Connecting requires explicit trust of the local injection binaries.
+
+The architecture-matched native injector loads a public `IXamlDiagnostics` TAP
+into the selected target. A local, same-user named pipe verifies the process
+creation identity, session, nonce and correlated `hello` reply. An injector
+acceptance result alone never establishes a connection. Periodic hello requests
+keep the connection alive.
+
+Only after the genuine TAP hello, an independent polling worker starts these
+two live graphs:
+
+| Graph | Series | Source and meaning |
+| --- | --- | --- |
+| CPU and GPU | CPU %, GPU % | NT process/system CPU snapshots with processor-group normalization; English PDH GPU Engine counters, using the busiest process engine, not their sum. |
+| Process memory | Working set, private working set, private commit (MiB) | `NtQuerySystemInformation(SystemProcessInformation)` process snapshots. Commit is not resident memory. |
+
+Polling and UI refresh are independent. Each series retains at most 121 points
+and two minutes; disconnect freezes the final history and does not terminate the
+target. Reconnecting starts a new metric scope. Closing the profiler cancels
+connection work, joins polling and disconnects the TAP without killing the target.
+Unavailable and warm-up measurements remain labelled gaps, never invented zeros.
+
+This is the executable/connection/metrics baseline, not the full profiler.
+There is no ETW listener, recording database, frame processing, tree snapshot,
+heap capture or instrumented-product dependency. The profiler UI uses its pinned
+SDK runtime; it does not replace the target's loaded runtime.
+
+## Build and run
+
+Requires Windows 11, .NET SDK 10.0.403, Windows SDK 10.0.26100.0 and Visual Studio
+with MSBuild plus the x64 and ARM64 C++ toolchains. This tool has a standalone
+build boundary and does not require a WinUI product build or product initialization.
+
+Run from this directory:
+
+```powershell
+.\scripts\Build-App.ps1 -Configuration Release -Platform x64
+$output = (Get-Content .\WinUIProfiler.App\obj\ProfilerAppOutput.x64.Release.txt -Raw).Trim()
+& (Join-Path $output 'WinUIProfiler.App.exe')
+```
+
+Use `-Platform ARM64` to cross-build an ARM64 application; `-Architecture` is an
+alias for `-Platform`. Both target-architecture TAP/injector pairs are built,
+hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
+is staged beside the executable. Distribute the complete output directory,
+not the executable alone.
+
+Select a mode and target, optionally arguments/working directory and diagnostics
+endpoint, check the trust box, then connect. Connection status shows the actual
+target PID, creation time, runtime path and latest hello. Errors and timeouts
+remain visible; connecting to a non-WinUI process cannot produce graph samples.
+The selected target must expose WinUI diagnostics, use a compatible runtime and
+have matching architecture and access rights. Access denial is reported, not
+silently elevated.
+
+## Validation
+
+```powershell
+dotnet test .\WinUIProfiler.Core.Tests\WinUIProfiler.Core.Tests.csproj -c Release
+.\scripts\Tests\Test-BuildEntry.ps1 -Configuration Release -Platform x64
+$msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\amd64\MSBuild.exe' | Select-Object -First 1
+& $msbuild .\WinUIProfiler.Tap.Tests\WinUIProfiler.Tap.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /nologo /v:quiet
+if ($LASTEXITCODE) { throw 'Native test build failed.' }
+& .\WinUIProfiler.Tap.Tests\bin\x64\Release\WinUIProfiler.Tap.Tests.exe
+if ($LASTEXITCODE) { throw 'Native protocol tests failed.' }
+.\scripts\Tests\Test-PlaceholderUi.ps1 -Target 'C:\path\Sample.exe' -ObserveSeconds 130 -ExerciseErrors -Reconnect
+.\scripts\Tests\Test-PlaceholderUi.ps1 -Mode Packaged -Target 'PackageFamilyName!App' -ObserveSeconds 15
+.\scripts\Tests\Test-PlaceholderUi.ps1 -Mode Attach -Target '1234' -ObserveSeconds 15 -CloseWhileConnected
+.\scripts\Tests\Test-PlaceholderPickers.ps1 -ApplicationId 'PackageFamilyName!App' -TargetProcessId 1234
+```
+
+The UI test starts and closes its own profiler, validates real hello/identity,
+both combined graphs, bounds, source/quality, an independent K32 process-memory
+comparison and target-preserving shutdown. It closes newly launched targets,
+but preserves attach targets. `-ProfilerProcessId` transfers shutdown ownership
+of that profiler to the test; never supply a user-owned instance. The optional
+error/cancellation checks require the default unpackaged test mode. Reconnect
+also exercises active-connection shutdown.
+The build-entry regression runs actual builds under PowerShell 7 and Windows
+PowerShell 5.1, checking BOM-less UTF-8 manifests and deployed payload hashes.
+The picker test checks installed-package and running-process discovery, search,
+selection reset on refresh, selection transfer and cancel preservation.
+
+CPU uses processor-time utilization, not Task Manager's frequency-adjusted
+utility. Aligned hardware parity with Task Manager and native ARM64 execution
+are separate qualification gates, not implied by a successful build or matching
+collection APIs. NT process layouts are validated at the compatibility boundary;
+unsupported layouts and missing GPU counters produce explicit diagnostics.
+The TAP's bounded replay guard rejects duplicates without eviction; its Bloom
+filter can conservatively reject a fresh request after very long sessions.
+Such a rejection stops the connection visibly rather than silently reconnecting.

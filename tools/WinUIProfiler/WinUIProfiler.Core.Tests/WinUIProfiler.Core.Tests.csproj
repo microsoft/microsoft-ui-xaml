@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <ProjectReference Include="..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
+    <None Include="..\WinUIProfiler.App\WinUIProfiler.App.csproj" Link="Deployment\WinUIProfiler.App.csproj" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\WinUIProfiler.App\packages.lock.json" Link="Deployment\packages.lock.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
