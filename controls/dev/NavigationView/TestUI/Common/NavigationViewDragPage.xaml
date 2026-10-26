@@ -58,6 +58,8 @@
                 <Button x:Name="DisableDragItem" Content="Disable item" Click="DisableDragItem_Click"/>
                 <Button x:Name="EnableDragItem" Content="Enable item" Click="EnableDragItem_Click"/>
                 <Button x:Name="FocusDragItem" Content="Focus item" Click="FocusDragItem_Click"/>
+                <Button x:Name="DetachDragItem" Content="Remove item" Click="DetachDragItem_Click"/>
+                <Button x:Name="AttachDragItem" Content="Restore item" Click="AttachDragItem_Click"/>
             </StackPanel>
             <Button x:Name="CompleteDragDeferral" Content="Complete drag deferral" IsEnabled="False"
                     Click="CompleteDragDeferral_Click"/>

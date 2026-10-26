@@ -120,6 +120,16 @@ namespace MUXControlsTestApp
 
         private void FocusDragItem_Click(object sender, RoutedEventArgs args) => DragItem.Focus(FocusState.Keyboard);
 
+        private void DetachDragItem_Click(object sender, RoutedEventArgs args) => NavView.MenuItems.Remove(DragItem);
+
+        private void AttachDragItem_Click(object sender, RoutedEventArgs args)
+        {
+            if (!NavView.MenuItems.Contains(DragItem))
+            {
+                NavView.MenuItems.Insert(0, DragItem);
+            }
+        }
+
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             InvocationCount.Text = (++invocationCount).ToString();
