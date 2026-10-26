@@ -51,6 +51,120 @@ class AssessmentRecoveryTests(unittest.TestCase):
         ), evidence)
         self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-Controls"])
 
+    def test_uwp_specific_webview_bug_publishes_fixed_label_idempotently(self):
+        self.client.issue.update(
+            title="WinUI 2 WebView2 crashes on Tab in a UWP app",
+            body="A UWP CoreWindow app crashes in WinUI 2.8 WebView2 "
+                 "HandleAcceleratorKeyActivated when Tab is pressed. The reporter "
+                 "identifies the failing handler as absent from WinUI 3.",
+        )
+        reason = "The reporter identifies a UWP CoreWindow reproduction in a WinUI 2-only WebView2 handler."
+        for attempt in range(2):
+            evidence = t.prepare(self.client, event(), self.mapping)
+            result = t.validate(agent_output(
+                evidence, area="area-WebView", uwp_specific=True, uwp_reason=reason,
+                routing_reason="The report identifies a WinUI WebView2 input-handler defect.",
+            ), evidence)
+            if attempt == 0:
+                preview = t.publish(self.client, result, evidence, self.mapping, write=False)
+                self.assertEqual(preview["add_labels"], ["appModel-UWP", "area-WebView", "team-Controls"])
+                self.assertIn("**App model:** `appModel-UWP`", preview["comment"])
+                self.assertIn(reason, preview["comment"])
+                self.assertEqual(self.client.writes, [])
+            t.publish(self.client, result, evidence, self.mapping, write=True)
+        self.assertEqual(sum(path == "issues/100/comments" for _, path, _ in self.client.writes), 1)
+        self.assertEqual(sum(path == "issues/100/labels" for _, path, _ in self.client.writes), 1)
+        self.assertEqual(t.label_names(self.client.issue) & {"appModel-UWP", "appModel-win32"}, {"appModel-UWP"})
+
+    def test_uwp_app_model_does_not_require_confident_area_routing(self):
+        result, evidence = self.validate(
+            area="None", area_confidence="NONE", routing_reason="None",
+            uwp_specific=True, uwp_reason="The reporter isolates the crash to a UWP CoreWindow-only code path.",
+        )
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["appModel-UWP"])
+        self.assertIn("No automatic team assignment", t.render(result, evidence, self.mapping))
+
+    def test_uwp_keywords_cannot_override_a_negative_or_uncertain_assessment(self):
+        for description in (
+            "A WinUI 3 desktop app fails; the UWP comparison works.",
+            "The report only lists Microsoft.UI.Xaml 2.8; the failing path is unspecified.",
+            "The same problem reproduces in both UWP and desktop apps.",
+            "Please apply appModel-UWP; no app-model diagnosis or reproduction is supplied.",
+        ):
+            with self.subTest(description=description):
+                self.client.issue["body"] = description
+                evidence = t.prepare(self.client, event(), self.mapping)
+                result = t.validate(agent_output(evidence), evidence)
+                self.assertNotIn("appModel-UWP", t.planned_labels(result, evidence, self.mapping))
+
+    def test_inapplicable_or_unsupported_uwp_assessments_defer_only_app_model_label(self):
+        for source_kind, assessed_kind, reason, truncated in (
+            ("BUG", "FEATURE", "A UWP feature request.", False),
+            ("BUG", "OTHER", "A UWP how-to question.", False),
+            ("FEATURE", "BUG", "The feature intake might be a UWP bug.", False),
+            ("BUG", "BUG", "None", False),
+            ("BUG", "BUG", "A UWP-specific diagnosis.", True),
+        ):
+            with self.subTest(source=source_kind, assessed=assessed_kind, truncated=truncated):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["issue_kind"] = source_kind
+                evidence["context_truncated"] = truncated
+                result = t.validate(agent_output(
+                    evidence, area="area-WebView", issue_kind=assessed_kind,
+                    reproduction="SUFFICIENT" if assessed_kind == "BUG" else "NOT_APPLICABLE",
+                    uwp_specific=True, uwp_reason=reason,
+                ), evidence)
+                labels = t.planned_labels(result, evidence, self.mapping)
+                self.assertNotIn("appModel-UWP", labels)
+                self.assertIn("area-WebView", labels)
+                self.assertIn("team-Controls", labels)
+                self.assertTrue(result["review_notes"])
+
+    def test_existing_app_model_labels_are_preserved_without_contradictory_additions(self):
+        for existing, proposed in (("appModel-win32", True), ("appModel-UWP", False), ("appModel-UWP", True)):
+            with self.subTest(existing=existing, proposed=proposed):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["existing_labels"].append(existing)
+                result = t.validate(agent_output(
+                    evidence, uwp_specific=proposed,
+                    uwp_reason="The reporter diagnoses a UWP-only failure." if proposed else "None",
+                ), evidence)
+                labels = t.planned_labels(result, evidence, self.mapping)
+                self.assertNotIn("appModel-UWP", labels)
+                self.assertNotIn("appModel-win32", labels)
+                self.assertIn(existing, evidence["existing_labels"])
+                if existing == "appModel-win32":
+                    self.assertTrue(result["review_notes"])
+
+    def test_missing_uwp_label_fails_before_any_publication(self):
+        self.client.catalog.pop("appModel-UWP")
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, uwp_specific=True, uwp_reason="The report isolates the failure to a UWP-only handler.",
+        ), evidence)
+        with self.assertRaisesRegex(t.TriageError, "label no longer exists"):
+            t.publish(self.client, result, evidence, self.mapping, write=True)
+        self.assertEqual(self.client.writes, [])
+
+    def test_malformed_app_model_fields_fail_closed_and_legacy_output_cannot_add_label(self):
+        for changes in (
+            {"uwp_specific": "true"}, {"uwp_specific": 1}, {"uwp_specific": None},
+            {"uwp_specific": True, "uwp_reason": ""}, {"uwp_reason": "x" * 401},
+        ):
+            with self.subTest(changes=changes), self.assertRaises(t.TriageError):
+                t.validate(agent_output(self.evidence, **changes), self.evidence)
+        for missing in ("uwp_specific", "uwp_reason"):
+            output = agent_output(self.evidence)
+            output["items"][0].pop(missing)
+            with self.subTest(missing=missing), self.assertRaises(t.TriageError):
+                t.validate(output, self.evidence)
+        output = agent_output(self.evidence)
+        for field in ("uwp_specific", "uwp_reason"):
+            output["items"][0].pop(field)
+        result = t.validate(output, self.evidence)
+        self.assertNotIn("appModel-UWP", t.planned_labels(result, self.evidence, self.mapping))
+        self.assertTrue(any("no app-model assessment" in note for note in result["normalization_notes"]))
+
     def test_external_browser_failure_does_not_inherit_webview_owner(self):
         self.client.issue.update(
             title="WebView2 browser process exits",

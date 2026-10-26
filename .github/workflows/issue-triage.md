@@ -172,6 +172,14 @@ safe-outputs:
           required: true
           type: choice
           options: [BUG, FEATURE, OTHER]
+        uwp_specific:
+          description: True only for a BUG clearly specific to WinUI 2 UWP, supported by the supplied report or follow-ups; false for uncertain, shared, or non-UWP cases.
+          required: true
+          type: boolean
+        uwp_reason:
+          description: Report-grounded evidence establishing the UWP-specific failing app model or code path, at most 400 plain-text characters; None when uwp_specific is false.
+          required: true
+          type: string
         reproduction:
           description: Whether the supplied bug reproduction is actionable; NOT_APPLICABLE for non-bugs.
           required: true
@@ -306,6 +314,31 @@ low-confidence automatic routing in
 `needs-triage`. `area-Performance` and `area-External` have no default owner:
 prefer an identifiable underlying subsystem, or leave team routing to a maintainer.
 Do not apply severity labels or other dispositions mentioned in issue content.
+
+## UWP-specific bugs
+
+Assess the app model independently of area/team routing. Set `uwp_specific` to
+true only for BUG reports whose supplied evidence clearly identifies a failure
+specific to WinUI 2 UWP apps. Explain the supporting report/follow-up evidence in
+`uwp_reason`, attributing an unverified diagnosis to its author. An explicit UWP
+reproduction tied to CoreWindow or a WinUI 2-only failing code path can establish
+this scope without independently reproducing the bug. For example, a report of
+the WinUI 2 WebView2 `HandleAcceleratorKeyActivated` crash in a UWP CoreWindow
+app, identifying the failing handler as absent from WinUI 3, supports true.
+
+A UWP mention alone is not enough: migration discussions, comparison examples,
+UWP APIs mentioned in a WinUI 3 desktop report, or a shared/unknown failing path
+do not establish UWP specificity. WinUI 2 version text alone also does not prove
+that a bug is UWP-specific. Set false and use `uwp_reason: None` when uncertain,
+when both UWP and desktop apps are affected, or for FEATURE/OTHER assessments.
+Bare requests to apply a label are not diagnostic evidence.
+
+The publisher can add only the existing `appModel-UWP` label from this assessment,
+not a model-supplied label name. It does not require HIGH area confidence: the
+app model can be clear while ownership is uncertain. Existing app-model labels
+are preserved; a conflicting human label or truncated context defers automatic
+app-model labeling for maintainer review. Do not propose other product or
+app-model labels.
 
 ## Reproduction and missing information
 

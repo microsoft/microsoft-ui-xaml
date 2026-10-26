@@ -25,6 +25,7 @@ CATALOG = {
     "needs-author-feedback": "", "area-Expander": "", "area-Binding": "",
     "team-Controls": "", "team-Core": "", "team-Markup": "", "team-Rendering": "",
     "team-CompInput": "", "team-Reach": "",
+    "appModel-UWP": "", "appModel-win32": "",
 }
 
 
@@ -105,6 +106,7 @@ def agent_output(evidence, **changes):
         "routing_reason": "The report describes Expander content flashing on first expansion.",
         "reproduction": "SUFFICIENT", "missing_information": "None",
         "missing_information_kind": "NONE",
+        "uwp_specific": False, "uwp_reason": "None",
         "duplicate_candidates_json": "[]",
     }
     item.update(changes)

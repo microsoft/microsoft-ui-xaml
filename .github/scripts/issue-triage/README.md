@@ -48,6 +48,7 @@ still rebuilds live evidence independently.
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
+| BUG clearly specific to WinUI 2 UWP, with supporting report evidence | Add the existing `appModel-UWP` label independently of area confidence, unless context is truncated or a human app-model label conflicts. |
 | BUG assessment with an insufficient repro and an actionable REPRODUCTION request | Ask for the specified details and add `needs-repro`, unless the intake is a feature or context is truncated. |
 | Missing version but otherwise actionable reproduction | Ask for the version in the comment; do not add `needs-repro` for that alone. |
 | Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
@@ -187,7 +188,8 @@ is the supported primary area, but existing area labels are not replaced.
 a version-specific exception or inherited Rendering/Core labels. Area selection
 must still distinguish WinUI control/integration defects from evidenced external
 browser-runtime failures. These distinctions use report evidence without adding
-product/app-model labels.
+other product/app-model labels. UWP-specific bugs are assessed separately from
+area ownership, as described below.
 
 `area-TitleBar` defaults to `team-Controls`; its existing `pointer-handling`
 exception still routes evidenced hit-testing, drag-region input, or caption-button
@@ -202,6 +204,33 @@ If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
 
 ## Assessment reconciliation
+
+### UWP app model
+
+The model returns a boolean `uwp_specific` assessment and bounded `uwp_reason`
+alongside its area/routing assessment. Clear report evidence of a WinUI 2 UWP
+failure, such as a CoreWindow reproduction tied to a WinUI 2-only handler, can
+support the existing `appModel-UWP` label without independent root-cause
+verification. A UWP mention, WinUI 2 version alone, migration/comparison example,
+shared failure, or bare label request is not sufficient. Uncertain app models
+and FEATURE/OTHER assessments return false.
+
+The publisher validates the types and requires a nonempty supporting rationale.
+It adds only the fixed existing label, never an arbitrary model-supplied name,
+and only for a BUG assessment that is not a feature intake. Missing rationale,
+truncated context, or an existing conflicting `appModel-*` label defers this
+label and surfaces a review note without discarding valid area/team triage.
+No existing app-model label is removed or replaced. Area confidence does not
+gate this independent classification. No other product/app-model label is added.
+As with area rationale, validation checks for an explanation, not its semantic
+correctness; the model must establish UWP specificity from the supplied evidence.
+
+Older output artifacts without both app-model fields remain usable but cannot
+authorize app-model labels; the omission is recorded in the comment and log.
+Partially present or malformed fields fail closed. Label existence, changed-input,
+preview, threat-detection and canonical-comment publication checks still apply.
+
+### Issue kind and reproduction
 
 The prepared issue kind is a label/template-based hint, not a verdict about the
 report's content. The model assesses BUG, FEATURE, or OTHER independently, while

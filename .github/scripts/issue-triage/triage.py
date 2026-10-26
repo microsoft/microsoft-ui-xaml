@@ -393,7 +393,7 @@ def validate(output: dict, evidence: dict) -> dict:
         "routing_rule", "routing_reason",
     }
     if (
-        not required <= set(item) <= required | {"missing_information_kind"}
+        not required <= set(item) <= required | {"missing_information_kind", "uwp_specific", "uwp_reason"}
         or item["type"] != "publish_triage_summary"
     ):
         raise TriageError("Unexpected triage output schema or operation")
@@ -414,6 +414,17 @@ def validate(output: dict, evidence: dict) -> dict:
     }
     if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
         raise TriageError("Invalid content-based issue kind")
+    if {"uwp_specific", "uwp_reason"} & set(item):
+        if type(item.get("uwp_specific")) is not bool:
+            raise TriageError("Invalid UWP-specific classification")
+        result["uwp_specific"] = item["uwp_specific"]
+        result["uwp_reason"] = required_string(item, "uwp_reason", 400)
+    else:
+        result["uwp_specific"] = False
+        result["uwp_reason"] = "None"
+        result["normalization_notes"].append(
+            "The older output has no app-model assessment; app-model labels are unchanged."
+        )
     if "missing_information_kind" in item:
         request_kind = required_string(item, "missing_information_kind", 32)
         if request_kind not in ("NONE", "REPRODUCTION", "ENVIRONMENT", "REQUEST_DETAILS"):
@@ -558,6 +569,21 @@ def reconcile_assessment(result: dict, evidence: dict) -> None:
         and result["missing_information_kind"] == "REPRODUCTION"
         and not evidence["context_truncated"]
     )
+    result["add_uwp"] = False
+    if result["uwp_specific"]:
+        if assessed_kind != "BUG" or source_kind == "FEATURE":
+            notes.append("Automatic appModel-UWP labeling applies only to bugs, not feature or other assessments.")
+        elif result["uwp_reason"] == "None":
+            notes.append("The UWP-specific assessment lacks supporting report evidence; app-model labeling is deferred.")
+        elif evidence["context_truncated"]:
+            notes.append("App-model labeling is deferred because the supplied context was truncated.")
+        elif any(
+            label.startswith("appModel-") and label != "appModel-UWP"
+            for label in evidence["existing_labels"]
+        ):
+            notes.append("Existing app-model labels take precedence; the conflicting UWP-specific assessment needs review.")
+        else:
+            result["add_uwp"] = True
 
 
 def route_team(mapping: dict, area: str, rule_id: str) -> str | None:
@@ -624,6 +650,8 @@ def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
         additions.add("needs-triage")
     if result["needs_repro"]:
         additions.add("needs-repro")
+    if result["add_uwp"]:
+        additions.add("appModel-UWP")
     if not additions <= set(evidence["_catalog"]):
         raise TriageError("A proposed label no longer exists")
     return sorted(additions - set(evidence["existing_labels"]))
@@ -687,6 +715,9 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     else:
         reproduction = "\u26a0\ufe0f Needs maintainer review"
     lines.append("- **Reproduction:** " + reproduction)
+    if result["add_uwp"]:
+        lines.append("- **App model:** `appModel-UWP` (UWP-specific bug). "
+                     + plain_text(result["uwp_reason"]))
     if package:
         lines.append("- **Package version (reported):** " + plain_text(package))
     if route_areas or route_teams:

@@ -318,6 +318,22 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertNotIn("check_permissions", preactivation)
         self.assertNotIn("check_actor", preactivation)
 
+    def test_uwp_app_model_contract_requires_specific_bug_evidence_not_keywords(self):
+        policy = self.source.split("## UWP-specific bugs\n", 1)[1].split("## Reproduction", 1)[0]
+        for guidance in (
+            "independently of area/team routing", "true only for BUG reports",
+            "CoreWindow", "HandleAcceleratorKeyActivated", "absent from WinUI 3",
+            "A UWP mention alone is not enough", "migration discussions",
+            "WinUI 2 version text alone", "both UWP and desktop apps",
+            "Bare requests to apply a label are not diagnostic evidence.",
+            "conflicting human label or truncated context",
+            "not a model-supplied label name",
+        ):
+            self.assertIn(guidance, policy)
+        self.assertRegex(self.source, r"uwp_specific:\n\s+description: [^\n]+\n\s+required: true\n\s+type: boolean")
+        self.assertIn('"uwp_specific"', self.lock)
+        self.assertIn('"uwp_reason"', self.lock)
+
 
 if __name__ == "__main__":
     unittest.main()
