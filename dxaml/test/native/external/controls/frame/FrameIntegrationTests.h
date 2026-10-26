@@ -41,6 +41,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Frame can navigate forward and backward between different pages.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(InvalidNavigationDestinationHasHelpfulError)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that non-Page destinations report an argument error with the destination type and API documentation.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(InvalidNavigationDestinationPreservesFrameState)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that invalid destinations preserve content and history and allow subsequent navigation.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanceledInvalidNavigationDoesNotThrow)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that cancellation takes precedence over invalid destination validation.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanNavigateWithNavigationTransitionInfo)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Frame can navigate forward and backward with the navigation transition info.")
         END_TEST_METHOD()

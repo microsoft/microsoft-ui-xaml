@@ -168,6 +168,265 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
 
+    void FrameIntegrationTests::InvalidNavigationDestinationHasHelpfulError()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            wxaml_interop::TypeName destinationTypes[] =
+            {
+                { L"Microsoft.UI.Xaml.Controls.UserControl", wxaml_interop::TypeKind::Primitive },
+                { L"Microsoft.UI.Xaml.Window", wxaml_interop::TypeKind::Primitive },
+                { L"Microsoft.UI.Xaml.Controls.Grid", wxaml_interop::TypeKind::Primitive }
+            };
+
+            for (auto destinationType : destinationTypes)
+            {
+                for (int overload = 0; overload < 6; ++overload)
+                {
+                    LOG_OUTPUT(L"Invalid destination: %s, overload: %d", destinationType.Name->Data(), overload);
+                    auto frame = ref new xaml_controls::Frame();
+                    TestServices::WindowHelper->WindowContent = frame;
+                    auto transitionInfo = ref new Microsoft::UI::Xaml::Media::Animation::SuppressNavigationTransitionInfo();
+                    auto options = ref new xaml_navigation::FrameNavigationOptions();
+                    options->IsNavigationStackEnabled = overload != 5;
+                    options->TransitionInfoOverride = transitionInfo;
+
+                    int navigationFailedCount = 0;
+                    int navigatedCount = 0;
+                    auto failedRegistration = CreateSafeEventRegistration(xaml_controls::Frame, NavigationFailed);
+                    auto navigatedRegistration = CreateSafeEventRegistration(xaml_controls::Frame, Navigated);
+                    failedRegistration.Attach(frame, ref new xaml_navigation::NavigationFailedEventHandler(
+                        [&](Platform::Object^, xaml_navigation::NavigationFailedEventArgs^ args)
+                        {
+                            ++navigationFailedCount;
+                            args->Handled = true;
+                        }));
+                    navigatedRegistration.Attach(frame, ref new xaml_navigation::NavigatedEventHandler(
+                        [&](Platform::Object^, xaml_navigation::NavigationEventArgs^)
+                        {
+                            ++navigatedCount;
+                        }));
+
+                    auto navigate = [&]()
+                    {
+                        switch (overload)
+                        {
+                        case 0:
+                            frame->Navigate(destinationType);
+                            break;
+                        case 1:
+                            frame->Navigate(destinationType, L"Parameter");
+                            break;
+                        case 2:
+                            frame->Navigate(destinationType, L"Parameter", transitionInfo);
+                            break;
+                        case 3:
+                            frame->NavigateToType(destinationType, L"Parameter", nullptr);
+                            break;
+                        default:
+                            frame->NavigateToType(destinationType, L"Parameter", options);
+                            break;
+                        }
+                    };
+
+                    auto verifyError = [destinationType](Platform::InvalidArgumentException^ exception)
+                    {
+                        VERIFY_ARE_EQUAL(E_INVALIDARG, exception->HResult);
+                        auto message = exception->Message;
+                        LOG_OUTPUT(L"Navigation error message: \"%s\"", message ? message->Data() : L"(null)");
+                        return message != nullptr &&
+                            wcsstr(message->Data(), destinationType.Name->Data()) != nullptr &&
+                            wcsstr(message->Data(), L"The destination type must derive from Microsoft.UI.Xaml.Controls.Page.") != nullptr &&
+                            wcsstr(message->Data(), L"https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.frame.navigate") != nullptr;
+                    };
+                    VERIFY_THROWS_SPECIFIC_WINRT(navigate(), Platform::InvalidArgumentException^, verifyError);
+                    VERIFY_IS_NULL(frame->Content);
+                    ValidateFrameStack(frame, 0, 0);
+                    VERIFY_IS_FALSE(frame->CanGoBack);
+                    VERIFY_IS_FALSE(frame->CanGoForward);
+                    VERIFY_ARE_EQUAL(0, navigationFailedCount);
+                    VERIFY_ARE_EQUAL(0, navigatedCount);
+                }
+            }
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void FrameIntegrationTests::InvalidNavigationDestinationPreservesFrameState()
+    {
+        TestCleanupWrapper cleanup;
+        wxaml_interop::TypeName pageType = { L"Microsoft.UI.Xaml.Controls.Page", wxaml_interop::TypeKind::Primitive };
+        wxaml_interop::TypeName invalidType = { L"Microsoft.UI.Xaml.Controls.UserControl", wxaml_interop::TypeKind::Primitive };
+
+        for (int historyMode = 0; historyMode < 3; ++historyMode)
+        {
+            xaml_controls::Frame^ frame = nullptr;
+            RunOnUIThread([&]()
+            {
+                frame = ref new xaml_controls::Frame();
+                TestServices::WindowHelper->WindowContent = frame;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            auto navigateToPage = [&](Platform::String^ parameter)
+            {
+                RunOnUIThread([&]()
+                {
+                    VERIFY_IS_TRUE(frame->Navigate(pageType, parameter));
+                    VERIFY_ARE_EQUAL(frame, safe_cast<xaml_controls::Page^>(frame->Content)->Frame);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            };
+
+            navigateToPage(L"Page 1");
+            navigateToPage(L"Page 2");
+            navigateToPage(L"Page 3");
+            RunOnUIThread([&]()
+            {
+                frame->GoBack();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                ValidateFrameStack(frame, 1, 1);
+                auto content = frame->Content;
+                auto sourcePageType = frame->SourcePageType;
+                auto currentSourcePageType = frame->CurrentSourcePageType;
+                auto backEntry = frame->BackStack->GetAt(0);
+                auto forwardEntry = frame->ForwardStack->GetAt(0);
+                auto canGoBack = frame->CanGoBack;
+                auto canGoForward = frame->CanGoForward;
+
+                if (historyMode == 1)
+                {
+                    frame->IsNavigationStackEnabled = false;
+                }
+
+                auto options = ref new xaml_navigation::FrameNavigationOptions();
+                options->IsNavigationStackEnabled = false;
+                auto navigate = [&]()
+                {
+                    if (historyMode == 2)
+                    {
+                        frame->NavigateToType(invalidType, nullptr, options);
+                    }
+                    else
+                    {
+                        frame->Navigate(invalidType);
+                    }
+                };
+                VERIFY_THROWS_SPECIFIC_WINRT(navigate(), Platform::InvalidArgumentException^,
+                    [](Platform::InvalidArgumentException^ exception) { return exception->HResult == E_INVALIDARG; });
+
+                VERIFY_ARE_EQUAL(content, frame->Content);
+                VERIFY_ARE_EQUAL(frame, safe_cast<xaml_controls::Page^>(content)->Frame);
+                VERIFY_ARE_EQUAL(sourcePageType.Name, frame->SourcePageType.Name);
+                VERIFY_ARE_EQUAL(sourcePageType.Kind, frame->SourcePageType.Kind);
+                VERIFY_ARE_EQUAL(currentSourcePageType.Name, frame->CurrentSourcePageType.Name);
+                VERIFY_ARE_EQUAL(currentSourcePageType.Kind, frame->CurrentSourcePageType.Kind);
+                ValidateFrameStack(frame, 1, 1);
+                VERIFY_ARE_EQUAL(backEntry, frame->BackStack->GetAt(0));
+                VERIFY_ARE_EQUAL(forwardEntry, frame->ForwardStack->GetAt(0));
+                VERIFY_ARE_EQUAL(canGoBack, frame->CanGoBack);
+                VERIFY_ARE_EQUAL(canGoForward, frame->CanGoForward);
+                VERIFY_ARE_EQUAL(historyMode != 1, frame->IsNavigationStackEnabled);
+                frame->IsNavigationStackEnabled = true;
+            });
+
+            navigateToPage(L"Page 4");
+            RunOnUIThread([&]()
+            {
+                ValidateFrameStack(frame, 2, 0);
+                frame->GoBack();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                ValidateFrameStack(frame, 1, 1);
+                VERIFY_ARE_EQUAL(frame, safe_cast<xaml_controls::Page^>(frame->Content)->Frame);
+                frame->GoForward();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                ValidateFrameStack(frame, 2, 0);
+                VERIFY_ARE_EQUAL(frame, safe_cast<xaml_controls::Page^>(frame->Content)->Frame);
+            });
+        }
+    }
+
+    void FrameIntegrationTests::CanceledInvalidNavigationDoesNotThrow()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::Frame^ frame = nullptr;
+        wxaml_interop::TypeName pageType = { L"Microsoft.UI.Xaml.Controls.Page", wxaml_interop::TypeKind::Primitive };
+        wxaml_interop::TypeName invalidType = { L"Microsoft.UI.Xaml.Controls.UserControl", wxaml_interop::TypeKind::Primitive };
+        int stoppedCount = 0;
+        int navigationFailedCount = 0;
+        int navigatedCount = 0;
+        auto navigatingRegistration = CreateSafeEventRegistration(xaml_controls::Frame, Navigating);
+        auto stoppedRegistration = CreateSafeEventRegistration(xaml_controls::Frame, NavigationStopped);
+        auto failedRegistration = CreateSafeEventRegistration(xaml_controls::Frame, NavigationFailed);
+        auto navigatedRegistration = CreateSafeEventRegistration(xaml_controls::Frame, Navigated);
+
+        RunOnUIThread([&]()
+        {
+            frame = ref new xaml_controls::Frame();
+            TestServices::WindowHelper->WindowContent = frame;
+            VERIFY_IS_TRUE(frame->Navigate(pageType));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto content = frame->Content;
+            navigatingRegistration.Attach(frame, ref new xaml_navigation::NavigatingCancelEventHandler(
+                [&](Platform::Object^, xaml_navigation::NavigatingCancelEventArgs^ args)
+                {
+                    args->Cancel = true;
+                }));
+            stoppedRegistration.Attach(frame, ref new xaml_navigation::NavigationStoppedEventHandler(
+                [&](Platform::Object^, xaml_navigation::NavigationEventArgs^)
+                {
+                    ++stoppedCount;
+                }));
+            failedRegistration.Attach(frame, ref new xaml_navigation::NavigationFailedEventHandler(
+                [&](Platform::Object^, xaml_navigation::NavigationFailedEventArgs^)
+                {
+                    ++navigationFailedCount;
+                }));
+            navigatedRegistration.Attach(frame, ref new xaml_navigation::NavigatedEventHandler(
+                [&](Platform::Object^, xaml_navigation::NavigationEventArgs^)
+                {
+                    ++navigatedCount;
+                }));
+
+            frame->Navigate(invalidType);
+            VERIFY_ARE_EQUAL(content, frame->Content);
+            VERIFY_ARE_EQUAL(frame, safe_cast<xaml_controls::Page^>(content)->Frame);
+            ValidateFrameStack(frame, 0, 0);
+            VERIFY_ARE_EQUAL(1, stoppedCount);
+            VERIFY_ARE_EQUAL(0, navigationFailedCount);
+            VERIFY_ARE_EQUAL(0, navigatedCount);
+            navigatingRegistration.Detach();
+            VERIFY_IS_TRUE(frame->Navigate(pageType));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            ValidateFrameStack(frame, 1, 0);
+            VERIFY_ARE_EQUAL(frame, safe_cast<xaml_controls::Page^>(frame->Content)->Frame);
+            VERIFY_ARE_EQUAL(1, stoppedCount);
+            VERIFY_ARE_EQUAL(0, navigationFailedCount);
+            VERIFY_ARE_EQUAL(1, navigatedCount);
+        });
+    }
+
     void FrameIntegrationTests::CanDisableNavigationHistoryUsingNavigationMethod()
     {
         TestCleanupWrapper cleanup;
