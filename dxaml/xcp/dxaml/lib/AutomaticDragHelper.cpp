@@ -248,6 +248,11 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         IFC_RETURN(UnregisterEvents());
     }
 
+    // Preserve touch cleanup for non-primary presses as well.
+    m_spPointerPoint = nullptr;
+    m_spPointer = nullptr;
+    m_isHoldingCompleted = false;
+
     IFC_RETURN(pArgs->GetCurrentPoint(m_pOwnerNoRef, &spPointerPoint));
     IFCPTR_RETURN(spPointerPoint);
 
@@ -268,9 +273,6 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         if (isLeftButtonPressed && updateKind == ixp::PointerUpdateKind_LeftButtonPressed)
         {
             // A fresh primary down also recovers from a release with no capture-loss notification.
-            m_spPointerPoint = nullptr;
-            m_spPointer = nullptr;
-            m_isHoldingCompleted = false;
             m_mouseDragPointerId = pointerId;
             m_isLeftButtonPressed = true;
             // Start listening for a mouse drag gesture
@@ -289,7 +291,6 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
     }
     else
     {
-        m_isHoldingCompleted = false;
         m_spPointerPoint = spPointerPoint;
         m_spPointer = spPointer;
 
