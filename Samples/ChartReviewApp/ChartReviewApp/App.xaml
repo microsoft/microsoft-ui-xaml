@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="ChartReviewApp.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ChartReviewApp">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <XamlChartsResources xmlns="using:Microsoft.UI.Xaml.Controls.Charts" />
+                <!-- Review app: no Charts brush overrides, so reviewers see the control's own defaults
+                     in Light, Dark and contrast themes. (The upstream sample overrides the Light/Dark
+                     foreground and the Dark background, with no HighContrast entry.) -->
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

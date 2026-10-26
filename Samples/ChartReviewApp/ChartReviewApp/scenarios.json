@@ -1,0 +1,364 @@
+[
+  {
+    "id": "baseline-two-series",
+    "title": "Two series with categories",
+    "instructions": "Baseline. Two visible series with Jan to May category names.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 10,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Monthly expenses","visible":true,"points":[{"key":"point-0","category":"Jan","value":31},{"key":"point-1","category":"Feb","value":29},{"key":"point-2","category":"Mar","value":25},{"key":"point-3","category":"Apr","value":27},{"key":"point-4","category":"May","value":28}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "bar-chart",
+    "title": "Bar chart",
+    "instructions": "One BarSeries. Same data as the baseline, drawn as bars.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "area-chart",
+    "title": "Area chart",
+    "instructions": "One AreaSeries. Same data again, drawn as a filled area.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "mixed-line-and-bar",
+    "title": "Mixed line and bar",
+    "instructions": "Two series of different types in one chart, so no single chart type describes it.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 10,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Monthly expenses","visible":true,"points":[{"key":"point-0","category":"Jan","value":31},{"key":"point-1","category":"Feb","value":29},{"key":"point-2","category":"Mar","value":25},{"key":"point-3","category":"Apr","value":27},{"key":"point-4","category":"May","value":28}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "labelled-axes",
+    "title": "Labelled axes",
+    "instructions": "Both axes carry an app-set Label: Month and Dollars.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "axis-range-set-by-app",
+    "title": "Axis range set by the app",
+    "instructions": "The vertical axis is fixed at 0 to 100; the data ranges from 18 to 52. Compare the reported axis range with the visible scale.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Utilization","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "dates-along-axis",
+    "title": "Dates along the axis",
+    "instructions": "Thirty consecutive days on a DateTimeAxis, so categories are dates rather than words.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 30,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Daily value","visible":true,"points":[{"key":"point-0","category":"","value":40,"dateUtc":"2024-01-01T00:00:00Z"},{"key":"point-1","category":"","value":44,"dateUtc":"2024-01-02T00:00:00Z"},{"key":"point-2","category":"","value":48,"dateUtc":"2024-01-03T00:00:00Z"},{"key":"point-3","category":"","value":52,"dateUtc":"2024-01-04T00:00:00Z"},{"key":"point-4","category":"","value":56,"dateUtc":"2024-01-05T00:00:00Z"},{"key":"point-5","category":"","value":60,"dateUtc":"2024-01-06T00:00:00Z"},{"key":"point-6","category":"","value":64,"dateUtc":"2024-01-07T00:00:00Z"},{"key":"point-7","category":"","value":68,"dateUtc":"2024-01-08T00:00:00Z"},{"key":"point-8","category":"","value":72,"dateUtc":"2024-01-09T00:00:00Z"},{"key":"point-9","category":"","value":40,"dateUtc":"2024-01-10T00:00:00Z"},{"key":"point-10","category":"","value":44,"dateUtc":"2024-01-11T00:00:00Z"},{"key":"point-11","category":"","value":48,"dateUtc":"2024-01-12T00:00:00Z"},{"key":"point-12","category":"","value":52,"dateUtc":"2024-01-13T00:00:00Z"},{"key":"point-13","category":"","value":56,"dateUtc":"2024-01-14T00:00:00Z"},{"key":"point-14","category":"","value":60,"dateUtc":"2024-01-15T00:00:00Z"},{"key":"point-15","category":"","value":64,"dateUtc":"2024-01-16T00:00:00Z"},{"key":"point-16","category":"","value":68,"dateUtc":"2024-01-17T00:00:00Z"},{"key":"point-17","category":"","value":72,"dateUtc":"2024-01-18T00:00:00Z"},{"key":"point-18","category":"","value":40,"dateUtc":"2024-01-19T00:00:00Z"},{"key":"point-19","category":"","value":44,"dateUtc":"2024-01-20T00:00:00Z"},{"key":"point-20","category":"","value":48,"dateUtc":"2024-01-21T00:00:00Z"},{"key":"point-21","category":"","value":52,"dateUtc":"2024-01-22T00:00:00Z"},{"key":"point-22","category":"","value":56,"dateUtc":"2024-01-23T00:00:00Z"},{"key":"point-23","category":"","value":60,"dateUtc":"2024-01-24T00:00:00Z"},{"key":"point-24","category":"","value":64,"dateUtc":"2024-01-25T00:00:00Z"},{"key":"point-25","category":"","value":68,"dateUtc":"2024-01-26T00:00:00Z"},{"key":"point-26","category":"","value":72,"dateUtc":"2024-01-27T00:00:00Z"},{"key":"point-27","category":"","value":40,"dateUtc":"2024-01-28T00:00:00Z"},{"key":"point-28","category":"","value":44,"dateUtc":"2024-01-29T00:00:00Z"},{"key":"point-29","category":"","value":48,"dateUtc":"2024-01-30T00:00:00Z"}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "legend-shown",
+    "title": "Legend shown",
+    "instructions": "ShowLegend is true with a legend title, so the series names are drawn on screen as well as carried by the series.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 10,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Monthly expenses","visible":true,"points":[{"key":"point-0","category":"Jan","value":31},{"key":"point-1","category":"Feb","value":29},{"key":"point-2","category":"Mar","value":25},{"key":"point-3","category":"Apr","value":27},{"key":"point-4","category":"May","value":28}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "data-labels-and-markers",
+    "title": "Data labels and markers",
+    "instructions": "Values are drawn next to each point and each point has a marker, so the number is visible on screen.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "named-by-app",
+    "title": "Named by the app",
+    "instructions": "The chart has an app-provided accessible name instead of the default chart name.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Core utilization","visible":true,"points":[{"key":"point-0","category":"Jan","value":42},{"key":"point-1","category":"Feb","value":55},{"key":"point-2","category":"Mar","value":38},{"key":"point-3","category":"Apr","value":61},{"key":"point-4","category":"May","value":49}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "values-without-categories",
+    "title": "Values without categories",
+    "instructions": "No X values, so datapoint names should fall back to 1 to 5.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Readings","visible":true,"points":[{"key":"point-0","category":"","value":12},{"key":"point-1","category":"","value":19},{"key":"point-2","category":"","value":7},{"key":"point-3","category":"","value":23},{"key":"point-4","category":"","value":15}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "no-data-at-all",
+    "title": "No data at all",
+    "instructions": "An empty chart. What is there for a screen reader to announce?",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 0,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "one-series-one-point",
+    "title": "One series, one point",
+    "instructions": "The smallest tree that still says something.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 1,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Single reading","visible":true,"points":[{"key":"point-0","category":"Only","value":42}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "hidden-series",
+    "title": "A hidden series",
+    "instructions": "IsVisible is false on the second series. Is it still in the tree?",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Visible series","visible":true,"points":[{"key":"point-0","category":"Jan","value":20},{"key":"point-1","category":"Feb","value":30},{"key":"point-2","category":"Mar","value":25},{"key":"point-3","category":"Apr","value":35},{"key":"point-4","category":"May","value":40}]},{"key":"series-1","title":"Hidden series","visible":false,"points":[{"key":"point-0","category":"Jan","value":60},{"key":"point-1","category":"Feb","value":55},{"key":"point-2","category":"Mar","value":65},{"key":"point-3","category":"Apr","value":50},{"key":"point-4","category":"May","value":58}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "untitled-series",
+    "title": "Untitled series",
+    "instructions": "No series title is set. Check the default series name that the chart exposes.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"","visible":true,"points":[{"key":"point-0","category":"Jan","value":14},{"key":"point-1","category":"Feb","value":22},{"key":"point-2","category":"Mar","value":18},{"key":"point-3","category":"Apr","value":30},{"key":"point-4","category":"May","value":26}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "six-series-twenty-four-points",
+    "title": "Six series, twenty four points each",
+    "instructions": "Six visible series with twenty four plotted points each. Use it to exercise a larger navigation workload.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 144,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Series 1","visible":true,"points":[{"key":"point-0","category":"P1","value":10},{"key":"point-1","category":"P2","value":13},{"key":"point-2","category":"P3","value":16},{"key":"point-3","category":"P4","value":19},{"key":"point-4","category":"P5","value":22},{"key":"point-5","category":"P6","value":25},{"key":"point-6","category":"P7","value":28},{"key":"point-7","category":"P8","value":10},{"key":"point-8","category":"P9","value":13},{"key":"point-9","category":"P10","value":16},{"key":"point-10","category":"P11","value":19},{"key":"point-11","category":"P12","value":22},{"key":"point-12","category":"P13","value":25},{"key":"point-13","category":"P14","value":28},{"key":"point-14","category":"P15","value":10},{"key":"point-15","category":"P16","value":13},{"key":"point-16","category":"P17","value":16},{"key":"point-17","category":"P18","value":19},{"key":"point-18","category":"P19","value":22},{"key":"point-19","category":"P20","value":25},{"key":"point-20","category":"P21","value":28},{"key":"point-21","category":"P22","value":10},{"key":"point-22","category":"P23","value":13},{"key":"point-23","category":"P24","value":16}]},{"key":"series-1","title":"Series 2","visible":true,"points":[{"key":"point-0","category":"P1","value":20},{"key":"point-1","category":"P2","value":23},{"key":"point-2","category":"P3","value":26},{"key":"point-3","category":"P4","value":29},{"key":"point-4","category":"P5","value":32},{"key":"point-5","category":"P6","value":35},{"key":"point-6","category":"P7","value":38},{"key":"point-7","category":"P8","value":20},{"key":"point-8","category":"P9","value":23},{"key":"point-9","category":"P10","value":26},{"key":"point-10","category":"P11","value":29},{"key":"point-11","category":"P12","value":32},{"key":"point-12","category":"P13","value":35},{"key":"point-13","category":"P14","value":38},{"key":"point-14","category":"P15","value":20},{"key":"point-15","category":"P16","value":23},{"key":"point-16","category":"P17","value":26},{"key":"point-17","category":"P18","value":29},{"key":"point-18","category":"P19","value":32},{"key":"point-19","category":"P20","value":35},{"key":"point-20","category":"P21","value":38},{"key":"point-21","category":"P22","value":20},{"key":"point-22","category":"P23","value":23},{"key":"point-23","category":"P24","value":26}]},{"key":"series-2","title":"Series 3","visible":true,"points":[{"key":"point-0","category":"P1","value":30},{"key":"point-1","category":"P2","value":33},{"key":"point-2","category":"P3","value":36},{"key":"point-3","category":"P4","value":39},{"key":"point-4","category":"P5","value":42},{"key":"point-5","category":"P6","value":45},{"key":"point-6","category":"P7","value":48},{"key":"point-7","category":"P8","value":30},{"key":"point-8","category":"P9","value":33},{"key":"point-9","category":"P10","value":36},{"key":"point-10","category":"P11","value":39},{"key":"point-11","category":"P12","value":42},{"key":"point-12","category":"P13","value":45},{"key":"point-13","category":"P14","value":48},{"key":"point-14","category":"P15","value":30},{"key":"point-15","category":"P16","value":33},{"key":"point-16","category":"P17","value":36},{"key":"point-17","category":"P18","value":39},{"key":"point-18","category":"P19","value":42},{"key":"point-19","category":"P20","value":45},{"key":"point-20","category":"P21","value":48},{"key":"point-21","category":"P22","value":30},{"key":"point-22","category":"P23","value":33},{"key":"point-23","category":"P24","value":36}]},{"key":"series-3","title":"Series 4","visible":true,"points":[{"key":"point-0","category":"P1","value":40},{"key":"point-1","category":"P2","value":43},{"key":"point-2","category":"P3","value":46},{"key":"point-3","category":"P4","value":49},{"key":"point-4","category":"P5","value":52},{"key":"point-5","category":"P6","value":55},{"key":"point-6","category":"P7","value":58},{"key":"point-7","category":"P8","value":40},{"key":"point-8","category":"P9","value":43},{"key":"point-9","category":"P10","value":46},{"key":"point-10","category":"P11","value":49},{"key":"point-11","category":"P12","value":52},{"key":"point-12","category":"P13","value":55},{"key":"point-13","category":"P14","value":58},{"key":"point-14","category":"P15","value":40},{"key":"point-15","category":"P16","value":43},{"key":"point-16","category":"P17","value":46},{"key":"point-17","category":"P18","value":49},{"key":"point-18","category":"P19","value":52},{"key":"point-19","category":"P20","value":55},{"key":"point-20","category":"P21","value":58},{"key":"point-21","category":"P22","value":40},{"key":"point-22","category":"P23","value":43},{"key":"point-23","category":"P24","value":46}]},{"key":"series-4","title":"Series 5","visible":true,"points":[{"key":"point-0","category":"P1","value":50},{"key":"point-1","category":"P2","value":53},{"key":"point-2","category":"P3","value":56},{"key":"point-3","category":"P4","value":59},{"key":"point-4","category":"P5","value":62},{"key":"point-5","category":"P6","value":65},{"key":"point-6","category":"P7","value":68},{"key":"point-7","category":"P8","value":50},{"key":"point-8","category":"P9","value":53},{"key":"point-9","category":"P10","value":56},{"key":"point-10","category":"P11","value":59},{"key":"point-11","category":"P12","value":62},{"key":"point-12","category":"P13","value":65},{"key":"point-13","category":"P14","value":68},{"key":"point-14","category":"P15","value":50},{"key":"point-15","category":"P16","value":53},{"key":"point-16","category":"P17","value":56},{"key":"point-17","category":"P18","value":59},{"key":"point-18","category":"P19","value":62},{"key":"point-19","category":"P20","value":65},{"key":"point-20","category":"P21","value":68},{"key":"point-21","category":"P22","value":50},{"key":"point-22","category":"P23","value":53},{"key":"point-23","category":"P24","value":56}]},{"key":"series-5","title":"Series 6","visible":true,"points":[{"key":"point-0","category":"P1","value":60},{"key":"point-1","category":"P2","value":63},{"key":"point-2","category":"P3","value":66},{"key":"point-3","category":"P4","value":69},{"key":"point-4","category":"P5","value":72},{"key":"point-5","category":"P6","value":75},{"key":"point-6","category":"P7","value":78},{"key":"point-7","category":"P8","value":60},{"key":"point-8","category":"P9","value":63},{"key":"point-9","category":"P10","value":66},{"key":"point-10","category":"P11","value":69},{"key":"point-11","category":"P12","value":72},{"key":"point-12","category":"P13","value":75},{"key":"point-13","category":"P14","value":78},{"key":"point-14","category":"P15","value":60},{"key":"point-15","category":"P16","value":63},{"key":"point-16","category":"P17","value":66},{"key":"point-17","category":"P18","value":69},{"key":"point-18","category":"P19","value":72},{"key":"point-19","category":"P20","value":75},{"key":"point-20","category":"P21","value":78},{"key":"point-21","category":"P22","value":60},{"key":"point-22","category":"P23","value":63},{"key":"point-23","category":"P24","value":66}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "live-updating-series",
+    "title": "Live updating series",
+    "instructions": "Starts paused. Step changes Jan from 20 to 59, then back to 20. Feb-May stay fixed; the value axis rescales. Resume steps every two seconds. This is not a scrolling chart.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Live readings","visible":true,"points":[{"key":"point-0","category":"Jan","value":20},{"key":"point-1","category":"Feb","value":24},{"key":"point-2","category":"Mar","value":22},{"key":"point-3","category":"Apr","value":28},{"key":"point-4","category":"May","value":26}]}]}],
+      "live": {"kind":"value-cycle","seriesIndex":0,"pointIndex":0,"period":40,"increment":1.000000}
+    },
+    "hasLiveProducer": true
+  },
+  {
+    "id": "very-long-series-title",
+    "title": "Very long series title",
+    "instructions": "Check whether the full 400-character series title is exposed.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long series title segment Long serie","visible":true,"points":[{"key":"point-0","category":"Jan","value":10},{"key":"point-1","category":"Feb","value":20},{"key":"point-2","category":"Mar","value":30},{"key":"point-3","category":"Apr","value":40},{"key":"point-4","category":"May","value":50}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "two-series-same-title",
+    "title": "Two series with the same title",
+    "instructions": "Both series are called Sales, so the title alone does not tell them apart.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 10,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Sales","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Sales","visible":true,"points":[{"key":"point-0","category":"Jan","value":31},{"key":"point-1","category":"Feb","value":29},{"key":"point-2","category":"Mar","value":25},{"key":"point-3","category":"Apr","value":27},{"key":"point-4","category":"May","value":28}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "series-with-no-points",
+    "title": "A series with no points",
+    "instructions": "Two series, one of which has values and one of which is empty.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Reported","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Not yet reported","visible":true,"points":[]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "negative-and-zero-values",
+    "title": "Negative and zero values",
+    "instructions": "The series crosses zero, so a listener has to hear the sign and tell zero from no value.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Net position","visible":true,"points":[{"key":"point-0","category":"Jan","value":-40},{"key":"point-1","category":"Feb","value":-12},{"key":"point-2","category":"Mar","value":0},{"key":"point-3","category":"Apr","value":15},{"key":"point-4","category":"May","value":38}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "decimals-and-large-numbers",
+    "title": "Decimals and large numbers",
+    "instructions": "Values from four thousandths to over a million in one series.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Measured","visible":true,"points":[{"key":"point-0","category":"Jan","value":0.0040000000000000001},{"key":"point-1","category":"Feb","value":12.5},{"key":"point-2","category":"Mar","value":1234.5599999999999},{"key":"point-3","category":"Apr","value":98765.399999999994},{"key":"point-4","category":"May","value":1234567.8899999999}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "hidden-axis",
+    "title": "A hidden axis",
+    "instructions": "The vertical axis has IsVisible false, which makes it implicit rather than removing it.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "series-added-and-removed",
+    "title": "Series added and removed",
+    "instructions": "Starts paused with one series. Step alternates one and two series (5 or 10 points). Resume repeats every three seconds. Reset pauses and restores one series.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Always present","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}],
+      "live": {"kind":"series-toggle","period":2,"alternateCharts":[{"key":"chart-0","series":[{"key":"series-0","title":"Always present","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Comes and goes","visible":true,"points":[{"key":"point-0","category":"Jan","value":31},{"key":"point-1","category":"Feb","value":29},{"key":"point-2","category":"Mar","value":25},{"key":"point-3","category":"Apr","value":27},{"key":"point-4","category":"May","value":28}]}]}]}
+    },
+    "hasLiveProducer": true
+  },
+  {
+    "id": "series-distinguished-only-by-colour",
+    "title": "Series told apart only by colour",
+    "instructions": "Intentional stress case: four solid series distinguished only by colour. Check identification without colour, including Windows high contrast; this is not a recommended presentation.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 20,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"North","visible":true,"points":[{"key":"point-0","category":"Jan","value":10},{"key":"point-1","category":"Feb","value":22},{"key":"point-2","category":"Mar","value":18},{"key":"point-3","category":"Apr","value":30},{"key":"point-4","category":"May","value":26}]},{"key":"series-1","title":"South","visible":true,"points":[{"key":"point-0","category":"Jan","value":20},{"key":"point-1","category":"Feb","value":12},{"key":"point-2","category":"Mar","value":28},{"key":"point-3","category":"Apr","value":16},{"key":"point-4","category":"May","value":36}]},{"key":"series-2","title":"East","visible":true,"points":[{"key":"point-0","category":"Jan","value":30},{"key":"point-1","category":"Feb","value":32},{"key":"point-2","category":"Mar","value":8},{"key":"point-3","category":"Apr","value":26},{"key":"point-4","category":"May","value":16}]},{"key":"series-3","title":"West","visible":true,"points":[{"key":"point-0","category":"Jan","value":40},{"key":"point-1","category":"Feb","value":18},{"key":"point-2","category":"Mar","value":38},{"key":"point-3","category":"Apr","value":10},{"key":"point-4","category":"May","value":46}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "keyboard-before-after-chart",
+    "title": "Keyboard only",
+    "instructions": "A button before and after the chart. Tab through without the mouse and note where focus goes, and whether the chart can be entered.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "two-charts-one-page",
+    "title": "Two charts on one page",
+    "instructions": "Moving between two charts, and a check that everything after the first chart is still reachable.",
+    "expectations": {
+      "minimumCharts": 2,
+      "minimumPoints": 10,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Requests","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]},{"key":"chart-1","series":[{"key":"series-0","title":"Errors","visible":true,"points":[{"key":"point-0","category":"Jan","value":5},{"key":"point-1","category":"Feb","value":3},{"key":"point-2","category":"Mar","value":8},{"key":"point-3","category":"Apr","value":2},{"key":"point-4","category":"May","value":6}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "replaced-data-label-text",
+    "title": "Data label with replaced text",
+    "instructions": "One point's data label is replaced with words rather than its value, so the label carries something the datapoint does not.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "legend-with-hidden-series",
+    "title": "Legend with a hidden series",
+    "instructions": "Two series with the legend shown, one of them hidden. Decide whether a legend entry can name something the series list does not.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Shown series","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]},{"key":"series-1","title":"Hidden series","visible":false,"points":[{"key":"point-0","category":"Jan","value":60},{"key":"point-1","category":"Feb","value":55},{"key":"point-2","category":"Mar","value":65},{"key":"point-3","category":"Apr","value":50},{"key":"point-4","category":"May","value":58}]}]}]
+    },
+    "hasLiveProducer": false
+  },
+  {
+    "id": "disabled-chart",
+    "title": "A disabled chart",
+    "instructions": "IsEnabled is false on the chart. Check whether the content inside reports the same state as the chart itself.",
+    "expectations": {
+      "minimumCharts": 1,
+      "minimumPoints": 5,
+      "fixtureVersion": 1,
+      "charts": [{"key":"chart-0","series":[{"key":"series-0","title":"Monthly profit","visible":true,"points":[{"key":"point-0","category":"Jan","value":18},{"key":"point-1","category":"Feb","value":27},{"key":"point-2","category":"Mar","value":34},{"key":"point-3","category":"Apr","value":41},{"key":"point-4","category":"May","value":52}]}]}]
+    },
+    "hasLiveProducer": false
+  }
+]
