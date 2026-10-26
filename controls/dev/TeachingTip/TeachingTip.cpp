@@ -1436,10 +1436,10 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
     auto const xamlRoot = XamlRoot();
     auto const popup = m_popup.get();
     // Keep the tip open only if the tip and its target are both back in the same XamlRoot as the tip's popup (the popup
-    // can't move to another window), and the target isn't inside a container generated for a data item: such a container
-    // can be recycled to a different item (for example by NavigationView's shared NavigationViewItem pool), and there is
-    // no reliable way to tell that it still shows the same item.
-    const bool tipIsBack = IsLoaded() && xamlRoot && (!popup || popup.XamlRoot() == xamlRoot);
+    // can't move to another window), and neither of them is inside a container generated for a data item: such a
+    // container can be recycled to a different item (for example by NavigationView's shared NavigationViewItem pool), and
+    // there is no reliable way to tell that it still shows the same item.
+    const bool tipIsBack = IsLoaded() && xamlRoot && (!popup || popup.XamlRoot() == xamlRoot) && !IsInGeneratedItemContainer(*this);
     const bool targetIsBack = !target ||
         (target.IsLoaded() && target.XamlRoot() == xamlRoot && !IsInGeneratedItemContainer(target));
     if (tipIsBack && targetIsBack)
@@ -1455,24 +1455,22 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
 
 bool TeachingTip::IsInGeneratedItemContainer(const winrt::DependencyObject& element)
 {
-    // Walk up from the element. A child of an ItemsRepeater, or an ItemsControl item container, that is not itself its
-    // item was generated for a data item and can be reused for another one.
+    // Walk up the visual parents from the element. A child of an ItemsRepeater, or an ItemsControl item container, that
+    // is not itself its item was generated for a data item and can be reused for another one.
     winrt::DependencyObject current = element;
     while (current)
     {
         auto const parent = winrt::VisualTreeHelper::GetParent(current);
         if (auto const repeater = parent.try_as<winrt::ItemsRepeater>())
         {
+            // Fail closed unless the repeater maps this child to an item that is the child itself. A recycled child kept
+            // in a pool has no index (-1), and a child in the unique-id reset pool keeps its old index until the next
+            // measure, which may be outside the current source.
             const int index = repeater.GetElementIndex(current.as<winrt::UIElement>());
-            if (index >= 0)
+            auto const itemsSourceView = repeater.ItemsSourceView();
+            if (index < 0 || !itemsSourceView || index >= itemsSourceView.Count() || itemsSourceView.GetAt(index) != current)
             {
-                if (auto const itemsSourceView = repeater.ItemsSourceView())
-                {
-                    if (itemsSourceView.GetAt(index) != current)
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
         }
         else if (auto const itemsControl = winrt::ItemsControl::ItemsControlFromItemContainer(current))
