@@ -2887,7 +2887,14 @@ _Check_return_ HRESULT CListViewBaseItemChrome::GoToChromedStateNewStyle(
 
                 if (updateSelectionIndicatorBackground)
                 {
-                    IFC_RETURN(SetSelectionIndicatorBackground());
+                    if (!m_selectionIndicatorRectangle)
+                    {
+                        IFC_RETURN(EnsureSelectionIndicator());
+                    }
+                    else
+                    {
+                        IFC_RETURN(SetSelectionIndicatorBackground());
+                    }
                 }
             }
 
