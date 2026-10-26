@@ -559,10 +559,11 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
         m_bIsClosed = true;
         guard.release(); // success, no need to reset closing and closed states
 
-        if (!m_bMinimizedOrHidden)
+        if (m_bWindowVisible)
         {
             // if this call fails, we don't want to reset shutdown status
             // better to crash
+            m_bWindowVisible = false;
             VERIFYHR(RaiseWindowVisibilityChangedEvent(FALSE));
         }
 
@@ -1428,6 +1429,15 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnMoved(wParam, lParam));
         case WM_SIZE:
             return LResultFromHResult(OnSizeChanged(wParam, lParam));
+        case WM_WINDOWPOSCHANGED:
+        {
+            // WM_WINDOWPOSCHANGED is delivered after a show/hide transition has updated
+            // the native window state. Raising here keeps Window.Visible consistent with
+            // the VisibilityChanged event arguments inside the event handler.
+            const auto result = BaseWindow::OnMessage(uMsg, wParam, lParam);
+            const HRESULT hr = UpdateWindowVisibility();
+            return FAILED(hr) ? LResultFromHResult(hr) : result;
+        }
         case WM_ACTIVATE:
             return LResultFromHResult(OnActivate(wParam, lParam));
         case WM_NCRBUTTONUP:
@@ -1565,8 +1575,9 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
         // Force focus on the island.
         SetFocusToContentIsland();
 
-        // Raise VisibilityChanged on initial Window Activation
+        // Raise VisibilityChanged on initial Window Activation.
         m_bInitialWindowActivation = false;
+        m_bWindowVisible = true;
         IFC_RETURN(RaiseWindowVisibilityChangedEvent(TRUE));
     }
 
@@ -1676,6 +1687,28 @@ LRESULT DesktopWindowImpl::OnDpiChanged(
     return 0;
 }
 
+_Check_return_ HRESULT DesktopWindowImpl::UpdateWindowVisibility()
+{
+    // The initial activation owns the first visible notification. Later notifications
+    // derive their effective state from the same native state that Window.Visible uses:
+    // a window is visible only when it is both shown and not minimized.
+    if (m_bIsClosed || m_bInitialWindowActivation)
+    {
+        return S_OK;
+    }
+
+    const BOOLEAN isVisible = !::IsIconic(m_hwnd.get()) && ::IsWindowVisible(m_hwnd.get());
+    if (isVisible == m_bWindowVisible)
+    {
+        return S_OK;
+    }
+
+    m_bWindowVisible = isVisible;
+    IFC_RETURN(RaiseWindowVisibilityChangedEvent(isVisible));
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT DesktopWindowImpl::OnSizeChanged(
     WPARAM wParam,
     LPARAM lParam)
@@ -1693,32 +1726,8 @@ _Check_return_ HRESULT DesktopWindowImpl::OnSizeChanged(
     ResizeWindowToDesktopWindowXamlSourceWindowDimensions(wParam, lParam);
     IFC_RETURN(RaiseWindowSizeChangedEvent());
 
-    switch (wParam)
-    {
-        case SIZE_RESTORED:
-        case SIZE_MAXIMIZED:
-        {
-            if (m_bMinimizedOrHidden)
-            {
-                m_bMinimizedOrHidden = false;
+    IFC_RETURN(UpdateWindowVisibility());
 
-                IFC_RETURN(RaiseWindowVisibilityChangedEvent(TRUE /* visible */));
-            }
-        }
-        break;
-
-        case SIZE_MINIMIZED:
-        {
-            if (!m_bMinimizedOrHidden)
-            {
-                m_bMinimizedOrHidden = true;
-
-                IFC_RETURN(RaiseWindowVisibilityChangedEvent(FALSE /* visible */));
-            }
-        }
-        break;
-    }
-    
     // NOTE: This is fragile. We need the window's "restored size" while the AppWindow is in a presenter
     // other than Overlapped (FullScreen/CompactOverlay) so the Width/Height getters return correct values.
     // BUT the AppWindow gives us no API to get (or set) that restored size, and when the presenter changes

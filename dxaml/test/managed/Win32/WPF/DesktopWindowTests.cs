@@ -150,6 +150,115 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that Window.VisibilityChanged follows effective AppWindow visibility changes.")]
+        public void ValidateVisibilityChangedOnAppWindowHideShowAndMinimize()
+        {
+            Window desktopWindow = null;
+            var visibilityChanges = new List<bool>();
+            Windows.Foundation.TypedEventHandler<Window, WindowVisibilityChangedEventArgs> visibilityChangedHandler = null;
+
+            UIExecutor.Execute(() =>
+            {
+                desktopWindow = new Window();
+                desktopWindow.Content = new StackPanel();
+                visibilityChangedHandler = (sender, args) =>
+                {
+                    // The event must be raised only after Window.Visible reports the same state.
+                    Verify.AreEqual(desktopWindow.Visible, args.Visible);
+                    visibilityChanges.Add(args.Visible);
+                };
+                desktopWindow.VisibilityChanged += visibilityChangedHandler;
+                desktopWindow.Activate();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsTrue(desktopWindow.Visible);
+                Verify.AreEqual(1, visibilityChanges.Count);
+                Verify.IsTrue(visibilityChanges[0]);
+
+                desktopWindow.AppWindow.Hide();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(desktopWindow.Visible);
+                Verify.AreEqual(2, visibilityChanges.Count);
+                Verify.IsFalse(visibilityChanges[1]);
+
+                // Resizing while hidden still produces WM_SIZE, but must not report visible.
+                var size = desktopWindow.AppWindow.Size;
+                desktopWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(size.Width + 1, size.Height + 1));
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(desktopWindow.Visible);
+                Verify.AreEqual(2, visibilityChanges.Count);
+
+                desktopWindow.AppWindow.Show();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsTrue(desktopWindow.Visible);
+                Verify.AreEqual(3, visibilityChanges.Count);
+                Verify.IsTrue(visibilityChanges[2]);
+
+                var presenter = (Microsoft.UI.Windowing.OverlappedPresenter)desktopWindow.AppWindow.Presenter;
+                presenter.Minimize();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(desktopWindow.Visible);
+                Verify.AreEqual(4, visibilityChanges.Count);
+                Verify.IsFalse(visibilityChanges[3]);
+
+                // A hidden or shown minimized window is still not effectively visible.
+                desktopWindow.AppWindow.Hide();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(desktopWindow.Visible);
+                Verify.AreEqual(4, visibilityChanges.Count);
+                desktopWindow.AppWindow.Show();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(desktopWindow.Visible);
+                Verify.AreEqual(4, visibilityChanges.Count);
+
+                var presenter = (Microsoft.UI.Windowing.OverlappedPresenter)desktopWindow.AppWindow.Presenter;
+                presenter.Restore();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsTrue(desktopWindow.Visible);
+                Verify.AreEqual(5, visibilityChanges.Count);
+                Verify.IsTrue(visibilityChanges[4]);
+
+                // Closing uses a pre-existing notification path that marks the native
+                // window closed before raising its final event, so unsubscribe from this
+                // callback that intentionally reads Window.Visible before closing.
+                desktopWindow.VisibilityChanged -= visibilityChangedHandler;
+                desktopWindow.Close();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies that we can retrieve a Window instance from the framework application in desktop mode")]
         public void ValidateWindowCanBeRetrievedFromApplication()
         {
