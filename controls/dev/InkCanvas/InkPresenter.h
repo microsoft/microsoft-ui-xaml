@@ -21,7 +21,9 @@
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
+#include <atomic>
 #include <functional>
+#include <memory>
 #include <vector>
 
 // The OS Windows.UI.Input.Inking types and the MUXC types are both folded into winrt::,
@@ -299,16 +301,28 @@ public:
     void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
 private:
-    // Custom-dry handoff state. Only BeginDry/EndDry move it, on the UI thread (StrokesCollected).
+    // Custom-dry handoff state. BeginDry sets InDry; EndDry moves InDry to Idle (forwarded now) or to EndDryPending
+    // (held for XAML's next frame, only when the ink is on XAML's device). Atomic because EndDry can be called from
+    // any thread; a second EndDry fails the compare-exchange and throws, as in UWP.
     //   Idle          - no dry in progress
     //   InDry         - BeginDry done, waiting for the app's EndDry
-    //   EndDryPending - ink is on XAML's device: EndDry is held until XAML's next frame starts (Rendering)
+    //   EndDryPending - EndDry held until XAML's next frame starts (Rendering)
     enum class DryState { Idle, InDry, EndDryPending };
     void FlushPendingEndDry();
     void EndDryOnOs();
-    DryState m_dryState{ DryState::Idle };
-    // Set only in EndDryPending: the Rendering registration that forwards the held EndDry.
-    std::shared_ptr<winrt::event_token> m_renderingToken;
+    bool IsXamlFrameHandoffOnThisThread();
+    void EnsureFrameHooks();
+    std::atomic<DryState> m_dryState{ DryState::Idle };
+
+    // UI thread only. Rendering/Rendered registrations for one dry handoff (null when not hooked), and whether XAML is
+    // between Rendering and Rendered of a frame.
+    struct FrameHooks
+    {
+        winrt::event_token rendering{};
+        winrt::event_token rendered{};
+    };
+    std::shared_ptr<FrameHooks> m_frameHooks;
+    bool m_inRenderingPass{ false };
 
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 

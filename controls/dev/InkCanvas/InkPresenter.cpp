@@ -763,6 +763,15 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
         },
         /* pumpMessages */ false);
     m_dryState = began ? DryState::InDry : DryState::Idle;
+
+    // Ink on XAML's device: hook XAML's frame now, before the app can call EndDry. A handler added during a
+    // Rendering pass only runs from the next frame, so hooking here (not in EndDry) also covers an app that calls
+    // EndDry from its own Rendering handler.
+    if (began && IsXamlFrameHandoffOnThisThread())
+    {
+        EnsureFrameHooks();
+    }
+
     // Build the returned collection on the calling (UI) thread so the app is never handed an
     // ink-thread-affine object.
     return winrt::single_threaded_vector<inking::InkStroke>(std::move(strokes)).GetView();
@@ -770,54 +779,98 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
 
 void InkSynchronizer::EndDry()
 {
-    auto owner = m_owner.get();
-    auto ownerImpl = owner ? winrt::get_self<::InkPresenter>(owner) : nullptr;
-    if (!ownerImpl || !ownerImpl->IsDryHandoffInXamlFrame() || !ownerImpl->IsOnUIThread())
-    {
-        // Ink on its own device (or called off the UI thread): forward now, as before.
-        EndDryOnOs();
-        m_dryState = DryState::Idle;
-        return;
-    }
+    // Hold EndDry for XAML's frame only when the frame hooks are in place and we are outside a Rendering pass.
+    // Otherwise forward now: inside a Rendering pass (XAML commits this frame with the app's dry ink), off the UI
+    // thread, or with the ink on its own device.
+    const bool holdForFrame = IsXamlFrameHandoffOnThisThread() && m_frameHooks && !m_inRenderingPass;
 
-    // Same error the OS gives for EndDry without BeginDry, raised now because the OS call is held.
-    if (m_dryState != DryState::InDry)
+    // EndDry without a BeginDry, or a second EndDry while one is held, is the OS error. Reject it before changing
+    // anything, so a pending EndDry still completes on the UI thread.
+    auto expected = DryState::InDry;
+    if (!m_dryState.compare_exchange_strong(expected, holdForFrame ? DryState::EndDryPending : DryState::Idle))
     {
         throw winrt::hresult_illegal_method_call();
     }
 
-    // The app's dry ink is in XAML's tree now and XAML renders it in its next frame. Forward EndDry when that
-    // frame starts (Rendering): the OS detaches the wet ink from its host visual on XAML's device, and XAML's
-    // commit of that frame carries both changes. On the UI thread, adding a Rendering handler does not fail.
-    m_dryState = DryState::EndDryPending;
-    auto token = std::make_shared<winrt::event_token>();
-    *token = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(
-        [weakThis = get_weak(), token](auto const&, auto const&)
-        {
-            if (auto self = weakThis.get())
-            {
-                self->FlushPendingEndDry();
-            }
-            else
-            {
-                // The synchronizer is gone; just unhook (this runs on the UI thread).
-                winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(*token);
-            }
-        });
-    m_renderingToken = std::move(token);
+    if (!holdForFrame)
+    {
+        EndDryOnOs();
+    }
+    // Otherwise the Rendering hook forwards it when XAML's next frame starts, or later in the current Rendering pass
+    // if the app's handler ran before ours.
 }
 
-// Sends a held EndDry to the OS. Runs on the UI thread: from Rendering, or from BeginDry (StrokesCollected).
-void InkSynchronizer::FlushPendingEndDry()
+bool InkSynchronizer::IsXamlFrameHandoffOnThisThread()
 {
-    if (m_dryState != DryState::EndDryPending)
+    auto owner = m_owner.get();
+    auto ownerImpl = owner ? winrt::get_self<::InkPresenter>(owner) : nullptr;
+    return ownerImpl && ownerImpl->IsDryHandoffInXamlFrame() && ownerImpl->IsOnUIThread();
+}
+
+// Hooks CompositionTarget.Rendering and Rendered for the length of one dry handoff. UI thread only. Rendering forwards a
+// held EndDry when XAML's frame starts and marks the Rendering pass; Rendered ends the pass and unhooks once nothing is
+// held. The handlers remove themselves on the UI thread, so the synchronizer never unhooks from another thread.
+void InkSynchronizer::EnsureFrameHooks()
+{
+    if (m_frameHooks)
     {
         return;
     }
-    m_dryState = DryState::Idle;
-    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(*m_renderingToken);
-    m_renderingToken = nullptr;
-    EndDryOnOs();
+    using winrt::Microsoft::UI::Xaml::Media::CompositionTarget;
+    auto hooks = std::make_shared<FrameHooks>();
+    auto unhook = [](std::shared_ptr<FrameHooks> const& h)
+    {
+        CompositionTarget::Rendering(h->rendering);
+        CompositionTarget::Rendered(h->rendered);
+    };
+    hooks->rendering = CompositionTarget::Rendering(
+        [weakThis = get_weak(), hooks, unhook](auto const&, auto const&)
+        {
+            auto self = weakThis.get();
+            if (!self)
+            {
+                unhook(hooks);
+                return;
+            }
+            self->m_inRenderingPass = true;
+            // Runs inside XAML's frame callback, so an OS failure is reported, not thrown into XAML.
+            try
+            {
+                self->FlushPendingEndDry();
+            }
+            catch (winrt::hresult_error const& e)
+            {
+                InkTelemetry::ReportError(
+                    InkTelemetry::ErrorCategory::ApiMisuse, InkTelemetry::Operation::EndDry, true /* isRecoverable */, e.code());
+            }
+        });
+    hooks->rendered = CompositionTarget::Rendered(
+        [weakThis = get_weak(), hooks, unhook](auto const&, auto const&)
+        {
+            auto self = weakThis.get();
+            if (!self)
+            {
+                unhook(hooks);
+                return;
+            }
+            self->m_inRenderingPass = false;
+            if (self->m_dryState == DryState::Idle)
+            {
+                unhook(hooks);
+                self->m_frameHooks = nullptr;
+            }
+        });
+    m_frameHooks = std::move(hooks);
+}
+
+// Sends a held EndDry to the OS. Runs on the UI thread: from the Rendering hook, or from BeginDry.
+void InkSynchronizer::FlushPendingEndDry()
+{
+    auto expected = DryState::EndDryPending;
+    if (m_dryState.compare_exchange_strong(expected, DryState::Idle))
+    {
+        EndDryOnOs();
+    }
 }
 
 void InkSynchronizer::EndDryOnOs()

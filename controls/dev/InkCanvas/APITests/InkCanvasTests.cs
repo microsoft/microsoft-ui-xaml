@@ -370,8 +370,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("Repeated create/load/unload/collect cycles completed without crashing.");
         }
 
-        // EndDry without BeginDry throws E_ILLEGAL_METHOD_CALL synchronously, including when the OS call is held for
-        // XAML's next frame. Back-to-back handoffs must not fail: a held EndDry is sent to the OS before the next BeginDry.
+        // EndDry without BeginDry, or a second EndDry for the same BeginDry (from any thread), throws E_ILLEGAL_METHOD_CALL
+        // synchronously, as in UWP. Back-to-back handoffs must not fail: a held EndDry is sent to the OS before the next BeginDry.
         [TestMethod]
         public void InkSynchronizerHandoffTest()
         {
@@ -410,6 +410,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Let the deferred EndDry calls reach the OS, then do one more handoff.
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                synchronizer.BeginDry();
+                synchronizer.EndDry();
+            });
+
+            // A second EndDry for the same BeginDry, here from a worker thread, is rejected like in UWP.
+            var duplicateHr = global::System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    synchronizer.EndDry();
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    return ex.HResult;
+                }
+            }).Result;
+            Verify.AreEqual(unchecked((int)0x8000000E), duplicateHr, "A second EndDry should throw E_ILLEGAL_METHOD_CALL.");
+
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
