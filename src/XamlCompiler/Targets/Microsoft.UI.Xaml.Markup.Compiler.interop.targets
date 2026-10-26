@@ -191,14 +191,18 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </PropertyGroup>
 
     <!--
-        When MSBuild runs on .NET (e.g. 'dotnet build'), run the .NET build of the executable compiler on the same
-        dotnet host that runs MSBuild; it is considerably faster than the .NET Framework one. Falls back to the
-        .NET Framework XamlCompiler.exe if the host isn't known, MSBuild predates .NET 8, a custom XamlCompilerExePath
-        was specified, or UseNetCoreXamlCompiler is set to false.
+        Run the .NET build of the executable compiler on the dotnet host of the .NET SDK (DOTNET_HOST_PATH) when it is
+        .NET 8 or later; it is considerably faster than the .NET Framework one. This applies both when MSBuild runs on
+        .NET (e.g. 'dotnet build') and on .NET Framework (Visual Studio, msbuild.exe), where it replaces the in-process
+        CompileXaml task unless UseXamlCompilerExecutable was explicitly set to false.
+        Falls back to the .NET Framework compiler if there is no .NET 8+ SDK, a custom XamlCompilerExePath was
+        specified, or UseNetCoreXamlCompiler is set to false.
     -->
     <PropertyGroup>
-        <XamlCompilerNetCoreDllPath Condition="'$(XamlCompilerNetCoreDllPath)' == ''">$(_MuxPackageToolsFolder)XamlCompiler.dll</XamlCompilerNetCoreDllPath>
-        <UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == '' and '$(MSBuildRuntimeType)' == 'Core' and '$(XamlCompilerExePath)' == '' and '$(DOTNET_HOST_PATH)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(MSBuildVersion)', '17.8')) and Exists('$(XamlCompilerNetCoreDllPath)')">true</UseNetCoreXamlCompiler>
+        <XamlCompilerNetCoreDllPath Condition="'$(XamlCompilerNetCoreDllPath)' == ''">$(_MuxPackageToolsFolder)..\net8.0\XamlCompiler.dll</XamlCompilerNetCoreDllPath>
+        <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' == 'Core'">$([MSBuild]::VersionGreaterThanOrEquals('$(MSBuildVersion)', '17.8'))</_XamlCompilerHasNetCoreSdk>
+        <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(NETCoreSdkVersion)' != ''">$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))</_XamlCompilerHasNetCoreSdk>
+        <UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == '' and '$(XamlCompilerExePath)' == '' and '$(UseXamlCompilerExecutable)' != 'false' and '$(DOTNET_HOST_PATH)' != '' and '$(_XamlCompilerHasNetCoreSdk)' == 'true' and Exists('$(XamlCompilerNetCoreDllPath)')">true</UseNetCoreXamlCompiler>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(XamlCompilerExePath) == ''">
@@ -206,7 +210,8 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </PropertyGroup>
 
     <PropertyGroup>
-        <_UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == 'true' and '$(DOTNET_HOST_PATH)' != ''">true</_UseNetCoreXamlCompiler>
+        <_UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == 'true' and '$(IsNativeLanguage)' != 'true' and '$(DOTNET_HOST_PATH)' != ''">true</_UseNetCoreXamlCompiler>
+        <UseXamlCompilerExecutable Condition="'$(_UseNetCoreXamlCompiler)' == 'true' and '$(UseXamlCompilerExecutable)' == ''">true</UseXamlCompilerExecutable>
         <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' == 'true'">"$(DOTNET_HOST_PATH)" "$(XamlCompilerNetCoreDllPath)"</_XamlCompilerCommand>
         <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' != 'true'">"$(XamlCompilerExePath)"</_XamlCompilerCommand>
     </PropertyGroup>
@@ -399,7 +404,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
         <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true'" />
+                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNetCoreXamlCompiler)' != 'true'" />
 
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
@@ -530,7 +535,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
         <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true'" />
+                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNetCoreXamlCompiler)' != 'true'" />
 
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
