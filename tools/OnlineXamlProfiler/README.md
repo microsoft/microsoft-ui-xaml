@@ -34,13 +34,15 @@ dotnet test .\OnlineXamlProfiler.Tests\OnlineXamlProfiler.Tests.csproj --filter 
 
 The application being inspected **must load a runtime built from this change**.
 The tool intentionally fails with an actionable diagnostic when the runtime lacks
-the new `OnlineXamlProfilerWithTreeAccess` export. It does not silently substitute
+the new `OnlineXamlProfilerWithTreeAccess` export or its version 2 ABI. It does not silently substitute
 ETW reconstruction or another tree source.
 
 Build the repository's `Microsoft.UI.Xaml.dll` normally: from the repository root,
 initialize with `.\init.ps1 amd64chk`, then build through `build.cmd` or its
 documented component-build workflow. Deploy the resulting runtime and its **matching**
 dependencies using the target app's existing local-WinUI deployment mechanism.
+Keep the matching localized resources, including `.mui` files, in that deployment;
+copying only DLLs can leave the target unable to initialize.
 For a self-contained test app this means its app-local WinUI runtime, not the
 profiler's own WinUI files. For a framework-package app use a matching locally
 built/deployed framework package. Do not replace files in an installed system
@@ -98,6 +100,49 @@ nearby process sample. Disconnect, target exit, and window close stop sampling.
 Reattaching starts a new live history and observed GPU peak while preserving
 earlier snapshots' readings in memory.
 
+### Snapshot memory and textures
+
+Expand **Snapshot memory and texture observations** after a capture to inspect
+core-object allocation bytes grouped by type, XAML allocation counters for the
+native heap, observation-cache coverage, and target-process DXGI usage/budgets
+per adapter and memory segment. Heap readings are process-wide measurements
+repeated for each UI-thread interval, not values to add together.
+
+Select a XAML, HWCompNode, or visual node to inspect its subtree's measured core
+bytes and associated current brush/surface references. Each known surface
+includes its lifetime generation, dimensions, format, virtual flag and logical
+byte estimate. An observed texture additionally includes the `ID3D11Resource`
+identity, description, draw offset and observation QPC. These readings stay
+frozen when selecting an earlier snapshot.
+
+The profiler-enabled runtime records texture metadata during ordinary drawing
+**from application startup**, independently of attachment or a MUX ETW session.
+Two snapshots can therefore reuse the same observation without another draw.
+An observation is not proof of current physical backing or residency. Surface
+estimates include virtual extent and can share an atlas; they are **not exact
+VRAM usage**. Core bytes exclude managed/native peers and auxiliary allocations.
+Unavailable capabilities, unknown owners and never-observed textures retain
+their HRESULT instead of being presented as measured zero.
+
+### Optional Windows GPU tracing
+
+Before launching or attaching, select **Optional Windows GPU trace** to request
+OS allocation enrichment. This is off by default and may require an elevated
+profiler. Failure to start tracing is reported in the captured memory panel;
+it does not disable tree, memory, cache or process-statistics capture.
+
+The panel shows process-aware resource/allocation evidence, reported allocation
+sizes and owner PIDs, deduplicated matched bytes, and coverage diagnostics.
+These are historical allocation links at observed draw times, **not a current
+resident-memory inventory**. A zero Present-call count can be valid for a WinUI
+app that does not call DXGI Present itself; it is not GPU utilization.
+
+Tracing starts before a launch request, but starts late when attaching to an
+existing PID. No OS allocation rundown/baseline is claimed. Missing, ambiguous,
+lost or evicted evidence and undrained event delivery remain explicit. No MUX
+provider is enabled by this option; existing process GPU graphs remain the
+independent counter-based view.
+
 ## Usage notes and limitations
 
 - Each UI-thread capture is synchronous, but the collection of threads is **not a
@@ -143,6 +188,23 @@ their nested topology and direct ownership links, and verifies the same process 
 request IDs. It never terminates or redeploys the selected target. Without those
 variables it is inconclusive, not a reported successful live test.
 
+To check startup-retained texture observations and optional OS allocation joins
+with a **test-owned, static** `FolderTreeAppCpp` instance:
+
+```powershell
+$env:ONLINE_XAML_TEST_EXE = '<absolute path to FolderTreeAppCpp.exe with the matching modified runtime>'
+$env:ONLINE_XAML_TEST_TAP = '<absolute path to matching OnlineXamlProfilerTap.dll>'
+dotnet test .\OnlineXamlProfiler.Tests\OnlineXamlProfiler.Tests.csproj --filter "FullyQualifiedName~CapturesStartupTextureObservationsAndOptionalWindowsGpuEvidence"
+```
+
+This test runs with tracing disabled and enabled, launching its own target for
+each case. It waits for initialized UI, attaches after startup drawing, and
+verifies copied memory/texture data and an unchanged observation across two
+captures. The enabled case starts tracing before launch and waits up to ten
+seconds for asynchronous OS allocation evidence for the same captured textures
+(or checks an explicit unavailable diagnostic). It closes only the targets it
+launched. The executable variable is not used by the existing PID-based test.
+
 For an interactive UI regression test, on an English desktop:
 
 ```powershell
@@ -154,7 +216,9 @@ $profiler = (Resolve-Path '.\artifacts\bin\OnlineXamlProfiler.App\x64\Debug\net9
 
 The UI test checks two snapshots, expanding all descendants in all three trees, a collapsed
 HWCompNode-to-IVisual link, live statistics updates, frozen snapshot readings,
-snapshot-history selection, stopping samples on disconnect, and reattach. Add
+snapshot-history selection, stopping samples on disconnect, and reattach.
+GPU tracing must be off by default; add `-EnableGpuTracing` to exercise the
+opt-in tracing control and its connected/disconnected state. Add
 `-ScreenshotPath '<absolute path to image.png>'` to retain a profiler-window image.
 It closes only its own profiler window; it never terminates the selected target. In launch
 mode it prints the newly launched PID so the caller can clean up a test-owned app.

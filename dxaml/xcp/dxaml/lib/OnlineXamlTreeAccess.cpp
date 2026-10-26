@@ -6,9 +6,55 @@
 #include "DXamlServices.h"
 #include "hwcompnode.h"
 #include "ContentRootCoordinator.h"
+#include "XcpAllocation.h"
+#ifdef XAMLPROFILER_ENABLED
+#include "OnlineXamlObservationCache.h"
+#include "XamlProfilerTracing.h"
+#endif
 
 namespace
 {
+#ifdef XAMLPROFILER_ENABLED
+    OnlineXaml::SurfaceObservationCache<>& ObservationCache() noexcept
+    {
+        static OnlineXaml::SurfaceObservationCache<> cache;
+        return cache;
+    }
+#endif
+
+    HRESULT WINAPI ReadMemory(void* context, OnlineXaml::NativeMemory* memory)
+    {
+        if (!memory || memory->Size != sizeof(*memory)) { return E_INVALIDARG; }
+        if (DirectUI::DXamlServices::GetSafeHandle() != context ||
+            DirectUI::DXamlServices::IsDXamlCoreShuttingDown()) { return RPC_E_WRONG_THREAD; }
+        *memory = {};
+        memory->HeapId = XcpAllocation::GetHeapHandle();
+        memory->IsPrivateHeap = XcpAllocation::IsUsingPrivateHeap();
+        if (XcpAllocation::IsOutstandingAllocationTrackingAvailable())
+        {
+            memory->HeapStatus = S_OK;
+            memory->OutstandingBytes = XcpAllocation::GetOutstandingAllocationSize();
+            memory->OutstandingCount = XcpAllocation::GetOutstandingAllocationCount();
+        }
+#ifdef XAMLPROFILER_ENABLED
+        ObservationCache().ReadMemory(*memory);
+#endif
+        return S_OK;
+    }
+
+    HRESULT WINAPI ReadSurface(void* context, UINT64 id, OnlineXaml::NativeSurface* surface)
+    {
+        if (!id || !surface || surface->Size != sizeof(*surface)) { return E_INVALIDARG; }
+        if (DirectUI::DXamlServices::GetSafeHandle() != context ||
+            DirectUI::DXamlServices::IsDXamlCoreShuttingDown()) { return RPC_E_WRONG_THREAD; }
+        *surface = {};
+#ifdef XAMLPROFILER_ENABLED
+        return ObservationCache().Read(id, *surface);
+#else
+        return E_NOTIMPL;
+#endif
+    }
+
     template<typename T>
     UINT64 Address(T* value)
     {
@@ -42,6 +88,10 @@ namespace
             node.ActualWidth = element->GetActualWidth();
             node.ActualHeight = element->GetActualHeight();
             node.IsVisible = element->IsVisible();
+#ifdef XAMLPROFILER_ENABLED
+            node.CoreAllocationBytes = XamlProfilerGetCoreSize(element);
+            node.CoreAllocationStatus = node.CoreAllocationBytes ? S_OK : E_NOTIMPL;
+#endif
             IFC_RETURN(reader->Node(reader->Context, &node));
             if (reader->Child)
             {
@@ -140,5 +190,24 @@ extern "C" HRESULT WINAPI OnlineXamlProfilerWithTreeAccess(
     access.Roots = ids.data();
     access.Context = core;
     access.ReadNode = ReadNode;
+    access.ReadMemory = ReadMemory;
+    access.ReadSurface = ReadSurface;
     return callback(context, &access);
 }
+
+#ifdef XAMLPROFILER_ENABLED
+void OnlineXaml::RegisterSurfaceObservation(const NativeSurface& surface) noexcept
+{
+    ObservationCache().Register(surface);
+}
+
+void OnlineXaml::RemoveSurfaceObservation(UINT64 id, UINT64 owner) noexcept
+{
+    ObservationCache().Remove(id, owner);
+}
+
+void OnlineXaml::ObserveSurfaceTexture(UINT64 id, UINT64 owner, const NativeTexture& texture) noexcept
+{
+    ObservationCache().Observe(id, owner, texture);
+}
+#endif

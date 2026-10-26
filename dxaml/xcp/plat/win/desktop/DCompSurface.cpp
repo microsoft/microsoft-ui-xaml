@@ -10,6 +10,7 @@
 #include <PixelFormat.h>
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
+#include "OnlineXamlTreeAccess.h"
 #endif
 
 #include "XcpAllocation.h"
@@ -128,6 +129,9 @@ DCompSurface::CreateWithNoHardware(
         nullptr, &dcompSurface->m_spWinRTSurface));
 
     dcompSurface->m_isVirtual = isVirtual;
+#ifdef XAMLPROFILER_ENABLED
+    dcompSurface->RegisterProfilerSurface();
+#endif
 
     return dcompSurface;
 }
@@ -152,6 +156,9 @@ DCompSurface::InitializeSurface(
     // initialized. If this surface is 8-bit, but 8-bit isn't natively supported, the underlying DComp surface will be
     // created as 32-bit and an extra copy will occur at upload time to do the format conversion (see FlushUpdates).
     DXGI_FORMAT compositionSurfaceFormat = GetCompositionSurfaceFormat();
+#ifdef XAMLPROFILER_ENABLED
+    m_profilerSurfaceFormat = compositionSurfaceFormat;
+#endif
 
     m_isVirtual = !!isVirtual;
 
@@ -212,6 +219,9 @@ DCompSurface::InitializeSurface(
 
     // Since it's possible to reuse a DCompSurface across discards, reset m_discarded after re-initializing.
     m_discarded = FALSE;
+#ifdef XAMLPROFILER_ENABLED
+    RegisterProfilerSurface();
+#endif
 
     return S_OK;
 }
@@ -291,6 +301,10 @@ DCompSurface::InitializeSurface(
 
     IFCFAILFAST(m_compositionSurfaceHelper.Initialize(m_pCompositionSurface));
 
+#ifdef XAMLPROFILER_ENABLED
+    m_profilerSurfaceFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+    RegisterProfilerSurface();
+#endif
     return S_OK;
 }
 
@@ -352,6 +366,10 @@ DCompSurface::~DCompSurface()
 void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
 {
     ASSERT(m_cLocks == 0);
+#ifdef XAMLPROFILER_ENABLED
+    OnlineXaml::RemoveSurfaceObservation(
+        reinterpret_cast<UINT64>(m_spWinRTSurface.Get()), reinterpret_cast<UINT64>(this));
+#endif
 
     // Keep m_spWinRTSurface so it can be reattached later
     if (m_spWinRTSurface != nullptr && resetWucSurface)
@@ -1156,6 +1174,7 @@ DCompSurface::Resize(
     }
 
 #ifdef XAMLPROFILER_ENABLED
+    RegisterProfilerSurface();
     TraceProfilerMemoryChange(true);
 #endif
 
@@ -1372,15 +1391,35 @@ DCompSurface::GetTextureSizeInBytes() const
 }
 
 #ifdef XAMLPROFILER_ENABLED
+void DCompSurface::RegisterProfilerSurface() noexcept
+{
+    OnlineXaml::NativeSurface surface;
+    surface.CompositionSurfaceId = reinterpret_cast<UINT64>(m_spWinRTSurface.Get());
+    surface.SurfaceId = reinterpret_cast<UINT64>(this);
+    surface.Width = GetWidthWithGutters();
+    surface.Height = GetHeightWithGutters();
+    surface.Format = static_cast<UINT32>(m_profilerSurfaceFormat);
+    surface.IsVirtual = m_isVirtual;
+    const UINT32 stride = m_profilerSurfaceFormat == DXGI_FORMAT_UNKNOWN ? 0 :
+        (m_profilerSurfaceFormat == DXGI_FORMAT_A8_UNORM ? 1 :
+            (m_profilerSurfaceFormat == DXGI_FORMAT_R16G16B16A16_FLOAT ? 8 : 4));
+    surface.EstimatedBytes = static_cast<UINT64>(surface.Width) * surface.Height * stride;
+    OnlineXaml::RegisterSurfaceObservation(surface);
+}
+
 void DCompSurface::TraceProfilerTextureObserved(
     _In_ IUnknown* updateObject,
     const POINT& offset) noexcept
 {
-    if (!XamlProfilerTracing::IsEnabled())
+    OnlineXaml::NativeTexture observation;
+    LARGE_INTEGER time{};
+    QueryPerformanceCounter(&time);
+    observation.ObservedQpc = time.QuadPart;
+    const auto saveObservation = [&]
     {
-        return;
-    }
-
+        OnlineXaml::ObserveSurfaceTexture(reinterpret_cast<UINT64>(m_spWinRTSurface.Get()),
+            reinterpret_cast<UINT64>(this), observation);
+    };
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
     if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&texture))))
     {
@@ -1389,23 +1428,41 @@ void DCompSurface::TraceProfilerTextureObserved(
         Microsoft::WRL::ComPtr<ID2D1Bitmap1> targetBitmap;
         Microsoft::WRL::ComPtr<IDXGISurface> targetSurface;
 
-        if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&deviceContext))))
+        observation.Status = updateObject->QueryInterface(IID_PPV_ARGS(&deviceContext));
+        if (FAILED(observation.Status))
         {
+            saveObservation();
             return;
         }
 
         deviceContext->GetTarget(&target);
+        observation.Status = E_NOINTERFACE;
         if (target == nullptr ||
-            FAILED(target.As(&targetBitmap)) ||
-            FAILED(targetBitmap->GetSurface(&targetSurface)) ||
-            FAILED(targetSurface.As(&texture)))
+            FAILED(observation.Status = target.As(&targetBitmap)) ||
+            FAILED(observation.Status = targetBitmap->GetSurface(&targetSurface)) ||
+            FAILED(observation.Status = targetSurface.As(&texture)))
         {
+            saveObservation();
             return;
         }
     }
 
     D3D11_TEXTURE2D_DESC desc = {};
     texture->GetDesc(&desc);
+
+    Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+    observation.Status = texture.As(&resource);
+    observation.ResourceId = reinterpret_cast<UINT64>(resource.Get());
+    observation.Width = desc.Width;
+    observation.Height = desc.Height;
+    observation.MipLevels = desc.MipLevels;
+    observation.ArraySize = desc.ArraySize;
+    observation.Format = static_cast<UINT32>(desc.Format);
+    observation.SampleCount = desc.SampleDesc.Count;
+    observation.OffsetX = offset.x;
+    observation.OffsetY = offset.y;
+    saveObservation();
+    if (!XamlProfilerTracing::IsEnabled()) { return; }
 
     XamlProfilerTracing::DCompSurfaceTextureObserved(
         reinterpret_cast<uint64_t>(this),

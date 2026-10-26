@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OnlineXamlProfiler.Core;
 
@@ -32,6 +33,9 @@ public sealed record SnapshotNode
     public required string CompId { get; init; }
     public required string VisualId { get; init; }
     public required IReadOnlyList<SnapshotProperty> Properties { get; init; }
+    public required int CoreAllocationStatus { get; init; }
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public required ulong CoreAllocationBytes { get; init; }
 }
 
 public sealed record ThreadSnapshot
@@ -43,11 +47,13 @@ public sealed record ThreadSnapshot
     public required int Status { get; init; }
     public required string Error { get; init; }
     public required IReadOnlyList<SnapshotNode> Nodes { get; init; }
+    public required SnapshotMemory Memory { get; init; }
+    public required IReadOnlyList<SnapshotSurface> Surfaces { get; init; }
 }
 
 public sealed record SnapshotDocument
 {
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;
     public const int MaximumNodeCount = 100000;
 
     public required int SchemaVersion { get; init; }
@@ -55,6 +61,7 @@ public sealed record SnapshotDocument
     public required string ProcessStartTime { get; init; }
     public required string RequestId { get; init; }
     public required IReadOnlyList<ThreadSnapshot> Threads { get; init; }
+    public required AdapterMemorySnapshot AdapterMemory { get; init; }
 
     public static SnapshotDocument Deserialize(ReadOnlySpan<byte> utf8Json)
     {
@@ -82,22 +89,26 @@ public sealed record SnapshotDocument
         }
 
         var threadIds = new HashSet<uint>();
+        if (AdapterMemory is null) { throw new InvalidDataException("Missing adapter memory metadata."); }
+        AdapterMemory.Validate();
         int totalNodes = 0;
+        int totalSurfaces = 0;
         foreach (var thread in Threads)
         {
             if (thread is null || thread.ThreadId == 0 || !threadIds.Add(thread.ThreadId) ||
-                thread.Nodes is null || thread.Error is null)
+                thread.Nodes is null || thread.Error is null || thread.Memory is null || thread.Surfaces is null)
             {
                 throw new InvalidDataException("Invalid or duplicate snapshot UI thread.");
             }
             totalNodes = checked(totalNodes + thread.Nodes.Count);
-            if (totalNodes > MaximumNodeCount)
+            totalSurfaces = checked(totalSurfaces + thread.Surfaces.Count);
+            if (totalNodes > MaximumNodeCount || totalSurfaces > MaximumNodeCount)
             {
                 throw new InvalidDataException("The snapshot exceeds the node limit.");
             }
             if (thread.Status < 0)
             {
-                if (thread.Nodes.Count != 0 || string.IsNullOrWhiteSpace(thread.Error))
+                if (thread.Nodes.Count != 0 || thread.Surfaces.Count != 0 || string.IsNullOrWhiteSpace(thread.Error))
                 {
                     throw new InvalidDataException("A failed thread capture must have an error and no partial tree.");
                 }
@@ -118,6 +129,14 @@ public sealed record SnapshotDocument
             if (thread.Nodes.Any(node => !Enum.IsDefined(node.Tree)))
             {
                 throw new InvalidDataException("Unknown snapshot tree kind.");
+            }
+            thread.Memory.Validate();
+            var visuals = thread.Nodes.Where(node => node.Tree == TreeKind.Visual).Select(node => node.Id)
+                .ToHashSet(StringComparer.Ordinal);
+            foreach (var surface in thread.Surfaces)
+            {
+                if (surface is null) { throw new InvalidDataException("Null captured surface."); }
+                surface.Validate(visuals, end);
             }
         }
     }
@@ -142,6 +161,11 @@ public sealed record SnapshotDocument
                 !byId.TryAdd(node.Id, node) || !siblingIndices.Add((node.ParentId, node.ChildIndex)))
             {
                 throw new InvalidDataException("Invalid node identity, metadata, or sibling order.");
+            }
+            if ((node.CoreAllocationStatus >= 0 && (kind != TreeKind.Xaml || node.CoreAllocationBytes == 0)) ||
+                (node.CoreAllocationStatus < 0 && node.CoreAllocationBytes != 0))
+            {
+                throw new InvalidDataException("Invalid core allocation measurement.");
             }
             foreach (var property in node.Properties)
             {
@@ -183,7 +207,7 @@ public sealed record SnapshotDocument
         }
     }
 
-    private static bool IsAddress(string? text, bool allowEmpty = true) =>
+    internal static bool IsAddress(string? text, bool allowEmpty = true) =>
         text is not null && ((allowEmpty && text.Length == 0) ||
         (text.Length == 16 && ulong.TryParse(text, NumberStyles.AllowHexSpecifier,
             CultureInfo.InvariantCulture, out ulong address) && address != 0 &&

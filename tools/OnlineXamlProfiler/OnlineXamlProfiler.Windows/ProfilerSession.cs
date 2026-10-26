@@ -79,7 +79,7 @@ public sealed class ProfilerSession : IDisposable
             }
             var hello = JsonSerializer.Deserialize<SessionHello>(frame.Payload)
                 ?? throw new InvalidDataException("The TAP handshake is null.");
-            if (hello.ProcessId != processId || hello.TreeAccessAbiVersion != 1 ||
+            if (hello.ProcessId != processId || hello.TreeAccessAbiVersion != 2 ||
                 hello.ProcessStartTime != processStart || string.IsNullOrWhiteSpace(hello.RuntimePath) ||
                 !string.Equals(hello.RuntimePath, runtime.XamlPath, StringComparison.OrdinalIgnoreCase))
             {

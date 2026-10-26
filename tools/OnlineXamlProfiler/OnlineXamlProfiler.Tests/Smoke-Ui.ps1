@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory)][string]$ProfilerPath,
     [Parameter(Mandatory, ParameterSetName='Attach')][uint32]$TargetProcessId,
     [Parameter(Mandatory, ParameterSetName='Launch')][string]$TargetExecutable,
+    [switch]$EnableGpuTracing,
     [string]$ScreenshotPath
 )
 $ErrorActionPreference = 'Stop'
@@ -20,7 +21,18 @@ function Wait-For([scriptblock]$Condition, [string]$Description) {
         if (& $Condition) { return }
         Start-Sleep -Milliseconds 100
     } while ((Get-Date) -lt $deadline)
-    throw "Timed out while $Description."
+    $details = if ($root) {
+        @($root.FindAll($scope, [System.Windows.Automation.PropertyCondition]::new(
+            $typeProperty, [System.Windows.Automation.ControlType]::Text)) |
+            ForEach-Object { $_.Current.Name }) -join ' | '
+    } else { 'No profiler UI root.' }
+    $bounds = if ($root) {
+        @('SnapshotPanelsScroll', 'XamlTree', 'CompTree', 'VisualTree') | ForEach-Object {
+            $element = Find-Id $_
+            "$_ bounds=$($element.Current.BoundingRectangle)"
+        }
+    }
+    throw "Timed out while $Description. Viewports: $($bounds -join '; '). Profiler UI: $details"
 }
 
 function Find-Name([string]$Name) {
@@ -42,8 +54,11 @@ function Invoke-Button([string]$Name) {
 
 function Set-Text([string]$Name, [string]$Value) {
     $control = Find-Name $Name
-    ([System.Windows.Automation.ValuePattern]$control.GetCurrentPattern(
-        [System.Windows.Automation.ValuePattern]::Pattern)).SetValue($Value)
+    $control.SetFocus()
+    $valuePattern = [System.Windows.Automation.ValuePattern]$control.GetCurrentPattern(
+        [System.Windows.Automation.ValuePattern]::Pattern)
+    $valuePattern.SetValue($Value)
+    Wait-For { $valuePattern.Current.Value -eq $Value } "setting $Name"
 }
 
 function Selected-Snapshot {
@@ -51,6 +66,27 @@ function Selected-Snapshot {
     $selection = [System.Windows.Automation.SelectionPattern]$combo.GetCurrentPattern(
         [System.Windows.Automation.SelectionPattern]::Pattern)
     @($selection.Current.GetSelection() | ForEach-Object { $_.Current.Name }) -join '; '
+}
+
+function Memory-Reading([string]$Name) {
+    $label = Find-Name $Name
+    if (!$label) { return $null }
+    $row = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($label)
+    @($row.FindAll($scope, [System.Windows.Automation.PropertyCondition]::new(
+        $typeProperty, [System.Windows.Automation.ControlType]::Text)) |
+        ForEach-Object { $_.Current.Name }) -join ' | '
+}
+
+function Show-Memory {
+    $panel = Find-Id 'SnapshotMemory'
+    ([System.Windows.Automation.ExpandCollapsePattern]$panel.GetCurrentPattern(
+        [System.Windows.Automation.ExpandCollapsePattern]::Pattern)).Expand()
+    $viewport = Find-Id 'SnapshotPanelsScroll'
+    $scroll = [System.Windows.Automation.ScrollPattern]$viewport.GetCurrentPattern(
+        [System.Windows.Automation.ScrollPattern]::Pattern)
+    Wait-For { $scroll.Current.VerticallyScrollable } 'expanding the snapshot memory panel'
+    $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, 100)
+    Wait-For { (Memory-Reading 'Measured core object allocations') -match '[\d,]+ bytes' } 'showing frozen core allocations'
 }
 
 function Tree-Group([string]$Id) {
@@ -142,6 +178,17 @@ try {
     if ((Find-Name 'Expand all trees').Current.IsEnabled) {
         throw 'Expand all trees must be disabled before a snapshot exists.'
     }
+    $gpuCheckbox = Find-Name 'Optional Windows GPU trace (may require elevation; enable before launch/attach)'
+    if (!$gpuCheckbox) { throw 'The opt-in Windows GPU tracing control is missing.' }
+    $gpuToggle = [System.Windows.Automation.TogglePattern]$gpuCheckbox.GetCurrentPattern(
+        [System.Windows.Automation.TogglePattern]::Pattern)
+    if ($gpuToggle.Current.ToggleState -ne [System.Windows.Automation.ToggleState]::Off) {
+        throw 'Windows GPU tracing must be off by default.'
+    }
+    if ($EnableGpuTracing) {
+        $gpuToggle.Toggle()
+        Wait-For { $gpuToggle.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::On } 'enabling Windows GPU tracing'
+    }
     if ($PSCmdlet.ParameterSetName -eq 'Launch') {
         Set-Text 'Executable path' $TargetExecutable
         Invoke-Button 'Launch executable'
@@ -150,6 +197,7 @@ try {
         Invoke-Button 'Attach'
     }
     Wait-For { (Find-Name 'Take snapshot').Current.IsEnabled } 'connecting to the target'
+    if ($gpuCheckbox.Current.IsEnabled) { throw 'Tracing configuration must not change while connected.' }
     Wait-For {
         (Find-Id 'StatisticsStatus').Current.Name -like 'Live process statistics | PID *' -and
         (Find-Id 'RamStatistics').Current.Name -match '\d+[\.,]\d+ MiB'
@@ -168,6 +216,7 @@ try {
         Write-Output "Launched target PID: $launchedPid"
     }
     $snapshotAStatistics = $null
+    $snapshotAMemory = $null
     foreach ($number in 1..2) {
         Invoke-Button 'Take snapshot'
         Wait-For { (Selected-Snapshot) -like "#$number |*" } "publishing snapshot $number"
@@ -176,9 +225,14 @@ try {
             (Find-Id 'SnapshotStatistics').Current.Name -match 'ms from capture midpoint'
         } "retaining process statistics for snapshot $number"
         if ($number -eq 1) { $snapshotAStatistics = (Find-Id 'SnapshotStatistics').Current.Name }
+        Show-Memory
+        if ($number -eq 1) { $snapshotAMemory = Memory-Reading 'Measured core object allocations' }
     }
 
     foreach ($id in @('XamlTree', 'CompTree', 'VisualTree')) {
+        if ((Tree-Group $id).Current.BoundingRectangle.IsEmpty) {
+            throw "$id has no visible viewport with the snapshot memory panel open."
+        }
         $items = Tree-Items $id
         if ($items.Count -eq 0) { throw "$id has no displayed roots." }
         $expand = [System.Windows.Automation.ExpandCollapsePattern]$items[0].GetCurrentPattern(
@@ -214,6 +268,8 @@ try {
     if ((Find-Id 'SnapshotStatistics').Current.Name -ne $snapshotAStatistics) {
         throw 'Snapshot A process statistics changed after capture.'
     }
+    Show-Memory
+    Wait-For { (Memory-Reading 'Measured core object allocations') -eq $snapshotAMemory } 'restoring snapshot A memory readings'
     Expand-AllTrees
     if ($ScreenshotPath) {
         Add-Type -AssemblyName System.Drawing
@@ -235,6 +291,10 @@ try {
     if ((Find-Id 'SnapshotStatistics').Current.Name -ne $snapshotAStatistics) {
         throw 'Disconnect changed the retained snapshot statistics.'
     }
+    if ((Memory-Reading 'Measured core object allocations') -ne $snapshotAMemory) {
+        throw 'Disconnect changed the retained snapshot memory.'
+    }
+    if (!$gpuCheckbox.Current.IsEnabled) { throw 'Tracing configuration remained disabled after disconnect.' }
     Invoke-Button 'Attach'
     Wait-For {
         (Find-Id 'StatisticsStatus').Current.Name -like 'Live process statistics | PID *' -and
@@ -244,7 +304,7 @@ try {
         throw 'Reattaching changed the retained snapshot statistics.'
     }
     Invoke-Button 'Disconnect'
-    Write-Output 'Passed: launch/attach, live statistics updates, snapshots A and B with frozen statistics, expand all trees, cross-tree selection, retained history, stopped sampling on disconnect, and reattach.'
+    Write-Output 'Passed: launch/attach, opt-in tracing control, live statistics, frozen snapshot memory, expand all trees, cross-tree selection, retained history, stopped sampling on disconnect, and reattach.'
 }
 finally {
     $profiler.Refresh()

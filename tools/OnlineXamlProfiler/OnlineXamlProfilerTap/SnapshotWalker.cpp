@@ -115,6 +115,10 @@ namespace
             CaptureXaml();
             CaptureComposition();
             CaptureVisuals();
+            if (m_access.ReadMemory)
+            {
+                m_capture.MemoryStatus = m_access.ReadMemory(m_access.Context, &m_capture.Memory);
+            }
         }
 
     private:
@@ -175,6 +179,8 @@ namespace
                 node.Name = std::move(captured.Name);
                 node.XamlId = node.Id;
                 node.CompId = captured.Values.CompId;
+                node.CoreAllocationStatus = captured.Values.CoreAllocationStatus;
+                node.CoreAllocationBytes = captured.Values.CoreAllocationBytes;
                 Number(node, L"ActualWidth", captured.Values.ActualWidth);
                 Number(node, L"ActualHeight", captured.Values.ActualHeight);
                 Property(node, L"IsVisible", captured.Values.IsVisible ? L"true" : L"false");
@@ -262,6 +268,60 @@ namespace
             Number(node, L"RotationAngleInDegrees", rotation, status);
         }
 
+        HRESULT CaptureBrushes(const Visual& visual) noexcept
+        try
+        {
+            using namespace winrt::Microsoft::UI::Composition;
+            auto sprite = visual.try_as<SpriteVisual>();
+            if (!sprite) { return S_OK; }
+            struct Pending { CompositionBrush Brush; std::wstring Role; };
+            std::vector<Pending> pending{{sprite.Brush(), L"Brush"}};
+            UINT32 visited = 0;
+            while (!pending.empty())
+            {
+                CheckCancelled(m_cancelled);
+                auto entry = std::move(pending.back());
+                pending.pop_back();
+                if (!entry.Brush) { continue; }
+                THROW_HR_IF(HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW), ++visited > 64);
+                if (auto surfaceBrush = entry.Brush.try_as<CompositionSurfaceBrush>())
+                {
+                    auto surface = surfaceBrush.Surface();
+                    if (!surface) { continue; }
+                    THROW_HR_IF(HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW),
+                        m_capture.Surfaces.size() >= MaximumSurfaceReferenceCount);
+                    SurfaceReference reference;
+                    reference.VisualId = VisualId(visual);
+                    reference.Role = std::move(entry.Role);
+                    reference.CompositionSurfaceId = reinterpret_cast<UINT64>(winrt::get_abi(surface));
+                    if (m_access.ReadSurface)
+                    {
+                        reference.Status = m_access.ReadSurface(
+                            m_access.Context, reference.CompositionSurfaceId, &reference.Surface);
+                    }
+                    m_capture.Surfaces.push_back(std::move(reference));
+                }
+                else if (auto mask = entry.Brush.try_as<CompositionMaskBrush>())
+                {
+                    pending.push_back({mask.Source(), entry.Role + L".Source"});
+                    pending.push_back({mask.Mask(), entry.Role + L".Mask"});
+                }
+                else if (auto grid = entry.Brush.try_as<CompositionNineGridBrush>())
+                {
+                    pending.push_back({grid.Source(), entry.Role + L".Source"});
+                }
+                else if (!entry.Brush.try_as<CompositionColorBrush>())
+                {
+                    return E_NOTIMPL;
+                }
+            }
+            return S_OK;
+        }
+        catch (...)
+        {
+            return winrt::to_hresult();
+        }
+
         void CaptureVisuals()
         {
             struct Pending { Visual Value; UINT64 Parent; UINT32 Index; UINT64 Owner; };
@@ -299,6 +359,9 @@ namespace
                 node.CompId = entry.Owner;
                 node.XamlId = entry.Owner ? m_compOwners.at(entry.Owner) : 0;
                 VisualProperties(entry.Value, node);
+                const auto brushStatus = CaptureBrushes(entry.Value);
+                THROW_HR_IF(brushStatus, brushStatus == HRESULT_FROM_WIN32(ERROR_CANCELLED));
+                Property(node, L"SurfaceTraversalStatus", L"Complete", brushStatus);
                 Property(node, L"CompLink",
                     owner != m_visualOwners.end() ? L"Direct" : (entry.Owner ? L"NearestAncestor" : L"None"));
                 ContainerVisual container{nullptr};

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "..\OnlineXamlProfilerTap\SnapshotWalker.h"
+#include "OnlineXamlObservationCache.h"
 #include <winrt/base.h>
 #include <algorithm>
 #include <cstdio>
@@ -79,6 +80,11 @@ namespace
         node.ActualWidth = 120.5;
         node.ActualHeight = 48;
         node.IsVisible = TRUE;
+        if (kind == TreeKind::Xaml)
+        {
+            node.CoreAllocationStatus = S_OK;
+            node.CoreAllocationBytes = 512;
+        }
         auto status = reader->Node(reader->Context, &node);
         if (FAILED(status)) { return status; }
         if (reader->Child)
@@ -135,6 +141,8 @@ namespace
         const auto& child = Find(capture, TreeKind::Xaml, 102);
         Check(child.ParentId == 100 && child.ChildIndex == 3, "Native child ordering was not preserved.");
         Check(child.Type == L"Test.UIElement" && child.Name == L"Test node", "Borrowed strings were not copied.");
+        Check(child.CoreAllocationStatus == S_OK && child.CoreAllocationBytes == 512,
+            "Native allocation metadata was not copied.");
         Check(child.Properties[0].Name == L"ActualWidth" && child.Properties[0].Value == L"120.5",
             "Scalar property formatting did not move into the TAP.");
         runtime.Nodes.clear();
@@ -197,6 +205,64 @@ namespace
         Check(runtime.ReadCount == 0,
             "TAP used an incompatible native adapter.");
     }
+
+    void RetainsObservationsAndInvalidatesGenerations()
+    {
+        OnlineXaml::SurfaceObservationCache<2> cache;
+        OnlineXaml::NativeSurface surface;
+        surface.SurfaceId = 10;
+        surface.CompositionSurfaceId = 100;
+        surface.Width = 64;
+        surface.Height = 32;
+        cache.Register(surface);
+        OnlineXaml::NativeTexture texture;
+        texture.Status = S_OK;
+        texture.ResourceId = 200;
+        texture.Width = 1024;
+        texture.Height = 1024;
+        texture.ObservedQpc = 123;
+        cache.Observe(100, 10, texture);
+        OnlineXaml::NativeSurface first, second;
+        CheckStatus(cache.Read(100, first), S_OK, "Initial cached observation is missing.");
+        CheckStatus(cache.Read(100, second), S_OK, "Second snapshot needs a new observation.");
+        Check(first.Generation == second.Generation && second.Texture.ResourceId == 200 &&
+            second.Texture.ObservedQpc == 123, "Reading the cache consumed or changed the observation.");
+        surface.Width = 128;
+        cache.Register(surface);
+        CheckStatus(cache.Read(100, second), S_OK, "Resize lost the live surface.");
+        Check(second.Generation > first.Generation && second.Width == 128 &&
+            second.Texture.Status == HRESULT_FROM_WIN32(ERROR_NOT_FOUND) && !second.Texture.ResourceId,
+            "Resize/reinitialization retained a previous-generation texture.");
+        cache.Remove(100, 10);
+        CheckStatus(cache.Read(100, second), HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "Released owner remained queryable.");
+        surface.SurfaceId = 11;
+        cache.Register(surface);
+        cache.Observe(100, 10, texture);
+        cache.Remove(100, 10);
+        CheckStatus(cache.Read(100, second), S_OK, "Stale owner removed a reused identity.");
+        Check(second.SurfaceId == 11 && FAILED(second.Texture.Status), "Stale owner polluted a new generation.");
+    }
+
+    void ReportsBoundedCacheCoverage()
+    {
+        OnlineXaml::SurfaceObservationCache<1> cache;
+        OnlineXaml::NativeSurface surface;
+        surface.SurfaceId = 1;
+        surface.CompositionSurfaceId = 100;
+        cache.Register(surface);
+        surface.CompositionSurfaceId = 200;
+        cache.Register(surface);
+        OnlineXaml::NativeMemory memory;
+        cache.ReadMemory(memory);
+        Check(memory.CachedSurfaceCount == 1 && memory.CacheCapacity == 1 &&
+            memory.DroppedRegistrations == 1 && FAILED(memory.CacheStatus), "Cache overflow was hidden.");
+        OnlineXaml::NativeSurface result;
+        CheckStatus(cache.Read(100, result), S_OK, "Capacity pressure evicted a known surface.");
+        CheckStatus(cache.Read(200, result), HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "Dropped surface was fabricated.");
+        cache.Remove(100, 1);
+        cache.Register(surface);
+        CheckStatus(cache.Read(200, result), S_OK, "Deleted table slots were not reusable.");
+    }
 }
 
 int main()
@@ -209,8 +275,10 @@ try
     CancelsBeforeAndDuringTraversal();
     ReportsNativeReadFailures();
     RejectsIncompatibleAdapter();
+    RetainsObservationsAndInvalidatesGenerations();
+    ReportsBoundedCacheCoverage();
     winrt::uninit_apartment();
-    puts("Passed: 6 TAP walker tests (native ancestry, copied data, budget, cycles, cancellation, errors, and ABI).");
+    puts("Passed: 8 native tests (walker, retained observations, generations, ownership, and bounded coverage).");
     return 0;
 }
 catch (const std::exception& exception)

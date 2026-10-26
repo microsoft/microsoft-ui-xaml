@@ -11,6 +11,7 @@
 namespace OnlineXamlProfiler
 {
     inline constexpr UINT32 MaximumNodeCount = 100000;
+    inline constexpr UINT32 MaximumSurfaceReferenceCount = 100000;
 
     struct PropertyRecord
     {
@@ -31,6 +32,17 @@ namespace OnlineXamlProfiler
         std::wstring Type;
         std::wstring Name;
         std::vector<PropertyRecord> Properties;
+        HRESULT CoreAllocationStatus = E_NOTIMPL;
+        UINT64 CoreAllocationBytes = 0;
+    };
+
+    struct SurfaceReference
+    {
+        UINT64 VisualId = 0;
+        std::wstring Role;
+        UINT64 CompositionSurfaceId = 0;
+        HRESULT Status = E_NOTIMPL;
+        OnlineXaml::NativeSurface Surface;
     };
 
     struct ThreadCapture
@@ -40,6 +52,9 @@ namespace OnlineXamlProfiler
         INT64 EndQpc{};
         INT64 QpcFrequency{};
         std::vector<NodeRecord> Nodes;
+        HRESULT MemoryStatus = E_NOTIMPL;
+        OnlineXaml::NativeMemory Memory;
+        std::vector<SurfaceReference> Surfaces;
     };
 
     HRESULT CaptureSnapshot(

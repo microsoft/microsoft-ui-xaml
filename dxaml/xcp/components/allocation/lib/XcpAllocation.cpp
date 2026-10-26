@@ -112,6 +112,15 @@ size_t XcpAllocation::GetDeallocationCount()
 #endif
 }
 
+bool XcpAllocation::IsOutstandingAllocationTrackingAvailable()
+{
+#if COUNT_OUTSTANDING_ALLOC
+    return true;
+#else
+    return false;
+#endif
+}
+
 size_t XcpAllocation::GetOutstandingAllocationCount()
 {
 #if COUNT_OUTSTANDING_ALLOC

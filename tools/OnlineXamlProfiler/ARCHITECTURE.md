@@ -10,8 +10,11 @@ captures.
 The injected TAP owns all three graph walks and builds the snapshot.** This is
 a private diagnostic interface, not a new public SDK API.
 
-This tool is independent of `tools\XamlProfiler`. It does not use ETW/ETL capture,
-parsing, replay, or the older profiler's TAP/helpers. See the [README](README.md)
+This tool is independent of `tools\XamlProfiler` and its TAP/helpers. Tree
+capture, startup texture observations and process statistics do not depend on
+ETW. An optional host-owned real-time Windows GPU trace enriches snapshots with
+allocation evidence; it does not enable the MUX profiler provider or reconstruct
+trees. See the [README](README.md)
 for build, deployment, and usage instructions.
 
 ## Component boundaries
@@ -23,6 +26,8 @@ for build, deployment, and usage instructions.
 | TAP worker in the target | Receives pipe requests, dispatches capture onto registered target UI threads, handles completion/errors, and serializes copied snapshot records. |
 | TAP `SnapshotWalker` on a target UI thread | Discovers graph roots, traverses all three trees, captures properties, builds ownership links, and enforces cancellation and node budgets. |
 | MUX `TreeAccess` adapter | Supplies existing XAML roots and one-node-at-a-time access to private XAML/HWCompNode data. It does not build a snapshot or recursively walk the graphs. |
+| MUX surface-observation cache | Retains bounded copied metadata from normal surface lifetime/drawing operations, independently of attachment or ETW. |
+| Optional host GPU trace and ledger | Collects Windows resource/allocation evidence and performs bounded, process-aware temporal joins with frozen native draw observations. |
 | Host process-statistics reader | Reads process memory and PID-scoped GPU counters through Windows APIs, independently of TAP and MUX tree capture. |
 | Host statistics history and presentation | Retains a rolling sample window, freezes nearby readings with snapshots, and displays live graphs and capture markers. |
 
@@ -94,6 +99,13 @@ The table supplies:
 - The owning thread ID and existing XAML root IDs.
 - A context valid for the current access scope.
 - `ReadNode(context, tree, id, reader)` for XAML and HWCompNode nodes.
+- `ReadMemory(context, memory)` for capability-qualified XAML heap counters and
+  observation-cache coverage.
+- `ReadSurface(context, compositionSurfaceId, surface)` for a copied live-owner
+  surface record and its last texture observation.
+
+The current private ABI and snapshot JSON schema are both version 2. The host
+rejects mismatched versions rather than interpreting a truncated record.
 
 `ReadNode` invokes `NodeReader.Node` with one node's metadata. If requested, it
 then invokes `NodeReader.Child` for that node's immediate children, preserving
@@ -168,6 +180,127 @@ opacity, and visibility.
 This pass does not call MUX's `ReadNode` for visual nodes. MUX only supplies the
 existing visuals that bridge the internal HWCompNode graph to the Composition
 visual graph.
+
+## Hybrid memory and GPU observations
+
+### Read-only native measurements
+
+XAML node records include `CoreAllocationStatus` and `CoreAllocationBytes`.
+Profiler-enabled builds use the runtime's allocation-size helper, including its
+debug-allocation-header handling; this is not `sizeof(CUIElement)`. A compiled-out
+or unavailable measurement reports an error status. These bytes exclude peer
+objects, sparse/auxiliary storage and referenced resources; subtree and by-type
+totals are totals of the measured core objects only.
+
+`ReadMemory` copies process-wide XAML allocation counters and their availability
+flag, heap identity/private-heap flag, cache capacity/count, dropped
+registrations and fixed metadata bytes. Compiled-out counters are `E_NOTIMPL`,
+not zero. Counter fields are independent atomic reads, not an atomic heap dump.
+Multiple UI-thread records can refer to the same process heap and must not be
+summed. The host's independent RAM/commit counters remain process totals.
+
+On the TAP worker, DXGI adapter enumeration and `IDXGIAdapter3::QueryVideoMemoryInfo`
+read target-process usage, budget, reservation and available-for-reservation for
+local/nonlocal segments. No D3D device is created. Factory/query errors remain
+explicit, and this query has its own QPC interval after the UI-thread tree
+captures.
+
+### Startup-retained surface cache
+
+`SurfaceObservationCache` has 8,192 fixed open-addressed slots, an SRW lock and
+no heap allocations, COM references or static-destruction dependency. It is
+compiled into profiler-enabled MUX and begins recording with ordinary surface
+creation, not with profiler attachment. Reading a record never consumes it.
+Overflow drops new registrations rather than evicting known live surfaces;
+cumulative drops and the resulting incomplete coverage are exposed to the host.
+
+`DCompSurface` registers copied metadata after its WinRT wrapper is initialized.
+The key is the `ICompositionSurface` ABI identity; the value includes the native
+owner identity, a monotonically increasing generation, dimensions, actual
+creation format, virtual flag and logical size estimate. Reinitialization and
+resize start a new generation and clear texture evidence. Release/device-loss
+handling and destruction remove the owner-checked record; stale owners cannot
+overwrite or remove a reused identity.
+
+During normal draw/upload operations, the existing texture-observation hook
+copies the `ID3D11Resource` identity, texture description, draw offset and QPC
+even when MUX ETW is disabled. Temporary QI references are released immediately;
+neither the cache nor a snapshot keeps a texture alive. Failed observation
+queries retain their HRESULT. Snapshotting does not call BeginDraw, force
+rendering/layout, or recover an unobserved historical texture by guessing.
+
+**Coverage is deliberately live-owner-only.** Composition can retain a surface
+wrapper after its `DCompSurface` owner is destroyed. Those surfaces, app/custom
+surfaces, never-drawn textures and dropped registrations are unavailable rather
+than attributed through a potentially recycled pointer. A retained observation
+describes a previous draw, not proof of current physical backing or residency.
+Logical estimates include virtual extent, exclude allocation overhead and must
+not be added as independent atlas VRAM allocations.
+
+### Current brush ownership and frozen records
+
+The TAP reads each current SpriteVisual brush using public Composition APIs.
+It follows surface, mask source/mask and nine-grid source brushes with a
+64-brush-per-visual bound, then queries MUX by the current surface ABI identity.
+Solid-color brushes have no surface; unsupported brush graphs and getter
+failures have a per-node `SurfaceTraversalStatus`. Surface references are bounded
+to 100,000 across the document; a failed UI thread contributes neither a partial
+tree nor partial surface list.
+
+Only copied metadata crosses the pipe. Integer byte counts, generations and
+QPC values are serialized as decimal strings to avoid JSON-double precision
+loss; pointer identities remain canonical uppercase 16-digit hexadecimal.
+The host validates required schema fields, statuses, identities, visual
+references and observation times before building frozen summaries. Shared logical
+surfaces are deduplicated by owner/generation, and allocation evidence uses its
+own identities rather than summing a texture per visual.
+
+The statistics/memory scroller, trees and property inspector share flexible
+height, with caps on the scroller and inspector. Expanding memory readings must
+not collapse the tree viewports at higher display scaling.
+
+### Optional Windows trace and temporal joins
+
+`GpuObservationSession` owns a uniquely named real-time TraceEvent session.
+Tracing is off by default, starts before executable/package activation when
+requested, and is disposed on failed connection, disconnect, exit or close.
+The MUX profiler provider is never enabled. The installed OS event contracts
+used are Direct3D11 Texture2D creation (Resources, event 12), DxgKrnl
+AdapterAllocation/DeviceAllocation (Resource, events 33/36), and DXGI Present
+calls (Events, event 42). Payload fields are checked rather than presumed
+present for an unsupported schema.
+
+Process-specific resource/Present records are filtered to the target once its
+PID is known. Before launch returns a PID, a bounded buffer retains candidate
+records. DxgKrnl allocation records are collected trace-wide because a reachable
+allocation can belong to another process; the host follows only chains reached
+from the selected target. It preserves owner PIDs without guessing that every
+non-app allocation belongs to DWM.
+
+The 32,768-record ledger joins:
+
+```text
+native draw: ID3D11Resource + observation QPC
+    -> latest preceding D3D11 resource creation for that PID
+    -> (PID, hKMResource) / (PID, hThunkResource)
+    -> hVidMmGlobalAlloc
+    -> preceding adapter allocation size and owner PID
+```
+
+Resource-address versions and event timestamps prevent a later creation from
+retrofitting an older draw. Conflicting allocation histories for a reused kernel
+handle remain ambiguous; no exact-byte attribution is claimed for them. Matched
+bytes are deduplicated by allocation identity and allocation-observation time.
+Start/Stop opcodes are not interpreted as destruction, and the ledger is not a
+live allocation/residency inventory.
+
+Every frozen result retains startup-versus-late-attach coverage, trace state,
+errors, OS event loss, bounded-history drops, invalid payload counts and timing.
+Flush requests buffer delivery but is **not** a consumer-drain or cross-provider
+atomicity guarantee. Late delivery or missing startup events can leave a chain
+unmatched. A matched allocation size is historical evidence, not current VRAM.
+Present calls are API-call observations, not GPU execution time; the existing
+counter-based busiest-engine graph remains the activity view.
 
 ## Threading and object lifetime
 

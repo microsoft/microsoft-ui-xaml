@@ -38,6 +38,7 @@ namespace XcpAllocation {
     size_t GetOutstandingAllocationSize();
     uint64_t GetHeapHandle();
     bool IsUsingPrivateHeap();
+    bool IsOutstandingAllocationTrackingAvailable();
 
     void UpdateAllocatedMemory(INT64 cSize);
 

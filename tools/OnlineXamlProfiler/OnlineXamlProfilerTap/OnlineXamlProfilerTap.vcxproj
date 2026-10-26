@@ -44,7 +44,7 @@
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>OnlineXamlProfilerTap.def</ModuleDefinitionFile>
-      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
     </Link>
   </ItemDefinitionGroup>

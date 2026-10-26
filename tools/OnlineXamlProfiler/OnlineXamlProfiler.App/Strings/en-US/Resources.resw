@@ -71,4 +71,39 @@
   <data name="StatisticsNoSnapshot" xml:space="preserve"><value>Take a tree snapshot to retain its nearest process statistics sample.</value></data>
   <data name="StatisticsSnapshotMissing" xml:space="preserve"><value>{0}: no process sample within 2 seconds of the capture midpoint.</value></data>
   <data name="StatisticsSnapshotReading" xml:space="preserve"><value>{0}: sample {1:HH:mm:ss.fff} ({2:+0;-0;0} ms from capture midpoint) | RAM/private {3} / {4} | Commit {5} | GPU dedicated/shared {6} / {7} | GPU {8} | OS RAM/commit peaks {9} / {10} | Observed GPU peak since attach {11}</value></data>
+  <data name="MemoryPanel.Header" xml:space="preserve"><value>Snapshot memory and texture observations</value></data>
+  <data name="MemoryPanel.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Frozen snapshot memory</value></data>
+  <data name="MemoryReadings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Captured allocation, heap, cache and adapter readings</value></data>
+  <data name="MemoryCaption.Text" xml:space="preserve"><value>Frozen readings, not an atomic memory dump. Core bytes exclude peer objects and auxiliary allocations. Heap counters are process-wide, repeated per UI thread; do not sum them. Surface bytes are logical estimates, not VRAM. Select a node for its subtree and current brush/surface links. Texture descriptions are last-observed draw evidence, retained from startup without ETW; missing owners, unsupported brushes and unobserved textures remain unavailable.</value></data>
+  <data name="MemoryMeasuredCore" xml:space="preserve"><value>Measured core object allocations</value></data>
+  <data name="MemoryUnmeasuredCore" xml:space="preserve"><value>Core objects without a measurement</value></data>
+  <data name="MemorySurfaceEstimate" xml:space="preserve"><value>Distinct logical surface estimate (includes virtual extent)</value></data>
+  <data name="MemoryUnknownSurfaces" xml:space="preserve"><value>Surface references without a live XAML owner record</value></data>
+  <data name="MemoryHeap" xml:space="preserve"><value>Native heap: ID / outstanding bytes / count</value></data>
+  <data name="MemoryCache" xml:space="preserve"><value>Observation cache: status / entries / metadata bytes</value></data>
+  <data name="MemoryDropped" xml:space="preserve"><value>Dropped registrations</value></data>
+  <data name="MemoryAdapterQuery" xml:space="preserve"><value>Target-process adapter query status</value></data>
+  <data name="MemoryAdapterInterval" xml:space="preserve"><value>Adapter query start / end QPC / frequency (after tree capture)</value></data>
+  <data name="MemoryAdapterValues" xml:space="preserve"><value>Usage {0} | budget {1} | reservation {2} | available for reservation {3}</value></data>
+  <data name="MemoryTypeValues" xml:space="preserve"><value>{0} | measured {1:N0} of {2:N0} objects</value></data>
+  <data name="MemoryBytes" xml:space="preserve"><value>{0:N0} bytes</value></data>
+  <data name="EnableGpuTracing.Content" xml:space="preserve"><value>Optional Windows GPU trace (may require elevation; enable before launch/attach)</value></data>
+  <data name="GpuTraceState" xml:space="preserve"><value>Windows GPU trace</value></data>
+  <data name="GpuTraceDisabled" xml:space="preserve"><value>Disabled; native snapshot observations remain available</value></data>
+  <data name="GpuTraceStarting" xml:space="preserve"><value>Starting</value></data>
+  <data name="GpuTraceCollecting" xml:space="preserve"><value>Collecting OS allocation and Present-call evidence; consumer drain is not guaranteed</value></data>
+  <data name="GpuTraceUnavailable" xml:space="preserve"><value>Unavailable; inspect diagnostic. Native snapshots remain available</value></data>
+  <data name="GpuTraceFailed" xml:space="preserve"><value>Failed or incomplete; inspect diagnostic</value></data>
+  <data name="GpuTraceStopped" xml:space="preserve"><value>Stopped before capture; evidence is incomplete</value></data>
+  <data name="GpuTraceCoverage" xml:space="preserve"><value>Trace coverage / OS events lost / host records dropped / undecodable records</value></data>
+  <data name="GpuTraceCoverageValues" xml:space="preserve"><value>{0} / {1:N0} / {2:N0} / {3:N0}</value></data>
+  <data name="GpuTraceBeforeLaunch" xml:space="preserve"><value>Started before launch; no baseline/rundown or complete delivery guarantee</value></data>
+  <data name="GpuTraceLateAttach" xml:space="preserve"><value>Late attachment: creation/allocation events before tracing are missing</value></data>
+  <data name="GpuTraceDelivery" xml:space="preserve"><value>Trace start / tree end / last delivered event QPC (flush is not a drain barrier)</value></data>
+  <data name="GpuTraceReportedBytes" xml:space="preserve"><value>Distinct matched allocation evidence bytes (not current VRAM)</value></data>
+  <data name="GpuTracePresents" xml:space="preserve"><value>Observed DXGI Present calls since trace start (not GPU execution time)</value></data>
+  <data name="GpuTraceDiagnostic" xml:space="preserve"><value>Windows trace diagnostic</value></data>
+  <data name="GpuEvidenceResourceNotObserved" xml:space="preserve"><value>No resource-creation mapping was observed before this draw</value></data>
+  <data name="GpuEvidenceAllocationNotObserved" xml:space="preserve"><value>No complete process-aware allocation chain was observed</value></data>
+  <data name="GpuEvidenceAmbiguousAllocation" xml:space="preserve"><value>Ambiguous allocation/handle history; no exact-byte attribution claimed</value></data>
 </root>

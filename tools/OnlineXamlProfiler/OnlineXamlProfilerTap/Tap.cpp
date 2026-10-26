@@ -5,6 +5,7 @@
 #include <unknwn.h>
 #include <ocidl.h>
 #include <xamlom.h>
+#include <dxgi1_4.h>
 #include <wil/cppwinrt.h>
 #include <wil/com.h>
 #include <wil/resource.h>
@@ -72,6 +73,75 @@ namespace
         HRESULT Status = E_PENDING;
     };
 
+    JsonObject SerializeMemory(HRESULT status, const OnlineXaml::NativeMemory& memory)
+    {
+        JsonObject result;
+        result.Insert(L"Status", JsonValue::CreateNumberValue(status));
+        result.Insert(L"HeapStatus", JsonValue::CreateNumberValue(memory.HeapStatus));
+        String(result, L"HeapId", Hex(memory.HeapId));
+        result.Insert(L"IsPrivateHeap", JsonValue::CreateBooleanValue(memory.IsPrivateHeap != FALSE));
+        String(result, L"OutstandingBytes", std::to_wstring(memory.OutstandingBytes));
+        String(result, L"OutstandingCount", std::to_wstring(memory.OutstandingCount));
+        result.Insert(L"CacheStatus", JsonValue::CreateNumberValue(memory.CacheStatus));
+        result.Insert(L"CacheCapacity", JsonValue::CreateNumberValue(memory.CacheCapacity));
+        result.Insert(L"CachedSurfaceCount", JsonValue::CreateNumberValue(memory.CachedSurfaceCount));
+        String(result, L"DroppedRegistrations", std::to_wstring(memory.DroppedRegistrations));
+        String(result, L"CacheBytes", std::to_wstring(memory.CacheBytes));
+        return result;
+    }
+
+    JsonObject CaptureAdapterMemory()
+    {
+        JsonObject result;
+        LARGE_INTEGER start{}, end{}, frequency{};
+        QueryPerformanceCounter(&start);
+        QueryPerformanceFrequency(&frequency);
+        JsonArray adapters;
+        wil::com_ptr<IDXGIFactory1> factory;
+        auto status = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
+        if (SUCCEEDED(status))
+        {
+            for (UINT index = 0; index < 64; ++index)
+            {
+                wil::com_ptr<IDXGIAdapter1> adapter;
+                status = factory->EnumAdapters1(index, &adapter);
+                if (status == DXGI_ERROR_NOT_FOUND) { status = S_OK; break; }
+                if (FAILED(status)) { break; }
+                DXGI_ADAPTER_DESC1 description{};
+                status = adapter->GetDesc1(&description);
+                if (FAILED(status)) { break; }
+                wil::com_ptr<IDXGIAdapter3> adapter3;
+                const auto adapterStatus = adapter->QueryInterface(IID_PPV_ARGS(&adapter3));
+                for (const auto segment : {DXGI_MEMORY_SEGMENT_GROUP_LOCAL, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL})
+                {
+                    DXGI_QUERY_VIDEO_MEMORY_INFO info{};
+                    const auto queryStatus = FAILED(adapterStatus) ? adapterStatus :
+                        adapter3->QueryVideoMemoryInfo(0, segment, &info);
+                    JsonObject entry;
+                    const auto luid = (static_cast<UINT64>(static_cast<UINT32>(description.AdapterLuid.HighPart)) << 32) |
+                        description.AdapterLuid.LowPart;
+                    String(entry, L"AdapterLuid", Hex(luid));
+                    String(entry, L"Description", description.Description);
+                    entry.Insert(L"Segment", JsonValue::CreateNumberValue(static_cast<UINT32>(segment)));
+                    entry.Insert(L"Status", JsonValue::CreateNumberValue(queryStatus));
+                    String(entry, L"CurrentUsage", std::to_wstring(info.CurrentUsage));
+                    String(entry, L"Budget", std::to_wstring(info.Budget));
+                    String(entry, L"CurrentReservation", std::to_wstring(info.CurrentReservation));
+                    String(entry, L"AvailableForReservation", std::to_wstring(info.AvailableForReservation));
+                    adapters.Append(entry);
+                }
+                if (index == 63) { status = HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW); }
+            }
+        }
+        result.Insert(L"Status", JsonValue::CreateNumberValue(status));
+        result.Insert(L"Adapters", adapters);
+        QueryPerformanceCounter(&end);
+        String(result, L"StartQpc", std::to_wstring(start.QuadPart));
+        String(result, L"EndQpc", std::to_wstring(end.QuadPart));
+        String(result, L"QpcFrequency", std::to_wstring(frequency.QuadPart));
+        return result;
+    }
+
     JsonObject SerializeThread(DWORD threadId, HRESULT status, const CaptureResult* result)
     {
         JsonObject thread;
@@ -96,6 +166,8 @@ namespace
                 String(node, L"XamlId", Hex(record.XamlId));
                 String(node, L"CompId", Hex(record.CompId));
                 String(node, L"VisualId", Hex(record.VisualId));
+                node.Insert(L"CoreAllocationStatus", JsonValue::CreateNumberValue(record.CoreAllocationStatus));
+                String(node, L"CoreAllocationBytes", std::to_wstring(record.CoreAllocationBytes));
                 JsonArray properties;
                 for (const auto& captured : record.Properties)
                 {
@@ -111,6 +183,43 @@ namespace
             }
         }
         thread.Insert(L"Nodes", nodes);
+        thread.Insert(L"Memory", SerializeMemory(
+            result && SUCCEEDED(status) ? result->Snapshot.MemoryStatus : E_NOTIMPL,
+            result && SUCCEEDED(status) ? result->Snapshot.Memory : OnlineXaml::NativeMemory{}));
+        JsonArray surfaces;
+        if (result && SUCCEEDED(status))
+        {
+            for (const auto& reference : result->Snapshot.Surfaces)
+            {
+                const auto& surface = reference.Surface;
+                const auto& texture = surface.Texture;
+                JsonObject entry;
+                String(entry, L"VisualId", Hex(reference.VisualId));
+                String(entry, L"Role", reference.Role);
+                String(entry, L"CompositionSurfaceId", Hex(reference.CompositionSurfaceId));
+                entry.Insert(L"Status", JsonValue::CreateNumberValue(reference.Status));
+                String(entry, L"SurfaceId", Hex(surface.SurfaceId));
+                String(entry, L"Generation", std::to_wstring(surface.Generation));
+                entry.Insert(L"Width", JsonValue::CreateNumberValue(surface.Width));
+                entry.Insert(L"Height", JsonValue::CreateNumberValue(surface.Height));
+                entry.Insert(L"Format", JsonValue::CreateNumberValue(surface.Format));
+                entry.Insert(L"IsVirtual", JsonValue::CreateBooleanValue(surface.IsVirtual != FALSE));
+                String(entry, L"EstimatedBytes", std::to_wstring(surface.EstimatedBytes));
+                entry.Insert(L"TextureStatus", JsonValue::CreateNumberValue(texture.Status));
+                String(entry, L"ResourceId", Hex(texture.ResourceId));
+                entry.Insert(L"TextureWidth", JsonValue::CreateNumberValue(texture.Width));
+                entry.Insert(L"TextureHeight", JsonValue::CreateNumberValue(texture.Height));
+                entry.Insert(L"MipLevels", JsonValue::CreateNumberValue(texture.MipLevels));
+                entry.Insert(L"ArraySize", JsonValue::CreateNumberValue(texture.ArraySize));
+                entry.Insert(L"TextureFormat", JsonValue::CreateNumberValue(texture.Format));
+                entry.Insert(L"SampleCount", JsonValue::CreateNumberValue(texture.SampleCount));
+                entry.Insert(L"OffsetX", JsonValue::CreateNumberValue(texture.OffsetX));
+                entry.Insert(L"OffsetY", JsonValue::CreateNumberValue(texture.OffsetY));
+                String(entry, L"ObservedQpc", std::to_wstring(texture.ObservedQpc));
+                surfaces.Append(entry);
+            }
+        }
+        thread.Insert(L"Surfaces", surfaces);
         return thread;
     }
 
@@ -210,6 +319,7 @@ namespace
             THROW_HR_IF(HRESULT_FROM_WIN32(ERROR_NOT_READY), queues.empty());
             JsonArray threads;
             UINT32 remaining = maximumNodes;
+            size_t remainingSurfaces = OnlineXamlProfiler::MaximumSurfaceReferenceCount;
             for (const auto& [threadId, queue] : queues)
             {
                 auto result = std::make_shared<CaptureResult>();
@@ -246,17 +356,25 @@ namespace
                 }
                 if (SUCCEEDED(result->Status))
                 {
+                    if (result->Snapshot.Surfaces.size() > remainingSurfaces)
+                    {
+                        result->Status = HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW);
+                        threads.Append(SerializeThread(threadId, result->Status, result.get()));
+                        continue;
+                    }
                     THROW_HR_IF(E_UNEXPECTED, result->Snapshot.Nodes.size() > remaining);
                     remaining -= static_cast<UINT32>(result->Snapshot.Nodes.size());
+                    remainingSurfaces -= result->Snapshot.Surfaces.size();
                 }
                 threads.Append(SerializeThread(threadId, result->Status, result.get()));
             }
             JsonObject snapshot;
-            snapshot.Insert(L"SchemaVersion", JsonValue::CreateNumberValue(1));
+            snapshot.Insert(L"SchemaVersion", JsonValue::CreateNumberValue(2));
             snapshot.Insert(L"ProcessId", JsonValue::CreateNumberValue(GetCurrentProcessId()));
             String(snapshot, L"ProcessStartTime", m_processStart);
             String(snapshot, L"RequestId", std::to_wstring(requestId));
             snapshot.Insert(L"Threads", threads);
+            snapshot.Insert(L"AdapterMemory", CaptureAdapterMemory());
             return snapshot;
         }
 

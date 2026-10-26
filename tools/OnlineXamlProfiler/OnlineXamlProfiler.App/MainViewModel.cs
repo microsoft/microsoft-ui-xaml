@@ -19,6 +19,8 @@ public sealed record CapturedSnapshot(
     IReadOnlyList<SnapshotTreeNode> XamlRoots,
     IReadOnlyList<SnapshotTreeNode> CompRoots,
     IReadOnlyList<SnapshotTreeNode> VisualRoots,
+    SnapshotMemorySummary Memory,
+    GpuTraceSnapshot GpuTrace,
     DateTimeOffset CapturedAtUtc, long CounterTimestamp, ProcessStatisticsSample? Statistics,
     ulong? ObservedGpuMemoryPeakBytes);
 
@@ -29,6 +31,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     private ProfilerSession? _session;
     private CancellationTokenSource? _operation;
     private CancellationTokenSource? _statisticsLifetime;
+    private GpuObservationSession? _gpuTrace;
     private bool _busy;
     private string _status = "";
     private string _error = "";
@@ -50,6 +53,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public string Arguments { get; set; } = "";
     public string Aumid { get; set; } = "";
     public string ProcessId { get; set; } = "";
+    public bool EnableGpuTracing { get; set; }
+    public bool CanConfigureGpuTracing => !_busy && _session is null;
     public string TapPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "OnlineXamlProfilerTap.dll");
     public string Status { get => _status; private set { _status = value; Notify(); } }
     public string Error { get => _error; private set { _error = value; Notify(); Notify(nameof(HasError)); } }
@@ -80,6 +85,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             Notify(nameof(XamlRoots));
             Notify(nameof(CompRoots));
             Notify(nameof(VisualRoots));
+            Notify(nameof(MemoryRows));
             Properties.Clear();
             SelectedNode = null;
             if (value is not null)
@@ -96,6 +102,73 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<SnapshotTreeNode> CompRoots => SelectedSnapshot?.CompRoots ?? [];
     public IReadOnlyList<SnapshotTreeNode> VisualRoots => SelectedSnapshot?.VisualRoots ?? [];
     public SnapshotTreeNode? SelectedNode { get; private set; }
+
+    public IReadOnlyList<PropertyRow> MemoryRows
+    {
+        get
+        {
+            if (SelectedSnapshot is not { } snapshot) { return []; }
+            var rows = new List<PropertyRow>
+            {
+                new(Text("MemoryMeasuredCore"), Bytes(snapshot.Memory.MeasuredCoreBytes)),
+                new(Text("MemoryUnmeasuredCore"), snapshot.Memory.UnmeasuredCoreCount.ToString(CultureInfo.CurrentCulture)),
+                new(Text("MemorySurfaceEstimate"), Bytes(snapshot.Memory.EstimatedSurfaceBytes)),
+                new(Text("MemoryUnknownSurfaces"), snapshot.Memory.UnknownSurfaceReferenceCount.ToString(CultureInfo.CurrentCulture)),
+            };
+            foreach (var thread in snapshot.Document.Threads.Where(thread => thread.Status >= 0))
+            {
+                var memory = thread.Memory;
+                rows.Add(new($"TID {thread.ThreadId} | {Text("MemoryHeap")}",
+                    memory.Status < 0 ? Hresult(memory.Status) : memory.HeapStatus < 0 ? Hresult(memory.HeapStatus) :
+                    $"{memory.HeapId} | {Bytes(memory.OutstandingBytes)} | {memory.OutstandingCount:N0} | private={memory.IsPrivateHeap}"));
+                rows.Add(new($"TID {thread.ThreadId} | {Text("MemoryCache")}", memory.Status < 0 ? Hresult(memory.Status) :
+                    memory.CacheCapacity == 0 ? Hresult(memory.CacheStatus) :
+                    $"{Hresult(memory.CacheStatus)} | {memory.CachedSurfaceCount:N0}/{memory.CacheCapacity:N0} | " +
+                    $"{Text("MemoryDropped")}: {memory.DroppedRegistrations:N0} | {Bytes(memory.CacheBytes)}"));
+            }
+            rows.Add(new(Text("MemoryAdapterQuery"), Hresult(snapshot.Document.AdapterMemory.Status)));
+            rows.Add(new(Text("MemoryAdapterInterval"),
+                $"{snapshot.Document.AdapterMemory.StartQpc} / {snapshot.Document.AdapterMemory.EndQpc} / " +
+                $"{snapshot.Document.AdapterMemory.QpcFrequency}"));
+            foreach (var adapter in snapshot.Document.AdapterMemory.Adapters)
+            {
+                rows.Add(new($"{adapter.Description} | {adapter.AdapterLuid} | {(adapter.Segment == 0 ? "Local" : "NonLocal")}",
+                    adapter.Status < 0 ? Hresult(adapter.Status) :
+                    string.Format(CultureInfo.CurrentCulture, Text("MemoryAdapterValues"),
+                        Bytes(adapter.CurrentUsage), Bytes(adapter.Budget), Bytes(adapter.CurrentReservation),
+                        Bytes(adapter.AvailableForReservation))));
+            }
+            foreach (var group in snapshot.Memory.CoreByType)
+            {
+                rows.Add(new(group.Type, string.Format(CultureInfo.CurrentCulture, Text("MemoryTypeValues"),
+                    Bytes(group.MeasuredBytes), group.MeasuredCount, group.ObjectCount)));
+            }
+            var trace = snapshot.GpuTrace;
+            rows.Add(new(Text("GpuTraceState"), Text($"GpuTrace{trace.State}")));
+            if (trace.State != "Disabled")
+            {
+                rows.Add(new(Text("GpuTraceCoverage"), string.Format(CultureInfo.CurrentCulture, Text("GpuTraceCoverageValues"),
+                    trace.StartedBeforeLaunch ? Text("GpuTraceBeforeLaunch") : Text("GpuTraceLateAttach"),
+                    trace.EventsLost, trace.DroppedObservations, trace.InvalidPayloads)));
+                rows.Add(new(Text("GpuTraceDelivery"), $"{trace.StartQpc} / {trace.CaptureEndQpc} / {trace.LastDeliveredQpc}"));
+                rows.Add(new(Text("GpuTraceReportedBytes"), trace.DistinctReportedAllocationBytes is { } bytes
+                    ? Bytes(bytes) : Text("StatisticsUnavailable")));
+                rows.Add(new(Text("GpuTracePresents"), trace.ObservedPresentCount.ToString(CultureInfo.CurrentCulture)));
+                if (trace.Diagnostic.Length != 0) { rows.Add(new(Text("GpuTraceDiagnostic"), trace.Diagnostic)); }
+                foreach (var evidence in trace.Resources)
+                {
+                    rows.Add(new($"{evidence.ResourceId} | QPC {evidence.DrawObservedQpc}",
+                        evidence.Status == GpuEvidenceStatus.Matched ?
+                            $"{evidence.AllocationId} | {Bytes(evidence.AllocationBytes!.Value)} | PID {evidence.OwnerProcessId}" :
+                            Text($"GpuEvidence{evidence.Status}")));
+                }
+            }
+            return rows;
+        }
+    }
+
+    private static string Hresult(int status) => $"HRESULT 0x{unchecked((uint)status):X8}";
+    private string Bytes(ulong value) => string.Format(CultureInfo.CurrentCulture, Text("MemoryBytes"), value);
 
     public void SelectNode(SnapshotTreeNode? selected)
     {
@@ -125,6 +198,42 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         Properties.Add(new("XamlId", node.XamlId));
         Properties.Add(new("CompId", node.CompId));
         Properties.Add(new("VisualId", node.VisualId));
+        Properties.Add(new("CoreAllocationBytes",
+            node.CoreAllocationStatus >= 0 ? Bytes(node.CoreAllocationBytes) : Hresult(node.CoreAllocationStatus)));
+        if (SelectedSnapshot is { } memorySnapshot)
+        {
+            var subtree = Enumerate([selected]).ToArray();
+            var measured = subtree.Where(item => item.Node.CoreAllocationStatus >= 0).ToArray();
+            Properties.Add(new("SubtreeCoreAllocationBytes",
+                Bytes(measured.Aggregate(0UL, (total, item) => checked(total + item.Node.CoreAllocationBytes)))));
+            Properties.Add(new("SubtreeUnmeasuredCoreCount",
+                subtree.Count(item => item.Node.Tree == TreeKind.Xaml && item.Node.CoreAllocationStatus < 0)
+                    .ToString(CultureInfo.CurrentCulture)));
+            var thread = memorySnapshot.Document.Threads.Single(thread => thread.ThreadId == selected.ThreadId);
+            var ids = subtree.Select(item => item.Node.Id).ToHashSet(StringComparer.Ordinal);
+            var visuals = thread.Nodes.Where(item => item.Tree == TreeKind.Visual &&
+                (node.Tree == TreeKind.Visual ? ids.Contains(item.Id) :
+                    node.Tree == TreeKind.Xaml ? ids.Contains(item.XamlId) : ids.Contains(item.CompId)))
+                .Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
+            int index = 0;
+            foreach (var surface in thread.Surfaces.Where(surface => visuals.Contains(surface.VisualId)))
+            {
+                string prefix = $"Surface[{index++}]";
+                Properties.Add(new(prefix, $"{surface.VisualId} | {surface.Role} | {surface.CompositionSurfaceId}"));
+                Properties.Add(new($"{prefix}.Status", Hresult(surface.Status)));
+                if (surface.Status < 0) { continue; }
+                Properties.Add(new($"{prefix}.Owner/Generation", $"{surface.SurfaceId} / {surface.Generation}"));
+                Properties.Add(new($"{prefix}.Size/Format/Virtual", $"{surface.Width} x {surface.Height} / {surface.Format} / {surface.IsVirtual}"));
+                Properties.Add(new($"{prefix}.EstimatedBytes", Bytes(surface.EstimatedBytes)));
+                Properties.Add(new($"{prefix}.TextureStatus", Hresult(surface.TextureStatus)));
+                Properties.Add(new($"{prefix}.LastObservedQpc", surface.ObservedQpc.ToString(CultureInfo.InvariantCulture)));
+                if (surface.TextureStatus < 0) { continue; }
+                Properties.Add(new($"{prefix}.ID3D11Resource", surface.ResourceId));
+                Properties.Add(new($"{prefix}.TextureSize/Format", $"{surface.TextureWidth} x {surface.TextureHeight} / {surface.TextureFormat}"));
+                Properties.Add(new($"{prefix}.Mips/Array/Samples", $"{surface.MipLevels} / {surface.ArraySize} / {surface.SampleCount}"));
+                Properties.Add(new($"{prefix}.Offset", $"{surface.OffsetX}, {surface.OffsetY}"));
+            }
+        }
         foreach (var property in node.Properties)
         {
             Properties.Add(new(property.Name, property.Status >= 0
@@ -176,6 +285,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private Task LaunchExeAsync() => RunAsync(async token =>
     {
+        await StartGpuTraceAsync(null, beforeLaunch: true, token);
         uint pid = await Task.Run(() => TargetLauncher.LaunchExecutable(Executable, Arguments), token);
         ProcessId = pid.ToString(CultureInfo.InvariantCulture);
         Notify(nameof(ProcessId));
@@ -184,6 +294,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private Task LaunchPackageAsync() => RunAsync(async token =>
     {
+        await StartGpuTraceAsync(null, beforeLaunch: true, token);
         uint pid = await Task.Run(() => TargetLauncher.LaunchPackaged(Aumid, Arguments), token);
         ProcessId = pid.ToString(CultureInfo.InvariantCulture);
         Notify(nameof(ProcessId));
@@ -196,13 +307,23 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             throw new ArgumentException(Text("InvalidPid"));
         }
+        await StartGpuTraceAsync(pid, beforeLaunch: false, token);
         await ConnectAsync(pid, token);
     });
+
+    private async Task StartGpuTraceAsync(uint? pid, bool beforeLaunch, CancellationToken token)
+    {
+        if (EnableGpuTracing)
+        {
+            _gpuTrace = await GpuObservationSession.StartAsync(pid, beforeLaunch, token);
+        }
+    }
 
     private async Task ConnectAsync(uint pid, CancellationToken token)
     {
         Status = Text("Connecting");
         _session = await ProfilerSession.ConnectAsync(pid, TapPath, token);
+        _gpuTrace?.SelectTarget(pid);
         Status = $"{Text("Connected")} {pid} | {_session.RuntimePath}";
         StartStatistics(_session);
     }
@@ -213,6 +334,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             var session = _session ?? throw new InvalidOperationException(Text("NotConnected"));
+            var gpuTrace = _gpuTrace;
             int number = Snapshots.Count + 1;
             var snapshot = await Task.Run(async () =>
             {
@@ -225,6 +347,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
                     $"#{number} | PID {document.ProcessId} | {capturedAt.ToLocalTime():T}",
                     document, SnapshotTree.Build(document, TreeKind.Xaml),
                     SnapshotTree.Build(document, TreeKind.Composition), SnapshotTree.Build(document, TreeKind.Visual),
+                    SnapshotMemorySummary.Build(document),
+                    gpuTrace?.Freeze(document) ?? GpuTraceSnapshot.Disabled,
                     capturedAt, midpoint, null, null);
             }, token);
             if (StatisticsHistory is { } history &&
@@ -257,6 +381,15 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             await action(operation.Token);
         }
+        catch
+        {
+            if (_session is null)
+            {
+                _gpuTrace?.Dispose();
+                _gpuTrace = null;
+            }
+            throw;
+        }
         finally
         {
             _operation = null;
@@ -270,6 +403,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         _statisticsLifetime?.Cancel();
         _statisticsLifetime?.Dispose();
         _statisticsLifetime = null;
+        _gpuTrace?.Dispose();
+        _gpuTrace = null;
         _session?.Dispose();
         _session = null;
         Status = Text("Disconnected");
@@ -343,6 +478,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private void NotifyCommands()
     {
+        Notify(nameof(CanConfigureGpuTracing));
         LaunchExeCommand.Notify();
         LaunchPackageCommand.Notify();
         AttachCommand.Notify();

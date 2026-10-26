@@ -237,6 +237,8 @@ private:
         );
 
 #ifdef XAMLPROFILER_ENABLED
+    DXGI_FORMAT m_profilerSurfaceFormat = DXGI_FORMAT_UNKNOWN;
+    void RegisterProfilerSurface() noexcept;
     void TraceProfilerMemoryChange(bool isAllocation);
     void TraceProfilerTextureObserved(
         _In_ IUnknown* updateObject,

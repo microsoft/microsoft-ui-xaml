@@ -15,9 +15,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="180" />
+            <RowDefinition Height="*" MaxHeight="320" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="*" MaxHeight="180" />
         </Grid.RowDefinitions>
         <Grid ColumnSpacing="12">
             <Grid.ColumnDefinitions>
@@ -61,13 +61,39 @@
                 IsEnabled="False" Click="ExpandAll_Click" />
         </Grid>
         <StackPanel Grid.Row="3" Spacing="4">
+            <CheckBox x:Uid="EnableGpuTracing" IsChecked="{x:Bind ViewModel.EnableGpuTracing, Mode=TwoWay}"
+                IsEnabled="{x:Bind ViewModel.CanConfigureGpuTracing, Mode=OneWay}" />
             <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
             <TextBlock Text="{x:Bind ViewModel.Status, Mode=OneWay}" TextWrapping="Wrap"
                 AutomationProperties.LiveSetting="Polite" IsTextSelectionEnabled="True" />
             <InfoBar x:Uid="Error" IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False"
                 Severity="Error" Message="{x:Bind ViewModel.Error, Mode=OneWay}" />
         </StackPanel>
-        <local:ProcessStatisticsPanel x:Name="ProcessStatistics" Grid.Row="4" />
+        <ScrollViewer Grid.Row="4" AutomationProperties.AutomationId="SnapshotPanelsScroll"
+            HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="8">
+            <local:ProcessStatisticsPanel x:Name="ProcessStatistics" />
+            <Expander x:Uid="MemoryPanel" AutomationProperties.AutomationId="SnapshotMemory"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <Grid RowSpacing="8">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <TextBlock x:Uid="MemoryCaption" TextWrapping="Wrap" />
+                    <ListView Grid.Row="1" x:Uid="MemoryReadings" MaxHeight="240" SelectionMode="None"
+                        ItemsSource="{x:Bind ViewModel.MemoryRows, Mode=OneWay}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local:PropertyRow">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind Name}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind Value}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Expander>
+        </StackPanel>
+        </ScrollViewer>
         <Grid Grid.Row="5" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
