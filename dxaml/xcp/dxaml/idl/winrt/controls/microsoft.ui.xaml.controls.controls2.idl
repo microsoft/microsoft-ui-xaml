@@ -789,8 +789,9 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ScrollViewerView
+    unsealed runtimeclass ScrollViewerView
     {
+        [method_name("CreateInstance")] ScrollViewerView();
         Double HorizontalOffset{ get; };
         Double VerticalOffset{ get; };
         Single ZoomFactor{ get; };
