@@ -1981,6 +1981,8 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
             return ABI::Microsoft::UI::Xaml::Controls::Primitives::JumpListItemForegroundConverterFactory::EnsureProperties();
         case activate_ListPickerFlyout:
             return ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutFactory::EnsureProperties();
+        case activate_ListPickerFlyoutPresenter:
+            return ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutPresenterFactory::EnsureProperties();
         case activate_LoopingSelector:
             return ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorFactory::EnsureProperties();
         case activate_NavigationThemeTransition:
