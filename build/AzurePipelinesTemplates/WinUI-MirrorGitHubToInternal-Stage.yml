@@ -21,16 +21,10 @@ stages:
     variables:
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_git_skip_checkout_none: true
-      sourceRepoRelativePath: 's\source'
-      targetRepoRelativePath: 's\target'
+      sourceRepoRelativePath: 's'
+      targetRepoRelativePath: 'target'
     steps:
-    - checkout: self
-      submodules: false
-      persistCredentials: false
-      fetchDepth: 1
-      fetchTags: false
-      path: '$(sourceRepoRelativePath)'
-      displayName: Checkout GitHub source repository '$(sourceRepoRelativePath)'
+    # OneBranch checks out self at $(Pipeline.Workspace)\s before user steps.
     - checkout: targetRepository
       submodules: false
       persistCredentials: true
