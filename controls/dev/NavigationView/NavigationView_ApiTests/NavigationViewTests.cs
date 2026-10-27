@@ -2307,6 +2307,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyTopNavigationViewObservesPhasedChildSource()
+        {
+            foreach (var templateKey in new[] { "UnphasedItem", "PhasedItem", "LatePhasedItem" })
+            {
+                NavigationView navView = null;
+                ItemsRepeater primaryRepeater = null;
+                var first = new NavigationViewChildrenData { Content = "First navigation item" };
+                var parent = new NavigationViewChildrenData { Content = "Parent" };
+                double availableWidth = 0;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var templates = new NavigationViewPhasedTemplatePage();
+                    navView = new NavigationView
+                    {
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                        IsSettingsVisible = false,
+                        IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                        Width = 800,
+                        Height = 300,
+                        MenuItemsSource = new ObservableCollection<NavigationViewChildrenData> { first, parent },
+                        MenuItemTemplate = (DataTemplate)templates.Resources[templateKey],
+                        SelectedItem = first
+                    };
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(parent.Children,
+                        ((NavigationViewItem)navView.ContainerFromMenuItem(parent)).MenuItemsSource);
+                    primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                    var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                    var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                    topGrid.Measure(infiniteSize);
+                    var leafWidth = topGrid.DesiredSize.Width;
+                    parent.Children.Add("Child");
+                    Content.UpdateLayout();
+                    topGrid.Measure(infiniteSize);
+                    Verify.IsTrue(topGrid.DesiredSize.Width > leafWidth);
+                    availableWidth = (leafWidth + topGrid.DesiredSize.Width) / 2;
+                    navView.Width = availableWidth;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                    Verify.IsNull(navView.ContainerFromMenuItem(parent));
+                    parent.Children = new ObservableCollection<string> { "Replacement child" };
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                    Verify.IsNull(navView.ContainerFromMenuItem(parent));
+                    parent.Children.Clear();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(availableWidth, navView.Width);
+                    Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                        templateKey + ": a recycled phased item must observe the replacement child collection.");
+                    Verify.AreEqual(Visibility.Collapsed, navView.TemplateSettings.OverflowButtonVisibility);
+                    Verify.AreEqual(first, navView.SelectedItem);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyTopNavigationViewObservesInitiallyNullChildSource()
         {
             NavigationView navView = null;

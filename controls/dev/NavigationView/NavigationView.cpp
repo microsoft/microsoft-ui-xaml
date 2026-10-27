@@ -24,6 +24,7 @@
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
+#include "Phaser.h"
 #include <ItemsRepeater.common.h>
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
@@ -3560,6 +3561,14 @@ void NavigationView::RefreshTopNavigationItemObservers()
                     component.Recycle();
                     int nextPhase = VirtualizationInfo::PhaseReachedEnd;
                     component.ProcessBindings(item, index, 0 /*currentPhase*/, nextPhase);
+                    // This temporary container is not scheduled for repeater phasing.
+                    while (nextPhase > 0)
+                    {
+                        const int currentPhase = nextPhase;
+                        nextPhase = VirtualizationInfo::PhaseReachedEnd;
+                        component.ProcessBindings(item, -1 /*item index unused*/, currentPhase, nextPhase);
+                        Phaser::ValidatePhaseOrdering(currentPhase, nextPhase);
+                    }
                 }
                 else
                 {
