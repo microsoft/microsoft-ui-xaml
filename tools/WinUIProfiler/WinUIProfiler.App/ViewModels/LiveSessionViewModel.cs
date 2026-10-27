@@ -10,10 +10,18 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private volatile TargetConnection? connection;
     private CancellationTokenSource? operation;
     private Task? connecting;
-    private string state = "Disconnected", detail = "", errorMessage = "";
+    private string state = "Disconnected";
+    private string detail = "";
+    private string errorMessage = "";
     public event PropertyChangedEventHandler? PropertyChanged;
-    public MetricHistory? History { get; private set; }
-    public bool IsBusy { get; private set; }
+    public MetricHistory? History
+    {
+        get; private set;
+    }
+    public bool IsBusy
+    {
+        get; private set;
+    }
     public bool CanConnect => !IsBusy && connection is null;
     public bool CanDisconnect => operation is not null || connection is not null;
     public string State => connection?.State ?? state;
@@ -23,7 +31,11 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
 
     public Task ConnectAsync(TargetConnectionOptions options, IProgress<ConnectionProgress> progress)
     {
-        if (!CanConnect) throw new InvalidOperationException("Disconnect the current target before connecting again.");
+        if (!CanConnect)
+        {
+            throw new InvalidOperationException("Disconnect the current target before connecting again.");
+        }
+
         connecting = ConnectCoreAsync(options, progress);
         return connecting;
     }
@@ -49,15 +61,29 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
             connection = candidate;
             History = candidate.History;
             candidate.Changed += Connection_Changed;
-            if (History is not null) History.Changed += History_Changed;
+            if (History is not null)
+            {
+                History.Changed += History_Changed;
+            }
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
             state = "Disconnected";
             detail = "";
         }
-        catch (Exception error) { state = "Failed"; ReportError(error); }
-        finally { operation = null; IsBusy = false; Notify(); }
+        catch (Exception error)
+        {
+            state = "Failed";
+            ReportError(error);
+
+        }
+        finally
+        {
+            operation = null;
+            IsBusy = false;
+            Notify();
+
+        }
     }
 
     public void ReportProgress(ConnectionProgress progress)
@@ -69,12 +95,18 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
 
     private void Connection_Changed(object? sender, EventArgs args)
     {
-        if (ReferenceEquals(sender, connection)) Notify();
+        if (ReferenceEquals(sender, connection))
+        {
+            Notify();
+        }
     }
 
     private void History_Changed(object? sender, EventArgs args)
     {
-        if (ReferenceEquals(sender, History)) PropertyChanged?.Invoke(this, new(nameof(History)));
+        if (ReferenceEquals(sender, History))
+        {
+            PropertyChanged?.Invoke(this, new(nameof(History)));
+        }
     }
 
     private void Notify() => PropertyChanged?.Invoke(this, new(null));
@@ -82,17 +114,40 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     public async Task DisconnectAsync()
     {
         operation?.Cancel();
-        if (connecting is { IsCompleted: false }) await connecting;
+        if (connecting is { IsCompleted: false })
+        {
+            await connecting;
+        }
+
         var owned = connection;
-        if (owned is null) return;
+        if (owned is null)
+        {
+            return;
+        }
+
         IsBusy = true;
         Notify();
-        try { await owned.DisposeAsync(); state = "Disconnected"; detail = ""; }
-        catch (Exception error) { state = "Failed"; ReportError(error); }
+        try
+        {
+            await owned.DisposeAsync();
+            state = "Disconnected";
+            detail = "";
+
+        }
+        catch (Exception error)
+        {
+            state = "Failed";
+            ReportError(error);
+
+        }
         finally
         {
             owned.Changed -= Connection_Changed;
-            if (History is not null) History.Changed -= History_Changed;
+            if (History is not null)
+            {
+                History.Changed -= History_Changed;
+            }
+
             connection = null;
             IsBusy = false;
             Notify();

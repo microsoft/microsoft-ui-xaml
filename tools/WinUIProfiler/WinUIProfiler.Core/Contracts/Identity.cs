@@ -6,15 +6,28 @@ namespace WinUIProfiler.Contracts;
 public readonly record struct ProcessInstanceKey(uint ProcessId, long? CreationTimeFileTime, Guid InstanceId)
 {
     public uint ProcessId { get; } = Require.Positive(ProcessId);
-    public long? CreationTimeFileTime { get; } = CreationTimeFileTime is null or > 0
+    public long? CreationTimeFileTime
+    {
+        get;
+    } = CreationTimeFileTime is null or > 0
         ? CreationTimeFileTime : throw new ArgumentOutOfRangeException(nameof(CreationTimeFileTime));
     public Guid InstanceId { get; } = Require.Id(InstanceId);
-    public void Validate() { Require.Positive(ProcessId); Require.Id(InstanceId); }
+    public void Validate()
+    {
+        Require.Positive(ProcessId);
+        Require.Id(InstanceId);
+
+    }
 }
 
 public sealed record SessionScope(Guid SessionId, ProcessInstanceKey Process)
 {
-    public void Validate() { Require.Id(SessionId); Process.Validate(); }
+    public void Validate()
+    {
+        Require.Id(SessionId);
+        Process.Validate();
+
+    }
 }
 
 public static class Require

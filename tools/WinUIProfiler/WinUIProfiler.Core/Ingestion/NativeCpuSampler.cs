@@ -1,21 +1,19 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using WinUIProfiler.Contracts;
+using static WinUIProfiler.Engine.Ingestion.NativeMetricAbi;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-internal sealed record CpuAcquisition(ProcessCpuSample Sample,
-    ulong AcquisitionBegin100ns, ulong AcquisitionEnd100ns, uint ErrorCode, uint ErrorDomain);
-
-internal sealed class NativeCpuSampler : IDisposable
+internal sealed record CpuAcquisition(ProcessCpuSample Sample, ulong AcquisitionBegin100ns, ulong AcquisitionEnd100ns, uint ErrorCode, uint ErrorDomain);
+internal sealed unsafe class NativeCpuSampler : IDisposable
 {
     private readonly object gate = new();
     private readonly NativeMetricLibrary module;
     private readonly CaptureCpu capture;
     private readonly NormalizeCpu normalize;
-    private CpuCounterSnapshot? previous;
+    private CpuCaptureResult? previous;
     private ProcessInstanceKey? previousTarget;
-
     internal NativeCpuSampler(string path)
     {
         module = new(path);
@@ -34,38 +32,46 @@ internal sealed class NativeCpuSampler : IDisposable
     internal CpuAcquisition Capture(SafeProcessHandle process, ProcessInstanceKey target)
     {
         ArgumentNullException.ThrowIfNull(process);
-        target.Validate();
-        if (target.CreationTimeFileTime is not > 0)
-            throw new ArgumentException("Native sampling requires the target's actual creation time.", nameof(target));
+        var request = Request(target, CaptureVersion);
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(module.IsClosed, this);
-            var request = new CpuRequest(target.ProcessId, checked((ulong)target.CreationTimeFileTime.Value));
-            var buffer = new byte[3696];
-            var result = capture(process, in request, buffer, checked((uint)buffer.Length));
+            var buffer = default(CpuCaptureResult);
+            var result = capture(process, in request, &buffer, SizeOf<CpuCaptureResult>());
             if (result != 0)
+            {
                 throw new COMException("The native CPU sampler rejected its ABI request.", unchecked((int)result));
-            var current = CpuMetricCodec.DecodeCapture(buffer, target);
-            var baseline = previousTarget == target && current.Status == 0 &&
-                previous is not null && current.Timestamp100ns > previous.Timestamp100ns ? previous : null;
-            var normalized = new byte[136];
-            result = normalize(baseline?.Snapshot, baseline?.Groups, current.Snapshot,
-                current.Groups, normalized, checked((uint)normalized.Length));
+            }
+
+            var current = CpuMetricCodec.DecodeCapture(in buffer, target);
+            var prior = previous.GetValueOrDefault();
+            var hasBaseline = previousTarget == target && current.Snapshot.Status == MetricStatus.Ok && previous.HasValue && current.Snapshot.Timestamp100ns > prior.Snapshot.Timestamp100ns;
+            var normalized = default(CpuResult);
+            result = normalize(hasBaseline ? &prior.Snapshot : null,
+hasBaseline ? &prior.Groups[0] : null,
+&current.Snapshot,
+&current.Groups[0],
+&normalized,
+SizeOf<CpuResult>());
             GC.KeepAlive(module);
             if (result != 0)
+            {
                 throw new COMException("The native CPU normalizer rejected its ABI input.", unchecked((int)result));
-            var sample = CpuMetricCodec.Decode(normalized, target);
-            if (current.Status != 0)
+            }
+
+            var sample = CpuMetricCodec.Decode(in normalized, target);
+            if (current.Snapshot.Status != MetricStatus.Ok)
             {
                 previous = null;
                 previousTarget = null;
             }
-            else if (previousTarget != target || previous is null || current.Timestamp100ns > previous.Timestamp100ns)
+            else if (previousTarget != target || !previous.HasValue || current.Snapshot.Timestamp100ns > prior.Snapshot.Timestamp100ns)
             {
                 previous = current;
                 previousTarget = target;
             }
-            return new(sample, current.Begin100ns, current.End100ns, current.ErrorCode, current.ErrorDomain);
+
+            return new(sample, current.Begin100ns, current.End100ns, current.ErrorCode, (uint)current.ErrorDomain);
         }
     }
 
@@ -79,21 +85,13 @@ internal sealed class NativeCpuSampler : IDisposable
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    private readonly struct CpuRequest(uint pid, ulong creationTime)
-    {
-        public readonly uint Size = 24;
-        public readonly uint Version = 1;
-        public readonly uint ProcessId = pid;
-        public readonly uint Reserved = 0;
-        public readonly ulong CreationTime = creationTime;
-    }
-
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate uint CaptureCpu(SafeProcessHandle process, in CpuRequest request,
-        [Out] byte[] output, uint capacity);
-
+    private delegate uint CaptureCpu(SafeProcessHandle process, in CaptureRequest request, CpuCaptureResult* output, uint capacity);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate uint NormalizeCpu([In] byte[]? previousSnapshot, [In] byte[]? previousGroups,
-        [In] byte[] currentSnapshot, [In] byte[] currentGroups, [Out] byte[] output, uint capacity);
+    private delegate uint NormalizeCpu(CpuSnapshot* previousSnapshot,
+CpuGroup* previousGroups,
+CpuSnapshot* currentSnapshot,
+CpuGroup* currentGroups,
+CpuResult* output,
+uint capacity);
 }

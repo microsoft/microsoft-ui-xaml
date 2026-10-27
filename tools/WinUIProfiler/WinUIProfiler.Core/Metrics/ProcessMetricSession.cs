@@ -17,7 +17,6 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
     private readonly NativeGpuSampler gpu;
     private readonly MetricPollingWorker worker;
     private readonly TaskCompletionSource firstSample = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
     internal ProcessMetricSession(string nativeLibrary, ProcessInstanceKey target, MetricHistory history)
     {
         target.Validate();
@@ -30,6 +29,7 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
             process.Dispose();
             throw new Win32Exception(error, "Opening the selected metric target failed.");
         }
+
         NativeCpuSampler? createdCpu = null;
         NativeMemorySampler? createdMemory = null;
         NativeGpuSampler? createdGpu = null;
@@ -41,7 +41,7 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
             cpu = createdCpu;
             memory = createdMemory;
             gpu = createdGpu;
-            worker = new(TimeSpan.FromSeconds(1), Capture);
+            worker = new(MetricHistory.SamplingInterval, Capture);
         }
         catch
         {
@@ -55,21 +55,21 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
 
     internal Task FirstSample => firstSample.Task;
     internal Task Completion => worker.Completion;
-    internal void Start() => worker.Start();
 
+    internal void Start() => worker.Start();
     private void Capture()
     {
         var cpuSample = cpu.Capture(process, target);
         var memorySample = memory.Capture(process, target);
         var gpuSample = gpu.Capture(process, target);
         if (cpuSample.Sample.Status is 5 or 6 || memorySample.Status is 5 or 6 || gpuSample.Sample.Status is 5 or 6)
+        {
             throw new IOException("The selected metric target exited or its process identity changed.");
-        history.Add(new(target, Stopwatch.GetTimestamp(), [
-            ToValue(ProcessMetric.Cpu, cpuSample.Sample.ProcessUtilization, cpuSample.Sample.Source),
-            ToValue(ProcessMetric.Gpu, gpuSample.Sample.Utilization, gpuSample.Sample.Source),
-            ToValue(ProcessMetric.WorkingSet, memorySample.TotalWorkingSet, memorySample.Source),
-            ToValue(ProcessMetric.PrivateWorkingSet, memorySample.PrivateWorkingSet, memorySample.Source),
-            ToValue(ProcessMetric.PrivateCommit, memorySample.PrivateCommit, memorySample.Source)]));
+        }
+
+        history.Add(new(target,
+Stopwatch.GetTimestamp(),
+[ToValue(ProcessMetric.Cpu, cpuSample.Sample.ProcessUtilization, cpuSample.Sample.Source), ToValue(ProcessMetric.Gpu, gpuSample.Sample.Utilization, gpuSample.Sample.Source), ToValue(ProcessMetric.WorkingSet, memorySample.TotalWorkingSet, memorySample.Source), ToValue(ProcessMetric.PrivateWorkingSet, memorySample.PrivateWorkingSet, memorySample.Source), ToValue(ProcessMetric.PrivateCommit, memorySample.PrivateCommit, memorySample.Source)]));
         firstSample.TrySetResult();
     }
 
@@ -79,7 +79,10 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
         value.Validate();
         var isPercent = metric <= ProcessMetric.Gpu;
         if (value.Unit != (isPercent ? ValueUnit.Percent : ValueUnit.Bytes))
+        {
             throw new ArgumentException("The metric's source unit does not match its graph.");
+        }
+
         var number = value.Kind switch
         {
             ValueKind.Integer => (double?)value.Integer,
@@ -87,13 +90,18 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
             ValueKind.Missing => null,
             _ => throw new ArgumentException("Process metrics require numeric or explicitly missing values.")
         };
-        return new(metric, isPercent ? number : number / (1024 * 1024), source,
-            number.HasValue ? value.Quality.Reason : value.Quality.Reason ?? "Unavailable");
+        return new(metric,
+isPercent ? number : number / (1024 * 1024),
+source,
+number.HasValue ? value.Quality.Reason : value.Quality.Reason ?? "Unavailable");
     }
 
     public async ValueTask DisposeAsync()
     {
-        try { await worker.DisposeAsync().ConfigureAwait(false); }
+        try
+        {
+            await worker.DisposeAsync().ConfigureAwait(false);
+        }
         finally
         {
             gpu.Dispose();
@@ -105,6 +113,5 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
 
     [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    private static extern SafeProcessHandle OpenProcess(uint access,
-        [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+    private static extern SafeProcessHandle OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
 }

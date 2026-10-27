@@ -48,8 +48,7 @@
   <data name="MemoryHeading" xml:space="preserve"><value>Process memory</value></data>
   <data name="UtilizationAutomation" xml:space="preserve"><value>CPU and GPU usage graph</value></data>
   <data name="MemoryAutomation" xml:space="preserve"><value>Process memory usage graph</value></data>
-  <data name="ChartEarlier.Text" xml:space="preserve"><value>2 minutes earlier</value></data>
-  <data name="ChartNow.Text" xml:space="preserve"><value>Latest sample</value></data>
+  <data name="ChartTime" xml:space="preserve"><value>{0} s</value></data>
   <data name="ChartScale" xml:space="preserve"><value>0 - {0} {1}</value></data>
   <data name="ChartValue" xml:space="preserve"><value>{0} {1}</value></data>
   <data name="ChartLegend" xml:space="preserve"><value>{0}: {1} | {2} {3}</value></data>
@@ -61,12 +60,13 @@
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
   <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. This baseline does not record ETW, SQLite, frames, or snapshots.</value></data>
-  <data name="SearchTargets" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
-  <data name="RefreshTargets" xml:space="preserve"><value>Refresh list</value></data>
+  <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
+  <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
+  <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
+  <data name="TargetList.AutomationProperties.Name" xml:space="preserve"><value>Available targets</value></data>
   <data name="PickPackage" xml:space="preserve"><value>Select a packaged application</value></data>
   <data name="PickProcess" xml:space="preserve"><value>Select a running process</value></data>
   <data name="SelectTarget" xml:space="preserve"><value>Select</value></data>
   <data name="LoadingTargets" xml:space="preserve"><value>Loading targets...</value></data>
   <data name="NoTargets" xml:space="preserve"><value>No matching targets.</value></data>
-  <data name="TargetListAutomation" xml:space="preserve"><value>Available targets</value></data>
 </root>

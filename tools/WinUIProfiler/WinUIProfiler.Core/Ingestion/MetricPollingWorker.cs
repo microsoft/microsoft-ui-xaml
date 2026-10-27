@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace WinUIProfiler.Engine.Ingestion;
 
 internal sealed class MetricPollingWorker : IAsyncDisposable
@@ -10,11 +12,13 @@ internal sealed class MetricPollingWorker : IAsyncDisposable
     private bool started;
     private bool stopped;
     private bool disposed;
-
     internal MetricPollingWorker(TimeSpan interval, Action capture)
     {
         if (interval < TimeSpan.FromMilliseconds(1) || interval.TotalMilliseconds > int.MaxValue)
+        {
             throw new ArgumentOutOfRangeException(nameof(interval), "Polling delay must be between 1 and Int32.MaxValue milliseconds.");
+        }
+
         ArgumentNullException.ThrowIfNull(capture);
         this.interval = interval;
         this.capture = capture;
@@ -22,7 +26,13 @@ internal sealed class MetricPollingWorker : IAsyncDisposable
 
     internal Task Completion
     {
-        get { lock (gate) return completion; }
+        get
+        {
+            lock (gate)
+            {
+                return completion;
+            }
+        }
     }
 
     internal void Start()
@@ -30,19 +40,29 @@ internal sealed class MetricPollingWorker : IAsyncDisposable
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
-            if (started || stopped) throw new InvalidOperationException("Metric polling can only be started once.");
+            if (started || stopped)
+            {
+                throw new InvalidOperationException("Metric polling can only be started once.");
+            }
+
             started = true;
-            completion = Task.Factory.StartNew(Run, CancellationToken.None,
-                TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            completion = Task.Factory.StartNew(Run, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
     }
 
     private void Run()
     {
+        var origin = Stopwatch.GetTimestamp();
         while (!stop.IsCancellationRequested)
         {
             capture();
-            if (stop.Token.WaitHandle.WaitOne(interval)) break;
+            // Wait for the next slot, skipping missed slots rather than adding capture cost.
+            var elapsed = Stopwatch.GetElapsedTime(origin);
+            var delay = interval - TimeSpan.FromTicks(elapsed.Ticks % interval.Ticks);
+            if (stop.Token.WaitHandle.WaitOne(delay))
+            {
+                break;
+            }
         }
     }
 
@@ -51,14 +71,21 @@ internal sealed class MetricPollingWorker : IAsyncDisposable
         lock (gate)
         {
             stopped = true;
-            if (!disposed) stop.Cancel();
+            if (!disposed)
+            {
+                stop.Cancel();
+            }
+
             return completion;
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        try { await StopAsync().ConfigureAwait(false); }
+        try
+        {
+            await StopAsync().ConfigureAwait(false);
+        }
         finally
         {
             lock (gate)

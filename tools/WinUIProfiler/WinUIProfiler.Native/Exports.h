@@ -6,6 +6,8 @@
 #define WUP_E_INVALIDARG 0x80070057u
 #define WUP_MAX_CPU_GROUPS 64u
 
+#pragma pack(push, 8)
+
 #ifdef __cplusplus
 #define WUP_ABI_NOEXCEPT noexcept
 extern "C" {
@@ -152,35 +154,66 @@ uint32_t WupCaptureCpu(void* process_handle, const WupCpuCaptureRequest* request
 #define WUP_MAX_GPU_ROWS 256u
 enum { WupEnglishPdhGpuEngine = 6 };
 typedef struct WupGpuRequest {
-    uint32_t size, version;
+    uint32_t size;
+    uint32_t version;
     WupProcessIdentity process;
 } WupGpuRequest;
 typedef struct WupGpuRawEngine {
-    uint32_t luid_high, luid_low, physical, engine;
-    uint32_t duplicate_index, status, pdh_status, counter_type;
-    uint64_t running_time, timer, timestamp_filetime_100ns;
+    uint32_t luid_high;
+    uint32_t luid_low;
+    uint32_t physical;
+    uint32_t engine;
+    uint32_t duplicate_index;
+    uint32_t status;
+    uint32_t pdh_status;
+    uint32_t counter_type;
+    uint64_t running_time;
+    uint64_t timer;
+    uint64_t timestamp_filetime_100ns;
 } WupGpuRawEngine;
 typedef struct WupGpuSnapshot {
-    uint32_t size, version, source, status;
+    uint32_t size;
+    uint32_t version;
+    uint32_t source;
+    uint32_t status;
     WupProcessIdentity process;
-    uint64_t clock_id, sample_filetime_100ns;
-    uint64_t acquisition_begin_100ns, acquisition_end_100ns;
+    uint64_t clock_id;
+    uint64_t sample_filetime_100ns;
+    uint64_t acquisition_begin_100ns;
+    uint64_t acquisition_end_100ns;
     uint64_t acquisition_clock_id;
-    uint32_t pdh_error, row_count, win32_error, observed_instance_count;
+    uint32_t pdh_error;
+    uint32_t row_count;
+    uint32_t win32_error;
+    uint32_t observed_instance_count;
     WupGpuRawEngine rows[WUP_MAX_GPU_ROWS];
 } WupGpuSnapshot;
 typedef struct WupGpuEngineUsage {
-    uint32_t luid_high, luid_low, physical, engine, status, reserved;
+    uint32_t luid_high;
+    uint32_t luid_low;
+    uint32_t physical;
+    uint32_t engine;
+    uint32_t status;
+    uint32_t reserved;
     double percent;
 } WupGpuEngineUsage;
 typedef struct WupGpuResult {
-    uint32_t size, version, source, status;
+    uint32_t size;
+    uint32_t version;
+    uint32_t source;
+    uint32_t status;
     WupProcessIdentity process;
-    uint64_t clock_id, begin_100ns, end_100ns;
+    uint64_t clock_id;
+    uint64_t begin_100ns;
+    uint64_t end_100ns;
     WupCpuMetric utilization;
-    uint32_t engine_count, reserved;
+    uint32_t engine_count;
+    uint32_t reserved;
     WupGpuEngineUsage engines[WUP_MAX_GPU_ROWS];
-    WupByteMetric dedicated_committed, shared_committed, dedicated_resident, shared_resident;
+    WupByteMetric dedicated_committed;
+    WupByteMetric shared_committed;
+    WupByteMetric dedicated_resident;
+    WupByteMetric shared_resident;
 } WupGpuResult;
 uint32_t WupCaptureGpu(void* process_handle, const WupGpuRequest* request,
     WupGpuSnapshot* output, uint32_t output_size) WUP_ABI_NOEXCEPT;
@@ -189,4 +222,22 @@ uint32_t WupNormalizeGpu(const WupGpuSnapshot* previous, const WupGpuSnapshot* c
 
 #ifdef __cplusplus
 }
+
+static_assert(sizeof(WupProcessIdentity) == 16);
+static_assert(sizeof(WupCpuGroup) == 56);
+static_assert(sizeof(WupCpuSnapshot) == 80);
+static_assert(sizeof(WupCpuMetric) == 16);
+static_assert(sizeof(WupCpuResult) == 136);
+static_assert(sizeof(WupMemoryRequest) == 24);
+static_assert(sizeof(WupByteMetric) == 16);
+static_assert(sizeof(WupMemoryResult) == 112);
+static_assert(sizeof(WupCpuCaptureRequest) == 24);
+static_assert(sizeof(WupCpuCaptureResult) == 3696);
+static_assert(sizeof(WupGpuRequest) == 24);
+static_assert(sizeof(WupGpuRawEngine) == 56);
+static_assert(sizeof(WupGpuSnapshot) == 14424);
+static_assert(sizeof(WupGpuEngineUsage) == 32);
+static_assert(sizeof(WupGpuResult) == 8336);
 #endif
+
+#pragma pack(pop)

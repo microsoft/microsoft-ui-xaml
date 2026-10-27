@@ -1,7 +1,13 @@
 namespace WinUIProfiler.Contracts;
 
-public enum TapMessageType : ushort { Handshake = 1, Disconnect = 7, Acknowledgement = 8, Hello = 10 }
-public enum CommandStatus { Accepted, Completed, Unsupported, Rejected, Cancelled, Failed }
+public enum TapMessageType : ushort
+{
+    Handshake = 1, Disconnect = 7, Acknowledgement = 8, Hello = 10
+}
+public enum CommandStatus
+{
+    Accepted, Completed, Unsupported, Rejected, Cancelled, Failed
+}
 public static class TapProtocol
 {
     public const ushort Version = 1;

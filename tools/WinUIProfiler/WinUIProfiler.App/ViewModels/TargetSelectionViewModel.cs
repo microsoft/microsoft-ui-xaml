@@ -25,7 +25,11 @@ public sealed class TargetSelectionViewModel(
         get => searchText;
         set
         {
-            if (searchText == value) return;
+            if (searchText == value)
+            {
+                return;
+            }
+
             searchText = value;
             Filter();
         }
@@ -35,13 +39,20 @@ public sealed class TargetSelectionViewModel(
         get => selected;
         set
         {
-            if (selected == value) return;
+            if (selected == value)
+            {
+                return;
+            }
+
             selected = value;
             PropertyChanged?.Invoke(this, new(nameof(Selected)));
             PropertyChanged?.Invoke(this, new(nameof(CanSelect)));
         }
     }
-    public bool IsBusy { get; private set; }
+    public bool IsBusy
+    {
+        get; private set;
+    }
     public bool CanRefresh => !IsBusy;
     public bool CanSelect => !IsBusy && Selected?.CanSelect == true && Candidates.Contains(Selected);
     public bool IsEmpty => !IsBusy && !HasError && Candidates.Count == 0;
@@ -50,7 +61,11 @@ public sealed class TargetSelectionViewModel(
 
     public async Task RefreshAsync(CancellationToken token = default)
     {
-        if (IsBusy) throw new InvalidOperationException("Target discovery is already running.");
+        if (IsBusy)
+        {
+            throw new InvalidOperationException("Target discovery is already running.");
+        }
+
         IsBusy = true;
         ErrorMessage = "";
         Selected = null;
@@ -70,7 +85,12 @@ public sealed class TargetSelectionViewModel(
             ErrorMessage = error.Message;
             Trace.TraceError(error.ToString());
         }
-        finally { IsBusy = false; Notify(); }
+        finally
+        {
+            IsBusy = false;
+            Notify();
+
+        }
     }
 
     private void Filter()
@@ -78,7 +98,11 @@ public sealed class TargetSelectionViewModel(
         var text = SearchText.Trim();
         Candidates = all.Where(candidate => candidate.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase) ||
             candidate.Value.Contains(text, StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (selected is not null && !Candidates.Contains(selected)) selected = null;
+        if (selected is not null && !Candidates.Contains(selected))
+        {
+            selected = null;
+        }
+
         Notify();
     }
 

@@ -19,7 +19,11 @@ internal static class TargetDiscovery
             foreach (var process in processes)
             {
                 token.ThrowIfCancellationRequested();
-                if (process.Id == Environment.ProcessId) continue;
+                if (process.Id == Environment.ProcessId)
+                {
+                    continue;
+                }
+
                 var pid = process.Id.ToString(CultureInfo.InvariantCulture);
                 var name = pid;
                 try
@@ -33,7 +37,13 @@ internal static class TargetDiscovery
                 }
             }
         }
-        finally { foreach (var process in processes) process.Dispose(); }
+        finally
+        {
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
         return Task.FromResult<IReadOnlyList<TargetCandidate>>(candidates);
     }
 
@@ -44,12 +54,18 @@ internal static class TargetDiscovery
         foreach (var package in manager.FindPackagesForUser(""))
         {
             token.ThrowIfCancellationRequested();
-            if (package.IsFramework || package.IsResourcePackage || package.IsBundle) continue;
+            if (package.IsFramework || package.IsResourcePackage || package.IsBundle)
+            {
+                continue;
+            }
+
             try
             {
                 var entries = await package.GetAppListEntriesAsync().AsTask(token).ConfigureAwait(false);
                 foreach (var entry in entries)
+                {
                     candidates.Add(new(entry.DisplayInfo.DisplayName, entry.AppUserModelId, TargetLaunchKind.Packaged));
+                }
             }
             catch (Exception error) when (error is COMException or UnauthorizedAccessException)
             {

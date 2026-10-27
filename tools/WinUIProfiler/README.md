@@ -19,14 +19,35 @@ two live graphs:
 | CPU and GPU | CPU %, GPU % | NT process/system CPU snapshots with processor-group normalization; English PDH GPU Engine counters, using the busiest process engine, not their sum. |
 | Process memory | Working set, private working set, private commit (MiB) | `NtQuerySystemInformation(SystemProcessInformation)` process snapshots. Commit is not resident memory. |
 
-Metric polling and UI updates are independent. Connection-state, heartbeat and
+Metrics are acquired every 250 ms on a fixed cadence; slow acquisitions skip
+missed slots without overlapping captures. Metric polling and UI updates are
+independent. Connection-state, heartbeat and
 new-sample notifications schedule coalesced updates on the UI dispatcher; there
 is no periodic UI refresh timer. State-only notifications do not redraw unchanged
-metric histories. Each series retains at most 121 points
-and two minutes; disconnect freezes the final history and does not terminate the
+metric histories. Each series retains at most 481 points and two minutes.
+Charts start at the left and fill toward the right, then scroll over the latest
+two minutes. Time labels show seconds since the first acquisition. The combined
+CPU/GPU axis is `min(100, 10 * highest available utilization in the visible data)`;
+an empty or all-zero window uses a 1% scale. Memory retains its independent MiB
+scale. Disconnect freezes the final history and does not terminate the
 target. Reconnecting starts a new metric scope. Closing the profiler cancels
 connection work, joins polling and disconnects the TAP without killing the target.
 Unavailable and warm-up measurements remain labelled gaps, never invented zeros.
+
+The chart visuals, legends and searchable target-selection dialog are declared
+in XAML. Executable browsing uses
+`Microsoft.Windows.Storage.Pickers.FileOpenPicker`, including when elevated;
+it does not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
+picker preserves the existing target input.
+
+`WinUIProfiler.Core\Ingestion\NativeMetricAbi.cs` mirrors the fixed-width C ABI
+in `WinUIProfiler.Native\Exports.h`: explicit pack-8 structs, named statuses,
+sources, clocks and units, and inline CPU-group/GPU-engine arrays. Native calls
+use typed pointers rather than byte buffers and numeric decoding offsets.
+Unsafe code is confined to synchronous native calls with bounded caller-owned
+storage. Size/version, process identity, counts, reserved fields, intervals,
+units, missing-value sentinels and busiest-engine validation remain enforced.
+Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 There is no ETW listener, recording database, frame processing, tree snapshot,

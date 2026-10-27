@@ -19,10 +19,17 @@ public static class TapCodec
     {
         Require.Id(requestId);
         if (Require.NotNull(body).GetType() != BodyType(type))
+        {
             throw new ArgumentException("Command type and body do not match.");
+        }
+
         Validate(body);
         var json = JsonSerializer.SerializeToUtf8Bytes(body, body.GetType(), Options);
-        if (json.Length > TapProtocol.MaximumBodyBytes) throw new ArgumentException("Command body exceeds the limit.");
+        if (json.Length > TapProtocol.MaximumBodyBytes)
+        {
+            throw new ArgumentException("Command body exceeds the limit.");
+        }
+
         var bytes = new byte[TapProtocol.HeaderBytes + json.Length];
         BinaryPrimitives.WriteUInt32LittleEndian(bytes, (uint)json.Length);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(4), TapProtocol.Version);
@@ -35,27 +42,45 @@ public static class TapCodec
 
     public static TapMessage Decode(ReadOnlySpan<byte> bytes)
     {
-        if (bytes.Length < TapProtocol.HeaderBytes) throw new ArgumentException("Truncated TAP header.");
+        if (bytes.Length < TapProtocol.HeaderBytes)
+        {
+            throw new ArgumentException("Truncated TAP header.");
+        }
+
         var header = DecodeHeader(bytes[..TapProtocol.HeaderBytes]);
         if (bytes.Length != TapProtocol.HeaderBytes + header.BodyLength)
+        {
             throw new ArgumentException("Exactly one complete TAP message is required.");
+        }
+
         var body = (ITapBody?)JsonSerializer.Deserialize(bytes[TapProtocol.HeaderBytes..], BodyType(header.Type), Options)
-            ?? throw new JsonException("Command body cannot be null.");
+                    ?? throw new JsonException("Command body cannot be null.");
         Validate(body);
         return new(header, body);
     }
 
     public static TapHeader DecodeHeader(ReadOnlySpan<byte> bytes)
     {
-        if (bytes.Length != TapProtocol.HeaderBytes) throw new ArgumentException("Exactly one TAP header is required.");
+        if (bytes.Length != TapProtocol.HeaderBytes)
+        {
+            throw new ArgumentException("Exactly one TAP header is required.");
+        }
+
         var length = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
         var version = BinaryPrimitives.ReadUInt16LittleEndian(bytes[4..]);
         var type = (TapMessageType)BinaryPrimitives.ReadUInt16LittleEndian(bytes[6..]);
         var id = new Guid(bytes.Slice(8, 16), bigEndian: true);
         var schema = BinaryPrimitives.ReadUInt32LittleEndian(bytes[24..]);
         if (version != TapProtocol.Version || schema != ContractVersions.Schema)
+        {
             throw new NotSupportedException("Unsupported TAP protocol/body schema version.");
-        if (length is 0 or > TapProtocol.MaximumBodyBytes) throw new ArgumentException("Invalid bounded TAP body length.");
+        }
+
+        if (length is 0 or > TapProtocol.MaximumBodyBytes)
+        {
+            throw new ArgumentException("Invalid bounded TAP body length.");
+        }
+
         Require.Id(id);
         _ = BodyType(type);
         return new(length, version, type, id, schema);
@@ -75,27 +100,49 @@ public static class TapCodec
         switch (body)
         {
             case HelloBody hello:
-                if (hello.Message != "hello") throw new ArgumentException("TAP hello message must be exactly 'hello'.");
+                if (hello.Message != "hello")
+                {
+                    throw new ArgumentException("TAP hello message must be exactly 'hello'.");
+                }
+
                 break;
             case HandshakeBody handshake:
                 Require.Id(handshake.SessionId);
                 handshake.Process.Validate();
                 if (handshake.Process.CreationTimeFileTime is not > 0)
+                {
                     throw new ArgumentException("Handshake requires process creation time.");
-                if (handshake.SchemaVersion != ContractVersions.Schema) throw new NotSupportedException("Unsupported handshake schema.");
+                }
+
+                if (handshake.SchemaVersion != ContractVersions.Schema)
+                {
+                    throw new NotSupportedException("Unsupported handshake schema.");
+                }
+
                 Span<byte> nonce = stackalloc byte[TapProtocol.NonceBytes];
-                if (handshake.NonceBase64 is null || !Convert.TryFromBase64String(handshake.NonceBase64, nonce, out var written) ||
+                if (handshake.NonceBase64 is null ||
+!Convert.TryFromBase64String(handshake.NonceBase64, nonce, out var written) ||
                     written != TapProtocol.NonceBytes)
+                {
                     throw new ArgumentException("Handshake nonce must be exactly 32 bytes.");
+                }
+
                 break;
             case DisconnectBody disconnect:
                 Require.Text(disconnect.Reason);
                 break;
             case AcknowledgementBody acknowledgement:
                 Require.Enum(acknowledgement.Status);
-                if (acknowledgement.CaptureId is { } id) Require.Id(id);
+                if (acknowledgement.CaptureId is { } id)
+                {
+                    Require.Id(id);
+                }
+
                 if (acknowledgement.Status is CommandStatus.Unsupported or CommandStatus.Rejected or CommandStatus.Failed)
+                {
                     Require.Text(acknowledgement.Reason);
+                }
+
                 break;
         }
     }
