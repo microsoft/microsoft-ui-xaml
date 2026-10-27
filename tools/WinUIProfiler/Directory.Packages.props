@@ -1,5 +1,6 @@
 <Project>
   <ItemGroup>
+    <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="[3.2.8]" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="[2.3.9]" />
   </ItemGroup>
 </Project>
