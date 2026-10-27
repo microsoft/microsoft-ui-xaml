@@ -65,6 +65,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
             {
                 History.Changed += History_Changed;
             }
+            _ = CompleteConnectionAsync(candidate);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
@@ -99,6 +100,38 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         {
             Notify();
         }
+    }
+
+    private async Task CompleteConnectionAsync(TargetConnection owned)
+    {
+        Exception? failure = null;
+        try
+        {
+            await owned.Completion;
+            await owned.DisposeAsync();
+        }
+        catch (Exception error)
+        {
+            failure = error;
+            Trace.TraceError(error.ToString());
+        }
+
+        if (!ReferenceEquals(owned, connection))
+        {
+            return;
+        }
+
+        owned.Changed -= Connection_Changed;
+        if (owned.History is not null)
+        {
+            owned.History.Changed -= History_Changed;
+        }
+
+        state = failure is null ? owned.State : "Failed";
+        detail = owned.Detail;
+        errorMessage = owned.Failure?.Message ?? failure?.Message ?? "";
+        connection = null;
+        Notify();
     }
 
     private void History_Changed(object? sender, EventArgs args)
