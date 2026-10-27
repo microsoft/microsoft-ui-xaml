@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include <GraphicsUtility.h>
 #include <DCompTreeHost.h>
 #include <MUX-ETWEvents.h>
@@ -164,26 +165,30 @@ DCompSurface::InitializeSurface(
     if (m_isVirtual)
     {
         ASSERT(m_requestAtlas);
-        IFCFAILFAST(pDCompTreeHost->GetSurfaceFactory()->CreateVirtualSurface(
-            GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
-            GetHeightWithoutGutters(),
-            compositionSurfaceFormat,
-            m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
-            &m_pVirtualCompositionSurface
-            ));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::VirtualCompositionSurface,
+            pDCompTreeHost->GetSurfaceFactory()->CreateVirtualSurface(
+                GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
+                GetHeightWithoutGutters(),
+                compositionSurfaceFormat,
+                m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
+                &m_pVirtualCompositionSurface
+                )));
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
     }
     else
     {
-        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositionHelper()->CreateSurface(
-            GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
-            GetHeightWithoutGutters(),
-            compositionSurfaceFormat,
-            m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
-            !m_requestAtlas,
-            &m_pCompositionSurface
-            ));
+        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::CompositionSurface,
+            pDCompTreeHost->GetCompositionHelper()->CreateSurface(
+                GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
+                GetHeightWithoutGutters(),
+                compositionSurfaceFormat,
+                m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
+                !m_requestAtlas,
+                &m_pCompositionSurface
+                )));
 
         //NOTE: If this is a shared surface this may inflate reported memory footprint.
         UpdateMemoryFootprint(TRUE);
@@ -237,13 +242,15 @@ DCompSurface::InitializeSurface(
     if (isVirtual)
     {
         ASSERT(m_requestAtlas);
-        IFC_RETURN(pSurfaceFactory->CreateVirtualSurface(
-            GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
-            GetHeightWithoutGutters(),
-            DXGI_FORMAT_B8G8R8A8_UNORM, //GetDxgiFormat()
-            m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
-            &m_pVirtualCompositionSurface
-            ));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::VirtualCompositionSurface,
+            pSurfaceFactory->CreateVirtualSurface(
+                GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
+                GetHeightWithoutGutters(),
+                DXGI_FORMAT_B8G8R8A8_UNORM, //GetDxgiFormat()
+                m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
+                &m_pVirtualCompositionSurface
+                )));
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
@@ -266,14 +273,16 @@ DCompSurface::InitializeSurface(
     }
     else
     {
-        IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateSurface(pSurfaceFactory,
-            GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
-            GetHeightWithoutGutters(),
-            DXGI_FORMAT_B8G8R8A8_UNORM, //GetDxgiFormat()
-            m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
-            !m_requestAtlas,
-            &m_pCompositionSurface
-            ));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::CompositionSurface,
+            pDCompTreeHost->GetCompositionHelper()->CreateSurface(pSurfaceFactory,
+                GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
+                GetHeightWithoutGutters(),
+                DXGI_FORMAT_B8G8R8A8_UNORM, //GetDxgiFormat()
+                m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
+                !m_requestAtlas,
+                &m_pCompositionSurface
+                )));
 
         UpdateMemoryFootprint(TRUE);
 
@@ -316,6 +325,7 @@ DCompSurface::DCompSurface(
     , m_isHDR(isHDR)
     , m_requestAtlas(requestAtlas)
 {
+    GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::DCompSurfaceWrapper);
     if (!s_traceDCompSurfacesInitialized)
     {
         static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
@@ -330,6 +340,7 @@ DCompSurface::~DCompSurface()
     ReleaseLegacyDCompResources(false /* resetWucSurface */);
 
     DCompSurfaceMonitor::RemoveSurface(this);
+    GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::DCompSurfaceWrapper);
 }
 
 // Release all D3D device-dependent resources.  This includes all "legacy" DComp resource references, but does not

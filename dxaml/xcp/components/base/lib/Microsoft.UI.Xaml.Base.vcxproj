@@ -24,9 +24,11 @@
         <ClCompile Include="..\FloatUtil.cpp"/>
         <ClCompile Include="..\bit_vector.cpp"/>
         <ClCompile Include="..\DesignMode.cpp"/>
+        <ClCompile Include="..\GraphicsResourceCounters.cpp"/>
     </ItemGroup>
 
     <ItemGroup>
+        <ClInclude Include="..\inc\GraphicsResourceCounters.h"/>
         <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\inc\XamlProfilerTracing.h"/>
     </ItemGroup>
 

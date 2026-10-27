@@ -23,11 +23,9 @@ INT64 g_allocatedMemory = 0;
 // otherwise pay overhead on every alloc/free for nothing. The flag is set
 // once when the managed runtime registers a reference tracker host
 // (see ReferenceTrackerManager::SetReferenceTrackerHost) and stays set
-// for the lifetime of the process. Reads are done without an atomic op —
-// stale reads during the brief transition window are harmless because the
-// counter clamps at zero (so frees of pre-tracked allocations don't go
-// negative).
-static bool g_memoryTrackingEnabled = false;
+// for the lifetime of the process. Relaxed atomic reads also allow diagnostics
+// to observe the flag safely without synchronizing allocation activity.
+static std::atomic<bool> g_memoryTrackingEnabled{false};
 
 void EnsureHeap()
 {
@@ -130,6 +128,24 @@ size_t XcpAllocation::GetOutstandingAllocationSize()
 #endif
 }
 
+XcpAllocation::AllocationSnapshot XcpAllocation::GetAllocationSnapshot() noexcept
+{
+    AllocationSnapshot snapshot{};
+#if COUNT_ALLOC
+    snapshot.allocationCountsAvailable = true;
+    snapshot.allocCount = GetAllocationCount();
+    snapshot.allocSize = GetAllocationSize();
+#endif
+#if COUNT_OUTSTANDING_ALLOC
+    snapshot.outstandingAllocationCountsAvailable = true;
+    snapshot.outstandingAllocCount = GetOutstandingAllocationCount();
+    snapshot.outstandingAllocSize = GetOutstandingAllocationSize();
+#endif
+    snapshot.memoryTrackingEnabled = g_memoryTrackingEnabled.load(std::memory_order_relaxed);
+    snapshot.allocatedMemory = InterlockedCompareExchange64(&g_allocatedMemory, 0, 0);
+    return snapshot;
+}
+
 uint64_t XcpAllocation::GetHeapHandle()
 {
     EnsureHeap();
@@ -144,12 +160,12 @@ bool XcpAllocation::IsUsingPrivateHeap()
 
 void XcpAllocation::EnableMemoryTracking()
 {
-    g_memoryTrackingEnabled = true;
+    g_memoryTrackingEnabled.store(true, std::memory_order_relaxed);
 }
 
 void XcpAllocation::UpdateAllocatedMemory(INT64 cSize)
 {
-    if (!g_memoryTrackingEnabled)
+    if (!g_memoryTrackingEnabled.load(std::memory_order_relaxed))
     {
         return;
     }
@@ -290,7 +306,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 #endif
 
-    const bool trackMemory = g_memoryTrackingEnabled;
+    const bool trackMemory = g_memoryTrackingEnabled.load(std::memory_order_relaxed);
     bool needBlockSize = trackMemory;
 #if COUNT_OUTSTANDING_ALLOC
     needBlockSize = true;
@@ -344,7 +360,7 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 {
     EnsureHeap();
 
-    const bool trackMemory = g_memoryTrackingEnabled;
+    const bool trackMemory = g_memoryTrackingEnabled.load(std::memory_order_relaxed);
     bool needBlockSize = trackMemory;
 #if COUNT_OUTSTANDING_ALLOC
     needBlockSize = true;
@@ -356,7 +372,7 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
         cSize = HeapSize(ghHeap, 0, pAddress);
         ASSERT(cSize != (SIZE_T)-1);
 
-        if (g_memoryTrackingEnabled)
+        if (g_memoryTrackingEnabled.load(std::memory_order_relaxed))
         {
             UpdateAllocatedMemory(-(INT64)cSize);
         }

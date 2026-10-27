@@ -232,11 +232,13 @@ Cleanup:
 CD2DStrokeStyle::CD2DStrokeStyle()
     : m_pStrokeStyle(NULL)
 {
+    GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DStrokeStyleWrapper);
 }
 
 CD2DStrokeStyle::~CD2DStrokeStyle()
 {
     ReleaseInterface(m_pStrokeStyle);
+    GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DStrokeStyleWrapper);
 }
 
 _Check_return_ HRESULT

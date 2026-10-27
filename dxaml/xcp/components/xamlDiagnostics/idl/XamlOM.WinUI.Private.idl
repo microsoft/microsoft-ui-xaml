@@ -20,5 +20,77 @@ interface IXamlDiagnosticsTestHooks : IUnknown
     HRESULT TryGetDispatcherQueueForObject(InstanceHandle obj, IInspectable** queue); 
 };
 
+typedef enum XamlGraphicsResourceCounterFlags
+{
+    XamlGraphicsResourceCounter_CreationCountAvailable = 0x1,
+    XamlGraphicsResourceCounter_WrapperLifetimeAvailable = 0x2,
+    XamlGraphicsResourceCounter_WinUICoreObservedScope = 0x4,
+    XamlGraphicsResourceCounter_NonTransactional = 0x8
+} XamlGraphicsResourceCounterFlags;
+
+typedef struct XamlGraphicsResourceCounterSnapshot
+{
+    UINT32 Size;
+    UINT32 Version;
+    UINT32 Flags;
+    UINT32 Reserved;
+    WCHAR Name[64];
+    UINT64 TotalCreated;
+    UINT64 TotalDestroyed;
+    UINT64 LiveCount;
+    INT64 ReadStartQpc;
+    INT64 ReadEndQpc;
+} XamlGraphicsResourceCounterSnapshot;
+
+[
+    object,
+    uuid(b8ca21e9-e8ae-4a47-9a9b-1e4b846f6798),
+    pointer_default(unique)
+]
+interface IXamlGraphicsResourceDiagnostics : IUnknown
+{
+    HRESULT GetGraphicsResourceCounterCount([out] UINT32* count);
+    HRESULT GetGraphicsResourceCounterSnapshot(
+        [in] UINT32 index,
+        [out] XamlGraphicsResourceCounterSnapshot* snapshot);
+};
+
+typedef enum XamlMemorySnapshotFlags
+{
+    XamlMemorySnapshot_AllocationCountsAvailable = 0x1,
+    XamlMemorySnapshot_OutstandingAllocationCountsAvailable = 0x2,
+    XamlMemorySnapshot_AllocatedMemoryTrackingEnabled = 0x4,
+    XamlMemorySnapshot_WinUICoreObservedScope = 0x8,
+    XamlMemorySnapshot_NonTransactional = 0x10
+} XamlMemorySnapshotFlags;
+
+const UINT32 XamlMemorySnapshotResourceCapacity = 32;
+
+typedef struct XamlMemorySnapshot
+{
+    UINT32 Size;
+    UINT32 Version;
+    UINT32 Flags;
+    UINT32 ResourceCount;
+    UINT64 AllocCount;
+    UINT64 AllocSize;
+    INT64 AllocatedMemory;
+    UINT64 OutstandingAllocCount;
+    UINT64 OutstandingAllocSize;
+    INT64 ReadStartQpc;
+    INT64 ReadEndQpc;
+    XamlGraphicsResourceCounterSnapshot Resources[XamlMemorySnapshotResourceCapacity];
+} XamlMemorySnapshot;
+
+[
+    object,
+    uuid(e4663afc-ea1a-4b94-8c21-56e938403965),
+    pointer_default(unique)
+]
+interface IXamlAllocationDiagnostics : IUnknown
+{
+    HRESULT GetMemorySnapshot([out] XamlMemorySnapshot* snapshot);
+};
+
 cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */ ")
 cpp_quote("#pragma endregion")

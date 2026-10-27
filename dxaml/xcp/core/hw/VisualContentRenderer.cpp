@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include "VisualContentRenderer.h"
 #include <LinearGradientBrush.h>
 #include <WUCBrushManager.h>
@@ -585,7 +586,9 @@ VisualContentRenderer::EnsureSpriteVisual(
     }
     else
     {
-        IFC_RETURN(pCompositor->CreateSpriteVisual(&spContentVisual));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::SpriteVisual,
+            pCompositor->CreateSpriteVisual(&spContentVisual)));
         VERIFYHR(spContentVisual.As(&spVisual));
     }
 
@@ -633,7 +636,9 @@ void VisualContentRenderer::EnsureShapeVisual(
     else
     {
         // Create a ShapeVisual
-        IFCFAILFAST(GetCompositor5()->CreateShapeVisual(&shapeVisual));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ShapeVisual,
+            GetCompositor5()->CreateShapeVisual(&shapeVisual)));
         shapeVisual.As(&visual);
     }
 

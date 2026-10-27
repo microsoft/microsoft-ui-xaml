@@ -48,6 +48,8 @@ class
         // should always be the most derived, but will still be able to QI for the other classes in the list.
         wrl::ChainInterfaces<IVisualTreeService3, IVisualTreeService2, IVisualTreeService>,
         IXamlDiagnosticsTestHooks,
+        IXamlGraphicsResourceDiagnostics,
+        IXamlAllocationDiagnostics,
         wrl::FtmBase>
 {
 
@@ -238,6 +240,16 @@ public:
     IFACEMETHOD(TryGetDispatcherQueueForObject)(\
         _In_ InstanceHandle handle,
         _Outptr_ IInspectable** queue) override;
+
+    IFACEMETHOD(GetGraphicsResourceCounterCount)(
+        _Out_ UINT32* count) override;
+
+    IFACEMETHOD(GetGraphicsResourceCounterSnapshot)(
+        UINT32 index,
+        _Out_ XamlGraphicsResourceCounterSnapshot* snapshot) override;
+
+    IFACEMETHOD(GetMemorySnapshot)(
+        _Out_ XamlMemorySnapshot* snapshot) override;
 
 public:
     // Public static helper methods

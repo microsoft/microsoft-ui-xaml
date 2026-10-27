@@ -39,6 +39,20 @@ namespace XcpAllocation {
     uint64_t GetHeapHandle();
     bool IsUsingPrivateHeap();
 
+    struct AllocationSnapshot
+    {
+        uint64_t allocCount;
+        uint64_t allocSize;
+        int64_t allocatedMemory;
+        uint64_t outstandingAllocCount;
+        uint64_t outstandingAllocSize;
+        bool allocationCountsAvailable;
+        bool outstandingAllocationCountsAvailable;
+        bool memoryTrackingEnabled;
+    };
+
+    AllocationSnapshot GetAllocationSnapshot() noexcept;
+
     void UpdateAllocatedMemory(INT64 cSize);
 
     // Enables tracking of native XAML heap allocations into g_allocatedMemory.

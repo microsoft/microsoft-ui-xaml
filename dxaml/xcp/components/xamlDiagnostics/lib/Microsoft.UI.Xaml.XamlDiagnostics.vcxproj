@@ -45,6 +45,8 @@
         <ClCompile Include="..\helpers.cpp"/>
         <ClCompile Include="..\XamlDiagnostics.cpp"/>
         <ClCompile Include="..\XamlDiagnosticsTestHooks.cpp"/>
+        <ClCompile Include="..\GraphicsResourceDiagnostics.cpp"/>
+        <ClCompile Include="..\AllocationDiagnostics.cpp"/>
         <ClCompile Include="..\Resources.cpp"/>
         <ClCompile Include="..\LiveVisualTree.cpp"/>
         <ClCompile Include="..\ElementStateChangedBuilder.cpp"/>

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include <DependencyLocator.h>
 #ifdef XAMLPROFILER_ENABLED
 #include <WucVisualTreeProfiler.h>
@@ -1313,7 +1314,9 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         ixp::ICompositor* compositorNoRef = dcompTreeHostNoRef->GetCompositor();
 
         wrl::ComPtr<ixp::IContainerVisual> containerVisual;
-        IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ContainerVisual,
+            compositorNoRef->CreateContainerVisual(&containerVisual)));
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
 
@@ -2372,14 +2375,18 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 
         wrl::ComPtr<ixp::IContainerVisual> windowCV;
         wrl::ComPtr<ixp::IVisual> windowV;
-        IFCFAILFAST(compositorNoRef->CreateContainerVisual(windowCV.ReleaseAndGetAddressOf()));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ContainerVisual,
+            compositorNoRef->CreateContainerVisual(windowCV.ReleaseAndGetAddressOf())));
         IFCFAILFAST(windowCV.As(&windowV));
         m_contentIslandRootVisual = windowV;
         DCompTreeHost::SetTagIfEnabled(m_contentIslandRootVisual.Get(), VisualDebugTags::WindowedPopup_ContentIslandRootVisual);
 
         wrl::ComPtr<ixp::IContainerVisual> animationCV;
         wrl::ComPtr<ixp::IVisual> animationV;
-        IFCFAILFAST(compositorNoRef->CreateContainerVisual(animationCV.ReleaseAndGetAddressOf()));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ContainerVisual,
+            compositorNoRef->CreateContainerVisual(animationCV.ReleaseAndGetAddressOf())));
         IFCFAILFAST(animationCV.As(&animationV));
         m_animationRootVisual = animationV;
         DCompTreeHost::SetTagIfEnabled(m_animationRootVisual.Get(), VisualDebugTags::WindowedPopup_AnimationRootVisual);
@@ -2417,14 +2424,18 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             // allows us to see exactly where the bridge/island are on screen and is helpful in debugging cases where
             // either the island bounds or the "undo transform" was not computed correctly.
             wrl::ComPtr<ixp::ICompositionColorBrush> debugColor_cb;
-            IFCFAILFAST(compositorNoRef->CreateColorBrush(&debugColor_cb));
+            IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+                GraphicsResourceCounters::ResourceKind::ColorBrush,
+                compositorNoRef->CreateColorBrush(&debugColor_cb)));
             IFCFAILFAST(debugColor_cb->put_Color(ColorUtils::GetWUColor(0x8800ff00)));
 
             wrl::ComPtr<ixp::ICompositionBrush> debugColor_b;
             IFCFAILFAST(debugColor_cb.As(&debugColor_b));
 
             wrl::ComPtr<ixp::ISpriteVisual> debugVisual;
-            IFCFAILFAST(compositorNoRef->CreateSpriteVisual(&debugVisual));
+            IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+                GraphicsResourceCounters::ResourceKind::SpriteVisual,
+                compositorNoRef->CreateSpriteVisual(&debugVisual)));
             IFCFAILFAST(debugVisual->put_Brush(debugColor_b.Get()));
             m_windowedPopupDebugVisual.Reset();
             IFCFAILFAST(debugVisual.As(&m_windowedPopupDebugVisual));

@@ -8,6 +8,7 @@
 //      go along with them).
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 
 #include "D3D11DeviceInstance.h"
 #include "D3D11SharedDeviceGuard.h"
@@ -616,10 +617,12 @@ _Check_return_ HRESULT CD3D11DeviceInstance::EnsureDeviceSpecificD2DResources(_I
         m_d2dDeviceContexts[deviceWrapper] = d2dDeviceContext;
 
         wrl::ComPtr<ID2D1SolidColorBrush> d2dSolidColorBrush;
-        IFC_RETURN(d2dDeviceContext->CreateSolidColorBrush(
-            &D2D1::ColorF(D2D1::ColorF::Black),
-            &D2D1::BrushProperties(),
-            &d2dSolidColorBrush));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::D2DSolidColorBrush,
+            d2dDeviceContext->CreateSolidColorBrush(
+                &D2D1::ColorF(D2D1::ColorF::Black),
+                &D2D1::BrushProperties(),
+                &d2dSolidColorBrush)));
         m_d2dSolidColorBrushes[deviceWrapper] = d2dSolidColorBrush;
     }
     return S_OK;

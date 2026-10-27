@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ClInclude Include="BitVectorUnitTests.h"/>
+        <ClInclude Include="GraphicsResourceCountersTests.h"/>
         <ClInclude Include="CompactInlineVectorUnitTests.h"/>
         <ClInclude Include="SmartPointerUnitTests.h"/>
         <ClInclude Include="ThreadLocalStorageUnitTests.h"/>
@@ -32,6 +33,7 @@
         <ClCompile Include="ThreadLocalStorageUnitTests.cpp"/>
         <ClCompile Include="VectorTreeUnitTests.cpp"/>
         <ClCompile Include="BitVectorUnitTests.cpp"/>
+        <ClCompile Include="GraphicsResourceCountersTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include "WUCBrushManager.h"
 #include <DCompSurface.h>
 #include <HWTextureMgr.h>
@@ -209,7 +210,9 @@ wrl::ComPtr<WUComp::ICompositionMaskBrush> WUCBrushManager::GetMaskBrush(
 
     if (maskBrush == nullptr)
     {
-        IFCFAILFAST(m_compositor2->CreateMaskBrush(&maskBrush));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::MaskBrush,
+            m_compositor2->CreateMaskBrush(&maskBrush)));
     }
 
     if (nineGrid != nullptr)
@@ -310,7 +313,9 @@ wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush
 
     if (nineGridBrush == nullptr)
     {
-        IFCFAILFAST(m_compositor2->CreateNineGridBrush(&nineGridBrush));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::NineGridBrush,
+            m_compositor2->CreateNineGridBrush(&nineGridBrush)));
     }
 
     float inverseRealizationScaleX = (maskRealizationScaleX == 0 ? 0 : 1.0f / maskRealizationScaleX);
@@ -344,7 +349,9 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetSurfaceBrush(
 
     if (surfaceBrush == nullptr)
     {
-        IFCFAILFAST(m_compositor->CreateSurfaceBrush(&surfaceBrush));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::SurfaceBrush,
+            m_compositor->CreateSurfaceBrush(&surfaceBrush)));
 
         // Reset the default alignment properties to what we need them to be
         IFCFAILFAST(surfaceBrush->put_HorizontalAlignmentRatio(0));
@@ -412,7 +419,9 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetColorBrush(_In_ CSoli
                 if (transition.m_wucBrush == nullptr)
                 {
                     wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-                    IFCFAILFAST(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+                    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+                        GraphicsResourceCounters::ResourceKind::ColorBrush,
+                        m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
                     transition.m_wucBrush = colorBrush;
                 }
 

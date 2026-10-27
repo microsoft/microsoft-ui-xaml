@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 
 #include <windows.ui.core.h>
 #include <CoreWindow.h>
@@ -204,7 +205,9 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeCommon()
     ctl::ComPtr<ixp::IContentIsland> compositionContent;
 
     ctl::ComPtr<ixp::IContainerVisual> containerRootVisual;
-    IFCFAILFAST(pCompositor->CreateContainerVisual(&containerRootVisual));
+    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::ContainerVisual,
+        pCompositor->CreateContainerVisual(&containerRootVisual)));
 
     ctl::ComPtr<ixp::IVisual> rootVisual;
     IFCFAILFAST(containerRootVisual.As(&rootVisual));

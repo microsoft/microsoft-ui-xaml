@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include "SolidColorBrush.h"
 #include "ColorUtil.h"
 #include <DependencyObjectDCompRegistry.h>
@@ -85,7 +86,9 @@ WUComp::ICompositionBrush* CSolidColorBrush::GetWUCBrush(_In_ WUComp::IComposito
 
         if (m_wucBrush == nullptr)
         {
-            IFCFAILFAST(compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+            IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+                GraphicsResourceCounters::ResourceKind::ColorBrush,
+                compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
             IFCFAILFAST(colorBrush.As(&m_wucBrush));
 
             // Initialize the WUC brush with this brush's color. If this brush is animating, and the animation has a start

@@ -5,6 +5,7 @@
 
 #include <d2d1_1.h>
 #include <DWrite_3.h>
+#include <GraphicsResourceCounters.h>
 
 _Check_return_ HRESULT UnwrapD2DGeometry(
     _In_ IPALAcceleratedGeometry *pGeometry,
@@ -83,11 +84,13 @@ public:
 protected:
     CD2DGeometry() : m_pGeometry(NULL)
     {
+        GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DGeometryWrapper);
     }
 
     ~CD2DGeometry() override
     {
         ReleaseInterface(m_pGeometry);
+        GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DGeometryWrapper);
     }
 
     _Check_return_ HRESULT Initialize(_In_ ID2D1Geometry* pGeometry)
@@ -368,4 +371,3 @@ private:
 
     ID2D1GeometrySink *m_pD2DGeometrySink;
 };
-
