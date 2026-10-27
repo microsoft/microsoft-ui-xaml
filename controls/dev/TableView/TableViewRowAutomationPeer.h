@@ -20,6 +20,10 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
 
+    // IAutomationPeerOverrides. Routes through TableView so focus and stale checks apply to a row
+    // style or template ContextFlyout too; falls back to the framework when TableView shows nothing.
+    void ShowContextMenuCore();
+
     // A TableViewRow is a Control with no content of its own, so the base peer computes no name
     // and AT announces a bare "data item". Compose the visible cell texts instead.
     hstring GetNameCore();

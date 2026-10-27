@@ -4,10 +4,12 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewSource.h"
+#include "TableViewTip.h"
 #include "RowMetadataProvider.h"
 #include "GroupedSourceAdapter.h"
 #include "HierarchicalSourceAdapter.h"
 #include "ShapedItemsSource.h"
+#include "ShapingHelpers.h"
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
 
@@ -38,7 +40,7 @@ struct TableViewSource::ShapingTip
             auto const stale = ownerGeneration != source.m_ownerGeneration;
             handlers->complete(kind, generation, !stale && observation.Failed(),
                 stale ? std::optional{ TableViewTip::IgnoreReason::Stale } : observation.Ignored(),
-                observation.error, observation.appFaultKind);
+                observation.error, observation.appFaultKind, observation.contained);
         }
     }
 
@@ -48,23 +50,27 @@ struct TableViewSource::ShapingTip
     template<class Callback>
     void Apply(Callback&& callback)
     {
+        // The verb counts its own contained delegate faults, however it ends. A tally already running belongs to the verb
+        // a delegate started this one in, and goes back to it; with no such verb it is live shaping's or a source
+        // change's, not this verb's.
+        auto const enclosing = source.m_engine->ExchangeSwallowedFaults({});
+        auto takeContained = gsl::finally([this, enclosing]() noexcept
+        {
+            auto const own = source.m_engine->ExchangeSwallowedFaults(previous ? enclosing : ShapingHelpers::SwallowedFaults{});
+            observation.contained = { own.count, own.firstError };
+        });
         try
         {
             std::forward<Callback>(callback)();
             observation.completed = true;
         }
-        catch (winrt::hresult_invalid_argument const&)
-        {
-            if (observation.appFaultKind == TableViewTip::AppFaultKind::None)
-            {
-                observation.appFaultKind = TableViewTip::AppFaultKind::Data;
-                observation.error = winrt::to_hresult();
-            }
-            throw;
-        }
         catch (...)
         {
-            if (!observation.error) { observation.error = winrt::to_hresult(); }
+            // The app's collection, its broken contract, or a callout arrive tagged as the app's; TableView's own
+            // invalid arguments stay its own.
+            auto const fault = TableViewTip::CurrentFault();
+            if (!observation.error) { observation.error = fault.error; }
+            if (observation.appFaultKind == TableViewTip::AppFaultKind::None) { observation.appFaultKind = fault.appFault; }
             throw;
         }
     }
@@ -124,7 +130,6 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
         throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
     }
     ShapingTip tip{ *this, TableViewTip::Operation::Filter };
-    m_hasFilter = true;
     tip.Apply([&]()
     {
         m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
@@ -151,7 +156,6 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
     }
 
-    m_hasGroup = true;
     tip.Apply([&]()
     {
         m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
@@ -159,18 +163,18 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     return *this;
 }
 
+// A clear is measured only when the engine holds something to clear. The engine keeps a declaration
+// even when re-projecting it throws, so it, not a flag set around the call, is the answer.
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_hasFilter };
-    m_hasFilter = false;
+    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_engine->HasFilter() };
     tip.Apply([&]() { m_engine->ClearFilter(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_hasGroup };
-    m_hasGroup = false;
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
     tip.Apply([&]() { m_engine->ClearGroup(); });
     return *this;
 }
@@ -196,21 +200,21 @@ winrt::TableViewSource TableViewSource::ClearParentBy()
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
     tip.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortOtherThan(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
 }
@@ -293,17 +297,22 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
     }
 
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
     // delegate, so the identity stays valid for as long as the axis lives.
+    auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
+    // Removing an axis that is not there is a no-op, measured no more than a clear with nothing to clear.
+    bool const meaningful = direction != winrt::SortDirection::None ||
+        m_engine->HasMatchingSort(sortAxisToken, keyIdentity) ||
+        (!previousSortAxisToken.empty() && previousSortAxisToken != sortAxisToken && m_engine->HasSortAxis(previousSortAxisToken));
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, meaningful };
     tip.Apply([&]()
     {
         m_engine->SetSort(
             previousSortAxisToken,
             sortAxisToken,
             [key](winrt::IInspectable const& item) { return key(item); },
-            key.as<winrt::Windows::Foundation::IUnknown>(),
+            keyIdentity,
             sortMemberPath,
             direction);
     });
@@ -313,6 +322,38 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
 bool TableViewSource::IsGrouped() const
 {
     return m_engine->IsProjectedAsGrouped();
+}
+
+bool TableViewSource::HasFilter() const
+{
+    return m_engine->HasFilter();
+}
+
+bool TableViewSource::HasGroupBy() const
+{
+    return m_engine->HasGroup();
+}
+
+bool TableViewSource::HasParentBy() const
+{
+    return m_engine->HasParentBy();
+}
+
+uint32_t TableViewSource::SourceRowCount() const
+{
+    return m_engine->SourceRowCount();
+}
+
+uint32_t TableViewSource::DataRowCount() const
+{
+    // Rows() is only a snapshot of a tree's visible rows; the published index holds every node the filter keeps.
+    if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
+    {
+        return adapter->KeptNodeCount();
+    }
+    // Rows() is the shaped data without headers and ignores group expansion.
+    auto const rows = m_engine->Rows();
+    return rows ? rows.Size() : 0;
 }
 
 bool TableViewSource::ContainsShapedItem(winrt::IInspectable const& item) const
@@ -534,6 +575,7 @@ void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
     m_engine->SetLiveShapingHold(nullptr);
     m_engine->SetLiveItemChangedHook(nullptr);
     m_engine->SetRowsReleasedHook(nullptr);
+    m_engine->SetLiveItemReshapeHandler(nullptr);
     m_engine->ResumeHeldLiveShaping();
 
     // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
@@ -557,6 +599,11 @@ void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
 void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
 {
     m_engine->SetLiveItemChangedHook(std::move(hook));
+}
+
+void TableViewSource::SetLiveItemReshapeHandler(std::function<void()> handler)
+{
+    m_engine->SetLiveItemReshapeHandler(std::move(handler));
 }
 
 void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)

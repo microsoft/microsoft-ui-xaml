@@ -827,7 +827,11 @@ Frame::RaiseNavigated(
     IFC(GetNavigatedEventSourceNoRef(&pEventSource));
     IFC(pEventSource->Raise(ctl::as_iinspectable(this), spINavigationEventArgs.Get()));
 
+#ifndef XAMLPROFILER_ENABLED
     TraceFrameNavigatedInfo(WindowsGetStringRawBuffer(descriptor, NULL), static_cast<const unsigned char>(navigationMode));
+#else
+    XamlElementTracing::FrameNavigated(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
+#endif
 
 Cleanup:
     RRETURN(hr);
@@ -858,7 +862,11 @@ Frame::RaiseNavigating(
 
     IFC(spINavigatingCancelEventArgs->get_Cancel(pIsCanceled));
 
+#ifndef XAMLPROFILER_ENABLED
     TraceFrameNavigatingInfo(WindowsGetStringRawBuffer(descriptor, NULL), static_cast<const unsigned char>(navigationMode));
+#else
+    XamlElementTracing::FrameNavigating(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
+#endif
 
 Cleanup:
     RRETURN(hr);

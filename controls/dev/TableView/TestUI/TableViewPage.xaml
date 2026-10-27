@@ -55,6 +55,10 @@
                     AutomationProperties.Name="RemoveColumnButton"
                     AutomationProperties.AutomationId="RemoveColumnButton"
                     Click="OnRemoveColumnClick" />
+            <Button Content="Toggle Score Pin"
+                    AutomationProperties.Name="ToggleScorePinButton"
+                    AutomationProperties.AutomationId="ToggleScorePinButton"
+                    Click="OnToggleScorePinClick" />
             <Button Content="Filter Source"
                     AutomationProperties.Name="FilterSourceButton"
                     AutomationProperties.AutomationId="FilterSourceButton"
@@ -99,6 +103,20 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnDisableFocusedRowClick" />
+            <!-- Mid-gesture teardown triggers for the resize capture tests (UIA Invoke only): each acts 1.5s
+                 after the click, while the test holds a pointer drag open. -->
+            <Button Content="Delayed Gripper Capture Loss"
+                    AutomationProperties.Name="DelayedGripperCaptureLossButton"
+                    AutomationProperties.AutomationId="DelayedGripperCaptureLossButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDelayedGripperCaptureLossClick" />
+            <Button Content="Delayed Disable"
+                    AutomationProperties.Name="DelayedDisableButton"
+                    AutomationProperties.AutomationId="DelayedDisableButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDelayedDisableClick" />
             <Button x:Name="navigateToTouch"
                     Content="Touch Page"
                     AutomationProperties.Name="navigateToTouch"
@@ -328,6 +346,92 @@
                 </controls:TableView>
             </Grid>
 
+            <!-- Context menus: one menu per resolution level, laid out as TableViewTestPageFacts describes. Each
+                 menu's Opening/Closed handlers write ContextMenuReadout. -->
+            <Grid x:Name="ContextMenuTableHost" Visibility="Collapsed" RowSpacing="4">
+                <Grid.Resources>
+                    <MenuFlyout x:Key="CellMenu">
+                        <MenuFlyoutItem Text="Cell menu" AutomationProperties.AutomationId="CellMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="HeaderMenu">
+                        <MenuFlyoutItem Text="Header menu" AutomationProperties.AutomationId="HeaderMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="TemplateMenu">
+                        <MenuFlyoutItem Text="Template menu" AutomationProperties.AutomationId="TemplateMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="RowMenu">
+                        <MenuFlyoutItem Text="Row menu" AutomationProperties.AutomationId="RowMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="TableMenu">
+                        <MenuFlyoutItem Text="Table menu" AutomationProperties.AutomationId="TableMenuItem" />
+                    </MenuFlyout>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetContextMenu"
+                            AutomationProperties.AutomationId="ResetContextMenu"
+                            Click="OnResetContextMenuClick" />
+                    <Button Content="Grouped"
+                            AutomationProperties.Name="GroupContextMenuTable"
+                            AutomationProperties.AutomationId="GroupContextMenuTable"
+                            Click="OnGroupContextMenuTableClick" />
+                    <Button Content="Right to left"
+                            AutomationProperties.Name="MirrorContextMenuTable"
+                            AutomationProperties.AutomationId="MirrorContextMenuTable"
+                            Click="OnMirrorContextMenuTableClick" />
+                </StackPanel>
+
+                <!-- Format documented on TableViewTestPageFacts.ContextMenuReadout. -->
+                <TextBox x:Name="ContextMenuReadout"
+                         Grid.Row="1"
+                         AutomationProperties.Name="ContextMenuReadout"
+                         AutomationProperties.AutomationId="ContextMenuReadout"
+                         HorizontalAlignment="Left"
+                         Width="840"
+                         IsReadOnly="True"
+                         IsTabStop="False"
+                         Text="" />
+
+                <controls:TableView x:Name="ContextMenuTable"
+                                    Grid.Row="2"
+                                    AutomationProperties.Name="ContextMenuTable"
+                                    AutomationProperties.AutomationId="ContextMenuTable"
+                                    Height="400"
+                                    Width="600"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    IsReadOnly="False"
+                                    SelectionMode="Single"
+                                    ContextFlyout="{StaticResource TableMenu}">
+                    <controls:TableView.Resources>
+                        <Style TargetType="controls:TableViewRow">
+                            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}" />
+                        </Style>
+                    </controls:TableView.Resources>
+                    <controls:TableViewTextColumn Header="Name"
+                                                  Width="160"
+                                                  Binding="{Binding Name, Mode=TwoWay}"
+                                                  CellContextFlyout="{StaticResource CellMenu}"
+                                                  HeaderContextFlyout="{StaticResource HeaderMenu}" />
+                    <controls:TableViewTemplateColumn Header="City" Width="160">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <Grid Background="Transparent" ContextFlyout="{StaticResource TemplateMenu}">
+                                    <TextBlock Text="{x:Bind City, Mode=OneWay}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTextColumn Header="Age" Width="100" Binding="{Binding Age}" />
+                </controls:TableView>
+            </Grid>
+
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
@@ -359,6 +463,10 @@
                     AutomationProperties.Name="GoToGroupedPagingButton"
                     AutomationProperties.AutomationId="GoToGroupedPagingButton"
                     Click="OnGoToGroupedPagingClick" />
+            <Button Content="ContextMenu"
+                    AutomationProperties.Name="GoToContextMenuButton"
+                    AutomationProperties.AutomationId="GoToContextMenuButton"
+                    Click="OnGoToContextMenuClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"

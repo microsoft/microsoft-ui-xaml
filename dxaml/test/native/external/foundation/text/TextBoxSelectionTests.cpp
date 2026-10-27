@@ -864,7 +864,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 textSelectionChangedEvent->WaitForDefault();
                 LOG_OUTPUT(L"1. Dump Dcomp to verify focused red SelectionHighlightColor.");
                 TestServices::WindowHelper->SynchronouslyTickUIThread(5);
-                TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"Focused-Red");
+                TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"Focused-Red-Initial");
 
                 FocusTestHelper::EnsureFocus(button, FocusState::Programmatic);
                 LOG_OUTPUT(L"2. Dump Dcomp to verify unfocused green SelectionHighlightColorWhenNotFocused.");
@@ -967,7 +967,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 textSelectionChangedEvent->WaitForDefault();
                 LOG_OUTPUT(L"1. Dump Dcomp to verify focused red SelectionHighlightColor.");
                 TestServices::WindowHelper->SynchronouslyTickUIThread(5);
-                TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"Focused-Red");
+                TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"Focused-Red-Initial");
 
                 FocusTestHelper::EnsureFocus(button, FocusState::Programmatic);
                 LOG_OUTPUT(L"2. Dump Dcomp to verify unfocused green SelectionHighlightColorWhenNotFocused.");

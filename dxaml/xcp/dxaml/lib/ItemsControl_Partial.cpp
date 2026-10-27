@@ -245,7 +245,11 @@ _Check_return_
 
     if (pNewValue != nullptr && !spSource)
     {
-        IFC_RETURN(E_INVALIDARG);
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG,
+            ERROR_PROPERTY_REQUIRES_INTERFACE,
+            XSTRING_PTR_EPHEMERAL(L"ItemsControl.ItemsSource"),
+            L"IBindableIterable or IIterable<IInspectable>"));
     }
 
     ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spItems;
@@ -1812,7 +1816,12 @@ ItemsControl::PrepareItemContainer(
     _In_ xaml::IDependencyObject* pContainer,
     _In_ IInspectable* pItem)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PrepareContainerBegin(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
+#else
     TracePrepareContainerBegin();
+#endif
+
     HRESULT hr = S_OK;
     ctl::ComPtr<IGroupItem> spGroupItem;
 
@@ -1842,7 +1851,11 @@ ItemsControl::PrepareItemContainer(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PrepareContainerEnd(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
+#else
     TracePrepareContainerEnd();
+#endif
     RRETURN(hr);
 }
 
