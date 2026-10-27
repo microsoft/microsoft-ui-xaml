@@ -14,6 +14,7 @@
     
   <PropertyGroup>
     <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) TEST_CODE=1;</ProjectPreprocessorDefinitions>
+    <ProjectPreprocessorDefinitions Condition="'$(TestInProductionIsReal)' == 'true'">$(ProjectPreprocessorDefinitions) MUX_TIP_REAL=1;</ProjectPreprocessorDefinitions>
     <ProjectIncludeDirectories>$(ProjectIncludeDirectories);</ProjectIncludeDirectories>
   </PropertyGroup>
     

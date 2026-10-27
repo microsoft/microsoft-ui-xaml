@@ -6,11 +6,13 @@
 #include "ITreeBuilder.g.h"
 #include "LifetimeUtils.h"
 #include <atomic>
+#include <cstdint>
 #include <memory>
 
 namespace DirectUI
 {
     class DXamlCore;
+    struct ReleaseQueueCleanupTip;
 
     //+------------------------------------------------------------------------------
     //
@@ -47,6 +49,10 @@ namespace DirectUI
         std::vector<ObjectReleaseInfo> m_queuedObjectsForUnreachableCleanup;
         std::vector<ObjectReleaseInfo> m_queuedObjectsForFinalRelease;
         std::atomic<bool> m_hasUnreachableObjects{ false };
+        uint64_t m_unreachableQueuedAt{};
+        uint64_t m_finalQueuedAt{};
+        UINT m_cleanupTipSamples{};
+        std::shared_ptr<ReleaseQueueCleanupTip> m_cleanupTip;
 
         wil::critical_section m_CriticalSection;
         BOOLEAN m_bInCleanup = FALSE;
@@ -88,6 +94,10 @@ namespace DirectUI
         {
             m_queuedObjectsForUnreachableCleanup.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
             ctl::addref_interface_inner(pItem);
+            if (m_queuedObjectsForUnreachableCleanup.size() == 1)
+            {
+                m_unreachableQueuedAt = GetTickCount64();
+            }
             m_hasUnreachableObjects.store(true, std::memory_order_release);
             const auto dispatcher = m_wakeDispatcher;
             const auto wakeState = m_wakeState;
@@ -101,6 +111,10 @@ namespace DirectUI
             {
                 auto lock = m_CriticalSection.lock();
                 m_queuedObjectsForFinalRelease.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
+                if (m_queuedObjectsForFinalRelease.size() == 1)
+                {
+                    m_finalQueuedAt = GetTickCount64();
+                }
                 dispatcher = m_wakeDispatcher;
                 wakeState = m_wakeState;
             }
@@ -128,4 +142,3 @@ namespace DirectUI
 
     };
 }
-
