@@ -132,8 +132,8 @@ decoded with the manifest installed with Windows.
 Events with element IDs and all Microsoft-Windows-XAML-Profiler events are only
 in builds with `XamlProfilerEnabled`. The GPU memory events come from Windows,
 whatever the build. They carry the values `IDXGIAdapter3::QueryVideoMemoryInfo`
-returns, which the profiler's `GpuMemorySnapshot` event also reports in builds
-that write it. The kernel writes them when the usage or budget changes, and
+returns, which earlier builds also reported in the profiler's `GpuMemorySnapshot`
+event. The kernel writes them when the usage or budget changes, and
 writes the current values when the process opens a GPU adapter and when a
 session requests capture state. The System process writes some of them, such as
 those written when the process exits, which bring the usage down to 0. So they
