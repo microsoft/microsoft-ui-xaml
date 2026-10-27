@@ -30,6 +30,9 @@ public:
 
     TextCommandBarFlyout();
 
+protected:
+    bool ShouldCloseWithoutShowing() override;
+
 private:
     void UpdateButtons();
 
