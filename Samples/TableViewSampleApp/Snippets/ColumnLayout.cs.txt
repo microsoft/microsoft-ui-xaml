@@ -33,6 +33,58 @@ private static GridLength Star(double factor = 1) => new(factor, GridUnitType.St
 
 private static GridLength Px(double px) => new(px, GridUnitType.Pixel);
 
+// Each width intent gets new columns: a column's Auto width is measured afresh only when the column is added.
+private void BuildColumns(string mode)
+{
+    WidthsTable.Columns.Clear();
+
+    switch (mode)
+    {
+        case "Auto":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
+            WidthsTable.Columns.Add(LockedRole(Auto()));
+            WidthsTable.Columns.Add(Templated("Department", "DepartmentChipTemplate", Auto()));
+            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
+            break;
+
+        case "Star":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Star(1)));
+            WidthsTable.Columns.Add(LockedRole(Star(2)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(3)));
+            break;
+
+        case "Pixel":
+            WidthsTable.Columns.Add(Templated("Photo", "AvatarTemplate", Px(56)));
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Px(180)));
+            WidthsTable.Columns.Add(LockedRole(Px(220)));
+            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Px(180)));
+            WidthsTable.Columns.Add(Templated("Join date", "JoinDatePickerTemplate", Px(200)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
+            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
+            break;
+
+        case "Mixed":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
+            WidthsTable.Columns.Add(LockedRole(Px(160)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(2)));
+            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Star(3)));
+            break;
+
+        default:
+            WidthsTable.Columns.Add(Templated("Photo", "AvatarTemplate", Px(56)));
+            WidthsTable.Columns.Add(Text("Name", nameof(Person.FullName), Px(160)));
+            WidthsTable.Columns.Add(LockedRole(Px(160)));
+            WidthsTable.Columns.Add(Templated("Join date", "JoinDatePickerTemplate", Px(200)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(140)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(220)));
+            break;
+    }
+}
+
 private void ApplyCanUserResizeColumns() =>
     WidthsTable.CanUserResizeColumns = CanUserResizeColumnsToggle.IsOn;
 

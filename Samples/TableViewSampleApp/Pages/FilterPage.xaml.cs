@@ -9,15 +9,12 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
-using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
-using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Pages;
 
@@ -25,7 +22,7 @@ namespace TableViewSampleApp.Pages;
 /// Filtering: ONE live <see cref="TableViewSource"/> whose <c>Filter(predicate)</c> narrows the
 /// rows the control renders (and <c>ClearFilter()</c> restores them) without mutating the
 /// collection. Grouping is applied to that same source, so a filtered, grouped view is a single
-/// projection. The columns are built in code from the shared Person cell templates.
+/// projection.
 /// </summary>
 public sealed partial class FilterPage : SamplePageBase
 {
@@ -41,7 +38,6 @@ public sealed partial class FilterPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
         InitializeComponent();
         FilterTable.SelectionChanged += OnTableSelectionChanged; // snippet:skip
-        BuildColumns();
         ApplyFilter();
         // </snippet>
         InitializeSample(Status, Shaping.Attach(FilterTable, Source));
@@ -54,61 +50,6 @@ public sealed partial class FilterPage : SamplePageBase
 
     // <snippet>
     public TableViewSource Source { get; }
-    // </snippet>
-
-    // ---- Columns, built in code from the shared templates -------------------------------------
-
-    // <snippet>
-    private void BuildColumns()
-    {
-        var resources = Application.Current.Resources;
-
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Photo",
-            CellTemplate = (DataTemplate)resources["AvatarTemplate"],
-            CanSort = false,
-            Width = Token("ColWidthAvatar"),
-            HeaderToolTip = "PersonPicture: the photo when the person has one, otherwise their initials.",
-        });
-        FilterTable.Columns.Add(new TableViewTextColumn
-        {
-            Header = "Name",
-            Binding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) },
-            Width = new GridLength(1, GridUnitType.Star),
-            MinWidth = (double)resources["ColMinWidthStar"],
-        });
-        // A template column sorts by SortMemberPath, the value behind the template.
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Department",
-            CellTemplate = (DataTemplate)resources["DepartmentChipTemplate"],
-            SortMemberPath = nameof(Person.Department),
-            Width = Token("ColWidthChip"),
-            HeaderToolTip = "Read-only chip. The query matches on it.",
-        });
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Role",
-            CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
-            SortMemberPath = nameof(Person.Role),
-            Width = Token("ColWidthLongName"),
-            HeaderToolTip = "Editable free text. The query matches on it, so retyping a role can push the row out of the filtered view.",
-        });
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Active",
-            CellTemplate = (DataTemplate)resources["ActiveCheckBoxTemplate"],
-            SortMemberPath = nameof(Person.IsActive),
-            Width = Token("ColWidthBoolean"),
-            HeaderToolTip = "Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view.",
-        });
-    }
-    // </snippet>
-
-    // <snippet>
-    // Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
-    private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
     // </snippet>
 
     // ---- Filtering --------------------------------------------------------------------------

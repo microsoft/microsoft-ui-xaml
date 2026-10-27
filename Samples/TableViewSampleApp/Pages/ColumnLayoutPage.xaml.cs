@@ -116,6 +116,18 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         var previousHeader = _activeColumn?.Header?.ToString();
 
         SetActiveColumn(null);
+        BuildColumns(mode);
+        ModeDescription.Text = DescribeMode(mode);
+
+        PopulateColumnSelector(previousHeader);
+        ApplyCanUserResizeColumns();
+        RefreshReadouts();
+    }
+
+    // <snippet>
+    // Each width intent gets new columns: a column's Auto width is measured afresh only when the column is added.
+    private void BuildColumns(string mode)
+    {
         WidthsTable.Columns.Clear();
 
         switch (mode)
@@ -126,7 +138,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Templated("Department", "DepartmentChipTemplate", Auto()));
                 WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
-                ModeDescription.Text = "Auto: every column sizes to its header and the widest realized cell, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.";
                 break;
 
             case "Star":
@@ -134,7 +145,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(LockedRole(Star(2)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(3)));
-                ModeDescription.Text = "Star: the columns share the table width by factor, so Email (3*) gets three times First name (1*). There is no empty band and no horizontal scrolling.";
                 break;
 
             case "Pixel":
@@ -146,7 +156,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
                 WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
-                ModeDescription.Text = "Pixel: every column has a fixed width, whatever its content. The total is wider than the table, so the body scrolls horizontally and the header stays in step with it.";
                 break;
 
             case "Mixed":
@@ -155,7 +164,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(2)));
                 WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Star(3)));
-                ModeDescription.Text = "Mixed: the Auto and Pixel columns are sized first, then the Star columns split what is left by factor.";
                 break;
 
             default:
@@ -165,14 +173,19 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Templated("Join date", "JoinDatePickerTemplate", Px(200)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(140)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(220)));
-                ModeDescription.Text = "Playground: fixed Pixel widths you change with the sliders below. The Join date column holds a full date picker in 200 px, so it clips until Width passes about 310.";
                 break;
         }
-
-        PopulateColumnSelector(previousHeader);
-        ApplyCanUserResizeColumns();
-        RefreshReadouts();
     }
+    // </snippet>
+
+    private static string DescribeMode(string mode) => mode switch
+    {
+        "Auto" => "Auto: every column sizes to its header and the widest realized cell, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.",
+        "Star" => "Star: the columns share the table width by factor, so Email (3*) gets three times First name (1*). There is no empty band and no horizontal scrolling.",
+        "Pixel" => "Pixel: every column has a fixed width, whatever its content. The total is wider than the table, so the body scrolls horizontally and the header stays in step with it.",
+        "Mixed" => "Mixed: the Auto and Pixel columns are sized first, then the Star columns split what is left by factor.",
+        _ => "Playground: fixed Pixel widths you change with the sliders below. The Join date column holds a full date picker in 200 px, so it clips until Width passes about 310.",
+    };
 
     // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's mode change only.
     private void AnnounceModeDescription() =>
