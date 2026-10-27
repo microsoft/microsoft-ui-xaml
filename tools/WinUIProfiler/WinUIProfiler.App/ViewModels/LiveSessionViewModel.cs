@@ -13,6 +13,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private string state = "Disconnected";
     private string detail = "";
     private string errorMessage = "";
+    private EtwStatus? finalEtw;
+    private string? finalEtwError;
     public event PropertyChangedEventHandler? PropertyChanged;
     public MetricHistory? History
     {
@@ -28,6 +30,9 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     public string Detail => connection?.Failure?.Message ?? connection?.Detail ?? detail;
     public string ErrorMessage => connection?.Failure?.Message ?? errorMessage;
     public TargetConnection? Connection => connection;
+    // Like the metric history, the last ETW counts stay visible after the connection ends.
+    public EtwStatus? Etw => connection?.Etw ?? finalEtw;
+    public string? EtwError => connection?.EtwError ?? finalEtwError;
 
     public Task ConnectAsync(TargetConnectionOptions options, IProgress<ConnectionProgress> progress)
     {
@@ -47,6 +52,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         detail = options.Target;
         errorMessage = "";
         History = null;
+        finalEtw = null;
+        finalEtwError = null;
         using var cancellation = new CancellationTokenSource();
         operation = cancellation;
         Notify();
@@ -130,6 +137,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         state = failure is null ? owned.State : "Failed";
         detail = owned.Detail;
         errorMessage = owned.Failure?.Message ?? failure?.Message ?? "";
+        finalEtw = owned.Etw;
+        finalEtwError = owned.EtwError;
         connection = null;
         Notify();
     }
@@ -181,6 +190,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
                 History.Changed -= History_Changed;
             }
 
+            finalEtw = owned.Etw;
+            finalEtwError = owned.EtwError;
             connection = null;
             IsBusy = false;
             Notify();

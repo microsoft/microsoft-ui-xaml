@@ -50,9 +50,9 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-There is no ETW listener, recording database, frame processing, tree snapshot,
-heap capture or instrumented-product dependency in the app yet. Reading XAML
-events from a recorded trace is described below. The profiler UI uses its pinned
+While connected, the app counts the target's XAML ETW events but does not record
+them yet. There is no recording database, frame processing, heap capture or
+instrumented-product dependency in the app yet. The profiler UI uses its pinned
 SDK runtime; it does not replace the target's loaded runtime.
 
 ## Build and run
@@ -112,10 +112,11 @@ Roots have individual capture intervals, not a globally atomic timestamp.
 Unrealized/logical objects, internal HWCompNodes and private compositor trees
 are not exposed. `GetElementVisual` may materialize handout visuals. Property
 errors and scope limitations are included in the JSON rather than fabricated values.
-## Reading XAML events from a trace
 
-`WinUIProfiler.Core` reads the XAML TraceLogging events of one process from a
-recorded `.etl` file (`Ingestion\OfflineEtlSource.cs`). Each event becomes a
+## XAML events
+
+`WinUIProfiler.Core` reads the XAML TraceLogging events of one process, live or
+from a recorded `.etl` file. Each event becomes a
 `ProfilerEvent` (`Events\ProfilerEvent.cs`). TraceLogging events carry their own
 field names and types, so no manifest is needed. Manifest events on the same
 providers are skipped.
@@ -128,12 +129,58 @@ providers are skipped.
 Events with element IDs and all Microsoft-Windows-XAML-Profiler events are only
 in builds with `XamlProfilerEnabled`.
 
-To record a trace, use `logman` from an elevated prompt, or from a normal prompt
-if your account is in the local Performance Log Users group. Then inspect it with
-`WinUIProfiler.Cli`. Run from this directory:
+Microsoft-Windows-XAML is enabled with keyword `0x100000`. No manifest event
+uses that keyword, so ETW drops them at the source and only TraceLogging events
+are delivered.
+
+Reading ETW needs an elevated process, or membership in the local Performance
+Log Users group.
+
+### Live, from the app
+
+The app reads ETW with one real-time session per connection
+(`Ingestion\LiveEtwSource.cs`):
+
+- **Launch:** the session starts before the process is created, so the target's
+  first events are included. The process has no ID yet, so ETW filters on its
+  executable name: the file name of the selected executable, or for a packaged
+  app the `Executable` of the matching `<Application>` in the installed
+  package's `AppxManifest.xml`. As soon as the launch returns the process ID,
+  the same session switches to a process ID filter. Events stay in the
+  session's buffers until then, and events from other processes with the same
+  executable name are skipped. The target is launched normally, not suspended,
+  so its launch timing is unchanged.
+- **Attach:** the session filters on the process ID from the start and reads
+  from the time of connection.
+
+The panel says whether the counts start at process start or at connection. A
+launch starts at connection when activation returns a packaged app that was
+already running, when the app declares no executable, or when the launched
+process runs a different executable than its manifest declares.
+
+Events go through a queue of 65,536 events to one processing thread that runs
+the event processors (`Processing\EventPipeline.cs`). The only processor today
+counts events (`Processing\EventCounter.cs`).
+
+The connection panel shows the count per provider, events lost by ETW, and
+events dropped because the queue was full. When the queue is full, new events
+are dropped and counted rather than stopping the session. The session stops
+when the connection ends; the last counts stay visible. If the session cannot
+start, the panel shows why and the metrics keep working.
+
+An ETW session outlives a profiler that crashes or is killed, and keeps the
+providers enabled in the processes it filters on. Sessions are named
+`WinUIProfiler-<profiler process ID>-<unique ID>`; starting a session stops any
+whose profiler process no longer exists. To stop one by hand, find it with
+`logman query -ets` and run `logman stop <name> -ets`.
+
+### Recorded, from a trace file
+
+To record a trace, use `logman`. Then inspect it with `WinUIProfiler.Cli`, which
+reads the file through `Ingestion\OfflineEtlSource.cs`. Run from this directory:
 
 ```powershell
-'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0xFFFFF 5',
+'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0x100000 5',
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5' | Set-Content providers.txt
 logman create trace XamlTrace -o xaml.etl -pf providers.txt -ets
 # ... use the target app ...
