@@ -62,6 +62,11 @@ struct ITableViewRowMetadataProvider
     // Expands a tree node and all descendants. No-op for group keys or non-hierarchical sources.
     virtual void ExpandSubtree(winrt::hstring const&) {}
 
+    // Expands every collapsed ancestor of the row with this key so it becomes visible, and returns
+    // its visible index; -1 when the key is unknown or the row is filtered out. The row itself is
+    // not expanded. Default: not supported (-1); TableViewSource2 implements it.
+    virtual int32_t Reveal(winrt::hstring const&) { return -1; }
+
     // 1-based position among data rows between adjacent header bands, and that count. Returns false
     // if `rows` isn't the provider's projection, or for flat sources, headers, or out of range.
     virtual bool TryGetGroupMembership(

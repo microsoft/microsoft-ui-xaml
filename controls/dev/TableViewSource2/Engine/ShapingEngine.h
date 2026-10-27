@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <span>
 #include <unordered_map>
 #include <utility>
@@ -77,6 +78,12 @@ public:
     // against it after each rebuild (F4).
     std::unordered_map<winrt::hstring, GroupNode*> const& GroupsByIdentity() const noexcept;
 
+    // The node is in the shaped tree: a group (emptied groups are pruned, E9), or a record for which
+    // InShapedParent holds at every record level up to its top-level record. O(depth). A record that
+    // fails the filter and is no ancestor of a match is not. ShapingManager::Reveal checks it
+    // before expanding anything (#20).
+    static bool InShapedTree(ShapedRef node) noexcept;
+
     // ---- Entry points -----------------------------------------------------------------------
     // Each is one unit of work. Called inside a flattener commit opened by ShapingManager.
 
@@ -126,9 +133,10 @@ public:
     // after Flattener::Clear() and before SourceTable::Clear(). Idempotent.
     void Clear();
 
-    // Destroys the groups pruned since the last call (m_retired). ShapingManager calls it after
-    // Publish, and from Clear(). Until then a pruned group stays alive, so the visible list can
-    // still hand out its ref between the events of the delta that removes it (V4).
+    // Destroys the groups pruned or replaced since the last call (m_retired). ShapingManager calls
+    // it after Publish, and from Clear(). Until then a pruned group stays alive, so the visible list
+    // can still hand out its ref between the events of the delta that removes it (V4), and the old
+    // rows stay readable during IShapingOwner::OnResetting (#18 O2).
     void ReleaseRetired() noexcept;
 
 private:
@@ -177,6 +185,25 @@ private:
     // groups never move on a surgical edit, the next rebuild restores exact first-appearance order).
     void StageGroupChain(StagedRecord& staged);
 
+    // Surgical placement (decided, E5 option B: no stored source order). Compute phase: returns the
+    // index in the record's shaped parent list (its source parent's ShapedChildren, its bottom-level
+    // group's Children, or m_root.Children) at which `staged` goes, so the result equals what a
+    // rebuild's stable sort gives: equal keys end in source order. The list is taken without the
+    // record itself (a move or key change computes before the write phase removes it).
+    //   - Sort active: binary-search the run of siblings whose keys tie with the staged keys (the
+    //     only app code, through Comparer levels). Empty run: its start. Otherwise set
+    //     ShapeFlags::PlacementMark on the run, walk the record's source siblings backwards from
+    //     its source position to the first marked one and return the index after it (the run
+    //     start if none), then clear the marks.
+    //   - Filter or GroupBy only (shaped order is source order): walk back to the first source
+    //     sibling in the same shaped list (InShapedParent, and the same ShapeState::Group when
+    //     top-level), then return its index in the list plus one (0 if none).
+    //   - Neither (ChildrenShaped clear): the source position.
+    // `sourceIndex` is SourceChange::NewIndex; empty for live shaping, which finds the record in
+    // its source sibling list. Reads only, besides the marks. O(log n + t + walk), worst case O(n).
+    // A new group from StageGroupChain has an empty list, so the result is 0.
+    uint32_t PlacementIndex(StagedRecord const& staged, std::optional<uint32_t> sourceIndex);
+
     // Write phase, when a top-level record leaves bottom-level group `group`: finds the topmost
     // node that leaves (the highest ancestor group with no other member, else the record) and
     // calls OnRemoving once for it while the old tree is intact (F1). Then unlinks the record,
@@ -214,10 +241,11 @@ private:
     // it in with the new groups. Empty while ungrouped. The shaped root is not in it.
     std::unordered_map<winrt::hstring, GroupNode*> m_groupsByIdentity;
 
-    // Groups pruned by surgical edits since the last ReleaseRetired (decided, V4). Unlinked from
-    // the tree and the map, so the engine never reaches them; kept alive only because m_rows may
-    // still hold their refs until the delta that removes them is published. A rebuild needs no
-    // retiring: it rewrites m_rows before destroying the old set.
+    // Groups pruned by surgical edits, or replaced by a rebuild, since the last ReleaseRetired
+    // (decided, V4; rebuilds since #18 O2). Unlinked from the tree and the map, so the engine never
+    // reaches them; kept alive only because m_rows may still hold their refs until the delta that
+    // removes them is published (a rebuild's rows are swapped in by Flattener::ApplyReset, after
+    // the owner's OnResetting has read the old ones).
     std::vector<std::unique_ptr<GroupNode>> m_retired;
 
     // Staging (decided, E4): compute results live in a transient object local to one entry point,
@@ -242,11 +270,15 @@ private:
         std::unique_ptr<GroupNode> NewGroupChain;
         GroupNode* NewGroupParent{ nullptr };
         std::vector<std::unordered_map<winrt::hstring, GroupNode*>::node_type> NewGroupEntries;
+        // Surgical insert, move or key change (E5): from PlacementIndex, in the shaped parent list
+        // without the record. Unused by a rebuild.
+        uint32_t ShapedIndex{ 0 };
     };
 
     // Everything Reapply builds aside: per-record results in pre-order, every parent's new
     // ShapedChildren, the new root Children / Subgroups and the new group map. Commit swaps these
-    // in under m_root, calls OnRebuilt, then destroys the old groups (which end up in here).
+    // in under m_root, calls OnRebuilt, then moves the old groups (which end up in here) to
+    // m_retired (#18 O2).
     struct StagedReapply
     {
         std::vector<StagedRecord> Records;

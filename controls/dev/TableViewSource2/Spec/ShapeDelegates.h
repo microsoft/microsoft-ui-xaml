@@ -55,9 +55,9 @@ public:
     // Keeps only the delegates referenced by `specsInUse`; releases the rest.
     void Retain(std::span<ShapeSpec const* const> specsInUse);
 
-    // Invocation, used by the engine and live shaping. A predicate that throws rejects the item
-    // (as v1's PassesFilter). Error handling for key selectors, comparers and paths follows the
-    // engine's error rule (open, see the spec).
+    // Invocation, used by the engine and live shaping. Exceptions from app code propagate (spec,
+    // "Misbehaving records"); the engine treats a throwing predicate's record as not passing and
+    // calls these only in its compute phase, before anything is written.
     bool Passes(DelegateId predicate, winrt::IInspectable const& item) const;
     winrt::IInspectable Key(DelegateId keySelector, winrt::IInspectable const& item) const;
     int32_t Compare(DelegateId comparer, winrt::IInspectable const& x, winrt::IInspectable const& y) const;

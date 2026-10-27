@@ -76,8 +76,16 @@ runtimeclass TableViewSource2
     TableViewSource2 ClearHierarchy();
 
     // Re-reads the source and rebuilds the projection. Needed for sources that do not raise
-    // change notifications.
+    // change notifications. Inside a DeferRefresh it is recorded and done once when the outermost
+    // handle closes.
     void Refresh();
+
+    // Batches verbs: while a returned handle is open, Filter, GroupBy, Sort, the hierarchy verbs,
+    // their Clear* forms and Refresh only record what they declare, and source collection changes
+    // are held. Closing the outermost handle (Dispose in C#) applies everything as one reshape and
+    // one Reset. Handles nest; an inner Close does nothing, and closing a handle twice is a no-op.
+    // An exception from app code during the reshape is thrown from that Close.
+    Windows.Foundation.IClosable DeferRefresh();
 
     // When true, a PropertyChanged on an item re-applies the active filter, sort, group and
     // hierarchy to it. Defaults to false: property edits leave rows in place until the next

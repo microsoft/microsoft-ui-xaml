@@ -19,8 +19,9 @@
 // to m_rows (Flattener::ApplySplice) and raises its event right away, a Remove of RemovedCount
 // rows, then an Add of Inserted.size() rows, at Index (the repeater has no Move). So Size / GetAt
 // match every event a consumer sees.
-// Today the flattener emits one-sided splices only ({i, n, {}} or {i, 0, rows}) and never merges
-// them; merging an adjacent remove + insert into a Replace is revisited with owner notifications.
+// The flattener emits one-sided splices only ({i, n, {}} or {i, 0, rows}) and never merges them
+// into a Replace (decided, #18 O6): the repeater treats Replace as Remove + Add anyway, and an item
+// changing in place keeps its row (the record refreshes; chrome goes through a RowStateEdit).
 struct FlatSplice
 {
     // In the list as it stands after the earlier splices of the same delta.
@@ -62,12 +63,40 @@ struct RowStateEdit
     RowStateField Fields{ RowStateField::None };
 };
 
+// What a published unit of work did to the visible list, for the owner (decided, #18 O5). It maps
+// the flags to UIA StructureChanged: Order alone -> ChildrenReordered; Membership or Reset ->
+// ChildrenInvalidated; RowState alone -> no structure event. Replaces v1 ShapingChanged(reorderOnly).
+enum class ShapingChangeFlags : uint8_t
+{
+    None = 0x0,
+
+    // The list was replaced by one Reset. Combined with Order (a sort-only reshape: same rows, new
+    // order; set by ShapingManager from the spec Diff) or Membership (everything else).
+    Reset = 0x1,
+
+    // Rows entered or left the list (insert, remove, filter change, expand, collapse).
+    Membership = 0x2,
+
+    // Rows moved without the shown set changing: within a surgical commit, a node removed and
+    // inserted again (live re-sort, group-key change, reparent).
+    Order = 0x4,
+
+    // States is non-empty.
+    RowState = 0x8,
+};
+DEFINE_ENUM_FLAG_OPERATORS(ShapingChangeFlags);
+
 struct FlatDelta
 {
     // Bulk: publish one stable Reset (the visible list implements IKeyIndexMapping, so the repeater
-    // reuses elements by key). Splices and States are empty. Flattener::Rebuild already wrote
-    // m_rows during the commit: one event, so no intermediate state can be observed.
+    // reuses elements by key). Splices and States are empty. Flattener::Rebuild staged the new rows
+    // during the commit; ShapingManager::Publish calls IShapingOwner::OnResetting (old rows still
+    // readable), then Flattener::ApplyReset swaps them in, then raises the Reset (#18 O2).
     bool IsReset{ false };
+
+    // Set by the flattener (Membership, Order, RowState, Reset); ShapingManager adds Order to a
+    // sort-only Reset. None for an empty delta.
+    ShapingChangeFlags Changes{ ShapingChangeFlags::None };
 
     // Surgical: applied to m_rows and published one at a time, in order (V4).
     std::vector<FlatSplice> Splices;

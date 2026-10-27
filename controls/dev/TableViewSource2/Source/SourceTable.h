@@ -225,6 +225,9 @@ public:
     void SetChildCollectionHierarchy(winrt::TableViewChildrenSelector2 const& childrenSelector);
 
     // Back to flat: ResetTreeToFlat(), resets the selectors, then one Reset. No-op when flat.
+    // All three, while frozen (an open DeferRefresh; ShapingManager rejects them during an apply):
+    // store the selectors in m_pendingHierarchy and set m_pendingReset, building nothing. The next
+    // Refresh() builds and validates the pending hierarchy in place of the current one.
     void ClearHierarchy();
 
     // ---- Live shaping (per-record INotifyPropertyChanged) -----------------------------------
@@ -425,6 +428,19 @@ private:
     std::optional<tracker_ref<winrt::TableViewKeySelector2>> m_keySelector;
     std::optional<tracker_ref<winrt::TableViewKeySelector2>> m_parentKeySelector;
     std::optional<tracker_ref<winrt::TableViewChildrenSelector2>> m_childrenSelector;
+
+    // A hierarchy verb received while frozen (DeferRefresh). Kind None means ClearHierarchy. The
+    // next Refresh() builds it instead of the current hierarchy: on success it replaces the kind
+    // and selectors above; a throw discards it and leaves the current tree and selectors in place.
+    // A later verb while still frozen replaces it. Clear() drops it.
+    struct PendingHierarchy
+    {
+        HierarchyKind Kind{ HierarchyKind::None };
+        std::optional<tracker_ref<winrt::TableViewKeySelector2>> KeySelector;
+        std::optional<tracker_ref<winrt::TableViewKeySelector2>> ParentKeySelector;
+        std::optional<tracker_ref<winrt::TableViewChildrenSelector2>> ChildrenSelector;
+    };
+    std::optional<PendingHierarchy> m_pendingHierarchy;
 
     // ParentKey: node key -> record, and each record's cached keys. Object keys are held while the
     // tree is current so their addresses cannot be reused (v1 section 3.1). Kept off SourceRecord

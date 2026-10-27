@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <winrt/Microsoft.UI.Xaml.Interop.h>
@@ -92,7 +93,13 @@ struct SourceRecord
     ShapeState Shape;
 
     // Logical identity, formatted on first use and then cached. The only way to read it.
+    // Format (fixed, D4): "0x" + Address in hex. Also the record's row key in ShapedCollectionView.
     winrt::hstring const& Identity() const;
+
+    // Inverse of Identity(): the Address a record identity encodes, or nullopt when identity is not
+    // in that format (a "g|" group key, or garbage). Lets IndexFromKey resolve a record through
+    // SourceTable::TryFindByAddress, which is always on, instead of the identity index (D4).
+    static std::optional<ObjectAddress> TryParseIdentity(winrt::hstring const& identity) noexcept;
 
 private:
     mutable winrt::hstring m_identity;

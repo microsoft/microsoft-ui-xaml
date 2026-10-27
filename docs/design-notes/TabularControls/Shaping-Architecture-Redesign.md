@@ -41,11 +41,13 @@ controls/dev/TableViewSource2/
     FlatDelta.h                                  FlatSplice, RowStateField, RowStateEdit, FlatDelta
     Flattener.h                                  Flattener (IShapedEditSink; visible list, counts, expansion)
     GroupExpansion.h                             GroupExpansion (group expansion model, keyed by GroupNode::Identity)
+    GroupHeaderRow.h                             GroupHeaderRow, IGroupHeaderRowTag, TryGetGroupHeaderRow (header row value)
+    ShapedCollectionView.h                       ShapedCollectionView (the WinRT visible list), CountOnlyItemList
+    ShapedRowMetadata.h                          ShapedRowMetadata (ITableViewRowMetadataProvider adapter)
   Shaping/                                       owns and wires the layers above
+    IShapingOwner.h                              IShapingOwner, ShapingAppliedArgs (owner channel to TableView)
     ShapingManager.h                             ShapingManager (the coordinator)
 ```
-
-The WinRT visible list the repeater binds to will also live in `View/` when it is declared.
 
 ## Why redesign
 
@@ -72,8 +74,8 @@ table serves as both the shared identity store and the cached full set that shap
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine: `ShapingEngine`; shaped tree node types `ShapedRef`, `GroupNode`; per-record `ShapeState`; change contract `ShapedEdit`, `IShapedEditSink` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/ShapedEdit.h` | Engine surface, node types, record state and change contract declared; group storage, lookup and staging pending; not implemented |
-| 7 | Flattener and visible list: `FlatDelta`, `Flattener`; the WinRT visible list and row metadata, wrapped in the `ItemsSourceView` that `ShapingManager::View()` returns | `View/FlatDelta.h`, `View/Flattener.h`, `View/GroupExpansion.h` | Flattener and delta types declared, not implemented; WinRT visible list and row metadata not started |
-| 8 | Coordinator: `ShapingManager` | `Shaping/ShapingManager.h` | Ownership decided; verbs, handlers, `View()`, flattener and group expansion declared; engine and visible list pending |
+| 7 | Flattener and visible list: `FlatDelta`, `Flattener`; the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token `GroupHeaderRow`; row metadata `ShapedRowMetadata` | `View/FlatDelta.h`, `View/Flattener.h`, `View/GroupExpansion.h`, `View/GroupHeaderRow.h`, `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h` | Flattener, delta types, `ShapedCollectionView` and `ShapedRowMetadata` declared, not implemented |
+| 8 | Coordinator: `ShapingManager`; owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the visible-list and row-metadata helpers, owner notifications (#18), flattener, group expansion and engine declared; not implemented |
 
 ## Class diagram
 
@@ -98,6 +100,7 @@ classDiagram
         +ClearSort() TableViewSource2
         +ClearHierarchy() TableViewSource2
         +Refresh()
+        +DeferRefresh() IClosable
         +IsLiveShaping : bool
     }
 
@@ -129,6 +132,12 @@ classDiagram
         +vector~SourceRecord*~ Removed
     }
 
+    class IShapingOwner {
+        <<interface>>
+        +OnResetting()
+        +OnShapingApplied(ShapingAppliedArgs)
+    }
+
     class ShapingManager {
         <<native coordinator>>
         -shared_ptr~SourceTable~ m_sourceTable
@@ -138,14 +147,73 @@ classDiagram
         -optional~tracker_ref~ItemsSourceView~~ m_view
         -bool m_isApplying
         +View() ItemsSourceView
+        +RowCount() uint32
+        +RowAt(index) ShapedRef
+        +IndexOfKey(key) optional~uint32~
+        +IndexOfItem(value) optional~uint32~
+        +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
+        +RowInfo(index) TableViewRowInfo
+        +TryResolveKey(key) optional~ShapedRef~
+        +SetExpanded(node, desired) bool
+        +SetAllExpanded(axis, expanded)
+        +ExpandSubtree(node)
+        +Reveal(node) optional~uint32~
+        +IsHierarchical() bool
+        +TryGetGroupMembership(index, position, size) bool
+        -IShapingOwner* m_owner
+        -uint32 m_liveHoldCount
+        +SetOwner(owner)
+        +BeginLiveShapingHold()
+        +EndLiveShapingHold()
         +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
         +Refresh()
+        +BeginDeferRefresh()
+        +EndDeferRefresh()
+        -uint32 m_deferDepth
         +IsLiveShaping : bool
         +Clear()
         -OnSourceChanged(change)
         -OnItemChanged(record, propertyName)
         -ApplyDesiredSpec()
         -Reapply()
+    }
+
+    class ShapedCollectionView {
+        <<WinRT, derives ItemsSourceView>>
+        -ShapingManager* m_owner
+        #GetSizeCore() int
+        #GetAtCore(index) IInspectable
+        #HasKeyIndexMappingCore() bool
+        #KeyFromIndexCore(index) hstring
+        #IndexFromKeyCore(key) int
+        #IndexOfCore(value) int
+        +NotifyRemoved(index, count)
+        +NotifyAdded(index, count)
+        +NotifyReset()
+        +Detach()
+    }
+
+    class ShapedRowMetadata {
+        <<ITableViewRowMetadataProvider adapter>>
+        -ShapingManager* m_owner
+        +GetRowInfo(index) TableViewRowInfo
+        +GetIdentity(index) hstring
+        +TryGetIndexForIdentity(identity, index) bool
+        +Expand/Collapse/Toggle(key) bool
+        +ExpandAll*/CollapseAll*()
+        +ExpandSubtree(key)
+        +Reveal(key) int
+        +IsHierarchicalSource() bool
+        +TryGetGroupMembership(rows, index, position, size) bool
+        +Detach()
+    }
+
+    class GroupHeaderRow {
+        <<WinRT, IGroupHeaderRowTag>>
+        -IInspectable m_key
+        -hstring m_identity
+        +Key() IInspectable
+        +Identity() hstring
     }
 
     class SourceTable {
@@ -254,6 +322,12 @@ classDiagram
 
     TableViewSource2 *-- ShapingManager : unique_ptr (forwards verbs)
     ShapingManager *-- SourceTable : shared_ptr (shareable with consumers)
+    ShapingManager *-- ShapedCollectionView : m_view (tracked, TableView also holds it)
+    ShapedCollectionView ..> ShapingManager : raw back-pointer, nulled by Detach()
+    ShapedCollectionView ..> GroupHeaderRow : header row value
+    ShapingManager *-- ShapedRowMetadata : m_rowMetadata (shared_ptr, TableView also holds it)
+    ShapedRowMetadata ..> ShapingManager : raw back-pointer, nulled by Detach()
+    ShapingManager ..> IShapingOwner : raw m_owner (TableView), OnResetting, OnShapingApplied
     SourceTable *-- CollectionAccessor2 : owns source accessor (optional, reset on Clear)
     SourceTable ..> SourceChange : raises (single handler)
     SourceTable "1" *-- "0..*" SourceRecord : sole strong shared_ptr per source position
@@ -321,8 +395,8 @@ whether `Sort` was declared before or after `GroupBy`.
     so this window does not occur in practice.
 - **`Refresh()`** re-reads the source and rebuilds. It is for sources that do not raise change
   notifications, which the record table cannot otherwise detect.
-- **Not included:** `DeferRefresh` (batching verbs into one rebuild) is postponed to a later design
-  session; see *Later design sessions: `DeferRefresh`*.
+- **`DeferRefresh()`** returns an `IClosable` handle that batches verbs into one reshape; see
+  *`DeferRefresh` (decided)*.
 
 ## 3. Source collection resolution: `CollectionAccessor2`
 
@@ -346,7 +420,8 @@ and that live exactly as long as the item stays in the source.
 |---|---|
 | `Item` | A `tracker_ref<IInspectable>` bound to the owning `TableViewSource2` (matching `Vector<IInspectable>`). Keeps the item alive while in the table while letting the .NET GC collect cycles when an item references its owner. `get_abi(Item.get())` is the raw-pointer lookup key. `Item.get()` is used only on live paths; teardown paths use `Item.safe_get()` (see *Reference tracking and teardown*). |
 | `Address` (`ObjectAddress` = `uintptr_t`) | The canonical `IUnknown` pointer: the object's physical identity. It costs one QI, at creation. |
-| `Identity()` | The logical identity string (`"0x…"` today). It is formatted on first use and cached; this accessor is the only way to read it. |
+| `Identity()` | The logical identity string: `"0x"` + `Address` in hex (fixed, D4; it is also the record's row key). It is formatted on first use and cached; this accessor is the only way to read it. |
+| `TryParseIdentity(identity)` (static) | Inverse of `Identity()`: the `Address` it encodes, or `nullopt` (a `g|` group key or garbage). Lets `ShapedCollectionView::IndexFromKey` resolve a record through `TryFindByAddress`, which is always on, instead of the identity index (D4). |
 | `PropertyChangedToken`, `Watch` | Live-shaping subscription state, revoked in `~SourceRecord()`. `NotObservable` records that an item has no `INotifyPropertyChanged`, so it is not probed again. |
 | `Parent`, `Children`, `Depth`, `HasChildren()` | Source-tree links, written only by `SourceTable`. Non-owning; flat sources leave every record top-level (`Parent == nullptr`) with no children. See *Hierarchy: the source tree in `SourceTable`*. |
 | `ShapeState Shape` | Engine state stored inline (`Engine/ShapeState.h`): filter flags, cached sort keys, filtered and sorted children, visible-descendant count. Written only by the engine and the flattener. See *Engine state storage*. |
@@ -839,14 +914,25 @@ std::vector<ShapedRef> m_rows;  // Flattener; one entry per visible row: data co
 - Only visible rows have entries; a collapsed node's descendants have none.
 
 **WinRT visible list (decided, V1: a virtual read-only collection over `m_rows`).** The
-collection the repeater binds to (through `View()`'s `ItemsSourceView`) is a small WinRT class
-that reads the flattener's `m_rows` directly; it holds no copy.
-- Implements `IVectorView<IInspectable>`, `IIterable<IInspectable>`, `INotifyCollectionChanged` and
-  `IKeyIndexMapping`. `Size()` is `m_rows.size()`; `GetAt(i)` maps `m_rows[i]` to its row value
-  (V2); `KeyFromIndex` / `IndexFromKey` use the row key (V3) and `Flattener::IndexOf`.
+collection the repeater binds to, `ShapedCollectionView`, is a small WinRT class that reads the
+flattener's `m_rows` directly; it holds no copy.
+- **Base (decided, D1: derives from `ItemsSourceView`).** `ShapedCollectionView` subclasses
+  `ItemsSourceView` inside the controls DLL, as `InspectingDataSource` does
+  (`winrt::implements<ShapedCollectionView, ItemsSourceView>`), and `View()` returns it as is;
+  `ItemsRepeater` uses an `ItemsSourceView` it is given without wrapping it. Overrides:
+  `GetSizeCore()` is `m_rows.size()`; `GetAtCore(i)` maps `m_rows[i]` to its row value (V2);
+  `HasKeyIndexMappingCore()` is true; `KeyFromIndexCore` / `IndexFromKeyCore` use the row key (V3)
+  and `Flattener::IndexOf`;   `IndexOfCore(item)` resolves the item through `SourceTable` (D4), then
+    `IndexOf` (O(depth), not a scan). Events are raised through the base
+  `OnItemsSourceChanged(args)`, which also refreshes the cached `Count`.
+  - Rejected: the earlier V1 shape, a standalone class implementing `IVectorView<IInspectable>`,
+    `IIterable`, `INotifyCollectionChanged` and `IKeyIndexMapping`, wrapped by
+    `winrt::ItemsSourceView{ list }`: two objects and two event hops per source, the mapping found
+    by `try_as`, and `IndexOf` a linear scan. Its only gain, binding the list to an arbitrary
+    `ItemsControl`, is not needed: `TableView` consumes an `ItemsSourceView`, as in v1.
 - `ShapingManager::Publish` raises one `CollectionChanged` per `FlatSplice` (a ranged `Remove` and
   `Add`), or one `Reset`, each right after `m_rows` reaches the state that event describes (V4).
-  `InspectingDataSource` listens to `INotifyCollectionChanged` on an `IVectorView`, and
+  The repeater subscribes to the view's `CollectionChanged`, and
   `ViewManager` reads only `NewItems().Size()` / `OldItems().Size()`, so a k-row splice shifts the
   realized indexes once.
 - **Publishing (decided, V4: one splice at a time).** A surgical commit records its splices and
@@ -854,8 +940,9 @@ that reads the flattener's `m_rows` directly; it holds no copy.
   recorded, since the tree may change again in the same commit). `Publish` then, for each splice
   in order, calls `Flattener::ApplySplice` (erase `RemovedCount` rows at `Index`, insert
   `Inserted`) and raises its event at once. So `Size()` / `GetAt` match every event a consumer
-  sees, as with a plain observable vector (v1 `m_entries`). A bulk delta's `Rebuild` writes
-  `m_rows` during the commit: one `Reset`, so no partial state is observable.
+  sees, as with a plain observable vector (v1 `m_entries`). A bulk delta's `Rebuild` stages the
+  new rows (`m_staged`); `Publish` calls the owner's `OnResetting` while the view still serves the
+  old rows, then `Flattener::ApplyReset` swaps them in and the `Reset` is raised (#18 O2).
   - Why: `ItemsSourceView` re-reads `Size()` on every event (`m_cachedSize`), and any other
     consumer reads `GetAt` in its handler. Publishing k splices against the final list would show
     each handler the wrong size and rows.
@@ -865,21 +952,47 @@ that reads the flattener's `m_rows` directly; it holds no copy.
     moves it to the engine's `m_retired`, and `Publish` ends with `ShapingEngine::ReleaseRetired()`.
     A handler between events may still be handed a removed group's ref (its splice not yet
     applied), so it must be alive. Records need nothing new: `SourceTable` destroys them only
-    after its `SourceChanged` handler returns, and `Publish` runs inside it. A rebuild needs no
-    retiring: `m_rows` is rewritten before the old set is destroyed.
+    after its `SourceChanged` handler returns, and `Publish` runs inside it. A rebuild retires
+    too (#18 O2): the old group set goes to `m_retired` instead of being destroyed after
+    `OnRebuilt`, because `OnResetting` may read the old rows (header rows included) through the
+    view before `ApplyReset` swaps them out.
   - `IndexOf` answers for the tree (the final state). Called mid-publish (`IndexFromKey`,
     `TryGetIndexForIdentity` from a handler), the visible list checks `m_rows[i]` and falls back
     to a linear search of `m_rows` when they disagree; -1 if absent. Rare, O(visible).
   - Event args: `Remove` and `Add` carry size-only placeholder item lists (the repeater reads only
-    their sizes); `Replace` and `Move` are not used. A splice with both counts raises `Remove`,
-    then `Add`.
-  - Order: splices, then `RowStateEdit`s to the owner (final indexes), then `ReleaseRetired`. All
+    their sizes); `Replace` and `Move` are never raised (#18 O6). A splice with both counts
+    raises `Remove`, then `Add`.
+  - Order: splices (or `OnResetting`, `ApplyReset`, `Reset`), then `IShapingOwner::OnShapingApplied`
+    (change flags, `RowStateEdit`s at final indexes, retired records), then `ReleaseRetired`. All
     inside the #19 apply scope, so a handler that calls a verb throws.
   - Rejected: a `Reset` whenever a delta has more than one splice (consistent, but batched edits
     lose their transitions and force a re-anchor), and publishing every splice against the final
     `m_rows` (wrong `Size` cached by `ItemsSourceView` between events; breaks any consumer that
     reads the list in its handler).
-- Read-only: no `IVector` mutators, so neither the app nor a binding can edit the rows.
+- Read-only: `ItemsSourceView` has no mutators, so neither the app nor a binding can edit the rows.
+- **Back-reference (decided, D2: a raw `ShapingManager*`, nulled by `Detach()`).** The view reads
+  through `ShapingManager`'s visible-list helpers (`RowCount`, `RowAt`, `IndexOfKey`,
+  `IndexOfItem`), never the flattener, engine or `SourceTable` directly, so the mid-publish rule
+  (V4) lives in one place. `ShapingManager` owns the view (`m_view`), but `TableView` may keep it
+  longer, so `ShapingManager::Clear()` calls `Detach()` first. A detached view reports `Count` 0,
+  `GetAt` throws `E_BOUNDS`, and the lookups return -1. `Detach()` raises nothing (teardown).
+  - Rejected: a `weak_ptr` to a shared coordinator (`ShapingManager` is a `unique_ptr` member and
+    lives on the UI thread with the view), and pointing the view at the `Flattener` (the key and
+    item lookups also need the engine and `SourceTable`).
+- **Event item lists (decided, D3: `CountOnlyItemList`).** `Remove` and `Add` args carry a
+  count-only `IBindableVector` / `IBindableIterable`: `Size` is the count, `GetAt` returns
+  `nullptr`, mutators throw. O(1) per event regardless of k.
+  - Rejected: a `Vector` of k `nullptr`s (`InspectingDataSource`'s shape: O(k) per event), and
+    real items (O(k) `GetAt`s nobody reads).
+- **Key to record (decided, D4: parse the key, then `TryFindByAddress`).** A record key is its
+  `Identity()`, `"0x"` + `Address` in hex. `IndexFromKey` parses it back with
+  `SourceRecord::TryParseIdentity` and resolves it through `SourceTable::TryFindByAddress`, which is
+  always on, so key lookups work without enabling the identity index. A `g|` key goes to
+  `ShapingEngine::GroupsByIdentity()`. `IndexOfCore(value)` resolves a `GroupHeaderRow` through its
+  `Identity` and an app item through `SourceTable::TryFindByItem`.
+  - Rejected: requiring the identity index (`TryFindByIdentity`) for every bound view (a map that is
+    otherwise needed only while shaping verbs are active).
+- `Publish` raises nothing before the first `View()` call (`m_view` is still null).
 - Rejected: a materialized `single_threaded_observable_vector<IInspectable>` mirroring `m_rows`
   (v1 `HierarchicalSourceAdapter` / `GroupedSourceAdapter::m_entries`). It is a second O(visible)
   list of AddRef'd objects that must stay in step, raises one `VectorChanged` per item (k events
@@ -1049,6 +1162,74 @@ Everything else is read through `Ref`:
   found by summing the spans of its earlier siblings at each level, O(depth × siblings), letting
   changes splice only their range instead of rebuilding (see §6 *Change pipeline*).
 
+**Row metadata provider (decided, R1–R4).**
+- **Shape (R1: an adapter over the existing interface).** `ShapedRowMetadata` (`View/`) implements
+  `ITableViewRowMetadataProvider`, and `TableViewSource2::GetRowMetadata()` (internal, not in IDL)
+  returns it, as v1 `TableViewSource::GetRowMetadata()` does, so `TableView` consumes v2 unchanged.
+  It holds no shaping logic: every call forwards to `ShapingManager`'s row-metadata helpers
+  (`RowInfo`, `TryResolveKey`, `SetExpanded`, `SetAllExpanded`, `ExpandSubtree`, `IsHierarchical`,
+  `TryGetGroupMembership`) and the visible-list helpers (`RowAt`, `IndexOfKey`). It is stateless:
+  no `CollectionChanged` subscriptions and no caches (v1 keeps three event tokens, an identity →
+  index map and a header-index list, rebuilt on every change).
+  - `GetRowInfo(i)`: `ShapingManager::RowInfo`, built from `RowAt(i)` per the field table above;
+    `IsExpanded` through `Flattener::IsExpanded` (made public; includes the F5 context-row overlay).
+  - `GetIdentity` / `TryGetIndexForIdentity`: the row key (V3) and `IndexOfKey` (D4, V4). The
+    provider's identity and the view's key are the same string; v1's `group:` / `node:` prefixes
+    are gone.
+  - `IsHierarchicalSource`: the source tree has a hierarchy.
+  - Rejected: `ShapingManager` implementing the interface itself (TableView holds the provider as a
+    `shared_ptr`; the manager is a `unique_ptr` member), and a new v2 interface (TableView changes,
+    or two paths until v1 is retired).
+- **Expansion (R2: typed entry points).** `ShapingManager::SetExpanded(ShapedRef, optional<bool>)`
+  (nullopt toggles; returns whether the state changed, false when not expandable),
+  `SetAllExpanded(ExpansionAxis {Groups, Rows}, bool)` and `ExpandSubtree(ShapedRef)` (new
+  `Flattener::ExpandSubtree`: flags over the record subtree, one splice of the revealed rows; no-op
+  for a group or a flat source). The adapter resolves the interface's string key with
+  `TryResolveKey` (the first half of `IndexOfKey`). Each runs inside the #19 apply scope and
+  publishes like an engine commit; called while an apply runs, it throws, like a verb. A future
+  public per-item expand (#20, Phase 6) will resolve to a `ShapedRef` and reuse these.
+  - Rejected: key-based entry points on the manager (its API takes the interface's shape, and #20
+    would need a second path).
+- **Reveal and per-item expansion (decided, #20).**
+  - **Reveal (internal now).** Expands every collapsed ancestor of a node so it becomes shown; the
+    node itself is not expanded. `ShapedRowMetadata::Reveal(key)` (new
+    `ITableViewRowMetadataProvider::Reveal`, default -1 so v1 is untouched) resolves the key with
+    `TryResolveKey` and calls `ShapingManager::Reveal(ShapedRef)`. That returns nullopt (-1 through
+    the interface), changing nothing, when `ShapingEngine::InShapedTree(node)` is false (filtered
+    out); otherwise it runs `Flattener::Reveal`, publishes and returns `IndexOf(node)`.
+    `Flattener::Reveal` collects the ancestors that read collapsed (record `Expanded`, the group
+    model, or a context row's `OverlayCollapsed`, F5), sets the flag of every one but the topmost
+    (each is hidden: flag only, as `Expand`), then expands the topmost as `Expand` does: one splice
+    of every revealed row, O(depth + revealed rows). Same #19 scope rule as the other expansion
+    entry points. Callers: a future `ScrollIntoView(item)`, selection by item, jumping to a filter
+    match. v1 has none (`Select(index)` takes visible indexes only; `ExpandSubtree` goes down).
+  - **Per-item expand / collapse (internal only).** Stays on `ITableViewRowMetadataProvider`
+    (`Expand` / `Collapse` / `Toggle` by key), the one path for `TableView`, keyboard and UIA. A
+    public per-item API (e.g. `TableView.Expand(item)`, next to the four expand-all verbs already on
+    `TableView`) is a Phase 6 `TableView` API item; it resolves to a `ShapedRef` and calls
+    `SetExpanded`.
+  - **Filter auto-expand:** decided earlier (F5, *Expansion*).
+  - Rejected: a public `TableViewSource2.Reveal(item)` now (sets public precedent before
+    `TableView`'s API is designed); deferring reveal entirely; public `Expand(item)` /
+    `Collapse(item)` / `IsExpanded(item)` on `TableViewSource2` (splits expansion API between
+    `TableView` and the source); a settable `TableViewRow.IsExpanded` (realized rows only).
+- **Group membership (R3: v1 meaning, computed).** `TryGetGroupMembership(rows, i, pos, size)` keeps
+  v1's meaning, position among the data rows between two adjacent header bands, which the UIA row
+  peer reports as `PositionInSet` / `SizeOfSet`. That band is exactly the shown descendants of the
+  row's bottom-level group: walk `ShapedParent` up to it (O(depth)); `pos = i − IndexOf(group)`
+  (1-based), `size = Flattener::ShownDescendantCount(group)` (new public read; valid because the
+  group is shown). False when `rows` is not this source's view, the source is ungrouped, or `i` is a
+  header. v1's cached header-index list and the peer's O(n) fallback walk are not needed.
+  - Rejected: sibling-set meaning (equal to `TableViewRowInfo::PositionInSet`): changes UIA output,
+    and nested rows would return false into the O(n) walk.
+- **Lifetime (R4: the D2 pattern).** `ShapingManager::RowMetadata()` creates the adapter on first
+  call with a raw `ShapingManager*` and caches it in `m_rowMetadata` (plain `shared_ptr`: it holds
+  no app object). `Clear()` calls its `Detach()` right after the view's. A detached provider returns
+  a default `TableViewRowInfo`, an empty identity, and false or a no-op elsewhere.
+- **Mid-publish (V4).** The row comes from `m_rows` (published), but per-node fields (`ChildCount`,
+  `IsExpanded`, `IsExpandable`) and `IndexOf` answer for the final tree; index lookups use the V4
+  check. The `RowStateEdit`s published after the splices bring the owner up to date.
+
 **Effect on downstream code.** `ShapedRef` and `GroupNode` stay native: the engine, the
 flattener, the WinRT visible list and the row metadata provider. `TableView` sees one list of
 items plus `TableViewRowInfo` / `TableViewGroupInfo`, and branches on group vs. row, never on whether
@@ -1214,8 +1395,8 @@ Decisions and open questions:
   - **Desired spec in the coordinator, applied spec in the engine.** Verbs edit the desired spec
     held by `ShapingManager` (§6) in place. The engine keeps a copy of the last applied spec,
     which `Diff(applied, desired)` needs anyway. There is never more than one desired spec, so intermediate states are never applied.
-  - **When it is applied.** Synchronously after each verb. Batching several verbs into one apply
-    (`DeferRefresh`) is postponed; see *Later design sessions: `DeferRefresh`*.
+  - **When it is applied.** Synchronously after each verb, unless a `DeferRefresh` handle is open
+    (one apply when the outermost handle closes); see *`DeferRefresh` (decided)*.
   - **Apply can fail, but never leaves shaped state half-written.** An exception from app code
     propagates; every call into app code runs before any write, so a failed apply leaves the
     shaped state as it was. See *Misbehaving records* below. Invalid arguments are rejected
@@ -1230,7 +1411,7 @@ Decisions and open questions:
     are shaped with the applied spec.
   - `DelegateId` stays a plain value; `ShapeDelegates`/`PathEvaluator` `Retain` the desired and
     applied specs after each apply, so a delegate the applied spec uses is never released early.
-- **Misbehaving records (decided, except where marked open).** Survey: WPF, Avalonia, the
+- **Misbehaving records (decided).** Survey: WPF, Avalonia, the
   Community Toolkit, AG Grid callbacks, TanStack/MUI and JavaFX let delegate exceptions propagate
   and never roll back. They differ in what state the throw leaves behind:
   - The incremental add is safe in all of them, because the filter runs before the insert.
@@ -1313,24 +1494,21 @@ Decisions and open questions:
     Grid moves orphans and cycles to the root with a warning; TanStack, Avalonia TreeDataGrid and
     MUI X propagate selector exceptions.
   - **Reporting:** nothing beyond the propagated exception (no framework reports separately).
-- **Path evaluation: revisit `PathEvaluator` and `SortMemberPathResolver` (open).** The current
-  declaration reuses v1's resolver (a hidden `ContentControl` with a `OneTime {Binding}`, one
-  per path) so v1 and v2 agree on what a path means. Questions to settle:
-  - Keep the binding-based resolver, or use a cheaper evaluator (for example reflection through
-    `ICustomPropertyProvider`, or a cached property getter) and accept differences from cell
-    bindings?
-  - The binding engine ties path evaluation to the UI thread; does that fit the engine's threading
-    model, or must path keys be extracted on the UI thread before off-thread work?
-  - Cost: each read is a `DataContext` write plus a binding evaluation, so keys must be read once
-    per record per level into a key cache (engine phase), not per comparison.
-  - Errors: the resolver swallows exceptions and returns `null`; confirm against the engine's error
-    rule.
+- **Path evaluation (decided: keep `PathEvaluator` as declared).** It reuses v1's
+  `SortMemberPathResolver` (a hidden `ContentControl` with a `OneTime {Binding}`, one per path), so
+  a path that displays in a cell also sorts, and v1 and v2 agree on what a path means.
+  - Threading: UI thread only, which matches the engine (UI-thread affine).
+  - Cost: each read is a `DataContext` write plus a binding evaluation, so keys are read once per
+    record per level into `ShapeState::SortKeys` (engine compute phase), never per comparison.
+  - Errors: a path that cannot be evaluated gives a `null` key, no throw (*Misbehaving records*).
   - Live shaping (decided, E7): a dotted path changes when a nested object raises
     `PropertyChanged`, which the row item does not report. The engine matches the path's first
     segment against the property name and re-reads only on a match; an empty name re-reads every
     path (see *Shaping engine*, live shaping).
-  - Ownership: should `PathEvaluator` be shared with v1 / the column-header sort path, and who
-    calls `Retain` (after each apply, per the ownership decision above)?
+  - Ownership: one `PathEvaluator` per `ShapingManager` (`m_paths`), not shared with v1; only the
+    resolver type is shared. `ShapingManager::ApplyDesiredSpec` calls `Retain` after each apply.
+  - Rejected: a cheaper evaluator (reflection through `ICustomPropertyProvider` or cached property
+    getters), which could disagree with cell bindings.
 
 ## 6. Coordinator: `ShapingManager`
 
@@ -1387,10 +1565,11 @@ Decisions and open questions:
 - **Only subscriber.** `ShapingManager` is the single `SourceChanged` and `ItemChanged`
   handler, and fans out to the engine, the visible list and the owner in a fixed order.
 - **Not the WinRT collection.** Unlike v1 `ShapedItemsSource`, it is not the collection the
-  repeater binds to. That collection is the visible list, not declared yet.
-- **`View()` returns an `ItemsSourceView`** wrapping the visible list, as v1
-  `TableViewSource::GetItemsSourceView()` does. It is created on first call and cached in
-  `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, reset by `Clear()`), and stays the same
+  repeater binds to. That collection is `ShapedCollectionView`, which reads through the
+  coordinator's visible-list helpers (`RowCount`, `RowAt`, `IndexOfKey`, `IndexOfItem`).
+- **`View()` returns the `ShapedCollectionView`** (an `ItemsSourceView` subclass, D1), as v1
+  `TableViewSource::GetItemsSourceView()` returns its view. It is created on first call and cached in
+  `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, detached and reset by `Clear()`), and stays the same
   object for the coordinator's lifetime: reshapes raise `CollectionChanged` on it rather than
   replacing it. Returns `nullptr` after `Clear()`.
 - **Row metadata and selection.** `TableView` talks only to `TableViewSource2`, and through it to
@@ -1519,13 +1698,14 @@ struct FlatDelta
   (O(states x splices), still needs dedup and removal); and no tracking, with the owner refreshing
   every realized row after each surgical delta (v1-like and simpler, but O(realized) refreshes on
   every commit, even for an unrelated single-item add).
-- **Splice shape (decided: general, no merging yet).** `FlatSplice` keeps both counts, but the
-  flattener emits one-sided splices only (`{i, n, {}}` from `OnRemoving`, `{i, 0, rows}` from
-  `OnInserted` and expansion) and never merges them. Merging an adjacent remove and insert at the
-  same index into `{i, r, a}` (published as a `Replace` when `r == a`) only pays off if the owner
-  treats a replaced row differently, for example keeping selection on it; revisited with owner
-  notifications. Rejected: a one-sided `{Index, Count, Kind}` type, which would have to change to
-  add merging later.
+- **Splice shape (decided: general, never merged, #18 O6).** `FlatSplice` keeps both counts, but
+  the flattener emits one-sided splices only (`{i, n, {}}` from `OnRemoving`, `{i, 0, rows}` from
+  `OnInserted` and expansion) and never merges them into a `Replace`. The repeater handles
+  `Replace` as `Remove` + `Add`, so merging buys no element reuse; the one case where a replaced
+  row would mean something (the item changes in place) keeps its row anyway, since the record
+  refreshes and its chrome goes through a `RowStateEdit`. Rejected: merging adjacent same-index
+  same-count splices (a pairing pass in the flattener and a second event shape for little gain),
+  and a one-sided `{Index, Count, Kind}` type.
 - **`ShapedEdit` fields (decided).** `Parent` and `IndexInParent` are kept: on a remove they
   describe the old location, which the node can no longer report once it is unlinked, and they let
   the flattener validate its walk. Upward walks elsewhere use `ShapedRef::ShapedParent()`, which
@@ -1603,11 +1783,13 @@ bottom-level test; the flattener keeps it until the next rebuild.
   Rejected: a new root per rebuild (`OnRebuilt` must re-point the flattener before the old tree is
   freed, and any held root `ShapedRef` goes stale) and no stored root (an engine query on every
   walk couples the View layer to the engine).
-- **Teardown order (decided).** `ShapingManager::Clear()` calls `Flattener::Clear()` first: it
+- **Teardown order (decided).** `ShapingManager::Clear()` first calls
+  `ShapedCollectionView::Detach()` and `ShapedRowMetadata::Detach()` (both hold a raw
+  `ShapingManager*`, D2/R4), then `Flattener::Clear()`: it
   empties `m_rows`, `m_dirty` and `m_pending` and nulls `m_root`. Then `ShapingEngine::Clear()`
   drops the groups and their tracked keys. Only then does `SourceTable::Clear()` destroy the
   records. A consumer that still holds the `ItemsSourceView`
-  afterwards sees `Size` 0, and `GetAt` throws out of bounds.
+  afterwards sees `Size` 0, `GetAt` throws out of bounds, and lookups return -1.
 
 - **Two callbacks, not one `OnEdit`.** For a remove the flattener reads the **old** tree, before
   the unlink, to find the node's flat index and span; for an insert it reads the **new** tree.
@@ -1746,11 +1928,13 @@ BeginCommit (ShapingManager, through a scope)
       → commit (writes Shape, groups, counts; calls OnRemoving / OnInserted; no app code)
   → EndCommit → FlatDelta
   → publish (per splice: ApplySplice into m_rows, then the visible list raises Remove range, Add range)
-  → owner notification (RowStateEdits; selection, focus and rank purge of removed records)
+  → IShapingOwner::OnShapingApplied (change flags; RowStateEdits; retired records for the
+    selection, focus and rank purge; #18)
   → ShapingEngine::ReleaseRetired (pruned groups destroyed, V4)
 ```
 
-Bulk is the same with `OnRebuilt` in the commit step and one `Reset` in the publish step.
+Bulk is the same with `OnRebuilt` in the commit step (`Rebuild` stages the rows) and, in the
+publish step, `IShapingOwner::OnResetting`, `Flattener::ApplyReset`, then one `Reset`.
 
 - **Stable `Reset`.** The visible list implements `IKeyIndexMapping` (key = record `Identity()`,
   or `GroupNode::Identity` for headers), so the repeater pools elements by key and reuses them
@@ -1762,7 +1946,8 @@ Bulk is the same with `OnRebuilt` in the commit step and one `Reset` in the publ
   published the owner captures an anchor: the first visible row's key and its Y offset in the
   viewport. Right after, in the same tick, it calls `GetOrCreateElement(IndexOf(anchor))` and
   `StartBringIntoView({ AnimationDesired = false, VerticalAlignmentRatio = 0,
-  VerticalOffset = +y })`. This needs a pre-`Reset` hook in the owner notifications (#18).
+  VerticalOffset = +y })`. The capture runs in `IShapingOwner::OnResetting` and the restore in
+  `OnShapingApplied` (`Changes` has `Reset`), both in the same tick (#18 O2).
   `IndexOf` is on that path once per `Reset`. `VerticalAnchorRatio = 0` stays set for incremental
   changes, which ScrollViewer anchors itself.
   - **Fallback when the anchor row is gone.** The capture is a short list of candidates, not one
@@ -1788,8 +1973,97 @@ Bulk is the same with `OnRebuilt` in the commit step and one `Reset` in the publ
     `Reset`; it handles `AnchorRequested` only to pin its own bring-into-view target.
   - ItemsRepeater has no re-anchor of its own, so `TableView` does it in the owner, not in the
     layout.
-- **`RowStateEdit`s are not collection changes.** They go to the owner, which refreshes the chrome
-  of realized rows at those indexes; unrealized rows read the state when realized.
+- **`RowStateEdit`s are not collection changes.** They go to the owner in
+  `ShapingAppliedArgs::States`, and it refreshes the chrome of realized rows at those indexes;
+  unrealized rows read the state when realized.
+
+#### Owner notifications (decided, #18 O1–O7)
+
+`Shaping/IShapingOwner.h`. The channel from `ShapingManager` to `TableView`. It replaces v1's
+separate `std::function` hooks on `TableViewSource` (`SetShapingChangedHandler`,
+`SetRowsReleasedHook`, `SetLiveShapingHold` / `ResumeHeldLiveShaping`, `SetProjectionChangedHandler`,
+`SetOwningTableView`).
+
+```cpp
+struct ShapingAppliedArgs
+{
+    ShapingChangeFlags Changes;                    // Reset | Membership | Order | RowState
+    std::span<RowStateEdit const> States;          // final indexes; empty on Reset
+    std::span<SourceRecord const* const> Retired;  // left the source; valid during the call
+};
+
+struct IShapingOwner
+{
+    virtual void OnResetting() = 0;                                  // before a Reset, old rows readable
+    virtual void OnShapingApplied(ShapingAppliedArgs const& args) = 0; // after the last event
+};
+
+// TableViewSource2 (internal), forwarding to ShapingManager:
+void SetOwner(IShapingOwner* owner);       // single owner; nullptr releases
+void BeginLiveShapingHold() noexcept;      // counted
+void EndLiveShapingHold();                 // count 0: post a drain if changes are pending
+```
+
+- **O1 — Shape: one native interface.** `TableView` (or a sink it owns) implements
+  `IShapingOwner` and registers it with `TableViewSource2::SetOwner`. `ShapingManager` keeps a raw
+  `IShapingOwner*` (`m_owner`); with no owner, `Publish` skips the calls. One object and one
+  header carry the whole contract, and the source layer still never names `TableView`.
+  Every call is on the UI thread from `Publish`, inside the #19 apply scope: reading the view and
+  the row metadata provider is allowed; a verb, `Refresh` or an expansion verb throws.
+  Rejected: separate `std::function` setters as in v1 (about eight setters and members, no single
+  contract, each to clear on unbind); public WinRT events (frozen public API, boxing, event-args
+  types for an internal channel).
+- **O2 — Reset hooks: `OnResetting` plus one end-of-publish call.** For an `IsReset` delta,
+  `Publish` calls `OnResetting()`, then `Flattener::ApplyReset()` (swaps the staged rows in), then
+  `NotifyReset`. So in `OnResetting` the view still serves the old rows and the owner captures its
+  anchor candidates. The restore happens in `OnShapingApplied`, which every unit of work ends
+  with. `Rebuild` therefore stages its rows (`m_staged`) instead of writing `m_rows` during the
+  commit, matching the surgical rule that `m_rows` changes only at publish. The engine likewise
+  moves a rebuild's old group set to `m_retired` instead of destroying it, so old header rows
+  stay readable until `ReleaseRetired`. Rejected: a separate
+  `OnReset()` right after the event (duplicates the end-of-publish call), and having the owner
+  track anchors on every layout pass (per-frame cost for a rare event).
+- **O3 — Removed records: retired only, borrowed.** `ShapingAppliedArgs::Retired` is the
+  `SourceChange::Removed` list of the change being published (a source remove or replace, or every
+  record gone in a source `Reset`), shown or not, as a `std::span` valid during the call (the
+  records are destroyed when the `SourceTable` handler returns). The owner purges selection, focus
+  and comparer ranks by `Item()` / `Identity()`. Records hidden by a filter or collapse are not
+  reported: their state survives and returns when they are shown again (v1 released rows only on
+  source removal). `OnShapingApplied` is called when the delta is non-empty or `Retired` is
+  non-empty, so removing a hidden record still purges. Empty for verbs, expansion and live shaping.
+  Rejected: reporting hidden rows too (a selection-policy question and more data per commit), and
+  copied `(key, item)` pairs (an allocation per commit; `SourceRecord` is already visible to
+  `TableView`).
+- **O4 — Live-shaping hold: counted push.** `BeginLiveShapingHold` / `EndLiveShapingHold`
+  increment and decrement `ShapingManager::m_liveHoldCount`. `DrainLiveChanges` defers while it
+  is above 0 (changes stay in `m_liveDirty`). Reaching 0 calls `PostLiveDrain` if changes are
+  pending, never draining inline (the owner is usually inside an input handler). Nested reasons
+  (a cell edit during a pointer press) compose, and resuming is part of releasing, so it cannot be
+  forgotten. Verbs and `Refresh` are not held: they still flush `m_liveDirty` synchronously.
+  Rejected: v1's pull (`IsLiveShapingHeld()` queried at drain time plus a separate resume call
+  that, if missed, leaves changes stuck), and a pushed bool (the owner combines reasons itself).
+- **O5 — Structure-change signal: flags.** `ShapingChangeFlags` (`View/FlatDelta.h`) on
+  `FlatDelta::Changes`, derived from what happened, not from which verb ran:
+  - `Reset`: set by `OnRebuilt` (and the expand-all verbs). `ShapingManager` adds `Order` when
+    the reshape came from a sort-only `Diff` (sort or group direction changed, nothing else), else
+    `Membership`.
+  - Surgical: the flattener keeps `m_departed`, the shown nodes removed in this commit. An insert
+    of a node in that list is a move (`Order`); any other shown insert, and any node still in the
+    list at `EndCommit`, is `Membership`. `Expand` / `Collapse` set `Membership` when rows appear
+    or disappear.
+  - `RowState`: `States` is non-empty.
+  The owner maps them to UIA `StructureChanged`: `Order` alone → `ChildrenReordered`;
+  `Membership` or `Reset` → `ChildrenInvalidated`; `RowState` alone → none. Replaces v1
+  `ShapingChanged(reorderOnly)`. Rejected: always `ChildrenInvalidated` (screen readers rebuild on
+  every sort), and a separate `OnStructureChanged` callback (two calls per commit at one point).
+- **O6 — No `Replace` merging.** See *Splice shape*.
+- **O7 — Single owner.** `SetOwner` throws `E_ILLEGAL_STATE_CHANGE` when a different non-null
+  owner is set, and throws during an apply. `SetOwner(nullptr)` releases the owner and its holds
+  (`m_liveHoldCount = 0`, then a posted drain if changes are pending). The owner must call it
+  before it is destroyed. `Clear()` nulls `m_owner` first, so teardown raises no callbacks. The
+  v1 `OwnerReleased` handoff (a second `TableView` taking over) is deferred to `TableView`
+  integration (Phase 6). Rejected: last writer wins (the old owner silently stops hearing), and
+  no rule at all.
 
 ### Shaping engine: `ShapingEngine`
 
@@ -1860,7 +2134,8 @@ private:
   frees its subtree. Order: a surgical prune calls `OnRemoving` before erasing the group from its
   parent's `Subgroups` (O(siblings) find, swap-and-pop) and moving it to `m_retired`, destroyed
   by `ReleaseRetired()` after `Publish` (V4). A rebuild builds the new set aside, swaps
-  it in under the root, calls `OnRebuilt`, then destroys the old set. v1 instead ref-counts COM
+  it in under the root, calls `OnRebuilt`, then moves the old set to `m_retired` (#18 O2: the old
+  rows stay readable through `OnResetting`). v1 instead ref-counts COM
   `ShapedGroup`s held by a key-path cache, so a group's lifetime is spread across holders.
   Rejected:
   - Engine-wide pool (`std::deque<GroupNode>` plus a free list): fewer allocations, but reused
@@ -1961,8 +2236,8 @@ private:
   - v1 refreshes on any source change while grouped (`ShapedItemsSource.cpp`, the
     `m_groupSelector` checks in `ApplyIncrementalChange` and `ApplyIncrementalVectorChange`), so it
     never creates or prunes a group surgically.
-  - Rejected for `None`: exact first-appearance (needs record source positions, O(n) per edit,
-    blocked on E5), a hybrid that falls back to `Reapply` for mid-source inserts (still diverges on
+  - Rejected for `None`: exact first-appearance (needs record source positions, O(n) per edit;
+    E5 keeps no stored order), a hybrid that falls back to `Reapply` for mid-source inserts (still diverges on
     removal unless every removal falls back), and v1's `Reapply` on any create or prune (a `Reset`
     for every new key).
 - **Live shaping (decided, E7).** `ItemChanged(record, propertyName)` from `SourceTable`.
@@ -1988,8 +2263,9 @@ private:
     `Clear()` empties it, so a drain posted before teardown is a no-op (the posted callback also
     holds a weak reference to the owning `TableViewSource2`).
   - Hold during a cell edit: the drain is skipped while the owner holds live shaping, so the
-    edited row does not move away under the editor; releasing the hold posts a drain. v1 has the
-    same hold (`m_liveShapingHold`). The hook is declared with #18 (owner notifications).
+    edited row does not move away under the editor; releasing the last hold posts a drain. v1 has
+    the same hold (`m_liveShapingHold`). Decided with #18 (O4): a counted
+    `BeginLiveShapingHold` / `EndLiveShapingHold` on `TableViewSource2`.
   - Precedent: v1 `OnLiveShapedItemChanged` (`ShapedItemsSource.cpp`) diffs a key snapshot and
     posts one `Refresh` (a full `Reapply` and `Reset`) per turn even for one record; WPF posts
     `RestoreLiveShaping` and moves each dirty item.
@@ -2004,8 +2280,26 @@ private:
 - **Teardown.** `Clear()` drops every `GroupNode` (and its tracked `Key`), every record's
   `SortKeys` and `ShapedChildren`, empties the root and resets the applied spec. It runs after
   `Flattener::Clear()` and before `SourceTable::Clear()`, while the tracker owner is alive.
-- **Open (engine):** E5 insert (deferred; see Open items)
-  position and tie-break by source order.
+- **Surgical placement and tie order (decided, E5: option B, no stored order).** Where a record
+  lands among its shaped siblings on a surgical insert, move or key change; the result equals a
+  rebuild's stable sort (equal keys end in source order). `ShapingEngine::PlacementIndex`, in the
+  compute phase, into `StagedRecord::ShapedIndex`; the list is taken without the record.
+  - Sort active: binary-search the run of siblings whose keys tie (the only app code, through
+    `Comparer` levels). Mark the run with the transient `ShapeFlags::PlacementMark`, walk the
+    record's source siblings backwards from its source position to the first marked one and insert
+    after it (the run start if none), then clear the marks.
+  - Filter or `GroupBy` only (shaped order is source order): walk back to the first source sibling
+    in the same shaped list (`InShapedParent`, same `ShapeState::Group` when top-level) and insert
+    after its index in the list (0 if none). Neither: the source position.
+  - Source position: `SourceChange::NewIndex`; live shaping finds the record in its source sibling
+    list. O(log n + t + walk), worst case O(n); reads only besides the marks; no upkeep on source
+    changes.
+  - v1 resolves a tie only when the item is last in the source and otherwise refreshes
+    (`ShapedItemsSource.cpp`, `SortedInsertPlacementFor`).
+  - Rejected: D, gapped 64-bit order labels (O(log n) placement but every source insert maintains
+    labels, with a rare relabel); A, a dense `SourceIndex` on `SourceRecord` (O(n) scattered
+    renumbering writes per insert for flat and top-level records); C, v1's `Reapply` on a tie
+    (tie-heavy sorts would rebuild constantly).
 
 ## 7. Implementation plan
 
@@ -2052,7 +2346,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `SourceTable` Reset.
 - [x] Declare the delegate registry (`ShapeDelegates`) and the path evaluator (`PathEvaluator`).
 - [ ] Implement `SortSpec::Matches`, `Diff`, `ShapeDelegates` and `PathEvaluator`.
-- [ ] Revisit path evaluation (`PathEvaluator`, `SortMemberPathResolver`; open, see §5).
+- [x] Decide path evaluation (§5: keep the binding-based `PathEvaluator`).
 - [x] Decide spec ownership and application (§5: desired spec in the coordinator, applied in the engine).
 - [x] Decide the per-verb rule for misbehaving records (§5: propagate, compute before commit,
   ranges all-or-nothing, group key failures go to the null-key group, desired spec not reverted
@@ -2061,13 +2355,6 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
   per-feed out-of-sync recovery).
 - [x] Add the desired spec to the coordinator (`ShapingManager::m_desired`, declared).
 - [ ] Wire `TableViewSource2` verb methods to forward to `ShapingManager`, which updates `m_desired`.
-
-### Phase 3 — Projection output & row metadata (`Projection/Projection.h/.cpp`, `RowMetadataProvider`)
-- [ ] Define the projected row store (`std::vector<SourceRecord*>` + `Identity` → projected index for
-      flat views; group/hierarchy adapters for grouped/tree views) separated from `SourceTable`.
-- [ ] Expose the WinRT `IObservableVector<IInspectable>` view consumed by `ItemsRepeater`.
-- [ ] Wire `RowMetadataProvider` to read row identities and indices from the projection and shared
-      `std::shared_ptr<SourceTable>` without recomputing `Identity()`.
 
 ### Phase 4 — Shaping engine (`Engine/ShapingEngine.h/.cpp`)
 - [x] Declare `ShapingEngine` (`Engine/ShapingEngine.h`): references, applied spec, stable root,
@@ -2082,6 +2369,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       placement (E9).
 - [x] Live shaping: routing by re-evaluate and diff, `ApplyItemChanged`, `ApplyItemsChanged`,
       `LiveChange`, `Rebuild` scoped to dirty records (E7).
+- [x] Surgical placement and tie order: `PlacementIndex`, `ShapeFlags::PlacementMark`,
+      `StagedRecord::ShapedIndex` (E5).
 - [ ] Shaped tree node types `ShapedRef`, `GroupNode` (`Engine/ShapedTree.h`): declared, no
       implementation.
 - [x] Decide where engine state lives: an engine-owned `ShapeState` slot on `SourceRecord`.
@@ -2107,7 +2396,16 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       for shown nodes, `ItemCount` derivation, group-expansion pruning
       (`ShapingEngine::GroupsByIdentity`, `RetainOnly` after every rebuild), and filter auto-expand
       (`ShapeFlags::OverlayCollapsed`).
-- [ ] Declare the WinRT visible-list member.
+- [x] Declare the WinRT visible list: `ShapedCollectionView` (D1–D4), `GroupHeaderRow`, and the
+      coordinator's visible-list read helpers.
+- [x] Declare the row metadata provider: `ShapedRowMetadata` (R1–R4), the coordinator's
+      row-metadata helpers and `TableViewSource2::GetRowMetadata()`.
+- [x] Decide and declare owner notifications (#18 O1–O7): `IShapingOwner`, `ShapingAppliedArgs`,
+      `ShapingChangeFlags`, `SetOwner`, the counted live-shaping hold, `Flattener::ApplyReset` /
+      `m_staged` / `m_departed`, and `Publish(delta, retired)`.
+- [x] Decide and declare reveal (#20): `ShapingManager::Reveal`, `Flattener::Reveal`,
+      `ShapingEngine::InShapedTree`, `ShapedRowMetadata::Reveal` and
+      `ITableViewRowMetadataProvider::Reveal` (default -1). Per-item expand stays internal.
 - [ ] Implement the `Flattener` (`View/Flattener.cpp`) and `ShapedRef::ShapedChildCount`,
       `operator==`, `ShapedRefHash`.
 
@@ -2123,39 +2421,61 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - [ ] Handle `SourceTable::ItemChanged` (`(SourceRecord*, propertyName)`): filter by active
       `ShapeSpec` property dependencies, coalesce per dispatcher turn, and re-evaluate affected
       records (every record for `ItemChanged(nullptr, L"")`) without managing `INotifyPropertyChanged` subscriptions in the coordinator.
-- [ ] Fan out `SourceChanged` to `TableView` owner callbacks (selection/focus/rank purge of removed
-      records, projection rebuild notifications).
+- [ ] Implement the owner calls in `Publish` (`OnResetting`, `OnShapingApplied` with the retired
+      records of the `SourceChange` being handled) and the counted hold (#18).
 
 ### Phase 6 — `TableView` integration & validation
 - [ ] Switch `TableView` to accept `TableViewSource2` alongside `TableViewSource`.
+- [ ] `TableView` API review (#20): a public reveal (e.g. inside `ScrollIntoView(item)`) and a
+      public per-item expand / collapse, both over the internal `Reveal` / `SetExpanded`.
 - [ ] Build and run API + interaction test suites (`TableViewSource_APITests`, `TableView_Sorting_APITests`,
       `TableView_LiveShaping_APITests`, `TableView_HierarchicalRows_APITests`).
 
-## Later design sessions: `DeferRefresh`
+## `DeferRefresh` (decided)
 
-Postponed, not dropped. This records what is already settled so the later session starts from it.
-
-- **What it is.** `DeferRefresh()` returns a handle; verbs called while a handle is open edit the
-  desired spec but do not apply it. The outermost handle's `Dispose` applies
-  `Diff(applied, desired)` once, giving one reshape and one `FlatDelta` for several verbs.
-- **Nesting (proposed, WPF model).** A depth counter: every verb is gated (unlike the Community
-  Toolkit's `Filter`), inner ends never refresh, and disposing a handle twice is a no-op.
-- **Errors.** An apply exception from app code surfaces from the outermost `Dispose`, with the same
-  rules as a verb (see *Misbehaving records*: desired not reverted, applied stays old).
-- **Hierarchy verbs (decided).** `ParentBy`/`ChildrenBy` act on `SourceTable`, not the spec, so a
-  spec-only deferral would not batch them: the tree would rebuild and reshape with the old spec,
-  then reshape again at `Dispose`. `SourceTable` therefore gets its own deferral counter, and an
-  open `DeferRefresh` holds it too. At the outermost `Dispose`, `SourceTable` rebuilds the tree
-  once and the engine reshapes once with the new spec. Rejected: leaving hierarchy verbs
-  undeferred (two reshapes, an intermediate state visible), and moving the hierarchy selectors
-  into the spec (contradicts `SourceTable` owning the tree).
-- **Open for that session.** Whether source changes arriving while a handle is open are shaped
-  immediately with the applied spec or queued; whether the `SourceTable` deferral counter is the
-  #19 freeze depth (`BeginFreeze` / `EndFreeze`, which already collapses to `m_pendingReset`); whether `Refresh()` inside a handle is deferred too.
-- **Checklist (when picked up).**
-  - [ ] Declare `DeferRefresh()` in the IDL and `TableViewSource2`.
-  - [ ] Add the `DeferRefresh` depth counter to `TableViewSource2` (or the coordinator).
-  - [ ] Add the `SourceTable` deferral counter and hold it from `DeferRefresh`.
+- **What it is.** `Windows.Foundation.IClosable DeferRefresh()` (C# `using`); verbs called while a
+  handle is open edit the desired spec but do not apply it. The outermost handle's `Close` applies
+  everything once, giving one reshape and one `FlatDelta` (a Reset) for several verbs.
+- **Shape and nesting (decided: IClosable, WPF model).** `DeferRefreshHandle` (in
+  `TableViewSource2.h`) holds a weak reference to the source and a closed flag: a second `Close` is
+  a no-op, and `Close` after the source is gone or torn down does nothing.
+  `ShapingManager::BeginDeferRefresh` / `EndDeferRefresh` keep a depth counter (`m_deferDepth`):
+  every verb is gated (unlike the Community Toolkit's `Filter`), inner ends never refresh.
+  `BeginDeferRefresh` throws while an apply runs (#19). Rejected: a `BeginDeferRefresh` /
+  `EndDeferRefresh` pair in the IDL (an exception inside the block leaves the deferral open unless
+  the app writes `try` / `finally`).
+- **Source changes while open (decided: freeze).** The outermost `BeginDeferRefresh` holds the #19
+  `SourceTable` freeze, so a collection change is not applied and only sets the pending reset; the
+  view stays as it was until `Close`, as during an apply. At the outermost end, `EndFreeze`
+  reports whether anything diverged. Rejected: shaping changes immediately with the applied spec
+  (work the `Close` reshape throws away, k events and then a Reset, and a separate `SourceTable`
+  counter for the hierarchy verbs).
+- **Hierarchy verbs (decided: the freeze is the deferral counter).** `ParentBy` / `ChildrenBy`
+  act on `SourceTable`, not the spec. While frozen, `SourceTable` stores them in
+  `m_pendingHierarchy` (Kind `None` for `ClearHierarchy`) and sets the pending reset; the re-read
+  at `Close` builds and validates the pending hierarchy instead of the current one (a throw
+  discards it and keeps the current tree). So the source is re-read once, the tree rebuilt once,
+  and the engine reshapes once with the new spec. Rejected: leaving hierarchy verbs undeferred
+  (two reshapes, an intermediate state visible), moving the hierarchy selectors into the spec
+  (contradicts `SourceTable` owning the tree), and a second counter beside the freeze.
+- **`Refresh()` while open (decided: deferred).** Sets `m_refreshRequested`; the outermost end
+  re-reads once. Rejected: running immediately (two Resets, and a re-read inside the freeze), and
+  throwing (surprising when every other verb is allowed).
+- **Outermost end.** `EndFreeze`; then, if it reported a pending change or `m_refreshRequested` is
+  set, `SourceTable::Refresh()`, whose Reset runs `Reapply()` with the desired spec; otherwise
+  `ApplyDesiredSpec()` (nothing when the spec did not change). Then `PostLiveDrain` if live
+  changes are pending: the drain is skipped while a handle is open (as under a hold), and a
+  `Reapply` empties the dirty set anyway.
+- **Errors.** An apply exception from app code surfaces from the outermost `Close`, with the same
+  rules as a verb (see *Misbehaving records*: desired not reverted, applied stays old). The depth
+  is 0 and `m_refreshRequested` cleared either way.
+- **Checklist.**
+  - [x] Declare `DeferRefresh()` in the IDL and `TableViewSource2`, and `DeferRefreshHandle`.
+  - [x] Declare `BeginDeferRefresh` / `EndDeferRefresh` / `IsRefreshDeferred`, `m_deferDepth`,
+        `m_refreshRequested` on `ShapingManager`.
+  - [x] Declare `SourceTable::m_pendingHierarchy` and the frozen behaviour of the hierarchy verbs.
+  - [ ] Implement (Phase 5) and test nesting, a throw from `Close`, and hierarchy plus spec verbs
+        in one handle.
 
 ## Open items
 
@@ -2170,39 +2490,19 @@ Postponed, not dropped. This records what is already settled so the later sessio
   elements reused when focused; a filtered-out anchor lands about one row off. Decision: keep
   `c_bulkThreshold = 1` and the stable `Reset`; the owner re-anchors (§6 *Scroll anchor across a
   `Reset`*).
-- **Owner notifications (open).** Must include a pre-`Reset` hook so the owner can capture the
-  scroll anchor (key and Y) before a `Reset` is published. Also decides whether the flattener merges an adjacent remove and
-  insert into one `{i, r, a}` splice published as a `Replace`. The callback that carries `RowStateEdit`s and removed records to
-  `TableView`, replacing v1 `ShapingChanged(reorderOnly)`.
-- **Source change during an apply (open).** A source event raised from app code in the compute
-  phase.
-- **E5: surgical placement and tie order (deferred).** Where a record lands among its shaped
-  siblings on a surgical insert, move or key change. Ties in sort keys must end in source order
-  (what a rebuild's stable sort produces); filter-only needs the count of passing siblings before
-  the record. v1 resolves a tie only when the item is last in the source and otherwise refreshes
-  (`ShapedItemsSource.cpp`, `SortedInsertPlacementFor`). Options considered:
-  - B (leading): no stored order. Binary search finds the tie run; mark it with a transient
-    `ShapeFlags` bit, walk the source siblings backwards from the record to the first marked one
-    and insert after it (run start if none); clear the marks. Filter-only walks back to the first
-    passing sibling (same group when grouped) and scans for it in the shaped list. Reads only, no
-    app code after the search, O(t + walk), worst case O(n), no maintenance.
-  - D: gapped 64-bit order labels (order maintenance); O(log n) placement, rare relabel.
-  - A, rejected: a dense `SourceIndex` on `SourceRecord`; renumbering is O(n) scattered writes for
-    flat and top-level records.
-  - C, rejected: fall back to `Reapply` on a tie (v1); tie-heavy sorts would rebuild constantly.
+- **Owner notifications (resolved, #18 O1–O7).** See §6 *Owner notifications*. Left for
+  `TableView` integration: the v1 `OwnerReleased` handoff between two owners.
+- **E5: surgical placement and tie order (resolved, option B).** See §6 *Surgical placement and
+  tie order*.
 - **Revisit the flattener after the engine (done).** Re-checked the flattener against the
   engine: F1 (one sink call at the topmost node that enters or leaves), F2 (counts valid only for
   shown nodes), F3 (`ItemCount` also covers group insert and remove), F4 (prune group expansion
   after every rebuild), F5 (filter auto-expand overlay bit), F6 (`OnRebuilt` clears `m_dirty`;
   expansion runs in the #19 scope). Root lifetime, the `groupLevelCount` handoff and the
   `ShapedEdit` fields needed no change.
-- **Expansion API (open).** Three parts:
-  - **Reveal verb:** expand a node's ancestors so it becomes visible. v1 has none: `Select(index)`
-    takes only visible indexes, and `ExpandSubtree` expands downward.
-  - **Filter auto-expand:** decided (F5, *Expansion*): v1 semantics with the
-    `ShapeFlags::OverlayCollapsed` bit.
-  - **Public per-item expand/collapse:** v1 has only the four expand-all verbs, plus toggling
-    through the UI, keyboard, UIA and the group header's `IsExpanded` DP.
+- **Expansion API (resolved, #20).** See §4 *Reveal and per-item expansion*. Left for the
+  Phase 6 `TableView` API review: a public reveal (e.g. inside `ScrollIntoView(item)`) and a public
+  per-item expand / collapse.
 
 - `Refresh` and `IsLiveShaping` are declared in the IDL and the header, with no `.cpp` stubs yet (Phase 1.4).
 - `m_shapingManager` is never created yet (the constructor does not allocate it), and

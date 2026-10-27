@@ -57,6 +57,12 @@ enum class ShapeFlags : uint8_t
     // cleared by the engine's full Filter stage (filter added, changed or removed, Reapply), not by
     // a live re-read or a surgical edit. Ignored on a record that passes the filter.
     OverlayCollapsed = 0x10,
+
+    // Transient tie-run mark for surgical placement (decided, E5). Set by
+    // ShapingEngine::PlacementIndex on the shaped siblings whose keys tie with the record being
+    // placed, read by its backward walk over the source siblings, and cleared before it returns.
+    // Never set outside that call.
+    PlacementMark = 0x20,
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeFlags);
 

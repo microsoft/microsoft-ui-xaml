@@ -40,10 +40,34 @@ public:
 
     void Refresh();
 
+    // Returns a new DeferRefreshHandle after ShapingManager::BeginDeferRefresh (decided, DeferRefresh
+    // session). Throws while an apply runs (#19), or after teardown.
+    winrt::Windows::Foundation::IClosable DeferRefresh();
+
+    // Internal (not in IDL): called once by DeferRefreshHandle::Close. Forwards to
+    // ShapingManager::EndDeferRefresh; no-op after teardown.
+    void EndDeferRefresh();
+
     // Forwards to ShapingManager, which forwards to SourceTable (owner of the flag and the
     // per-item subscriptions).
     bool IsLiveShaping() const;
     void IsLiveShaping(bool value);
+
+    // Internal (not in IDL): the row metadata provider for TableView, as v1
+    // TableViewSource::GetRowMetadata(). Forwards to ShapingManager::RowMetadata(). nullptr after
+    // teardown.
+    TableViewRowMetadataProvider GetRowMetadata();
+
+    // Internal (not in IDL), for TableView (#18). Forward to ShapingManager:
+    //   SetOwner: single owner (O7); throws E_ILLEGAL_STATE_CHANGE if another owner is set;
+    //     nullptr releases it and its live-shaping holds. Replaces v1 SetOwningTableView /
+    //     ReleaseOwningTableView and the separate handler setters (O1).
+    //   Begin / EndLiveShapingHold: counted hold (O4); replaces v1 SetLiveShapingHold and
+    //     ResumeHeldLiveShaping.
+    // No-ops after teardown, except SetOwner with a non-null owner, which throws.
+    void SetOwner(IShapingOwner* owner);
+    void BeginLiveShapingHold() noexcept;
+    void EndLiveShapingHold();
 
 private:
     [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);
@@ -55,4 +79,20 @@ private:
     // engine, flattener and View. Its tracker_refs are bound to this, so ~TableViewSource2() calls
     // m_shapingManager->Clear() while this object is still alive.
     std::unique_ptr<ShapingManager> m_shapingManager;
+};
+
+// The handle DeferRefresh() returns (decided, DeferRefresh session: IClosable, WPF nesting). Close
+// calls ShapingManager::EndDeferRefresh once; a second Close is a no-op. Holds a weak reference, so
+// an open handle does not keep the source alive; Close after the source is gone, or after
+// teardown, is a no-op. Not reference-tracked: it holds no app object. UI-thread affine.
+struct DeferRefreshHandle : winrt::implements<DeferRefreshHandle, winrt::Windows::Foundation::IClosable>
+{
+    explicit DeferRefreshHandle(winrt::weak_ref<winrt::TableViewSource2> source) noexcept;
+
+    // Exceptions from app code during the outermost reshape propagate from here.
+    void Close();
+
+private:
+    winrt::weak_ref<winrt::TableViewSource2> m_source;
+    bool m_closed{ false };
 };

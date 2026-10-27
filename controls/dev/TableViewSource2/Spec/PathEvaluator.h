@@ -38,7 +38,8 @@ public:
     PathEvaluator(PathEvaluator const&) = delete;
     PathEvaluator& operator=(PathEvaluator const&) = delete;
 
-    // Reads `path` from `item`. Error handling follows the engine's error rule (open, see the spec).
+    // Reads `path` from `item`. A path that cannot be evaluated gives nullptr, no throw (spec,
+    // "Misbehaving records").
     winrt::IInspectable Value(winrt::hstring const& path, winrt::IInspectable const& item);
 
     // Keeps only the resolvers for paths referenced by `specsInUse`; drops the rest.

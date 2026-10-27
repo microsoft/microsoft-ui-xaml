@@ -26,7 +26,8 @@
 //
 // Ownership (decided, WPF model): verbs edit the desired spec held by ShapingManager (the
 // coordinator) in place; the engine keeps a copy of the last applied spec and applies
-// Diff(applied, desired) synchronously after each verb (DeferRefresh batching is postponed).
+// Diff(applied, desired) synchronously after each verb, or once when the outermost DeferRefresh
+// handle closes.
 // App-code exceptions propagate; apply runs all app code before any write, so a failed apply
 // leaves the shaped state unchanged.
 

@@ -148,7 +148,7 @@ struct GroupNode
     uint32_t VisibleDescendantCount{ 0 };
 
     // The header's row value in the visible list (decided, V2): an internal GroupHeaderRow token
-    // holding Key and Identity only, created on the first VisibleRows::GetAt and reused after, so
+    // holding Key and Identity only, created on the first ShapedCollectionView::GetAtCore and reused after, so
     // the header's DataContext is stable. Null until then and on the shaped root. Mutable: the
     // visible list fills it from a const read.
     mutable winrt::Windows::Foundation::IInspectable HeaderRow{ nullptr };
