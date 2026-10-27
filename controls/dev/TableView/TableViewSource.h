@@ -68,6 +68,7 @@ public:
     winrt::ITableViewShapingSource ChildrenWith(winrt::TableViewChildrenSelector const&) { throw winrt::hresult_not_implemented(); }
     winrt::ITableViewShapingSource ChildrenWith(winrt::TableViewChildrenSelector const&, winrt::TableViewHasChildrenPredicate const&) { throw winrt::hresult_not_implemented(); }
     winrt::ITableViewShapingSource ClearChildrenWith() { throw winrt::hresult_not_implemented(); }
+    winrt::ITableViewShapingSource ParentBy(winrt::TableViewIdentitySelector const&) { throw winrt::hresult_not_implemented(); }
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
     // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
     // app declared through the fluent Sort verb (which is untokenized and so unaddressable by

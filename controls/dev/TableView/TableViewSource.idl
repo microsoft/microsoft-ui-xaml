@@ -43,7 +43,11 @@ interface ITableViewShapingSource
     ITableViewShapingSource Sort(String sortMemberPath, SortDirection direction);
     [default_overload] [method_name("Sort")]
     ITableViewShapingSource Sort(TableViewKeySelector keySelector, SortDirection direction);
+    [default_overload] [method_name("ParentBy")]
     ITableViewShapingSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    // Parent by row key: parentSelector returns the parent's key (null/empty for a root). Needs a keyed source.
+    [method_name("ParentByIdentity")]
+    ITableViewShapingSource ParentBy(TableViewIdentitySelector parentSelector);
     ITableViewShapingSource ClearFilter();
     ITableViewShapingSource ClearGroupBy();
     ITableViewShapingSource ClearSort();
@@ -68,6 +72,18 @@ runtimeclass TableViewSource : [default] ITableViewShapingSource
     // Null is the same as From(items). This variant does not support a key: non-null throws E_NOTIMPL.
     [method_name("FromWithKey")]
     static TableViewSource From(Object items, TableViewIdentitySelector keySelector);
+}
+
+// A source that identifies rows by an app-supplied key and shapes them through one pre-order row
+// array. Keys must be unique and non-empty.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource2 : [default] ITableViewShapingSource
+{
+    // Throws E_INVALIDARG: this variant needs a key selector.
+    static TableViewSource2 From(Object items);
+    [method_name("FromWithKey")]
+    static TableViewSource2 From(Object items, TableViewIdentitySelector keySelector);
 }
 
 // Creates a source by variant name, so a harness can switch source implementations without a

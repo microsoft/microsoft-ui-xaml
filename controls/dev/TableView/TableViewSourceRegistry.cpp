@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewSourceRegistry.h"
 #include "TableViewSource.h"
+#include "TableViewSource2.h"
 
 #include <array>
 #include <string_view>
@@ -23,6 +24,10 @@ namespace
         SourceVariant{ L"default", [](winrt::IInspectable const& items, winrt::TableViewIdentitySelector const& keySelector) -> winrt::ITableViewShapingSource
             {
                 return ::TableViewSource::From(items, keySelector);
+            } },
+        SourceVariant{ L"v2", [](winrt::IInspectable const& items, winrt::TableViewIdentitySelector const& keySelector) -> winrt::ITableViewShapingSource
+            {
+                return ::TableViewSource2::From(items, keySelector);
             } },
     };
 }
