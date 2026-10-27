@@ -85,7 +85,14 @@ silently elevated.
 
 ## Tree snapshots
 
-After connecting, select **Take tree snapshot**. The TAP captures exactly two
+As soon as a connection succeeds after the genuine TAP hello, the app
+automatically captures and saves an **Initial snapshot** as the first snapshot
+of that connection. Manual capture is disabled until this initial attempt
+finishes. A failed initial capture is reported without failing the connection;
+**Take tree snapshot** remains available to retry or capture later states.
+Each reconnect takes its own initial snapshot, retaining earlier history.
+
+The TAP captures exactly two
 trees: the realized XAML visual tree and its publicly exposed Composition visual
 tree, with object-to-visual correlations and a bounded set of SDK properties.
 The validated JSON is saved atomically under `%LOCALAPPDATA%\WinUIProfiler\Snapshots`;

@@ -30,6 +30,7 @@
   <data name="SnapshotHistoryNotice.Text" xml:space="preserve"><value>Select a snapshot to inspect its trees. This list lasts for the profiler session; saved JSON files are retained.</value></data>
   <data name="SnapshotHistory.AutomationProperties.Name" xml:space="preserve"><value>Captured tree snapshots</value></data>
   <data name="SnapshotHistoryTitleFormat" xml:space="preserve"><value>{0} | PID {1}</value></data>
+  <data name="InitialSnapshotHistoryTitleFormat" xml:space="preserve"><value>Initial snapshot | {0} | PID {1}</value></data>
   <data name="SnapshotHistorySummaryFormat" xml:space="preserve"><value>{0:N0} XAML | {1:N0} Composition | {2:N0} links</value></data>
   <data name="SnapshotViewerTitleFormat" xml:space="preserve"><value>Snapshot viewer - {0}</value></data>
   <data name="SnapshotViewerHeading.Text" xml:space="preserve"><value>Snapshot viewer</value></data>
