@@ -2958,10 +2958,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ScrollBar
+    unsealed runtimeclass ScrollBar
         : Microsoft.UI.Xaml.Controls.Primitives.RangeBase
     {
-        ScrollBar();
+        [method_name("CreateInstance")] ScrollBar();
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
         Double ViewportSize;
         Microsoft.UI.Xaml.Controls.Primitives.ScrollingIndicatorMode IndicatorMode;
