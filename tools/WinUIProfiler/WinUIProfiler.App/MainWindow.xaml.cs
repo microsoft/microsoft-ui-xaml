@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -9,6 +10,7 @@ using Windows.Graphics;
 using WinUIProfiler.App.Services;
 using WinUIProfiler.App.ViewModels;
 using WinUIProfiler.App.Views;
+using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Target;
 
@@ -26,6 +28,10 @@ public sealed partial class MainWindow : Window
     private volatile bool closing;
     private bool closeAllowed;
     private bool refreshing;
+    private CancellationTokenSource? snapshotOperation;
+    private SavedTreeSnapshot? snapshot;
+    private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
+    public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
     public MainWindow()
     {
         InitializeComponent();
@@ -51,8 +57,10 @@ public sealed partial class MainWindow : Window
         }
 
         closing = true;
+        snapshotOperation?.Cancel();
         connectionGeneration++;
         model.PropertyChanged -= Model_PropertyChanged;
+        foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
         await model.DisconnectAsync();
         closeAllowed = true;
         Close();
@@ -80,8 +88,11 @@ public sealed partial class MainWindow : Window
             (Trust, "TrustAutomation"),
             (ConnectButton, "ConnectAutomation"),
             (DisconnectButton, "DisconnectAutomation"),
+            (SnapshotButton, "SnapshotAutomation"),
+            (SnapshotStatus, "SnapshotStatusAutomation"),
             (ConnectionStatus, "StatusAutomation"),
-            (ConnectionIdentity, "IdentityAutomation")
+            (ConnectionIdentity, "IdentityAutomation"),
+            (EtwSummary, "EtwAutomation")
         })
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
@@ -140,6 +151,18 @@ public sealed partial class MainWindow : Window
             ConnectButton.IsEnabled = idle;
             DisconnectButton.IsEnabled = model.CanDisconnect && !closing;
             DisconnectButton.Content = Text(model.IsBusy ? "CancelConnection" : "DisconnectLabel");
+            SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy && snapshotOperation is null;
+            SnapshotStatus.Text = snapshotOperation is not null ? Text("SnapshotCapturing") :
+                snapshot is null ? "" : Format("SnapshotSavedFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Path);
+            AutomationProperties.SetItemStatus(SnapshotStatus, JsonSerializer.Serialize(new
+            {
+                busy = snapshotOperation is not null,
+                captureId = snapshot?.CaptureId,
+                path = snapshot?.Path,
+                roots = snapshot?.Roots,
+                xamlNodes = snapshot?.XamlNodes,
+                compositionNodes = snapshot?.CompositionNodes
+            }));
             var stateKey = "State" + model.State.Replace(" ", "", StringComparison.Ordinal);
             ConnectionStatus.Title = Text(stateKey);
             ConnectionStatus.Message = model.Detail;
@@ -164,6 +187,10 @@ JsonSerializer.Serialize(new
 }));
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
+            var etw = model.Etw;
+            EtwSummary.Text = model.EtwError is { } etwError ? Format("EtwUnavailable", etwError)
+                : etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
+                    etw.XamlEvents, etw.ProfilerEvents, etw.LostEvents, etw.DroppedEvents);
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
@@ -202,6 +229,7 @@ JsonSerializer.Serialize(new
 
     private async void Connect_Click(object sender, RoutedEventArgs args)
     {
+        snapshot = null;
         var generation = ++connectionGeneration;
         try
         {
@@ -241,9 +269,60 @@ selectedTarget?.CreationTimeFileTime);
 
     private async void Disconnect_Click(object sender, RoutedEventArgs args)
     {
+        snapshotOperation?.Cancel();
         connectionGeneration++;
         DisconnectButton.IsEnabled = false;
         await model.DisconnectAsync();
+    }
+
+    private async void Snapshot_Click(object sender, RoutedEventArgs args)
+    {
+        if (snapshotOperation is not null) return;
+        using var cancellation = new CancellationTokenSource();
+        snapshotOperation = cancellation;
+        Refresh();
+        try
+        {
+            var connection = model.Connection ?? throw new InvalidOperationException(Text("SnapshotRequiresConnection"));
+            var process = connection.Scope?.Process ?? throw new InvalidOperationException(Text("SnapshotRequiresConnection"));
+            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "WinUIProfiler", "Snapshots");
+            snapshot = await connection.TakeSnapshotAsync(directory, cancellation.Token);
+            var savedAt = DateTimeOffset.UtcNow;
+            Snapshots.Insert(0, new(snapshot, process, savedAt,
+                Format("SnapshotHistoryTitleFormat", savedAt.ToLocalTime().ToString("G", CultureInfo.CurrentCulture),
+                    process.ProcessId),
+                Format("SnapshotHistorySummaryFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Correlations)));
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+        catch (Exception error)
+        {
+            model.ReportError(error);
+        }
+        finally
+        {
+            snapshotOperation = null;
+            Refresh();
+        }
+    }
+
+    private void SnapshotEntry_Click(object sender, ItemClickEventArgs args)
+    {
+        if (closing || args.ClickedItem is not SnapshotHistoryEntry entry) return;
+        try
+        {
+            if (!snapshotWindows.TryGetValue(entry.Saved.CaptureId, out var viewer))
+            {
+                viewer = new(entry);
+                snapshotWindows.Add(entry.Saved.CaptureId, viewer);
+                viewer.Closed += (_, _) => snapshotWindows.Remove(entry.Saved.CaptureId);
+            }
+            viewer.Activate();
+        }
+        catch (Exception error)
+        {
+            model.ReportError(error);
+        }
     }
 
     private async void Browse_Click(object sender, RoutedEventArgs args)

@@ -5,7 +5,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
+using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.Engine.Target;
 
@@ -22,16 +24,27 @@ bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
 long? ExpectedCreationTimeFileTime = null);
 public sealed record ConnectionProgress(string State, string Detail);
+// FromProcessStart is true when the session was listening before the target was created, so its startup is
+// included; otherwise the counts start when the profiler connected.
+public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long ProfilerEvents, int LostEvents, long DroppedEvents);
 
 [SupportedOSPlatform("windows")]
 public sealed class TargetConnection : IAsyncDisposable
 {
     private readonly CancellationTokenSource stop = new();
     private readonly object disposalGate = new();
+    private readonly SemaphoreSlim targetCommands = new(1, 1);
     private readonly IProgress<ConnectionProgress>? progress;
     private Process? target;
     private TapClient? tap;
     private ProcessMetricSession? sampling;
+    // Kept after cleanup so the final counts stay visible.
+    private LiveEtwSource? etw;
+    private EventPipeline? pipeline;
+    private EventCounter? eventCounter;
+    private bool etwFromProcessStart;
+    private long etwListeningSinceFileTime;
+    private string? etwStartError;
     private Task? lifetime;
     private Task? disposal;
     private volatile string state = "Preparing";
@@ -56,6 +69,22 @@ public sealed class TargetConnection : IAsyncDisposable
     public DateTime? LastHelloUtc => Interlocked.Read(ref lastHelloTicks) is var ticks && ticks > 0
         ? new DateTime(ticks, DateTimeKind.Utc) : null;
     public Task Completion => lifetime ?? Task.CompletedTask;
+    public EtwStatus? Etw => eventCounter is { } counter && etw is { } source && pipeline is { } events
+        ? new(etwFromProcessStart, counter.XamlEvents, counter.ProfilerEvents, source.EventsLost, events.DroppedEvents) : null;
+    // Set when the ETW session could not start or stopped with an error; process metrics keep working.
+    public string? EtwError
+    {
+        get
+        {
+            if (etwStartError is not null)
+            {
+                return etwStartError;
+            }
+
+            var failure = etw?.Failure ?? pipeline?.Failure;
+            return failure is null ? null : $"ETW reading stopped: {failure.Message}";
+        }
+    }
     private TargetConnection(IProgress<ConnectionProgress>? progress) => this.progress = progress;
 
     public static void ValidateOptions(TargetConnectionOptions options)
@@ -133,6 +162,12 @@ public sealed class TargetConnection : IAsyncDisposable
         var token = deadline.Token;
         token.ThrowIfCancellationRequested();
         Report("Launching", options.Target);
+        var launchExecutables = GetLaunchExecutables(options);
+        if (launchExecutables.Count > 0)
+        {
+            PrepareEtw(launchExecutables);
+        }
+
         target = options.Kind switch
         {
             TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
@@ -146,6 +181,7 @@ public sealed class TargetConnection : IAsyncDisposable
             throw new InvalidOperationException("The selected PID was reused. Refresh the process list and select again.");
         }
 
+        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables);
         var payloads = ConnectionPayloadCatalog.Resolve(options.PayloadDirectory, InjectorResolver.GetArchitecture(Scope.Process));
         Report("Waiting for XAML", $"PID {target.Id}; waiting for the WinUI diagnostics endpoint.");
         string? runtime = null;
@@ -206,8 +242,156 @@ History);
         lifetime = MaintainAsync();
     }
 
+    // The executable names a launch will start, so ETW can listen before the process exists. Empty for attach,
+    // or when a packaged application's executable cannot be determined; ETW then starts after the launch.
+    private static IReadOnlyList<string> GetLaunchExecutables(TargetConnectionOptions options)
+    {
+        try
+        {
+            return options.Kind switch
+            {
+                TargetLaunchKind.Unpackaged => Path.GetFileName(options.Target) is { Length: > 0 } name ? [name] : [],
+                TargetLaunchKind.Packaged => TargetLauncher.GetPackagedExecutableNames(options.Target),
+                _ => []
+            };
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"The launched executable is unknown, so ETW starts after the launch: {error}");
+            return [];
+        }
+    }
+
+    private void PrepareEtw(IReadOnlyList<string> launchExecutables)
+    {
+        try
+        {
+            etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
+            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables);
+        }
+        catch (Exception error)
+        {
+            SetEtwStartError(error);
+        }
+    }
+
+    private void StartEtw(Process process, long? creationTimeFileTime, IReadOnlyList<string> launchExecutables)
+    {
+        if (etwStartError is not null)
+        {
+            return;
+        }
+
+        var counter = new EventCounter();
+        var events = new EventPipeline([counter]);
+        try
+        {
+            if (etw is null)
+            {
+                etw = LiveEtwSource.Start(process.Id, events.Post);
+            }
+            else
+            {
+                // The session has listened since before the launch. It saw this process's start only if the process
+                // was created after that (activating a packaged app that is already running returns the existing
+                // process) and runs one of the executables the session was filtering on.
+                var createdAfterListening = creationTimeFileTime >= etwListeningSinceFileTime;
+                var runsExpectedExecutable = launchExecutables.Any(name =>
+                    Path.GetFileNameWithoutExtension(name).Equals(process.ProcessName, StringComparison.OrdinalIgnoreCase));
+                etwFromProcessStart = createdAfterListening && runsExpectedExecutable;
+                if (!etwFromProcessStart)
+                {
+                    Trace.TraceWarning(createdAfterListening
+                        ? $"Launched {process.ProcessName}, expected {string.Join(", ", launchExecutables)}; ETW starts now."
+                        : "The activated application was already running; ETW starts now.");
+                }
+
+                etw.StartReading(process.Id, events.Post);
+            }
+
+            pipeline = events;
+            eventCounter = counter;
+        }
+        catch (Exception error)
+        {
+            events.Dispose();
+            etw?.Dispose();
+            etw = null;
+            etwFromProcessStart = false;
+            SetEtwStartError(error);
+        }
+    }
+
+    private void SetEtwStartError(Exception error)
+    {
+        etwStartError = error is UnauthorizedAccessException
+            ? "Reading ETW needs an elevated profiler or membership in the local Performance Log Users group."
+            : $"The ETW session could not start: {error.Message}";
+        Trace.TraceWarning(error.ToString());
+    }
+
     public static ProcessInstanceKey Identify(Process process) =>
         new(checked((uint)process.Id), process.StartTime.ToFileTimeUtc(), Guid.NewGuid());
+
+    public async Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
+        if (!Path.IsPathFullyQualified(directory))
+        {
+            throw new ArgumentException("Snapshot output directory must be absolute.", nameof(directory));
+        }
+
+        var client = tap;
+        if (State != "Connected" || client is null)
+        {
+            throw new InvalidOperationException("Connect to a target before taking a tree snapshot.");
+        }
+
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
+        var token = cancellation.Token;
+        TreeSnapshotDocument snapshot;
+        await targetCommands.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            snapshot = await client.TakeSnapshotAsync(TimeSpan.FromSeconds(30), token).ConfigureAwait(false);
+        }
+        finally
+        {
+            targetCommands.Release();
+        }
+
+        token.ThrowIfCancellationRequested();
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, $"tree-{snapshot.ProcessId}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{snapshot.CaptureId:N}.json");
+        var temporary = path + ".partial";
+        var created = false;
+        var committed = false;
+        try
+        {
+            await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                64 * 1024, FileOptions.Asynchronous))
+            {
+                created = true;
+                await TreeSnapshotCodec.WriteAsync(output, snapshot, token).ConfigureAwait(false);
+            }
+            token.ThrowIfCancellationRequested();
+            File.Move(temporary, path);
+            committed = true;
+            return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
+                snapshot.CompositionNodes.Count, snapshot.Correlations.Count);
+        }
+        finally
+        {
+            if (created && !committed)
+            {
+                try { File.Delete(temporary); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+                {
+                    Trace.TraceError($"Removing incomplete tree snapshot '{temporary}' failed: {error}");
+                }
+            }
+        }
+    }
 
     private async Task MaintainAsync()
     {
@@ -230,7 +414,16 @@ History);
                     throw new IOException("Process sampling ended unexpectedly.");
                 }
                 await delay.ConfigureAwait(false);
-                await tap!.HelloAsync(TimeSpan.FromSeconds(5), stop.Token).ConfigureAwait(false);
+                // A bounded tree capture must not consume the heartbeat's own timeout.
+                await targetCommands.WaitAsync(stop.Token).ConfigureAwait(false);
+                try
+                {
+                    await tap!.HelloAsync(TimeSpan.FromSeconds(5), stop.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    targetCommands.Release();
+                }
                 Interlocked.Exchange(ref lastHelloTicks, DateTime.UtcNow.Ticks);
                 Changed?.Invoke(this, EventArgs.Empty);
             }
@@ -261,6 +454,17 @@ History);
     private async Task CleanupAsync(bool targetExited = false)
     {
         var errors = new List<Exception>();
+        try
+        {
+            // Stop the source before the pipeline so nothing is posted to a finished queue.
+            etw?.Dispose();
+            pipeline?.Dispose();
+        }
+        catch (Exception error)
+        {
+            errors.Add(error);
+        }
+
         if (sampling is not null)
         {
             try
@@ -284,7 +488,7 @@ History);
         {
             try
             {
-                if (!targetExited && Failure is null)
+                if (!targetExited && Failure is null && !tap.IsClosed)
                 {
                     await tap.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
                 }
