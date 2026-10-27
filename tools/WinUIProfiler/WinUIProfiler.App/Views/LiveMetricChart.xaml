@@ -1,0 +1,21 @@
+<UserControl
+    x:Class="WinUIProfiler.App.Views.LiveMetricChart"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+            CornerRadius="8" Padding="12">
+        <Grid RowSpacing="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="64" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}" FontWeight="SemiBold" />
+            <Border Grid.Row="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <Canvas />
+            </Border>
+            <TextBlock Grid.Row="2" x:Uid="NoSamples" Style="{ThemeResource CaptionTextBlockStyle}" />
+        </Grid>
+    </Border>
+</UserControl>

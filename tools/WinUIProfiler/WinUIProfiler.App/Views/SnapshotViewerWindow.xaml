@@ -1,0 +1,48 @@
+<Window
+    x:Class="WinUIProfiler.App.Views.SnapshotViewerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Snapshot viewer">
+    <Grid Padding="20" RowSpacing="12" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="130" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Uid="SnapshotHeading" Style="{ThemeResource TitleTextBlockStyle}" />
+        <TextBlock Grid.Row="1" x:Uid="NoSnapshot" TextWrapping="Wrap" />
+        <Grid Grid.Row="2" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Uid="SnapshotXamlHeading" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TreeView Grid.Row="1" x:Uid="SnapshotXamlTree" AutomationProperties.AutomationId="SnapshotXamlTree"
+                          IsEnabled="False" CanDragItems="False" CanReorderItems="False" />
+            </Grid>
+            <Grid Grid.Column="1" RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Uid="SnapshotVisualHeading" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TreeView Grid.Row="1" x:Uid="SnapshotCompositionTree" AutomationProperties.AutomationId="SnapshotCompositionTree"
+                          IsEnabled="False" CanDragItems="False" CanReorderItems="False" />
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="3" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Uid="SnapshotXamlDetails" TextWrapping="Wrap" />
+            <TextBlock Grid.Column="1" x:Uid="SnapshotCompositionDetails" TextWrapping="Wrap" />
+        </Grid>
+    </Grid>
+</Window>

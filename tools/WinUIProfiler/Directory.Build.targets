@@ -1,0 +1,3 @@
+<Project>
+  <!-- Keep this standalone tool independent of the repository's product build targets. -->
+</Project>

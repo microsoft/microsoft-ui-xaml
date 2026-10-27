@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Heading.Text" xml:space="preserve"><value>WinUI Profiler</value></data>
+  <data name="SnapshotViewer.Content" xml:space="preserve"><value>Snapshot viewer</value></data>
+  <data name="AppScope.Title" xml:space="preserve"><value>App shell</value></data>
+  <data name="AppScope.Message" xml:space="preserve"><value>Process connection, session loading, and snapshot capture are not available in this build.</value></data>
+  <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Process metrics</value></data>
+  <data name="SavedSessionTab.Header" xml:space="preserve"><value>Saved session</value></data>
+  <data name="NoProcess.Text" xml:space="preserve"><value>No process connected.</value></data>
+  <data name="LiveCpuChart.Title" xml:space="preserve"><value>CPU</value></data>
+  <data name="LiveGpuChart.Title" xml:space="preserve"><value>GPU</value></data>
+  <data name="LiveWorkingSetChart.Title" xml:space="preserve"><value>Working set</value></data>
+  <data name="LivePrivateWorkingSetChart.Title" xml:space="preserve"><value>Private working set</value></data>
+  <data name="LiveCommitChart.Title" xml:space="preserve"><value>Private commit</value></data>
+  <data name="NoSamples.Text" xml:space="preserve"><value>No samples collected.</value></data>
+  <data name="NoSession.Text" xml:space="preserve"><value>No session loaded.</value></data>
+  <data name="SessionPath.Header" xml:space="preserve"><value>Saved session database</value></data>
+  <data name="SessionPath.PlaceholderText" xml:space="preserve"><value>Session loading is not available yet</value></data>
+  <data name="SessionPath.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Saved session database path</value></data>
+  <data name="Open.Content" xml:space="preserve"><value>Open</value></data>
+  <data name="SessionId.Text" xml:space="preserve"><value>Session identity</value></data>
+  <data name="ProcessId.Text" xml:space="preserve"><value>Process</value></data>
+  <data name="RecordedState.Text" xml:space="preserve"><value>Recorded state</value></data>
+  <data name="Metrics.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Session metric samples</value></data>
+  <data name="SnapshotHeading.Text" xml:space="preserve"><value>Snapshot viewer</value></data>
+  <data name="NoSnapshot.Text" xml:space="preserve"><value>No snapshot loaded. Snapshot capture and loading are not available in this build.</value></data>
+  <data name="SnapshotXamlHeading.Text" xml:space="preserve"><value>XAML tree</value></data>
+  <data name="SnapshotVisualHeading.Text" xml:space="preserve"><value>Composition visual tree</value></data>
+  <data name="SnapshotXamlTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot XAML tree</value></data>
+  <data name="SnapshotCompositionTree.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Snapshot composition tree</value></data>
+  <data name="SnapshotXamlDetails.Text" xml:space="preserve"><value>No XAML element details.</value></data>
+  <data name="SnapshotCompositionDetails.Text" xml:space="preserve"><value>No composition visual details.</value></data>
+</root>
