@@ -1572,10 +1572,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ScrollContentPresenter
+    unsealed runtimeclass ScrollContentPresenter
         : Microsoft.UI.Xaml.Controls.ContentPresenter
     {
-        ScrollContentPresenter();
+        [method_name("CreateInstance")] ScrollContentPresenter();
         Boolean CanVerticallyScroll;
         Boolean CanHorizontallyScroll;
         Double ExtentWidth{ get; };
