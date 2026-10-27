@@ -202,7 +202,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <XamlCompilerNetCoreDllPath Condition="'$(XamlCompilerNetCoreDllPath)' == ''">$(_MuxPackageToolsFolder)..\net8.0\XamlCompiler.dll</XamlCompilerNetCoreDllPath>
         <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' == 'Core'">$([MSBuild]::VersionGreaterThanOrEquals('$(MSBuildVersion)', '17.8'))</_XamlCompilerHasNetCoreSdk>
         <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(NETCoreSdkVersion)' != ''">$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))</_XamlCompilerHasNetCoreSdk>
-        <UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == '' and '$(XamlCompilerExePath)' == '' and '$(UseXamlCompilerExecutable)' != 'false' and '$(DOTNET_HOST_PATH)' != '' and '$(_XamlCompilerHasNetCoreSdk)' == 'true' and Exists('$(XamlCompilerNetCoreDllPath)')">true</UseNetCoreXamlCompiler>
+        <UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == '' and '$(XamlCompilerExePath)' == '' and '$(UseXamlCompilerExecutable)' != 'false' and '$(DOTNET_HOST_PATH)' != '' and '$(_XamlCompilerHasNetCoreSdk)' == 'true' and !$(NETCoreSdkVersion.Contains('-')) and Exists('$(XamlCompilerNetCoreDllPath)')">true</UseNetCoreXamlCompiler>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(XamlCompilerExePath) == ''">
@@ -210,7 +210,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </PropertyGroup>
 
     <PropertyGroup>
-        <_UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == 'true' and '$(IsNativeLanguage)' != 'true' and '$(DOTNET_HOST_PATH)' != ''">true</_UseNetCoreXamlCompiler>
+        <_UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == 'true' and '$(IsNativeLanguage)' != 'true' and '$(DOTNET_HOST_PATH)' != '' and '$(DesignTimeBuild)' != 'true'">true</_UseNetCoreXamlCompiler>
         <UseXamlCompilerExecutable Condition="'$(_UseNetCoreXamlCompiler)' == 'true' and '$(UseXamlCompilerExecutable)' == ''">true</UseXamlCompilerExecutable>
         <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' == 'true'">"$(DOTNET_HOST_PATH)" "$(XamlCompilerNetCoreDllPath)"</_XamlCompilerCommand>
         <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' != 'true'">"$(XamlCompilerExePath)"</_XamlCompilerCommand>
