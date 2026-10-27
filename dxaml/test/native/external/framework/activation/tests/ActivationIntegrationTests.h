@@ -29,5 +29,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         BEGIN_TEST_METHOD(CreateInputEventArgs)
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ActivationLibrarySearchesAddedDirectories)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify activation DLL lookup preserves loaded modules and includes AddDllDirectory locations.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WebView2EnvironmentFailureCompletesCreation)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify a WebView2 environment failure completes pending callers and permits retries.")
+        END_TEST_METHOD()
     };
 } } } } } }

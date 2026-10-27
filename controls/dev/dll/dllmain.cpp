@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "ActivationLibrary.h"
 #include "RuntimeProfiler.h"
 #include "WinUIrc.ver"
 #include <winstring.h>
@@ -186,12 +187,7 @@ int32_t __stdcall MuxcActivationHandler(
     {
         path.resize(dotPos);
         path += L".dll";
-        HMODULE hModule = LoadLibraryW(path.c_str());
-        if (!hModule)
-        {
-            // Preserve existing lookup before trying directories registered with AddDllDirectory.
-            hModule = LoadLibraryExW(path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-        }
+        HMODULE hModule = MuxcActivation::LoadLibraryForActivation(path.c_str());
         path.resize(path.size() - 4);
 
         if (!hModule)
