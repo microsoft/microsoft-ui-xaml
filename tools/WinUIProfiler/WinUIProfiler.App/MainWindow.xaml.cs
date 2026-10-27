@@ -91,7 +91,8 @@ public sealed partial class MainWindow : Window
             (SnapshotButton, "SnapshotAutomation"),
             (SnapshotStatus, "SnapshotStatusAutomation"),
             (ConnectionStatus, "StatusAutomation"),
-            (ConnectionIdentity, "IdentityAutomation")
+            (ConnectionIdentity, "IdentityAutomation"),
+            (EtwSummary, "EtwAutomation")
         })
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
@@ -186,6 +187,10 @@ JsonSerializer.Serialize(new
 }));
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
+            var etw = model.Etw;
+            EtwSummary.Text = model.EtwError is { } etwError ? Format("EtwUnavailable", etwError)
+                : etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
+                    etw.XamlEvents, etw.ProfilerEvents, etw.LostEvents, etw.DroppedEvents);
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
