@@ -1006,11 +1006,19 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
     _In_ xaml_controls::LayoutReference referenceInformation,
     _In_ BOOLEAN goForward)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::GenerateItemsBegin(GetHandle());
+#else
     TraceGenerateItemsBegin();
+#endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlElementTracing::GenerateItemsEnd(GetHandle());
+#else
         TraceGenerateItemsEnd();
+#endif
     });
 
     // needed for Sticky Headers

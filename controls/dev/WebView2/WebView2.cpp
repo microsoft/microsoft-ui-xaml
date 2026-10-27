@@ -1690,21 +1690,18 @@ void WebView2::TryCompleteInitialization()
     if (!m_textScaleChangedRevoker)
     {
         m_textScaleChangedRevoker = GetUISettings().TextScaleFactorChanged(winrt::auto_revoke,
-            [weakThis](auto&&, auto&&)
+            [weakThis, dispatcherHelper = m_dispatcherHelper](auto&&, auto&&)
             {
-                if (auto strongThis = weakThis.get())
-                {
-                    WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
-                    // OnTextScaleFactorChanged happens in non-UI thread, use dispatcher to call UpdateCoreWebViewScale in UI thread.
-                    rawThis->m_dispatcherHelper.RunAsync([weakThis]()
+                // Resolve the control only on the UI thread so the background
+                // notification cannot own its final release during shutdown.
+                dispatcherHelper.RunAsync([weakThis]()
+                    {
+                        if (auto strongThis = weakThis.get())
                         {
-                            if (auto strongThis = weakThis.get())
-                            {
-                                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
-                                rawThis->UpdateCoreWebViewScale();
-                            }
-                        });
-                }
+                            WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                            rawThis->UpdateCoreWebViewScale();
+                        }
+                    });
             });
     }
 
@@ -2223,23 +2220,29 @@ void WebView2::CheckAndUpdateVisibility(bool force)
 // To resolve this, we delay the call to hide CoreWV if the WebView is being hidden.
 void WebView2::UpdateCoreWebViewVisibility()
 {
-    auto strongThis = get_strong(); // ensure object lifetime during coroutines
-    auto updateCoreWebViewVisibilityAction = [&, strongThis]()
+    // The delayed action can outlive the UI dispatcher during window shutdown.
+    // Do not keep the control alive until the thread-pool timer releases it.
+    auto weakThis{ winrt::make_weak(static_cast<winrt::WebView2>(*this)) };
+    auto updateCoreWebViewVisibilityAction = [weakThis]()
     {
-        if (strongThis->m_coreWebViewController)
+        if (auto strongControl = weakThis.get())
         {
-            CoreWebView2RunIgnoreInvalidStateSync(
-                [&]()
-                {
-                    strongThis->m_coreWebViewController.IsVisible(strongThis->m_isVisible);
-                    
-                    // If controller is now visible and focus was pending, move focus now
-                    if (strongThis->m_isVisible && strongThis->m_xamlFocusChangeInfo.m_isPending)
+            auto rawThis = winrt::get_self<WebView2>(strongControl);
+            if (rawThis->m_coreWebViewController)
+            {
+                rawThis->CoreWebView2RunIgnoreInvalidStateSync(
+                    [&]()
                     {
-                        strongThis->MoveFocusIntoCoreWebView2(strongThis->m_xamlFocusChangeInfo.m_storedMoveFocusReason);
-                        strongThis->m_xamlFocusChangeInfo.m_isPending = false;
-                    }
-                });
+                        rawThis->m_coreWebViewController.IsVisible(rawThis->m_isVisible);
+
+                        // If controller is now visible and focus was pending, move focus now
+                        if (rawThis->m_isVisible && rawThis->m_xamlFocusChangeInfo.m_isPending)
+                        {
+                            rawThis->MoveFocusIntoCoreWebView2(rawThis->m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+                            rawThis->m_xamlFocusChangeInfo.m_isPending = false;
+                        }
+                    });
+            }
         }
     };
 
@@ -2251,6 +2254,7 @@ void WebView2::UpdateCoreWebViewVisibility()
     {
         if (m_coreWebViewController)
         {
+            auto strongThis = get_strong();
             CoreWebView2RunIgnoreInvalidStateSync(
                 [&]()
                 {

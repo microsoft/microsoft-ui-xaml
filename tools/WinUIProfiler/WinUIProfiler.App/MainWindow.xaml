@@ -1,0 +1,61 @@
+<Window
+    x:Class="WinUIProfiler.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:WinUIProfiler.App.Views">
+    <Grid x:Name="Root" Padding="24" RowSpacing="12"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Spacing="4">
+            <TextBlock x:Uid="PageTitle" Style="{ThemeResource TitleTextBlockStyle}" />
+            <TextBlock x:Uid="PageIntroduction" TextWrapping="Wrap" />
+        </StackPanel>
+        <Grid Grid.Row="1" RowSpacing="8" ColumnSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="230" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ComboBox x:Name="Mode" x:Uid="Mode" SelectedIndex="0" HorizontalAlignment="Stretch"
+                      SelectionChanged="Mode_SelectionChanged">
+                <ComboBoxItem x:Uid="UnpackagedMode" />
+                <ComboBoxItem x:Uid="PackagedMode" />
+                <ComboBoxItem x:Uid="AttachMode" />
+            </ComboBox>
+            <TextBox x:Name="TargetText" x:Uid="Target" Grid.Column="1" TextChanged="Target_TextChanged" />
+            <Button x:Name="Browse" x:Uid="Browse" Grid.Column="2" VerticalAlignment="Bottom" Click="Browse_Click" />
+            <TextBox x:Name="ArgumentsText" x:Uid="Arguments" Grid.Row="1" Grid.ColumnSpan="2" />
+            <NumberBox x:Name="Endpoint" x:Uid="Endpoint" Grid.Row="1" Grid.Column="2" Value="1"
+                       Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact" />
+            <TextBox x:Name="WorkingDirectoryText" x:Uid="WorkingDirectory" Grid.Row="2" Grid.ColumnSpan="3" />
+            <CheckBox x:Name="Trust" x:Uid="Trust" Grid.Row="3" Grid.ColumnSpan="2" />
+            <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                <Button x:Name="ConnectButton" x:Uid="Connect" Click="Connect_Click" Style="{ThemeResource AccentButtonStyle}" />
+                <Button x:Name="DisconnectButton" x:Uid="Disconnect" Click="Disconnect_Click" IsEnabled="False" />
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="2" Spacing="4">
+            <InfoBar x:Name="ConnectionStatus" x:Uid="ConnectionStatus" IsOpen="True" IsClosable="False" />
+            <TextBlock x:Name="ConnectionIdentity" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+            <InfoBar x:Name="Error" x:Uid="Error" IsOpen="False" IsClosable="False" Severity="Error" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="12" Padding="0,0,8,0">
+                <views:MetricChart x:Name="UtilizationChart" />
+                <views:MetricChart x:Name="MemoryChart" />
+                <TextBlock x:Uid="MetricLimitations" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

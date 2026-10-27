@@ -5,14 +5,13 @@
 
 #include <TraceLoggingInterop.h>
 
-// XamlProfiler tree-tracking instrumentation is compiled into chk/Debug builds only
-// (XAMLPROFILER_ENABLED is defined alongside DBG when Configuration==Debug; see
-// Xaml.Cpp.Targets / LibraryCompile.props). In retail/fre builds this entire header is
-// empty, and the matching WucVisualTreeProfiler.cpp is excluded from the build, so the
-// profiler adds zero code/size to shipping binaries. Every consumer #includes this header
-// (and its call sites) inside its own #ifdef XAMLPROFILER_ENABLED, matching the
-// SwipeTestHooks convention.
+// XamlProfiler instrumentation is compiled when XAMLPROFILER_ENABLED is
+// defined by the build's XamlProfilerEnabled setting. This can include
+// fre/Release builds. Call sites are compile-time guarded, and event
+// emission is controlled by runtime ETW enablement.
 #ifdef XAMLPROFILER_ENABLED
+
+#include "XamlTelemetry.h"
 
 class CDependencyObject;
 
@@ -333,6 +332,305 @@ public:
         uint64_t, NonLocalBudget,
         bool,     NonLocalAvailable,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+};
+
+// Element-scoped events are TraceLogging events on the existing Microsoft-Windows-XAML provider
+// {531a35ab-63ce-4bcf-aa98-f88c7a89e455}, through the same XamlTelemetryLogging registration that
+// XamlTelemetry uses, rather than on Microsoft-Windows-XAML-Profiler. TraceLogging events are
+// self-describing, so WPA/TraceProcessor decode their names and typed identity fields without a
+// registered manifest.
+class XamlElementTracing final : public TelemetryBase
+{
+    #pragma warning (suppress : 6387)
+    IMPLEMENT_TELEMETRY_CLASS(XamlElementTracing, XamlTelemetryLogging);
+
+public:
+
+    struct Identity
+    {
+        uint64_t uiElement = 0;
+        uint64_t objectPointer = 0;
+    };
+
+    static Identity GetIdentity(
+        _In_opt_ CDependencyObject* object,
+        _In_opt_ CDependencyObject* relatedUIElement);
+
+    // =====================================================================
+    // Element-Scoped Activity Events
+    //
+    // Each of these mirrors a retail Microsoft-Windows-XAML operation (layout,
+    // transition, focus, virtualization, ...) that previously emitted
+    // no element identity, so an out-of-process consumer could only attribute it
+    // to an element by scope-nesting inference. Core pointers are classified at
+    // runtime, including objects reached through a projection's GetHandle():
+    //   * UI element, including controls: ElementId.
+    //   * Other dependency object: objectpointer, plus ElementId only when a
+    //     UI owner is explicitly supplied.
+    // A null subject produces objectpointer=0, without an ElementId field.
+    // ElementId uses the Visual tree's CUIElement identity.
+    // No owner is inferred from the dependency object.
+    //
+    // Routing model (see XAMLPROFILER_ENABLED): the manifest and TraceLogging forms are mutually
+    // exclusive at each call site. A retail (shipping) build never defines XAMLPROFILER_ENABLED
+    // and emits only the retail manifest event, exactly as before — existing xperf/WPA consumers
+    // are byte-for-byte unaffected. A profiler-enabled (chk/debug) build emits only the
+    // TraceLogging copy below IN PLACE OF the retail manifest event, on the same
+    // Microsoft-Windows-XAML provider, so a profiler build never double-logs the same operation.
+    // Each call site selects one branch with #ifdef XAMLPROFILER_ENABLED (profiler) / #else
+    // (retail). The consumer keys a scope by (provider + task) and pairs Start/Stop by opcode, so
+    // each activity below reuses the retail operation's name as its event name and preserves the
+    // Begin/End timing while adding typed identities.
+    //
+    // Exception (stays additive): RealizeTransition keeps the pre-existing retail Begin/End
+    // around the whole pass and adds per-element profiler markers inside the loop. The markers
+    // are not same-location duplicates, so the pre-existing bracket is left intact.
+    //
+    // Payload parity: where the retail marker carried extra payload (style name, focus
+    // direction, virtualization state, container index), the profiler
+    // copy carries the same payload PLUS typed identities, so a profiler build — which emits in place
+    // of the retail marker — loses no information the retail provider would have supplied.
+    //
+    // Two shapes are used:
+    //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Begin/End pair mirroring the
+    //     retail timing so per-operation duration is preserved. Both edges carry
+    //     their subject's identity, so each Begin and End row stands on its own. The exceptions
+    //     are GenerateContainerBegin and GenerateMCContainerBegin, whose containers are not yet
+    //     available. An operation whose retail marker carried extra payload adds a
+    //     matching overload on the edge that carried it (e.g. GetBuiltInStyleEnd with the
+    //     style name).
+    //   * Point events: a single marker for
+    //     operations whose retail form is win:Info, or whose element identity is
+    //     per-iteration inside a pass-level Begin/End (RealizeTransition). The field
+    //     payload preserves the retail fields alongside the typed identities.
+    // =====================================================================
+
+    // Resolve relationships only when the event can actually be emitted at its original level.
+#define TRACE_ELEMENT_EVENT(OpName, Object, RelatedUIElement, Level, ...) \
+    do \
+    { \
+        if (TraceLoggingProviderEnabled(TraceLoggingType::Provider(), Level, 0)) \
+        { \
+            const auto identity = GetIdentity(Object, RelatedUIElement); \
+            if (identity.uiElement != 0 && identity.objectPointer == 0) \
+            { \
+                TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
+                    TraceLoggingLevel(Level), \
+                    TraceLoggingValue(identity.uiElement, "ElementId"), \
+                    __VA_ARGS__); \
+            } \
+            else if (identity.uiElement != 0) \
+            { \
+                TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
+                    TraceLoggingLevel(Level), \
+                    TraceLoggingValue(identity.uiElement, "ElementId"), \
+                    TraceLoggingValue(identity.objectPointer, "objectpointer"), \
+                    __VA_ARGS__); \
+            } \
+            else \
+            { \
+                TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
+                    TraceLoggingLevel(Level), \
+                    TraceLoggingValue(identity.objectPointer, "objectpointer"), \
+                    __VA_ARGS__); \
+            } \
+        } \
+    } while (false)
+
+    // Emits a Begin/End activity pair using ETW Start/Stop opcodes under one task (== OpName),
+    // so the consumer pairs them into a duration exactly like the retail Begin/End.
+    // End always takes a subject; the parameterless Begin exists only for
+    // GenerateContainer (see above).
+#define DEFINE_ELEMENT_ACTIVITY(OpName, Level) \
+    static void OpName##Begin(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
+    { \
+        TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, Level, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_START)); \
+    } \
+    static void OpName##End(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
+    { \
+        TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, Level, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP)); \
+    }
+
+    // Layout-manager passes (CLayoutManager): the subject is the layout root.
+    DEFINE_ELEMENT_ACTIVITY(FireLayoutUpdated, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(FireSizeChanged, WINEVENT_LEVEL_INFO);
+    // Per-element size-changed notification: the subject is the element whose size changed.
+    DEFINE_ELEMENT_ACTIVITY(IndividualSizeChanged, WINEVENT_LEVEL_INFO);
+    // Root visual set on a visual tree: the subject is the root element.
+    DEFINE_ELEMENT_ACTIVITY(PutRootVisual, WINEVENT_LEVEL_INFO);
+
+    // Top-level layout passes (CLayoutManager::UpdateLayout): the subject is the layout root.
+    DEFINE_ELEMENT_ACTIVITY(Layout, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(Measure, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(Arrange, WINEVENT_LEVEL_INFO);
+
+    // Layout transitions: the subject is the element the transition targets.
+    // RealizeTransition stays a point event: its retail Begin/End brackets a whole
+    // pass while the element identity is per-iteration inside the loop.
+    static void RealizeTransition(CDependencyObject* object)
+    {
+        TRACE_ELEMENT_EVENT("RealizeTransition", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingOpcode(WINEVENT_OPCODE_INFO));
+    }
+    DEFINE_ELEMENT_ACTIVITY(CancelTransitions, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition, WINEVENT_LEVEL_VERBOSE);
+
+    // Focus (CFocusManager): the subject can be a UI element or a non-UI Hyperlink.
+    // UpdateFocus Begin carries the requested target and End carries pNewFocus; they can
+    // differ after redirection. End also runs on cancellation/error, not just successful focus.
+    DEFINE_ELEMENT_ACTIVITY(UpdateFocus, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(XYFocusEntered, WINEVENT_LEVEL_INFO);
+    // XYFocusEntered adds the retail Begin's focus-direction string on the Begin edge.
+    static void XYFocusEnteredBegin(CDependencyObject* object, PCWSTR Direction)
+    {
+        TRACE_ELEMENT_EVENT("XYFocusEntered", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingValue(Direction, "Direction"));
+    }
+
+    // Items virtualization (dxaml projection layer): the subject is the container/panel.
+    // GenerateContainer carries an identity on its End: the container is only realized near the
+    // end of the generate call (inverted Begin/End pair; CopyTo keeps it live through Cleanup).
+    DEFINE_ELEMENT_ACTIVITY(GenerateContainer, WINEVENT_LEVEL_INFO);
+    static void GenerateContainerBegin()
+    {
+        TraceLoggingWrite(TraceLoggingType::Provider(), "GenerateContainer",
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO));
+    }
+    DEFINE_ELEMENT_ACTIVITY(GenerateItems, WINEVENT_LEVEL_INFO);
+    // GenerateMCContainer carries the retail item-collection index on Begin and the container
+    // identity on End, once the container is available.
+    DEFINE_ELEMENT_ACTIVITY(GenerateMCContainer, WINEVENT_LEVEL_INFO);
+    static void GenerateMCContainerBegin(int32_t Index)
+    {
+        TraceLoggingWrite(TraceLoggingType::Provider(), "GenerateMCContainer",
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+            TraceLoggingValue(Index, "ItemIndex"));
+    }
+    DEFINE_ELEMENT_ACTIVITY(PlaceElement, WINEVENT_LEVEL_INFO);
+    // PlaceElement adds the retail Begin's data index on the Begin edge.
+    static void PlaceElementBegin(CDependencyObject* object, int32_t DataIndex)
+    {
+        TRACE_ELEMENT_EVENT("PlaceElement", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingValue(DataIndex, "ItemIndex"));
+    }
+    DEFINE_ELEMENT_ACTIVITY(PrepareContainer, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(MeasureChild, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationMeasure, WINEVENT_LEVEL_INFO);
+    // OrientedVirtualizingPanel-scoped virtualization bookkeeping (CleanupContainers,
+    // UpdateLogicalScrollData: the subject is the panel itself). VirtualizationAdd is
+    // per-container: the subject is the container being added.
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationAdd, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationCleanup, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(UpdateLogicalScrollData, WINEVENT_LEVEL_INFO);
+    // VirtualizationIsEnabledByLayout stays a point event (retail form is win:Info).
+    // IsEnabled/Name/ClassType/PropertyType mirror the retail Info1 payload.
+    static void VirtualizationIsEnabledByLayout(CDependencyObject* object, bool IsVirtualizationActive, PCWSTR ElementName, PCWSTR ClassName, PCWSTR ParentClassName)
+    {
+        TRACE_ELEMENT_EVENT("VirtualizationIsEnabledByLayout", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(IsVirtualizationActive, "IsEnabled"),
+            TraceLoggingValue(ElementName, "Name"),
+            TraceLoggingValue(ClassName, "ClassType"),
+            TraceLoggingValue(ParentClassName, "PropertyType"));
+    }
+    DEFINE_ELEMENT_ACTIVITY(GetElementCount, WINEVENT_LEVEL_VERBOSE);
+
+    // Control template/style operations (CControl): the subject is the control, not the style.
+    DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle, WINEVENT_LEVEL_INFO);
+    // GetBuiltInStyle adds the retail End's resolved style target-type name on the End edge.
+    static void GetBuiltInStyleEnd(CDependencyObject* object, PCWSTR StyleName)
+    {
+        TRACE_ELEMENT_EVENT("GetBuiltInStyle", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP),
+            TraceLoggingValue(StyleName, "ClassName"));
+    }
+
+    // Hit-testing (CUIElement::BoundsTestEntry): the subject is the subtree being hit-tested.
+    DEFINE_ELEMENT_ACTIVITY(HitTest, WINEVENT_LEVEL_INFO);
+    // Per-hit-test bounds cache stats, emitted once BoundsTestEntry completes. The subject is the
+    // same element as the enclosing HitTest activity; RecalculatedCount/ReusedCount mirror the
+    // retail Info payload.
+    static void OuterBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("OuterBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    static void InnerBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("InnerBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    static void ContentBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("ContentBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    static void ChildBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("ChildBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    // Hub section count (Hub_Partial.cpp): the subject is the Hub whose section count changed.
+    static void HubSectionCount(CDependencyObject* object, uint32_t SectionCount)
+    {
+        TRACE_ELEMENT_EVENT("HubSectionCount", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(SectionCount, "CurrentSectionCount"));
+    }
+
+    // Frame navigation (Frame_Partial.cpp): the subject is the Frame, not its content.
+    static void FrameNavigated(CDependencyObject* object, PCWSTR Descriptor, uint8_t NavigationMode)
+    {
+        TRACE_ELEMENT_EVENT("FrameNavigated", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(Descriptor, "PageDescriptor"),
+            TraceLoggingValue(NavigationMode, "NavigationMode"));
+    }
+
+    static void FrameNavigating(CDependencyObject* object, PCWSTR Descriptor, uint8_t NavigationMode)
+    {
+        TRACE_ELEMENT_EVENT("FrameNavigating", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(Descriptor, "PageDescriptor"),
+            TraceLoggingValue(NavigationMode, "NavigationMode"));
+    }
+
+    // Text input scope/keyboard skin (CPasswordBox): the subject is the PasswordBox.
+    static void SendInputScopeToRichEdit(CDependencyObject* object, uint32_t InputScope)
+    {
+        TRACE_ELEMENT_EVENT("SendInputScopeToRichEdit", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(InputScope, "InputScopeValue"));
+    }
+
+    static void SetIhmKeyboardSkin(CDependencyObject* object, uint32_t KeyboardSkin)
+    {
+        TRACE_ELEMENT_EVENT("SetIhmKeyboardSkin", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(KeyboardSkin, "IKSkinValue"));
+    }
+
+    // Container-content-changing setup (ListViewBase_Partial_ContainerPhase.cpp): the subject is
+    // the container being set up.
+    DEFINE_ELEMENT_ACTIVITY(SetupCCC, WINEVENT_LEVEL_INFO);
+    // SetupCCC adds the retail Begin's item index on the Begin edge.
+    static void SetupCCCBegin(CDependencyObject* object, int32_t ItemIndex, CDependencyObject* relatedUIElement = nullptr)
+    {
+        TRACE_ELEMENT_EVENT("SetupCCC", object, relatedUIElement, WINEVENT_LEVEL_INFO,
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingValue(ItemIndex, "ItemIndex"));
+    }
+
+#undef DEFINE_ELEMENT_ACTIVITY
+#undef TRACE_ELEMENT_EVENT
 };
 
 #endif // XAMLPROFILER_ENABLED

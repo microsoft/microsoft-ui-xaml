@@ -161,12 +161,21 @@ Hub::OnCollectionChanged(
     ctl::ComPtr<VectorChangedEventArgs> spArg;
     UINT32 nIndexInPanel = nIndex;
 
-    if (EventEnabledHubSectionCountInfo() && m_tpSections)
+#ifdef XAMLPROFILER_ENABLED
+    const bool traceHubSectionCount = XamlElementTracing::IsEnabled();
+#else
+    const bool traceHubSectionCount = !!EventEnabledHubSectionCountInfo();
+#endif
+    if (traceHubSectionCount && m_tpSections)
     {
         UINT nNewSectionsCount = 0;
         if (SUCCEEDED(m_tpSections->get_Size(&nNewSectionsCount)))
         {
+#ifndef XAMLPROFILER_ENABLED
             TraceHubSectionCountInfo(nNewSectionsCount);
+#else
+            XamlElementTracing::HubSectionCount(GetHandle(), nNewSectionsCount);
+#endif
         }
     }
 

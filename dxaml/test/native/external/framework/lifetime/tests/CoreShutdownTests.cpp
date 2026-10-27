@@ -8,6 +8,7 @@
 #include <wil/result_macros.h>
 #include <SafeEventRegistration.h>
 #include <TestEvent.h>
+#include <wrl.h>
 
 using namespace Platform;
 using namespace ::Windows::Foundation;
@@ -36,6 +37,79 @@ bool CoreShutdownTests::TestCleanup()
     // Deliberately don't shut down core in test cleanup, because the tests manually do this themselves.
     TestServices::WindowHelper->VerifyTestCleanup();
     return true;
+}
+
+void CoreShutdownTests::OffThreadReleaseBeforeIslandCreation()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+
+    xaml::RoutedEventArgs^ args = nullptr;
+    RunOnUIThread([&]
+    {
+        VERIFY_IS_NULL(TestServices::WindowHelper->WindowContent);
+        args = ref new xaml::RoutedEventArgs();
+    });
+
+    // Releasing off the UI thread queues cleanup, but there is no XAML island to tick build-tree work.
+    args = nullptr;
+    TestServices::WindowHelper->WaitForIdle();
+}
+
+void CoreShutdownTests::OffThreadReleaseWakesIdleCleanup()
+{
+    struct ReleaseState
+    {
+        Event destroyed;
+        DWORD threadId = 0;
+    };
+    class ReleaseSignal final : public WRL::RuntimeClass<IInspectable>
+    {
+        InspectableClass(L"LifetimeTests.ReleaseSignal", BaseTrust);
+    public:
+        explicit ReleaseSignal(std::shared_ptr<ReleaseState> state) : m_state(std::move(state)) {}
+        ~ReleaseSignal()
+        {
+            m_state->threadId = GetCurrentThreadId();
+            m_state->destroyed.Set();
+        }
+    private:
+        std::shared_ptr<ReleaseState> m_state;
+    };
+
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+    auto state = std::make_shared<ReleaseState>();
+    DWORD uiThreadId = 0;
+    xaml_controls::Grid^ element = nullptr;
+    RunOnUIThread([&]
+    {
+        uiThreadId = GetCurrentThreadId();
+        TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        element = ref new xaml_controls::Grid();
+        auto signal = WRL::Make<ReleaseSignal>(state);
+        VERIFY_IS_NOT_NULL(signal.Get());
+        element->Tag = reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(signal.Get()));
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    VERIFY_IS_FALSE(state->destroyed.HasFired());
+    VERIFY_ARE_NOT_EQUAL(uiThreadId, GetCurrentThreadId());
+
+    // Only a passive native destructor notification is observed after the off-thread release.
+    // No GC, WaitForIdle, rendering request, or queue enumeration may help the cleanup wake.
+    element = nullptr;
+    const bool destroyed = state->destroyed.WaitForNoThrow(std::chrono::seconds(5));
+    VERIFY_IS_TRUE(destroyed);
+    if (destroyed)
+    {
+        VERIFY_ARE_EQUAL(uiThreadId, state->threadId);
+    }
 }
 
 // Exposed an edge case in our peer cleanup

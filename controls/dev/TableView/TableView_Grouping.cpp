@@ -249,6 +249,13 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
         ? BulkExpansionAxis::Groups
         : BulkExpansionAxis::Rows;
 
+    // One group or node is use; a subtree is a bulk request, like ExpandAllGroups.
+    if (!subtree && !identity.empty())
+    {
+        TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation,
+            axis == BulkExpansionAxis::Groups ? TableViewTelemetry::Feature::Grouping : TableViewTelemetry::Feature::Hierarchy);
+    }
+
     QueueGroupExpansionByIdentity(identity, desired, axis, subtree);
 }
 
@@ -496,13 +503,21 @@ void TableView::ApplyGroupExpansionByIdentity(
     }
 
     bool changed = false;
-    try
+    // Local strong ref: a handler may re-declare the shape and replace the provider mid-call. Edit-ending handlers
+    // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
+    // queued edit reshapes.
+    auto const provider = m_tableViewSourceRowMetadata;
+    if (provider && generation == m_rowMetadataGeneration)
     {
-        // Local strong ref: a handler may re-declare the shape and replace the provider mid-call.
-        // Edit-ending handlers ran app code above, so re-check the source before mutating; a stale
-        // request still falls through to drain queued edit reshapes.
-        auto const provider = m_tableViewSourceRowMetadata;
-        if (provider && generation == m_rowMetadataGeneration)
+        // While actions are tracked, every request is, so a failure writes TableView_Error. A request that changes one
+        // group or tree node also runs a TiP test. A subtree is a bulk request, like ExpandAllGroups, and a request
+        // that changes nothing runs none: each arrow on a group header is requested by the header and again by
+        // TryHandleGroupHeaderExpandCollapseKey. The lookup runs only while actions are tracked.
+        auto const withTest = TracksTipActions() && !subtree && provider->WouldChangeExpansion(identity, desired);
+        ActionTip tip{ *this, axis == BulkExpansionAxis::Groups ?
+                TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+            TableViewTip::Stage::Expansion, true, withTest };
+        try
         {
             if (subtree)
             {
@@ -520,11 +535,22 @@ void TableView::ApplyGroupExpansionByIdentity(
             {
                 changed = provider->Toggle(identity);
             }
+
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (changed) { tip.Complete(); }
+            // No change shown yet. A tested request expected one; an untested one closes without a TiP result.
+            else { tip.Ignore(TableViewTip::IgnoreReason::DeferredOrUnproven); }
         }
-    }
-    catch (...)
-    {
-        // Best-effort: the grouping source or its state can change during cleanup.
+        catch (...)
+        {
+            // Best-effort: the grouping source or its state can change during cleanup. Expansion reads only the
+            // projection TableView built, so a failure is TableView's unless the source was replaced or the exception
+            // is tagged as the app's.
+            auto const fault = TableViewTip::CurrentFault();
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (fault.appFault != TableViewTip::AppFaultKind::None) { tip.ApplicationFault(fault.appFault, fault.error); }
+            else { tip.Fail(fault.error); }
+        }
     }
 
     DrainCoalescedEditReshape();
@@ -1050,6 +1076,11 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     if (!groupRow)
     {
         groupRow = header.DataContext();
+        if (groupRow && groupRow.try_as<winrt::TableViewGroupInfo>())
+        {
+            // Already prepared once: DataContext is the projection set below, not the entry.
+            groupRow = headerImpl->GroupEntryInternal();
+        }
     }
 
     if (auto const entry = TryGetGroupedEntry(groupRow))
@@ -1135,6 +1166,15 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     header.IsExpandable(isExpandable);
     header.IsExpanded(isExpanded);
 
+    // Expose the projection as the header's DataContext, as a data row exposes its item, so
+    // bindings in a group header Style and in its ContextFlyout (the flyout takes its target's
+    // DataContext) see TableViewGroupInfo rather than the internal projection entry.
+    headerImpl->SetGroupEntryInternal(groupRow);
+    if (auto const info = header.Content(); header.DataContext() != info)
+    {
+        header.DataContext(info);
+    }
+
     if (sameGroup && previousState != newState)
     {
         headerImpl->RaiseExpandCollapseStateChanged(previousState, newState);
@@ -1212,6 +1252,7 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     // ref costs nothing to keep and stays correct.
     winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
     header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
+    winrt::get_self<TableViewGroupHeader>(header)->SetGroupEntryInternal(nullptr);
 }
 
 void TableView::UpdateGroupHeaderWidth(winrt::TableViewGroupHeader const& header)
