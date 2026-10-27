@@ -657,6 +657,39 @@ std::vector<uint8_t> EncodeHello(GUID requestId)
     catch (const Invalid&) { throw std::invalid_argument("Invalid TAP hello request identity."); }
 }
 
+std::vector<uint8_t> EncodeSnapshotChunk(GUID requestId, GUID captureId, uint32_t index,
+    const char* data, size_t length)
+{
+    if (captureId == GUID{} || !data || length == 0 || length > SnapshotChunkBytes ||
+        index >= (MaximumSnapshotBytes + SnapshotChunkBytes - 1) / SnapshotChunkBytes)
+        throw std::invalid_argument("Invalid snapshot chunk.");
+    constexpr char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string encoded;
+    encoded.reserve((length + 2) / 3 * 4);
+    for (size_t i = 0; i < length; i += 3)
+    {
+        const auto a = static_cast<uint8_t>(data[i]);
+        const auto b = i + 1 < length ? static_cast<uint8_t>(data[i + 1]) : 0;
+        const auto c = i + 2 < length ? static_cast<uint8_t>(data[i + 2]) : 0;
+        const uint32_t value = (uint32_t(a) << 16) | (uint32_t(b) << 8) | uint32_t(c);
+        encoded += alphabet[(value >> 18) & 63]; encoded += alphabet[(value >> 12) & 63];
+        encoded += i + 1 < length ? alphabet[(value >> 6) & 63] : '=';
+        encoded += i + 2 < length ? alphabet[value & 63] : '=';
+    }
+    return Encode(MessageType::SnapshotChunk, requestId, "{\"captureId\":" + Quote(GuidText(captureId)) +
+        ",\"index\":" + std::to_string(index) + ",\"dataBase64\":" + Quote(encoded) + "}");
+}
+
+std::vector<uint8_t> EncodeSnapshotResult(GUID requestId, GUID captureId, uint32_t chunks, size_t bytes)
+{
+    if (captureId == GUID{} || chunks == 0 ||
+        chunks > (MaximumSnapshotBytes + SnapshotChunkBytes - 1) / SnapshotChunkBytes ||
+        bytes == 0 || bytes > MaximumSnapshotBytes)
+        throw std::invalid_argument("Invalid snapshot completion.");
+    return Encode(MessageType::SnapshotResult, requestId, "{\"captureId\":" + Quote(GuidText(captureId)) +
+        ",\"chunkCount\":" + std::to_string(chunks) + ",\"byteCount\":" + std::to_string(bytes) + "}");
+}
+
 std::vector<uint8_t> EncodeCapabilities(GUID requestId, GUID epoch, bool hasRuntime)
 {
     try

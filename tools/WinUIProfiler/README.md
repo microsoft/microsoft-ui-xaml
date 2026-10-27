@@ -50,7 +50,7 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-There is no ETW listener, recording database, frame processing, tree snapshot,
+There is no ETW listener, recording database, frame processing,
 heap capture or instrumented-product dependency. The profiler UI uses its pinned
 SDK runtime; it does not replace the target's loaded runtime.
 
@@ -81,6 +81,36 @@ remain visible; connecting to a non-WinUI process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
 silently elevated.
+
+## Tree snapshots
+
+After connecting, select **Take tree snapshot**. The TAP captures exactly two
+trees: the realized XAML visual tree and its publicly exposed Composition visual
+tree, with object-to-visual correlations and a bounded set of SDK properties.
+The validated JSON is saved atomically under `%LOCALAPPDATA%\WinUIProfiler\Snapshots`;
+the UI shows the node counts and saved path. Repeated captures are independent.
+Each successful capture appears in **Snapshot history**, newest first. Select an
+entry to open its viewer: expandable XAML and Composition trees, selected-node
+properties, and direct object-to-visual mapping/highlighting. The same snapshot
+reuses its open viewer; different snapshots can be compared in separate windows.
+Tree labels include the XAML object's COM identity address or the Composition
+visual's IVisual interface address. Each tree has Expand all and Collapse all
+buttons; expanding includes descendants that have not yet been realized.
+Composition node details hide known default-valued properties. Non-default
+values, unknown properties and property errors remain visible; XAML details and
+the complete saved snapshot JSON are unchanged.
+History remains available across disconnect/reconnect for the current profiler
+session, and the saved JSON files are retained after exit. The history list is
+not reloaded on startup. Missing or invalid snapshot files produce visible errors.
+No recording database, heap capture or MUX changes are required.
+
+Root discovery uses public `IVisualTreeService` callbacks on the target's UI
+threads; traversal uses `VisualTreeHelper`, `ElementCompositionPreview` and
+Composition APIs. Captures are bounded to 20 seconds, 64 MiB and 131,072 records.
+Roots have individual capture intervals, not a globally atomic timestamp.
+Unrealized/logical objects, internal HWCompNodes and private compositor trees
+are not exposed. `GetElementVisual` may materialize handout visuals. Property
+errors and scope limitations are included in the JSON rather than fabricated values.
 
 ## Limitations
 

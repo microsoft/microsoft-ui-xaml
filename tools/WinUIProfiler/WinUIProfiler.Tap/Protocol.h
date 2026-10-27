@@ -9,6 +9,8 @@
 
 namespace WinUIProfiler::Tap
 {
+inline constexpr size_t MaximumSnapshotBytes = 64 * 1024 * 1024;
+inline constexpr size_t SnapshotChunkBytes = 48 * 1024;
 enum class MessageType : uint16_t
 {
     Handshake = 1, Capabilities = 2, Rundown = 3, LightweightSnapshot = 4,
@@ -51,4 +53,7 @@ std::vector<uint8_t> EncodeAcknowledgement(GUID requestId, CommandStatus status,
     GUID captureId, const std::string& reason);
 std::vector<uint8_t> EncodeCapabilities(GUID requestId, GUID epoch = {}, bool hasRuntime = false);
 std::vector<uint8_t> EncodeHello(GUID requestId);
+std::vector<uint8_t> EncodeSnapshotChunk(GUID requestId, GUID captureId, uint32_t index,
+    const char* data, size_t length);
+std::vector<uint8_t> EncodeSnapshotResult(GUID requestId, GUID captureId, uint32_t chunks, size_t bytes);
 }
