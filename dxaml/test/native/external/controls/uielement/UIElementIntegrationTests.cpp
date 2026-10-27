@@ -132,8 +132,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     // C++/CX can prepend the system HRESULT description to the originated message.
                     const std::wstring actualMessage(exception->Message->Data(), exception->Message->Length());
                     VERIFY_IS_TRUE(actualMessage.size() >= expectedMessage.size());
-                    VERIFY_ARE_EQUAL(expectedMessage.c_str(),
-                        actualMessage.c_str() + actualMessage.size() - expectedMessage.size());
+                    VERIFY_ARE_EQUAL(0, wcscmp(expectedMessage.c_str(),
+                        actualMessage.c_str() + actualMessage.size() - expectedMessage.size()));
                 }
                 VERIFY_IS_TRUE(threw, L"Setting an invalid offset should throw");
                 VERIFY_ARE_EQUAL(-12.25, target->HorizontalOffset);
