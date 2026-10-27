@@ -33,8 +33,11 @@ private:
     void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight);
     void HideItem(const winrt::UIElement& breadcrumbItem);
     void HideItem(const winrt::NonVirtualizingLayoutContext& context, int index);
-    int GetFirstBreadcrumbBarItemToArrange(winrt::IVectorView<winrt::UIElement> const& children, float availableWidth);
-    float GetBreadcrumbBarItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender);
+    int GetFirstBreadcrumbBarItemToArrange(
+        winrt::IVectorView<winrt::UIElement> const& children,
+        winrt::Size const& availableSize,
+        bool& constrainedAncestor);
+    float GetBreadcrumbBarItemsHeight(winrt::IVectorView<winrt::UIElement> const& children, int firstItemToRender);
 
     uint32_t GetItemCount(winrt::NonVirtualizingLayoutContext const& context);
     winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
