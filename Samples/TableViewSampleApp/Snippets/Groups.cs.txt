@@ -32,6 +32,35 @@ private void SetFirstColumn(TableViewColumn first)
 private static void GroupRows(TableViewSource source, Func<object?, object> groupKeyOf) =>
     source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
 
+// From Controls\ShapingOptions.xaml.cs
+// Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+// the tree rows, so Grouped hierarchy calls both.
+private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.ExpandAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.ExpandAllRows();
+    }
+}
+
+private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.CollapseAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.CollapseAllRows();
+    }
+}
+
 // From Helpers\SampleShaping.cs
 // Bucket label for a null or blank group key.
 public const string NoneKey = "(none)";

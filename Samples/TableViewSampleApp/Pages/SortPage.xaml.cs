@@ -40,7 +40,6 @@ public sealed partial class SortPage : SamplePageBase
         Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        TeamsTable.Sorted += OnTableSorted;
         TeamsTable.SelectionChanged += OnTeamsSelectionChanged;
         InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key)));
         TrackItems(Teams, OnTeamChanged);
@@ -109,28 +108,30 @@ public sealed partial class SortPage : SamplePageBase
     // </snippet>
 
 
-    // Sorted fires after the sort state is applied and the header arrow is published: header
-    // clicks and the API calls above alike. Column is null when the sort was cleared.
+    // <snippet>
+    // Sorted fires after the sort is applied and the header arrow is shown: header clicks and the
+    // API calls above alike. Column is null when the sort was cleared.
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
-        _sortedFiredCount++;
-        _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
+        _sortedFiredCount++; // snippet:skip
+        _lastSortedColumn = args.Column is null ? "cleared" : string.Format(CultureInfo.CurrentCulture, "{0} {1}", args.Column.Header, args.Direction);
 
-        // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction,
-        // possibly on a later turn: that is not a new sort, so keep the action's own narration.
-        var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection;
-        _reportedSortColumn = args.Column;
-        _reportedSortDirection = args.Direction;
-        if (_isResorting || unchanged)
-        {
-            RefreshReadouts();
-            return;
-        }
+        // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction, // snippet:skip
+        // possibly on a later turn: that is not a new sort, so keep the action's own narration. // snippet:skip
+        var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection; // snippet:skip
+        _reportedSortColumn = args.Column; // snippet:skip
+        _reportedSortDirection = args.Direction; // snippet:skip
+        if (_isResorting || unchanged) // snippet:skip
+        { // snippet:skip
+            RefreshReadouts(); // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        SetLastAction(args.Column is null
-            ? "Sort cleared"
-            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction));
+        SetLastAction(args.Column is null // snippet:skip
+            ? "Sort cleared" // snippet:skip
+            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction)); // snippet:skip
     }
+    // </snippet>
 
     // ---- Re-sorting after a value change -----------------------------------------------------
     //

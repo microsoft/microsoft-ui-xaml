@@ -1,7 +1,8 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People selection"
-    SelectionMode="Single">
+    SelectionMode="Single"
+    SelectionChanged="OnTableSelectionChanged">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>

@@ -32,3 +32,10 @@ private void OnClearSortClick(object sender, RoutedEventArgs e)
 {
     TeamsTable.ClearSort();
 }
+
+// Sorted fires after the sort is applied and the header arrow is shown: header clicks and the
+// API calls above alike. Column is null when the sort was cleared.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    _lastSortedColumn = args.Column is null ? "cleared" : string.Format(CultureInfo.CurrentCulture, "{0} {1}", args.Column.Header, args.Direction);
+}

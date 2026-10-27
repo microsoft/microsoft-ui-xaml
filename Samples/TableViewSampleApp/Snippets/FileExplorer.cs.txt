@@ -12,6 +12,20 @@ public ObservableCollection<FileSystemEntry> Entries { get; } = new();
 
 public TableViewSource Source { get; }
 
+private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
+{
+    if (e.Key == VirtualKey.Enter)
+    {
+        e.Handled = true;
+        OpenSelectedFolder();
+    }
+    else if (e.Key == VirtualKey.Back)
+    {
+        e.Handled = true;
+        GoUp();
+    }
+}
+
 private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
 {
     var filter = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag;
@@ -30,18 +44,4 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
             Source.ClearFilter();
             break;
     }
-}
-
-private static string ModifiedBucket(DateTimeOffset modified)
-{
-    var days = (DateTime.Now.Date - modified.LocalDateTime.Date).TotalDays;
-    return days switch
-    {
-        < 1 => "Today",
-        < 2 => "Yesterday",
-        < 8 => "Earlier this week",
-        < 31 => "Earlier this month",
-        < 366 => "Earlier this year",
-        _ => "A long time ago",
-    };
 }

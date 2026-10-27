@@ -23,6 +23,7 @@
                 AutomationProperties.AutomationId="SelectionTable"
                 AutomationProperties.Name="People selection"
                 SelectionMode="Single"
+                SelectionChanged="OnTableSelectionChanged"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>

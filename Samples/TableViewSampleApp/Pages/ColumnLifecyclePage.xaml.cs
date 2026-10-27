@@ -26,7 +26,9 @@ namespace TableViewSampleApp.Pages;
 public sealed partial class ColumnLifecyclePage : SamplePageBase
 {
     private const int RowCount = 40;
+    // <snippet>
     private const string JoinDateHeader = "Join date";
+    // </snippet>
 
     private readonly TableViewColumn[] _canonical;
     private int _nextPersonIndex = RowCount;   // PersonData row used by the next "Add a person"
@@ -36,10 +38,10 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
+        // </snippet>
 
         // Index = the Tag of the matching visibility checkbox.
         _canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
-        // </snippet>
         PopulateColumnPicker();
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
@@ -55,15 +57,14 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
 
     // ---- Column visibility: TableViewColumn.Visibility --------------------------------------
 
-    // <snippet>
     private void OnColumnToggle(object sender, RoutedEventArgs e)
     {
-        // IsChecked="True" raises Checked during InitializeComponent, before _canonical is // snippet:skip
-        // assigned; the XAML already matches. Reset also writes IsChecked and reports itself. // snippet:skip
-        if (_canonical is null || IsBulkUpdating) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        // IsChecked="True" raises Checked during InitializeComponent, before _canonical is
+        // assigned; the XAML already matches. Reset also writes IsChecked and reports itself.
+        if (_canonical is null || IsBulkUpdating)
+        {
+            return;
+        }
 
         if (sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
         {
@@ -72,9 +73,14 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
 
         var column = _canonical[index];
         var visible = box.IsChecked == true;
-        column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        SetColumnVisible(column, visible);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} the {1} column", visible ? "Showed" : "Hid", column.Header));
     }
+
+    // <snippet>
+    // A collapsed column stays in Columns, in its place, and comes back there when made visible.
+    private static void SetColumnVisible(TableViewColumn column, bool visible) =>
+        column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
     // </snippet>
 
     // ---- Column order: move, add, remove in TableView.Columns ------------------------------
@@ -83,7 +89,6 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
 
     private void OnMoveRightClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(+1);
 
-    // <snippet>
     private void MoveSelectedColumn(int direction)
     {
         if (SelectedColumn() is not { } column)
@@ -100,13 +105,19 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
             return;
         }
 
-        // Moving the entry in the observable Columns vector IS the reorder; the header band and
-        // the realized rows follow. The instance is reused, so its width travels with it.
+        MoveColumn(from, to);
+        PopulateColumnPicker();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from position {1} to {2}", column.Header, from + 1, to + 1));
+    }
+
+    // <snippet>
+    // Moving the entry in the observable Columns vector IS the reorder; the header band and
+    // the realized rows follow. The instance is reused, so its width travels with it.
+    private void MoveColumn(int from, int to)
+    {
+        var column = PeopleTable.Columns[from];
         PeopleTable.Columns.RemoveAt(from);
         PeopleTable.Columns.Insert(to, column);
-
-        PopulateColumnPicker(); // snippet:skip
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from position {1} to {2}", column.Header, from + 1, to + 1));
     }
     // </snippet>
 
@@ -169,7 +180,7 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
             {
                 var column = _canonical[int.Parse((string)box.Tag, CultureInfo.InvariantCulture)];
                 var visible = column != ColShift;
-                column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                SetColumnVisible(column, visible);
                 box.IsChecked = visible;
             }
         }
@@ -178,8 +189,10 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         SetLastAction("Restored the starting column order and visibility");
     }
 
+    // <snippet>
     private TableViewColumn? FindColumn(string header) =>
         PeopleTable.Columns.FirstOrDefault(c => string.Equals(c.Header?.ToString(), header, StringComparison.Ordinal));
+    // </snippet>
 
     private TableViewColumn? SelectedColumn() =>
         ColumnPicker.SelectedItem is ComboBoxItem { Tag: string header } ? FindColumn(header) : null;

@@ -22,7 +22,6 @@ private void AttachHeaderMenus()
         menu.Items.Add(hide);
         menu.Items.Add(showAll);
         column.HeaderContextFlyout = menu;
-        _headerMenus[column] = menu;
     }
 }
 

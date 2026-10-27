@@ -442,7 +442,7 @@ public sealed partial class HierarchyPage : SamplePageBase
 
     // <snippet>
     // TableView.Columns is the live column collection: moving an entry moves the column. The first
-    // visible column hosts the group indent and the expander chevron.
+    // visible column hosts the level indent and the expander chevron.
     private void SetFirstColumn(TableViewColumn first)
     {
         var columns = PeopleTable.Columns;

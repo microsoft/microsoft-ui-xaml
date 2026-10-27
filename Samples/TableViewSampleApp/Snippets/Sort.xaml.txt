@@ -41,7 +41,8 @@
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
     IsReadOnly="False"
-    EmptyTemplate="{StaticResource SortEmptyTemplate}">
+    EmptyTemplate="{StaticResource SortEmptyTemplate}"
+    Sorted="OnTableSorted">
     <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
     <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="74" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team"/>
     <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="74" IsReadOnly="True" Binding="{Binding Group}"/>

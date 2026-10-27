@@ -91,6 +91,7 @@
                 AutomationProperties.AutomationId="HeadersVisibilityTable"
                 AutomationProperties.Name="Support tickets"
                 ItemsSource="{x:Bind Source}"
+                HeadersVisibility="Column"
                 SelectionMode="Single"
                 IsReadOnly="True"
                 VerticalAlignment="Stretch"

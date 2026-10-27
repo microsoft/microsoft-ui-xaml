@@ -6,12 +6,6 @@ public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRow
 
 public TableViewSource Source { get; }
 
-private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
-{
-    var single = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "Single";
-    PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
-}
-
 // Select takes a display index; group headers take indexes too but cannot be selected, so walk
 // in from one end until IsSelected confirms a row took the selection.
 private int SelectFirstSelectable(int lastIndex, bool fromEnd)
@@ -33,3 +27,16 @@ private void OnClearSelectionClick(object sender, RoutedEventArgs e)
 {
     PeopleTable.DeselectAll();
 }
+
+// Raised after the selection has settled, so sender.SelectedItem and SelectedIndex hold the new
+// state. Replacing a selection raises one event with both the removed and the added row.
+private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+{
+    _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
+}
+
+// From Pages\SelectionPage.Status.cs
+private static string DescribeAll(IList<object>? items) =>
+    items is null || items.Count == 0 ? "none" : string.Join(", ", items.Select(Describe));
+
+private static string Describe(object? item) => item is Person person ? person.FullName : "(none)";

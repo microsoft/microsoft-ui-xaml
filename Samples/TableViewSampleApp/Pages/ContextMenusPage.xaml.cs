@@ -69,7 +69,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
             menu.Items.Add(hide);
             menu.Items.Add(showAll);
             column.HeaderContextFlyout = menu;
-            _headerMenus[column] = menu;
+            _headerMenus[column] = menu; // snippet:skip
         }
     }
     // </snippet>

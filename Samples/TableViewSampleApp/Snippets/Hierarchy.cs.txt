@@ -44,7 +44,7 @@ private void OnSortChanged(object sender, SelectionChangedEventArgs e)
 }
 
 // TableView.Columns is the live column collection: moving an entry moves the column. The first
-// visible column hosts the group indent and the expander chevron.
+// visible column hosts the level indent and the expander chevron.
 private void SetFirstColumn(TableViewColumn first)
 {
     var columns = PeopleTable.Columns;
@@ -61,6 +61,35 @@ private void SetFirstColumn(TableViewColumn first)
 // resets expansion, so declare it once.
 private static void NestRows(TableViewSource source, ParentRelation relation) =>
     source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+
+// From Controls\ShapingOptions.xaml.cs
+// Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+// the tree rows, so Grouped hierarchy calls both.
+private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.ExpandAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.ExpandAllRows();
+    }
+}
+
+private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.CollapseAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.CollapseAllRows();
+    }
+}
 
 // From Helpers\ParentRelation.cs
 // The two selectors ParentBy takes: a row's unique key, and its parent's key (null for a root).

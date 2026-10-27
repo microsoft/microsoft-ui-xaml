@@ -35,9 +35,6 @@ public sealed partial class SelectionPage : SamplePageBase
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
-        TrackLifetime(
-            () => PeopleTable.SelectionChanged += OnTableSelectionChanged,
-            () => PeopleTable.SelectionChanged -= OnTableSelectionChanged);
     }
 
     // <snippet>
@@ -50,7 +47,6 @@ public sealed partial class SelectionPage : SamplePageBase
 
     // ---- Selection mode -----------------------------------------------------------------
 
-    // <snippet>
     private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="1"), before the table exists. // snippet:skip
@@ -63,7 +59,6 @@ public sealed partial class SelectionPage : SamplePageBase
         PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
         SetLastAction(single ? "Selection mode -> Single" : "Selection mode -> None");
     }
-    // </snippet>
 
     private bool IsSingleMode => PeopleTable.SelectionMode == TableViewSelectionMode.Single;
 
@@ -217,12 +212,16 @@ public sealed partial class SelectionPage : SamplePageBase
 
     // ---- Events ---------------------------------------------------------------------------
 
+    // <snippet>
+    // Raised after the selection has settled, so sender.SelectedItem and SelectedIndex hold the new
+    // state. Replacing a selection raises one event with both the removed and the added row.
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        _changeCount++;
+        _changeCount++; // snippet:skip
         _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
         RefreshReadouts();
     }
+    // </snippet>
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {

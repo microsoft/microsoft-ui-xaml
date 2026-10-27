@@ -471,8 +471,36 @@ public sealed partial class ShapingOptions : UserControl
         return false;
     }
 
+    // <snippet Groups Hierarchy>
     // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
     // the tree rows, so Grouped hierarchy calls both.
+    private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
+    {
+        if (grouped)
+        {
+            table.ExpandAllGroups();
+        }
+
+        if (hierarchical)
+        {
+            table.ExpandAllRows();
+        }
+    }
+
+    private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
+    {
+        if (grouped)
+        {
+            table.CollapseAllGroups();
+        }
+
+        if (hierarchical)
+        {
+            table.CollapseAllRows();
+        }
+    }
+    // </snippet>
+
     public void ExpandAll()
     {
         var table = _table;
@@ -480,14 +508,9 @@ public sealed partial class ShapingOptions : UserControl
         var hierarchical = IsHierarchical;
         var elapsedMilliseconds = Time(() =>
         {
-            if (grouped)
+            if (table is not null)
             {
-                table?.ExpandAllGroups();
-            }
-
-            if (hierarchical)
-            {
-                table?.ExpandAllRows();
+                ExpandEvery(table, grouped, hierarchical);
             }
         });
         ActionPerformed?.Invoke(this, new ShapingActionEventArgs(ShapingAction.ExpandedAll, elapsedMilliseconds, "Expanded all " + ExpandTargets(grouped, hierarchical)));
@@ -500,14 +523,9 @@ public sealed partial class ShapingOptions : UserControl
         var hierarchical = IsHierarchical;
         var elapsedMilliseconds = Time(() =>
         {
-            if (grouped)
+            if (table is not null)
             {
-                table?.CollapseAllGroups();
-            }
-
-            if (hierarchical)
-            {
-                table?.CollapseAllRows();
+                CollapseEvery(table, grouped, hierarchical);
             }
         });
         ActionPerformed?.Invoke(this, new ShapingActionEventArgs(ShapingAction.CollapsedAll, elapsedMilliseconds, "Collapsed all " + ExpandTargets(grouped, hierarchical)));

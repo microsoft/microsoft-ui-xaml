@@ -218,6 +218,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         }
     }
 
+    // <snippet>
     private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Enter)
@@ -231,6 +232,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
             GoUp();
         }
     }
+    // </snippet>
 
     private void OnRowDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => OpenSelectedFolder();
 
@@ -390,7 +392,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
 
-    // <snippet>
     private static string ModifiedBucket(DateTimeOffset modified)
     {
         var days = (DateTime.Now.Date - modified.LocalDateTime.Date).TotalDays;
@@ -404,5 +405,4 @@ public sealed partial class FileExplorerPage : SamplePageBase
             _ => "A long time ago",
         };
     }
-    // </snippet>
 }

@@ -177,7 +177,9 @@ feature stay outside the regions. A tiny snippet is fine.
   page chrome (headings, focus sentinels, side lists) outside the regions. Write column widths as
   literals (the `ColWidth*` tokens in `App.xaml` are for columns built in code), give the
   `TableView` start tag one attribute per line, and subscribe readout-only handlers in code
-  rather than in the snippet's XAML.
+  rather than in the snippet's XAML. When the event is what the page teaches (`SelectionChanged`
+  on Selection, `Sorted` on Sort), subscribe it in the XAML and keep the handler in the snippet,
+  with its readout lines marked `// snippet:skip`.
 - C#: the data setup and the TableView calls, including the calls the rail's controls make, as
   small handlers. Keep page plumbing (readouts, pickers, button enabling, guards for controls not
   created yet) outside the regions, or mark the line `// snippet:skip`. A non-obvious app

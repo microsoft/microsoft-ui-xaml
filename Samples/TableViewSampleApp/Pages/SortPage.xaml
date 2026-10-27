@@ -151,6 +151,7 @@
                 SelectionMode="Single"
                 IsReadOnly="False"
                 EmptyTemplate="{StaticResource SortEmptyTemplate}"
+                Sorted="OnTableSorted"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
