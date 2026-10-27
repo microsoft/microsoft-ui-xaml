@@ -47,9 +47,9 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.OnPropertyChangeCallback)]
     [Guids(ClassGuid = "93790753-7ded-46d9-bf50-eced4011793d")]
-    public sealed class LoopingSelector : Controls.Control
+    public class LoopingSelector : Controls.Control
     {
-        internal LoopingSelector() { }
+        public LoopingSelector() { }
 
         public Windows.Foundation.Boolean ShouldLoop
         {
