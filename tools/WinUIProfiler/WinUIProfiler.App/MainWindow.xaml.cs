@@ -32,6 +32,7 @@ public sealed partial class MainWindow : Window
     private CancellationTokenSource? snapshotOperation;
     private SavedTreeSnapshot? snapshot;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
+    private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
     public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
     public MainWindow()
     {
@@ -62,6 +63,7 @@ public sealed partial class MainWindow : Window
         connectionGeneration++;
         model.PropertyChanged -= Model_PropertyChanged;
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
+        foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
         await model.DisconnectAsync();
         closeAllowed = true;
         Close();
@@ -169,6 +171,7 @@ public sealed partial class MainWindow : Window
             DisconnectButton.Content = Text(model.IsBusy ? "CancelConnection" : "DisconnectLabel");
             SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy &&
                 !initialSnapshotPending && snapshotOperation is null;
+            CompareSnapshotsButton.IsEnabled = Snapshots.Count >= 2;
             SnapshotStatus.Text = snapshotOperation is not null ? Text("SnapshotCapturing") :
                 snapshot is null ? "" : Format("SnapshotSavedFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Path);
             AutomationProperties.SetItemStatus(SnapshotStatus, JsonSerializer.Serialize(new
@@ -373,6 +376,42 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 snapshotWindows.Add(entry.Saved.CaptureId, viewer);
                 viewer.Closed += (_, _) => snapshotWindows.Remove(entry.Saved.CaptureId);
             }
+            viewer.Activate();
+        }
+        catch (Exception error)
+        {
+            model.ReportError(error);
+        }
+    }
+
+    private void SnapshotDiffPicker_Opening(object sender, object args)
+    {
+        SnapshotDiffBefore.SelectedIndex = Snapshots.Count >= 2 ? 1 : -1;
+        SnapshotDiffAfter.SelectedIndex = Snapshots.Count > 0 ? 0 : -1;
+    }
+
+    private void SnapshotDiffSelection_Changed(object sender, SelectionChangedEventArgs args)
+    {
+        if (CompareSelectedSnapshots is null) return;
+        CompareSelectedSnapshots.IsEnabled = SnapshotDiffBefore.SelectedItem is SnapshotHistoryEntry before &&
+            SnapshotDiffAfter.SelectedItem is SnapshotHistoryEntry after && before.CaptureId != after.CaptureId &&
+            SnapshotDiffData.CanCompare(before, after);
+    }
+
+    private void CompareSnapshots_Click(object sender, RoutedEventArgs args)
+    {
+        if (closing || SnapshotDiffBefore.SelectedItem is not SnapshotHistoryEntry before ||
+            SnapshotDiffAfter.SelectedItem is not SnapshotHistoryEntry after) return;
+        try
+        {
+            var key = (before.Saved.CaptureId, after.Saved.CaptureId);
+            if (!snapshotDiffWindows.TryGetValue(key, out var viewer))
+            {
+                viewer = new(before, after);
+                snapshotDiffWindows.Add(key, viewer);
+                viewer.Closed += (_, _) => snapshotDiffWindows.Remove(key);
+            }
+            SnapshotDiffPicker.Hide();
             viewer.Activate();
         }
         catch (Exception error)
