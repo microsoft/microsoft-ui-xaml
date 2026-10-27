@@ -15,6 +15,8 @@ namespace TableViewSampleApp.Controls;
 
 public sealed partial class SamplePresenter : UserControl
 {
+    private const string PageSourceRoot = "https://github.com/microsoft/microsoft-ui-xaml/blob/main/Samples/TableViewSampleApp/Pages/";
+
     private const double OptionsColumnWidth = 320;
     private const double WideLayoutMinWidth = 900;
 
@@ -321,6 +323,15 @@ public sealed partial class SamplePresenter : UserControl
     }
 
     // SelectedItem, not SelectorBarItem.IsSelected: the item flag can still hold the old state here.
+    private async void OnSourceLinkClick(object sender, RoutedEventArgs e)
+    {
+        SourceLinksButton.Flyout?.Hide();
+        if (sender is FrameworkElement { Tag: string uri })
+        {
+            await Launcher.LaunchUriAsync(new Uri(uri));
+        }
+    }
+
     private void OnSourceTabSelected(DependencyObject sender, DependencyProperty dp)
     {
         ShowSelectedSource();
@@ -581,6 +592,11 @@ public sealed partial class SamplePresenter : UserControl
         {
             return;
         }
+
+        var page = $"{PageSourceRoot}{name}Page.xaml";
+        sp.SourceXamlLink.Tag = page;
+        sp.SourceCSharpLink.Tag = page + ".cs";
+        sp.SourceLinksButton.Visibility = Visibility.Visible;
 
         if (sp.ReadLocalValue(SourceSnippetProperty) == DependencyProperty.UnsetValue)
         {

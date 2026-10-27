@@ -21,6 +21,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock
@@ -31,10 +32,79 @@
             AutomationProperties.HeadingLevel="Level1"
             VerticalAlignment="Center"/>
 
+        <!-- Links to this page's source and the control's source; shown on pages with a Snippet. -->
+        <DropDownButton
+            x:Name="SourceLinksButton"
+            Grid.Row="1"
+            AutomationProperties.AutomationId="SampleSourceLinksButton"
+            Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon Glyph="&#xE943;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                <TextBlock Text="Source"/>
+            </StackPanel>
+            <DropDownButton.Flyout>
+                <Flyout Placement="BottomEdgeAlignedLeft">
+                    <StackPanel Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                Text="Sample page source code"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level3"/>
+                            <FontIcon
+                                Glyph="&#xE946;"
+                                FontSize="14"
+                                ToolTipService.ToolTip="The files of this sample page on GitHub."
+                                AutomationProperties.AccessibilityView="Raw"/>
+                        </StackPanel>
+                        <HyperlinkButton
+                            x:Name="SourceXamlLink"
+                            Content="XAML"
+                            AutomationProperties.AutomationId="SampleSourceXamlLink"
+                            AutomationProperties.HelpText="The files of this sample page on GitHub."
+                            Click="OnSourceLinkClick"/>
+                        <HyperlinkButton
+                            x:Name="SourceCSharpLink"
+                            Content="C#"
+                            AutomationProperties.AutomationId="SampleSourceCSharpLink"
+                            AutomationProperties.HelpText="The files of this sample page on GitHub."
+                            Click="OnSourceLinkClick"/>
+                        <Border
+                            Height="1"
+                            Margin="0,6"
+                            Background="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                Text="Control source code"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level3"/>
+                            <FontIcon
+                                Glyph="&#xE946;"
+                                FontSize="14"
+                                ToolTipService.ToolTip="The TableView control's implementation and its API spec on GitHub."
+                                AutomationProperties.AccessibilityView="Raw"/>
+                        </StackPanel>
+                        <HyperlinkButton
+                            Content="TableView"
+                            Tag="https://github.com/microsoft/microsoft-ui-xaml/tree/main/controls/dev/TableView"
+                            AutomationProperties.AutomationId="SampleControlSourceLink"
+                            AutomationProperties.HelpText="The TableView control's implementation and its API spec on GitHub."
+                            Click="OnSourceLinkClick"/>
+                        <HyperlinkButton
+                            Content="Spec"
+                            Tag="https://github.com/microsoft/microsoft-ui-xaml/blob/main/docs/api-specs/TableView/TableView-spec.md"
+                            AutomationProperties.AutomationId="SampleControlSpecLink"
+                            AutomationProperties.HelpText="The TableView control's implementation and its API spec on GitHub."
+                            Click="OnSourceLinkClick"/>
+                    </StackPanel>
+                </Flyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
+
         <!-- Description -->
         <TextBlock
             x:Name="DescriptionText"
-            Grid.Row="1"
+            Grid.Row="2"
             Style="{ThemeResource BodyTextBlockStyle}"
             Text="{x:Bind Description, Mode=OneWay}"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
