@@ -483,6 +483,56 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             TestServices.Utilities.VerifyUIElementTree("3");
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Validates that RichEditBox honors FontStretch instead of falling back to a condensed face.")]
+        [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        public void VerifyRichEditBoxHonorsFontStretch()
+        {
+            TestServices.WindowHelper.SetWindowSizeOverride(new global::Windows.Foundation.Size(800, 400));
+
+            // Bahnschrift ships with Windows and has separate Normal, SemiCondensed and Condensed faces,
+            // so whichever face gets resolved shows up as a difference in the measured width.
+            double unset = MeasureFontStretchSample(null);
+            double normal = MeasureFontStretchSample("Normal");
+            double semiCondensed = MeasureFontStretchSample("SemiCondensed");
+            double condensed = MeasureFontStretchSample("Condensed");
+
+            Log.Comment($"Widths - unset: {unset}, Normal: {normal}, SemiCondensed: {semiCondensed}, Condensed: {condensed}");
+
+            Verify.IsGreaterThan(normal, semiCondensed, "Normal should be wider than SemiCondensed");
+            Verify.IsGreaterThan(semiCondensed, condensed, "SemiCondensed should be wider than Condensed");
+            Verify.AreEqual(normal, unset, "An unset FontStretch should render the same as Normal");
+        }
+
+        private static double MeasureFontStretchSample(string fontStretch)
+        {
+            string fontStretchAttribute = fontStretch == null ? string.Empty : $" FontStretch='{fontStretch}'";
+            string rootPanelXaml =
+                    $@"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <RichEditBox x:Name='reb' HorizontalAlignment='Left' FontFamily='Bahnschrift' FontSize='20'{fontStretchAttribute} />
+                      </StackPanel>";
+
+            StackPanel rootPanel = null;
+            RichEditBox richEditBox = null;
+            double width = 0;
+
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = (StackPanel)XamlReader.Load(rootPanelXaml);
+                richEditBox = (RichEditBox)rootPanel.FindName("reb");
+                richEditBox.Document.SetText(TextSetOptions.None, "HHHHHHHHHHHHHHHHHHHH");
+                TestServices.WindowHelper.WindowContent = rootPanel;
+            });
+
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                width = richEditBox.ActualWidth;
+            });
+
+            return width;
+        }
     }
 }
 
