@@ -173,7 +173,7 @@
                 <Property Name="Grid.Column" Value="0" />
                 <Property Name="HorizontalContentAlignment" Value="0" />
                 <Property Name="Name" Value="MonthLoopingSelector" />
-                <Property Name="Padding" Value="9,3,0,6" />
+                <Property Name="Padding" Value="9,4,0,6" />
                 <Property Name="RenderSize" Value="133x355" />
                 <Property Name="TabIndex" Value="0" />
                 <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
@@ -247,7 +247,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -270,7 +270,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -307,7 +307,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -330,7 +330,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -367,7 +367,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -390,7 +390,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -427,7 +427,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -450,7 +450,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -487,7 +487,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -510,7 +510,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -547,7 +547,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -570,7 +570,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -607,7 +607,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -630,7 +630,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -667,7 +667,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -690,7 +690,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -727,7 +727,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -750,7 +750,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -787,7 +787,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -810,7 +810,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -847,7 +847,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -870,7 +870,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -907,7 +907,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -930,7 +930,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -967,7 +967,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -990,7 +990,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1027,7 +1027,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1050,7 +1050,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1087,7 +1087,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1110,7 +1110,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1147,7 +1147,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1170,7 +1170,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1207,7 +1207,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1230,7 +1230,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1267,7 +1267,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1290,7 +1290,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1327,7 +1327,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="0" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="9,3,0,6" />
+                            <Property Name="Padding" Value="9,4,0,6" />
                             <Property Name="RenderSize" Value="133x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1350,7 +1350,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="0" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="9,3,0,6" />
+                                <Property Name="Padding" Value="9,4,0,6" />
                                 <Property Name="RenderSize" Value="129x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1443,7 +1443,7 @@
                 <Property Name="Grid.Column" Value="2" />
                 <Property Name="HorizontalContentAlignment" Value="1" />
                 <Property Name="Name" Value="DayLoopingSelector" />
-                <Property Name="Padding" Value="0,3,0,6" />
+                <Property Name="Padding" Value="0,4,0,6" />
                 <Property Name="RenderSize" Value="79x355" />
                 <Property Name="TabIndex" Value="1" />
                 <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
@@ -1517,7 +1517,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1540,7 +1540,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1577,7 +1577,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1600,7 +1600,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1637,7 +1637,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1660,7 +1660,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1697,7 +1697,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1720,7 +1720,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1757,7 +1757,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1780,7 +1780,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1817,7 +1817,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1840,7 +1840,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1877,7 +1877,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1900,7 +1900,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1937,7 +1937,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -1960,7 +1960,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -1997,7 +1997,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2020,7 +2020,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2057,7 +2057,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2080,7 +2080,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2117,7 +2117,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2140,7 +2140,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2177,7 +2177,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2200,7 +2200,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2237,7 +2237,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2260,7 +2260,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2297,7 +2297,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2320,7 +2320,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2357,7 +2357,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2380,7 +2380,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2417,7 +2417,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2440,7 +2440,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2477,7 +2477,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2500,7 +2500,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2537,7 +2537,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2560,7 +2560,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2597,7 +2597,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="79x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2620,7 +2620,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="75x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2713,7 +2713,7 @@
                 <Property Name="Grid.Column" Value="4" />
                 <Property Name="HorizontalContentAlignment" Value="1" />
                 <Property Name="Name" Value="YearLoopingSelector" />
-                <Property Name="Padding" Value="0,3,0,6" />
+                <Property Name="Padding" Value="0,4,0,6" />
                 <Property Name="RenderSize" Value="78x355" />
                 <Property Name="TabIndex" Value="2" />
                 <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
@@ -2787,7 +2787,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2810,7 +2810,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2847,7 +2847,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2870,7 +2870,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2907,7 +2907,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2930,7 +2930,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -2967,7 +2967,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -2990,7 +2990,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3027,7 +3027,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3050,7 +3050,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3087,7 +3087,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3110,7 +3110,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3147,7 +3147,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3170,7 +3170,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3207,7 +3207,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3230,7 +3230,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3267,7 +3267,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3290,7 +3290,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3327,7 +3327,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3350,7 +3350,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3387,7 +3387,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3410,7 +3410,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3447,7 +3447,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3470,7 +3470,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3507,7 +3507,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3530,7 +3530,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3567,7 +3567,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3590,7 +3590,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3627,7 +3627,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3650,7 +3650,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3687,7 +3687,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3710,7 +3710,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3747,7 +3747,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3770,7 +3770,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3807,7 +3807,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3830,7 +3830,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
@@ -3867,7 +3867,7 @@
                             <Property Name="HorizontalAlignment" Value="3" />
                             <Property Name="HorizontalContentAlignment" Value="1" />
                             <Property Name="IsTabStop" Value="False" />
-                            <Property Name="Padding" Value="0,3,0,6" />
+                            <Property Name="Padding" Value="0,4,0,6" />
                             <Property Name="RenderSize" Value="78x40" />
                             <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                             <Property Name="VerticalAlignment" Value="3" />
@@ -3890,7 +3890,7 @@
                                 <Property Name="HorizontalContentAlignment" Value="1" />
                                 <Property Name="Margin" Value="2,0,2,0" />
                                 <Property Name="Name" Value="ContentPresenter" />
-                                <Property Name="Padding" Value="0,3,0,6" />
+                                <Property Name="Padding" Value="0,4,0,6" />
                                 <Property Name="RenderSize" Value="74x40" />
                                 <Property Name="VerticalContentAlignment" Value="1" />
                                 <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
