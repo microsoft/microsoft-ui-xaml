@@ -7,7 +7,9 @@ using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.System;
 
 namespace TableViewSampleApp.Controls;
 
@@ -54,6 +56,10 @@ public sealed partial class SamplePresenter : UserControl
     private long _revealSourceUntil;
     private bool _revealSourceQueued;
 
+    // Height of the expanded code area from the last sizing pass; NaN leaves it to its content.
+    private double _sourceHeight = double.NaN;
+    private bool _sourceFullScreen;
+
     public SamplePresenter()
     {
         InitializeComponent();
@@ -63,6 +69,7 @@ public sealed partial class SamplePresenter : UserControl
 
         // One vertical scroller: the Source scroller is already bounded.
         SourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
+        SourceTabs.RegisterPropertyChangedCallback(SelectorBar.SelectedItemProperty, OnSourceTabSelected);
 
         var margin = OuterGrid.Margin;
         HeaderPanel.Margin = new Thickness(margin.Left, margin.Top, margin.Right, HeaderGap);
@@ -202,7 +209,7 @@ public sealed partial class SamplePresenter : UserControl
     private void UpdateOptionsVisibility()
     {
         var hasOptions = Options is not null;
-        OptionsRail.Visibility = hasOptions ? Visibility.Visible : Visibility.Collapsed;
+        OptionsRail.Visibility = hasOptions && !_sourceFullScreen ? Visibility.Visible : Visibility.Collapsed;
         ApplyResponsiveLayout(ActualWidth);
     }
 
@@ -301,19 +308,20 @@ public sealed partial class SamplePresenter : UserControl
         SourceExpander.Visibility = hasXaml || hasCSharp ? Visibility.Visible : Visibility.Collapsed;
         SourceXamlTab.Visibility = hasXaml ? Visibility.Visible : Visibility.Collapsed;
         SourceCSharpTab.Visibility = hasCSharp ? Visibility.Visible : Visibility.Collapsed;
-        if (SourceCSharpTab.IsSelected && !hasCSharp)
+        if (SourceTabs.SelectedItem != SourceXamlTab && !hasCSharp)
         {
-            SourceXamlTab.IsSelected = true;
+            SourceTabs.SelectedItem = SourceXamlTab;
         }
-        else if (SourceXamlTab.IsSelected && !hasXaml && hasCSharp)
+        else if (SourceTabs.SelectedItem != SourceCSharpTab && !hasXaml && hasCSharp)
         {
-            SourceCSharpTab.IsSelected = true;
+            SourceTabs.SelectedItem = SourceCSharpTab;
         }
 
         ShowSelectedSource();
     }
 
-    private void OnSourceTabsSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    // SelectedItem, not SelectorBarItem.IsSelected: the item flag can still hold the old state here.
+    private void OnSourceTabSelected(DependencyObject sender, DependencyProperty dp)
     {
         ShowSelectedSource();
         InvalidateMeasure();
@@ -321,12 +329,12 @@ public sealed partial class SamplePresenter : UserControl
 
     private void ShowSelectedSource()
     {
-        if (SourceCodeBlock is null || SourceCSharpTab is null)
+        if (SourceCodeBlock is null || SourceTabs is null)
         {
             return;
         }
 
-        var csharp = SourceCSharpTab.IsSelected;
+        var csharp = SourceTabs.SelectedItem == SourceCSharpTab;
         SourceCodeBlock.CodeLanguage = csharp ? CodeHighlighter.CSharp : CodeHighlighter.Xaml;
         SourceCodeBlock.Code = (csharp ? AdditionalSourceCode : SourceXaml) ?? string.Empty;
     }
@@ -340,7 +348,53 @@ public sealed partial class SamplePresenter : UserControl
     private void OnSourceExpanderCollapsed(Expander sender, ExpanderCollapsedEventArgs args)
     {
         _revealSourceUntil = 0;
+        SetSourceFullScreen(false);
         InvalidateMeasure();
+    }
+
+    private void OnSourceFullScreenChanged(object sender, RoutedEventArgs e) =>
+        SetSourceFullScreen(SourceFullScreenButton.IsChecked == true);
+
+    // Full screen covers this presenter: the page title, description, example and rail. The window's
+    // navigation pane, title bar and status bar are outside it.
+    private void SetSourceFullScreen(bool on)
+    {
+        if (SourceFullScreenButton.IsChecked != on)
+        {
+            SourceFullScreenButton.IsChecked = on;   // re-enters through Checked / Unchecked
+            return;
+        }
+
+        if (_sourceFullScreen == on)
+        {
+            return;
+        }
+
+        _sourceFullScreen = on;
+        if (on)
+        {
+            SourceExpander.IsExpanded = true;
+        }
+
+        var pageContent = on ? Visibility.Collapsed : Visibility.Visible;
+        HeaderPanel.Visibility = pageContent;
+        ExampleGrid.Visibility = pageContent;
+        ExampleRow.MinHeight = on ? 0 : ExampleRowMinHeight;
+        UpdateOptionsVisibility();
+        SourceFullScreenIcon.Glyph = on ? "\uE73F" : "\uE740";
+        ToolTipService.SetToolTip(SourceFullScreenButton, on ? "Exit full screen (Esc)" : "Full screen");
+        OuterScroller.ChangeView(null, 0, null, disableAnimation: true);
+        InvalidateMeasure();
+    }
+
+    private void OnSourceExpanderKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape && _sourceFullScreen)
+        {
+            SetSourceFullScreen(false);
+            SourceFullScreenButton.Focus(FocusState.Keyboard);
+            e.Handled = true;
+        }
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -391,7 +445,11 @@ public sealed partial class SamplePresenter : UserControl
             : new Windows.Foundation.Size(desired.Width, Math.Min(desired.Height, availableSize.Height));
     }
 
-    private void OnUnloaded(object sender, RoutedEventArgs e) => LayoutUpdated -= OnLayoutUpdated;
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        LayoutUpdated -= OnLayoutUpdated;
+        SetSourceFullScreen(false);
+    }
 
     // DesiredSize is clamped to the slot, so detect overflow from children arranged taller than their
     // slot; ApplyStretchSizing then unpins and scrolls instead of collapsing the `*` table row.
@@ -552,14 +610,34 @@ public sealed partial class SamplePresenter : UserControl
         ExampleHostRow.Height = StretchExample ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
     }
 
-    // `*` collapses to 0 in an infinite-height ScrollViewer, so a page that fits pins the grid's Height.
-    // Otherwise the grid is unpinned and the Example row gets a fixed height so the table still virtualizes.
     private void ApplyStretchSizing(double availableHeight)
     {
         if (OuterGrid is null)
         {
             return;
         }
+
+        _sourceHeight = double.NaN;
+        ApplyStretchSizingCore(availableHeight);
+        var expanded = SourceExpander.Visibility == Visibility.Visible && SourceExpander.IsExpanded;
+        if (expanded && !double.IsNaN(_sourceHeight))
+        {
+            SetMaxHeight(SourceContentScroller, _sourceHeight);
+            if (!SourceContentScroller.Height.Equals(_sourceHeight))
+            {
+                SourceContentScroller.Height = _sourceHeight;
+            }
+        }
+        else
+        {
+            ClearIfSet(SourceContentScroller, HeightProperty);
+        }
+    }
+
+    // `*` collapses to 0 in an infinite-height ScrollViewer, so a page that fits pins the grid's Height.
+    // Otherwise the grid is unpinned and the Example row gets a fixed height so the table still virtualizes.
+    private void ApplyStretchSizingCore(double availableHeight)
+    {
 
         var hasHeight = !double.IsNaN(availableHeight) && availableHeight > 0;
         var target = hasHeight ? Math.Max(0, availableHeight - _headerHeight - OuterGrid.Margin.Top - OuterGrid.Margin.Bottom) : 0;
@@ -571,6 +649,20 @@ public sealed partial class SamplePresenter : UserControl
         var sourceChrome = !sourceVisible ? 0
             : sourceExpanded ? _expandedSourceChrome
             : (collapsedMeasured ? SourceExpander.ActualHeight + SourceExpander.Margin.Top : CollapsedSourceEstimate);
+
+        if (_sourceFullScreen)
+        {
+            ClearIfSet(OuterGrid, HeightProperty);
+            SetExampleRowHeight(new GridLength(0));
+            _sourceHeight = hasHeight ? Math.Max(MinSourceHeight, Math.Floor(target - sourceChrome - RowGapsHeight())) : double.NaN;
+            return;
+        }
+
+        // Expanded, the code takes about half of the content height and the example the rest.
+        if (sourceExpanded && hasHeight)
+        {
+            _sourceHeight = Math.Max(MinSourceHeight, Math.Floor((availableHeight / 2) - sourceChrome));
+        }
 
         if (!StretchExample || !hasHeight)
         {
@@ -591,7 +683,7 @@ public sealed partial class SamplePresenter : UserControl
         }
 
         var gaps = RowGapsHeight();
-        var reservedCode = sourceExpanded ? MinSourceHeight : 0;
+        var reservedCode = sourceExpanded ? _sourceHeight : 0;
         var fits = !_isNarrow && gaps + _exampleMinHeight + sourceChrome + reservedCode <= target;
         if (fits)
         {

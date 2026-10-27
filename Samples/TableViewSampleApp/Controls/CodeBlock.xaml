@@ -81,6 +81,7 @@
                 <ContentPresenter
                     x:Name="HeaderPresenter"
                     Grid.Column="0"
+                    HorizontalContentAlignment="Stretch"
                     VerticalAlignment="Center"
                     Visibility="Collapsed"/>
                 <Button

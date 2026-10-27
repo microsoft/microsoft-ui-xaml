@@ -104,6 +104,10 @@ workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"
 The Source code expander shows them as XAML and C# tabs (`SampleSourceTabs`: `SampleSourceXamlTab`,
 `SampleSourceCSharpTab`, hidden when the page has no C# snippet) over one `CodeBlock`, which colours
 the code with the built-in `CodeHighlighter` and theme brushes (`Light`, `Dark`, `HighContrast`).
+Expanded, the code area takes about half of the presenter's height (`ApplyStretchSizing`) and scrolls
+inside it; the example keeps the rest. The full-screen toggle (`SampleSourceFullScreenButton`) hides the
+presenter's title, description, example and rail so the code fills the page content area; Esc, the
+toggle or collapsing the expander restores them, and leaving the page resets it.
 
 `BuildInfo` is generated to `$(IntermediateOutputPath)\BuildInfo.g.cs` and included from there.
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names

@@ -198,6 +198,7 @@
             AutomationProperties.Name="Source code"
             Expanding="OnSourceExpanderExpanding"
             Collapsed="OnSourceExpanderCollapsed"
+            KeyDown="OnSourceExpanderKeyDown"
             Visibility="Collapsed">
             <Expander.Header>
                 <TextBlock Text="Source code"/>
@@ -210,23 +211,41 @@
                 HorizontalScrollBarVisibility="Disabled">
                 <local:CodeBlock x:Name="SourceCodeBlock">
                     <local:CodeBlock.HeaderContent>
-                        <SelectorBar
-                            x:Name="SourceTabs"
-                            AutomationProperties.AutomationId="SampleSourceTabs"
-                            AutomationProperties.Name="Source language"
-                            SelectionChanged="OnSourceTabsSelectionChanged">
-                            <SelectorBarItem
-                                x:Name="SourceXamlTab"
-                                Text="XAML"
-                                IsSelected="True"
-                                AutomationProperties.AutomationId="SampleSourceXamlTab"
-                                AutomationProperties.Name="XAML"/>
-                            <SelectorBarItem
-                                x:Name="SourceCSharpTab"
-                                Text="C#"
-                                AutomationProperties.AutomationId="SampleSourceCSharpTab"
-                                AutomationProperties.Name="C#"/>
-                        </SelectorBar>
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <SelectorBar
+                                x:Name="SourceTabs"
+                                AutomationProperties.AutomationId="SampleSourceTabs"
+                                AutomationProperties.Name="Source language">
+                                <SelectorBarItem
+                                    x:Name="SourceXamlTab"
+                                    Text="XAML"
+                                    IsSelected="True"
+                                    AutomationProperties.AutomationId="SampleSourceXamlTab"
+                                    AutomationProperties.Name="XAML"/>
+                                <SelectorBarItem
+                                    x:Name="SourceCSharpTab"
+                                    Text="C#"
+                                    AutomationProperties.AutomationId="SampleSourceCSharpTab"
+                                    AutomationProperties.Name="C#"/>
+                            </SelectorBar>
+                            <!-- The checked state is the announcement; the name stays the same. -->
+                            <ToggleButton
+                                x:Name="SourceFullScreenButton"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Padding="8,4"
+                                AutomationProperties.AutomationId="SampleSourceFullScreenButton"
+                                AutomationProperties.Name="Full screen"
+                                ToolTipService.ToolTip="Full screen"
+                                Checked="OnSourceFullScreenChanged"
+                                Unchecked="OnSourceFullScreenChanged">
+                                <FontIcon x:Name="SourceFullScreenIcon" Glyph="&#xE740;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                            </ToggleButton>
+                        </Grid>
                     </local:CodeBlock.HeaderContent>
                 </local:CodeBlock>
             </ScrollViewer>
