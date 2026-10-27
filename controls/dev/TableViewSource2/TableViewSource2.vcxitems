@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\IShapingOwner.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\ShapingManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceHierarchy.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceRecord.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceTable.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Spec\PathEvaluator.h" />

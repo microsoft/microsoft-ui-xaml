@@ -71,7 +71,7 @@ struct SourceRecord
     // top-level with no children. Never written by Filter, Sort or GroupBy: group membership, group
     // level and expansion live in the shaping layer; filtered/sorted children, filter flags, cached
     // keys and visible counts live in Shape (below).
-    // Non-owning; ownership stays with the item's collection (m_records or a ChildFeed).
+    // Non-owning; ownership stays with the item's collection (m_records or a ChildCollectionsHierarchy child feed).
 
     // Source parent; nullptr for a top-level record.
     SourceRecord* Parent{ nullptr };

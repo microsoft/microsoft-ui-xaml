@@ -58,14 +58,24 @@ public:
     // teardown.
     TableViewRowMetadataProvider GetRowMetadata();
 
+    // Internal (not in IDL): as v1 ContainsShapedItem. Forwards to ShapingManager::ContainsItem.
+    // TableView reaches shaping state only through narrow queries like this, never SourceTable.
+    // False after teardown.
+    bool ContainsItem(winrt::IInspectable const& item) const;
+
     // Internal (not in IDL), for TableView (#18). Forward to ShapingManager:
-    //   SetOwner: single owner (O7); throws E_ILLEGAL_STATE_CHANGE if another owner is set;
-    //     nullptr releases it and its live-shaping holds. Replaces v1 SetOwningTableView /
-    //     ReleaseOwningTableView and the separate handler setters (O1).
+    //   TrySetOwner: single owner (O7); false, not a throw, if another owner is registered.
+    //   ReleaseOwner: releases it and its live-shaping holds, then runs the waiters (handoff).
+    //   Add / RemoveOwnerReleasedWaiter: a refused table waits for the release (v1 model).
+    //   Together these replace v1 SetOwningTableView / ReleaseOwningTableView /
+    //   Add / RemoveOwnerReleasedHandler and the separate handler setters (O1).
     //   Begin / EndLiveShapingHold: counted hold (O4); replaces v1 SetLiveShapingHold and
     //     ResumeHeldLiveShaping.
-    // No-ops after teardown, except SetOwner with a non-null owner, which throws.
-    void SetOwner(IShapingOwner* owner);
+    // No-ops after teardown; TrySetOwner then returns false and Add drops the waiter.
+    bool TrySetOwner(IShapingOwner* owner);
+    void ReleaseOwner(IShapingOwner* owner);
+    void AddOwnerReleasedWaiter(winrt::IInspectable const& waiter, std::function<void()> handler);
+    void RemoveOwnerReleasedWaiter(winrt::IInspectable const& waiter);
     void BeginLiveShapingHold() noexcept;
     void EndLiveShapingHold();
 

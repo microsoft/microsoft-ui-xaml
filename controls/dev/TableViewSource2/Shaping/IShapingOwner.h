@@ -12,7 +12,7 @@
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Owner notifications".
 //
 // Decided (#18): one native interface (O1) instead of v1's separate std::function hooks. The owner
-// (TableView, or a sink it owns) implements it and registers through TableViewSource2::SetOwner.
+// (TableView, or a sink it owns) implements it and registers through TableViewSource2::TrySetOwner.
 // The source layer never names TableView (dependency rule); TableView may read SourceRecord.
 //
 // Every call is made on the UI thread from inside ShapingManager::Publish, so inside the #19 apply
@@ -24,7 +24,9 @@
 //   RowsReleased                 -> ShapingAppliedArgs::Retired (O3)
 //   LiveShapingHold / Resume     -> TableViewSource2::BeginLiveShapingHold / EndLiveShapingHold (O4)
 //   ProjectionChanged            -> none: the view is never swapped
-//   SetOwningTableView           -> TableViewSource2::SetOwner, single owner (O7)
+//   SetOwningTableView           -> TableViewSource2::TrySetOwner, single owner (O7)
+//   ReleaseOwningTableView       -> TableViewSource2::ReleaseOwner
+//   Add / RemoveOwnerReleasedHandler -> TableViewSource2::Add / RemoveOwnerReleasedWaiter
 
 // Delivered once per published unit of work, after its last collection event.
 struct ShapingAppliedArgs
