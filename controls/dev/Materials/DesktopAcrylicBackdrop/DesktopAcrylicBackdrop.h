@@ -6,12 +6,14 @@
 #include <winrt/windows.system.h>
 
 #include "DesktopAcrylicBackdrop.g.h"
+#include "DesktopAcrylicBackdrop.properties.h"
 
 using namespace winrt::Microsoft::UI::Composition;
 using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
 
 class DesktopAcrylicBackdrop :
-    public ReferenceTracker<DesktopAcrylicBackdrop, winrt::implementation::DesktopAcrylicBackdropT>
+    public ReferenceTracker<DesktopAcrylicBackdrop, winrt::implementation::DesktopAcrylicBackdropT>,
+    public DesktopAcrylicBackdropProperties
 {
 public:
     DesktopAcrylicBackdrop() = default;
@@ -19,6 +21,8 @@ public:
 
     void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, winrt::Microsoft::UI::Xaml::XamlRoot xamlRoot);
     void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget);
+
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     class ControllerEntry

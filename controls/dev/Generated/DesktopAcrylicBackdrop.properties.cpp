@@ -8,9 +8,55 @@
 
 namespace winrt::Microsoft::UI::Xaml::Media
 {
-    CppWinRTActivatableClassWithBasicFactory(DesktopAcrylicBackdrop)
+    CppWinRTActivatableClassWithDPFactory(DesktopAcrylicBackdrop)
 }
 
 #include "DesktopAcrylicBackdrop.g.cpp"
 
+GlobalDependencyProperty DesktopAcrylicBackdropProperties::s_KindProperty{ nullptr };
 
+DesktopAcrylicBackdropProperties::DesktopAcrylicBackdropProperties()
+{
+    EnsureProperties();
+}
+
+void DesktopAcrylicBackdropProperties::EnsureProperties()
+{
+    if (!s_KindProperty)
+    {
+        s_KindProperty =
+            InitializeDependencyProperty(
+                L"Kind",
+                winrt::name_of<winrt::DesktopAcrylicKind>(),
+                winrt::name_of<winrt::DesktopAcrylicBackdrop>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DesktopAcrylicKind>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnKindPropertyChanged));
+    }
+}
+
+void DesktopAcrylicBackdropProperties::ClearProperties()
+{
+    s_KindProperty = nullptr;
+}
+
+void DesktopAcrylicBackdropProperties::OnKindPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::DesktopAcrylicBackdrop>();
+    winrt::get_self<DesktopAcrylicBackdrop>(owner)->OnPropertyChanged(args);
+}
+
+void DesktopAcrylicBackdropProperties::Kind(winrt::DesktopAcrylicKind const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<DesktopAcrylicBackdrop*>(this)->SetValue(s_KindProperty, ValueHelper<winrt::DesktopAcrylicKind>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DesktopAcrylicKind DesktopAcrylicBackdropProperties::Kind()
+{
+    return ValueHelper<winrt::DesktopAcrylicKind>::CastOrUnbox(static_cast<DesktopAcrylicBackdrop*>(this)->GetValue(s_KindProperty));
+}
