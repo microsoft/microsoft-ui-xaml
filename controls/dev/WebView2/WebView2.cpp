@@ -845,8 +845,10 @@ winrt::IAsyncAction WebView2::CreateCoreObjects(winrt::CoreWebView2Environment e
         {
             m_isImplicitCreationInProgress = false;
             m_isExplicitCreationInProgress = false;
-            auto creationInProgressAsync = std::move(m_creationInProgressAsync);
-            creationInProgressAsync->StopWaiting();
+
+            // Clear the current operation before releasing callers that may retry initialization.
+            auto completedCreation = std::move(m_creationInProgressAsync);
+            completedCreation->StopWaiting();
         });
         RegisterXamlEventHandlers();
 

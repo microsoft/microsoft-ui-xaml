@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ActivationLibrary.h"
+#include "ActivationHelpers.h"
 #include "RuntimeProfiler.h"
 #include "WinUIrc.ver"
 #include <winstring.h>
@@ -187,7 +187,7 @@ int32_t __stdcall MuxcActivationHandler(
     {
         path.resize(dotPos);
         path += L".dll";
-        HMODULE hModule = MuxcActivation::LoadLibraryForActivation(path.c_str());
+        HMODULE hModule = LoadLibraryForActivation(path.c_str());
         path.resize(path.size() - 4);
 
         if (!hModule)

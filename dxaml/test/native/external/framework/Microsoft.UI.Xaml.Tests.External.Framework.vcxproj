@@ -188,7 +188,9 @@
   <ItemGroup>
     <ClCompile Include="activation\abi_tests\ActivationABITests.cpp" />
     <ClCompile Include="settings\XamlOptionalChangesTests.cpp" />
-    <ClCompile Include="activation\tests\ActivationIntegrationTests.cpp" />
+    <ClCompile Include="activation\tests\ActivationIntegrationTests.cpp">
+      <AdditionalIncludeDirectories>$(XamlSourcePath)\..\controls\dev\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="collections\VectorIntegrationTests.cpp" />
     <ClCompile Include="componentconnector\tests\ComponentConnectorTests.cpp" />
     <ClCompile Include="componentconnector\tests\CustomPages.cpp" />
