@@ -1501,6 +1501,15 @@ CFocusManager::NotifyFocusChanged(_In_ bool bringIntoView, _In_ bool animateIfBr
     {
         IFC_RETURN(m_contentRoot.GetInputManager().NotifyFocusChanged(m_pFocusedElement, bringIntoView, animateIfBringIntoView));
     }
+    else
+    {
+        // Focus was withdrawn to no element (e.g. the focused control was removed, or focus was cleared
+        // programmatically). Still forward a null focused element so the legacy-IME focus park can park
+        // TSF focus on its keyboard-disabled document - otherwise IMM could fall back to the CUAS default
+        // input context while nothing editable is focused (bug 62702548). Other consumers of this
+        // notification (InputPaneProcessor) already no-op on a null focused element.
+        IFC_RETURN(m_contentRoot.GetInputManager().NotifyFocusChanged(nullptr, bringIntoView, animateIfBringIntoView));
+    }
 
     return S_OK;
 }

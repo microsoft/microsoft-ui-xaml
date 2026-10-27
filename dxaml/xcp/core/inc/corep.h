@@ -2255,6 +2255,11 @@ public:
     void ForceDisableTSF3() { m_isTsf3Disabled = true; }
     bool IsTSF3Enabled() const;
 
+    // Set at DXamlCore init when the per-app legacy-IME opt-in is on: CInputServices::SetCoreWindow then
+    // installs the ImeFocusPark (see RuntimeEnabledFeature::EnableLegacyImeAuxiliaryUi).
+    void SetShouldInstallImeFocusPark(bool value) { m_shouldInstallImeFocusPark = value; }
+    bool ShouldInstallImeFocusPark() const { return m_shouldInstallImeFocusPark; }
+
     bool IsLayoutCycleTrackingActive() { return m_isLayoutCycleTrackingActive; }
     void SetIsLayoutCycleTrackingActive(bool isActive) { m_isLayoutCycleTrackingActive = isActive; }
 
@@ -2302,6 +2307,10 @@ private:
 
     // Has TSF3 been explicitly disabled?  Set by DesktopWindowXamlSource
     bool                        m_isTsf3Disabled = false;
+
+    // Whether CInputServices should install the legacy-IME focus park (per-app opt-in read at DXamlCore
+    // init; see RuntimeEnabledFeature::EnableLegacyImeAuxiliaryUi and ImeFocusPark).
+    bool                        m_shouldInstallImeFocusPark = false;
 
     bool                        m_isDCompLeakDetectionEnabled = true;
     CResourceDictionary        *m_pThemeResources;
