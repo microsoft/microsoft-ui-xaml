@@ -54,8 +54,9 @@
             </Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
                 <InfoBar x:Name="ConnectionStatus" x:Uid="ConnectionStatus" IsOpen="True" IsClosable="False" />
-                <TextBlock x:Name="ConnectionIdentity" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
-                <TextBlock x:Name="EtwSummary" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock x:Name="ConnectionIdentity" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock x:Name="EtwSummary" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock x:Name="RecordingSummary" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <TextBlock x:Name="SnapshotStatus" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <InfoBar x:Name="Error" x:Uid="Error" IsOpen="False" IsClosable="False" Severity="Error" />
             </StackPanel>

@@ -48,11 +48,13 @@ public sealed class EventPipeline : IDisposable
     {
         try
         {
+            long sequence = 0;
             foreach (var profilerEvent in queue.GetConsumingEnumerable())
             {
+                sequence++;
                 foreach (var processor in processors)
                 {
-                    processor.Process(profilerEvent);
+                    processor.Process(sequence, profilerEvent);
                 }
             }
         }

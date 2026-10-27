@@ -71,11 +71,18 @@
   <data name="StateConnected" xml:space="preserve"><value>Connected: hello received</value></data>
   <data name="StateFailed" xml:space="preserve"><value>Connection failed</value></data>
   <data name="InvalidEndpoint" xml:space="preserve"><value>Select a whole diagnostics endpoint number between 1 and 65535.</value></data>
-  <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | Created {1} | Last TAP hello {2} | WinUI: {3}</value></data>
-  <data name="EtwFormat" xml:space="preserve"><value>ETW {0}: {1:N0} Microsoft-Windows-XAML events | {2:N0} Microsoft-Windows-XAML-Profiler events | {3:N0} lost by ETW | {4:N0} dropped by the profiler</value></data>
-  <data name="EtwFromProcessStart" xml:space="preserve"><value>from process start</value></data>
-  <data name="EtwFromConnection" xml:space="preserve"><value>from connection (earlier events not included)</value></data>
+  <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | WinUI from {1}</value></data>
+  <data name="IdentityDetailsFormat" xml:space="preserve"><value>Process started {0}&#10;Last TAP heartbeat {1}&#10;WinUI runtime {2}</value></data>
+  <data name="EtwFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | lost {3:N0} | dropped {4:N0}</value></data>
+  <data name="EtwDetailsFormat" xml:space="preserve"><value>{0}&#10;XAML: Microsoft-Windows-XAML events&#10;Profiler: Microsoft-Windows-XAML-Profiler events&#10;Lost: events ETW could not deliver&#10;Dropped: events the profiler discarded because its queue was full</value></data>
+  <data name="EtwFromProcessStart" xml:space="preserve"><value>ETW from process start</value></data>
+  <data name="EtwFromConnection" xml:space="preserve"><value>ETW from connection</value></data>
+  <data name="EtwCoverageProcessStart" xml:space="preserve"><value>Every event since the process started is included.</value></data>
+  <data name="EtwCoverageConnection" xml:space="preserve"><value>Events written before the profiler connected are not included.</value></data>
   <data name="EtwUnavailable" xml:space="preserve"><value>ETW: {0}</value></data>
+  <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
+  <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>
+  <data name="RecordingDetailsFormat" xml:space="preserve"><value>{0}&#10;Limit {1:N0} MB: the oldest events are removed to stay within it.</value></data>
   <data name="ModeAutomation" xml:space="preserve"><value>Launch or attach mode</value></data>
   <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
   <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>
@@ -88,6 +95,7 @@
   <data name="StatusAutomation" xml:space="preserve"><value>Live connection status</value></data>
   <data name="IdentityAutomation" xml:space="preserve"><value>Connected target identity</value></data>
   <data name="EtwAutomation" xml:space="preserve"><value>XAML ETW event counts</value></data>
+  <data name="RecordingAutomation" xml:space="preserve"><value>Session file</value></data>
   <data name="UtilizationHeading" xml:space="preserve"><value>CPU and GPU utilization</value></data>
   <data name="MemoryHeading" xml:space="preserve"><value>Process memory</value></data>
   <data name="UtilizationAutomation" xml:space="preserve"><value>CPU and GPU usage graph</value></data>
@@ -103,7 +111,7 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are counted while connected but not recorded yet; there is no SQLite storage or frame view yet.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected; there is no object or frame view yet.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
