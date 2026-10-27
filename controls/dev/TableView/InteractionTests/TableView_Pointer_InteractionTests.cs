@@ -43,13 +43,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("MUXControlsTestSuite", "SuiteB")]
         public static void ClassInitialize(TestContext testContext)
         {
+            KillTestAppLeftByPreviousTestHost();
             TestEnvironment.Initialize(testContext);
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            KillAppLeftByPreviousTestHost();
         }
 
         [TestCleanup]

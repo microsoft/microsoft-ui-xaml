@@ -613,24 +613,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // A TAEF timeout kills the host and skips TestCleanup, and the next host re-attaches to the possibly hung app.
-        // An app older than this host is that leftover: kill it (Close() goes through UIA) so TestSetupHelper relaunches.
-        internal static void KillAppLeftByPreviousTestHost()
+        // A TAEF timeout kills the host and skips cleanup, and the next host's TestEnvironment.Initialize would re-attach
+        // to the possibly hung app through UIA. Call first in ClassInitialize: kill any test app older than this host.
+        internal static void KillTestAppLeftByPreviousTestHost()
         {
-            try
+            DateTime hostStart = System.Diagnostics.Process.GetCurrentProcess().StartTime;
+            foreach (var process in System.Diagnostics.Process.GetProcessesByName("MUXControlsTestApp"))
             {
-                var process = TestEnvironment.Application.Process;
-                if (process != null && !process.HasExited &&
-                    process.StartTime < System.Diagnostics.Process.GetCurrentProcess().StartTime)
+                try
                 {
-                    Log.Comment("Test app {0} predates this test host; killing it so the test starts on a fresh instance.",
-                        process.Id);
-                    TestEnvironment.Application.KillAndWaitForExit();
+                    if (!process.HasExited && process.StartTime < hostStart)
+                    {
+                        Log.Comment("Test app {0} predates this test host; killing it so the class starts on a fresh instance.",
+                            process.Id);
+                        process.Kill();
+                        process.WaitForExit(10000);
+                    }
                 }
-            }
-            catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
-            {
-                // The process could not be queried; leave the restart decision to the infra.
+                catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+                {
+                    Log.Comment("Could not kill test app {0}: {1}", process.Id, e.Message);
+                }
+                finally
+                {
+                    process.Dispose();
+                }
             }
         }
 
