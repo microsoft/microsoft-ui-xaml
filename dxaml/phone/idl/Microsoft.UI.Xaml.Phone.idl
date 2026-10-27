@@ -326,9 +326,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass DatePickerFlyoutPresenter
+    unsealed runtimeclass DatePickerFlyoutPresenter
         : Microsoft.UI.Xaml.Controls.Control
     {
+        [method_name("CreateInstance")] DatePickerFlyoutPresenter();
         Boolean IsDefaultShadowEnabled;
         static Microsoft.UI.Xaml.DependencyProperty IsDefaultShadowEnabledProperty{ get; };
     };
