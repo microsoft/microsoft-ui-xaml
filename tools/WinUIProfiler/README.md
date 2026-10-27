@@ -50,8 +50,9 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-There is no ETW listener, recording database, frame processing,
-heap capture or instrumented-product dependency. The profiler UI uses its pinned
+There is no ETW listener, recording database, frame processing, tree snapshot,
+heap capture or instrumented-product dependency in the app yet. Reading XAML
+events from a recorded trace is described below. The profiler UI uses its pinned
 SDK runtime; it does not replace the target's loaded runtime.
 
 ## Build and run
@@ -111,6 +112,39 @@ Roots have individual capture intervals, not a globally atomic timestamp.
 Unrealized/logical objects, internal HWCompNodes and private compositor trees
 are not exposed. `GetElementVisual` may materialize handout visuals. Property
 errors and scope limitations are included in the JSON rather than fabricated values.
+## Reading XAML events from a trace
+
+`WinUIProfiler.Core` reads the XAML TraceLogging events of one process from a
+recorded `.etl` file (`Ingestion\OfflineEtlSource.cs`). Each event becomes a
+`ProfilerEvent` (`Events\ProfilerEvent.cs`). TraceLogging events carry their own
+field names and types, so no manifest is needed. Manifest events on the same
+providers are skipped.
+
+| Provider | GUID | TraceLogging events |
+| --- | --- | --- |
+| Microsoft-Windows-XAML | `531a35ab-63ce-4bcf-aa98-f88c7a89e455` | Frames (`CoreServices_Frame`), objects entering the tree (`DependencyObject_Enter`), and layout, focus and other operations with element IDs |
+| Microsoft-Windows-XAML-Profiler | `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d` | Tree, composition and graphics events |
+
+Events with element IDs and all Microsoft-Windows-XAML-Profiler events are only
+in builds with `XamlProfilerEnabled`.
+
+To record a trace, use `logman` from an elevated prompt, or from a normal prompt
+if your account is in the local Performance Log Users group. Then inspect it with
+`WinUIProfiler.Cli`. Run from this directory:
+
+```powershell
+'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0xFFFFF 5',
+'{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5' | Set-Content providers.txt
+logman create trace XamlTrace -o xaml.etl -pf providers.txt -ets
+# ... use the target app ...
+logman stop XamlTrace -ets
+
+dotnet build .\WinUIProfiler.Cli\WinUIProfiler.Cli.csproj -c Release
+$cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
+& $cli processes xaml.etl                      # event count per process, to find the PID
+& $cli summary xaml.etl --pid <pid>            # event counts for that process
+& $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
+```
 
 ## Limitations
 

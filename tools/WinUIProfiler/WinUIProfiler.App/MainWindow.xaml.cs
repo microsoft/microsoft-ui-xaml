@@ -23,7 +23,7 @@ public sealed partial class MainWindow : Window
     private MetricHistory? renderedHistory;
     private long renderedSamples = -1;
     private int refreshQueued;
-    private long? selectedCreationTime;
+    private TargetCandidate? selectedTarget;
     private long connectionGeneration;
     private volatile bool closing;
     private bool closeAllowed;
@@ -210,11 +210,18 @@ JsonSerializer.Serialize(new
         }
 
         TargetText.Text = "";
-        selectedCreationTime = null;
+        selectedTarget = null;
         Refresh();
     }
 
-    private void Target_TextChanged(object sender, TextChangedEventArgs args) => selectedCreationTime = null;
+    private void Target_TextChanged(object sender, TextChangedEventArgs args)
+    {
+        if (TargetText.Text.Trim() != selectedTarget?.Value)
+        {
+            selectedTarget = null;
+        }
+    }
+
     private async void Connect_Click(object sender, RoutedEventArgs args)
     {
         snapshot = null;
@@ -233,7 +240,7 @@ WorkingDirectoryText.Text,
 Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
 Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
-selectedCreationTime);
+selectedTarget?.CreationTimeFileTime);
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy)
@@ -335,8 +342,8 @@ selectedCreationTime);
             var selected = await dialog.PickAsync();
             if (selected is not null)
             {
+                selectedTarget = selected;
                 TargetText.Text = selected.Value;
-                selectedCreationTime = selected.CreationTimeFileTime;
             }
         }
         catch (Exception error)
