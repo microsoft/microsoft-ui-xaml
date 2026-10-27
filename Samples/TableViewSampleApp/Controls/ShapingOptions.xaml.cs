@@ -270,7 +270,7 @@ public sealed partial class ShapingOptions : UserControl
         ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(mode, key, SelectedKeyLabel, announce, elapsedMilliseconds, AppliedText, message));
     }
 
-    // <snippet Groups Sort CellEditing CellTemplating Density Filter GridLinesVisibility HeadersVisibility TextWrap Virtualization>
+    // <snippet Groups>
     // Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
     // ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
     // keeps its subtree.

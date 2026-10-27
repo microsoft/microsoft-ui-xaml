@@ -6,10 +6,6 @@ InitializeComponent();
 AttachCellToolTips();
 ApplyHeaderToolTips("original");
 
-// …
-
-// ---- Cell tooltips ----------------------------------------------------------------------
-
 private void AttachCellToolTips()
 {
     // A tooltip on an image cell: the person's name.
@@ -39,12 +35,6 @@ private void DetachCellToolTips()
 
 private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
 {
-    // Fires during InitializeComponent (IsOn="True"); the constructor attaches the bindings.
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     if (CellToolTipsToggle.IsOn)
     {
         AttachCellToolTips();
@@ -55,15 +45,8 @@ private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
     }
 }
 
-// ---- Header tooltips --------------------------------------------------------------------
-
 private void OnHeaderToolTipsChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     ApplyHeaderToolTips(SampleShaping.SelectedTag(HeaderToolTipsSelector, "original"));
 }
 

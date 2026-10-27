@@ -17,11 +17,8 @@
                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
         </DataTemplate>
 
-        <!-- Editor of the Department column, shown only while the cell is in edit mode. It uses a
-             classic {Binding} with UpdateSourceTrigger=Explicit, and no x:DataType: the control
-             commits by calling UpdateSource on the editor's binding expressions, which it can find
-             only on a {Binding}. Esc therefore discards the choice without touching the model.
-             The items are the PersonData.Departments values. -->
+        <!-- Classic {Binding} with UpdateSourceTrigger=Explicit: the control commits through the
+             binding expression, which x:Bind does not expose, so Esc leaves the model untouched. -->
         <DataTemplate x:Key="DepartmentEditingTemplate">
             <ComboBox SelectedItem="{Binding Department, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
                       AutomationProperties.Name="Department"

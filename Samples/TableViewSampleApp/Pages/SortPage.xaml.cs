@@ -85,6 +85,8 @@ public sealed partial class SortPage : SamplePageBase
         SetLastAction("ClearSort(): rows are back in source order");
     }
 
+    // </snippet>
+
     // Sorted fires after the sort state is applied and the header arrow is published: header
     // clicks and the API calls above alike. Column is null when the sort was cleared.
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
@@ -107,6 +109,8 @@ public sealed partial class SortPage : SamplePageBase
             ? "Sort cleared"
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction));
     }
+
+    // <snippet>
 
     // ---- Re-sorting after a value change -----------------------------------------------------
     //

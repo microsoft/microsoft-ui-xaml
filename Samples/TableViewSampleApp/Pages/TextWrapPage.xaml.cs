@@ -114,8 +114,8 @@ public sealed partial class TextWrapPage : SamplePageBase
         // picker is disabled to say so.
         WrapState.MaxLines = wrapOn ? _maxLines : 0;
         WrapState.TextTrimming = !wrapOn || _maxLines > 0 ? TextTrimming.CharacterEllipsis : TextTrimming.None;
-        MaxLinesSelector.IsEnabled = wrapOn;
-        QueueRowMeasure();
+        MaxLinesSelector.IsEnabled = wrapOn; // snippet:skip
+        QueueRowMeasure(); // snippet:skip
     }
 
     private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -130,7 +130,7 @@ public sealed partial class TextWrapPage : SamplePageBase
 
         BioColumn.Width = new GridLength(e.NewValue);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Bio column Width -> {0:N0} px", e.NewValue));
-        QueueRowMeasure();
+        QueueRowMeasure(); // snippet:skip
     }
     // </snippet>
 
@@ -226,7 +226,6 @@ public sealed partial class TextWrapPage : SamplePageBase
 
     private void OnBioSizeChanged(object sender, SizeChangedEventArgs e) => QueueRowMeasure();
 
-    // <snippet>
     // Coalesced: many cells change size in one layout pass, but the rows are measured once,
     // after layout, at low priority.
     private void QueueRowMeasure()
@@ -246,7 +245,6 @@ public sealed partial class TextWrapPage : SamplePageBase
             }
         });
     }
-    // </snippet>
 
     private static T? FindDescendant<T>(DependencyObject node, string name) where T : FrameworkElement
     {

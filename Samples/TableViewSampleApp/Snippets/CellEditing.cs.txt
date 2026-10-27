@@ -6,32 +6,14 @@ foreach (var person in People)
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
-
-// ---- Editing ------------------------------------------------------------------------
-
 private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
 {
-    if (PeopleTable is null || ReadOnlyToggle is null)
-    {
-        return;
-    }
-
     PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
 }
 
-private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
-{
-    ClearRejectedWrite();
-    SetEditButtonsEnabled(true);
-}
-
-// Raised for every close, with EditAction saying whether it committed or cancelled.
+// Raised before the control writes and validates, for a commit and a cancel alike.
 private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
 {
-    SetEditButtonsEnabled(false);
-
-    // CellEditEnding runs before the control writes, validates and closes; check afterwards.
     EnqueueIfLoaded(() =>
     {
         if (!PeopleTable.IsEditing)
@@ -41,44 +23,20 @@ private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs
     });
 }
 
-// A rejected commit writes the invalid value, then the previous value back. The first write
-// carries the error; the second is the rollback. Neither is logged as an edit.
-private bool IsRejectedWrite(Person person, string property)
-{
-    foreach (var error in person.GetErrors(property))
-    {
-        _rejectedPerson = person;
-        _rejectedProperty = property;
-        _rejectedError = error?.ToString();
-        _rollbackPending = true;
-        return true;
-    }
-
-    if (_rollbackPending && ReferenceEquals(person, _rejectedPerson) && property == _rejectedProperty)
-    {
-        _rollbackPending = false;
-        return true;
-    }
-
-    return false;
-}
-
-// Queued from CellEditEnding(Commit): by now the control has written, validated and either
-// closed the editor or kept it open.
+// Queued after a commit. _rejectedError is the GetErrors text of a write the control rejected;
+// the editor then stays open.
 private void OnCommitSettled()
 {
     var error = _rejectedError;
-    ClearRejectedWrite();
-    if (error is null || !PeopleTable.IsEditing)
+    if (!PeopleTable.IsEditing)
     {
         return;
     }
 
-    SetEditButtonsEnabled(true);
     var message = error + " The editor stays open with the previous value: type a new value and press Enter, or press Esc to cancel.";
     if (ValidationInfoBar.IsOpen)
     {
-        // Already open: InfoBar announces only when it opens, so announce the repeat.
+        // InfoBar announces only when it opens, so announce a repeat.
         FrameworkElementAutomationPeer.FromElement(ValidationInfoBar)?.RaiseNotificationEvent(
             AutomationNotificationKind.ActionAborted, AutomationNotificationProcessing.ImportantAll,
             message, "CellEditingValidationRejected");
@@ -88,108 +46,19 @@ private void OnCommitSettled()
     ValidationInfoBar.IsOpen = true;
 }
 
-private void ClearRejectedWrite()
-{
-    _rejectedPerson = null;
-    _rejectedProperty = null;
-    _rejectedError = null;
-    _rollbackPending = false;
-}
-
-private void SetEditButtonsEnabled(bool enabled)
-{
-    CommitEditButton.IsEnabled = enabled;
-    CancelEditButton.IsEnabled = enabled;
-}
-
-// The buttons set AllowFocusOnInteraction="False", so clicking one leaves focus, and the
-// open editor, where they are.
 private void OnCommitEditClick(object sender, RoutedEventArgs e)
 {
-    // A rejected value is reported by OnCommitSettled.
-    if (!PeopleTable.CommitEdit() && _rejectedError is null)
-    {
-        // …
-    }
+    PeopleTable.CommitEdit();
 }
 
 private void OnCancelEditClick(object sender, RoutedEventArgs e)
 {
-    if (!PeopleTable.CancelEdit())
-    {
-        // …
-    }
+    PeopleTable.CancelEdit();
 }
-
-private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
-{
-    if (sender is not Person person || Array.IndexOf(s_editableProperties, e.PropertyName) < 0)
-    {
-        return;
-    }
-
-    if (IsRejectedWrite(person, e.PropertyName!))
-    {
-        return;
-    }
-
-    LogEdit(person, e.PropertyName!);
-
-    // The write arrives from inside the control's commit. Re-group after it returns, so the
-    // reshape never runs while the edit is still closing.
-    var property = e.PropertyName;
-    EnqueueIfLoaded(() =>
-    {
-        var hadFocus = IsFocusWithinTable();
-        var regrouped = IsGrouped && property == AppliedGroupKey;
-        ReapplyIfGroupedOn(property);
-        if (regrouped && hadFocus)
-        {
-            // The reshape recycles the containers; put focus back on the edited row.
-            RestoreRowFocusAfterLayout(person);
-        }
-    });
-}
-
-// …
-
-// From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
-{
-    if (relation is not null && IsHierarchicalMode(mode))
-    {
-        // A second ParentBy replaces the relation and resets expansion, so declare it once.
-        if (!hadParentBy)
-        {
-            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
-        }
-    }
-    else if (hadParentBy)
-    {
-        source.ClearParentBy();
-    }
-
-    if (mode is "grouped" or "groupedHierarchy")
-    {
-        // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
-    }
-    else
-    {
-        source.ClearGroupBy();
-    }
-}
-
-// …
 
 // From Models\Person.cs
-// Person implements INotifyDataErrorInfo. After a commit writes a cell's value, TableView calls
-// GetErrors for the edited property: an error keeps the editor open and writes the previous
-// value back. Set calls ValidateName before raising PropertyChanged, so a handler of the write
-// already sees its errors.
+// TableView checks INotifyDataErrorInfo when committing a cell: an error keeps the editor open
+// and writes the previous value back. Set calls ValidateName before raising PropertyChanged.
 private string? _firstNameError;
 private string? _lastNameError;
 

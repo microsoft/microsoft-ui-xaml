@@ -118,13 +118,13 @@ public sealed partial class FilterPage : SamplePageBase
             return;
         }
 
-        // TextChanged is raised after the Text setter returns. When an action set the text, it
-        // has already applied the filter and reported it.
-        if (_programmaticQuery is not null && _programmaticQuery == SearchBox.Text)
-        {
-            _programmaticQuery = null;
-            return;
-        }
+        // TextChanged is raised after the Text setter returns. When an action set the text, it // snippet:skip
+        // has already applied the filter and reported it. // snippet:skip
+        if (_programmaticQuery is not null && _programmaticQuery == SearchBox.Text) // snippet:skip
+        { // snippet:skip
+            _programmaticQuery = null; // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyFilter();
         SetLastAction(Query.Length > 0

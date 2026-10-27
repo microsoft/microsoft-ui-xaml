@@ -2,10 +2,10 @@
      resolve their own row brushes without code-behind. -->
 <Style x:Key="CustomBandingTableViewStyle" TargetType="tv:TableView">
     <Setter Property="RowBackground" Value="{ThemeResource SampleCustomRowBackgroundBrush}"/>
-    <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
+    <Setter
+        Property="AlternatingRowBackground"
+        Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
 </Style>
-
-<!-- … -->
 
 <!-- Hides the column separators only. Copy of the default TableViewColumnHeader template in
      TableView.xaml without the optional PART_GridLine; re-copy it when that template changes. -->
@@ -14,26 +14,33 @@
         <Setter.Value>
             <ControlTemplate TargetType="tv:TableViewColumnHeader">
                 <!-- CornerRadius is set only while keyboard-focused: a rounded root clips. -->
-                <Grid x:Name="PART_Root"
-                      Background="{TemplateBinding Background}"
-                      CornerRadius="{TemplateBinding CornerRadius}">
+                <Grid
+                    x:Name="PART_Root"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{TemplateBinding CornerRadius}">
                     <!-- State groups must sit on the template root. -->
                     <VisualStateManager.VisualStateGroups>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal"/>
                             <VisualState x:Name="PointerOver">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}"/>
+                                    <Setter
+                                        Target="PART_Root.Background"
+                                        Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Pressed">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}"/>
+                                    <Setter
+                                        Target="PART_Root.Background"
+                                        Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Disabled">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}"/>
+                                    <Setter
+                                        Target="PART_ContentPresenter.Foreground"
+                                        Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}"/>
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -41,14 +48,22 @@
                             <VisualState x:Name="HighContrastNormal"/>
                             <VisualState x:Name="HighContrastPointerOver">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}"/>
-                                    <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
+                                    <Setter
+                                        Target="PART_ContentPresenter.Foreground"
+                                        Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}"/>
+                                    <Setter
+                                        Target="PART_ContentPresenter.HighContrastAdjustment"
+                                        Value="None"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="HighContrastPressed">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}"/>
-                                    <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
+                                    <Setter
+                                        Target="PART_ContentPresenter.Foreground"
+                                        Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}"/>
+                                    <Setter
+                                        Target="PART_ContentPresenter.HighContrastAdjustment"
+                                        Value="None"/>
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -56,33 +71,39 @@
                             <VisualState x:Name="Unsorted"/>
                             <VisualState x:Name="SortAscending">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible"/>
+                                    <Setter
+                                        Target="PART_SortIndicatorHost.Visibility"
+                                        Value="Visible"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="SortDescending">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible"/>
+                                    <Setter
+                                        Target="PART_SortIndicatorHost.Visibility"
+                                        Value="Visible"/>
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
                     </VisualStateManager.VisualStateGroups>
 
-                    <ContentPresenter x:Name="PART_ContentPresenter"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                      ContentTransitions="{TemplateBinding ContentTransitions}"
-                                      Padding="{TemplateBinding Padding}"
-                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      AutomationProperties.AccessibilityView="Raw"/>
+                    <ContentPresenter
+                        x:Name="PART_ContentPresenter"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                        Padding="{TemplateBinding Padding}"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        AutomationProperties.AccessibilityView="Raw"/>
 
-                    <Border x:Name="PART_SortIndicatorHost"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            IsHitTestVisible="False"
-                            Visibility="Collapsed"
-                            AutomationProperties.AccessibilityView="Raw"/>
+                    <Border
+                        x:Name="PART_SortIndicatorHost"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False"
+                        Visibility="Collapsed"
+                        AutomationProperties.AccessibilityView="Raw"/>
 
                     <!-- Last, so the gripper wins the hit test on the shared edge. -->
                     <Border x:Name="PART_ResizeGripperHost"/>
@@ -92,41 +113,45 @@
     </Setter>
 </Style>
 
-<!-- … -->
-
 <tv:TableView
     x:Name="PeopleTable"
-    AutomationProperties.AutomationId="GridLinesVisibilityTable"
     AutomationProperties.Name="People with grid lines"
     ItemsSource="{x:Bind Source}"
     GridLinesVisibility="All"
     SelectionMode="Single"
-    IsReadOnly="True"
-    VerticalAlignment="Stretch"
-    MinHeight="320">
-    <!-- To hide every header line (column separators and bottom rule), override the brush
-         both use; the Header lines option switches this at runtime:
-    <tv:TableView.Resources>
-        <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
-    </tv:TableView.Resources>
-    -->
-    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
-    <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
-    <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    IsReadOnly="True">
+    <tv:TableViewTemplateColumn
+        Header="Photo"
+        Width="56"
+        CellTemplate="{StaticResource AvatarTemplate}"
+        CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn
+        Header="Department"
+        Width="130"
+        CellTemplate="{StaticResource DepartmentChipTemplate}"
+        SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn
+        Header="Active"
+        Width="84"
+        CellTemplate="{StaticResource ActiveCheckBoxTemplate}"
+        SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn
+        Header="Join date"
+        Width="170"
+        CellTemplate="{StaticResource JoinCalendarDateTemplate}"
+        SortMemberPath="JoinDate"/>
+    <tv:TableViewTextColumn
+        Header="Salary"
+        Width="100"
+        Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
 </tv:TableView>
-
-<!-- … -->
 
 <ComboBox
     x:Name="GridLinesSelector"
-    AutomationProperties.AutomationId="GridLinesVisibilityGridLinesSelector"
     Header="Grid lines"
     SelectedIndex="3"
-    SelectionChanged="OnGridLinesChanged"
-    HorizontalAlignment="Stretch">
+    SelectionChanged="OnGridLinesChanged">
     <ComboBoxItem Content="None" Tag="None"/>
     <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
     <ComboBoxItem Content="Vertical" Tag="Vertical"/>

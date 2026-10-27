@@ -14,11 +14,6 @@ if (Shaping.IsShaped)
     Shaping.Apply(announce: false);
 }
 
-// …
-
-// Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
-// ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
-// group and row expanded and a uniform row height.
 private void ScrollToRow(int number, string message)
 {
     if (_people.Count == 0)
@@ -74,8 +69,6 @@ private void ScrollToRow(int number, string message)
     }
 }
 
-// …
-
 // The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
 // visible rows that intersect the body viewport.
 private static bool InViewport(TableViewRow row, ScrollViewer scroller)
@@ -87,36 +80,4 @@ private static bool InViewport(TableViewRow row, ScrollViewer scroller)
 
     var bounds = row.TransformToVisual(scroller).TransformBounds(new Rect(0, 0, row.ActualWidth, row.ActualHeight));
     return bounds.Bottom > 0 && bounds.Top < scroller.ViewportHeight;
-}
-
-// …
-
-// From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
-{
-    if (relation is not null && IsHierarchicalMode(mode))
-    {
-        // A second ParentBy replaces the relation and resets expansion, so declare it once.
-        if (!hadParentBy)
-        {
-            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
-        }
-    }
-    else if (hadParentBy)
-    {
-        source.ClearParentBy();
-    }
-
-    if (mode is "grouped" or "groupedHierarchy")
-    {
-        // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
-    }
-    else
-    {
-        source.ClearGroupBy();
-    }
 }

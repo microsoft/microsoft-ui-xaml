@@ -1,24 +1,12 @@
 Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
-
-// ---- Headers visibility -------------------------------------------------------------
-
 private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
 {
-    // Fires during InitializeComponent (SelectedIndex="0") before the table exists.
-    if (TicketsTable is null || HeadersText is null)
-    {
-        return;
-    }
-
     TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
         ? TableViewHeadersVisibility.None
         : TableViewHeadersVisibility.Column;
 }
-
-// ---- Sorting from code --------------------------------------------------------------
 
 private void OnSortByDueClick(object sender, RoutedEventArgs e)
 {
@@ -28,18 +16,6 @@ private void OnSortByDueClick(object sender, RoutedEventArgs e)
         : TableViewSortDirection.Ascending;
     TicketsTable.SortByColumn(DueColumn, direction);
 }
-
-// …
-
-// Raised for header clicks and for SortByColumn / ClearSort alike.
-private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
-{
-    SortText.Text = e.Column is null || e.Direction == TableViewSortDirection.None
-        ? "None"
-        : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
-}
-
-// …
 
 private void OnEscalateClick(object sender, RoutedEventArgs e)
 {
@@ -61,40 +37,6 @@ private void OnEscalateClick(object sender, RoutedEventArgs e)
     // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
     ReapplyIfGroupedOn(nameof(SupportTicket.Priority));
 }
-
-// …
-
-// From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
-{
-    if (relation is not null && IsHierarchicalMode(mode))
-    {
-        // A second ParentBy replaces the relation and resets expansion, so declare it once.
-        if (!hadParentBy)
-        {
-            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
-        }
-    }
-    else if (hadParentBy)
-    {
-        source.ClearParentBy();
-    }
-
-    if (mode is "grouped" or "groupedHierarchy")
-    {
-        // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
-    }
-    else
-    {
-        source.ClearGroupBy();
-    }
-}
-
-// …
 
 // From Data\TicketData.cs
 // Never empty: GroupBy fails fast on an empty group identity.

@@ -153,8 +153,27 @@ The Source code snippets (`Snippets\*.txt`) are generated from `<!-- snippet -->
 `// <snippet>` regions by `tools\Update-Snippets.ps1` (`-Tags Sort,Groups` limits it to some pages)
 and checked in. A named region (`// <snippet Groups Sort>`) in a shared or data file is appended to
 those pages' snippets; a snippet whose first line is `// snippet:manual` opts out. Keep each region
-readable on its own (declare, or take as parameters, the values it uses); narration
-(`SetLastAction`, `RefreshReadouts`) is elided.
+readable on its own (declare, or take as parameters, the values it uses).
+
+A snippet shows what an app needs to reproduce the demo, as the WinUI Gallery samples do: the
+TableView, the columns and templates it demonstrates, the data setup and the API calls. Keep page
+plumbing outside the regions, or mark a line `// snippet:skip` (`// snippet:as <code>` shows a
+simpler line instead). The tool also trims mechanically:
+
+- C#: statements that narrate or drive the page UI (`SetLastAction*`, `RefreshReadouts`,
+  `Announce*`, `Populate*`, `Seed*`, `Set*Enabled`, `*Button.IsEnabled =`, `*Text.Text =`) are
+  elided; guards that only protect the page (`Control is null`, `!IsLoaded`, `IsBulkUpdating`,
+  `_ready`, `_syncing*`, `_suppress*`) are dropped with the comment above them; `using
+  (BeginBulkUpdate())` is unwrapped; an `if` or method left empty, and a variable only narration
+  read, are removed; `// ----` banners, `///` doc comments, comment blocks of three or more lines and
+  sentence-style `HeaderToolTip` strings are dropped.
+- XAML: `AutomationProperties.AutomationId` and `HelpText` are dropped (keep
+  `AutomationProperties.Name`); page layout on a region's top-level elements (`Grid.*`, `Margin`,
+  `Min/MaxHeight`, alignment, `IsEnabled`) is dropped; sentence-style `HeaderToolTip` /
+  `ToolTipService.ToolTip` narration is dropped; `{StaticResource Col*}` widths become literals;
+  comments longer than two lines are dropped; a `TableView` start tag gets one attribute per line.
+
+So write region comments as one or two lines on the non-obvious why; anything longer disappears.
 
 After editing a region, run `powershell -File tools\Update-Snippets.ps1` and commit the result. The
 build's `_CheckTableViewSnippets` target runs it with `-Check` only when a source, snippet or the

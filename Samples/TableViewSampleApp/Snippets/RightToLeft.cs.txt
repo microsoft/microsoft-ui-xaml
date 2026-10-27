@@ -1,29 +1,14 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
-
-// ---- Flow direction and filter ------------------------------------------------------
-
 private void OnRtlToggled(object sender, RoutedEventArgs e)
 {
-    // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft.
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 }
 
 private void OnFilterChanged(object sender, TextChangedEventArgs e)
 {
-    if (FilterBox is null)
-    {
-        return;
-    }
-
-    var term = ApplyFilter();
+    ApplyFilter();
 }
 
 private string ApplyFilter()
@@ -49,8 +34,6 @@ private static bool Matches(Person person, string term) =>
     || person.Office.Contains(term, StringComparison.CurrentCultureIgnoreCase)
     || person.Bio.Contains(term, StringComparison.CurrentCultureIgnoreCase);
 
-// …
-
 private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
 {
     var direction = FirstNameColumn.SortDirection == TableViewSortDirection.Ascending
@@ -58,8 +41,6 @@ private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
         : TableViewSortDirection.Ascending;
     PeopleTable.SortByColumn(FirstNameColumn, direction);
 }
-
-// …
 
 // TableView.Columns is the live column collection: moving an entry moves the column.
 private void MoveColumn(TableViewColumn column, int offset)

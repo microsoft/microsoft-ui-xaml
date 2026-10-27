@@ -29,13 +29,11 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
 
-        // <snippet>
         // The editors are two-way bound; the page only observes the model to report each commit.
         TrackItems(People, OnPersonChanged);
         TrackLifetime(
             () => PersonCellTemplates.DetailsOpened += OnDetailsOpened,
             () => PersonCellTemplates.DetailsOpened -= OnDetailsOpened);
-        // </snippet>
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);

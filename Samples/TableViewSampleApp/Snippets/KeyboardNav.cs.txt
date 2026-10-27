@@ -3,8 +3,6 @@ InitializeComponent();
 PeopleTable.ItemsSource = Source;
 ResetFixture(announce: false);
 
-// …
-
 // In-cell editors write the model; re-bucket when the grouped-on value changed, because
 // GroupBy takes a delegate and cannot follow PropertyChanged.
 private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
@@ -24,8 +22,6 @@ private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
             break;
     }
 }
-
-// …
 
 private void ConfigureColumns()
 {
@@ -83,11 +79,9 @@ private void ConfigureColumns()
     }
 }
 
-// …
-
 private void OnGroupingToggled(object sender, RoutedEventArgs e)
 {
-    if (_updating || _fixtureSource is null || !CloseEditForSetup())
+    if (!CloseEditForSetup())
     {
         return;
     }

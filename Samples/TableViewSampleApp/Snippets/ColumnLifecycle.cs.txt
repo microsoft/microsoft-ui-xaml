@@ -4,15 +4,9 @@ InitializeComponent();
 // Index = the Tag of the matching visibility checkbox.
 _canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
 
-// …
-
-// ---- Column visibility: TableViewColumn.Visibility --------------------------------------
-
 private void OnColumnToggle(object sender, RoutedEventArgs e)
 {
-    // IsChecked="True" raises Checked during InitializeComponent, before _canonical is
-    // assigned; the XAML already matches. Reset also writes IsChecked and reports itself.
-    if (_canonical is null || IsBulkUpdating || sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
+    if (sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
     {
         return;
     }
@@ -21,8 +15,6 @@ private void OnColumnToggle(object sender, RoutedEventArgs e)
     var visible = box.IsChecked == true;
     column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
 }
-
-// ---- Column order: move, add, remove in TableView.Columns ------------------------------
 
 private void OnMoveLeftClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(-1);
 
@@ -46,8 +38,6 @@ private void MoveSelectedColumn(int direction)
     // the realized rows follow. The instance is reused, so its width travels with it.
     PeopleTable.Columns.RemoveAt(from);
     PeopleTable.Columns.Insert(to, column);
-
-    PopulateColumnPicker();
 }
 
 private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
@@ -66,10 +56,7 @@ private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
         Width = new GridLength((double)resources["ColWidthDatePicker"]),
         CellTemplate = (DataTemplate)resources["JoinDatePickerTemplate"],
         SortMemberPath = nameof(Person.JoinDate),
-        HeaderToolTip = "Date the person joined. Editable; sorts by the JoinDate value.",
     });
-
-    PopulateColumnPicker();
 }
 
 private void OnRemoveJoinDateColumnClick(object sender, RoutedEventArgs e)
@@ -80,7 +67,6 @@ private void OnRemoveJoinDateColumnClick(object sender, RoutedEventArgs e)
     }
 
     PeopleTable.Columns.Remove(joinDate);
-    PopulateColumnPicker();
 }
 
 private void OnResetClick(object sender, RoutedEventArgs e)
@@ -95,16 +81,11 @@ private void OnResetClick(object sender, RoutedEventArgs e)
         }
     }
 
-    using (BeginBulkUpdate())
+    foreach (var box in new[] { VisAvatarCheckBox, VisNameCheckBox, VisDepartmentCheckBox, VisRoleCheckBox, VisSalaryCheckBox, VisActiveCheckBox, VisShiftCheckBox })
     {
-        foreach (var box in new[] { VisAvatarCheckBox, VisNameCheckBox, VisDepartmentCheckBox, VisRoleCheckBox, VisSalaryCheckBox, VisActiveCheckBox, VisShiftCheckBox })
-        {
-            var column = _canonical[int.Parse((string)box.Tag, CultureInfo.InvariantCulture)];
-            var visible = column != ColShift;
-            column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-            box.IsChecked = visible;
-        }
+        var column = _canonical[int.Parse((string)box.Tag, CultureInfo.InvariantCulture)];
+        var visible = column != ColShift;
+        column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        box.IsChecked = visible;
     }
-
-    PopulateColumnPicker();
 }

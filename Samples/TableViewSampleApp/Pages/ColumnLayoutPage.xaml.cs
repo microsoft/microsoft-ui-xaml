@@ -236,6 +236,8 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         RefreshReadouts();
     }
 
+    // </snippet>
+
     // Push the column's current values into the sliders without echoing back into the column.
     private void SeedSliders()
     {
@@ -261,10 +263,9 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             _suppressSliderHandlers = false;
             DescribePixels(MinWidthSlider, MinWidthSlider.Value); // snippet:skip
             DescribePixels(WidthSlider, WidthSlider.Value); // snippet:skip
-            DescribePixels(MaxWidthSlider, MaxWidthSlider.Value); // snippet:skip
+            DescribePixels(MaxWidthSlider, MaxWidthSlider.Value);
         }
     }
-    // </snippet>
 
     private void OnMinWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {

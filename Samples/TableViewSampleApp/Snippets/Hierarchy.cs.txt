@@ -11,8 +11,6 @@ MentorTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
 DeclareManagerRelation(_managerSource);
 DeclareMentorRelation(_mentorSource);
 
-// …
-
 private static void BuildColumns(TableView table)
 {
     // The chevron and the indent are drawn over the first column; nothing about these column
@@ -22,8 +20,6 @@ private static void BuildColumns(TableView table)
     table.Columns.Add(SampleColumns.Text("Dept", nameof(Employee.Dept), SampleColumns.Pixels(100)));
     table.Columns.Add(SampleColumns.Text("Id", nameof(Employee.Id), SampleColumns.Pixels(60)));
 }
-
-// ---- Relations ----
 
 // A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
 private static void DeclareManagerRelation(TableViewSource source) =>
@@ -35,10 +31,6 @@ private static void DeclareMentorRelation(TableViewSource source) =>
     source.ParentBy(
         new TableViewKeySelector(item => ((Employee)item).Id),
         new TableViewKeySelector(item => ((Employee)item).MentorId!));
-
-// …
-
-// ---- Shaping (applied to both sources) ----
 
 private void ApplyFilter()
 {
@@ -106,8 +98,6 @@ private void ApplyLive()
         source.IsLiveShaping = live;
     }
 }
-
-// …
 
 // Moves selection under another manager (never itself or a report, which would cycle). Live: a
 // property set reparents. Off: the item is replaced so the collection change carries the new key.

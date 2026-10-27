@@ -1,5 +1,3 @@
-// ---- Header menus -------------------------------------------------------------------------
-
 // A header menu item has no row item to bind to, so each column gets its own menu and the
 // handler closes over that column.
 private void AttachHeaderMenus()
@@ -36,8 +34,6 @@ private void ShowAllColumns()
         column.Visibility = Visibility.Visible;
     }
 }
-
-// ---- Cell and row menu items ----------------------------------------------------------------
 
 // MenuFlyout has no item filter: cache the XAML items and re-add this row kind's subset on each
 // open. Re-adding (not Visibility) leaves the IsActive bindings in charge.
@@ -120,15 +116,6 @@ private void OnToggleActiveClick(object sender, RoutedEventArgs e)
     }
 }
 
-// A group header menu item's DataContext is the header's TableViewGroupInfo.
-private void OnEmailGroupClick(object sender, RoutedEventArgs e)
-{
-    if (sender is FrameworkElement { DataContext: TableViewGroupInfo group })
-    {
-        // …
-    }
-}
-
 private void OnRemoveClick(object sender, RoutedEventArgs e)
 {
     if (sender is FrameworkElement { DataContext: Person person } && People.Remove(person))
@@ -146,16 +133,9 @@ private void OnRestoreListClick(object sender, RoutedEventArgs e)
     }
 }
 
-// ---- Options ------------------------------------------------------------------------------
-
 // Setting a menu property to null removes that candidate; the request falls through.
 private void OnNameMenuToggled(object sender, RoutedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     NameColumn.CellContextFlyout = NameMenuToggle.IsOn ? _nameCellMenu : null;
 }
 
@@ -163,11 +143,6 @@ private void OnNameMenuToggled(object sender, RoutedEventArgs e)
 // the realized rows on the next layout pass; recycled rows pick it up when they are reused.
 private void OnRowMenuToggled(object sender, RoutedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     PeopleTable.Resources.Remove(typeof(TableViewRow));
     if (RowMenuToggle.IsOn)
     {
@@ -177,11 +152,6 @@ private void OnRowMenuToggled(object sender, RoutedEventArgs e)
 
 private void OnHeaderMenuToggled(object sender, RoutedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     foreach (var (column, menu) in _headerMenus)
     {
         column.HeaderContextFlyout = HeaderMenuToggle.IsOn ? menu : null;

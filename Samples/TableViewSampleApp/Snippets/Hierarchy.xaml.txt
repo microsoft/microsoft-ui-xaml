@@ -2,14 +2,10 @@
      resource, not a property; set it on this table's Resources to retheme it only. -->
 <tv:TableView
     x:Name="ManagerTable"
-    Grid.Row="1"
-    AutomationProperties.AutomationId="HierarchyManagerTable"
     AutomationProperties.Name="Employees by manager"
     SelectionMode="Single"
     SelectionChanged="OnTableSelectionChanged"
-    GridLinesVisibility="Horizontal"
-    VerticalAlignment="Stretch"
-    MinHeight="320">
+    GridLinesVisibility="Horizontal">
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
     </tv:TableView.Resources>

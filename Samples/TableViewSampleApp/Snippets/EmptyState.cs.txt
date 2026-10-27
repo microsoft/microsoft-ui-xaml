@@ -1,19 +1,8 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
-
-// ---- Data source: the ways of being empty ---------------------------------------------
-
 private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
 {
-    // Fires during InitializeComponent (SelectedIndex="0"), and when an action moves the
-    // selector to match what it just did; neither is a user choice.
-    if (!IsLoaded || _syncingDataSource)
-    {
-        return;
-    }
-
     var tag = SampleShaping.SelectedTag(DataSourceSelector, "Populated");
     ApplyDataSource(tag);
 }
@@ -55,8 +44,6 @@ private void AttachSource()
         _sourceAttached = true;
     }
 }
-
-// …
 
 private void OnFilterToZeroClick(object sender, RoutedEventArgs e)
 {

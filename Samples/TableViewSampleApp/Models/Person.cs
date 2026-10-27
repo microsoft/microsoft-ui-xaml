@@ -179,10 +179,8 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
     public event PropertyChangedEventHandler? PropertyChanged;
 
     // <snippet CellEditing>
-    // Person implements INotifyDataErrorInfo. After a commit writes a cell's value, TableView calls
-    // GetErrors for the edited property: an error keeps the editor open and writes the previous
-    // value back. Set calls ValidateName before raising PropertyChanged, so a handler of the write
-    // already sees its errors.
+    // TableView checks INotifyDataErrorInfo when committing a cell: an error keeps the editor open
+    // and writes the previous value back. Set calls ValidateName before raising PropertyChanged.
     private string? _firstNameError;
     private string? _lastNameError;
 

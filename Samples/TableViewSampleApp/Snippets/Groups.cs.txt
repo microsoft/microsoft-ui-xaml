@@ -2,17 +2,8 @@ Source = TableViewSource.From(People);     // created once; reshaped in place, n
 InitializeComponent();
 ApplyGroupHeaderTemplate();
 
-// …
-
-// ---- Group header template ----------------------------------------------------------
-
 private void OnHeaderTemplateChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (PeopleTable is null || HeaderTemplateSelector is null)
-    {
-        return;
-    }
-
     ApplyGroupHeaderTemplate();
 }
 
@@ -23,11 +14,9 @@ private void ApplyGroupHeaderTemplate()
         : null;
 }
 
-// ---- In-cell edits --------------------------------------------------------------------
-
 private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
 {
-    if (sender is not Person person || IsBulkUpdating)
+    if (sender is not Person person)
     {
         return;
     }
@@ -82,8 +71,6 @@ protected override void OnShapingApplied(ShapingAppliedEventArgs e)
     });
 }
 
-// …
-
 // Adding and removing rows needs no GroupBy call: the projection follows collection changes.
 private void OnAddPersonClick(object sender, RoutedEventArgs e)
 {
@@ -117,12 +104,7 @@ private void OnAddPersonClick(object sender, RoutedEventArgs e)
     People.Add(person);
 }
 
-// …
-
 // From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
 private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
 {
     if (relation is not null && IsHierarchicalMode(mode))
@@ -148,8 +130,6 @@ private static void ApplyShaping(TableViewSource source, string mode, Func<objec
         source.ClearGroupBy();
     }
 }
-
-// …
 
 // From Pages\GroupsPage.Status.cs
 private void NoteHeaderExpansion(DependencyObject? source, bool? desired)

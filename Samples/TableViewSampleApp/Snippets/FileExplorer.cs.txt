@@ -7,10 +7,6 @@ FileTable.Density = TableViewDensity.Compact;
 // handledEventsToo: the table consumes Enter for its own row navigation.
 FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
 
-// …
-
-// ---- Navigation (the folder is read on a background thread) ---------------------------
-
 private async Task NavigateAsync(string path, bool addToHistory, string verb)
 {
     var version = ++_navigationVersion;
@@ -47,25 +43,14 @@ private async Task NavigateAsync(string path, bool addToHistory, string verb)
     }
 
     AddressBar.Text = _currentDir;
-    BackButton.IsEnabled = _history.Count > 0;
-    UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null;
     if (focusState != FocusState.Unfocused)
     {
         FocusFirstRowAfterLayout(focusState);
     }
 }
 
-// …
-
-// ---- Filter (TableViewSource.Filter) ---------------------------------------------------
-
 private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (FilterSelector is null)
-    {
-        return;
-    }
-
     var filter = SampleShaping.SelectedTag(FilterSelector, "all");
     switch (filter)
     {
@@ -82,12 +67,6 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
             Source.ClearFilter();
             break;
     }
-
-    // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
-    if (IsLoaded)
-    {
-        // …
-    }
 }
 
 // Nested, a filter also keeps each match's folders.
@@ -98,8 +77,6 @@ private int VisibleCount() => SampleShaping.SelectedTag(FilterSelector, "all") s
     "none" => 0,
     _ => Entries.Count,
 };
-
-// …
 
 // A sort declared BEFORE GroupBy orders the groups: newest first reads Today, Yesterday, ...
 protected override void OnShapingApplying(ShapingApplyingEventArgs e)

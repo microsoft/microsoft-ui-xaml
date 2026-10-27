@@ -5,8 +5,6 @@ PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
 PropTable.Density = TableViewDensity.Compact;
 
-// …
-
 // Refills the one collection; the source re-projects it under the current filter and grouping.
 private void ShowFile(FileInfo file)
 {
@@ -18,17 +16,8 @@ private void ShowFile(FileInfo file)
     }
 }
 
-// …
-
-// ---- Filter (TableViewSource.Filter) ---------------------------------------------------
-
 private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (FilterSelector is null)
-    {
-        return;
-    }
-
     switch (SampleShaping.SelectedTag(FilterSelector, "all"))
     {
         case "dates":
@@ -44,15 +33,7 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
             Source.ClearFilter();
             break;
     }
-
-    // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
-    if (IsLoaded)
-    {
-        // …
-    }
 }
-
-// …
 
 private void OnMoveSectionClick(object sender, RoutedEventArgs e)
 {
@@ -78,8 +59,6 @@ private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
     // A collection change: the source drops the row (and an emptied section) by itself.
     Entries.Remove(entry);
 }
-
-// …
 
 // Never blank: TableViewSource fails fast on an empty group identity.
 private static object KeyOf(FilePropertyEntry? entry, string key)

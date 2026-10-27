@@ -13,17 +13,12 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
 
 _timer.Tick += OnTimerTick;
 
-// …
-
 private void OnTimerTick(object? sender, object e)
 {
     RandomizeAll();
     ResortIfMetricSorted();
 }
 
-// A value change raised through INotifyPropertyChanged updates the cell but does not move the
-// row: the projection re-sorts on collection changes only. Re-declaring the active sort with
-// the column's own path re-sorts the same source and keeps that column's sort indicator.
 private void ResortIfMetricSorted()
 {
     var column = SampleShaping.ActiveSortColumn(ProcessTable);
@@ -35,10 +30,6 @@ private void ResortIfMetricSorted()
 
     Source.Sort(column.SortMemberPath, column.SortDirection);
 }
-
-// …
-
-// ---- Search (TableViewSource.Filter) ------------------------------------------------
 
 private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {
@@ -69,8 +60,6 @@ private static bool MatchesSearch(ProcessItem process, string query) =>
     process.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
     || process.Category.Contains(query, StringComparison.CurrentCultureIgnoreCase)
     || process.StatusText.Contains(query, StringComparison.CurrentCultureIgnoreCase);
-
-// …
 
 // Child processes are rows only while the source is nested: ParentBy then shows each under its app.
 protected override void OnShapingApplying(ShapingApplyingEventArgs e)

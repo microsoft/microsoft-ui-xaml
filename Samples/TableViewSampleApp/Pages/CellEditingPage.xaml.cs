@@ -58,8 +58,6 @@ public sealed partial class CellEditingPage : SamplePageBase
     public ObservableCollection<string> EditLog { get; } = new();
 
     // <snippet>
-    // ---- Editing ------------------------------------------------------------------------
-
     private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
     {
         if (PeopleTable is null || ReadOnlyToggle is null)
@@ -70,27 +68,27 @@ public sealed partial class CellEditingPage : SamplePageBase
         PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "IsReadOnly -> {0}", PeopleTable.IsReadOnly));
     }
+    // </snippet>
 
     private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
     {
-        FlushPendingCommit(); // snippet:skip
+        FlushPendingCommit();
         ClearRejectedWrite();
-        _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
-        _isEditOpen = true; // snippet:skip
-        _editsAtBeginEdit = _editsCommitted; // snippet:skip
+        _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName);
+        _isEditOpen = true;
+        _editsAtBeginEdit = _editsCommitted;
         SetEditButtonsEnabled(true);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Began editing {0}", _openEdit));
     }
 
-    // Raised for every close, with EditAction saying whether it committed or cancelled.
+    // <snippet>
+    // Raised before the control writes and validates, for a commit and a cancel alike.
     private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
     {
         var what = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
         _openEdit = "(none)"; // snippet:skip
-        SetEditButtonsEnabled(false);
+        SetEditButtonsEnabled(false); // snippet:skip
         AnnounceEditEnding(args.EditAction, what); // snippet:skip
-
-        // CellEditEnding runs before the control writes, validates and closes; check afterwards.
         EnqueueIfLoaded(() =>
         {
             if (!PeopleTable.IsEditing)
@@ -99,9 +97,9 @@ public sealed partial class CellEditingPage : SamplePageBase
             }
         });
     }
+    // </snippet>
 
-    // A rejected commit writes the invalid value, then the previous value back. The first write
-    // carries the error; the second is the rollback. Neither is logged as an edit.
+    // A rejected commit writes the invalid value, then the previous value back; neither is an edit.
     private bool IsRejectedWrite(Person person, string property)
     {
         foreach (var error in person.GetErrors(property))
@@ -122,12 +120,13 @@ public sealed partial class CellEditingPage : SamplePageBase
         return false;
     }
 
-    // Queued from CellEditEnding(Commit): by now the control has written, validated and either
-    // closed the editor or kept it open.
+    // <snippet>
+    // Queued after a commit. _rejectedError is the GetErrors text of a write the control rejected;
+    // the editor then stays open.
     private void OnCommitSettled()
     {
         var error = _rejectedError;
-        ClearRejectedWrite();
+        ClearRejectedWrite(); // snippet:skip
         if (error is null || !PeopleTable.IsEditing)
         {
             FlushPendingCommit(); // snippet:skip
@@ -137,11 +136,11 @@ public sealed partial class CellEditingPage : SamplePageBase
         _openEdit = _pendingCommit ?? _openEdit; // snippet:skip
         _pendingCommit = null; // snippet:skip
         _isEditOpen = true; // snippet:skip
-        SetEditButtonsEnabled(true);
+        SetEditButtonsEnabled(true); // snippet:skip
         var message = error + " The editor stays open with the previous value: type a new value and press Enter, or press Esc to cancel.";
         if (ValidationInfoBar.IsOpen)
         {
-            // Already open: InfoBar announces only when it opens, so announce the repeat.
+            // InfoBar announces only when it opens, so announce a repeat.
             FrameworkElementAutomationPeer.FromElement(ValidationInfoBar)?.RaiseNotificationEvent(
                 AutomationNotificationKind.ActionAborted, AutomationNotificationProcessing.ImportantAll,
                 message, "CellEditingValidationRejected");
@@ -151,6 +150,7 @@ public sealed partial class CellEditingPage : SamplePageBase
         ValidationInfoBar.IsOpen = true;
         RefreshReadouts(); // snippet:skip
     }
+    // </snippet>
 
     private void ClearRejectedWrite()
     {
@@ -166,14 +166,12 @@ public sealed partial class CellEditingPage : SamplePageBase
         CancelEditButton.IsEnabled = enabled;
     }
 
-    // The buttons set AllowFocusOnInteraction="False", so clicking one leaves focus, and the
-    // open editor, where they are.
+    // <snippet>
     private void OnCommitEditClick(object sender, RoutedEventArgs e)
     {
-        // A rejected value is reported by OnCommitSettled.
-        if (!PeopleTable.CommitEdit() && _rejectedError is null)
+        if (!PeopleTable.CommitEdit() && _rejectedError is null) // snippet:as if (!PeopleTable.CommitEdit())
         {
-            SetLastAction("CommitEdit returned false: no edit was open, or the value was rejected.");
+            SetLastAction("CommitEdit returned false: no edit was open, or the value could not be written.");
         }
     }
 
@@ -184,6 +182,7 @@ public sealed partial class CellEditingPage : SamplePageBase
             SetLastAction("CancelEdit returned false: no edit was open.");
         }
     }
+    // </snippet>
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -199,8 +198,7 @@ public sealed partial class CellEditingPage : SamplePageBase
 
         LogEdit(person, e.PropertyName!);
 
-        // The write arrives from inside the control's commit. Re-group after it returns, so the
-        // reshape never runs while the edit is still closing.
+        // The write arrives from inside the control's commit; re-group after it returns.
         var property = e.PropertyName;
         EnqueueIfLoaded(() =>
         {
@@ -209,7 +207,6 @@ public sealed partial class CellEditingPage : SamplePageBase
             ReapplyIfGroupedOn(property);
             if (regrouped && hadFocus)
             {
-                // The reshape recycles the containers; put focus back on the edited row.
                 RestoreRowFocusAfterLayout(person);
             }
 
@@ -217,7 +214,6 @@ public sealed partial class CellEditingPage : SamplePageBase
         });
         RefreshReadouts();
     }
-    // </snippet>
 
     private void LogEdit(Person person, string propertyName)
     {
