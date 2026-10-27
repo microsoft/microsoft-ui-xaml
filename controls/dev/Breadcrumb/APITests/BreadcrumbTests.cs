@@ -448,6 +448,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 int rootMeasureCount = rootItem.MeasureCount;
                 int parentMeasureCount = parentItem.MeasureCount;
+
+                foreach (double width in new[] { 1200.0, 1100.0, 1000.0 })
+                {
+                    lastItem.MeasureCount = 0;
+                    breadcrumb.Width = width;
+                    Content.UpdateLayout();
+
+                    Verify.AreEqual(rootMeasureCount, rootItem.MeasureCount);
+                    Verify.AreEqual(parentMeasureCount, parentItem.MeasureCount);
+                    Verify.AreEqual(1, lastItem.MeasureCount, "The last item should receive one final constraint, even when everything fits.");
+                }
+
                 int lastMeasureCount = lastItem.MeasureCount;
 
                 breadcrumb.Width = 200;
@@ -465,7 +477,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Verify.AreEqual(rootMeasureCount, rootItem.MeasureCount);
                     Verify.AreEqual(parentMeasureCount, parentItem.MeasureCount);
-                    Verify.AreEqual(2, lastItem.MeasureCount, "Only the squeezed item needs natural and constrained measurements.");
+                    Verify.AreEqual(1, lastItem.MeasureCount, "The last item should only be measured at its final constraint.");
                 }
 
                 breadcrumb.Width = 0;
@@ -482,21 +494,521 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        [TestProperty("Data:ItemCount", "{1,3}")]
+        public void VerifyConstrainedBreadcrumbCanReduceDesiredHeight()
+        {
+            int itemCount = Convert.ToInt32(TestContext.DataRow["ItemCount"]);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var breadcrumb = new BreadcrumbBar
+                {
+                    Width = 200,
+                    ItemsSource = Enumerable.Range(0, itemCount).Select(index => "Item " + index).ToArray(),
+                    ItemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                            <controls:BreadcrumbBarItem>
+                                <controls:BreadcrumbBarItem.Template>
+                                    <ControlTemplate TargetType='controls:BreadcrumbBarItem'>
+                                        <Viewbox>
+                                            <Border Width='500' Height='500' Background='CornflowerBlue'/>
+                                        </Viewbox>
+                                    </ControlTemplate>
+                                </controls:BreadcrumbBarItem.Template>
+                            </controls:BreadcrumbBarItem>
+                        </DataTemplate>")
+                };
+                var followingContent = new Border { Height = 20 };
+                var stackPanel = new StackPanel();
+                stackPanel.Children.Add(breadcrumb);
+                stackPanel.Children.Add(followingContent);
+                Content = stackPanel;
+                Content.UpdateLayout();
+
+                var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(itemCount);
+
+                if (itemCount == 1)
+                {
+                    Verify.AreEqual(200.0, lastItem.DesiredSize.Height);
+                }
+
+                Verify.AreEqual(200.0, breadcrumb.DesiredSize.Height,
+                    "The bar should use the constrained height, not the Viewbox's natural height.");
+                Verify.AreEqual(200.0, LayoutInformation.GetLayoutSlot(followingContent).Y,
+                    "Following content should not be displaced by the natural Viewbox height.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        [TestProperty("Data:Parent", "{i,C:}")]
+        public void VerifyNarrowInlineAncestorRemainsReadable()
+        {
+            string parent = (string)TestContext.DataRow["Parent"];
+            bool optimizedStyles = ((string)TestContext.DataRow["XamlOptionalChanges"]).Contains("DefaultStyleOptimizations:true");
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+                {
+                    var breadcrumb = CreateTextBreadcrumb(new[] { parent, new string('W', 100) });
+                    breadcrumb.FlowDirection = flowDirection;
+                    breadcrumb.Width = 2000;
+                    Content = breadcrumb;
+                    Content.UpdateLayout();
+
+                    var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                    var ellipsis = (BreadcrumbBarItem)repeater.TryGetElement(0);
+                    var ancestor = (BreadcrumbBarItem)repeater.TryGetElement(1);
+                    var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(2);
+                    string expectedStyle = optimizedStyles ? "generic_perf2026.xaml" : "generic.xaml";
+                    Verify.IsTrue(ancestor.DefaultStyleResourceUri.AbsoluteUri.EndsWith("/" + expectedStyle, StringComparison.Ordinal),
+                        "The control must actually load the template variant selected by the test.");
+                    Log.Comment($"Actual ancestor style: {ancestor.DefaultStyleResourceUri.AbsoluteUri}");
+                    double naturalWidth = ancestor.DesiredSize.Width;
+                    Verify.IsTrue(double.IsNaN(ancestor.Width), "The ancestor must not have an artificial width.");
+                    Verify.IsTrue(naturalWidth < ellipsis.DesiredSize.Width,
+                        "This readable ancestor should naturally cost less than the overflow button.");
+
+                    var presenter = (ContentPresenter)ancestor.FindVisualChildByName("PART_ItemContentPresenter");
+                    var label = (TextBlock)presenter.FindVisualChildByName("CrumbText");
+                    var chevron = (TextBlock)ancestor.FindVisualChildByName("PART_ChevronTextBlock");
+                    var lastPresenter = (ContentPresenter)lastItem.FindVisualChildByName("PART_LastItemContentPresenter");
+                    var lastLabel = (TextBlock)lastPresenter.FindVisualChildByName("CrumbText");
+                    double tolerance = 1 / breadcrumb.XamlRoot.RasterizationScale + 0.001;
+                    UIElement coordinateRoot = breadcrumb.XamlRoot.Content;
+                    Rect GetBounds(FrameworkElement element) => element.TransformToVisual(coordinateRoot)
+                        .TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+                    double GetGap(Rect first, Rect second) => Math.Max(
+                        second.X - (first.X + first.Width), first.X - (second.X + second.Width));
+                    double normalParentGap = GetGap(GetBounds(label), GetBounds(chevron));
+                    double normalTitleGap = GetGap(GetBounds(chevron), GetBounds(lastLabel));
+
+                    breadcrumb.Width = 200;
+                    Content.UpdateLayout();
+
+                    var ancestorBounds = GetBounds(ancestor);
+                    var labelBounds = GetBounds(label);
+                    var chevronBounds = GetBounds(chevron);
+                    var lastBounds = GetBounds(lastLabel);
+                    Verify.AreEqual(0.0, LayoutInformation.GetLayoutSlot(ellipsis).Width);
+                    Verify.AreEqual(parent, label.Text);
+                    Verify.IsFalse(label.IsTextTrimmed);
+                    Verify.IsGreaterThan(label.ActualWidth, 0.0);
+                    Verify.IsTrue(ancestor.ActualWidth + tolerance >= naturalWidth);
+                    Verify.IsTrue(labelBounds.X >= ancestorBounds.X - tolerance);
+                    Verify.IsTrue(labelBounds.X + labelBounds.Width <= ancestorBounds.X + ancestorBounds.Width + tolerance);
+                    Verify.IsTrue(chevronBounds.X >= ancestorBounds.X - tolerance);
+                    Verify.IsTrue(chevronBounds.X + chevronBounds.Width <= ancestorBounds.X + ancestorBounds.Width + tolerance);
+                    Verify.IsTrue(labelBounds.X + labelBounds.Width <= chevronBounds.X + tolerance ||
+                        chevronBounds.X + chevronBounds.Width <= labelBounds.X + tolerance);
+                    Verify.IsGreaterThan(chevron.Padding.Left, 0.0);
+                    Verify.IsGreaterThan(chevron.Padding.Right, 0.0);
+
+                    double glyphGap = Math.Max(
+                        lastBounds.X - (chevronBounds.X + chevronBounds.Width - chevron.Padding.Right),
+                        chevronBounds.X + chevron.Padding.Left - (lastBounds.X + lastBounds.Width));
+                    Verify.IsTrue(glyphGap >= Math.Min(chevron.Padding.Left, chevron.Padding.Right) - tolerance,
+                        "The separator must retain its normal padding before the final title.");
+                    Verify.IsTrue(Math.Abs(GetGap(labelBounds, chevronBounds) - normalParentGap) <= tolerance,
+                        "Parent-to-separator spacing should match the unconstrained layout.");
+                    Verify.IsTrue(Math.Abs(GetGap(chevronBounds, lastBounds) - normalTitleGap) <= tolerance,
+                        "Separator-to-title spacing should match the unconstrained layout.");
+                    Log.Comment($"Readable parent={parent}, flow={flowDirection}, S={naturalWidth}, E={ellipsis.DesiredSize.Width}, " +
+                        $"label={labelBounds}, separator={chevronBounds}, title={lastBounds}, " +
+                        $"parentGap={GetGap(labelBounds, chevronBounds)}, referenceParentGap={normalParentGap}, " +
+                        $"titleGap={GetGap(chevronBounds, lastBounds)}, referenceTitleGap={normalTitleGap}, glyphGap={glyphGap}");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        public void VerifyWideAncestorPreservesCurrentItemSpace()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+                {
+                    var breadcrumb = CreateTextBreadcrumb(new[] { "Documents", new string('W', 100) });
+                    breadcrumb.FlowDirection = flowDirection;
+                    breadcrumb.Width = 200;
+                    Content = breadcrumb;
+                    Content.UpdateLayout();
+
+                    var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                    var ellipsis = (BreadcrumbBarItem)repeater.TryGetElement(0);
+                    var ancestor = (BreadcrumbBarItem)repeater.TryGetElement(1);
+                    var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(2);
+                    var presenter = (ContentPresenter)lastItem.FindVisualChildByName("PART_LastItemContentPresenter");
+                    var text = (TextBlock)presenter.FindVisualChildByName("CrumbText");
+                    double inlineWidth = breadcrumb.Width - ancestor.DesiredSize.Width;
+                    double overflowWidth = breadcrumb.Width - ellipsis.DesiredSize.Width;
+                    double uncappedTextWidth = text.ActualWidth;
+
+                    Verify.IsTrue(double.IsNaN(ancestor.Width));
+                    Verify.AreEqual(double.PositiveInfinity, lastItem.MaxWidth);
+                    Verify.IsGreaterThan(ancestor.DesiredSize.Width, ellipsis.DesiredSize.Width);
+                    Verify.IsGreaterThan(lastItem.DesiredSize.Width, inlineWidth);
+                    Verify.IsTrue(lastItem.DesiredSize.Width <= overflowWidth,
+                        "The current item must be constrained to the space after overflow.");
+                    Verify.IsGreaterThan(LayoutInformation.GetLayoutSlot(ellipsis).Width, 0.0);
+                    Verify.AreEqual(0.0, LayoutInformation.GetLayoutSlot(ancestor).Width,
+                        "A wider parent must give way to overflow when the current item needs the space.");
+                    Verify.IsTrue(text.IsTextTrimmed);
+                    VerifyTextIsInsideBreadcrumb(text, repeater);
+
+                    foreach (bool fitsInline in new[] { true, false })
+                    {
+                        lastItem.MaxWidth = fitsInline ? inlineWidth - 1 : (inlineWidth + overflowWidth) / 2;
+                        Content.UpdateLayout();
+
+                        Verify.IsTrue(lastItem.DesiredSize.Width <= lastItem.MaxWidth);
+                        Verify.AreEqual(!fitsInline, LayoutInformation.GetLayoutSlot(ellipsis).Width > 0);
+                        Verify.AreEqual(fitsInline, LayoutInformation.GetLayoutSlot(ancestor).Width > 0);
+                        Verify.IsGreaterThan(uncappedTextWidth, text.ActualWidth,
+                            "An explicit MaxWidth, not the parent, should limit the title.");
+                        Verify.IsTrue(text.IsTextTrimmed);
+                        VerifyTextIsInsideBreadcrumb(text, repeater);
+                        Log.Comment($"Wide parent flow={flowDirection}, style={ancestor.DefaultStyleResourceUri}, " +
+                            $"S={ancestor.DesiredSize.Width}, E={ellipsis.DesiredSize.Width}, " +
+                            $"MaxWidth={lastItem.MaxWidth}, title={lastItem.DesiredSize.Width}, " +
+                            $"overflow={LayoutInformation.GetLayoutSlot(ellipsis).Width > 0}");
+                    }
+
+                    lastItem.MaxWidth = double.PositiveInfinity;
+                    Content.UpdateLayout();
+
+                    Verify.IsGreaterThan(LayoutInformation.GetLayoutSlot(ellipsis).Width, 0.0);
+                    Verify.AreEqual(0.0, LayoutInformation.GetLayoutSlot(ancestor).Width);
+                    Verify.AreEqual(uncappedTextWidth, text.ActualWidth,
+                        "Removing the explicit cap must restore all the space available after overflow.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        [TestProperty("Data:Change", "{MaxWidth,Content,TemplateText}")]
+        [TestProperty("Data:Ancestors", "{Narrow,Wide}")]
+        public void VerifyOverflowUpdatesAfterLastItemChanges()
+        {
+            bool narrowAncestors = (string)TestContext.DataRow["Ancestors"] == "Narrow";
+            string shortContent = new string('W', narrowAncestors ? 13 : 7);
+            string longContent = new string('W', 100);
+            string change = (string)TestContext.DataRow["Change"];
+            BreadcrumbBar breadcrumb = null;
+            BreadcrumbBar freshBreadcrumb = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                breadcrumb = CreateTextBreadcrumb(new[] { "i", shortContent });
+                breadcrumb.Width = 2000;
+                freshBreadcrumb = CreateTextBreadcrumb(new[] { "i", shortContent });
+                freshBreadcrumb.Width = 2000;
+                var stackPanel = new StackPanel();
+                stackPanel.Children.Add(breadcrumb);
+                stackPanel.Children.Add(freshBreadcrumb);
+                Content = stackPanel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                var ellipsis = (BreadcrumbBarItem)repeater.TryGetElement(0);
+                var ancestor = (BreadcrumbBarItem)repeater.TryGetElement(1);
+                var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(2);
+                // Artificial bounds isolate the size-cache regression; natural label visibility
+                // and separator spacing are verified by VerifyNarrowInlineAncestorRemainsReadable.
+                ancestor.Width = narrowAncestors ? 10 : 80;
+                Content.UpdateLayout();
+
+                double shortContentWidth = lastItem.DesiredSize.Width;
+                Verify.AreEqual(narrowAncestors, ancestor.DesiredSize.Width < ellipsis.DesiredSize.Width);
+                Verify.IsTrue(shortContentWidth + ancestor.DesiredSize.Width <= 200,
+                    "The short content and ancestor must fit without overflow.");
+
+                if (narrowAncestors)
+                {
+                    Verify.IsTrue(shortContentWidth + ellipsis.DesiredSize.Width > 200,
+                        "The short content must still be constrained if the stale overflow button remains.");
+                }
+
+                lastItem.Content = longContent;
+                breadcrumb.Width = 200;
+                Content.UpdateLayout();
+
+                var presenter = (ContentPresenter)lastItem.FindVisualChildByName("PART_LastItemContentPresenter");
+                var text = (TextBlock)presenter.FindVisualChildByName("CrumbText");
+                Verify.AreEqual(!narrowAncestors, LayoutInformation.GetLayoutSlot(ellipsis).Width > 0);
+                Verify.AreEqual(narrowAncestors, LayoutInformation.GetLayoutSlot(ancestor).Width > 0);
+                Verify.IsTrue(text.IsTextTrimmed);
+
+                switch (change)
+                {
+                    case "MaxWidth":
+                        lastItem.MaxWidth = 200 - ancestor.DesiredSize.Width;
+                        break;
+                    case "Content":
+                        lastItem.Content = shortContent;
+                        break;
+                    case "TemplateText":
+                        text.Text = shortContent;
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unexpected change: " + change);
+                }
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(200.0, breadcrumb.ActualWidth);
+                Verify.AreEqual(0.0, LayoutInformation.GetLayoutSlot(ellipsis).Width,
+                    "Overflow should disappear without resizing the bar or explicitly invalidating its measure.");
+                Verify.IsGreaterThan(LayoutInformation.GetLayoutSlot(ancestor).Width, 0.0);
+
+                if (change != "MaxWidth")
+                {
+                    Verify.IsFalse(text.IsTextTrimmed, "The short content fits without trimming once overflow is removed.");
+                }
+
+                var freshRepeater = (ItemsRepeater)freshBreadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                var freshAncestor = (BreadcrumbBarItem)freshRepeater.TryGetElement(1);
+                var freshLastItem = (BreadcrumbBarItem)freshRepeater.TryGetElement(2);
+                freshAncestor.Width = ancestor.Width;
+                freshBreadcrumb.Width = 200;
+
+                if (change == "MaxWidth")
+                {
+                    freshLastItem.Content = longContent;
+                    freshLastItem.MaxWidth = lastItem.MaxWidth;
+                }
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(LayoutInformation.GetLayoutSlot((FrameworkElement)freshRepeater.TryGetElement(0)).Width,
+                    LayoutInformation.GetLayoutSlot(ellipsis).Width, "Cached and fresh overflow states should agree.");
+                Verify.AreEqual(freshLastItem.DesiredSize, lastItem.DesiredSize,
+                    "Cached and fresh item measurements should agree after the change.");
+                VerifyTextIsInsideBreadcrumb(text, repeater);
+
+                if (change == "MaxWidth")
+                {
+                    lastItem.MaxWidth = double.PositiveInfinity;
+                }
+                else if (change == "Content")
+                {
+                    lastItem.Content = longContent;
+                }
+                else
+                {
+                    text.Text = longContent;
+                }
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(!narrowAncestors, LayoutInformation.GetLayoutSlot(ellipsis).Width > 0);
+                Verify.AreEqual(narrowAncestors, LayoutInformation.GetLayoutSlot(ancestor).Width > 0);
+                Verify.IsTrue(text.IsTextTrimmed);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        public void VerifyZeroWidthOverflowUsesConstrainedAncestorWidth()
+        {
+            BreadcrumbBar breadcrumb = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                breadcrumb = CreateTextBreadcrumb(new[] { "x", "Ancestor", "Current" });
+                breadcrumb.Width = 200;
+                Content = breadcrumb;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                var ellipsis = (BreadcrumbBarItem)repeater.TryGetElement(0);
+                var firstItem = (BreadcrumbBarItem)repeater.TryGetElement(1);
+                var oversizedItem = (BreadcrumbBarItem)repeater.TryGetElement(2);
+                var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(3);
+                ellipsis.Width = 0;
+                firstItem.Width = 10;
+                lastItem.Width = 0;
+                oversizedItem.ContentTemplate = null;
+                oversizedItem.Content = new MeasureCountingElement(500, 20);
+                Content.UpdateLayout();
+
+                Verify.IsTrue(firstItem.DesiredSize.Width + oversizedItem.DesiredSize.Width <= 200);
+                Verify.AreEqual(10.0, LayoutInformation.GetLayoutSlot(firstItem).Width,
+                    "The first item should fit after constraining the oversized ancestor.");
+                Verify.AreEqual(10.0, LayoutInformation.GetLayoutSlot(oversizedItem).X);
+                var slot = LayoutInformation.GetLayoutSlot(oversizedItem);
+                Verify.IsTrue(slot.X + slot.Width <= breadcrumb.ActualWidth + 1);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        public void VerifyOverflowUsesFinalMeasuredWidth()
+        {
+            BreadcrumbBar breadcrumb = null;
+            BreadcrumbBar freshBreadcrumb = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                breadcrumb = CreateTextBreadcrumb(new[] { "i", "Current" });
+                freshBreadcrumb = CreateTextBreadcrumb(new[] { "i", "Current" });
+                breadcrumb.Width = 200;
+                freshBreadcrumb.Width = 200;
+                var stackPanel = new StackPanel();
+                stackPanel.Children.Add(breadcrumb);
+                stackPanel.Children.Add(freshBreadcrumb);
+                Content = stackPanel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                var ancestor = (BreadcrumbBarItem)repeater.TryGetElement(1);
+                var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(2);
+                var content = new MeasureCountingElement(500, 8);
+                ancestor.Width = 40;
+                lastItem.ContentTemplate = null;
+                lastItem.Content = content;
+                Content.UpdateLayout();
+
+                double measuredWidth = content.DesiredSize.Width;
+                Verify.IsGreaterThan(ancestor.DesiredSize.Width,
+                    ((BreadcrumbBarItem)repeater.TryGetElement(0)).DesiredSize.Width);
+                Verify.IsTrue(ancestor.DesiredSize.Width + lastItem.DesiredSize.Width <= 200,
+                    "The final measured sizes must fit even though the natural content does not.");
+                Verify.AreEqual(0.0, LayoutInformation.GetLayoutSlot((FrameworkElement)repeater.TryGetElement(0)).Width);
+                Verify.IsGreaterThan(LayoutInformation.GetLayoutSlot(ancestor).Width, 0.0);
+
+                content.NaturalWidth = measuredWidth;
+                Content.UpdateLayout();
+                Verify.AreEqual(measuredWidth, content.DesiredSize.Width,
+                    "This change must collide with the old constrained desired width.");
+
+                var freshRepeater = (ItemsRepeater)freshBreadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                ((BreadcrumbBarItem)freshRepeater.TryGetElement(1)).Width = 40;
+                var freshLastItem = (BreadcrumbBarItem)freshRepeater.TryGetElement(2);
+                freshLastItem.ContentTemplate = null;
+                freshLastItem.Content = new MeasureCountingElement(measuredWidth, 8);
+                Content.UpdateLayout();
+
+                Verify.AreEqual(LayoutInformation.GetLayoutSlot((FrameworkElement)freshRepeater.TryGetElement(0)).Width,
+                    LayoutInformation.GetLayoutSlot((FrameworkElement)repeater.TryGetElement(0)).Width);
+                Verify.AreEqual(freshLastItem.DesiredSize, lastItem.DesiredSize,
+                    "An unchanged constrained size must produce the same result as a fresh layout.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false,DefaultStyleOptimizations:true}")]
+        public void VerifyScalingContentMatchesFreshLayout()
+        {
+            BreadcrumbBar breadcrumb = null;
+            BreadcrumbBar freshBreadcrumb = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                breadcrumb = CreateScalingBreadcrumb(500);
+                freshBreadcrumb = CreateScalingBreadcrumb(100);
+                var stackPanel = new StackPanel();
+                stackPanel.Children.Add(breadcrumb);
+                stackPanel.Children.Add(freshBreadcrumb);
+                Content = stackPanel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                var lastItem = (BreadcrumbBarItem)repeater.TryGetElement(1);
+                var viewbox = (Viewbox)lastItem.FindVisualChildByName("ScalingRoot");
+                var child = (Border)viewbox.Child;
+                child.Width = 100;
+                child.Height = 100;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(200.0, breadcrumb.DesiredSize.Height,
+                    "Scaling content should use its available width, not its intrinsic width.");
+                Verify.AreEqual(200.0, freshBreadcrumb.DesiredSize.Height);
+                Verify.AreEqual(freshBreadcrumb.DesiredSize, breadcrumb.DesiredSize,
+                    "Cached and fresh Viewbox content should have the same layout.");
+            });
+        }
+
+        private static BreadcrumbBar CreateScalingBreadcrumb(double size)
+        {
+            return new BreadcrumbBar
+            {
+                Width = 200,
+                ItemsSource = new[] { size },
+                ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <controls:BreadcrumbBarItem>
+                            <controls:BreadcrumbBarItem.Template>
+                                <ControlTemplate TargetType='controls:BreadcrumbBarItem'>
+                                    <Viewbox x:Name='ScalingRoot'>
+                                        <Border Width='{Binding}' Height='{Binding}' Background='CornflowerBlue'/>
+                                    </Viewbox>
+                                </ControlTemplate>
+                            </controls:BreadcrumbBarItem.Template>
+                        </controls:BreadcrumbBarItem>
+                    </DataTemplate>")
+            };
+        }
+
         private partial class MeasureCountingElement : FrameworkElement
         {
-            private readonly double _naturalWidth;
+            private double _naturalWidth;
+            private readonly double _constrainedWidthReduction;
 
-            public MeasureCountingElement(double naturalWidth)
+            public MeasureCountingElement(double naturalWidth, double constrainedWidthReduction = 0)
             {
                 _naturalWidth = naturalWidth;
+                _constrainedWidthReduction = constrainedWidthReduction;
             }
 
             public int MeasureCount { get; set; }
 
+            public double NaturalWidth
+            {
+                get => _naturalWidth;
+                set
+                {
+                    _naturalWidth = value;
+                    InvalidateMeasure();
+                }
+            }
+
             protected override Size MeasureOverride(Size availableSize)
             {
                 ++MeasureCount;
-                return new Size(Math.Min(_naturalWidth, availableSize.Width), 20);
+                double width = _naturalWidth <= availableSize.Width
+                    ? _naturalWidth
+                    : Math.Max(0, availableSize.Width - _constrainedWidthReduction);
+                return new Size(width, 20);
             }
         }
 
