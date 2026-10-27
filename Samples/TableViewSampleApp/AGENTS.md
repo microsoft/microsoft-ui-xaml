@@ -101,6 +101,9 @@ and `Options` with `x:Bind`; do not reintroduce split-binary/CsWinRT manual cont
 workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"`, which names
 `X.xaml.txt` and `X.cs.txt`) must correspond to files under `Snippets\*.txt`;
 `tools\Update-Snippets.ps1 -Check` validates those declarations (see Snippets below).
+The Source code expander shows them as XAML and C# tabs (`SampleSourceTabs`: `SampleSourceXamlTab`,
+`SampleSourceCSharpTab`, hidden when the page has no C# snippet) over one `CodeBlock`, which colours
+the code with the built-in `CodeHighlighter` and theme brushes (`Light`, `Dark`, `HighContrast`).
 
 `BuildInfo` is generated to `$(IntermediateOutputPath)\BuildInfo.g.cs` and included from there.
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
@@ -146,7 +149,7 @@ automation peer unless the AutomationId should change too.
 
 ## Snippets
 
-The Source expander snippets (`Snippets\*.txt`) are generated from `<!-- snippet -->` /
+The Source code snippets (`Snippets\*.txt`) are generated from `<!-- snippet -->` /
 `// <snippet>` regions by `tools\Update-Snippets.ps1` (`-Tags Sort,Groups` limits it to some pages)
 and checked in. A named region (`// <snippet Groups Sort>`) in a shared or data file is appended to
 those pages' snippets; a snippet whose first line is `// snippet:manual` opts out. Keep each region

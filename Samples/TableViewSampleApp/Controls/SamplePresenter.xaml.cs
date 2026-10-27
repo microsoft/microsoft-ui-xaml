@@ -63,7 +63,6 @@ public sealed partial class SamplePresenter : UserControl
 
         // One vertical scroller: the Source scroller is already bounded.
         SourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
-        AdditionalSourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
 
         var margin = OuterGrid.Margin;
         HeaderPanel.Margin = new Thickness(margin.Left, margin.Top, margin.Right, HeaderGap);
@@ -217,19 +216,9 @@ public sealed partial class SamplePresenter : UserControl
         DependencyProperty.Register(nameof(SourceXaml), typeof(string), typeof(SamplePresenter),
             new PropertyMetadata(null, OnSourceChanged));
 
-    public string? SourceCaption
-    {
-        get => (string?)GetValue(SourceCaptionProperty);
-        set => SetValue(SourceCaptionProperty, value);
-    }
-
-    public static readonly DependencyProperty SourceCaptionProperty =
-        DependencyProperty.Register(nameof(SourceCaption), typeof(string), typeof(SamplePresenter),
-            new PropertyMetadata("XAML", OnBindingsChanged));
-
     /// <summary>
     /// Path under the project's Snippets/ folder of an EmbeddedResource snippet to display
-    /// in the Source expander (e.g. "BasicTable.xaml.txt"). Loaded once at set-time.
+    /// in the XAML tab of the Source code expander (e.g. "BasicTable.xaml.txt").
     /// </summary>
     public string? SourceSnippet
     {
@@ -250,9 +239,8 @@ public sealed partial class SamplePresenter : UserControl
     }
 
     /// <summary>
-    /// Optional second snippet shown below SourceSnippet inside the same expander
-    /// (e.g. "Filter.cs.txt" paired with "Filter.xaml.txt"). Loaded the same way
-    /// as <see cref="SourceSnippet"/>.
+    /// Optional C# snippet shown in the C# tab of the Source code expander (e.g. "Filter.cs.txt"
+    /// paired with "Filter.xaml.txt"). The tab is hidden when there is none.
     /// </summary>
     public string? AdditionalSnippet
     {
@@ -276,19 +264,8 @@ public sealed partial class SamplePresenter : UserControl
         }
     }
 
-    /// <summary>Caption rendered above the second CodeBlock. Defaults to "C#".</summary>
-    public string? AdditionalSnippetCaption
-    {
-        get => (string?)GetValue(AdditionalSnippetCaptionProperty);
-        set => SetValue(AdditionalSnippetCaptionProperty, value);
-    }
-
-    public static readonly DependencyProperty AdditionalSnippetCaptionProperty =
-        DependencyProperty.Register(nameof(AdditionalSnippetCaption), typeof(string), typeof(SamplePresenter),
-            new PropertyMetadata("C#", OnBindingsChanged));
-
     /// <summary>
-    /// Bound to the second CodeBlock's Code property. Set by <see cref="AdditionalSnippet"/>
+    /// The C# tab's code. Set by <see cref="AdditionalSnippet"/>
     /// loading, but may also be assigned directly for inline strings.
     /// </summary>
     public string? AdditionalSourceCode
@@ -305,29 +282,53 @@ public sealed partial class SamplePresenter : UserControl
     {
         if (d is SamplePresenter sp)
         {
-            sp.Bindings.Update();
             sp.UpdateSourceVisibility();
         }
     }
-
-    // Exposed for x:Bind in XAML — collapses the second CodeBlock when no additional source.
-    public Visibility AdditionalSourceVisibility =>
-        string.IsNullOrWhiteSpace(AdditionalSourceCode) ? Visibility.Collapsed : Visibility.Visible;
 
     private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is SamplePresenter sp)
         {
-            sp.Bindings.Update();
             sp.UpdateSourceVisibility();
         }
     }
 
     private void UpdateSourceVisibility()
     {
-        var hasSource = !string.IsNullOrWhiteSpace(SourceXaml)
-                        || !string.IsNullOrWhiteSpace(AdditionalSourceCode);
-        SourceExpander.Visibility = hasSource ? Visibility.Visible : Visibility.Collapsed;
+        var hasXaml = !string.IsNullOrWhiteSpace(SourceXaml);
+        var hasCSharp = !string.IsNullOrWhiteSpace(AdditionalSourceCode);
+        SourceExpander.Visibility = hasXaml || hasCSharp ? Visibility.Visible : Visibility.Collapsed;
+        SourceXamlTab.Visibility = hasXaml ? Visibility.Visible : Visibility.Collapsed;
+        SourceCSharpTab.Visibility = hasCSharp ? Visibility.Visible : Visibility.Collapsed;
+        if (SourceCSharpTab.IsSelected && !hasCSharp)
+        {
+            SourceXamlTab.IsSelected = true;
+        }
+        else if (SourceXamlTab.IsSelected && !hasXaml && hasCSharp)
+        {
+            SourceCSharpTab.IsSelected = true;
+        }
+
+        ShowSelectedSource();
+    }
+
+    private void OnSourceTabsSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        ShowSelectedSource();
+        InvalidateMeasure();
+    }
+
+    private void ShowSelectedSource()
+    {
+        if (SourceCodeBlock is null || SourceCSharpTab is null)
+        {
+            return;
+        }
+
+        var csharp = SourceCSharpTab.IsSelected;
+        SourceCodeBlock.CodeLanguage = csharp ? CodeHighlighter.CSharp : CodeHighlighter.Xaml;
+        SourceCodeBlock.Code = (csharp ? AdditionalSourceCode : SourceXaml) ?? string.Empty;
     }
 
     private void OnSourceExpanderExpanding(Expander sender, ExpanderExpandingEventArgs args)
@@ -521,16 +522,6 @@ public sealed partial class SamplePresenter : UserControl
         if (d is not SamplePresenter sp || e.NewValue is not string name || string.IsNullOrEmpty(name))
         {
             return;
-        }
-
-        if (sp.ReadLocalValue(SourceCaptionProperty) == DependencyProperty.UnsetValue)
-        {
-            sp.SourceCaption = $"{name}Page.xaml (excerpt)";
-        }
-
-        if (sp.ReadLocalValue(AdditionalSnippetCaptionProperty) == DependencyProperty.UnsetValue)
-        {
-            sp.AdditionalSnippetCaption = $"{name}Page.xaml.cs (excerpt)";
         }
 
         if (sp.ReadLocalValue(SourceSnippetProperty) == DependencyProperty.UnsetValue)

@@ -200,10 +200,7 @@
             Collapsed="OnSourceExpanderCollapsed"
             Visibility="Collapsed">
             <Expander.Header>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE943;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
-                    <TextBlock Text="Source" FontWeight="SemiBold"/>
-                </StackPanel>
+                <TextBlock Text="Source code"/>
             </Expander.Header>
             <ScrollViewer
                 x:Name="SourceContentScroller"
@@ -211,17 +208,27 @@
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollMode="Disabled"
                 HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Spacing="12">
-                    <local:CodeBlock
-                        x:Name="SourceCodeBlock"
-                        Caption="{x:Bind SourceCaption, Mode=OneWay}"
-                        Code="{x:Bind SourceXaml, Mode=OneWay}"/>
-                    <local:CodeBlock
-                        x:Name="AdditionalSourceCodeBlock"
-                        Caption="{x:Bind AdditionalSnippetCaption, Mode=OneWay}"
-                        Code="{x:Bind AdditionalSourceCode, Mode=OneWay}"
-                        Visibility="{x:Bind AdditionalSourceVisibility, Mode=OneWay}"/>
-                </StackPanel>
+                <local:CodeBlock x:Name="SourceCodeBlock">
+                    <local:CodeBlock.HeaderContent>
+                        <SelectorBar
+                            x:Name="SourceTabs"
+                            AutomationProperties.AutomationId="SampleSourceTabs"
+                            AutomationProperties.Name="Source language"
+                            SelectionChanged="OnSourceTabsSelectionChanged">
+                            <SelectorBarItem
+                                x:Name="SourceXamlTab"
+                                Text="XAML"
+                                IsSelected="True"
+                                AutomationProperties.AutomationId="SampleSourceXamlTab"
+                                AutomationProperties.Name="XAML"/>
+                            <SelectorBarItem
+                                x:Name="SourceCSharpTab"
+                                Text="C#"
+                                AutomationProperties.AutomationId="SampleSourceCSharpTab"
+                                AutomationProperties.Name="C#"/>
+                        </SelectorBar>
+                    </local:CodeBlock.HeaderContent>
+                </local:CodeBlock>
             </ScrollViewer>
         </Expander>
     </Grid>
