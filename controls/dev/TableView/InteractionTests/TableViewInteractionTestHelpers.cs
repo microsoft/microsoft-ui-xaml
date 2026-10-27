@@ -613,6 +613,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // A TAEF timeout kills the host and skips TestCleanup, and the next host re-attaches to the possibly hung app.
+        // An app older than this host is that leftover: kill it (Close() goes through UIA) so TestSetupHelper relaunches.
+        internal static void KillAppLeftByPreviousTestHost()
+        {
+            try
+            {
+                var process = TestEnvironment.Application.Process;
+                if (process != null && !process.HasExited &&
+                    process.StartTime < System.Diagnostics.Process.GetCurrentProcess().StartTime)
+                {
+                    Log.Comment("Test app {0} predates this test host; killing it so the test starts on a fresh instance.",
+                        process.Id);
+                    TestEnvironment.Application.KillAndWaitForExit();
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+            {
+                // The process could not be queried; leave the restart decision to the infra.
+            }
+        }
+
         // Call last inside the TestSetupHelper scope of a test that leaves a column header focused. On 25H2 the UIA
         // call after GoBack (back-button InvokeAndWait, or the next test's page lookup) has blocked until the TAEF
         // timeout when the page was torn down with a header holding keyboard focus; the app itself stayed responsive.
@@ -631,6 +652,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             if (!outside.HasKeyboardFocus)
             {
                 Log.Comment("Could not move keyboard focus to " + DummyButton + " before teardown.");
+            }
+        }
+
+        // Declare inside the TestSetupHelper scope so it runs before teardown, including on early return or failure.
+        internal static IDisposable MoveFocusOffTableOnExit() => new FocusOffTableOnExit();
+
+        private sealed class FocusOffTableOnExit : IDisposable
+        {
+            public void Dispose()
+            {
+                try
+                {
+                    MoveFocusOffTableBeforeTeardown();
+                }
+                catch (Exception e)
+                {
+                    Log.Comment("Could not move focus off the table before teardown: " + e.Message);
+                }
             }
         }
 

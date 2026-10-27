@@ -36,6 +36,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            KillAppLeftByPreviousTestHost();
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
@@ -50,6 +56,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnCellTextOpensCellMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -67,6 +74,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnCellPaddingOpensCellMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -83,6 +91,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnTemplateCellOpensTemplateMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -102,6 +111,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnPlainCellOpensRowMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -119,6 +129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnBlankRowSpaceOpensRowMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -135,6 +146,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnHeaderOpensHeaderMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -151,6 +163,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnHeaderWithoutMenuOpensTableMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -167,6 +180,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickBelowRowsOpensTableMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -188,6 +202,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void ShiftF10OnCellOpensCellMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
@@ -204,6 +219,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void ShiftF10OnRowOpensRowMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (FocusRowAt(ContextMenuTable, 3) == null) { return; }
@@ -220,6 +236,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void MenuKeyOnPlainCellOpensRowMenuAtCell()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 3)) { return; }
@@ -244,6 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void MenuKeyOnPlainCellOpensRowMenuAtCellRightToLeft()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(MirrorContextMenuTableButton)) { return; }
@@ -269,6 +287,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void ShiftF10OnHeaderOpensHeaderMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
 
@@ -291,6 +310,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void EscapeReturnsFocusToMenuTarget()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
@@ -314,6 +334,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnEditorOpensNoTableViewMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -338,6 +359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void EditorMenuCommandKeepsEdit()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -360,6 +382,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void ClickAwayAfterEditorMenuCommitsEdit()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -392,6 +415,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnOtherRowWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -410,6 +434,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnHeaderWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!BeginEditOnNameCell(2)) { return; }
@@ -427,6 +452,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickBelowRowsWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -443,6 +469,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnGroupHeaderWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -467,6 +494,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void PressAndHoldOnCellOpensCellMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -494,6 +522,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void RightClickOnGroupHeaderOpensTableMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
@@ -513,6 +542,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void ShiftF10OnGroupHeaderOpensTableMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
+            using (MoveFocusOffTableOnExit())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }

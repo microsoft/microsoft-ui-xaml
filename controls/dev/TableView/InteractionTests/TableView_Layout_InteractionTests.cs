@@ -58,6 +58,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            KillAppLeftByPreviousTestHost();
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
