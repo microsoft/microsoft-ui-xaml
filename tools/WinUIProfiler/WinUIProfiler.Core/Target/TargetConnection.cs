@@ -28,7 +28,8 @@ long? ExpectedCreationTimeFileTime = null,
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
-public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long ProfilerEvents, int LostEvents, long DroppedEvents);
+public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, int LostEvents,
+    long DroppedEvents);
 
 [SupportedOSPlatform("windows")]
 public sealed class TargetConnection : IAsyncDisposable
@@ -75,7 +76,8 @@ public sealed class TargetConnection : IAsyncDisposable
         ? new DateTime(ticks, DateTimeKind.Utc) : null;
     public Task Completion => lifetime ?? Task.CompletedTask;
     public EtwStatus? Etw => eventCounter is { } counter && etw is { } source && pipeline is { } events
-        ? new(etwFromProcessStart, counter.XamlEvents, counter.ProfilerEvents, source.EventsLost, events.DroppedEvents) : null;
+        ? new(etwFromProcessStart, counter.XamlEvents, counter.ProfilerEvents, counter.GpuMemoryEvents, source.EventsLost,
+            events.DroppedEvents) : null;
     // Set when the ETW session could not start or stopped with an error; process metrics keep working.
     public string? EtwError
     {

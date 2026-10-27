@@ -215,7 +215,7 @@ JsonSerializer.Serialize(new
             {
                 SetLine(EtwSummary,
                     etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
-                        etw.XamlEvents, etw.ProfilerEvents, etw.LostEvents, etw.DroppedEvents),
+                        etw.XamlEvents, etw.ProfilerEvents, etw.GpuMemoryEvents, etw.LostEvents, etw.DroppedEvents),
                     etw is null ? null : Format("EtwDetailsFormat", Text(etw.FromProcessStart ? "EtwCoverageProcessStart" : "EtwCoverageConnection")));
             }
 
