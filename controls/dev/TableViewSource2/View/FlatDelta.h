@@ -6,22 +6,32 @@
 #include <cstdint>
 #include <vector>
 
+#include "Engine/ShapedTree.h"
+
 // Flattener -> visible list and owner (declarations only). See
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Change pipeline".
 //
 // One FlatDelta per unit of work (a commit, an expand or collapse). Either a stable Reset (bulk) or
 // an ordered list of splices plus the row-state refreshes that follow them (surgical).
 
-// A contiguous range of the visible list replaced. Published by the visible list as a Remove of
-// RemovedCount items, then an Add of InsertedCount items, at Index (the repeater has no Move).
-// Today the flattener emits one-sided splices only ({i, n, 0} or {i, 0, n}) and never merges them;
-// merging an adjacent remove + insert into a Replace is revisited with owner notifications.
+// A contiguous range of the visible list replaced. Published one at a time (decided, V4): a
+// commit records splices and leaves m_rows alone; ShapingManager::Publish then applies each splice
+// to m_rows (Flattener::ApplySplice) and raises its event right away, a Remove of RemovedCount
+// rows, then an Add of Inserted.size() rows, at Index (the repeater has no Move). So Size / GetAt
+// match every event a consumer sees.
+// Today the flattener emits one-sided splices only ({i, n, {}} or {i, 0, rows}) and never merges
+// them; merging an adjacent remove + insert into a Replace is revisited with owner notifications.
 struct FlatSplice
 {
     // In the list as it stands after the earlier splices of the same delta.
     uint32_t Index{ 0 };
     uint32_t RemovedCount{ 0 };
-    uint32_t InsertedCount{ 0 };
+
+    // The rows inserted at Index, in display order. Captured when the splice is recorded, because
+    // the tree may change again later in the same commit. A ref may name a group that a later
+    // splice of the same delta removes; the engine keeps pruned groups alive until the delta is
+    // published (ShapingEngine::ReleaseRetired).
+    std::vector<ShapedRef> Inserted;
 };
 
 // Row chrome that changed without the row moving. Derived by the flattener from the edits and its
@@ -55,10 +65,11 @@ struct RowStateEdit
 struct FlatDelta
 {
     // Bulk: publish one stable Reset (the visible list implements IKeyIndexMapping, so the repeater
-    // reuses elements by key). Splices and States are empty.
+    // reuses elements by key). Splices and States are empty. Flattener::Rebuild already wrote
+    // m_rows during the commit: one event, so no intermediate state can be observed.
     bool IsReset{ false };
 
-    // Surgical: applied in order.
+    // Surgical: applied to m_rows and published one at a time, in order (V4).
     std::vector<FlatSplice> Splices;
 
     // Surgical: delivered after all splices.

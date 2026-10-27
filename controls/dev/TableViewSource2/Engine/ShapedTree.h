@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -36,8 +37,10 @@
 //   - ShapedRef and GroupNode stay native: the engine, the flattener (whose visible list is a
 //     vector of ShapedRef), the WinRT visible list and the row metadata provider. TableView sees
 //     items and the TableViewRowInfo / TableViewGroupInfo derived from them.
-//   - UI-thread affine, like SourceTable. GroupNodes are owned by the engine in a container with
-//     stable addresses, so GroupNode* and ShapedRef stay valid until the engine drops the group.
+//   - UI-thread affine, like SourceTable. Each GroupNode is heap-allocated and owned by its parent
+//     group (GroupNode::Subgroups; top-level groups by the engine's shaped root), so GroupNode* and
+//     ShapedRef stay valid until the engine drops the group, and dropping a group frees its
+//     subtree.
 
 struct GroupNode;
 
@@ -104,6 +107,9 @@ struct GroupNode
     // per level (the parent's Identity plus this Key's ValueKey::ToObjectLookupKey form:
     // "value:<typed value>", "object:<IUnknown address>" or "null:"). Survives a regroup, unlike
     // GroupNode*, so the expansion model keys group expansion on it. Empty on the shaped root.
+    // Starts with the reserved "g|" marker (decided, V3), written once for a top-level group and
+    // inherited by nested ones, so it doubles as the visible list's header key without colliding
+    // with record identities.
     // Not the header text (that is StringifyGroupKey, culture-formatted and possibly colliding).
     winrt::hstring Identity;
 
@@ -115,11 +121,20 @@ struct GroupNode
     uint16_t GroupLevel{ 0 };
 
     // Subgroups (all IsGroup()), or, for a bottom-level group, top-level records after filter and
-    // sort. Never mixed. On the shaped root: top-level groups, or top-level records when ungrouped.
+    // sort. Never mixed. Non-owning and in display order: the subgroups are owned by Subgroups. On the shaped root: top-level groups, or top-level records when ungrouped.
     // Bottom-level is not stored or tested here: the engine knows it from its group-level count
     // (GroupLevel + 1 == count; the shaped root when count == 0). Children cannot tell an empty
     // group's kind.
     std::vector<ShapedRef> Children;
+
+    // Owns this group's subgroups (decided: parent owns subgroups). Same set as the group entries
+    // of Children, in no particular order; empty for a bottom-level group. Destroying a group
+    // destroys its subtree. The engine reports a group's removal (IShapedEditSink::OnRemoving)
+    // before erasing it here; a surgical prune moves it to the engine's retired list, destroyed
+    // after the delta is published (V4). A rebuild builds the new set aside, swaps it in under the root,
+    // calls OnRebuilt (the flattener drops every old ShapedRef), and only then destroys the old
+    // set.
+    std::vector<std::unique_ptr<GroupNode>> Subgroups;
 
     // Bucketed top-level records after filter (descendants not counted, as v1 GroupItemCount).
     // Children.size() for a bottom-level group; the sum over subgroups otherwise.
@@ -128,9 +143,15 @@ struct GroupNode
     // Rows this node's own subtree contributes below it (headers and data rows), given its own and
     // its descendants' expansion and ignoring its ancestors': 0 when collapsed. Lets the flattener
     // find a node's visible position and splice only the affected range. Maintained by the
-    // flattener.
+    // flattener; valid only while the node is shown, undefined while hidden (F2).
     // For source parents the same count lives in the record's ShapeState slot.
     uint32_t VisibleDescendantCount{ 0 };
+
+    // The header's row value in the visible list (decided, V2): an internal GroupHeaderRow token
+    // holding Key and Identity only, created on the first VisibleRows::GetAt and reused after, so
+    // the header's DataContext is stable. Null until then and on the shaped root. Mutable: the
+    // visible list fills it from a const read.
+    mutable winrt::Windows::Foundation::IInspectable HeaderRow{ nullptr };
 
     bool IsRoot() const noexcept { return Parent == nullptr; }
 };

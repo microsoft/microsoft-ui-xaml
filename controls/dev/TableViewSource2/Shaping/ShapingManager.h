@@ -5,11 +5,13 @@
 
 #include <memory>
 #include <optional>
+#include <unordered_map>
 
 #include "pch.h"
 #include "common.h"
 
 #include "Source/SourceTable.h"
+#include "Engine/ShapingEngine.h"
 #include "Spec/ShapeSpec.h"
 #include "Spec/ShapeDelegates.h"
 #include "Spec/PathEvaluator.h"
@@ -87,7 +89,8 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Teardown: Flattener::Clear() first (it holds raw record pointers), then SourceTable::Clear()
+    // Teardown: Flattener::Clear() first (it holds raw record pointers), then ShapingEngine::Clear()
+    // (drops groups and tracked keys), then SourceTable::Clear()
     // (detach, handlers nulled, records destroyed), ShapeDelegates::Clear(),
     // PathEvaluator::Clear(), m_view.reset(). Must run on the UI thread while m_trackerOwner is alive. Idempotent.
     void Clear();
@@ -95,7 +98,27 @@ public:
 private:
     // SourceTable callbacks.
     void OnSourceChanged(SourceChange const& change);
+    // Live shaping (decided, E7: coalesce per dispatcher turn). Never shapes inside the app's
+    // setter: adds (record, propertyName) to m_liveDirty (a second, different name for the same
+    // record becomes the empty name, "re-read everything") and posts one DrainLiveChanges.
+    // record == nullptr (a dropped off-thread change) sets m_liveAllDirty instead. Ignored when no
+    // verb is active.
     void OnItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
+
+    // Posts DrainLiveChanges to the current DispatcherQueue unless one is already posted
+    // (m_liveDrainPosted). The callback holds a weak reference to the owning TableViewSource2 and
+    // returns if it is gone.
+    void PostLiveDrain();
+
+    // The posted callback, and the synchronous flush before a verb. One commit, one Publish:
+    //   m_liveAllDirty           -> Reapply();
+    //   one entry                -> m_engine.ApplyItemChanged (surgical);
+    //   more than c_bulkThreshold -> m_engine.ApplyItemsChanged (re-read dirty records only, then
+    //                               one structural rebuild and a stable Reset).
+    // Empties m_liveDirty and clears both flags first. Skipped while the owner holds live shaping
+    // (an in-progress cell edit, v1 m_liveShapingHold); the hook is declared with #18 (owner
+    // notifications), and releasing the hold calls PostLiveDrain.
+    void DrainLiveChanges();
 
     // Applies Diff(applied, desired); then Retain()s the delegates and paths both specs use.
     void ApplyDesiredSpec();
@@ -106,8 +129,14 @@ private:
     void Reapply();
 
     // The single path from a FlatDelta to consumers, whatever produced it (an engine commit,
-    // Expand / Collapse, or an expand-all verb): splices to the visible list's CollectionChanged,
-    // then RowStateEdits to the owner. An empty delta raises nothing.
+    // Expand / Collapse, or an expand-all verb). Decided (V4):
+    //   - Surgical: for each splice in order, Flattener::ApplySplice, then the visible list raises
+    //     a ranged Remove (if RemovedCount) and a ranged Add (if Inserted is non-empty). Item lists
+    //     are size-only placeholders; Replace is not used.
+    //   - Bulk: one Reset.
+    //   - Then RowStateEdits to the owner, then ShapingEngine::ReleaseRetired.
+    // Runs inside the #19 apply scope: a handler that calls a verb throws. An empty delta raises
+    // nothing.
     void Publish(FlatDelta const& delta);
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
@@ -132,14 +161,43 @@ private:
     // Re-entrancy guard: a verb or Refresh while an apply runs throws.
     bool m_isApplying{ false };
 
-    // Group expansion, keyed by GroupNode::Identity. Read and written by m_flattener; pruned on
-    // regroup (RetainOnly with the new groups' identities before the old tree is released), on a
-    // dropped group (Erase) and cleared when GroupBy gets a new selector. Declared before
-    // m_flattener, which references it.
+    // Source change during an apply (decided, #19: freeze, then one deferred Reset). Every engine
+    // entry point and its Publish run inside one scope: m_isApplying, SourceTable::BeginFreeze,
+    // Flattener::BeginCommit, the engine call, EndCommit -> Publish, EndFreeze. A source change
+    // raised by app code inside that scope (a predicate, comparer or key selector, or a binding,
+    // converter or element factory during Publish) is not applied to the table, so records and
+    // links never change under the engine or the flattener. When EndFreeze reports a pending
+    // change, ResyncSource runs SourceTable::Refresh(), whose Reset goes to Reapply().
+    // It runs synchronously once; it is posted instead when the scope ended by an exception, or
+    // when the resync's own apply was disturbed again (one resync per turn, so an app that mutates
+    // on every callback cannot loop).
+    void ResyncSource(bool post);
+    bool m_resyncPosted{ false };
+
+    // Live-shaping changes pending for the next DrainLiveChanges (E7). Keys are raw record
+    // pointers: OnSourceChanged erases removed records and their descendants before the engine
+    // applies the change, a SourceTable Reset or any Reapply empties the map (it re-reads every
+    // record), and a verb drains it synchronously before applying, so a verb never runs over stale
+    // keys. Clear() empties it, so a drain posted before teardown is a no-op.
+    std::unordered_map<SourceRecord*, winrt::hstring> m_liveDirty;
+    bool m_liveAllDirty{ false };     // ItemChanged(nullptr): the drain does Reapply()
+    bool m_liveDrainPosted{ false };
+
+    // Group expansion, keyed by GroupNode::Identity. Read and written by m_flattener. Pruned
+    // (decided, F4): after every engine commit whose delta is IsReset, this calls
+    // RetainOnly(m_engine.GroupsByIdentity()); the flattener Erases on a surgical group drop;
+    // cleared when GroupBy gets a new selector. Declared before m_flattener, which references it.
     GroupExpansion m_groupExpansion;
 
     // Shaped tree -> visible list; the engine's IShapedEditSink.
     Flattener m_flattener{ m_groupExpansion };
 
-    // Not declared yet: the engine (Phase 4) and the visible list (the WinRT collection).
+    // Source tree + applied spec -> shaped tree. Declared after m_flattener, its IShapedEditSink.
+    // Every entry point is bracketed here: m_flattener.BeginCommit(), the engine call,
+    // EndCommit() -> Publish, with a scope that calls AbortCommit() if the call throws.
+    // Built in the constructor's member-init list after m_sourceTable is created (it binds to
+    // *m_sourceTable), with m_trackerOwner, m_delegates, m_paths and m_flattener.
+    ShapingEngine m_engine;
+
+    // Not declared yet: the visible list (the WinRT collection).
 };

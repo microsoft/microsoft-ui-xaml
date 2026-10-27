@@ -25,7 +25,8 @@ struct SourceRecord;
 // record when shaping starts, a pointer hop and null check on every access, and a rule for when to
 // free. Revisit if the fixed size grows.
 //
-// Written only by the engine (and the flattener for VisibleDescendantCount and Expanded). The source tree links
+// Written only by the engine (and the flattener for VisibleDescendantCount, Expanded and
+// OverlayCollapsed). The source tree links
 // (SourceRecord::Parent/Children) are never written here. UI-thread affine.
 enum class ShapeFlags : uint8_t
 {
@@ -34,21 +35,28 @@ enum class ShapeFlags : uint8_t
     // Passes every filter predicate (true when no filter is active).
     PassesFilter = 0x1,
 
-    // Some source descendant passes the filter, so this record is shown as an ancestor of a match
-    // even if it fails the filter itself.
-    HasPassingDescendant = 0x2,
+    // There is no "has a passing descendant" flag (decided, E8): a record failing the filter stays
+    // in the shaped tree as an ancestor of a match exactly when its ShapedChildren is non-empty.
+    // See ShapingEngine::InShapedParent.
 
     // ShapedChildren is current. When clear, the shaped children are SourceRecord::Children as-is
     // (no filter and no sort active). Never depends on expansion: shaping is eager.
-    ChildrenShaped = 0x4,
+    ChildrenShaped = 0x2,
 
     // SortKeys is current for the applied spec. Cleared on ItemChanged and on a ShapeDelta::Sort.
-    SortKeysValid = 0x8,
+    SortKeysValid = 0x4,
 
     // The record's rows are expanded. Records keep their own expansion (they survive reshapes and,
     // through Reconcile, Resets); only groups need the expansion model. Default clear (collapsed).
     // Written and read by the flattener (Expand/Collapse, ExpandAllRows/CollapseAllRows).
-    Expanded = 0x10,
+    Expanded = 0x8,
+
+    // Filter auto-expand overlay (decided, F5). A context row (in the shaped tree, failing the
+    // filter) shows expanded unless this is set; toggling a context row writes only this bit, so
+    // Expanded keeps the user's state for when the filter is cleared. Written by the flattener;
+    // cleared by the engine's full Filter stage (filter added, changed or removed, Reapply), not by
+    // a live re-read or a surgical edit. Ignored on a record that passes the filter.
+    OverlayCollapsed = 0x10,
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeFlags);
 
@@ -57,9 +65,9 @@ struct ShapeState
     ShapeFlags Flags{ ShapeFlags::None };
 
     // Rows this record's own subtree contributes below it, given its own and its descendants'
-    // expansion and ignoring its ancestors': 0 when collapsed. A hidden record keeps its count, so
-    // re-showing it costs one read. Toggling updates counts only up to the first collapsed
-    // ancestor. Same meaning as GroupNode::VisibleDescendantCount. Maintained by the flattener.
+    // expansion and ignoring its ancestors': 0 when collapsed. Valid only while the record is
+    // shown (every ancestor expanded); undefined while hidden and recomputed when revealed (F2).
+    // Same meaning as GroupNode::VisibleDescendantCount. Maintained by the flattener.
     uint32_t VisibleDescendantCount{ 0 };
 
     // One cached key per SortSpec of the applied spec, in level order. Path and Key levels hold the
@@ -72,6 +80,8 @@ struct ShapeState
     // Source children after filter and sort, in shaped order. Non-owning. Valid only while
     // ChildrenShaped is set. Built eagerly for every parent whenever a filter or sort is active,
     // expanded or not, so expansion never runs app code and every edit has a shaped index.
+    // Holds exactly the children for which ShapingEngine::InShapedParent is true, so under a
+    // filter a non-empty list is what keeps a failing record visible as an ancestor of a match.
     std::vector<SourceRecord*> ShapedChildren;
 
     // Top-level records only: the GroupNode holding this record in the shaped tree, i.e. its shaped

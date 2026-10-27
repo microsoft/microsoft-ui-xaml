@@ -16,12 +16,17 @@
 // Shaped tree -> visible list (declarations only). See
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Change pipeline".
 //
-// Keeps the visible list (m_rows) and every node's VisibleDescendantCount in step with the shaped
+// Keeps the visible list (m_rows) and every shown node's VisibleDescendantCount in step with the shaped
 // tree, and turns each unit of work into one FlatDelta:
 //   - Bulk:      OnRebuilt -> Rebuild -> IsReset.
 //   - Surgical:  BeginCommit -> OnRemoving / OnInserted per ShapedEdit -> EndCommit.
 //   - Expansion: Expand / Collapse (one node) or ExpandAll* / CollapseAll* (Reset). Never involves
 //                the engine: shaped children are built eagerly, so no app code runs.
+//
+// m_rows holds the published state (decided, V4). A surgical unit of work records its splices,
+// each with the rows it inserts, and leaves m_rows alone; ShapingManager::Publish applies them one
+// at a time (ApplySplice), raising each event right after, so Size / GetAt match every event.
+// Rebuild writes m_rows directly: a Reset is one event, so nothing sees a partial state.
 //
 // Expansion state: records use ShapeFlags::Expanded on their ShapeState; groups use the group
 // expansion model, keyed by GroupNode::Identity (owned by ShapingManager, written here).
@@ -44,20 +49,32 @@ public:
 
     uint32_t Size() const noexcept;
 
-    // The node shown at index (group header or data row). O(1).
+    // The node shown at index (group header or data row). O(1). Reads m_rows, the published
+    // state: during a commit, and between the events of a delta being published, it lags the tree.
     ShapedRef GetAt(uint32_t index) const;
 
     // Index of node in the visible list, or nullopt when an ancestor is collapsed. Public for
     // identity -> index (TryGetIndexForIdentity, IKeyIndexMapping::IndexFromKey), restore after a
     // Reset, and UIA / keyboard parent navigation. The visible list maps nullopt to -1 for WinRT.
+    // Derived from the tree's counts, so it answers for the final state; the visible list checks
+    // m_rows when it is called mid-publish (V4).
     std::optional<uint32_t> IndexOf(ShapedRef node) const;
 
     // Number of active GroupBy levels (0 when ungrouped). Feeds ShapedDepth().
     uint16_t GroupLevelCount() const noexcept;
 
+    // ---- Publishing (V4) --------------------------------------------------------------------
+
+    // Applies one splice of the delta being published to m_rows: erases RemovedCount rows at
+    // Index, then inserts Inserted. ShapingManager::Publish calls it once per splice, in order,
+    // each followed by that splice's event. Never dereferences a removed ref. Asserts that no
+    // commit is open.
+    void ApplySplice(FlatSplice const& splice);
+
     // ---- Bulk -------------------------------------------------------------------------------
 
-    // Depth-first pass from root's children: fills m_rows and every VisibleDescendantCount.
+    // Depth-first pass from root's children over shown nodes only: fills m_rows and their
+    // VisibleDescendantCount, O(visible). Hidden counts are left undefined (F2).
     void Rebuild(GroupNode& root, uint16_t groupLevelCount);
 
     // ---- Surgical (IShapedEditSink) ---------------------------------------------------------
@@ -66,39 +83,48 @@ public:
     void BeginCommit();
 
     // 1. span = 1 + VisibleDescendantCount(node).
-    // 2. If shown: erase m_rows[i, i + span) at i = FlatIndexOf(node); append {i, span, 0}.
+    // 2. If shown: append {i, span, {}} at i = FlatIndexOf(node). m_rows is not touched (V4).
     // 3. Subtract span up the ancestors, stopping at the first collapsed one.
-    // 4. Mark the parent (ItemCount up the group chain for a record; Expandable if its shaped child
-    //    count is now 0).
+    // 4. Mark the parent (ItemCount up the group chain for a top-level record or a group, never
+    //    the shaped root; Expandable if its shaped child count is now 0).
     // 5. Drop the node and its subtree from m_dirty.
+    // 6. A GroupNode: GroupExpansion::Erase for it and every group in its subtree (F4).
     void OnRemoving(ShapedEdit const& e) override;
 
-    // Mirror of OnRemoving: compute the node's count from its subtree, insert its rows and append
-    // {i, 0, span} if shown, add span up the ancestors, mark the parent (ItemCount; Expandable if
-    // its count is now 1).
+    // Mirror of OnRemoving: if shown, compute the node's count through its expanded descendants
+    // (F2), collect its shown rows in display order and append {i, 0, rows}; if hidden, no count
+    // work; add span up the ancestors, mark the parent (ItemCount; Expandable if its count is now 1).
     void OnInserted(ShapedEdit const& e) override;
 
-    // Rebuild, then the pending delta becomes IsReset.
+    // Rebuild, clear m_dirty (its nodes may be destroyed after this call), and the pending delta
+    // becomes IsReset. A commit either rebuilds or edits, never both.
     void OnRebuilt(GroupNode& root, uint16_t groupLevelCount) override;
 
     // Resolves m_dirty: one RowStateEdit {FlatIndexOf(node), fields} per dirty node still shown.
     // Returns m_pending.
     FlatDelta EndCommit();
 
+    // Closes a unit of work whose engine compute phase threw: clears m_pending, m_dirty and
+    // m_inCommit. Called by ShapingManager's commit scope. Nothing to undo: the engine calls the
+    // sink only from its write phase, which cannot throw, so no splice was recorded.
+    void AbortCommit() noexcept;
+
     // ---- Expansion --------------------------------------------------------------------------
     //
     // Each call is its own unit of work: it brackets itself with BeginCommit / EndCommit and returns
     // the delta, which ShapingManager::Publish sends out exactly like an engine commit. Asserts if
-    // called while a commit is open, so expansion never merges into an engine delta.
+    // called while a commit is open, so expansion never merges into an engine delta. The manager
+    // runs the call and its Publish inside the #19 apply scope (source frozen).
 
-    // Sets the flag (ShapeFlags::Expanded, or the group model), recomputes the node's count from
-    // its direct children (O(children): hidden children keep their counts), splices the rows in at
-    // FlatIndexOf(node) + 1 if shown, propagates up, marks the node Expanded if shown. No-op if
-    // already expanded or not expandable. Hidden node (an ancestor collapsed): flag and count only,
-    // empty delta; the rows appear when the ancestor expands. Revealing a node is a separate verb.
+    // Sets the flag (ShapeFlags::Expanded, or the group model). If shown: recomputes the node's
+    // count recursively through its expanded descendants (O(revealed rows), F2), records a splice
+    // of the revealed rows at FlatIndexOf(node) + 1, propagates up, marks the node Expanded. No-op if already
+    // expanded or not expandable. Hidden node (an ancestor collapsed): flag only, empty delta; the
+    // rows appear when the ancestor expands. Revealing a node is a separate verb.
     FlatDelta Expand(ShapedRef node);
 
-    // Reverse of Expand: the count drops to 0 and the rows are erased.
+    // Reverse of Expand: the count drops to 0 and a removal splice is recorded.
+    // Expand / Collapse of a context row (F5) write only ShapeFlags::OverlayCollapsed.
     FlatDelta Collapse(ShapedRef node);
 
     // One verb per axis: opening every group and expanding every tree node are different user
@@ -106,7 +132,8 @@ public:
     // Groups: move the group model's baseline (GroupExpansion::SetAll). O(1) + Rebuild.
     FlatDelta ExpandAllGroups();
     FlatDelta CollapseAllGroups();
-    // Records: set or clear ShapeFlags::Expanded on every record. O(n) + Rebuild.
+    // Records: set or clear ShapeFlags::Expanded on every record, and clear or set
+    // OverlayCollapsed on every context row (F5). O(n) + Rebuild.
     FlatDelta ExpandAllRows();
     FlatDelta CollapseAllRows();
 
@@ -121,7 +148,11 @@ private:
     // Every ancestor of node is expanded. O(depth). Private: outside callers use IndexOf.
     bool IsShown(ShapedRef node) const;
 
+    // Effective expansion. Group: GroupExpansion. Record: context row (fails the filter, in the
+    // shaped tree) ? !OverlayCollapsed : Expanded (F5).
     bool IsExpanded(ShapedRef node) const;
+    // Writes the bit IsExpanded reads: OverlayCollapsed for a context row, else Expanded or the
+    // group model.
     void SetExpanded(ShapedRef node, bool expanded);
 
     // The node's own VisibleDescendantCount (GroupNode or the record's ShapeState).
@@ -145,6 +176,7 @@ private:
     //     UIA only). Storing it would make every insert or remove rewrite all later siblings;
     //   - owning group: header -> GroupNode::Parent; record -> top-level ancestor -> Shape.Group;
     //   - shaped depth, TableViewRowInfo: built on demand by the row metadata provider.
+    // The published state (V4): written only by Rebuild, ApplySplice and Clear.
     std::vector<ShapedRef> m_rows;
 
     // The delta being built by the current unit of work.

@@ -26,7 +26,10 @@ enum class ShapedEditKind : uint8_t
     Remove,
 };
 
-// One structural change to the shaped tree. The node moves with its whole subtree.
+// One structural change to the shaped tree. The node moves with its whole subtree. One edit per
+// change, at the topmost node that enters or leaves (decided, F1): a record whose insert makes a
+// failing ancestor (E8) or a new group chain (E9) appear is reported as one Insert of that
+// ancestor or topmost group; removal mirrors it.
 //   - Move (reparent, live re-sort, group-key change): a Remove at the old location, then an
 //     Insert at the new one.
 //   - Group created or dropped: an Insert or Remove of the GroupNode (with its subtree).

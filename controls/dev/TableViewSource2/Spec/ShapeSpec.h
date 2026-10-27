@@ -127,10 +127,10 @@ struct ShapeSpec
 enum class ShapeDelta : uint8_t
 {
     None = 0x0,
-    Sort = 0x1,         // re-sort rows within each group
-    GroupOrder = 0x2,   // reorder groups only
-    GroupKey = 0x4,     // re-bucket into groups, then re-sort
-    Filter = 0x8,       // re-filter from SourceTable (no source re-read), then regroup and re-sort
+    Sort = 0x1,         // re-read changed sort levels, re-sort rows within each parent / group
+    GroupOrder = 0x2,   // re-sort groups only
+    GroupKey = 0x4,     // re-read group keys, re-bucket; row order within groups reuses SortKeys
+    Filter = 0x8,       // re-test every record (no source re-read); reuse cached keys where valid
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeDelta);
 

@@ -94,8 +94,9 @@ enum class HierarchyKind : uint8_t
 //       3. Removed records are destroyed (revoking any live PropertyChangedToken).
 //     Root-collection and child-collection notifications go through the same path, re-entrancy
 //     gate and queue. Multi-item notifications are split into single-item changes or reported as
-//     one Reset. A change raised re-entrantly from inside the handler is queued and delivered after
-//     the handler returns; several queued changes may be coalesced into one Reset.
+//     one Reset. A change raised re-entrantly while frozen (decided, #19: inside a SourceChanged
+//     dispatch or a Freeze scope) is not applied: the table is left as it was, m_pendingReset is
+//     set, and the source is re-read with one Reset when the outermost dispatch or freeze ends.
 //     OPEN: under ParentBy one source change can produce several tree changes (an insert adopts
 //     existing orphans, each a Move from top level to the new item). Deliver them as an ordered
 //     batch in one dispatch, or collapse to Reset above a threshold.
@@ -190,6 +191,18 @@ public:
 
     void SetSourceChangedHandler(SourceChangedHandler handler);
     void SetItemChangedHandler(ItemChangedHandler handler);
+
+    // ---- Freeze (decided, #19) --------------------------------------------------------------
+    // While frozen (depth > 0), root- and child-collection notifications are not applied: records,
+    // links and lookups stay exactly as they were, so the coordinator can iterate TopLevel() and
+    // Children and hold raw SourceRecord pointers across app code. A notification only sets
+    // m_pendingReset (the source has diverged). Nests. ShapingManager freezes around every engine
+    // call and Publish. EndFreeze returns true when the outermost freeze ends with m_pendingReset
+    // set; the caller then calls Refresh() (re-read, one Reset), now or posted. Item
+    // PropertyChanged is not affected (it never mutates the table).
+    void BeginFreeze() noexcept;
+    [[nodiscard]] bool EndFreeze() noexcept;
+    bool IsFrozen() const noexcept;
 
     // ---- Source tree (hierarchy) ------------------------------------------------------------
 
@@ -297,7 +310,8 @@ private:
         std::vector<SourceRecord*> const& added,
         std::vector<SourceRecordPtr>& removed);
 
-    // Deliver queued re-entrant changes after the outermost dispatch returns.
+    // After the outermost dispatch returns (and no freeze is held): if a notification arrived
+    // while frozen, Refresh() (one Reset).
     void DrainPendingChanges();
 
     void AddToLookups(SourceRecord* record);
@@ -448,11 +462,12 @@ private:
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;
 
-    // Re-entrancy guard. While true, source notifications are applied to the table but their
-    // SourceChanged is deferred; m_pendingReset collapses deferred changes into one Reset.
+    // Re-entrancy (decided, #19). The table is frozen while m_isDispatching or m_freezeDepth > 0:
+    // a source notification is not applied and only sets m_pendingReset, which a Refresh() (one
+    // Reset) clears. Nothing is removed while frozen, so no removed records are held.
     bool m_isDispatching{ false };
+    uint32_t m_freezeDepth{ 0 };
     bool m_pendingReset{ false };
-    std::vector<SourceRecordPtr> m_pendingRemoved;
 
     // Set when an incremental notification was rejected (null/duplicate). The source has diverged
     // from m_records, so every later notification is handled as a Reset until validation succeeds.
