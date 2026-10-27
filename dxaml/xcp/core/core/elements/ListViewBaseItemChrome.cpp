@@ -2456,12 +2456,13 @@ _Check_return_ HRESULT CListViewBaseItemChrome::MeasureNewStyle(
         IFC_RETURN(m_multiSelectCheckBoxRectangle->Measure(totalSize));
     }
 
+    const bool selected =
+        m_visualStates.HasState(CommonStates2_Selected) ||
+        m_visualStates.HasState(CommonStates2_PressedSelected) ||
+        m_visualStates.HasState(CommonStates2_PointerOverSelected);
+
     // Selection can survive a popup disconnect even when its indicator does not.
-    if (!m_selectionIndicatorRectangle &&
-        (m_visualStates.HasState(CommonStates2_Selected) ||
-         m_visualStates.HasState(CommonStates2_PressedSelected) ||
-         m_visualStates.HasState(CommonStates2_PointerOverSelected)) &&
-        IsInSelectionIndicatorMode())
+    if (!m_selectionIndicatorRectangle && selected && IsInSelectionIndicatorMode())
     {
         IFC_RETURN(EnsureSelectionIndicator());
     }
@@ -3752,15 +3753,6 @@ _Check_return_ HRESULT CListViewBaseItemChrome::RemoveSelectionIndicator()
 #endif // LVBIC_DEBUG
 
     ASSERT(m_selectionIndicatorRectangle);
-
-    // A hide animation can complete after the selected item reconnects.
-    if ((m_visualStates.HasState(CommonStates2_Selected) ||
-         m_visualStates.HasState(CommonStates2_PressedSelected) ||
-         m_visualStates.HasState(CommonStates2_PointerOverSelected)) &&
-        IsInSelectionIndicatorMode())
-    {
-        return S_OK;
-    }
 
     IFC_RETURN(RemoveChild(m_selectionIndicatorRectangle));
 
