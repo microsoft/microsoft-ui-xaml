@@ -14,7 +14,7 @@ public sealed class EventCounter : IEventProcessor
     public long XamlEvents => Interlocked.Read(ref xamlEvents);
     public long ProfilerEvents => Interlocked.Read(ref profilerEvents);
 
-    public void Process(ProfilerEvent profilerEvent)
+    public void Process(long sequence, ProfilerEvent profilerEvent)
     {
         if (profilerEvent.Provider == XamlProvider.Xaml)
         {

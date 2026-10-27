@@ -8,6 +8,7 @@ using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Processing;
+using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Engine.Target;
 
@@ -22,7 +23,8 @@ string Arguments,
 string PayloadDirectory,
 bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
-long? ExpectedCreationTimeFileTime = null);
+long? ExpectedCreationTimeFileTime = null,
+    string? SessionDirectory = null);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -42,9 +44,12 @@ public sealed class TargetConnection : IAsyncDisposable
     private LiveEtwSource? etw;
     private EventPipeline? pipeline;
     private EventCounter? eventCounter;
+    private SessionWriter? recorder;
     private bool etwFromProcessStart;
     private long etwListeningSinceFileTime;
+    private long etwListeningSinceQpc;
     private string? etwStartError;
+    private string? recordingStartError;
     private Task? lifetime;
     private Task? disposal;
     private volatile string state = "Preparing";
@@ -85,6 +90,10 @@ public sealed class TargetConnection : IAsyncDisposable
             return failure is null ? null : $"ETW reading stopped: {failure.Message}";
         }
     }
+    // The session file the events are saved to; null when this connection does not record. Kept after cleanup.
+    public RecordingStatus? Recording => recorder?.Status;
+    public string? RecordingError => recordingStartError ??
+        (recorder?.Failure is { } failure ? $"Recording stopped: {failure.Message}" : null);
     private TargetConnection(IProgress<ConnectionProgress>? progress) => this.progress = progress;
 
     public static void ValidateOptions(TargetConnectionOptions options)
@@ -181,7 +190,7 @@ public sealed class TargetConnection : IAsyncDisposable
             throw new InvalidOperationException("The selected PID was reused. Refresh the process list and select again.");
         }
 
-        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables);
+        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory);
         var payloads = ConnectionPayloadCatalog.Resolve(options.PayloadDirectory, InjectorResolver.GetArchitecture(Scope.Process));
         Report("Waiting for XAML", $"PID {target.Id}; waiting for the WinUI diagnostics endpoint.");
         string? runtime = null;
@@ -267,6 +276,7 @@ History);
         try
         {
             etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
+            etwListeningSinceQpc = Stopwatch.GetTimestamp();
             etw = LiveEtwSource.StartBeforeLaunch(launchExecutables);
         }
         catch (Exception error)
@@ -275,7 +285,8 @@ History);
         }
     }
 
-    private void StartEtw(Process process, long? creationTimeFileTime, IReadOnlyList<string> launchExecutables)
+    private void StartEtw(Process process, long? creationTimeFileTime, IReadOnlyList<string> launchExecutables,
+        string? sessionDirectory)
     {
         if (etwStartError is not null)
         {
@@ -283,14 +294,10 @@ History);
         }
 
         var counter = new EventCounter();
-        var events = new EventPipeline([counter]);
+        EventPipeline? events = null;
         try
         {
-            if (etw is null)
-            {
-                etw = LiveEtwSource.Start(process.Id, events.Post);
-            }
-            else
+            if (etw is not null)
             {
                 // The session has listened since before the launch. It saw this process's start only if the process
                 // was created after that (activating a packaged app that is already running returns the existing
@@ -305,7 +312,17 @@ History);
                         ? $"Launched {process.ProcessName}, expected {string.Join(", ", launchExecutables)}; ETW starts now."
                         : "The activated application was already running; ETW starts now.");
                 }
+            }
 
+            recorder = CreateRecorder(sessionDirectory, process, creationTimeFileTime);
+            events = new EventPipeline(recorder is null ? [counter] : [counter, recorder]);
+            if (etw is null)
+            {
+                etwListeningSinceQpc = Stopwatch.GetTimestamp();
+                etw = LiveEtwSource.Start(process.Id, events.Post);
+            }
+            else
+            {
                 etw.StartReading(process.Id, events.Post);
             }
 
@@ -314,11 +331,37 @@ History);
         }
         catch (Exception error)
         {
-            events.Dispose();
+            events?.Dispose();
+            recorder?.Close("ETW could not start");
+            recorder = null;
             etw?.Dispose();
             etw = null;
             etwFromProcessStart = false;
             SetEtwStartError(error);
+        }
+    }
+
+    // One file per connection; time zero of the recording is when ETW started listening.
+    private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
+    {
+        if (directory is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var path = Path.Combine(directory, $"{DateTime.Now:yyyyMMdd-HHmmss}-{process.ProcessName}-{process.Id}.sqlite");
+            return SessionWriter.Create(path, new(process.Id, process.ProcessName,
+                creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null, Stopwatch.Frequency,
+                etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
+                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection));
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            recordingStartError = $"The session file could not be created: {error.Message}";
+            Trace.TraceWarning(error.ToString());
+            return null;
         }
     }
 
@@ -456,9 +499,20 @@ History);
         var errors = new List<Exception>();
         try
         {
-            // Stop the source before the pipeline so nothing is posted to a finished queue.
+            // Stop the source before the pipeline so nothing is posted to a finished queue, and the pipeline before the
+            // recorder so every processed event is stored.
             etw?.Dispose();
             pipeline?.Dispose();
+        }
+        catch (Exception error)
+        {
+            errors.Add(error);
+        }
+
+        try
+        {
+            recorder?.Close(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected",
+                etw?.EventsLost, pipeline?.DroppedEvents);
         }
         catch (Exception error)
         {

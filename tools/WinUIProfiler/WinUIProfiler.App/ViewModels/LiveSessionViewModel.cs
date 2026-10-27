@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using WinUIProfiler.Engine.Metrics;
+using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.App.ViewModels;
@@ -15,6 +16,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private string errorMessage = "";
     private EtwStatus? finalEtw;
     private string? finalEtwError;
+    private RecordingStatus? finalRecording;
+    private string? finalRecordingError;
     public event PropertyChangedEventHandler? PropertyChanged;
     public MetricHistory? History
     {
@@ -33,6 +36,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     // Like the metric history, the last ETW counts stay visible after the connection ends.
     public EtwStatus? Etw => connection?.Etw ?? finalEtw;
     public string? EtwError => connection?.EtwError ?? finalEtwError;
+    public RecordingStatus? Recording => connection?.Recording ?? finalRecording;
+    public string? RecordingError => connection?.RecordingError ?? finalRecordingError;
 
     public Task ConnectAsync(TargetConnectionOptions options, IProgress<ConnectionProgress> progress)
     {
@@ -54,6 +59,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         History = null;
         finalEtw = null;
         finalEtwError = null;
+        finalRecording = null;
+        finalRecordingError = null;
         using var cancellation = new CancellationTokenSource();
         operation = cancellation;
         Notify();
@@ -139,6 +146,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         errorMessage = owned.Failure?.Message ?? failure?.Message ?? "";
         finalEtw = owned.Etw;
         finalEtwError = owned.EtwError;
+        finalRecording = owned.Recording;
+        finalRecordingError = owned.RecordingError;
         connection = null;
         Notify();
     }
@@ -192,6 +201,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
 
             finalEtw = owned.Etw;
             finalEtwError = owned.EtwError;
+            finalRecording = owned.Recording;
+            finalRecordingError = owned.RecordingError;
             connection = null;
             IsBusy = false;
             Notify();
