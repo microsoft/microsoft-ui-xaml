@@ -31,7 +31,7 @@ internal static class SessionSchema
             DroppedByProfiler INTEGER);
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
-            Provider TEXT NOT NULL,
+            Provider TEXT NOT NULL,    -- Xaml, XamlProfiler or DxgKrnl (XamlProvider)
             Name TEXT NOT NULL,
             Opcode INTEGER NOT NULL,
             FieldNames TEXT NOT NULL,  -- comma-separated names; the Nth names the Nth value in Events.Payload

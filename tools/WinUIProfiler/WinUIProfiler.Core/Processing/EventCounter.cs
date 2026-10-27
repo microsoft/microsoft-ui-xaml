@@ -10,19 +10,25 @@ public sealed class EventCounter : IEventProcessor
 {
     private long xamlEvents;
     private long profilerEvents;
+    private long gpuMemoryEvents;
 
     public long XamlEvents => Interlocked.Read(ref xamlEvents);
     public long ProfilerEvents => Interlocked.Read(ref profilerEvents);
+    public long GpuMemoryEvents => Interlocked.Read(ref gpuMemoryEvents);
 
     public void Process(long sequence, ProfilerEvent profilerEvent)
     {
-        if (profilerEvent.Provider == XamlProvider.Xaml)
+        switch (profilerEvent.Provider)
         {
-            Interlocked.Increment(ref xamlEvents);
-        }
-        else
-        {
-            Interlocked.Increment(ref profilerEvents);
+            case XamlProvider.Xaml:
+                Interlocked.Increment(ref xamlEvents);
+                break;
+            case XamlProvider.XamlProfiler:
+                Interlocked.Increment(ref profilerEvents);
+                break;
+            case XamlProvider.DxgKrnl:
+                Interlocked.Increment(ref gpuMemoryEvents);
+                break;
         }
     }
 }

@@ -22,18 +22,21 @@ internal static class CliApplication
           WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other]]
 
-          processes  Counts XAML events per process, to find the target PID.
-          summary    Counts one process's XAML events by provider and event.
-          dump       Prints one process's XAML events in order. --name keeps events whose
+          processes  Counts the events of each process with XAML events, to find the target PID.
+                     A session file shows its process.
+          summary    Counts one process's events by provider and event.
+          dump       Prints one process's events in order. --name keeps events whose
                      name contains <text>; --max limits the output (default 1000, 0 = all).
-          record     Writes one process's XAML events from a trace to a new session file, as the
+          record     Writes one process's events from a trace to a new session file, as the
                      app does while connected. --limit-mb is the size limit (default 500).
           objects    Lists the UI elements in a session file. --type and --name filter them.
           timeline   Prints the events that mention one UI element, marking the field that holds it.
           frames     Lists the frames per UI thread. --frame prints one frame's events, optionally
                      of one bucket.
 
-          A trace needs --pid; a session file holds one process.
+          Events are the XAML TraceLogging events and the kernel's GPU memory usage and
+          budget events (DxgKrnl) of the process. A trace needs --pid; a session file
+          holds one process.
         """;
 
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
@@ -210,16 +213,21 @@ internal static class CliApplication
         {
             if (!counts.TryGetValue(profilerEvent.ProcessId, out var perProvider))
             {
-                counts[profilerEvent.ProcessId] = perProvider = new long[2];
+                counts[profilerEvent.ProcessId] = perProvider = new long[Enum.GetValues<XamlProvider>().Length];
             }
 
             perProvider[(int)profilerEvent.Provider]++;
         }, cancellationToken);
 
-        output.WriteLine($"{"PID",8} {"Events",10} {"XAML",10} {"XAML-Prof",10}");
-        foreach (var (processId, perProvider) in counts.OrderByDescending(entry => entry.Value.Sum()))
+        // In a trace, every process that uses the GPU has GPU memory events; only those with XAML events are listed.
+        output.WriteLine($"{"PID",8} {"Events",10} {"XAML",10} {"XAML-Prof",10} {"DxgKrnl",10}");
+        foreach (var (processId, perProvider) in counts
+            .Where(entry => options.IsSessionFile ||
+                entry.Value[(int)XamlProvider.Xaml] + entry.Value[(int)XamlProvider.XamlProfiler] > 0)
+            .OrderByDescending(entry => entry.Value.Sum()))
         {
-            output.WriteLine($"{processId,8} {perProvider.Sum(),10} {perProvider[0],10} {perProvider[1],10}");
+            output.WriteLine($"{processId,8} {perProvider.Sum(),10} {perProvider[(int)XamlProvider.Xaml],10} " +
+                $"{perProvider[(int)XamlProvider.XamlProfiler],10} {perProvider[(int)XamlProvider.DxgKrnl],10}");
         }
 
         output.WriteLine($"{(options.IsSessionFile ? "Session" : "Trace")}: {result.Duration.TotalSeconds:F1} s, {result.EventsLost} events lost.");
@@ -248,12 +256,12 @@ internal static class CliApplication
 
         if (result.EventsDelivered == 0)
         {
-            output.WriteLine($"No XAML events from process {options.ProcessId}. Run 'processes' to list the PIDs.");
+            output.WriteLine($"No events from process {options.ProcessId}. Run 'processes' to list the PIDs.");
             return 0;
         }
 
         var seconds = Math.Max(0.001, (last - first) / 1000);
-        output.WriteLine($"Process {processId}: {result.EventsDelivered} XAML events over {seconds:F1} s " +
+        output.WriteLine($"Process {processId}: {result.EventsDelivered} events over {seconds:F1} s " +
             $"({result.EventsDelivered / seconds:F0}/s); {result.EventsLost} events lost in the {(options.IsSessionFile ? "session" : "trace")}.");
         output.WriteLine();
         foreach (var (key, count) in counts.OrderByDescending(entry => entry.Value))
@@ -403,7 +411,12 @@ internal static class CliApplication
         }
     }
 
-    private static string ShortName(XamlProvider provider) => provider == XamlProvider.Xaml ? "XAML" : "XAML-Prof";
+    private static string ShortName(XamlProvider provider) => provider switch
+    {
+        XamlProvider.Xaml => "XAML",
+        XamlProvider.XamlProfiler => "XAML-Prof",
+        _ => "DxgKrnl"
+    };
 
     private static string ShortType(string? type) => type is null ? "?" : type[(type.LastIndexOf('.') + 1)..];
 

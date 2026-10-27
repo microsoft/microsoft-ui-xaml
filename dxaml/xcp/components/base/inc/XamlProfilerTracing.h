@@ -321,17 +321,9 @@ public:
         uint32_t, Role,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    // Driver-reported memory usage for this process on the D3D device's adapter. This is the
-    // closest available view of committed GPU memory, but allocations owned by DWM/DComp may
-    // be charged outside the app process.
-    DEFINE_TRACELOGGING_EVENT_PARAM6(GpuMemorySnapshot,
-        uint64_t, LocalCurrentUsage,
-        uint64_t, LocalBudget,
-        bool,     LocalAvailable,
-        uint64_t, NonLocalCurrentUsage,
-        uint64_t, NonLocalBudget,
-        bool,     NonLocalAvailable,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    // No GPU memory usage event: the DirectX kernel traces each process's usage and budget on every
+    // change (Microsoft-Windows-DxgKrnl VidMmProcessUsageChange and VidMmProcessBudgetChange), with
+    // the same values IDXGIAdapter3::QueryVideoMemoryInfo returns.
 };
 
 // Element-scoped events are TraceLogging events on the existing Microsoft-Windows-XAML provider

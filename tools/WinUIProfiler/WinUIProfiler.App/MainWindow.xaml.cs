@@ -28,6 +28,7 @@ public sealed partial class MainWindow : Window
     private volatile bool closing;
     private bool closeAllowed;
     private bool refreshing;
+    private bool initialSnapshotPending;
     private CancellationTokenSource? snapshotOperation;
     private SavedTreeSnapshot? snapshot;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
@@ -148,7 +149,7 @@ public sealed partial class MainWindow : Window
         refreshing = true;
         try
         {
-            var idle = model.CanConnect;
+            var idle = model.CanConnect && !initialSnapshotPending && snapshotOperation is null;
             foreach (var control in new Control[]
             {
                 Mode,
@@ -166,7 +167,8 @@ public sealed partial class MainWindow : Window
             ConnectButton.IsEnabled = idle;
             DisconnectButton.IsEnabled = model.CanDisconnect && !closing;
             DisconnectButton.Content = Text(model.IsBusy ? "CancelConnection" : "DisconnectLabel");
-            SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy && snapshotOperation is null;
+            SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy &&
+                !initialSnapshotPending && snapshotOperation is null;
             SnapshotStatus.Text = snapshotOperation is not null ? Text("SnapshotCapturing") :
                 snapshot is null ? "" : Format("SnapshotSavedFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Path);
             AutomationProperties.SetItemStatus(SnapshotStatus, JsonSerializer.Serialize(new
@@ -213,7 +215,7 @@ JsonSerializer.Serialize(new
             {
                 SetLine(EtwSummary,
                     etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
-                        etw.XamlEvents, etw.ProfilerEvents, etw.LostEvents, etw.DroppedEvents),
+                        etw.XamlEvents, etw.ProfilerEvents, etw.GpuMemoryEvents, etw.LostEvents, etw.DroppedEvents),
                     etw is null ? null : Format("EtwDetailsFormat", Text(etw.FromProcessStart ? "EtwCoverageProcessStart" : "EtwCoverageConnection")));
             }
 
@@ -268,6 +270,8 @@ JsonSerializer.Serialize(new
 
     private async void Connect_Click(object sender, RoutedEventArgs args)
     {
+        if (!model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
+        initialSnapshotPending = true;
         snapshot = null;
         var generation = ++connectionGeneration;
         try
@@ -296,6 +300,10 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 model.ReportProgress(value);
             }));
             await model.ConnectAsync(options, progress);
+            if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
+            {
+                await TakeSnapshotAsync(isInitial: true);
+            }
         }
         catch (Exception error)
         {
@@ -303,7 +311,9 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
         }
         finally
         {
+            initialSnapshotPending = false;
             connectionGeneration++;
+            Refresh();
         }
     }
 
@@ -315,9 +325,11 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
         await model.DisconnectAsync();
     }
 
-    private async void Snapshot_Click(object sender, RoutedEventArgs args)
+    private async void Snapshot_Click(object sender, RoutedEventArgs args) => await TakeSnapshotAsync();
+
+    private async Task TakeSnapshotAsync(bool isInitial = false)
     {
-        if (snapshotOperation is not null) return;
+        if (closing || snapshotOperation is not null || !isInitial && initialSnapshotPending) return;
         using var cancellation = new CancellationTokenSource();
         snapshotOperation = cancellation;
         Refresh();
@@ -327,10 +339,14 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
             var process = connection.Scope?.Process ?? throw new InvalidOperationException(Text("SnapshotRequiresConnection"));
             var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "WinUIProfiler", "Snapshots");
-            snapshot = await connection.TakeSnapshotAsync(directory, cancellation.Token);
+            var saved = await connection.TakeSnapshotAsync(directory, cancellation.Token);
+            cancellation.Token.ThrowIfCancellationRequested();
+            if (closing || !ReferenceEquals(connection, model.Connection)) return;
+            snapshot = saved;
             var savedAt = DateTimeOffset.UtcNow;
             Snapshots.Insert(0, new(snapshot, process, savedAt,
-                Format("SnapshotHistoryTitleFormat", savedAt.ToLocalTime().ToString("G", CultureInfo.CurrentCulture),
+                Format(isInitial ? "InitialSnapshotHistoryTitleFormat" : "SnapshotHistoryTitleFormat",
+                    savedAt.ToLocalTime().ToString("G", CultureInfo.CurrentCulture),
                     process.ProcessId),
                 Format("SnapshotHistorySummaryFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Correlations)));
         }
