@@ -2854,10 +2854,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass Thumb
+    unsealed runtimeclass Thumb
         : Microsoft.UI.Xaml.Controls.Control
     {
-        Thumb();
+        [method_name("CreateInstance")] Thumb();
         Boolean IsDragging{ get; };
         event Microsoft.UI.Xaml.Controls.Primitives.DragStartedEventHandler DragStarted;
         event Microsoft.UI.Xaml.Controls.Primitives.DragDeltaEventHandler DragDelta;
