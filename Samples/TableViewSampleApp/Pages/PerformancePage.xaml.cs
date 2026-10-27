@@ -103,8 +103,8 @@ public sealed partial class PerformancePage : SamplePageBase
 
     private string ColumnSetLabel => _templateColumns ? "template columns" : "text columns";
 
-    // <snippet>
     // ---- Timed runs ---------------------------------------------------------------------
+    // <snippet>
 
     // Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
     // window ends when the new rows are laid out rather than when the C# call returns.

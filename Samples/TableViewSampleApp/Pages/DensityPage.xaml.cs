@@ -32,31 +32,36 @@ public sealed partial class DensityPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
+        PeopleTable.SelectionChanged += OnSelectionChanged;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Density ------------------------------------------------------------------------
+    // <snippet>
 
     private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the
-        // Standard default.
-        if (PeopleTable is null || DensitySelector is null || !IsLoaded)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the // snippet:skip
+        // Standard default. // snippet:skip
+        if (PeopleTable is null || DensitySelector is null || !IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));
         PeopleTable.Density = density;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Density -> {0}", density));
     }
 
+    // </snippet>
     // ---- Actions ------------------------------------------------------------------------
+    // <snippet>
 
     private void OnMoveGroupClick(object sender, RoutedEventArgs e)
     {

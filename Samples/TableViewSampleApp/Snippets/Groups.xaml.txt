@@ -1,3 +1,5 @@
+<!-- A StackPanel, not a Grid with a * column: the header content is sized to its desired width,
+     so a * column would collapse the count and the chip to zero. -->
 <DataTemplate x:Key="CustomGroupHeaderTemplate" x:DataType="tv:TableViewGroupInfo">
     <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6" VerticalAlignment="Center">
         <TextBlock
@@ -30,29 +32,10 @@
     SelectionMode="Single"
     EmptyTemplate="{StaticResource GroupsEmptyTemplate}">
     <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-    <tv:TableViewTemplateColumn
-        Header="Photo"
-        Width="56"
-        CellTemplate="{StaticResource AvatarTemplate}"
-        CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn
-        Header="Department"
-        Width="150"
-        CellTemplate="{StaticResource DeptComboTemplate}"
-        SortMemberPath="Department"/>
-    <tv:TableViewTemplateColumn
-        Header="Active"
-        Width="84"
-        CellTemplate="{StaticResource ActiveCheckBoxTemplate}"
-        SortMemberPath="IsActive"/>
-    <tv:TableViewTemplateColumn
-        Header="Join date"
-        Width="170"
-        CellTemplate="{StaticResource JoinCalendarDateTemplate}"
-        SortMemberPath="JoinDate"/>
-    <tv:TableViewTextColumn
-        Header="Salary"
-        Width="100"
-        Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTextColumn Header="Salary" Width="100" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
 </tv:TableView>

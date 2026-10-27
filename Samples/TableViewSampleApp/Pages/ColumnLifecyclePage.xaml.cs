@@ -40,23 +40,30 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         // Index = the Tag of the matching visibility checkbox.
         _canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
         // </snippet>
-        PopulateColumnPicker();
+        PopulateColumnPicker(); // snippet:skip
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Column visibility: TableViewColumn.Visibility --------------------------------------
+    // <snippet>
 
     private void OnColumnToggle(object sender, RoutedEventArgs e)
     {
-        // IsChecked="True" raises Checked during InitializeComponent, before _canonical is
-        // assigned; the XAML already matches. Reset also writes IsChecked and reports itself.
-        if (_canonical is null || IsBulkUpdating || sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
+        // IsChecked="True" raises Checked during InitializeComponent, before _canonical is // snippet:skip
+        // assigned; the XAML already matches. Reset also writes IsChecked and reports itself. // snippet:skip
+        if (_canonical is null || IsBulkUpdating) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
+
+        if (sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
         {
             return;
         }
@@ -67,7 +74,9 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} the {1} column", visible ? "Showed" : "Hid", column.Header));
     }
 
+    // </snippet>
     // ---- Column order: move, add, remove in TableView.Columns ------------------------------
+    // <snippet>
 
     private void OnMoveLeftClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(-1);
 
@@ -94,7 +103,7 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         PeopleTable.Columns.RemoveAt(from);
         PeopleTable.Columns.Insert(to, column);
 
-        PopulateColumnPicker();
+        PopulateColumnPicker(); // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from position {1} to {2}", column.Header, from + 1, to + 1));
     }
 
@@ -118,7 +127,7 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
             HeaderToolTip = "Date the person joined. Editable; sorts by the JoinDate value.",
         });
 
-        PopulateColumnPicker();
+        PopulateColumnPicker(); // snippet:skip
         SetLastAction("Added the Join date column at the end");
     }
 
@@ -131,10 +140,11 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         }
 
         PeopleTable.Columns.Remove(joinDate);
-        PopulateColumnPicker();
+        PopulateColumnPicker(); // snippet:skip
         SetLastAction("Removed the Join date column");
     }
 
+    // </snippet>
     private void OnResetClick(object sender, RoutedEventArgs e)
     {
         for (var target = 0; target < _canonical.Length; target++)
@@ -158,10 +168,9 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
             }
         }
 
-        PopulateColumnPicker();
+        PopulateColumnPicker(); // snippet:skip
         SetLastAction("Restored the starting column order and visibility");
     }
-    // </snippet>
 
     private TableViewColumn? FindColumn(string header) =>
         PeopleTable.Columns.FirstOrDefault(c => string.Equals(c.Header?.ToString(), header, StringComparison.Ordinal));

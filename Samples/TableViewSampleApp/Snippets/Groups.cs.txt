@@ -2,6 +2,10 @@ Source = TableViewSource.From(People);     // created once; reshaped in place, n
 InitializeComponent();
 ApplyGroupHeaderTemplate();
 
+public ObservableCollection<Person> People { get; }
+
+public TableViewSource Source { get; }
+
 private void OnHeaderTemplateChanged(object sender, SelectionChangedEventArgs e)
 {
     ApplyGroupHeaderTemplate();
@@ -105,6 +109,8 @@ private void OnAddPersonClick(object sender, RoutedEventArgs e)
 }
 
 // From Controls\ShapingOptions.xaml.cs
+// Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
+// so under both each root keeps its subtree.
 private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
 {
     if (relation is not null && IsHierarchicalMode(mode))

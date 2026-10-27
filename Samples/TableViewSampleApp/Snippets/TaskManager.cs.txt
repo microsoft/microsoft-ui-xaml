@@ -13,12 +13,18 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
 
 _timer.Tick += OnTimerTick;
 
+public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
+
+public TableViewSource Source { get; }
+
 private void OnTimerTick(object? sender, object e)
 {
     RandomizeAll();
     ResortIfMetricSorted();
 }
 
+// PropertyChanged updates a cell but does not move its row; re-declaring the active sort with the
+// column's own path re-sorts the source and keeps the column's sort indicator.
 private void ResortIfMetricSorted()
 {
     var column = SampleShaping.ActiveSortColumn(ProcessTable);

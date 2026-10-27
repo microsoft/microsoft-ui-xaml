@@ -72,19 +72,21 @@ public sealed partial class GroupsPage : SamplePageBase
             });
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; }
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Group header template ----------------------------------------------------------
+    // <snippet>
 
     private void OnHeaderTemplateChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (PeopleTable is null || HeaderTemplateSelector is null)
-        {
-            return;
-        }
+        if (PeopleTable is null || HeaderTemplateSelector is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyGroupHeaderTemplate();
         if (IsLoaded) // snippet:skip
@@ -100,11 +102,18 @@ public sealed partial class GroupsPage : SamplePageBase
             : null;
     }
 
+    // </snippet>
     // ---- In-cell edits --------------------------------------------------------------------
+    // <snippet>
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not Person person || IsBulkUpdating)
+        if (IsBulkUpdating) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
+
+        if (sender is not Person person)
         {
             return;
         }

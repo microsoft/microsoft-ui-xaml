@@ -40,6 +40,7 @@ public sealed partial class FilterPage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
         InitializeComponent();
+        FilterTable.SelectionChanged += OnTableSelectionChanged; // snippet:skip
         BuildColumns();
         ApplyFilter();
         // </snippet>
@@ -47,12 +48,14 @@ public sealed partial class FilterPage : SamplePageBase
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(60);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Columns, built in code from the shared templates -------------------------------------
+    // <snippet>
 
     private void BuildColumns()
     {
@@ -103,7 +106,9 @@ public sealed partial class FilterPage : SamplePageBase
     // Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
     private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
 
+    // </snippet>
     // ---- Filtering --------------------------------------------------------------------------
+    // <snippet>
 
     private string Query => SearchBox?.Text?.Trim() ?? string.Empty;
 
@@ -113,10 +118,10 @@ public sealed partial class FilterPage : SamplePageBase
 
     private void OnSearchChanged(object sender, TextChangedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         // TextChanged is raised after the Text setter returns. When an action set the text, it // snippet:skip
         // has already applied the filter and reported it. // snippet:skip
@@ -134,19 +139,16 @@ public sealed partial class FilterPage : SamplePageBase
 
     private void OnActiveToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyFilter();
         SetLastAction((ActiveOnly ? "Active only -> On: " : "Active only -> Off: ") + ShownSummary());
     }
 
-    /// <summary>
-    /// Hands the combined predicate to the one source, or clears it. The ItemsSource is never
-    /// reassigned, so selection, scroll offset and group state survive.
-    /// </summary>
+    // ItemsSource is never reassigned, so selection, scroll offset and group state survive.
     private void ApplyFilter()
     {
         var query = Query;
@@ -180,23 +182,24 @@ public sealed partial class FilterPage : SamplePageBase
     private static bool Contains(string? value, string query) =>
         value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);
 
-    /// <summary>
-    /// An in-cell edit changes the Person but does not re-run the predicate (or the group key
-    /// selector), so apply both again once the edit has settled.
-    /// </summary>
+    // An edit does not re-run the predicate or the group key selector; apply both once it settles.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not Person person || IsBulkUpdating || _refreshQueued
-            || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
+        if (IsBulkUpdating || _refreshQueued) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
+
+        if (sender is not Person person || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
         {
             return;
         }
 
         var property = e.PropertyName;
-        _refreshQueued = true;
+        _refreshQueued = true; // snippet:skip
         EnqueueIfLoaded(() =>
         {
-            _refreshQueued = false;
+            _refreshQueued = false; // snippet:skip
             ReapplyIfGroupedOn(property);
             ApplyFilter();
             SetLastAction(string.Format(

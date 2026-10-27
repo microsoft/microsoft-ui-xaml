@@ -41,118 +41,23 @@
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
     IsReadOnly="False"
-    EmptyTemplate="{StaticResource SortEmptyTemplate}"
-    Sorted="OnTableSorted"
-    SelectionChanged="OnTeamsSelectionChanged">
+    EmptyTemplate="{StaticResource SortEmptyTemplate}">
     <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
-    <tv:TableViewTemplateColumn
-        x:Name="CrestColumn"
-        Header="Crest"
-        Width="74"
-        CellTemplate="{StaticResource CrestTemplate}"
-        SortMemberPath="Team"/>
-    <tv:TableViewTextColumn
-        x:Name="GroupColumn"
-        Header="Group"
-        Width="74"
-        IsReadOnly="True"
-        Binding="{Binding Group}"/>
-    <tv:TableViewTextColumn
-        x:Name="TeamColumn"
-        Header="Team"
-        Width="*"
-        MinWidth="140"
-        Binding="{Binding Team, Mode=TwoWay}"/>
-    <tv:TableViewTemplateColumn
-        x:Name="CountryColumn"
-        Header="Country"
-        Width="130"
-        CellTemplate="{StaticResource CountryChipTemplate}"
-        SortMemberPath="Country"/>
-    <tv:TableViewTemplateColumn
-        x:Name="SeededColumn"
-        Header="Seeded"
-        Width="84"
-        CellTemplate="{StaticResource SeededCheckBoxTemplate}"
-        SortMemberPath="IsSeeded"/>
-    <tv:TableViewTemplateColumn
-        x:Name="NextMatchColumn"
-        Header="Next match"
-        Width="170"
-        CellTemplate="{StaticResource NextMatchDateTemplate}"
-        SortMemberPath="NextMatchDate"/>
-    <tv:TableViewTemplateColumn
-        x:Name="KickoffColumn"
-        Header="Kickoff"
-        Width="150"
-        CellTemplate="{StaticResource KickoffTimeTemplate}"
-        SortMemberPath="Kickoff"/>
-    <tv:TableViewTextColumn
-        x:Name="NextMatchTextColumn"
-        Header="Next match (text)"
-        Width="110"
-        Visibility="Collapsed"
-        IsReadOnly="True"
-        Binding="{Binding NextMatchText}"/>
-    <tv:TableViewTextColumn
-        x:Name="PlayedColumn"
-        Header="P"
-        Width="48"
-        IsReadOnly="True"
-        CanSort="False"
-        Binding="{Binding Played}"/>
-    <tv:TableViewTextColumn
-        x:Name="WinsColumn"
-        Header="W"
-        Width="48"
-        IsReadOnly="True"
-        HeaderToolTip="Won"
-        Binding="{Binding Wins}"/>
-    <tv:TableViewTextColumn
-        x:Name="DrawsColumn"
-        Header="D"
-        Width="48"
-        IsReadOnly="True"
-        HeaderToolTip="Drawn"
-        Binding="{Binding Draws}"/>
-    <tv:TableViewTextColumn
-        x:Name="LossesColumn"
-        Header="L"
-        Width="48"
-        IsReadOnly="True"
-        HeaderToolTip="Lost"
-        Binding="{Binding Losses}"/>
-    <tv:TableViewTextColumn
-        x:Name="GoalsForColumn"
-        Header="GF"
-        Width="52"
-        IsReadOnly="True"
-        HeaderToolTip="Goals for"
-        Binding="{Binding GoalsFor}"/>
-    <tv:TableViewTextColumn
-        x:Name="GoalsAgainstColumn"
-        Header="GA"
-        Width="52"
-        IsReadOnly="True"
-        HeaderToolTip="Goals against"
-        Binding="{Binding GoalsAgainst}"/>
-    <tv:TableViewTextColumn
-        x:Name="GoalDifferenceColumn"
-        Header="GD"
-        Width="52"
-        IsReadOnly="True"
-        Binding="{Binding GoalDifference}"/>
-    <tv:TableViewTextColumn
-        x:Name="PointsColumn"
-        Header="Pts"
-        Width="52"
-        IsReadOnly="True"
-        Binding="{Binding Points}"/>
-    <tv:TableViewTemplateColumn
-        x:Name="StandingColumn"
-        Header="Standing"
-        Width="130"
-        IsReadOnly="True"
-        CellTemplate="{StaticResource StandingChipTemplate}"
-        SortMemberPath="Points"/>
+    <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="74" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team"/>
+    <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="74" IsReadOnly="True" Binding="{Binding Group}"/>
+    <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="140" Binding="{Binding Team, Mode=TwoWay}"/>
+    <tv:TableViewTemplateColumn x:Name="CountryColumn" Header="Country" Width="130" CellTemplate="{StaticResource CountryChipTemplate}" SortMemberPath="Country"/>
+    <tv:TableViewTemplateColumn x:Name="SeededColumn" Header="Seeded" Width="84" CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded"/>
+    <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="170" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate"/>
+    <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="150" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff"/>
+    <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="110" Visibility="Collapsed" IsReadOnly="True" Binding="{Binding NextMatchText}"/>
+    <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="48" IsReadOnly="True" CanSort="False" Binding="{Binding Played}"/>
+    <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="48" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
+    <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="48" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
+    <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="48" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>
+    <tv:TableViewTextColumn x:Name="GoalsForColumn" Header="GF" Width="52" IsReadOnly="True" HeaderToolTip="Goals for" Binding="{Binding GoalsFor}"/>
+    <tv:TableViewTextColumn x:Name="GoalsAgainstColumn" Header="GA" Width="52" IsReadOnly="True" HeaderToolTip="Goals against" Binding="{Binding GoalsAgainst}"/>
+    <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD" Width="52" IsReadOnly="True" Binding="{Binding GoalDifference}"/>
+    <tv:TableViewTextColumn x:Name="PointsColumn" Header="Pts" Width="52" IsReadOnly="True" Binding="{Binding Points}"/>
+    <tv:TableViewTemplateColumn x:Name="StandingColumn" Header="Standing" Width="130" IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points"/>
 </tv:TableView>

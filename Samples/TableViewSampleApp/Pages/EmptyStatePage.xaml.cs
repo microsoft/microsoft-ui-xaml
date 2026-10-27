@@ -37,21 +37,23 @@ public sealed partial class EmptyStatePage : SamplePageBase
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Data source: the ways of being empty ---------------------------------------------
+    // <snippet>
 
     private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0"), and when an action moves the
-        // selector to match what it just did; neither is a user choice.
-        if (!IsLoaded || _syncingDataSource)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="0"), and when an action moves the // snippet:skip
+        // selector to match what it just did; neither is a user choice. // snippet:skip
+        if (!IsLoaded || _syncingDataSource) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var tag = SampleShaping.SelectedTag(DataSourceSelector, "Populated");
         ApplyDataSource(tag);

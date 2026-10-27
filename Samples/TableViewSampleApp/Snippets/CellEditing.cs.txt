@@ -6,15 +6,19 @@ foreach (var person in People)
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
+
 private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
 {
-    PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
+    PeopleTable.IsReadOnly = ((ToggleSwitch)sender).IsOn;
 }
 
 // Raised before the control writes and validates, for a commit and a cancel alike.
 private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
 {
-    EnqueueIfLoaded(() =>
+    DispatcherQueue.TryEnqueue(() =>
     {
         if (!PeopleTable.IsEditing)
         {
@@ -28,7 +32,7 @@ private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs
 private void OnCommitSettled()
 {
     var error = _rejectedError;
-    if (!PeopleTable.IsEditing)
+    if (error is null || !PeopleTable.IsEditing)
     {
         return;
     }
@@ -46,14 +50,15 @@ private void OnCommitSettled()
     ValidationInfoBar.IsOpen = true;
 }
 
+// Buttons that call these need AllowFocusOnInteraction="False", or the click takes focus from the editor first.
 private void OnCommitEditClick(object sender, RoutedEventArgs e)
 {
-    PeopleTable.CommitEdit();
+    var committed = PeopleTable.CommitEdit();
 }
 
 private void OnCancelEditClick(object sender, RoutedEventArgs e)
 {
-    PeopleTable.CancelEdit();
+    var cancelled = PeopleTable.CancelEdit();
 }
 
 // From Models\Person.cs

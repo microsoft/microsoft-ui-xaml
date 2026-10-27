@@ -1,6 +1,10 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+public ObservableCollection<Person> People { get; } = RtlPersonData.Mixed();
+
+public TableViewSource Source { get; }
+
 private void OnRtlToggled(object sender, RoutedEventArgs e)
 {
     PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
@@ -8,7 +12,7 @@ private void OnRtlToggled(object sender, RoutedEventArgs e)
 
 private void OnFilterChanged(object sender, TextChangedEventArgs e)
 {
-    ApplyFilter();
+    var term = ApplyFilter();
 }
 
 private string ApplyFilter()
@@ -36,9 +40,9 @@ private static bool Matches(Person person, string term) =>
 
 private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
 {
-    var direction = FirstNameColumn.SortDirection == TableViewSortDirection.Ascending
-        ? TableViewSortDirection.Descending
-        : TableViewSortDirection.Ascending;
+    var direction = FirstNameColumn.SortDirection == SortDirection.Ascending
+        ? SortDirection.Descending
+        : SortDirection.Ascending;
     PeopleTable.SortByColumn(FirstNameColumn, direction);
 }
 

@@ -159,26 +159,34 @@ and checked in. A named region (`// <snippet Groups Sort>`) in a shared or data 
 those pages' snippets; a snippet whose first line is `// snippet:manual` opts out. Keep each region
 readable on its own (declare, or take as parameters, the values it uses).
 
-A snippet shows what an app needs to reproduce the demo, as the WinUI Gallery samples do: the
-TableView, the columns and templates it demonstrates, the data setup and the API calls. Keep page
-plumbing outside the regions, or mark a line `// snippet:skip` (`// snippet:as <code>` shows a
-simpler line instead). The tool also trims mechanically:
+A snippet shows what an app needs to reproduce the demo, as the WinUI Gallery samples do, and it is
+the page's real code: get there by choosing the region boundaries and keeping the page source clean,
+not by having the tool rewrite it.
 
-- C#: statements that narrate or drive the page UI (`SetLastAction*`, `RefreshReadouts`,
-  `Announce*`, `Populate*`, `Seed*`, `Set*Enabled`, `*Button.IsEnabled =`, `*Text.Text =`) are
-  elided; guards that only protect the page (`Control is null`, `!IsLoaded`, `IsBulkUpdating`,
-  `_ready`, `_syncing*`, `_suppress*`) are dropped with the comment above them; `using
-  (BeginBulkUpdate())` is unwrapped; an `if` or method left empty, and a variable only narration
-  read, are removed; `// ----` banners, `///` doc comments, comment blocks of three or more lines and
-  sentence-style `HeaderToolTip` strings are dropped.
-- XAML: `AutomationProperties.AutomationId` and `HelpText` are dropped (keep
-  `AutomationProperties.Name`); page layout on a region's top-level elements (`Grid.*`, `Margin`,
-  `Min/MaxHeight`, alignment, `IsEnabled`) is dropped; sentence-style `HeaderToolTip` /
-  `ToolTipService.ToolTip` narration is dropped; `{StaticResource Col*}` widths become literals;
-  comments longer than two lines are dropped; a `TableView` start tag gets one attribute per line.
+- XAML: only the TableView, its columns and the templates and resources it uses. Regions inside
+  `SamplePresenter.Options` (the rail) are ignored, so option controls never appear; keep other
+  page chrome (headings, focus sentinels, side lists) outside the regions. Write column widths as
+  literals (the `ColWidth*` tokens in `App.xaml` are for columns built in code), give the
+  `TableView` start tag one attribute per line, and subscribe readout-only handlers in code
+  rather than in the snippet's XAML.
+- C#: the data setup and the TableView calls, including the calls the rail's controls make, as
+  small handlers. Keep page plumbing (readouts, pickers, button enabling, guards for controls not
+  created yet) outside the regions, or mark the line `// snippet:skip`. A non-obvious app
+  requirement gets a one-line comment next to the call, for example on `CommitEdit`:
+  `// Buttons that call these need AllowFocusOnInteraction="False", ...`.
+- Comments inside a region: one or two lines on the non-obvious why; no `// ----` banners or
+  `///` blocks.
 
-So write region comments as one or two lines on the non-obvious why; anything longer disappears.
+The tool rewrites only what a page cannot avoid, and nothing else:
 
+- XAML: `AutomationProperties.AutomationId` is removed (pages keep it for the UIA scripts); the
+  page-layout attributes of a region's top-level elements are removed (`Grid.Row`, `Grid.Column`,
+  `Grid.RowSpan`, `Grid.ColumnSpan`, `Margin`, `MinHeight`, `MaxHeight`, `HorizontalAlignment`,
+  `VerticalAlignment`); a `HeaderToolTip` or `ToolTipService.ToolTip` whose literal value is a
+  sentence is removed, because it narrates the sample page to its user.
+- C#: whole `SetLastAction*(...)` and `RefreshReadouts();` statements are elided, and a block left
+  empty shows `// …`.
+- Regions are dedented and joined with a blank line.
 After editing a region, run `powershell -File tools\Update-Snippets.ps1` and commit the result. The
 build's `_CheckTableViewSnippets` target runs it with `-Check` only when a source, snippet or the
 tool changed, never in design-time builds; a stale or missing snippet is a warning (`TVSNIP001`)

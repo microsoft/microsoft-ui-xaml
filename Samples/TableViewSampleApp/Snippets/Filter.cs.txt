@@ -3,6 +3,10 @@ InitializeComponent();
 BuildColumns();
 ApplyFilter();
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(60);
+
+public TableViewSource Source { get; }
+
 private void BuildColumns()
 {
     var resources = Application.Current.Resources;
@@ -13,6 +17,7 @@ private void BuildColumns()
         CellTemplate = (DataTemplate)resources["AvatarTemplate"],
         CanSort = false,
         Width = Token("ColWidthAvatar"),
+        HeaderToolTip = "PersonPicture: the photo when the person has one, otherwise their initials.",
     });
     FilterTable.Columns.Add(new TableViewTextColumn
     {
@@ -28,6 +33,7 @@ private void BuildColumns()
         CellTemplate = (DataTemplate)resources["DepartmentChipTemplate"],
         SortMemberPath = nameof(Person.Department),
         Width = Token("ColWidthChip"),
+        HeaderToolTip = "Read-only chip. The query matches on it.",
     });
     FilterTable.Columns.Add(new TableViewTemplateColumn
     {
@@ -35,6 +41,7 @@ private void BuildColumns()
         CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
         SortMemberPath = nameof(Person.Role),
         Width = Token("ColWidthLongName"),
+        HeaderToolTip = "Editable free text. The query matches on it, so retyping a role can push the row out of the filtered view.",
     });
     FilterTable.Columns.Add(new TableViewTemplateColumn
     {
@@ -42,6 +49,7 @@ private void BuildColumns()
         CellTemplate = (DataTemplate)resources["ActiveCheckBoxTemplate"],
         SortMemberPath = nameof(Person.IsActive),
         Width = Token("ColWidthBoolean"),
+        HeaderToolTip = "Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view.",
     });
 }
 
@@ -64,6 +72,7 @@ private void OnActiveToggled(object sender, RoutedEventArgs e)
     ApplyFilter();
 }
 
+// ItemsSource is never reassigned, so selection, scroll offset and group state survive.
 private void ApplyFilter()
 {
     var query = Query;
@@ -95,19 +104,17 @@ private static bool Matches(Person person, string query, bool activeOnly)
 private static bool Contains(string? value, string query) =>
     value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);
 
+// An edit does not re-run the predicate or the group key selector; apply both once it settles.
 private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
 {
-    if (sender is not Person person || IsBulkUpdating || _refreshQueued
-        || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
+    if (sender is not Person person || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
     {
         return;
     }
 
     var property = e.PropertyName;
-    _refreshQueued = true;
     EnqueueIfLoaded(() =>
     {
-        _refreshQueued = false;
         ReapplyIfGroupedOn(property);
         ApplyFilter();
     });

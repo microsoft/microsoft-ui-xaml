@@ -1,15 +1,7 @@
 <!-- MaxWidth: the row area measures at infinite width, so uncapped text lays out as one wide line. -->
 <DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
-    <StackPanel
-        Spacing="4"
-        Padding="24"
-        MaxWidth="400"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center">
-        <TextBlock
-            Text="No rows match the filter"
-            Style="{ThemeResource SubtitleTextBlockStyle}"
-            HorizontalAlignment="Center"/>
+    <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
         <TextBlock
             Text="The underlying collection is untouched. Clear the filter to bring every row back."
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -25,23 +17,4 @@
     AutomationProperties.Name="Filtered people"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
-    SelectionChanged="OnTableSelectionChanged"
     EmptyTemplate="{StaticResource FilterEmptyTemplate}"/>
-
-<controls:RailSection
-    IsFirst="True"
-    Header="Filter"
-    Description="The query and the Active only switch combine into one predicate handed to TableViewSource.Filter. Clearing both calls ClearFilter(); the source instance never changes.">
-    <TextBox
-        x:Name="SearchBox"
-        Header="Query"
-        PlaceholderText="Search people"
-        TextChanged="OnSearchChanged"
-        HorizontalAlignment="Stretch"/>
-    <ToggleSwitch
-        x:Name="ActiveOnlyToggle"
-        Header="Active only"
-        OffContent="Off"
-        OnContent="On"
-        Toggled="OnActiveToggled"/>
-</controls:RailSection>

@@ -1,6 +1,10 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
+
+public TableViewSource Source { get; }
+
 private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
 {
     PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
@@ -21,32 +25,4 @@ private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
 private void SetColumnSeparatorsHidden(bool hidden)
 {
     PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
-}
-
-private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
-{
-    if (PeopleTable.SelectedItem is not Person person)
-    {
-        return;
-    }
-
-    // Moves along the key the Group key selector names, so the row always changes group
-    // when grouped (and the same value changes when flat).
-    var key = Shaping.SelectedKey;
-    switch (key)
-    {
-        case nameof(Person.Office):
-            person.Office = SampleShaping.Next(PersonData.Offices, person.Office);
-            break;
-        case nameof(Person.IsActive):
-            person.IsActive = !person.IsActive;
-            break;
-        default:
-            person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
-            break;
-    }
-
-    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
-    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
-    ReapplyIfGroupedOn(key);
 }

@@ -28,11 +28,11 @@
                 IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
-                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
-                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="140" Binding="{Binding Department}"/>
+                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140" Binding="{Binding Office}"/>
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

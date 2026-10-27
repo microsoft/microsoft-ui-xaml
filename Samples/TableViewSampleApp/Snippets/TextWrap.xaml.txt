@@ -1,3 +1,5 @@
+<!-- Wrapping, trimming and the line limit bind the page's static WrapState, so every realized cell,
+     recycled ones included, follows the rail. -->
 <DataTemplate x:Key="BioTemplate" x:DataType="models:Person">
     <TextBlock
         Text="{x:Bind Bio, Mode=OneWay}"
@@ -16,48 +18,8 @@
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
     IsReadOnly="True">
-    <tv:TableViewTemplateColumn
-        Header="Photo"
-        Width="56"
-        CellTemplate="{StaticResource AvatarTemplate}"
-        CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn
-        x:Name="BioColumn"
-        Header="Bio"
-        Width="360"
-        CellTemplate="{StaticResource BioTemplate}"
-        SortMemberPath="Bio"/>
-    <tv:TableViewTemplateColumn
-        Header="Department"
-        Width="130"
-        CellTemplate="{StaticResource DepartmentChipTemplate}"
-        SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
 </tv:TableView>
-
-<ToggleSwitch
-    x:Name="WrapToggle"
-    Header="TextWrapping"
-    IsOn="True"
-    OnContent="Wrap"
-    OffContent="NoWrap"
-    Toggled="OnWrapToggled"/>
-<!-- Disabled by ApplyTextState while TextWrapping is NoWrap, where MaxLines is a no-op. -->
-<ComboBox
-    x:Name="MaxLinesSelector"
-    Header="Max lines"
-    SelectedIndex="0"
-    SelectionChanged="OnMaxLinesChanged">
-    <ComboBoxItem Content="Unlimited" Tag="0"/>
-    <ComboBoxItem Content="2 lines + ellipsis" Tag="2"/>
-    <ComboBoxItem Content="3 lines + ellipsis" Tag="3"/>
-</ComboBox>
-
-<Slider
-    x:Name="BioWidthSlider"
-    AutomationProperties.Name="Bio column width"
-    Minimum="220"
-    Maximum="520"
-    StepFrequency="20"
-    Value="360"
-    ValueChanged="OnBioWidthChanged"/>

@@ -1,3 +1,7 @@
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
+
 // A header menu item has no row item to bind to, so each column gets its own menu and the
 // handler closes over that column.
 private void AttachHeaderMenus()
@@ -113,6 +117,15 @@ private void OnToggleActiveClick(object sender, RoutedEventArgs e)
     if (sender is FrameworkElement { DataContext: Person person })
     {
         person.IsActive = !person.IsActive;
+    }
+}
+
+// A group header menu item's DataContext is the header's TableViewGroupInfo.
+private void OnEmailGroupClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: TableViewGroupInfo group })
+    {
+        // …
     }
 }
 

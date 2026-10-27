@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -35,20 +34,22 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         TrackLifetime(() => TicketsTable.Sorted += OnTableSorted, () => TicketsTable.Sorted -= OnTableSorted);
     }
 
+    // <snippet>
     public ObservableCollection<SupportTicket> Tickets { get; } = TicketData.Queue();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Headers visibility -------------------------------------------------------------
+    // <snippet>
 
     private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0") before the table exists.
-        if (TicketsTable is null || HeadersText is null)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="0") before the table exists. // snippet:skip
+        if (TicketsTable is null || HeadersText is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
             ? TableViewHeadersVisibility.None
@@ -56,14 +57,16 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", TicketsTable.HeadersVisibility));
     }
 
+    // </snippet>
     // ---- Sorting from code --------------------------------------------------------------
+    // <snippet>
 
     private void OnSortByDueClick(object sender, RoutedEventArgs e)
     {
         // The header click does the same thing; SortByColumn is the only way while it is hidden.
-        var direction = DueColumn.SortDirection == TableViewSortDirection.Ascending
-            ? TableViewSortDirection.Descending
-            : TableViewSortDirection.Ascending;
+        var direction = DueColumn.SortDirection == SortDirection.Ascending
+            ? SortDirection.Descending
+            : SortDirection.Ascending;
         TicketsTable.SortByColumn(DueColumn, direction);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(Due, {0})", direction));
     }
@@ -79,7 +82,7 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
     // Raised for header clicks and for SortByColumn / ClearSort alike.
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
     {
-        SortText.Text = e.Column is null || e.Direction == TableViewSortDirection.None
+        SortText.Text = e.Column is null || e.Direction == SortDirection.None
             ? "None"
             : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
     }

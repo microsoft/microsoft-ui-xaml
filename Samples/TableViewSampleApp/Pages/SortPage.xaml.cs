@@ -16,7 +16,6 @@ using TableViewSampleApp.Models;
 // Microsoft.UI.Xaml.Controls.Tabular.SortDirection { None, Ascending, Descending }.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -26,7 +25,7 @@ public sealed partial class SortPage : SamplePageBase
 {
     private bool _isResorting;
     private TableViewColumn? _reportedSortColumn;
-    private TableViewSortDirection _reportedSortDirection;
+    private SortDirection _reportedSortDirection;
 
     // Edits made in the same dispatcher turn, re-applied together by one queued callback.
     private readonly HashSet<string> _pendingProperties = new();
@@ -41,6 +40,8 @@ public sealed partial class SortPage : SamplePageBase
         Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
+        TeamsTable.Sorted += OnTableSorted;
+        TeamsTable.SelectionChanged += OnTeamsSelectionChanged;
         InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key)));
         TrackItems(Teams, OnTeamChanged);
 
@@ -48,26 +49,28 @@ public sealed partial class SortPage : SamplePageBase
         TrackLifetime(_pendingProperties.Clear);
     }
 
+    // <snippet>
     public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Programmatic sort: one column at a time; a new sort replaces the previous one -------
+    // <snippet>
 
-    private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, TableViewSortDirection.Descending);
+    private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, SortDirection.Descending);
 
-    private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, TableViewSortDirection.Ascending);
+    private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, SortDirection.Ascending);
 
-    private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, TableViewSortDirection.Descending);
+    private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, SortDirection.Descending);
 
-    private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, TableViewSortDirection.Ascending);
+    private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, SortDirection.Ascending);
 
-    private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, TableViewSortDirection.Ascending);
+    private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, SortDirection.Ascending);
 
-    private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, TableViewSortDirection.Descending);
+    private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, SortDirection.Descending);
 
-    private void SortBy(TableViewColumn column, TableViewSortDirection direction)
+    private void SortBy(TableViewColumn column, SortDirection direction)
     {
         TeamsTable.SortByColumn(column, direction);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn({0}, {1})", ColumnLabel(column), direction));
@@ -110,13 +113,12 @@ public sealed partial class SortPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction));
     }
 
-    // <snippet>
-
     // ---- Re-sorting after a value change -----------------------------------------------------
     //
     // The control sorts when asked and when the collection changes. A PropertyChanged on the
     // sorted value does NOT re-position the row by itself, so the page applies the active sort
     // again whenever a value it depends on changes.
+    // <snippet>
 
     private bool ResortIfSortedOn(params string[] propertyNames)
     {
@@ -144,7 +146,12 @@ public sealed partial class SortPage : SamplePageBase
 
     private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not LeagueTeam team || IsBulkUpdating || e.PropertyName is null)
+        if (IsBulkUpdating) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
+
+        if (sender is not LeagueTeam team || e.PropertyName is null)
         {
             return;
         }
@@ -240,7 +247,6 @@ public sealed partial class SortPage : SamplePageBase
             resorted ? "; re-sorted, so the row moved" : string.Empty));
     }
 
-    // <snippet>
     private void OnPostponeClick(object sender, RoutedEventArgs e)
     {
         if (TeamsTable.SelectedItem is not LeagueTeam team)
@@ -264,7 +270,6 @@ public sealed partial class SortPage : SamplePageBase
             team.NextMatchText,
             resorted ? "; re-sorted, so the row moved" : string.Empty));
     }
-    // </snippet>
 
     private void OnTeamsSelectionChanged(TableView sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs args) => RefreshReadouts();
 
@@ -278,7 +283,7 @@ public sealed partial class SortPage : SamplePageBase
     private void OnSortAsTextClick(object sender, RoutedEventArgs e)
     {
         SetTextDateColumnVisible(true);
-        TeamsTable.SortByColumn(NextMatchTextColumn, TableViewSortDirection.Ascending);
+        TeamsTable.SortByColumn(NextMatchTextColumn, SortDirection.Ascending);
 
         // Find the first neighbouring pair the alphabetical order gets wrong.
         var byText = Teams.OrderBy(t => t.NextMatchText, StringComparer.CurrentCulture).ToList();

@@ -14,6 +14,8 @@ if (Shaping.IsShaped)
     Shaping.Apply(announce: false);
 }
 
+// Workaround, not a pattern to copy: there is no TableView.ScrollIntoView in this release, so scroll
+// the body ScrollViewer to an estimate and correct it from a visible row (uniform rows, all expanded).
 private void ScrollToRow(int number, string message)
 {
     if (_people.Count == 0)

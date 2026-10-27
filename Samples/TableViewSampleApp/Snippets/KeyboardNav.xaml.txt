@@ -1,71 +1,16 @@
-<!-- The asymmetry is under assessment: the intrinsic template sets NO AutomationProperties.Name and the
-     explicit one sets a name that differs from the displayed text. Do not "fix" it. -->
-<DataTemplate x:Key="IntrinsicRecordTemplate" x:DataType="models:AccessibilityRow">
-    <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
-        <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}" TextWrapping="Wrap"/>
-    </Button>
-</DataTemplate>
-<DataTemplate x:Key="ExplicitRecordTemplate" x:DataType="models:AccessibilityRow">
-    <Button
-        Click="OnTemplateContentClick"
-        HorizontalAlignment="Stretch"
-        AutomationProperties.Name="{x:Bind ExplicitName}">
-        <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}" TextWrapping="Wrap"/>
-    </Button>
-</DataTemplate>
-
-<!-- Focus sentinels either side make the tab order in and out checkable without a mouse. -->
-<Button Content="Before table"/>
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="Keyboard navigation people"
     SelectionMode="Single"
     Height="360">
     <!-- Decorative: the avatar template is never a tab stop. -->
-    <tv:TableViewTemplateColumn
-        Header="Photo"
-        Width="56"
-        CellTemplate="{StaticResource AvatarTemplate}"
-        CanSort="False"/>
-    <tv:TableViewTextColumn
-        Header="Name"
-        Width="*"
-        MinWidth="140"
-        Binding="{Binding FullName}"
-        IsReadOnly="True"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}" IsReadOnly="True"/>
     <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
-    <tv:TableViewTemplateColumn
-        Header="Department"
-        Width="130"
-        CellTemplate="{StaticResource DepartmentChipTemplate}"
-        SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <!-- Controls in cells: arrow to the cell, Enter moves into the control, Esc returns to the cell.
          The table body is one tab stop, so Tab leaves the table. -->
-    <tv:TableViewTemplateColumn
-        Header="Active"
-        Width="84"
-        CellTemplate="{StaticResource ActiveCheckBoxTemplate}"
-        CanSort="False"/>
-    <tv:TableViewTemplateColumn
-        Header="Office"
-        Width="150"
-        CellTemplate="{StaticResource OfficeComboTemplate}"
-        CanSort="False"/>
-    <tv:TableViewTemplateColumn
-        Header="Details"
-        Width="96"
-        CellTemplate="{StaticResource DetailsButtonTemplate}"
-        CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
 </tv:TableView>
-<Button Content="After table"/>
-
-<!-- Height 248 shows about five rows, which keeps record 24 off screen. -->
-<tv:TableView
-    x:Name="AssessmentTable"
-    AutomationProperties.Name="Accessibility regression records"
-    SelectionMode="Single"
-    SelectionChanged="OnFixtureSelectionChanged"
-    BeginningEdit="OnBeginningEdit"
-    CellEditEnding="OnCellEditEnding"
-    IsReadOnly="True"
-    Height="248"/>

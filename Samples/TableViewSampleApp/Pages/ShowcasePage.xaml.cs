@@ -19,7 +19,6 @@ using TableViewSampleApp.Templates;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 using TableViewSelectionMode = Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -50,6 +49,8 @@ public sealed partial class ShowcasePage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
+        PeopleTable.Sorted += OnPeopleTableSorted;
+        PeopleTable.SelectionChanged += OnSelectionChanged;
 
         _columnToggles[ShiftColumnCheckBox] = ShiftColumn;
         _columnToggles[OfficeColumnCheckBox] = OfficeColumn;
@@ -70,9 +71,11 @@ public sealed partial class ShowcasePage : SamplePageBase
         TrackTimer(_liveTimer, () => LiveToggle.IsOn);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = new();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
     // Upper bound of the display indexes (rows plus one header per group).
     private int LastDisplayIndex => People.Count + PersonData.Roles.Count + PersonData.Departments.Count;
@@ -129,43 +132,54 @@ public sealed partial class ShowcasePage : SamplePageBase
     private void DescribeInterval(double value) =>
         AutomationProperties.SetItemStatus(UpdateIntervalSlider, string.Format(CultureInfo.CurrentCulture, "{0:N0} milliseconds", value));
 
-    // <snippet>
     private void OnLiveTimerTick(object? sender, object e)
     {
-        var flipped = false;
+        bool flipped;
         using (BeginBulkUpdate())
         {
-            foreach (var person in People.Take(LiveRowCount))
+            flipped = UpdateLiveRows();
+        }
+
+        ReshapeAfterLiveUpdate(flipped);
+        RefreshReadouts();
+    }
+
+    // <snippet>
+    // Person raises PropertyChanged, so only the changed cells re-run their bindings and tint converters.
+    private bool UpdateLiveRows()
+    {
+        var flipped = false;
+        foreach (var person in People.Take(LiveRowCount))
+        {
+            var next = Math.Clamp(person.Salary + ((_liveRandom.NextDouble() - 0.5) * 12_000), 110_000, MaxSalary);
+            person.Salary = Math.Round(next / 100.0) * 100.0;
+            if (_liveRandom.NextDouble() < 0.15)
             {
-                // Nudge Salary within the dataset band and flip Active now and then. Person raises
-                // PropertyChanged, so only these cells re-run their bindings and tint converters.
-                var next = Math.Clamp(person.Salary + ((_liveRandom.NextDouble() - 0.5) * 12_000), 110_000, MaxSalary);
-                person.Salary = Math.Round(next / 100.0) * 100.0;
-                if (_liveRandom.NextDouble() < 0.15)
-                {
-                    person.IsActive = !person.IsActive;
-                    flipped = true;
-                }
+                person.IsActive = !person.IsActive;
+                flipped = true;
             }
         }
 
-        // Neither grouping nor sorting observes PropertyChanged, so re-apply whichever one is
-        // keyed on a value the tick just changed.
+        return flipped;
+    }
+
+    // Neither grouping nor sorting observes PropertyChanged: re-apply whichever is keyed on a changed value.
+    private void ReshapeAfterLiveUpdate(bool flipped)
+    {
         if (flipped)
         {
             ReapplyIfGroupedOn(nameof(Person.IsActive));
         }
 
         ResortIfSortedOn(nameof(Person.Salary), nameof(Person.IsActive));
-        RefreshReadouts();
     }
 
     private void OnVibrantToggled(object sender, RoutedEventArgs e)
     {
-        if (!_ready)
-        {
-            return;
-        }
+        if (!_ready) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         Vibrant = VibrantToggle.IsOn;
 
@@ -213,10 +227,10 @@ public sealed partial class ShowcasePage : SamplePageBase
     // <snippet>
     private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!_ready)
-        {
-            return;
-        }
+        if (!_ready) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var mode = Enum.Parse<TableViewSelectionMode>(SampleShaping.SelectedTag(SelectionModeSelector, "Single"));
         PeopleTable.SelectionMode = mode;
@@ -225,10 +239,10 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!_ready)
-        {
-            return;
-        }
+        if (!_ready) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
         PeopleTable.HeadersVisibility = visibility;
@@ -257,15 +271,14 @@ public sealed partial class ShowcasePage : SamplePageBase
             return;
         }
 
-        SetLastAction(args.Column is null || args.Direction == TableViewSortDirection.None
+        SetLastAction(args.Column is null || args.Direction == SortDirection.None
             ? "Sort cleared"
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} ({1})", args.Column.Header, args.Direction));
     }
 
     // <snippet>
-    // The control sorts once, when the sort is applied. Re-declaring the same path on the source
-    // re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
-    // value changed moves to its new position.
+    // The control sorts when the sort is applied; re-declaring the same path on the source re-reads
+    // every key, so a row whose sorted value changed moves.
     private void ResortIfSortedOn(params string[] propertyNames)
     {
         var column = SampleShaping.ActiveSortColumn(PeopleTable);

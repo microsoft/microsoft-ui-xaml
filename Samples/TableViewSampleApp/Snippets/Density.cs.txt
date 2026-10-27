@@ -1,6 +1,10 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
+
 private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 {
     var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));

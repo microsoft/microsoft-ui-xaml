@@ -46,13 +46,17 @@ public sealed partial class CellEditingPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
+        PeopleTable.BeginningEdit += OnBeginningEdit;
+        PeopleTable.SelectionChanged += OnSelectionChanged;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
     /// <summary>Values written to the model, newest first (bound in XAML).</summary>
     public ObservableCollection<string> EditLog { get; } = new();
@@ -60,12 +64,12 @@ public sealed partial class CellEditingPage : SamplePageBase
     // <snippet>
     private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
     {
-        if (PeopleTable is null || ReadOnlyToggle is null)
-        {
-            return;
-        }
+        if (PeopleTable is null || ReadOnlyToggle is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
+        PeopleTable.IsReadOnly = ((ToggleSwitch)sender).IsOn;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "IsReadOnly -> {0}", PeopleTable.IsReadOnly));
     }
     // </snippet>
@@ -89,7 +93,7 @@ public sealed partial class CellEditingPage : SamplePageBase
         _openEdit = "(none)"; // snippet:skip
         SetEditButtonsEnabled(false); // snippet:skip
         AnnounceEditEnding(args.EditAction, what); // snippet:skip
-        EnqueueIfLoaded(() =>
+        DispatcherQueue.TryEnqueue(() =>
         {
             if (!PeopleTable.IsEditing)
             {
@@ -167,20 +171,23 @@ public sealed partial class CellEditingPage : SamplePageBase
     }
 
     // <snippet>
+    // Buttons that call these need AllowFocusOnInteraction="False", or the click takes focus from the editor first.
     private void OnCommitEditClick(object sender, RoutedEventArgs e)
     {
-        if (!PeopleTable.CommitEdit() && _rejectedError is null) // snippet:as if (!PeopleTable.CommitEdit())
-        {
-            SetLastAction("CommitEdit returned false: no edit was open, or the value could not be written.");
-        }
+        var committed = PeopleTable.CommitEdit();
+        if (!committed && _rejectedError is null) // snippet:skip
+        { // snippet:skip
+            SetLastAction("CommitEdit returned false: no edit was open, or the value could not be written."); // snippet:skip
+        } // snippet:skip
     }
 
     private void OnCancelEditClick(object sender, RoutedEventArgs e)
     {
-        if (!PeopleTable.CancelEdit())
-        {
-            SetLastAction("CancelEdit returned false: no edit was open.");
-        }
+        var cancelled = PeopleTable.CancelEdit();
+        if (!cancelled) // snippet:skip
+        { // snippet:skip
+            SetLastAction("CancelEdit returned false: no edit was open."); // snippet:skip
+        } // snippet:skip
     }
     // </snippet>
 

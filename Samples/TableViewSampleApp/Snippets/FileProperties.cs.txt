@@ -5,6 +5,10 @@ PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
 PropTable.Density = TableViewDensity.Compact;
 
+public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
+
+public TableViewSource Source { get; }
+
 // Refills the one collection; the source re-projects it under the current filter and grouping.
 private void ShowFile(FileInfo file)
 {

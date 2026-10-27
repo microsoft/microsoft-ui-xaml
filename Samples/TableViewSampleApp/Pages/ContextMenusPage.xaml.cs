@@ -38,12 +38,14 @@ public sealed partial class ContextMenusPage : SamplePageBase
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Header menus -------------------------------------------------------------------------
+    // <snippet>
 
     // A header menu item has no row item to bind to, so each column gets its own menu and the
     // handler closes over that column.
@@ -85,7 +87,9 @@ public sealed partial class ContextMenusPage : SamplePageBase
         SetLastAction("Showed all columns");
     }
 
+    // </snippet>
     // ---- Cell and row menu items ----------------------------------------------------------------
+    // <snippet>
 
     // MenuFlyout has no item filter: cache the XAML items and re-add this row kind's subset on each
     // open. Re-adding (not Visibility) leaves the IsActive bindings in charge.
@@ -200,15 +204,17 @@ public sealed partial class ContextMenusPage : SamplePageBase
         SetLastAction("Restored the list");
     }
 
+    // </snippet>
     // ---- Options ------------------------------------------------------------------------------
+    // <snippet>
 
     // Setting a menu property to null removes that candidate; the request falls through.
     private void OnNameMenuToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         NameColumn.CellContextFlyout = NameMenuToggle.IsOn ? _nameCellMenu : null;
         SetLastAction(NameMenuToggle.IsOn ? "Name cell menu on" : "Name cell menu off (Name cells use the row menu)");
@@ -218,10 +224,10 @@ public sealed partial class ContextMenusPage : SamplePageBase
     // the realized rows on the next layout pass; recycled rows pick it up when they are reused.
     private void OnRowMenuToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         PeopleTable.Resources.Remove(typeof(TableViewRow));
         if (RowMenuToggle.IsOn)
@@ -234,10 +240,10 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
     private void OnHeaderMenuToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         foreach (var (column, menu) in _headerMenus)
         {

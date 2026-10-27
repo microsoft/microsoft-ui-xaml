@@ -35,6 +35,8 @@ public sealed partial class TaskManagerPage : SamplePageBase
         RandomizeAll();
         Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
         InitializeComponent();
+        ProcessTable.Sorted += OnProcessTableSorted; // snippet:skip
+        ProcessTable.SelectionChanged += OnSelectionChanged; // snippet:skip
 
         ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
@@ -53,9 +55,11 @@ public sealed partial class TaskManagerPage : SamplePageBase
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
     }
 
+    // <snippet>
     public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
     // ---- Live data ----------------------------------------------------------------------
 
@@ -99,9 +103,8 @@ public sealed partial class TaskManagerPage : SamplePageBase
         ResortIfMetricSorted();
     }
 
-    // A value change raised through INotifyPropertyChanged updates the cell but does not move the
-    // row: the projection re-sorts on collection changes only. Re-declaring the active sort with
-    // the column's own path re-sorts the same source and keeps that column's sort indicator.
+    // PropertyChanged updates a cell but does not move its row; re-declaring the active sort with the
+    // column's own path re-sorts the source and keeps the column's sort indicator.
     private void ResortIfMetricSorted()
     {
         var column = SampleShaping.ActiveSortColumn(ProcessTable);
@@ -130,8 +133,8 @@ public sealed partial class TaskManagerPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0}, {1}", args.Column.Header, args.Direction == SortDirection.Descending ? "descending" : "ascending"));
     }
 
-    // <snippet>
     // ---- Search (TableViewSource.Filter) ------------------------------------------------
+    // <snippet>
 
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {

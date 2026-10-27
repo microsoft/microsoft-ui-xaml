@@ -4,33 +4,10 @@
     AutomationProperties.Name="People density"
     ItemsSource="{x:Bind Source}"
     Density="Standard"
-    SelectionMode="Single"
-    SelectionChanged="OnSelectionChanged">
-    <tv:TableViewTemplateColumn
-        Header="Photo"
-        Width="56"
-        CellTemplate="{StaticResource AvatarTemplate}"
-        CanSort="False"/>
+    SelectionMode="Single">
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn
-        Header="Department"
-        Width="130"
-        CellTemplate="{StaticResource DepartmentChipTemplate}"
-        SortMemberPath="Department"/>
-    <tv:TableViewTemplateColumn
-        Header="Status"
-        Width="120"
-        CellTemplate="{StaticResource ActiveStatusChipTemplate}"
-        SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Status" Width="120" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
     <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
 </tv:TableView>
-
-<ComboBox
-    x:Name="DensitySelector"
-    Header="Density"
-    SelectedIndex="1"
-    SelectionChanged="OnDensityChanged">
-    <ComboBoxItem Content="Compact" Tag="Compact"/>
-    <ComboBoxItem Content="Standard (default)" Tag="Standard"/>
-    <ComboBoxItem Content="Comfortable" Tag="Comfortable"/>
-</ComboBox>

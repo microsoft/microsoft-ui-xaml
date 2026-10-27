@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Models;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -39,20 +38,22 @@ public sealed partial class RightToLeftPage : SamplePageBase
     }
 
     // PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.
+    // <snippet>
     public ObservableCollection<Person> People { get; } = RtlPersonData.Mixed();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Flow direction and filter ------------------------------------------------------
+    // <snippet>
 
     private void OnRtlToggled(object sender, RoutedEventArgs e)
     {
-        // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft.
-        if (!IsLoaded)
-        {
-            return;
-        }
+        // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft. // snippet:skip
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "FlowDirection -> {0}", PeopleTable.FlowDirection));
@@ -60,10 +61,10 @@ public sealed partial class RightToLeftPage : SamplePageBase
 
     private void OnFilterChanged(object sender, TextChangedEventArgs e)
     {
-        if (FilterBox is null)
-        {
-            return;
-        }
+        if (FilterBox is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var term = ApplyFilter();
         SetLastAction(term.Length == 0
@@ -141,9 +142,9 @@ public sealed partial class RightToLeftPage : SamplePageBase
     // <snippet>
     private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
     {
-        var direction = FirstNameColumn.SortDirection == TableViewSortDirection.Ascending
-            ? TableViewSortDirection.Descending
-            : TableViewSortDirection.Ascending;
+        var direction = FirstNameColumn.SortDirection == SortDirection.Ascending
+            ? SortDirection.Descending
+            : SortDirection.Ascending;
         PeopleTable.SortByColumn(FirstNameColumn, direction);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(First name, {0})", direction));
     }

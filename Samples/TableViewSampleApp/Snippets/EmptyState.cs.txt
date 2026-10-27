@@ -1,6 +1,10 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
+
+public TableViewSource Source { get; }
+
 private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
 {
     var tag = SampleShaping.SelectedTag(DataSourceSelector, "Populated");

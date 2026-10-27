@@ -36,21 +36,23 @@ public sealed partial class CellTemplatingPage : SamplePageBase
             () => PersonCellTemplates.DetailsOpened -= OnDetailsOpened);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Join date editor: swap the column's CellTemplate at run time -----------------------
+    // <snippet>
 
     private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the
-        // compact editor and the column is not attached to the table yet.
-        if (JoinDateColumn is null || !IsLoaded)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the // snippet:skip
+        // compact editor and the column is not attached to the table yet. // snippet:skip
+        if (JoinDateColumn is null || !IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var full = SampleShaping.SelectedTag(JoinDateEditorSelector, "calendar") == "datepicker";
         var resources = Application.Current.Resources;
@@ -115,7 +117,6 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} all {1:N0} rows", isActive ? "Checked Active on" : "Unchecked Active on", People.Count));
     }
 
-    // <snippet>
     private void OnChangeDepartmentClick(object sender, RoutedEventArgs e)
     {
         if (PeopleTable.SelectedItem is not Person person)
@@ -136,7 +137,6 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         ReapplyIfGroupedOn(nameof(Person.Department));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, to));
     }
-    // </snippet>
 
     private void OnOpenDetailsClick(object sender, RoutedEventArgs e)
     {

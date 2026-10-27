@@ -152,9 +152,8 @@ public sealed partial class VirtualizationPage : SamplePageBase
         ScrollToRow(1, "Jumped to the first row");
 
     // <snippet>
-    // Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
-    // ScrollViewer to an estimated offset and correct it from a visible row. Assumes no sort, every
-    // group and row expanded and a uniform row height.
+    // Workaround, not a pattern to copy: there is no TableView.ScrollIntoView in this release, so scroll
+    // the body ScrollViewer to an estimate and correct it from a visible row (uniform rows, all expanded).
     private void ScrollToRow(int number, string message)
     {
         if (_people.Count == 0)

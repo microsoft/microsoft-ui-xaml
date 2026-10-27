@@ -21,9 +21,8 @@
             </MenuFlyoutItem>
         </MenuFlyout>
 
-        <!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
-             blank space past the last column. An implicit TableViewRow style sets it on every row.
-             OnRowMenuOpening keeps untagged items plus those tagged for the row's kind. -->
+        <!-- The row menu covers cells without their own CellContextFlyout and the space past the last column;
+             an implicit TableViewRow style sets it on every row. -->
         <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
             <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
                 <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
@@ -93,16 +92,16 @@
                     </MenuFlyout>
                 </tv:TableView.ContextFlyout>
                 <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
                                              CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
                                          Binding="{Binding FullName}"
                                          CellContextFlyout="{StaticResource NameCellMenu}"/>
-                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                              CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}"
+                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140"
                                          Binding="{Binding Office}"/>
-                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
                                          Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
             </tv:TableView>
             <!-- /snippet -->

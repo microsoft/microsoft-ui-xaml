@@ -69,7 +69,9 @@ public sealed partial class HierarchyPage : SamplePageBase
         table.Columns.Add(SampleColumns.Text("Id", nameof(Employee.Id), SampleColumns.Pixels(60)));
     }
 
+    // </snippet>
     // ---- Relations ----
+    // <snippet>
 
     // A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
     private static void DeclareManagerRelation(TableViewSource source) =>
@@ -85,8 +87,8 @@ public sealed partial class HierarchyPage : SamplePageBase
 
     private IEnumerable<TableViewSource> Sources => new[] { _managerSource, _mentorSource };
 
-    // <snippet>
     // ---- Shaping (applied to both sources) ----
+    // <snippet>
 
     private void ApplyFilter()
     {

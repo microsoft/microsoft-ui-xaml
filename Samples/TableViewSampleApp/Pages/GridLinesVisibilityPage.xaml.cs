@@ -50,20 +50,22 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             });
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Grid lines and banding ---------------------------------------------------------
+    // <snippet>
 
     private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
-        if (PeopleTable is null || GridLinesText is null)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="3") before the table exists. // snippet:skip
+        if (PeopleTable is null || GridLinesText is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
         {
@@ -77,10 +79,10 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
 
     private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (PeopleTable is null || RowBandingText is null)
-        {
-            return;
-        }
+        if (PeopleTable is null || RowBandingText is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
         PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
@@ -207,7 +209,6 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "{0} has no displayed row (collapsed group?); expand the groups first.", person.FullName));
     }
 
-    // <snippet>
     private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
     {
         if (PeopleTable.SelectedItem is not Person person)
@@ -241,7 +242,6 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         ReapplyIfGroupedOn(key);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
-    // </snippet>
 
     private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {

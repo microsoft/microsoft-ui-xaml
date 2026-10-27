@@ -47,12 +47,14 @@ public sealed partial class ToolTipsPage : SamplePageBase
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Cell tooltips ----------------------------------------------------------------------
+    // <snippet>
 
     private void AttachCellToolTips()
     {
@@ -83,11 +85,11 @@ public sealed partial class ToolTipsPage : SamplePageBase
 
     private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
     {
-        // Fires during InitializeComponent (IsOn="True"); the constructor attaches the bindings.
-        if (!IsLoaded)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (IsOn="True"); the constructor attaches the bindings. // snippet:skip
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         if (CellToolTipsToggle.IsOn)
         {
@@ -101,14 +103,16 @@ public sealed partial class ToolTipsPage : SamplePageBase
         }
     }
 
+    // </snippet>
     // ---- Header tooltips --------------------------------------------------------------------
+    // <snippet>
 
     private void OnHeaderToolTipsChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyHeaderToolTips(SampleShaping.SelectedTag(HeaderToolTipsSelector, "original"));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Header tooltips -> {0}", SampleShaping.Label(HeaderToolTipsSelector)));

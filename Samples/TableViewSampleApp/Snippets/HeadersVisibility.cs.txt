@@ -1,6 +1,10 @@
 Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+public ObservableCollection<SupportTicket> Tickets { get; } = TicketData.Queue();
+
+public TableViewSource Source { get; }
+
 private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
 {
     TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
@@ -11,10 +15,18 @@ private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs
 private void OnSortByDueClick(object sender, RoutedEventArgs e)
 {
     // The header click does the same thing; SortByColumn is the only way while it is hidden.
-    var direction = DueColumn.SortDirection == TableViewSortDirection.Ascending
-        ? TableViewSortDirection.Descending
-        : TableViewSortDirection.Ascending;
+    var direction = DueColumn.SortDirection == SortDirection.Ascending
+        ? SortDirection.Descending
+        : SortDirection.Ascending;
     TicketsTable.SortByColumn(DueColumn, direction);
+}
+
+// Raised for header clicks and for SortByColumn / ClearSort alike.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
+{
+    SortText.Text = e.Column is null || e.Direction == SortDirection.None
+        ? "None"
+        : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
 }
 
 private void OnEscalateClick(object sender, RoutedEventArgs e)

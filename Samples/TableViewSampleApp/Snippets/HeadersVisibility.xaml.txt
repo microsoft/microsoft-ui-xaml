@@ -27,41 +27,9 @@
     IsReadOnly="True">
     <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
     <tv:TableViewTextColumn Header="Ticket" Width="80" Binding="{Binding TicketId}"/>
-    <tv:TableViewTemplateColumn
-        Header="Assignee"
-        Width="100"
-        CellTemplate="{StaticResource AssigneeTemplate}"
-        SortMemberPath="Assignee"
-        CellToolTipBinding="{Binding Assignee}"/>
-    <tv:TableViewTextColumn
-        Header="Summary"
-        Width="*"
-        MinWidth="140"
-        Binding="{Binding Summary}"
-        CellToolTipBinding="{Binding Summary}"/>
-    <tv:TableViewTemplateColumn
-        Header="Priority"
-        Width="100"
-        CellTemplate="{StaticResource PriorityChipTemplate}"
-        SortMemberPath="Priority"/>
-    <tv:TableViewTemplateColumn
-        x:Name="DueColumn"
-        Header="Due"
-        Width="170"
-        CellTemplate="{StaticResource DueDateTemplate}"
-        SortMemberPath="Due"/>
-    <tv:TableViewTemplateColumn
-        Header="Resolved"
-        Width="96"
-        CellTemplate="{StaticResource ResolvedTemplate}"
-        SortMemberPath="IsResolved"/>
+    <tv:TableViewTemplateColumn Header="Assignee" Width="100" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}"/>
+    <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="140" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
+    <tv:TableViewTemplateColumn Header="Priority" Width="100" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority"/>
+    <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="170" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due"/>
+    <tv:TableViewTemplateColumn Header="Resolved" Width="96" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved"/>
 </tv:TableView>
-
-<ComboBox
-    x:Name="HeadersVisibilitySelector"
-    Header="Headers"
-    SelectedIndex="0"
-    SelectionChanged="OnHeadersVisibilityChanged">
-    <ComboBoxItem Content="Column" Tag="Column"/>
-    <ComboBoxItem Content="None" Tag="None"/>
-</ComboBox>

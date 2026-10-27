@@ -4,30 +4,3 @@
     AutomationProperties.Name="People, with columns sized by the chosen width intent"
     ItemsSource="{x:Bind People}"
     SelectionMode="Single"/>
-
-<ComboBox
-    x:Name="WidthModeSelector"
-    Header="Width intent"
-    SelectedIndex="0"
-    SelectionChanged="OnWidthModeChanged">
-    <ComboBoxItem Content="Playground" Tag="Playground"/>
-    <ComboBoxItem Content="Auto" Tag="Auto"/>
-    <ComboBoxItem Content="Star" Tag="Star"/>
-    <ComboBoxItem Content="Pixel" Tag="Pixel"/>
-    <ComboBoxItem Content="Mixed" Tag="Mixed"/>
-</ComboBox>
-
-<ToggleSwitch
-    x:Name="CanUserResizeColumnsToggle"
-    Header="Users can resize columns"
-    IsOn="True"
-    Toggled="OnCanUserResizeColumnsToggled"/>
-
-<Slider
-    x:Name="WidthSlider"
-    Header="Width (Pixel)"
-    Minimum="0"
-    Maximum="500"
-    StepFrequency="10"
-    Value="160"
-    ValueChanged="OnWidthSliderChanged"/>

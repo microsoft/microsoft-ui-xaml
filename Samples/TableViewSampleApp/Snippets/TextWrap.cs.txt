@@ -7,7 +7,12 @@ WrapState.MaxLines = 0;
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+// Wrapping, trimming and line limit shared by every Bio cell.
 public static TextWrapState WrapState { get; } = new();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
 
 private void OnWrapToggled(object sender, RoutedEventArgs e)
 {

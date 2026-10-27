@@ -271,9 +271,8 @@ public sealed partial class ShapingOptions : UserControl
     }
 
     // <snippet Groups>
-    // Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-    // ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-    // keeps its subtree.
+    // Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
+    // so under both each root keeps its subtree.
     private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
     {
         if (relation is not null && IsHierarchicalMode(mode))

@@ -1,60 +1,19 @@
 <!-- Cells wrap rather than trim so long values stay readable under text scaling.
      Padding matches a Compact text cell. -->
 <DataTemplate x:Key="PropertyNameTemplate" x:DataType="models:FilePropertyEntry">
-    <TextBlock
-        Text="{x:Bind Property}"
-        TextWrapping="Wrap"
-        Padding="8,2,8,2"
-        VerticalAlignment="Center"/>
+    <TextBlock Text="{x:Bind Property}" TextWrapping="Wrap" Padding="8,2,8,2" VerticalAlignment="Center"/>
 </DataTemplate>
 <DataTemplate x:Key="PropertyValueTemplate" x:DataType="models:FilePropertyEntry">
-    <TextBlock
-        Text="{x:Bind Value}"
-        TextWrapping="Wrap"
-        Padding="8,2,8,2"
-        VerticalAlignment="Center"/>
+    <TextBlock Text="{x:Bind Value}" TextWrapping="Wrap" Padding="8,2,8,2" VerticalAlignment="Center"/>
 </DataTemplate>
 
-<TextBlock
-    Text="Files"
-    AutomationProperties.HeadingLevel="Level2"
-    Style="{StaticResource SectionHeaderTextStyle}"/>
-<!-- MaxWidth, not Width: names wrap instead of trimming when text is scaled. -->
-<Border Style="{StaticResource CardBorderStyle}" MaxWidth="320">
-    <ListView
-        x:Name="FileList"
-        AutomationProperties.Name="Files"
-        SelectionMode="Single"
-        SelectionChanged="OnFileSelectionChanged">
-        <ListView.ItemTemplate>
-            <DataTemplate x:DataType="io:FileInfo">
-                <TextBlock Text="{x:Bind Name}" TextWrapping="Wrap"/>
-            </DataTemplate>
-        </ListView.ItemTemplate>
-    </ListView>
-</Border>
-
-<TextBlock
-    Text="Properties"
-    AutomationProperties.HeadingLevel="Level2"
-    Style="{StaticResource SectionHeaderTextStyle}"/>
 <tv:TableView
     x:Name="PropTable"
     AutomationProperties.Name="File properties"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
-    IsReadOnly="True"
-    SelectionChanged="OnPropSelectionChanged">
+    IsReadOnly="True">
     <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
-    <tv:TableViewTemplateColumn
-        Header="Property"
-        Width="170"
-        CellTemplate="{StaticResource PropertyNameTemplate}"
-        SortMemberPath="Property"/>
-    <tv:TableViewTemplateColumn
-        Header="Value"
-        Width="*"
-        MinWidth="140"
-        CellTemplate="{StaticResource PropertyValueTemplate}"
-        SortMemberPath="Value"/>
+    <tv:TableViewTemplateColumn Header="Property" Width="170" CellTemplate="{StaticResource PropertyNameTemplate}" SortMemberPath="Property"/>
+    <tv:TableViewTemplateColumn Header="Value" Width="*" MinWidth="140" CellTemplate="{StaticResource PropertyValueTemplate}" SortMemberPath="Value"/>
 </tv:TableView>

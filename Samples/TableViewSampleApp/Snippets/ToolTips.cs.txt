@@ -6,6 +6,10 @@ InitializeComponent();
 AttachCellToolTips();
 ApplyHeaderToolTips("original");
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
+
 private void AttachCellToolTips()
 {
     // A tooltip on an image cell: the person's name.

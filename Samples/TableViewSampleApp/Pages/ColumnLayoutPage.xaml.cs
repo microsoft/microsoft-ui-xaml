@@ -48,8 +48,8 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-    // <snippet>
     // ---- Column factories ---------------------------------------------------------------
+    // <snippet>
 
     private static TableViewTextColumn Text(string header, string path, GridLength width) =>
         new()
@@ -82,15 +82,17 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     private static GridLength Star(double factor = 1) => new(factor, GridUnitType.Star);
     private static GridLength Px(double px) => new(px, GridUnitType.Pixel);
 
+    // </snippet>
     // ---- Width intent -------------------------------------------------------------------
+    // <snippet>
 
     private void OnWidthModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0"); Loaded builds the first layout.
-        if (!IsLoaded)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="0"); Loaded builds the first layout. // snippet:skip
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplySelectedMode();
         AnnounceModeDescription(); // snippet:skip
@@ -100,7 +102,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     private void ApplySelectedMode()
     {
         var mode = SampleShaping.SelectedTag(WidthModeSelector, PlaygroundMode);
-        var previousHeader = _activeColumn?.Header?.ToString();
+        var previousHeader = _activeColumn?.Header?.ToString(); // snippet:skip
 
         SetActiveColumn(null);
         WidthsTable.Columns.Clear();
@@ -156,7 +158,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 break;
         }
 
-        PopulateColumnSelector(previousHeader);
+        PopulateColumnSelector(previousHeader); // snippet:skip
         ApplyCanUserResizeColumns();
         RefreshReadouts();
     }
@@ -225,14 +227,14 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         // ActualWidth is resolved during layout, after this call returns, and changes again while
         // the user drags the header edge. Follow it instead of reading it once.
         _actualWidthToken = column.RegisterPropertyChangedCallback(TableViewColumn.ActualWidthProperty, OnActualWidthChanged);
-        SeedSliders();
+        SeedSliders(); // snippet:skip
         RefreshReadouts();
     }
 
     private void OnActualWidthChanged(DependencyObject sender, DependencyProperty dp)
     {
         // Covers drag-resize too: the gripper writes Width, then layout resolves ActualWidth.
-        SeedSliders();
+        SeedSliders(); // snippet:skip
         RefreshReadouts();
     }
 
@@ -339,7 +341,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         }
 
         Autosize(column);
-        SeedSliders();
+        SeedSliders(); // snippet:skip
         SetLastActionAfterLayout(() => string.Format(CultureInfo.CurrentCulture,
             "Width of {0} -> Auto; ActualWidth {1:N0}", column.Header, column.ActualWidth));
     }
@@ -351,7 +353,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Autosize(column);
         }
 
-        SeedSliders();
+        SeedSliders(); // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width of all {0:N0} columns -> Auto", WidthsTable.Columns.Count));
     }
 
@@ -366,7 +368,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
 
         // Deliberately small, so a raised MinWidth visibly stops ActualWidth from following.
         column.Width = Px(80);
-        SeedSliders();
+        SeedSliders(); // snippet:skip
         SetLastActionAfterLayout(() => string.Format(CultureInfo.CurrentCulture,
             "Width of {0} -> 80 px; MinWidth {1:N0} gives ActualWidth {2:N0}", column.Header, column.MinWidth, column.ActualWidth));
     }

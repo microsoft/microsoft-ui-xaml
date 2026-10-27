@@ -44,6 +44,9 @@ public sealed partial class FileExplorerPage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(Entries);    // created once; filtered and grouped in place
         InitializeComponent();
+        FileTable.DoubleTapped += OnRowDoubleTapped; // snippet:skip
+        FileTable.Sorted += OnTableSorted; // snippet:skip
+        FileTable.SelectionChanged += OnSelectionChanged; // snippet:skip
 
         FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         FileTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
@@ -57,9 +60,11 @@ public sealed partial class FileExplorerPage : SamplePageBase
     }
 
     // Folder contents replace the items of this one collection; the source is never rebuilt.
+    // <snippet>
     public ObservableCollection<FileSystemEntry> Entries { get; } = new();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
     private void OpenInitialFolder()
     {
@@ -69,8 +74,8 @@ public sealed partial class FileExplorerPage : SamplePageBase
         }
     }
 
-    // <snippet>
     // ---- Navigation (the folder is read on a background thread) ---------------------------
+    // <snippet>
 
     private async Task NavigateAsync(string path, bool addToHistory, string verb)
     {
@@ -109,8 +114,8 @@ public sealed partial class FileExplorerPage : SamplePageBase
         }
 
         AddressBar.Text = _currentDir;
-        BackButton.IsEnabled = _history.Count > 0;
-        UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null;
+        BackButton.IsEnabled = _history.Count > 0; // snippet:skip
+        UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null; // snippet:skip
         if (focusState != FocusState.Unfocused)
         {
             FocusFirstRowAfterLayout(focusState);
@@ -261,15 +266,15 @@ public sealed partial class FileExplorerPage : SamplePageBase
         _ = NavigateAsync(path, addToHistory: true, verb: "Opened");
     }
 
-    // <snippet>
     // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+    // <snippet>
 
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (FilterSelector is null)
-        {
-            return;
-        }
+        if (FilterSelector is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var filter = SampleShaping.SelectedTag(FilterSelector, "all");
         switch (filter)
@@ -288,11 +293,11 @@ public sealed partial class FileExplorerPage : SamplePageBase
                 break;
         }
 
-        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
-        if (IsLoaded)
-        {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleCount()));
-        }
+        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only. // snippet:skip
+        if (IsLoaded) // snippet:skip
+        { // snippet:skip
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleCount())); // snippet:skip
+        } // snippet:skip
     }
 
     // Nested, a filter also keeps each match's folders.

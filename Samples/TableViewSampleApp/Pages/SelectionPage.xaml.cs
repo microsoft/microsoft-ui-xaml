@@ -40,20 +40,22 @@ public sealed partial class SelectionPage : SamplePageBase
             () => PeopleTable.SelectionChanged -= OnTableSelectionChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
-    // <snippet>
     // ---- Selection mode -----------------------------------------------------------------
+    // <snippet>
 
     private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="1"), before the table exists.
-        if (PeopleTable is null || SelectFirstButton is null)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="1"), before the table exists. // snippet:skip
+        if (PeopleTable is null || SelectFirstButton is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         var single = SampleShaping.SelectedTag(SelectionModeSelector, "Single") == "Single";
         PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
@@ -62,18 +64,16 @@ public sealed partial class SelectionPage : SamplePageBase
 
     private bool IsSingleMode => PeopleTable.SelectionMode == TableViewSelectionMode.Single;
 
+    // </snippet>
     // ---- Selection from code --------------------------------------------------------------
+    // <snippet>
 
     private void OnSelectFirstClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: false);
 
     private void OnSelectLastClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: true);
 
-    /// <summary>
-    /// Selects the first or last row in DISPLAY order. Select(index) takes a display index, and
-    /// when the table is grouped every group header takes one too, so the last row's index is
-    /// rows + groups - 1, not People.Count - 1. Select ignores header and out-of-range indexes,
-    /// so the sample walks in from the end until IsSelected confirms a row took the selection.
-    /// </summary>
+    // Select takes a display index, and group headers take indexes too but cannot be selected,
+    // so walk in from the end until IsSelected confirms a row took the selection.
     private void SelectDisplayedRow(bool fromEnd)
     {
         var which = fromEnd ? "last" : "first"; // snippet:skip
@@ -202,7 +202,9 @@ public sealed partial class SelectionPage : SamplePageBase
         }); // snippet:skip
     }
 
+    // </snippet>
     // ---- Events ---------------------------------------------------------------------------
+    // <snippet>
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {

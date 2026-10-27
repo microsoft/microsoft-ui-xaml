@@ -7,6 +7,10 @@ FileTable.Density = TableViewDensity.Compact;
 // handledEventsToo: the table consumes Enter for its own row navigation.
 FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
 
+public ObservableCollection<FileSystemEntry> Entries { get; } = new();
+
+public TableViewSource Source { get; }
+
 private async Task NavigateAsync(string path, bool addToHistory, string verb)
 {
     var version = ++_navigationVersion;

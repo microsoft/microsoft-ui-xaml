@@ -43,7 +43,6 @@
                 AutomationProperties.Name="Filtered people"
                 ItemsSource="{x:Bind Source}"
                 SelectionMode="Single"
-                SelectionChanged="OnTableSelectionChanged"
                 EmptyTemplate="{StaticResource FilterEmptyTemplate}"
                 VerticalAlignment="Stretch"
                 MinHeight="320"/>

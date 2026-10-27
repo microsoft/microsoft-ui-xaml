@@ -9,6 +9,8 @@
     </MenuFlyoutItem>
 </MenuFlyout>
 
+<!-- The row menu covers cells without their own CellContextFlyout and the space past the last column;
+     an implicit TableViewRow style sets it on every row. -->
 <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
     <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
@@ -20,14 +22,10 @@
     <MenuFlyoutItem Text="Move to next department" Click="OnNextDepartmentClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8AB;"/></MenuFlyoutItem.Icon>
     </MenuFlyoutItem>
-    <MenuFlyoutItem
-        Text="Deactivate"
-        Click="OnToggleActiveClick"
-        Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
-    <MenuFlyoutItem
-        Text="Reactivate"
-        Click="OnToggleActiveClick"
-        Visibility="{Binding IsActive, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
+    <MenuFlyoutItem Text="Deactivate" Click="OnToggleActiveClick"
+                    Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+    <MenuFlyoutItem Text="Reactivate" Click="OnToggleActiveClick"
+                    Visibility="{Binding IsActive, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
     <MenuFlyoutItem Text="Remove from list" Click="OnRemoveClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;"/></MenuFlyoutItem.Icon>
     </MenuFlyoutItem>
@@ -53,12 +51,8 @@
         </Style>
         <Style TargetType="tv:TableViewGroupHeader">
             <Setter Property="ContextFlyout" Value="{StaticResource GroupMenu}"/>
-            <Setter
-                Property="Background"
-                Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
-            <Setter
-                Property="Foreground"
-                Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+            <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
             <Setter Property="Padding" Value="8,10,16,10"/>
         </Style>
     </tv:TableView.Resources>
@@ -71,32 +65,15 @@
         </MenuFlyout>
     </tv:TableView.ContextFlyout>
     <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
-    <tv:TableViewTemplateColumn
-        x:Name="PhotoColumn"
-        Header="Photo"
-        Width="56"
-        CellTemplate="{StaticResource AvatarTemplate}"
-        CanSort="False"/>
-    <tv:TableViewTextColumn
-        x:Name="NameColumn"
-        Header="Name"
-        Width="160"
-        Binding="{Binding FullName}"
-        CellContextFlyout="{StaticResource NameCellMenu}"/>
-    <tv:TableViewTemplateColumn
-        x:Name="DepartmentColumn"
-        Header="Department"
-        Width="130"
-        CellTemplate="{StaticResource DepartmentChipTemplate}"
-        SortMemberPath="Department"/>
-    <tv:TableViewTextColumn
-        x:Name="OfficeColumn"
-        Header="Office"
-        Width="140"
-        Binding="{Binding Office}"/>
-    <tv:TableViewTextColumn
-        x:Name="SalaryColumn"
-        Header="Salary"
-        Width="100"
-        Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
+                             Binding="{Binding FullName}"
+                             CellContextFlyout="{StaticResource NameCellMenu}"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
+                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140"
+                             Binding="{Binding Office}"/>
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
+                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
 </tv:TableView>

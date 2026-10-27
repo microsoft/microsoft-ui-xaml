@@ -41,6 +41,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(Entries);    // created once; never rebuilt
         InitializeComponent();
+        PropTable.SelectionChanged += OnPropSelectionChanged; // snippet:skip
 
         PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
@@ -51,9 +52,11 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         TrackLifetime(ListFilesOnce);
     }
 
+    // <snippet>
     public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
 
     public TableViewSource Source { get; }
+    // </snippet>
 
     private async void ListFilesOnce()
     {
@@ -181,15 +184,15 @@ public sealed partial class FilePropertiesPage : SamplePageBase
     private static string SizeText(long bytes) =>
         string.Format(CultureInfo.CurrentCulture, "{0} ({1:N0} bytes)", FileSystemEntry.FormatSize(bytes), bytes);
 
-    // <snippet>
     // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+    // <snippet>
 
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (FilterSelector is null)
-        {
-            return;
-        }
+        if (FilterSelector is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         switch (SampleShaping.SelectedTag(FilterSelector, "all"))
         {
@@ -207,11 +210,11 @@ public sealed partial class FilePropertiesPage : SamplePageBase
                 break;
         }
 
-        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
-        if (IsLoaded)
-        {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleEntries().Count()));
-        }
+        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only. // snippet:skip
+        if (IsLoaded) // snippet:skip
+        { // snippet:skip
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleEntries().Count())); // snippet:skip
+        } // snippet:skip
     }
     // </snippet>
 

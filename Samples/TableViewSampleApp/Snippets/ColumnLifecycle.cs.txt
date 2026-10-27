@@ -4,6 +4,10 @@ InitializeComponent();
 // Index = the Tag of the matching visibility checkbox.
 _canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
 
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
+
+public TableViewSource Source { get; }
+
 private void OnColumnToggle(object sender, RoutedEventArgs e)
 {
     if (sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
@@ -56,6 +60,7 @@ private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
         Width = new GridLength((double)resources["ColWidthDatePicker"]),
         CellTemplate = (DataTemplate)resources["JoinDatePickerTemplate"],
         SortMemberPath = nameof(Person.JoinDate),
+        HeaderToolTip = "Date the person joined. Editable; sorts by the JoinDate value.",
     });
 }
 
@@ -67,25 +72,4 @@ private void OnRemoveJoinDateColumnClick(object sender, RoutedEventArgs e)
     }
 
     PeopleTable.Columns.Remove(joinDate);
-}
-
-private void OnResetClick(object sender, RoutedEventArgs e)
-{
-    for (var target = 0; target < _canonical.Length; target++)
-    {
-        var current = PeopleTable.Columns.IndexOf(_canonical[target]);
-        if (current >= 0 && current != target)
-        {
-            PeopleTable.Columns.RemoveAt(current);
-            PeopleTable.Columns.Insert(target, _canonical[target]);
-        }
-    }
-
-    foreach (var box in new[] { VisAvatarCheckBox, VisNameCheckBox, VisDepartmentCheckBox, VisRoleCheckBox, VisSalaryCheckBox, VisActiveCheckBox, VisShiftCheckBox })
-    {
-        var column = _canonical[int.Parse((string)box.Tag, CultureInfo.InvariantCulture)];
-        var visible = column != ColShift;
-        column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        box.IsChecked = visible;
-    }
 }
