@@ -9,11 +9,11 @@
           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.Resources>
             <DataTemplate x:Key="SnapshotTreeTemplate" x:DataType="controls:TreeViewNode">
-                <Grid Padding="4">
+                <Grid>
                     <Border BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}" BorderThickness="2"
                             CornerRadius="{StaticResource ControlCornerRadius}"
                             Visibility="{x:Bind ((views:SnapshotTreeLabel)Content).MatchVisibility, Mode=OneWay}" />
-                    <TextBlock Text="{x:Bind ((views:SnapshotTreeLabel)Content).Label, Mode=OneWay}" Margin="4"
+                    <TextBlock Text="{x:Bind ((views:SnapshotTreeLabel)Content).Label, Mode=OneWay}" Margin="4,0"
                                ToolTipService.ToolTip="{x:Bind ((views:SnapshotTreeLabel)Content).Label, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>

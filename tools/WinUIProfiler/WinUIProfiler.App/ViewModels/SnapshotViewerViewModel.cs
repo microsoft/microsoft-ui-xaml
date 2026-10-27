@@ -22,10 +22,11 @@ public sealed class SnapshotTreeNode
     public string? DiagnosticsHandle { get; }
     public JsonElement Properties { get; }
     public IReadOnlyList<SnapshotTreeNode> Children { get; internal set; } = [];
-    public string Label => $"#{Id} {Type[(Type.LastIndexOf('.') + 1)..]}" +
-        (string.IsNullOrEmpty(Name) ? "" : $" ({Name})") + $" [{VisualAddress ?? ObjectAddress}]";
+    public string Label => Type[(Type.LastIndexOf('.') + 1)..] +
+        (string.IsNullOrEmpty(Name) ? "" : $" ({Name})") + $" ({VisualAddress ?? ObjectAddress})";
     public string Details => JsonSerializer.Serialize(new
     {
+        id = Id,
         type = Type,
         name = Name,
         objectAddress = ObjectAddress,
