@@ -28,6 +28,7 @@ public sealed class TargetConnection : IAsyncDisposable
 {
     private readonly CancellationTokenSource stop = new();
     private readonly object disposalGate = new();
+    private readonly SemaphoreSlim targetCommands = new(1, 1);
     private readonly IProgress<ConnectionProgress>? progress;
     private Process? target;
     private TapClient? tap;
@@ -209,6 +210,66 @@ History);
     public static ProcessInstanceKey Identify(Process process) =>
         new(checked((uint)process.Id), process.StartTime.ToFileTimeUtc(), Guid.NewGuid());
 
+    public async Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
+        if (!Path.IsPathFullyQualified(directory))
+        {
+            throw new ArgumentException("Snapshot output directory must be absolute.", nameof(directory));
+        }
+
+        var client = tap;
+        if (State != "Connected" || client is null)
+        {
+            throw new InvalidOperationException("Connect to a target before taking a tree snapshot.");
+        }
+
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
+        var token = cancellation.Token;
+        TreeSnapshotDocument snapshot;
+        await targetCommands.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            snapshot = await client.TakeSnapshotAsync(TimeSpan.FromSeconds(30), token).ConfigureAwait(false);
+        }
+        finally
+        {
+            targetCommands.Release();
+        }
+
+        token.ThrowIfCancellationRequested();
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, $"tree-{snapshot.ProcessId}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{snapshot.CaptureId:N}.json");
+        var temporary = path + ".partial";
+        var created = false;
+        var committed = false;
+        try
+        {
+            await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                64 * 1024, FileOptions.Asynchronous))
+            {
+                created = true;
+                await TreeSnapshotCodec.WriteAsync(output, snapshot, token).ConfigureAwait(false);
+            }
+            token.ThrowIfCancellationRequested();
+            File.Move(temporary, path);
+            committed = true;
+            return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
+                snapshot.CompositionNodes.Count, snapshot.Correlations.Count);
+        }
+        finally
+        {
+            if (created && !committed)
+            {
+                try { File.Delete(temporary); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+                {
+                    Trace.TraceError($"Removing incomplete tree snapshot '{temporary}' failed: {error}");
+                }
+            }
+        }
+    }
+
     private async Task MaintainAsync()
     {
         var targetExited = false;
@@ -230,7 +291,16 @@ History);
                     throw new IOException("Process sampling ended unexpectedly.");
                 }
                 await delay.ConfigureAwait(false);
-                await tap!.HelloAsync(TimeSpan.FromSeconds(5), stop.Token).ConfigureAwait(false);
+                // A bounded tree capture must not consume the heartbeat's own timeout.
+                await targetCommands.WaitAsync(stop.Token).ConfigureAwait(false);
+                try
+                {
+                    await tap!.HelloAsync(TimeSpan.FromSeconds(5), stop.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    targetCommands.Release();
+                }
                 Interlocked.Exchange(ref lastHelloTicks, DateTime.UtcNow.Ticks);
                 Changed?.Invoke(this, EventArgs.Empty);
             }
@@ -284,7 +354,7 @@ History);
         {
             try
             {
-                if (!targetExited && Failure is null)
+                if (!targetExited && Failure is null && !tap.IsClosed)
                 {
                     await tap.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
                 }
