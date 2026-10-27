@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
@@ -37,6 +38,11 @@ public sealed partial class CellEditingPage : SamplePageBase
     public CellEditingPage()
     {
         // <snippet>
+        foreach (var person in People)
+        {
+            person.ValidatesNames = true;          // a first and last name are required on this page
+        }
+
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
@@ -68,6 +74,7 @@ public sealed partial class CellEditingPage : SamplePageBase
     private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
     {
         FlushPendingCommit(); // snippet:skip
+        ClearRejectedWrite();
         _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
         _isEditOpen = true; // snippet:skip
         _editsAtBeginEdit = _editsCommitted; // snippet:skip
@@ -82,6 +89,75 @@ public sealed partial class CellEditingPage : SamplePageBase
         _openEdit = "(none)"; // snippet:skip
         SetEditButtonsEnabled(false);
         AnnounceEditEnding(args.EditAction, what); // snippet:skip
+
+        // CellEditEnding runs before the control writes, validates and closes; check afterwards.
+        EnqueueIfLoaded(() =>
+        {
+            if (!PeopleTable.IsEditing)
+            {
+                ValidationInfoBar.IsOpen = false;
+            }
+        });
+    }
+
+    // A rejected commit writes the invalid value, then the previous value back. The first write
+    // carries the error; the second is the rollback. Neither is logged as an edit.
+    private bool IsRejectedWrite(Person person, string property)
+    {
+        foreach (var error in person.GetErrors(property))
+        {
+            _rejectedPerson = person;
+            _rejectedProperty = property;
+            _rejectedError = error?.ToString();
+            _rollbackPending = true;
+            return true;
+        }
+
+        if (_rollbackPending && ReferenceEquals(person, _rejectedPerson) && property == _rejectedProperty)
+        {
+            _rollbackPending = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    // Queued from CellEditEnding(Commit): by now the control has written, validated and either
+    // closed the editor or kept it open.
+    private void OnCommitSettled()
+    {
+        var error = _rejectedError;
+        ClearRejectedWrite();
+        if (error is null || !PeopleTable.IsEditing)
+        {
+            FlushPendingCommit(); // snippet:skip
+            return;
+        }
+
+        _openEdit = _pendingCommit ?? _openEdit; // snippet:skip
+        _pendingCommit = null; // snippet:skip
+        _isEditOpen = true; // snippet:skip
+        SetEditButtonsEnabled(true);
+        var message = error + " The editor stays open with the previous value: type a new value and press Enter, or press Esc to cancel.";
+        if (ValidationInfoBar.IsOpen)
+        {
+            // Already open: InfoBar announces only when it opens, so announce the repeat.
+            FrameworkElementAutomationPeer.FromElement(ValidationInfoBar)?.RaiseNotificationEvent(
+                AutomationNotificationKind.ActionAborted, AutomationNotificationProcessing.ImportantAll,
+                message, "CellEditingValidationRejected");
+        }
+
+        ValidationInfoBar.Message = message;
+        ValidationInfoBar.IsOpen = true;
+        RefreshReadouts(); // snippet:skip
+    }
+
+    private void ClearRejectedWrite()
+    {
+        _rejectedPerson = null;
+        _rejectedProperty = null;
+        _rejectedError = null;
+        _rollbackPending = false;
     }
 
     private void SetEditButtonsEnabled(bool enabled)
@@ -94,7 +170,8 @@ public sealed partial class CellEditingPage : SamplePageBase
     // open editor, where they are.
     private void OnCommitEditClick(object sender, RoutedEventArgs e)
     {
-        if (!PeopleTable.CommitEdit())
+        // A rejected value is reported by OnCommitSettled.
+        if (!PeopleTable.CommitEdit() && _rejectedError is null)
         {
             SetLastAction("CommitEdit returned false: no edit was open, or the value was rejected.");
         }
@@ -111,6 +188,11 @@ public sealed partial class CellEditingPage : SamplePageBase
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender is not Person person || Array.IndexOf(s_editableProperties, e.PropertyName) < 0)
+        {
+            return;
+        }
+
+        if (IsRejectedWrite(person, e.PropertyName!))
         {
             return;
         }
@@ -176,7 +258,7 @@ public sealed partial class CellEditingPage : SamplePageBase
         if (action == TableViewEditAction.Commit && _editsCommitted == _editsAtBeginEdit)
         {
             _pendingCommit = what;
-            EnqueueIfLoaded(FlushPendingCommit);
+            EnqueueIfLoaded(OnCommitSettled);
             return;
         }
 

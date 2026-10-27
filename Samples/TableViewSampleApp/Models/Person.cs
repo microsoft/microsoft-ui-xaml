@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -16,8 +17,10 @@ namespace TableViewSampleApp.Models;
 /// The person row used by most gallery pages. Implements INotifyPropertyChanged so in-cell
 /// editors (two-way bound) and page actions that mutate a row are reflected by the table.
 /// Shared cell templates for this model live in Templates\PersonCellTemplates.xaml.
+/// INotifyDataErrorInfo is opt-in through <see cref="ValidatesNames"/>, which only the Cell
+/// editing page sets, so every other page edits names without validation.
 /// </summary>
-public sealed class Person : INotifyPropertyChanged
+public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
 {
     private string _firstName = string.Empty;
     private string _lastName = string.Empty;
@@ -175,6 +178,72 @@ public sealed class Person : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    // <snippet CellEditing>
+    // Person implements INotifyDataErrorInfo. After a commit writes a cell's value, TableView calls
+    // GetErrors for the edited property: an error keeps the editor open and writes the previous
+    // value back. Set calls ValidateName before raising PropertyChanged, so a handler of the write
+    // already sees its errors.
+    private string? _firstNameError;
+    private string? _lastNameError;
+
+    public bool ValidatesNames { get; set; }
+
+    public bool HasErrors => _firstNameError is not null || _lastNameError is not null;
+
+    public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+    public IEnumerable GetErrors(string? propertyName)
+    {
+        var all = string.IsNullOrEmpty(propertyName);
+        if ((all || propertyName == nameof(FirstName)) && _firstNameError is not null)
+        {
+            yield return _firstNameError;
+        }
+
+        if ((all || propertyName == nameof(LastName)) && _lastNameError is not null)
+        {
+            yield return _lastNameError;
+        }
+    }
+
+    // Returns true when the property's errors changed.
+    private bool ValidateName(string? propertyName)
+    {
+        string? Required(string value, string label) =>
+            ValidatesNames && string.IsNullOrWhiteSpace(value) ? label + " is required." : null;
+
+        switch (propertyName)
+        {
+            case nameof(FirstName):
+                var firstError = Required(_firstName, "First name");
+                if (firstError == _firstNameError)
+                {
+                    return false;
+                }
+
+                _firstNameError = firstError;
+                return true;
+            case nameof(LastName):
+                var lastError = Required(_lastName, "Last name");
+                if (lastError == _lastNameError)
+                {
+                    return false;
+                }
+
+                _lastNameError = lastError;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void RaiseErrorsChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasErrors)));
+        ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+    }
+    // </snippet>
+
     private void Set<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (Equals(field, value))
@@ -182,7 +251,12 @@ public sealed class Person : INotifyPropertyChanged
             return;
         }
         field = value;
+        var errorsChanged = ValidateName(propertyName);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        if (errorsChanged)
+        {
+            RaiseErrorsChanged(propertyName!);
+        }
         if (propertyName is nameof(FirstName) or nameof(LastName))
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullName)));

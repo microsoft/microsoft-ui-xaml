@@ -26,8 +26,20 @@
 
 <!-- … -->
 
+<!-- Opened by the page only when TableView rejects a commit (see OnCommitSettled). -->
+<InfoBar
+    x:Name="ValidationInfoBar"
+    AutomationProperties.AutomationId="CellEditingValidationInfoBar"
+    Severity="Error"
+    Title="Edit rejected"
+    IsClosable="False"
+    IsOpen="False"/>
+
+<!-- … -->
+
 <tv:TableView
     x:Name="PeopleTable"
+    Grid.Row="1"
     AutomationProperties.AutomationId="CellEditingTable"
     AutomationProperties.Name="Editable people"
     ItemsSource="{x:Bind Source}"
@@ -39,8 +51,8 @@
     VerticalAlignment="Stretch"
     MinHeight="320">
     <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="A CellTemplate with no CellEditingTemplate, so this column is never editable."/>
-    <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}"/>
-    <tv:TableViewTextColumn Header="Last name" Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}"/>
+    <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" HeaderToolTip="Required: clearing it is rejected by INotifyDataErrorInfo validation."/>
+    <tv:TableViewTextColumn Header="Last name" Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" HeaderToolTip="Required: clearing it is rejected by INotifyDataErrorInfo validation."/>
     <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Role}"/>
     <tv:TableViewTemplateColumn
         Header="Department"
