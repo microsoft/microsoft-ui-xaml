@@ -168,7 +168,8 @@ boundary can support HIGH area confidence and the configured team route.
 The rationale attributes the diagnosis to the reporter rather than presenting
 it as a verified finding. Unverified root cause alone is not a reason to lower
 routing confidence; contradictory observations or unresolved competing areas
-still require an advisory assessment. A bare label request or unsupported guess
+outside the initial-investigation defaults below still require an advisory
+assessment. A bare label request or unsupported guess
 is not diagnostic evidence, and human labels and configured routing rules remain
 authoritative. This is model guidance, not a publisher-side confidence promotion.
 Unknown rule IDs remain errors. A cross-area rule can be normalized
@@ -180,10 +181,19 @@ For example, `area-Scrolling` normally maps to `team-Controls`, but its
 `compositor-input` rule maps compositor-thread interaction tracker/input-latency
 problems to `team-CompInput`.
 
-The AppWindow `xaml-window-facade` rule handles the XAML facade size-propagation
-boundary when direct AppWindow sizing works; direct native-window defects retain
-their existing route. New reports may instead select `area-XamlWindow` when that
-is the supported primary area, but existing area labels are not replaced.
+For a window-behavior report that does not distinguish XAML/WinUI Window from
+AppWindow, prefer `area-XamlWindow` for initial investigation. A working
+AppWindow alternative is not required: maintainers can redirect later. HIGH
+confidence can express this clear initial route, not a verified root cause;
+the rationale explains the report and policy. Direct AppWindow failures and
+clearly identified control/content-layout failures retain their own areas.
+Existing human areas and teams are never replaced by this default.
+
+The AppWindow `xaml-window-facade` rule handles an evidenced XAML/WinUI Window
+size-propagation or activation-ordering failure when the corresponding direct
+AppWindow operation works. Its stable identifier is retained for compatibility;
+the descriptions refer directly to XAML/WinUI Window. This exception preserves
+an existing AppWindow area rather than replacing the human area decision.
 `area-WebView` defaults to `team-Controls` across product generations, without
 a version-specific exception or inherited Rendering/Core labels. Area selection
 must still distinguish WinUI control/integration defects from evidenced external
@@ -194,6 +204,12 @@ area ownership, as described below.
 `area-TitleBar` defaults to `team-Controls`; its existing `pointer-handling`
 exception still routes evidenced hit-testing, drag-region input, or caption-button
 pointer handling to `team-CompInput`. Existing human team labels are preserved.
+`ExtendsContentIntoTitleBar` is a Window/AppWindow API, not a TitleBar control
+property. Custom title-bar integration reports can start in `area-TitleBar`
+when the control/window boundary is unclear, without claiming API ownership or
+a verified control defect. Failures isolated to Window/AppWindow properties or
+operations follow the window guidance instead. The property name alone does
+not select the TitleBar area.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
 changes. An absent entry or a `null` default team means "do not auto-assign a

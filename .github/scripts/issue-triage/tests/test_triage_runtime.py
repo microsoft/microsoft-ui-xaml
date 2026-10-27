@@ -304,9 +304,27 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("Attribute the diagnosis to the reporter in `routing_reason`", routing)
         self.assertIn("support HIGH `area-TitleBar` routing", routing)
         self.assertIn("A bare label request or unsupported guess is not a technical diagnosis.", routing)
-        self.assertIn("areas unresolved, use MEDIUM/LOW and explain the uncertainty.", routing)
+        self.assertIn("If the diagnosis conflicts with the supplied observations, use MEDIUM/LOW", routing)
+        self.assertIn("Unresolved competing areas also remain advisory unless", routing)
         self.assertIn("Existing area and team labels always take", routing)
         self.assertIn("Never emit a team name.", routing)
+
+    def test_window_initial_investigation_defaults_distinguish_api_ownership(self):
+        routing = self.source.split("## Routing\n", 1)[1].split("## UWP-specific", 1)[0]
+        for guidance in (
+            "prefer `area-XamlWindow` for", "without requiring a working AppWindow alternative",
+            "failure explicitly isolated to direct AppWindow operations",
+            "`ExtendsContentIntoTitleBar` belongs to the Window/AppWindow APIs",
+            "not the", "TitleBar control", "prefer `area-TitleBar` for initial investigation",
+            "does not assert API ownership", "rather than replacing the human area decision",
+        ):
+            self.assertIn(guidance, routing)
+        mapping = t.read_json(str(t.MAP_PATH))
+        self.assertNotIn("ExtendsContentIntoTitleBar", mapping["area-TitleBar"]["match"])
+        self.assertIn("Window.ExtendsContentIntoTitleBar", mapping["area-XamlWindow"]["match"])
+        for area in ("area-AppWindow", "area-XamlWindow"):
+            self.assertNotIn("facade", mapping[area]["note"])
+            self.assertIn("initial investigation", mapping[area]["note"])
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

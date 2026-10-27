@@ -178,7 +178,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
         self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["area-External"])
         self.assertIn("No automatic team assignment", t.render(result, evidence, self.mapping))
 
-    def test_xaml_facade_exception_preserves_existing_appwindow_area_and_routes_core(self):
+    def test_xaml_window_exception_preserves_existing_appwindow_area_and_routes_core(self):
         self.client.issue.update(
             title="Window Width/Height are not reflected before activation",
             body="XAML Window.Width/Height have not propagated to AppWindow.Size before Activate; "
@@ -202,6 +202,52 @@ class AssessmentRecoveryTests(unittest.TestCase):
             t.planned_labels(result, evidence, self.mapping),
             ["area-AppWindow", "team-CompInput"],
         )
+
+    def test_window_initial_route_does_not_require_a_working_appwindow_alternative(self):
+        self.client.issue.update(
+            title="Window does not appear at the requested size",
+            body="The window size is wrong after activation. The report does not distinguish "
+                 "XAML Window from AppWindow and supplies no working alternative.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        reason = "The report concerns window sizing; policy starts investigation in XAML Window. Root cause is unverified."
+        result = t.validate(agent_output(
+            evidence, area="area-XamlWindow", routing_reason=reason,
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], ["area-XamlWindow", "team-Core", "team-Reach"])
+        self.assertIn(reason, plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_window_initial_route_does_not_replace_an_existing_appwindow_area(self):
+        self.client.issue["labels"].append({"name": "area-AppWindow"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-AppWindow",
+            routing_reason="Existing AppWindow routing is preserved; no conditional XAML Window diagnosis is supplied.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-CompInput"])
+
+    def test_titlebar_integration_and_isolated_window_property_failures_keep_distinct_routes(self):
+        for area, description, expected in (
+            ("area-TitleBar",
+             "Custom title-bar integration fails after ExtendsContentIntoTitleBar is enabled; "
+             "the report does not isolate a Window/AppWindow property failure.",
+             ["area-TitleBar", "team-Controls"]),
+            ("area-XamlWindow",
+             "The reporter isolates the failure to Window.ExtendsContentIntoTitleBar propagation.",
+             ["area-XamlWindow", "team-Core", "team-Reach"]),
+            ("area-AppWindow",
+             "The reporter isolates the failure to a direct AppWindow title-bar property operation.",
+             ["area-AppWindow", "team-CompInput"]),
+        ):
+            with self.subTest(area=area):
+                self.client.issue["body"] = description
+                evidence = t.prepare(self.client, event(), self.mapping)
+                result = t.validate(agent_output(
+                    evidence, area=area, routing_reason=description,
+                ), evidence)
+                self.assertEqual(t.planned_labels(result, evidence, self.mapping), expected)
 
     def test_existing_human_owner_is_not_reassigned_by_a_new_exception(self):
         self.evidence["existing_labels"] += ["area-AppWindow", "team-CompInput"]
@@ -246,7 +292,8 @@ class AssessmentRecoveryTests(unittest.TestCase):
     def test_unresolved_titlebar_diagnosis_remains_advisory(self):
         result, evidence = self.validate(
             area="area-TitleBar", area_confidence="MEDIUM",
-            routing_reason="The report does not distinguish stale TitleBar state from native activation failure.",
+            routing_reason="TitleBar only appears in sample code; it is unclear whether content focus, "
+                           "application activation, or title-bar state fails.",
         )
         plan = t.publish(self.client, result, evidence, self.mapping, write=False)
         self.assertEqual(plan["add_labels"], [])
