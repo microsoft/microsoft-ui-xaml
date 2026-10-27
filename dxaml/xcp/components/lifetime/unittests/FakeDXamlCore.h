@@ -58,6 +58,10 @@ namespace DirectUI
         virtual void SetRTWTotalCompressedImageSize(std::uint64_t imageSize) override { m_rtwCompressedImageSize = imageSize; }
 
         BOOLEAN IsFinalReleaseQueueEmpty() { return m_finalReleaseQueue.size() == 0; }
+        // Pillar C test helpers: inspect/reset the off-thread final-release routing target without deleting the
+        // queued raw pointers (the queue does not own a reference in this fake).
+        size_t GetFinalReleaseQueueCount() const { return m_finalReleaseQueue.size(); }
+        void ClearFinalReleaseQueue() { m_finalReleaseQueue.clear(); }
         UINT32 GenerateRawElementProviderRuntimeId() override { ASSERT(false); return 0; }
 
         static IDXamlCore* GetCurrentDXamlCore() { return s_currentDXamlCore; }
