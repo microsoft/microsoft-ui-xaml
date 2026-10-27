@@ -108,7 +108,8 @@ Expanded, the code area takes about half of the presenter's height (`ApplyStretc
 inside it; the example keeps the rest. The full-screen toggle (`SampleSourceFullScreenButton`) hides the
 presenter's title, description, example and rail so the code fills the page content area; Esc, the
 toggle or collapsing the expander restores them, and leaving the page resets it.
-Under the title, the Source drop-down (`SampleSourceLinksButton`) opens a flyout with "Sample page
+At the right end of the title row (wrapped under the title when the row is too narrow), the Source
+drop-down (`SampleSourceLinksButton`, the GitHub mark) opens a flyout with "Sample page
 source code" (XAML and C# of `Pages\<Snippet>Page.xaml(.cs)` on GitHub, main branch) and then "Control
 source code" (`controls\dev\TableView` and the API spec). It is built from `Snippet`, so it appears on
 every sample page and not on Home, About or Settings, and opens links with `Launcher.LaunchUriAsync`.

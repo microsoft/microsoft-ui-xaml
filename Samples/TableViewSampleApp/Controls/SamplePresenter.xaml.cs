@@ -323,6 +323,25 @@ public sealed partial class SamplePresenter : UserControl
     }
 
     // SelectedItem, not SelectorBarItem.IsSelected: the item flag can still hold the old state here.
+    // The title and the Source button share the first row while both fit; otherwise the button wraps
+    // under the title, so it never overlaps it.
+    private void ArrangeHeader(double width)
+    {
+        var wrap = false;
+        if (SourceLinksButton.Visibility == Visibility.Visible)
+        {
+            var unconstrained = new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+            HeaderText.Measure(unconstrained);
+            SourceLinksButton.Measure(unconstrained);
+            wrap = HeaderText.DesiredSize.Width + HeaderPanel.ColumnSpacing + SourceLinksButton.DesiredSize.Width > width;
+        }
+
+        Grid.SetRow(SourceLinksButton, wrap ? 1 : 0);
+        Grid.SetColumn(SourceLinksButton, wrap ? 0 : 1);
+        SourceLinksButton.HorizontalAlignment = wrap ? HorizontalAlignment.Left : HorizontalAlignment.Right;
+        Grid.SetRow(DescriptionText, wrap ? 2 : 1);
+    }
+
     private async void OnSourceLinkClick(object sender, RoutedEventArgs e)
     {
         SourceLinksButton.Flyout?.Hide();
@@ -438,6 +457,8 @@ public sealed partial class SamplePresenter : UserControl
             {
                 HeaderPanel.Width = width;
             }
+
+            ArrangeHeader(Math.Min(width, HeaderPanel.MaxWidth));
         }
 
         HeaderPanel.Measure(new Windows.Foundation.Size(availableSize.Width, double.PositiveInfinity));
