@@ -100,6 +100,9 @@ public:
 
 private:
     void UpdateVisualStates(bool useTransitions);
+    void UpdateDefaultCountOpacity();
+    void TrackDefaultCount(winrt::UIElement const& root);
+    winrt::Size MeasureBand(winrt::Size const& availableSize);
     void UpdateTerminalBottomGridLineSuppression();
 
     winrt::hstring GetGroupIdentity();
@@ -111,6 +114,9 @@ private:
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    // The count in the default content template, cached per inspected ContentTemplateRoot.
+    tracker_ref<winrt::TextBlock> m_defaultCount{ this };
+    winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };

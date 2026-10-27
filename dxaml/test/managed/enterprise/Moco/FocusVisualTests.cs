@@ -45,7 +45,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         #region RS1 default behavior tests
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICDefaultBehaviorWithNoSelection()
         {
@@ -60,7 +60,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICDefaultBehaviorWithSingleSelection()
         {
@@ -75,7 +75,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICDefaultBehaviorWithMultipleSelection1()
         {
@@ -90,7 +90,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICDefaultBehaviorWithMultipleSelection2()
         {
@@ -105,7 +105,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVIEDefaultBehaviorWithMultipleSelection1()
         {
@@ -120,7 +120,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVIEDefaultBehaviorWithMultipleSelection2()
         {
@@ -135,7 +135,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICDefaultBehaviorWithNoSelection()
         {
@@ -150,7 +150,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICDefaultBehaviorWithSingleSelection()
         {
@@ -165,7 +165,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICDefaultBehaviorWithMultipleSelection1()
         {
@@ -180,7 +180,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICDefaultBehaviorWithMultipleSelection2()
         {
@@ -195,7 +195,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVIEDefaultBehaviorWithMultipleSelection1()
         {
@@ -210,7 +210,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVIEDefaultBehaviorWithMultipleSelection2()
         {
@@ -229,7 +229,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         #region RS1 DottedLine behavior tests
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICDottedLineBehaviorWithMultipleSelection1()
         {
@@ -244,7 +244,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICDottedLineBehaviorWithMultipleSelection2()
         {
@@ -259,7 +259,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICDottedLineBehaviorWithMultipleSelection1()
         {
@@ -274,7 +274,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICDottedLineBehaviorWithMultipleSelection2()
         {
@@ -293,7 +293,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         #region RS1 No SystemFocusVisuals tests
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICNoSystemFocusVisualsBehaviorWithMultipleSelection1()
         {
@@ -308,7 +308,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void GVICNoSystemFocusVisualsBehaviorWithMultipleSelection2()
         {
@@ -323,7 +323,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICNoSystemFocusVisualsBehaviorWithMultipleSelection1()
         {
@@ -338,7 +338,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void LVICNoSystemFocusVisualsBehaviorWithMultipleSelection2()
         {

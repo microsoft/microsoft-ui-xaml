@@ -188,14 +188,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateListViewItemFocusPropertyThemeChange)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the ListViewItem's FocusVisual* properties respond to theme changes.")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateGridViewItemFocusPropertyThemeChange)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the GridViewItem's FocusVisual* properties respond to theme changes.")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 

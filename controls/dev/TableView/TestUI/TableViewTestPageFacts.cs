@@ -39,10 +39,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string AfterTableButton = "AfterTableButton";
         internal const string AddColumnButton = "AddColumnButton";
         internal const string RemoveColumnButton = "RemoveColumnButton";
+        internal const string ToggleScorePinButton = "ToggleScorePinButton";
         internal const string FilterSourceButton = "FilterSourceButton";
         internal const string ExpandAllGroupsButton = "ExpandAllGroupsButton";
         internal const string CollapseAllGroupsButton = "CollapseAllGroupsButton";
         internal const string DelayedUnloadButton = "DelayedUnloadButton";
+        internal const string DelayedGripperCaptureLossButton = "DelayedGripperCaptureLossButton";
+        internal const string DelayedDisableButton = "DelayedDisableButton";
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";

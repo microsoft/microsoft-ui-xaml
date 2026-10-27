@@ -9,6 +9,8 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <limits>
+#include <new>
 #include <numeric>
 #include <unordered_map>
 #include <unordered_set>
@@ -651,17 +653,47 @@ namespace ShapingHelpers
         return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
     }
 
+    [[noreturn]] void RethrowAsCallerError(uint32_t kind)
+    {
+        try { throw; }
+        catch (CallerError const&) { throw; }
+        catch (CallerOutOfMemory const&) { throw; }
+        catch (winrt::hresult_error const& error) { throw CallerError(error, kind); }
+        catch (std::bad_alloc const&) { throw CallerOutOfMemory(kind); }
+    }
+
+    uint32_t CurrentCallerErrorKind() noexcept
+    {
+        try { throw; }
+        catch (CallerError const& error) { return error.Kind(); }
+        catch (CallerOutOfMemory const& error) { return error.Kind(); }
+        catch (...) { return 0; }
+    }
+
+    void SwallowedFaults::Note() noexcept
+    {
+        if (count == 0)
+        {
+            try { throw; }
+            catch (winrt::hresult_error const& error) { firstError = error.code(); }
+            catch (std::bad_alloc const&) { firstError = E_OUTOFMEMORY; }
+            catch (...) { firstError = E_FAIL; }
+        }
+        if (count != (std::numeric_limits<uint32_t>::max)()) { ++count; }
+    }
+
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
-        bool throwIfUnsupported)
+        bool throwIfUnsupported,
+        CollectionOwner owner)
     {
         // Single entry point for callers holding a raw source. The classification and the walk both
         // live on CollectionAccessor so there is exactly one interface ladder in the stack.
-        return CollectionAccessor{ source }.Enumerate(throwIfUnsupported);
+        return CollectionAccessor{ source, owner }.Enumerate(throwIfUnsupported);
     }
 
-    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source) :
-        m_source(source)
+    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source, CollectionOwner owner) :
+        m_source(source), m_callerOwned(owner == CollectionOwner::Caller)
     {
         if (!source)
         {
@@ -706,6 +738,7 @@ namespace ShapingHelpers
     }
 
     uint32_t CollectionAccessor::Count() const
+    try
     {
         if (m_vector)
         {
@@ -721,8 +754,15 @@ namespace ShapingHelpers
         }
         return 0;
     }
+    catch (...)
+    {
+        // Only the collection runs here, so any failure, out-of-memory included, is its own.
+        if (m_callerOwned) { RethrowAsCallerError(c_callerDataFault); }
+        throw;
+    }
 
     winrt::IInspectable CollectionAccessor::GetAtUnchecked(uint32_t index) const
+    try
     {
         if (m_vector)
         {
@@ -733,6 +773,11 @@ namespace ShapingHelpers
             return m_vectorView.GetAt(index);
         }
         return m_bindableVector.GetAt(index);
+    }
+    catch (...)
+    {
+        if (m_callerOwned) { RethrowAsCallerError(c_callerDataFault); }
+        throw;
     }
 
     bool CollectionAccessor::TryGetAt(uint32_t index, winrt::IInspectable& item) const
@@ -748,6 +793,7 @@ namespace ShapingHelpers
     }
 
     std::vector<winrt::IInspectable> CollectionAccessor::Enumerate(bool throwIfUnsupported) const
+    try
     {
         std::vector<winrt::IInspectable> result;
         if (!m_source)
@@ -818,10 +864,18 @@ namespace ShapingHelpers
 
         return result;
     }
+    catch (...)
+    {
+        // This also grows its own vector, so an out-of-memory here may be shaping's. A caller's indexed read that
+        // ran out of memory is tagged already (Count, GetAtUnchecked).
+        if (m_callerOwned && winrt::to_hresult() != E_OUTOFMEMORY) { RethrowAsCallerError(c_callerDataFault); }
+        throw;
+    }
 
     void ApplyPredicateFilter(
         std::vector<winrt::IInspectable>& items,
-        std::function<bool(winrt::IInspectable const& item)> const& predicate)
+        std::function<bool(winrt::IInspectable const& item)> const& predicate,
+        SwallowedFaults* contained)
     {
         if (!predicate)
         {
@@ -839,6 +893,7 @@ namespace ShapingHelpers
             }
             catch (...)
             {
+                if (contained) { contained->Note(); }
                 keep = false;
             }
 
@@ -1017,6 +1072,7 @@ namespace ShapingHelpers
         }
         catch (...)
         {
+            m_swallowedFaults.Note();
             return 0;
         }
     }

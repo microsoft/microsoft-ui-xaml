@@ -98,6 +98,9 @@ public:
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
+    // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
+    bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
+
 private:
 
     void OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
@@ -482,6 +485,8 @@ private:
     NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
+    // Unlike m_appliedTemplate, this is never reset, so it tells first-time setup apart from re-templating.
+    bool m_templateAppliedOnce{ false };
 
     // Identifies whenever a call is the result of OnApplyTemplate
     bool m_fromOnApplyTemplate{ false };

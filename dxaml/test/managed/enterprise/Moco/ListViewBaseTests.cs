@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void Setup(TestContext context)
@@ -1860,7 +1860,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "True")] // ListViewBaseTests.ThumbDragTest is unreliable
         public void ThumbDragTest()
         {
@@ -3081,6 +3081,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "If the selected item's container is not focusable, validate that focus is sent to children instead.")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void DoesFocusChildrenOfSelectedItemIfContainerIsNotFocusable()
         {
             StackPanel root = null;
@@ -3628,7 +3629,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "OneCore, WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")] // TODO 20928844: Re-enable after investigating why software injection causes this to inconsistently fail.
         public void ValidateVisibilityChangeDuringDrag()
         {

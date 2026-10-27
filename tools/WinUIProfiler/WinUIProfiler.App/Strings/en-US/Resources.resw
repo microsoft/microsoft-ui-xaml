@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>WinUI Profiler</value></data>
+  <data name="PageTitle.Text" xml:space="preserve"><value>WinUI Profiler</value></data>
+  <data name="PageIntroduction.Text" xml:space="preserve"><value>Launch or attach to a WinUI application. Live process graphs start after the injected TAP replies hello.</value></data>
+  <data name="Mode.Header" xml:space="preserve"><value>Connection mode</value></data>
+  <data name="UnpackagedMode.Content" xml:space="preserve"><value>Unpackaged executable</value></data>
+  <data name="PackagedMode.Content" xml:space="preserve"><value>Packaged application</value></data>
+  <data name="AttachMode.Content" xml:space="preserve"><value>Attach to process ID</value></data>
+  <data name="Target.Header" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
+  <data name="Browse.Content" xml:space="preserve"><value>Browse...</value></data>
+  <data name="Arguments.Header" xml:space="preserve"><value>Launch arguments</value></data>
+  <data name="WorkingDirectory.Header" xml:space="preserve"><value>Working directory (optional; unpackaged only)</value></data>
+  <data name="Endpoint.Header" xml:space="preserve"><value>Diagnostics endpoint</value></data>
+  <data name="Trust.Content" xml:space="preserve"><value>Trust local injector and TAP binaries (executes native code in the target)</value></data>
+  <data name="Connect.Content" xml:space="preserve"><value>Launch and connect</value></data>
+  <data name="Disconnect.Content" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="DisconnectLabel" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Snapshot.Content" xml:space="preserve"><value>Take tree snapshot</value></data>
+  <data name="SnapshotAutomation" xml:space="preserve"><value>Take XAML and Composition tree snapshot</value></data>
+  <data name="SnapshotStatusAutomation" xml:space="preserve"><value>Tree snapshot status</value></data>
+  <data name="SnapshotCapturing" xml:space="preserve"><value>Capturing XAML and Composition trees...</value></data>
+  <data name="SnapshotSavedFormat" xml:space="preserve"><value>Saved {0} XAML nodes and {1} Composition nodes: {2}</value></data>
+  <data name="SnapshotRequiresConnection" xml:space="preserve"><value>Connect to a target before taking a tree snapshot.</value></data>
+  <data name="SnapshotHistoryHeading.Text" xml:space="preserve"><value>Snapshot history</value></data>
+  <data name="SnapshotHistoryNotice.Text" xml:space="preserve"><value>Select a snapshot to inspect its trees. This list lasts for the profiler session; saved JSON files are retained.</value></data>
+  <data name="SnapshotHistory.AutomationProperties.Name" xml:space="preserve"><value>Captured tree snapshots</value></data>
+  <data name="SnapshotHistoryTitleFormat" xml:space="preserve"><value>{0} | PID {1}</value></data>
+  <data name="SnapshotHistorySummaryFormat" xml:space="preserve"><value>{0:N0} XAML | {1:N0} Composition | {2:N0} links</value></data>
+  <data name="SnapshotViewerTitleFormat" xml:space="preserve"><value>Snapshot viewer - {0}</value></data>
+  <data name="SnapshotViewerHeading.Text" xml:space="preserve"><value>Snapshot viewer</value></data>
+  <data name="SnapshotViewerIdentity.AutomationProperties.Name" xml:space="preserve"><value>Snapshot capture identity</value></data>
+  <data name="SnapshotViewerScope.Text" xml:space="preserve"><value>Realized XAML and public Composition trees only. Each root has its own capture interval. Addresses are snapshot metadata, not lifetime IDs. Composition details hide known default values; saved snapshots retain all values.</value></data>
+  <data name="SnapshotViewerLoading.AutomationProperties.Name" xml:space="preserve"><value>Loading tree snapshot</value></data>
+  <data name="SnapshotViewerError.Title" xml:space="preserve"><value>Snapshot viewer failed</value></data>
+  <data name="SnapshotXamlHeading.Text" xml:space="preserve"><value>XAML visual tree</value></data>
+  <data name="SnapshotXamlTree.AutomationProperties.Name" xml:space="preserve"><value>XAML visual tree</value></data>
+  <data name="SnapshotCompositionHeading.Text" xml:space="preserve"><value>Composition visual tree</value></data>
+  <data name="SnapshotCompositionTree.AutomationProperties.Name" xml:space="preserve"><value>Composition visual tree</value></data>
+  <data name="SnapshotXamlExpandAll.Content" xml:space="preserve"><value>Expand all</value></data>
+  <data name="SnapshotXamlExpandAll.AutomationProperties.Name" xml:space="preserve"><value>Expand all XAML nodes</value></data>
+  <data name="SnapshotXamlCollapseAll.Content" xml:space="preserve"><value>Collapse all</value></data>
+  <data name="SnapshotXamlCollapseAll.AutomationProperties.Name" xml:space="preserve"><value>Collapse all XAML nodes</value></data>
+  <data name="SnapshotCompositionExpandAll.Content" xml:space="preserve"><value>Expand all</value></data>
+  <data name="SnapshotCompositionExpandAll.AutomationProperties.Name" xml:space="preserve"><value>Expand all Composition nodes</value></data>
+  <data name="SnapshotCompositionCollapseAll.Content" xml:space="preserve"><value>Collapse all</value></data>
+  <data name="SnapshotCompositionCollapseAll.AutomationProperties.Name" xml:space="preserve"><value>Collapse all Composition nodes</value></data>
+  <data name="SnapshotMappingStatus.Text" xml:space="preserve"><value>Select a node to inspect its direct object mappings.</value></data>
+  <data name="SnapshotMappingStatus.AutomationProperties.Name" xml:space="preserve"><value>Selected snapshot node mappings</value></data>
+  <data name="SnapshotMatches.Header" xml:space="preserve"><value>Direct matches in the other tree</value></data>
+  <data name="SnapshotMatches.AutomationProperties.Name" xml:space="preserve"><value>Direct snapshot node matches</value></data>
+  <data name="SnapshotXamlDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected XAML node properties</value></data>
+  <data name="SnapshotCompositionDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected Composition node properties</value></data>
+  <data name="SnapshotRootFormat" xml:space="preserve"><value>XamlRoot #{0} | thread {1}</value></data>
+  <data name="SnapshotSelectNode" xml:space="preserve"><value>Select a node to inspect its direct object mappings.</value></data>
+  <data name="SnapshotNoMapping" xml:space="preserve"><value>No direct mapping. No ancestor or geometry-based mapping is inferred.</value></data>
+  <data name="SnapshotMatchesFormat" xml:space="preserve"><value>{0:N0} direct match(es). All matches are highlighted; choose a match to reveal it.</value></data>
+  <data name="CancelConnection" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Error.Title" xml:space="preserve"><value>Operation failed</value></data>
+  <data name="StateDisconnected" xml:space="preserve"><value>Disconnected</value></data>
+  <data name="StatePreparing" xml:space="preserve"><value>Preparing connection</value></data>
+  <data name="StateLaunching" xml:space="preserve"><value>Launching or selecting target</value></data>
+  <data name="StateWaitingforXAML" xml:space="preserve"><value>Waiting for XAML diagnostics</value></data>
+  <data name="StateInjectingTAP" xml:space="preserve"><value>Injecting TAP</value></data>
+  <data name="StateAuthenticatingpipe" xml:space="preserve"><value>Authenticating pipe</value></data>
+  <data name="StateVerifyinghello" xml:space="preserve"><value>Verifying TAP hello</value></data>
+  <data name="StateConnected" xml:space="preserve"><value>Connected: hello received</value></data>
+  <data name="StateFailed" xml:space="preserve"><value>Connection failed</value></data>
+  <data name="InvalidEndpoint" xml:space="preserve"><value>Select a whole diagnostics endpoint number between 1 and 65535.</value></data>
+  <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | Created {1} | Last TAP hello {2} | WinUI: {3}</value></data>
+  <data name="ModeAutomation" xml:space="preserve"><value>Launch or attach mode</value></data>
+  <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
+  <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>
+  <data name="ArgumentsAutomation" xml:space="preserve"><value>Launch arguments</value></data>
+  <data name="DirectoryAutomation" xml:space="preserve"><value>Working directory</value></data>
+  <data name="EndpointAutomation" xml:space="preserve"><value>Diagnostics endpoint</value></data>
+  <data name="TrustAutomation" xml:space="preserve"><value>Trust local injection binaries</value></data>
+  <data name="ConnectAutomation" xml:space="preserve"><value>Launch and connect</value></data>
+  <data name="DisconnectAutomation" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="StatusAutomation" xml:space="preserve"><value>Live connection status</value></data>
+  <data name="IdentityAutomation" xml:space="preserve"><value>Connected target identity</value></data>
+  <data name="UtilizationHeading" xml:space="preserve"><value>CPU and GPU utilization</value></data>
+  <data name="MemoryHeading" xml:space="preserve"><value>Process memory</value></data>
+  <data name="UtilizationAutomation" xml:space="preserve"><value>CPU and GPU usage graph</value></data>
+  <data name="MemoryAutomation" xml:space="preserve"><value>Process memory usage graph</value></data>
+  <data name="ChartTime" xml:space="preserve"><value>{0} s</value></data>
+  <data name="ChartScale" xml:space="preserve"><value>0 - {0} {1}</value></data>
+  <data name="ChartValue" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="ChartLegend" xml:space="preserve"><value>{0}: {1} | {2} {3}</value></data>
+  <data name="Cpu" xml:space="preserve"><value>CPU (solid)</value></data>
+  <data name="Gpu" xml:space="preserve"><value>GPU (dashed)</value></data>
+  <data name="WorkingSet" xml:space="preserve"><value>Working set (solid)</value></data>
+  <data name="PrivateWorkingSet" xml:space="preserve"><value>Private working set (short dash)</value></data>
+  <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
+  <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. This baseline does not record ETW, SQLite, or frames.</value></data>
+  <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
+  <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
+  <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
+  <data name="TargetList.AutomationProperties.Name" xml:space="preserve"><value>Available targets</value></data>
+  <data name="PickPackage" xml:space="preserve"><value>Select a packaged application</value></data>
+  <data name="PickProcess" xml:space="preserve"><value>Select a running process</value></data>
+  <data name="SelectTarget" xml:space="preserve"><value>Select</value></data>
+  <data name="LoadingTargets" xml:space="preserve"><value>Loading targets...</value></data>
+  <data name="NoTargets" xml:space="preserve"><value>No matching targets.</value></data>
+</root>

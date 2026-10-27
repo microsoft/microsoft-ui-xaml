@@ -506,6 +506,29 @@ bool RowMetadataProvider::Toggle(winrt::hstring const& key)
     return SetGroupExpandedCore(ResolveGroupFromKey(key), std::nullopt);
 }
 
+// The guards of SetGroupExpandedCore and HierarchicalSourceAdapter::SetNodeExpanded: a group that resolves, or a
+// presented node with children, in another state than the one requested.
+bool RowMetadataProvider::WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept
+{
+    try
+    {
+        if (IsNodeExpansionKey(key))
+        {
+            int32_t index = -1;
+            auto const* const row = m_hierarchicalAdapter->TryGetIndexForNodeKey(key, index)
+                ? m_hierarchicalAdapter->TryGetNodeRow(index) : nullptr;
+            return row && row->HasChildren && (!desired || row->IsExpanded != *desired);
+        }
+
+        auto const group = ResolveGroupFromKey(key);
+        return group && m_groupedAdapter && (!desired || m_groupedAdapter->IsGroupExpanded(group) != *desired);
+    }
+    catch (...)
+    {
+        return true;
+    }
+}
+
 // Under GroupedHierarchical both "group:" and "node:" keys arrive here; route on the key
 // (disjoint prefixes), not SourceKind.
 bool RowMetadataProvider::IsNodeExpansionKey(winrt::hstring const& key) const

@@ -304,7 +304,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateDCompTree()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -386,4 +386,3 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
     }
 }
-
