@@ -4026,7 +4026,7 @@ namespace Microsoft.UI.Xaml.Controls
     [TypeFlags(IsCreateableFromXAML = false)]
     [NativeName("CRowDefinitionCollection")]
     [Guids(ClassGuid = "1d4e2cf0-d66f-47d2-87f5-1516520a5ea5")]
-    public sealed class RowDefinitionCollection
+    public class RowDefinitionCollection
      : Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection<RowDefinition>
     {
         [NativeStorageType(ValueType.valueObject)]
@@ -4036,7 +4036,7 @@ namespace Microsoft.UI.Xaml.Controls
             set;
         }
 
-        internal RowDefinitionCollection() { }
+        public RowDefinitionCollection() { }
     }
 
     [ClassFlags(HasBaseTypeInDXamlInterface = false, HasTypeConverter = true)]
