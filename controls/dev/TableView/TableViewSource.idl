@@ -13,30 +13,75 @@ delegate Object TableViewKeySelector(Object item);
 [webhosthidden]
 delegate String TableViewIdentitySelector(Object item);
 
+// An item's children, for ChildrenWith: a collection accepted by the same rules as From(items), or
+// null/empty for a leaf.
 [MUX_PREVIEW]
 [webhosthidden]
-runtimeclass TableViewSource
+delegate Object TableViewChildrenSelector(Object item);
+
+// Whether an item has children, answered without enumerating them, so ChildrenWith can stay lazy.
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Boolean TableViewHasChildrenPredicate(Object item);
+
+// The fluent shaping verbs every source variant exposes, so a harness can drive any variant the
+// factory creates through one surface.
+[MUX_PREVIEW]
+[webhosthidden]
+interface ITableViewShapingSource
 {
     Boolean IsLiveShaping { get; set; };
 
-    TableViewSource Filter(TableViewPredicate predicate);
-    // Do not remove the [default_overload]/[method_name] metadata on GroupBy/Sort: it is frozen ABI, and
-    // without it MIDL renames the overloads (GroupBy2/Sort2).
+    ITableViewShapingSource Filter(TableViewPredicate predicate);
+    // Keep the [default_overload]/[method_name] metadata on GroupBy/Sort: without it MIDL renames the
+    // overloads (GroupBy2/Sort2).
     [default_overload] [method_name("GroupBy")]
-    TableViewSource GroupBy(TableViewKeySelector keySelector);
+    ITableViewShapingSource GroupBy(TableViewKeySelector keySelector);
     [method_name("GroupByWithIdentity")]
-    TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
+    ITableViewShapingSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
     [method_name("SortByPath")]
-    TableViewSource Sort(String sortMemberPath, SortDirection direction);
+    ITableViewShapingSource Sort(String sortMemberPath, SortDirection direction);
     [default_overload] [method_name("Sort")]
-    TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
-    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
-    TableViewSource ClearFilter();
-    TableViewSource ClearGroupBy();
-    TableViewSource ClearSort();
-    TableViewSource ClearParentBy();
+    ITableViewShapingSource Sort(TableViewKeySelector keySelector, SortDirection direction);
+    ITableViewShapingSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    ITableViewShapingSource ClearFilter();
+    ITableViewShapingSource ClearGroupBy();
+    ITableViewShapingSource ClearSort();
+    ITableViewShapingSource ClearParentBy();
 
+    // Optional verbs: only some variants support them; the others throw E_NOTIMPL.
+    [default_overload] [method_name("ChildrenWith")]
+    ITableViewShapingSource ChildrenWith(TableViewChildrenSelector childrenSelector);
+    [method_name("ChildrenWithHasChildren")]
+    ITableViewShapingSource ChildrenWith(TableViewChildrenSelector childrenSelector, TableViewHasChildrenPredicate hasChildrenSelector);
+    ITableViewShapingSource ClearChildrenWith();
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource : [default] ITableViewShapingSource
+{
+    // The shaping verbs come from ITableViewShapingSource and return it, so every source variant
+    // chains through one type.
     static TableViewSource From(Object items);
+    // keySelector identifies rows by the selected string key instead of by item object identity.
+    // Null is the same as From(items). This variant does not support a key: non-null throws E_NOTIMPL.
+    [method_name("FromWithKey")]
+    static TableViewSource From(Object items, TableViewIdentitySelector keySelector);
+}
+
+// Creates a source by variant name, so a harness can switch source implementations without a
+// rebuild of its own. Every variant implements ITableViewShapingSource and binds to TableView.
+[MUX_PREVIEW]
+[webhosthidden]
+static runtimeclass TableViewSourceRegistry
+{
+    // Throws E_INVALIDARG for a name not in Variants.
+    static ITableViewShapingSource Create(String variant, Object items);
+    // keySelector is passed to the variant's From; null means object identity.
+    [method_name("CreateWithKey")]
+    static ITableViewShapingSource Create(String variant, Object items, TableViewIdentitySelector keySelector);
+    static Windows.Foundation.Collections.IVectorView<String> Variants { get; };
 }
 
 }

@@ -43,20 +43,22 @@ void TableView::SampleInstanceTelemetry() noexcept
         }
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }
         if (!IsReadOnly() && anyEditable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Editing; }
-        if (auto const source = m_activeSource.get())
-        {
-            auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);
-            if (sourceImpl->HasFilter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
-            if (sourceImpl->HasGroupBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
-            if (sourceImpl->HasParentBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
-            if (sourceImpl->IsLiveShaping()) { sample.enabledFeatures |= TableViewTelemetry::Feature::LiveShaping; }
-            sample.sourceRows = sourceImpl->SourceRowCount();
-            sample.dataRows = sourceImpl->DataRowCount();
-            if (sample.dataRows == 0)
-            {
-                TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Empty);
-            }
-        }
+        // Source-derived telemetry is disabled while the source is moved behind ITableViewSource, which does not
+        // expose these shaping queries.
+        // if (auto const source = m_activeSource.get())
+        // {
+        //     auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+        //     if (sourceImpl->HasFilter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
+        //     if (sourceImpl->HasGroupBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
+        //     if (sourceImpl->HasParentBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
+        //     if (sourceImpl->IsLiveShaping()) { sample.enabledFeatures |= TableViewTelemetry::Feature::LiveShaping; }
+        //     sample.sourceRows = sourceImpl->SourceRowCount();
+        //     sample.dataRows = sourceImpl->DataRowCount();
+        //     if (sample.dataRows == 0)
+        //     {
+        //         TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Empty);
+        //     }
+        // }
         if (auto const repeater = m_rowsRepeater.get())
         {
             // A cleared container stays the repeater's child in its recycle pool, so this is the containers created.

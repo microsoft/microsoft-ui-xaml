@@ -215,9 +215,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return list;
         }
 
-        internal static TableViewSource MakeLiveSource(object items, Func<TableViewSource, TableViewSource> shape)
+        internal static ITableViewShapingSource MakeLiveSource(object items, Func<ITableViewShapingSource, ITableViewShapingSource> shape)
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 source = shape(TableViewSource.From(items));
@@ -228,7 +228,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // load is the test class's LoadContent, which is protected on the base.
-        internal static TableView Place(TableViewSource source, Action<UIElement> load, bool expandRows = false)
+        internal static TableView Place(ITableViewShapingSource source, Action<UIElement> load, bool expandRows = false)
         {
             TableView tableView = null;
             RunOnUIThread.Execute(() =>

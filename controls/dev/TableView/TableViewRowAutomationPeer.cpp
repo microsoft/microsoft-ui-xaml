@@ -25,15 +25,15 @@ namespace
     {
         try
         {
-            // Grouping exists only on an app-assigned TableViewSource (the ItemsSource itself).
-            auto const source = tableImpl->ItemsSource().try_as<winrt::TableViewSource>();
+            // Grouping exists only on an app-assigned source (the ItemsSource itself).
+            auto const source = TryGetTableViewSource(tableImpl->ItemsSource());
             auto const repeater = tableImpl->GetRowsRepeaterInternal();
             if (!source || !repeater)
             {
                 return false;
             }
 
-            auto const metadata = winrt::get_self<::TableViewSource>(source)->GetRowMetadata();
+            auto const metadata = source->GetRowMetadata();
             return metadata && metadata->TryGetGroupMembership(repeater.ItemsSourceView(), rowIndex, positionInSet, sizeOfSet);
         }
         catch (...)

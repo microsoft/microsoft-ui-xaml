@@ -677,9 +677,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #region Helpers
 
-        private static TableViewSource MakeSource(object items, Func<TableViewSource, TableViewSource> shape, bool live)
+        private static ITableViewShapingSource MakeSource(object items, Func<ITableViewShapingSource, ITableViewShapingSource> shape, bool live)
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 source = shape(TableViewSource.From(items));
@@ -689,7 +689,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return source;
         }
 
-        private TableView Place(TableViewSource source, bool expandRows = false, bool editable = false)
+        private TableView Place(ITableViewShapingSource source, bool expandRows = false, bool editable = false)
         {
             TableView tableView = null;
             RunOnUIThread.Execute(() =>

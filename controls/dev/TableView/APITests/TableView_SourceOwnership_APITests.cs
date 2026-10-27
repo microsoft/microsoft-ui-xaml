@@ -32,7 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView owner = null;
             TableView waiter = null;
-            TableViewSource shared = null;
+            ITableViewShapingSource shared = null;
             List<ShapedPerson> reentrant = null;
 
             RunOnUIThread.Execute(() =>
@@ -97,7 +97,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView first = null;
             TableView second = null;
-            TableViewSource shared = null;
+            ITableViewShapingSource shared = null;
             StackPanel host = null;
 
             RunOnUIThread.Execute(() =>
@@ -160,7 +160,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView first = null;
             TableView second = null;
-            TableViewSource shared = null;
+            ITableViewShapingSource shared = null;
             StackPanel host = null;
 
             RunOnUIThread.Execute(() =>
@@ -233,7 +233,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView first = null;
             TableView second = null;
-            TableViewSource shared = null;
+            ITableViewShapingSource shared = null;
             StackPanel host = null;
             int sortingCount = 0;
             int sortedCount = 0;

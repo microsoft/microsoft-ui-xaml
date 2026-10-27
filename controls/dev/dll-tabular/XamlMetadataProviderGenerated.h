@@ -110,6 +110,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewShapingSource",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewShapingSource",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -631,6 +651,32 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSourceRegistry",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSourceRegistry",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ITableViewSourceRegistryStatics statics = GetFactory<winrt::ITableViewSourceRegistryStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSourceRegistry");
+                    {
+                        // Ignoring static non-dependency property Variants()
+                    }
+
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);

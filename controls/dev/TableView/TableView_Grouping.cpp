@@ -100,7 +100,7 @@ bool TableView::IsTableViewSourceGrouped() const
 {
     if (auto const source = m_activeSource.get())
     {
-        return winrt::get_self<::TableViewSource>(source)->IsGrouped();
+        return GetTableViewSource(source)->IsGrouped();
     }
 
     return false;

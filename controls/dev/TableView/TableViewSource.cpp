@@ -123,7 +123,16 @@ winrt::TableViewSource TableViewSource::From(winrt::IInspectable const& items)
     return winrt::make<::TableViewSource>(items);
 }
 
-winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& predicate)
+winrt::TableViewSource TableViewSource::From(winrt::IInspectable const& items, winrt::TableViewIdentitySelector const& keySelector)
+{
+    if (keySelector)
+    {
+        throw winrt::hresult_not_implemented(L"This TableViewSource variant does not support a row key.");
+    }
+    return From(items);
+}
+
+winrt::ITableViewShapingSource TableViewSource::Filter(winrt::TableViewPredicate const& predicate)
 {
     if (!predicate)
     {
@@ -137,12 +146,12 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key)
+winrt::ITableViewShapingSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key)
 {
     return GroupBy(key, nullptr);
 }
 
-winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector)
+winrt::ITableViewShapingSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector)
 {
     if (!key)
     {
@@ -165,21 +174,21 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
 
 // A clear is measured only when the engine holds something to clear. The engine keeps a declaration
 // even when re-projecting it throws, so it, not a flag set around the call, is the answer.
-winrt::TableViewSource TableViewSource::ClearFilter()
+winrt::ITableViewShapingSource TableViewSource::ClearFilter()
 {
     ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_engine->HasFilter() };
     tip.Apply([&]() { m_engine->ClearFilter(); });
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearGroupBy()
+winrt::ITableViewShapingSource TableViewSource::ClearGroupBy()
 {
     ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
     tip.Apply([&]() { m_engine->ClearGroup(); });
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
+winrt::ITableViewShapingSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
 {
     if (!keySelector || !parentKeySelector)
     {
@@ -192,13 +201,13 @@ winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector con
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearParentBy()
+winrt::ITableViewShapingSource TableViewSource::ClearParentBy()
 {
     m_engine->ClearParentBy();
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearSort()
+winrt::ITableViewShapingSource TableViewSource::ClearSort()
 {
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
     tip.Apply([&]() { m_engine->ClearSorts(); });
@@ -249,12 +258,12 @@ winrt::hstring TableViewSource::SortAxisTokenForPath(winrt::hstring const& sortM
     return L"path:" + sortMemberPath;
 }
 
-winrt::TableViewSource TableViewSource::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
+winrt::ITableViewShapingSource TableViewSource::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
 {
     return SortCore({}, {}, key, {}, direction);
 }
 
-winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+winrt::ITableViewShapingSource TableViewSource::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
     if (sortMemberPath.empty())
     {

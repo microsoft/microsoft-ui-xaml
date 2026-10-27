@@ -1094,7 +1094,7 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
         // repeater re-binds, and an item under a collapsed group or node is still present.
         auto const source = m_activeSource.get();
         const bool itemLeftSource = sourceReplaced || !source ||
-            !winrt::get_self<::TableViewSource>(source)->ContainsShapedItem(UnwrapEditingDataItem(m_currentEditItem.get()));
+            !GetTableViewSource(source)->ContainsShapedItem(UnwrapEditingDataItem(m_currentEditItem.get()));
 
         // Transfer the pending editor value to the source BEFORE validating. The editing
         // bindings use UpdateSourceTrigger::Explicit, so until this runs the typed value is
@@ -1199,7 +1199,7 @@ void TableView::DrainCoalescedEditReshape()
     {
         if (auto const source = m_activeSource.get())
         {
-            winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();
+            GetTableViewSource(source)->ResumeHeldLiveShaping();
         }
     }
 

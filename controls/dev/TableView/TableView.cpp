@@ -1797,10 +1797,10 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
 {
     auto const itemsSource = ItemsSource();
     // Reclaiming keeps the projection this table already minted, and with it the shaping state.
-    winrt::TableViewSource tableViewSource = reclaimActiveSource ? m_activeSource.get() : winrt::TableViewSource{ nullptr };
+    winrt::IInspectable tableViewSource = reclaimActiveSource ? m_activeSource.get() : winrt::IInspectable{ nullptr };
     if (!tableViewSource)
     {
-        tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
+        tableViewSource = TryGetTableViewSource(itemsSource) ? itemsSource : nullptr;
         m_telemetrySourceKinds = tableViewSource ? TableViewTelemetry::SourceKind::AppSupplied : 0u;
     }
 
@@ -1818,17 +1818,17 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         // Deliberately unguarded. The shaping engine accepts exactly the collection interfaces
         // ItemsSourceView does, so a source it refuses is one XAML cannot project either, and
         // ItemsRepeater raises that as an error rather than degrading. Let it surface.
-        tableViewSource = winrt::TableViewSource::From(itemsSource);
+        tableViewSource = winrt::TableViewSource::From(itemsSource).as<winrt::IInspectable>();
         m_telemetrySourceKinds = TableViewTelemetry::SourceKind::Projected;
     }
 
     StopAwaitingSource();
-    if (tableViewSource && !winrt::get_self<::TableViewSource>(tableViewSource)->SetOwningTableView(*this))
+    if (tableViewSource && !GetTableViewSource(tableViewSource)->SetOwningTableView(*this))
     {
         TVDiag::LogRetailF(L"[TableView] ItemsSource is a TableViewSource already bound to another TableView; ignored.");
         // Retry when the owner lets go; OnTableViewLoaded retries too.
         auto weakThis = get_weak();
-        winrt::get_self<::TableViewSource>(tableViewSource)->AddOwnerReleasedHandler(*this, [weakThis]()
+        GetTableViewSource(tableViewSource)->AddOwnerReleasedHandler(*this, [weakThis]()
         {
             if (auto strongThis = weakThis.get(); strongThis && strongThis->IsLoaded())
             {
@@ -1854,7 +1854,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
 
     if (tableViewSource)
     {
-        auto* const sourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+        auto const sourceImpl = GetTableViewSource(tableViewSource);
 
         // The source raises this rather than calling back into TableView by name, so the shaping
         // stack stays below the control. Weak, because the control owns the source through
@@ -1874,7 +1874,8 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
-        AttachSourceTip(tableViewSource);
+        // Source TiP wiring is disabled while the source is moved behind ITableViewSource.
+        // AttachSourceTip(tableViewSource);
         // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
@@ -1923,7 +1924,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     // TableView it no longer belongs to. A nested adoption may have made it active again.
     if (previouslyOwned && previouslyOwned != tableViewSource && previouslyOwned != m_activeSource.get())
     {
-        winrt::get_self<::TableViewSource>(previouslyOwned)->ReleaseOwningTableView(*this);
+        GetTableViewSource(previouslyOwned)->ReleaseOwningTableView(*this);
     }
 }
 
@@ -1941,7 +1942,7 @@ void TableView::RefreshRowsPipeline()
 
     if (auto const activeSource = m_activeSource.get())
     {
-        auto* const sourceImpl = winrt::get_self<::TableViewSource>(activeSource);
+        auto const sourceImpl = GetTableViewSource(activeSource);
         // Straight through: for a TableViewSource the row view IS the projection's view.
         m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
         m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
@@ -3640,14 +3641,14 @@ void TableView::StopAwaitingSource()
 {
     if (auto const awaitedSource = m_awaitedSource.get())
     {
-        winrt::get_self<::TableViewSource>(awaitedSource)->RemoveOwnerReleasedHandler(*this);
+        GetTableViewSource(awaitedSource)->RemoveOwnerReleasedHandler(*this);
     }
     m_awaitedSource = nullptr;
 }
 
 void TableView::ReclaimItemsSource()
 {
-    if (m_activeSource.get() ? !m_activeSourceReleased : !ItemsSource().try_as<winrt::TableViewSource>())
+    if (m_activeSource.get() ? !m_activeSourceReleased : !TryGetTableViewSource(ItemsSource()))
     {
         return;
     }
@@ -3739,7 +3740,7 @@ void TableView::OnTableViewUnloaded()
     if (auto const activeSource = m_activeSource.get(); activeSource && !m_activeSourceReleased)
     {
         m_activeSourceReleased = true;
-        winrt::get_self<::TableViewSource>(activeSource)->ReleaseOwningTableView(*this);
+        GetTableViewSource(activeSource)->ReleaseOwningTableView(*this);
     }
     StopAwaitingSource();
 

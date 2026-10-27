@@ -119,7 +119,7 @@ namespace MUXControlsTestApp
         private readonly ObservableCollection<TableViewTestPerson> _basicItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
-        private TableViewSource _groupedSource;
+        private ITableViewShapingSource _groupedSource;
         private int _addedColumnCount;
         private TableViewRow _disabledRow;
         private object _disabledRowItem;
@@ -524,12 +524,12 @@ namespace MUXControlsTestApp
 
         // ---------- Hierarchy pivot ----------
 
-        private TableViewSource _hierarchySource;
-        private TableViewSource _hierarchyRtlSource;
+        private ITableViewShapingSource _hierarchySource;
+        private ITableViewShapingSource _hierarchyRtlSource;
         private int _hierarchyBeginningEditCount;
         private bool _hierarchyRefreshQueued;
 
-        private static TableViewSource CreateHierarchySource()
+        private static ITableViewShapingSource CreateHierarchySource()
         {
             var items = new ObservableCollection<HierarchyTestEmployee>();
             for (int i = 0; i < Facts.HierarchyIds.Length; i++)

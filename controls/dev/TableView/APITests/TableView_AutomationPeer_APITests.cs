@@ -2843,7 +2843,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "A flat row must not expose ExpandCollapse, or AT announces it as collapsed.");
             });
 
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             var tableView = PlaceTreeTable(() => source = TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
                 .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
 
@@ -2928,7 +2928,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        private TableView PlaceTreeTable(Func<TableViewSource> makeSource)
+        private TableView PlaceTreeTable(Func<ITableViewShapingSource> makeSource)
         {
             TableView tableView = null;
 

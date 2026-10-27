@@ -914,7 +914,8 @@ private:
         std::optional<HRESULT> m_recoveredError;
     };
 
-    void AttachSourceTip(winrt::TableViewSource const& source);
+    // Disabled while the source is moved behind ITableViewSource.
+    // void AttachSourceTip(winrt::TableViewSource const& source);
     // Whether a synchronous action is tracked: only while a loaded session is active and the rows are not drained.
     bool TracksTipActions() const noexcept { return m_telemetrySession.active && !m_rowsSourceDrained; }
     uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
@@ -1085,7 +1086,8 @@ private:
     winrt::ItemsSourceView m_rowsItemsSourceView{ nullptr };
 
     // The single active source, whether the app assigned it or the control synthesized it over a
-    // plain ItemsSource. Held strongly through a tracker_ref: TableViewSource is a ReferenceTracker,
+    // plain ItemsSource. Any object implementing ITableViewSource; reached through that interface.
+    // Held strongly through a tracker_ref: TableViewSource is a ReferenceTracker,
     // so this edge is visible to the GC's cross-boundary cycle walker (the same reason ItemsRepeater
     // holds its ItemsSourceView by tracker_ref) and double-retention of an app-assigned source
     // alongside the ItemsSource DP cannot leak. Also used to detach the previous source on a swap:
@@ -1094,7 +1096,7 @@ private:
     // when ItemsSource changes to null / a different source; the source keeps only a weak
     // back-pointer to the owner, so this is not a hard cycle. Reassigned exclusively by
     // AdoptItemsSource, so every other path reads it as a stable answer rather than re-deriving it.
-    tracker_ref<winrt::TableViewSource> m_activeSource{ this };
+    tracker_ref<winrt::IInspectable> m_activeSource{ this };
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
@@ -1188,9 +1190,9 @@ private:
     bool CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     // False when the active source cannot order its rows (a null item or one object twice).
     bool CanApplySortTo(winrt::SortDirection direction) const;
-    // The source the rows are projected through, app-assigned or synthesized. Non-null means the
-    // control can reshape the rows itself.
-    winrt::TableViewSource ShapingSourceInternal() const;
+    // The source the rows are projected through, app-assigned or synthesized; it implements
+    // ITableViewSource. Non-null means the control can reshape the rows itself.
+    winrt::IInspectable ShapingSourceInternal() const;
     // Writes the single-column sort state into the columns; does not reshape.
     void ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     // Applies the current sort state to the bound TableViewSource. Returns false when there is no
@@ -1403,7 +1405,7 @@ private:
     // While released the rank hooks were off: edits went unseen and removed rows stayed ranked.
     bool m_rerankCustomSortOnReconcile{ false };
     // The source whose owner refused this table, which waits to be offered it on release.
-    winrt::weak_ref<winrt::TableViewSource> m_awaitedSource{ nullptr };
+    winrt::weak_ref<winrt::IInspectable> m_awaitedSource{ nullptr };
     void StopAwaitingSource();
 
     bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;

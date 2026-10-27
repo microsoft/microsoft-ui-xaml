@@ -48,7 +48,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies the first projection of a ParentBy source shows only roots, collapsed.")]
         public void VerifyParentByProjectsRootsCollapsed()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a null parent key, or one that matches no item, makes the row a root and no row is dropped.")]
         public void VerifyRootsAndOrphansAreRoots()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -82,7 +82,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies an empty-string parent key means no parent, not a key lookup.")]
         public void VerifyEmptyStringParentIsRoot()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
                 source = TableViewSource.From(MakeTree()).ParentBy(EmpKey(e => e.Code), EmpKey(e => e.ParentCode)));
             var tableView = Place(source);
@@ -94,7 +94,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies TableViewRow Level, IsExpandable and IsExpanded reflect node state after ExpandAllRows.")]
         public void VerifyLevelAndExpandableDPs()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -118,7 +118,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies ExpandAllRows and CollapseAllRows touch every node.")]
         public void VerifyExpandAllCollapseAll()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -137,7 +137,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies expansion intent is per node: collapsing and re-expanding a parent keeps its descendants' state.")]
         public void VerifyNestedReexpandKeepsState()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -157,7 +157,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies ClearParentBy restores the flat projection in source order at Level 0.")]
         public void VerifyClearParentByReturnsFlat()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -181,7 +181,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                TableViewSource source;
+                ITableViewShapingSource source;
                 ObservableCollection<TreeEmployee> list;
                 List<WeakReference> weak;
                 RetractAndEmpty(out source, out list, out weak);
@@ -240,7 +240,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a second ParentBy replaces the relation and resets expansion.")]
         public void VerifyRedeclareClearsIntent()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -259,7 +259,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies keys compare by type and value: Int32 ids never link to Int64 parent keys.")]
         public void VerifyInt32VsInt64KeysDoNotLink()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
                 source = TableViewSource.From(MakeTree()).ParentBy(ById, EmpKey(e => e.BigManagerId)));
             var tableView = Place(source);
@@ -271,7 +271,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies WinRT enum keys, boxed afresh on every call, link by value.")]
         public void VerifyEnumKeys()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
                 source = TableViewSource.From(MakeTree()).ParentBy(
                     EmpKey(e => (global::Windows.System.VirtualKey)e.Id),
@@ -288,13 +288,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies reference-type keys link by identity, and fresh objects per call never link or collide.")]
         public void VerifyObjectKeysLinkByIdentity()
         {
-            TableViewSource shared = null;
+            ITableViewShapingSource shared = null;
             RunOnUIThread.Execute(() =>
                 shared = TableViewSource.From(MakeTree()).ParentBy(EmpKey(e => e), EmpKey(e => e.Manager)));
             var tableView = Place(shared);
             RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "shared instances link"));
 
-            TableViewSource fresh = null;
+            ITableViewShapingSource fresh = null;
             RunOnUIThread.Execute(() =>
                 fresh = TableViewSource.From(MakeTree()).ParentBy(
                     EmpKey(e => new object()),
@@ -308,7 +308,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyKeySurvivesRecreate()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -331,7 +331,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies ParentBy rejects a null key or parent key selector.")]
         public void VerifyNullSelectorThrows()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -396,7 +396,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a failed pass is not poisoned: data fixed during the failing pass is projected by the replayed refresh.")]
         public void VerifyRecoverAfterFix()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             string thrown = null;
 
             RunOnUIThread.Execute(() =>
@@ -435,7 +435,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies sort orders each sibling set and children stay under their parent.")]
         public void VerifySortWithinSiblings()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -450,7 +450,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a sort reshape keeps expansion intent.")]
         public void VerifySortKeepsExpansion()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -466,7 +466,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a deep filter match brings its ancestor chain, auto-expanded.")]
         public void VerifyFilterKeepsAncestors()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -480,7 +480,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies matches pull in ancestors, not descendants, and an empty result is valid.")]
         public void VerifyFilterParentMatchExcludesUnmatchedChildren()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -506,7 +506,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies the filter auto-expand overlay is temporary: clearing the filter restores prior intent.")]
         public void VerifyFilterClearRestoresIntent()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -524,7 +524,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyFilteredTogglesAreOverlayOnly()
         {
             // Context collapse and re-expand within the filter.
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -567,7 +567,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies changing the filter discards context-row collapses and rebuilds the overlay.")]
         public void VerifyFilterReplaceAfterContextCollapse()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -589,7 +589,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies grouping buckets roots only and descendants follow their root.")]
         public void VerifyGroupByBucketsRootsOnly()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()).GroupBy(ByDept));
             var tableView = Place(source);
 
@@ -635,7 +635,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies grouping and ungrouping an expanded tree keeps expansion.")]
         public void VerifyRegroupExpandedTree()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -662,7 +662,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyAddRoot()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -681,7 +681,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyAddChildUnderLeaf()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -702,7 +702,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyRemoveParentOrphansChildren()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -722,7 +722,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyReplaceReparents()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -743,7 +743,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyMoveKeepsSiblingOrderBySource()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -762,7 +762,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyResetKeepsIntent()
         {
             ResettableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = new ResettableCollection<TreeEmployee>(MakeTree());
@@ -785,7 +785,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies collapsing the parent of the selected row clears selection, and re-expanding does not restore it.")]
         public void VerifyCollapseDropsSelectionOfHiddenRow()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -830,7 +830,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupedTreeSelectionSurvivesRegroupWhenKeyChanges()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -874,7 +874,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyReentrantClearParentFromSelector()
         {
             // ClearParentBy inside ExpandAllRows' presented change.
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()));
             var tableView = Place(source);
 
@@ -898,7 +898,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             string redeclareThrown = null;
             RunOnUIThread.Execute(() =>
             {
-                TableViewSource redeclared = null;
+                ITableViewShapingSource redeclared = null;
                 redeclared = TableViewSource.From(MakeTree());
                 var once = false;
                 var redeclaring = new TableViewKeySelector(o =>
@@ -927,7 +927,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var armed = false;
             RunOnUIThread.Execute(() =>
             {
-                TableViewSource sorted = null;
+                ITableViewShapingSource sorted = null;
                 sorted = Tree(MakeTree()).Sort(EmpKey(e =>
                 {
                     if (armed)
@@ -961,7 +961,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             // During an incremental add.
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -1010,7 +1010,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyReentrantAddNewGroupRootDuringExpand()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -1056,7 +1056,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             // Flat: a duplicate added during the teardown fails the flat refresh.
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -1188,7 +1188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyDeferredRequestSurvivesFailingIncrementalChange()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();
@@ -1300,7 +1300,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a grouped root row is indented by the group header's expander gutter plus its spacing.")]
         public void VerifyGroupedRootIndentMatchesGroupHeaderGutterAndSpacing()
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = Tree(MakeTree()).GroupBy(ByDept));
             var tableView = Place(source);
 
@@ -1329,7 +1329,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static readonly TableViewKeySelector ByName = EmpKey(e => e.Name);
         private static readonly TableViewKeySelector ByDept = EmpKey(e => e.Dept);
 
-        private static TableViewSource Tree(ObservableCollection<TreeEmployee> list)
+        private static ITableViewShapingSource Tree(ObservableCollection<TreeEmployee> list)
             => TableViewSource.From(list).ParentBy(ById, ByManager);
 
         private static TableViewPredicate NameIs(string name)
@@ -1356,9 +1356,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Data-row names of a freshly placed table over the source, header rows skipped.
-        private string PlacedNames(Func<TableViewSource> makeSource)
+        private string PlacedNames(Func<ITableViewShapingSource> makeSource)
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = makeSource());
             var tableView = Place(source);
 
@@ -1441,7 +1441,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Declares a relation, retracts it, then empties the source. Not inlined, so no local here
         // keeps an item alive for the caller's GC.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void RetractAndEmpty(out TableViewSource source, out ObservableCollection<TreeEmployee> list, out List<WeakReference> weak)
+        private static void RetractAndEmpty(out ITableViewShapingSource source, out ObservableCollection<TreeEmployee> list, out List<WeakReference> weak)
         {
             list = MakeTree();
             weak = list.Select(e => new WeakReference(e)).ToList();
@@ -1454,11 +1454,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // is ArgumentException and the projection is unchanged.
         private void VerifyThrowsKeepsProjection(
             Action<ObservableCollection<TreeEmployee>> mutate,
-            Func<TableViewSource, TableViewSource> declare,
+            Func<ITableViewShapingSource, ITableViewShapingSource> declare,
             string context)
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() =>
             {
                 list = MakeTree();

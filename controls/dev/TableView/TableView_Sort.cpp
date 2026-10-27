@@ -177,7 +177,7 @@ namespace
     }
 }
 
-winrt::TableViewSource TableView::ShapingSourceInternal() const
+winrt::IInspectable TableView::ShapingSourceInternal() const
 {
     // AdoptItemsSource is the single place that decides what the source is; everything else
     // reads the answer here rather than re-deriving it from ItemsSource.
@@ -207,11 +207,11 @@ bool TableView::CanApplySortTo(winrt::SortDirection direction) const
         return true;
     }
     auto const source = ShapingSourceInternal();
-    if (source && m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this))
+    if (source && m_activeSourceReleased && GetTableViewSource(source)->IsOwnedByOther(*this))
     {
         return false;
     }
-    return !source || winrt::get_self<::TableViewSource>(source)->CanApplySort();
+    return !source || GetTableViewSource(source)->CanApplySort();
 }
 
 bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort) const
@@ -412,7 +412,7 @@ bool TableView::IsSortLitOnlyByApp() const
         return false;
     }
     auto const source = ShapingSourceInternal();
-    return source && !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+    return source && !GetTableViewSource(source)->ActiveSortAxisInfos().empty();
 }
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
@@ -580,7 +580,7 @@ bool TableView::SyncTableViewSourceSort(
 
     // Released on Unloaded or before the first Loaded. While another table owns the source, this
     // table changes only its own state; a path axis left behind re-lights the column on reclaim.
-    if (m_activeSourceReleased && winrt::get_self<::TableViewSource>(tableViewSource)->IsOwnedByOther(*this))
+    if (m_activeSourceReleased && GetTableViewSource(tableViewSource)->IsOwnedByOther(*this))
     {
         if (direction == winrt::SortDirection::None)
         {
@@ -626,7 +626,7 @@ bool TableView::SyncTableViewSourceSort(
                 auto rowsView = m_rowsItemsSourceView;
                 if (!rowsView)
                 {
-                    rowsView = winrt::get_self<::TableViewSource>(tableViewSource)->GetItemsSourceView();
+                    rowsView = GetTableViewSource(tableViewSource)->GetItemsSourceView();
                 }
 
                 // Snapshot the rows for the engine, which ranks over a plain vector and never sees
@@ -696,7 +696,7 @@ bool TableView::SyncTableViewSourceSort(
     // Limitation: this reshapes on explicit sort and on collection notifications only.
     // INotifyPropertyChanged-only mutations of the active sort key do not live re-sort until the
     // next collection change.
-    auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+    auto tableViewSourceImpl = GetTableViewSource(tableViewSource);
     // An explicit clear needs no key selector: an app-declared axis lit on a column was never
     // installed by this control, yet clearing that column must still remove it. Any other clear
     // removes only the axis this control installed.
@@ -716,11 +716,11 @@ bool TableView::SyncTableViewSourceSort(
         // An explicit clear means "nothing is sorted", so it clears EVERY axis, not just the one
         // this control installed. Clearing only its own token would leave an app-declared fluent
         // axis ordering the rows while every chevron said the sort was off.
-        tableViewSourceImpl->ClearSort();
+        tableViewSourceImpl->ClearAllSortAxes();
     }
     else if (direction == winrt::SortDirection::None)
     {
-        tableViewSourceImpl->ClearSort(sortAxisToken);
+        tableViewSourceImpl->ClearSortAxis(sortAxisToken);
     }
     else
     {
@@ -728,7 +728,7 @@ bool TableView::SyncTableViewSourceSort(
         // second one on top of the first.
         try
         {
-            tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+            tableViewSourceImpl->ReplaceSortAxis(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
         }
         catch (...)
         {
@@ -737,7 +737,7 @@ bool TableView::SyncTableViewSourceSort(
             m_tableViewSourceSort.AxisToken = sortAxisToken;
             throw;
         }
-        tableViewSourceImpl->ClearSortsExcept(sortAxisToken);
+        tableViewSourceImpl->ClearSortAxesExcept(sortAxisToken);
     }
 
     if (direction == winrt::SortDirection::None)
@@ -886,7 +886,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         {
             if (auto const source = ShapingSourceInternal())
             {
-                keptSourceSort = !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+                keptSourceSort = !GetTableViewSource(source)->ActiveSortAxisInfos().empty();
             }
         }
 
@@ -1001,7 +1001,7 @@ void TableView::ReconcileSortStateWithSource()
     const bool rerankCustomSort = std::exchange(m_rerankCustomSortOnReconcile, false);
 
     auto const& ownToken = m_tableViewSourceSort.AxisToken;
-    auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+    auto tableViewSourceImpl = GetTableViewSource(tableViewSource);
     auto axes = tableViewSourceImpl->ActiveSortAxisInfos();
 
     // A comparer axis another table (or this one, before an ItemsSource change) installed ranks
@@ -1013,7 +1013,7 @@ void TableView::ReconcileSortStateWithSource()
             std::wstring_view{ axis.AxisToken }.starts_with(L"column:"))
         {
             auto const reconcileGuard = BeginControlInitiatedSortScope();
-            tableViewSourceImpl->ClearSort(axis.AxisToken);
+            tableViewSourceImpl->ClearSortAxis(axis.AxisToken);
             clearedForeignComparerAxis = true;
         }
     }
@@ -1025,7 +1025,7 @@ void TableView::ReconcileSortStateWithSource()
     bool ownAxisPresent = false;
     // Infos arrive in precedence order, so the first foreign axis is the one that outranks ours
     // and is therefore the only one a single-column chevron could honestly describe.
-    ::TableViewSource::ActiveSortAxisInfo const* primaryForeignAxis = nullptr;
+    ::ITableViewSource::ActiveSortAxisInfo const* primaryForeignAxis = nullptr;
     for (auto const& axis : axes)
     {
         if (!ownToken.empty() && axis.AxisToken == ownToken)
@@ -1054,7 +1054,7 @@ void TableView::ReconcileSortStateWithSource()
         // alone it would keep whichever axis was declared FIRST as the primary sort, which is the
         // hidden-precedence case this reconciliation exists to prevent.
         auto const reconcileGuard = BeginControlInitiatedSortScope();
-        tableViewSourceImpl->ClearSort(ownToken);
+        tableViewSourceImpl->ClearSortAxis(ownToken);
     }
 
     // A path-declared axis names the property it sorts on, so the chevron can follow the app's own

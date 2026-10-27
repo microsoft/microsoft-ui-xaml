@@ -195,7 +195,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupInfoItemCountUpdatesInPlaceWithNotification()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ObservableCollection<ShapedPerson> items = null;
             TableViewGroupInfo captured = null;
             var raised = new List<string>();
@@ -653,7 +653,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupCollapseDropsSelectionOfHiddenRow()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             var changes = 0;
 
             RunOnUIThread.Execute(() =>
@@ -1267,7 +1267,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectionSurvivesRegroupWhenKeyChanges()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ShapedPerson ines = null;
             var changes = 0;
 

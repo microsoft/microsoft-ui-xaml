@@ -35,7 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectionSurvivesSortThenFilterThenClear()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ShapedPerson diego = null;
             var selectionChangedCount = 0;
 
@@ -106,7 +106,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectedItemWhenFilteredOutThenRestored()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ShapedPerson diego = null;
             var events = new List<(IList<object> Added, IList<object> Removed)>();
 
@@ -162,7 +162,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupingAppliedWhileRowSelectedKeepsSelection()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ShapedPerson owen = null;
 
             RunOnUIThread.Execute(() =>
@@ -219,7 +219,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySortKeyChangeRepositionsRowWhileFilterActive()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ObservableCollection<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -680,7 +680,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupedRowPositionInSetIsGroupRelativeInEveryGroup()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {

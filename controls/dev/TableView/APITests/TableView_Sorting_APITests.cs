@@ -1267,7 +1267,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySortReconcilesWithTableViewSourceSort()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1326,7 +1326,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var clear = ((string)TestContext.DataRow["Clear"]).Trim();
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1379,7 +1379,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var change = ((string)TestContext.DataRow["Change"]).Trim();
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             var sortedArgs = new List<TableViewSortedEventArgs>();
 
             RunOnUIThread.Execute(() =>
@@ -1438,7 +1438,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyUngatingAfterAppSourceSortDoesNotReportClear()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             var sortedArgs = new List<TableViewSortedEventArgs>();
 
             RunOnUIThread.Execute(() =>
@@ -1485,7 +1485,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var sort = ((string)TestContext.DataRow["Sort"]).Trim();
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             int sortedCount = 0;
 
             RunOnUIThread.Execute(() =>
@@ -1538,7 +1538,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var change = ((string)TestContext.DataRow["Change"]).Trim();
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             int sortingCount = 0;
             int sortedCount = 0;
             int directionChanges = 0;

@@ -159,12 +159,13 @@ TableViewTip::MetricsInputs TableView::TipMetricsInputs() noexcept
     try
     {
         metrics.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
-        if (auto const source = m_activeSource.get())
-        {
-            auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);
-            metrics.sourceRows = sourceImpl->SourceRowCount();
-            metrics.dataRows = sourceImpl->DataRowCount();
-        }
+        // Source row counts are disabled while the source is moved behind ITableViewSource, which does not expose them.
+        // if (auto const source = m_activeSource.get())
+        // {
+        //     auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+        //     metrics.sourceRows = sourceImpl->SourceRowCount();
+        //     metrics.dataRows = sourceImpl->DataRowCount();
+        // }
     }
     catch (...)
     {
@@ -191,7 +192,7 @@ void TableView::CompleteTipInitializationIfEmpty() noexcept
     try
     {
         auto const source = m_activeSource.get();
-        auto const view = source ? winrt::get_self<::TableViewSource>(source)->GetItemsSourceView() : nullptr;
+        auto const view = source ? GetTableViewSource(source)->GetItemsSourceView() : nullptr;
         if (!view || view.Count() == 0) { TableViewTip::CompleteInitialization(m_tip); }
     }
     catch (...)
@@ -261,7 +262,7 @@ void TableView::IgnoreTipInitializationUnloadedBeforeRender() noexcept
     try
     {
         auto const source = m_activeSource.get();
-        auto const view = source ? winrt::get_self<::TableViewSource>(source)->GetItemsSourceView() : nullptr;
+        auto const view = source ? GetTableViewSource(source)->GetItemsSourceView() : nullptr;
         if (!view || view.Count() == 0) { return; }
         if (HasRowsViewport()) { TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::UnloadedBeforeRender); }
     }
@@ -325,6 +326,8 @@ void TableView::CompleteTipOperation(uint64_t generation) noexcept
     TableViewTip::CompleteOperation(m_tip, generation);
 }
 
+// Disabled while the source is moved behind ITableViewSource, which does not expose SetShapingTipHandlers.
+#if 0
 void TableView::AttachSourceTip(winrt::TableViewSource const& source)
 {
     auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
@@ -407,3 +410,4 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
             }
         });
 }
+#endif

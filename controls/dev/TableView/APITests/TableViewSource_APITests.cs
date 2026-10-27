@@ -227,7 +227,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyFilterReducesProjectionToMatchingItems()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -253,7 +253,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyClearFilterRestoresEveryItem()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -285,7 +285,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyReplacingTheFilterReevaluatesEveryItem()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -319,7 +319,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyNullFilterPredicateThrows()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -360,7 +360,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyThrowingFilterPredicateLeavesSourceUsable()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -576,7 +576,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyClearGroupByRestoresFlatRows()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -610,7 +610,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyNullGroupKeySelectorThrows()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -695,7 +695,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySortByPathOrdersRows()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -787,7 +787,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyKeySelectorSortNoneFollowsDelegateIdentity()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
             TableViewKeySelector byLength = o => Person(o).Name.Length;
             var byLengthAscending = new List<string> { "Mei", "Asha", "Rafa", "Ines", "Owen", "Diego" };
@@ -847,7 +847,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySortDirectionNoneRemovesThatAxis()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -881,7 +881,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyClearSortRestoresSourceOrder()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -951,7 +951,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyResortingAPathKeepsItsAxisPosition()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -992,7 +992,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyEmptySortMemberPathThrows()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
@@ -1026,7 +1026,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyNullSortKeySelectorThrows()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1049,7 +1049,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySortByKeySelectorClearsColumnSortIndicators()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1092,7 +1092,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView first = null;
             TableView second = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1137,7 +1137,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView first = null;
             TableView second = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             StackPanel host = null;
             int rowCount = 0;
 
@@ -1187,7 +1187,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView first = null;
             TableView second = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             StackPanel host = null;
 
             RunOnUIThread.Execute(() =>
@@ -1244,7 +1244,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView unloaded = null;
             TableView loaded = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             int rowCount = 0;
 
             RunOnUIThread.Execute(() =>
@@ -1285,7 +1285,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableView firstWaiter = null;
             TableView secondWaiter = null;
             TableView claimant = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             StackPanel host = null;
             int rowCount = 0;
 
@@ -1957,7 +1957,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyReentrantShapingDuringSortedReplaceRebuilds()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ObservableCollection<ShapedPerson> items = null;
             var reenter = false;
 
@@ -2120,7 +2120,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyRegroupAfterKeyChangePublishesOneReset()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             List<ShapedPerson> people = null;
             var actions = new List<string>();
 
@@ -2226,7 +2226,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyDuplicateItemObjectThrowsWhenShaped()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -2260,7 +2260,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectionReanchorsAcrossAReshape()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             ShapedPerson selected = null;
 
             RunOnUIThread.Execute(() =>
@@ -2358,7 +2358,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Tall enough that every row in these fixtures realizes, so TryGetElement never legitimately
         // returns null.
-        internal static TableView CreateShapedTable(TableViewSource source)
+        internal static TableView CreateShapedTable(ITableViewShapingSource source)
             => CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 700);
 
         internal static int GroupHeaderCount(TableView tableView)

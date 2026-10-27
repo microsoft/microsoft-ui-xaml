@@ -1604,7 +1604,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // The sibling keeps the parent's child list non-empty once the edited child leaves it.
-        private static TableViewSource ParentEditedUnder(IEnumerable<EditablePerson> items, EditablePerson parent, EditablePerson child, EditablePerson sibling)
+        private static ITableViewShapingSource ParentEditedUnder(IEnumerable<EditablePerson> items, EditablePerson parent, EditablePerson child, EditablePerson sibling)
         {
             var source = SourceFrom(items);
             RunOnUIThread.Execute(() => source.ParentBy(
@@ -1614,7 +1614,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Nodes start collapsed, so expand them to give the child a realized row to edit.
-        private TableView LoadExpandedTable(TableViewSource source)
+        private TableView LoadExpandedTable(ITableViewShapingSource source)
         {
             var tableView = LoadEditableTable(source);
             RunOnUIThread.Execute(() => tableView.ExpandAllRows());
@@ -1623,14 +1623,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // TableViewSource must be created on the UI thread.
-        private static TableViewSource SourceFrom(object items)
+        private static ITableViewShapingSource SourceFrom(object items)
         {
-            TableViewSource source = null;
+            ITableViewShapingSource source = null;
             RunOnUIThread.Execute(() => source = TableViewSource.From(items));
             return source;
         }
 
-        private static TableViewSource GroupByRole(IEnumerable<EditablePerson> items)
+        private static ITableViewShapingSource GroupByRole(IEnumerable<EditablePerson> items)
         {
             var source = SourceFrom(items);
             RunOnUIThread.Execute(() => source.GroupBy(o => ((EditablePerson)o).Role));
