@@ -98,8 +98,8 @@ visible on purpose.
 - Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
   text wrapping, row height, cell editing (with `INotifyDataErrorInfo` validation that keeps a rejected
   edit open), empty state, density, and grouped rows
-- Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
-  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list of people, by manager or by mentor,
+  composed with filter, sort and grouping, and `IsLiveShaping` reshaping the tree when a row's property changes.
   The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
   pages whose rows have no parent relation show those modes disabled with the reason

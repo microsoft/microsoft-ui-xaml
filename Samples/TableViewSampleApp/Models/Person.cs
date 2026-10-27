@@ -35,6 +35,7 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
     private string? _avatarPath;
     private int _employeeId;
     private int? _managerId;
+    private int? _mentorId;
     private string _office = string.Empty;
 
     public string FirstName
@@ -167,6 +168,13 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
     {
         get => _managerId;
         set => Set(ref _managerId, value);
+    }
+
+    /// <summary>EmployeeId of this person's mentor, or null for someone without one (a root of the mentor tree).</summary>
+    public int? MentorId
+    {
+        get => _mentorId;
+        set => Set(ref _mentorId, value);
     }
 
     /// <summary>Office location; one of <c>PersonData.Offices</c>.</summary>

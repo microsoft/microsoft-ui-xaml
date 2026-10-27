@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Hierarchy: TableViewSource.ParentBy(key, parentKey) over one flat list. Two tables share ONE
-    ObservableCollection and declare different relations (manager vs mentor), so the same row sits at a
-    different depth in each. Filter, Sort and GroupBy compose with the hierarchy, and IsLiveShaping
-    reshapes both trees when a row's property changes. The Shaping section is the page's own, not
-    ShapingOptions: it shapes two tables at once.
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.HierarchyPage"
     NavigationCacheMode="Disabled"
@@ -15,143 +8,169 @@
     xmlns:pages="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
-    <Page.Resources>
-        <!-- GroupBy buckets only ROOTS; descendants stay under their parent. -->
-        <DataTemplate x:Key="GroupHeader">
-            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <TextBlock Text="{Binding KeyText}" FontWeight="SemiBold"/>
-                <Border Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
-                        CornerRadius="10" Padding="8,1">
-                    <TextBlock Text="{Binding ItemCountText}" FontSize="11"/>
-                </Border>
-            </StackPanel>
-        </DataTemplate>
-    </Page.Resources>
-
     <controls:SamplePresenter
         Header="Hierarchy"
-        Description="The data is one flat list of employees. TableViewSource.ParentBy(key, parentKey) tells a source how the rows relate; the rows have no children collection, level or expanded flag. Both tables share ONE ObservableCollection: the first declares the Manager relation (ManagerId), the second the Mentor relation (MentorId), so the same person appears at a different depth in each. Rows start collapsed; a null parent key makes a root and an unknown parent key makes an orphan root. Sort applies within each sibling set, Filter keeps matches plus their ancestors (expanded while the filter is active), and grouping buckets the roots while every root keeps its subtree. ParentBy is a code-behind call: a hierarchy cannot be declared in XAML in this release."
+        Description="The rows are one flat list of people with no children collection, level or expanded flag. TableViewSource.ParentBy(key, parentKey) tells the source how they relate: here EmployeeId under ManagerId (the org chart) or under MentorId (a second tree over the same rows). Rows start collapsed; a null parent key makes a root and an unknown parent key an orphan root. Sort applies within each sibling set, Filter keeps every match and its ancestors, and Grouped hierarchy buckets the roots while each root keeps its subtree. ParentBy is a code-behind call: a hierarchy cannot be declared in XAML in this release."
         Snippet="Hierarchy"
-        ShowHierarchyKeys="True"
         StretchExample="True"
-        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to the parent, and * expands the whole subtree. Select a row and choose Reparent, Rename or Next department: with Live shaping on, both trees reshape in place."
-        WhatToLookFor="The same person sits at a different depth in each table. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted, announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows / CollapseAllRows): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open a single row. Known control issue: under a filter, a match whose descendants also match stays collapsed (type Ada: Ada A1 stays closed), so those descendants stay hidden until you expand it.">
+        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to its parent, and * expands its whole subtree. Switch Parent relation to Mentor: the same people form a different tree. Select a row and choose Reparent, Rename or Next department; with Live shaping on, the tree reshapes in place."
+        WhatToLookFor="The same person sits at a different depth under each relation. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted and announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows and CollapseAllRows, the Expand all and Collapse all buttons): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open one row. With Live shaping off, an edit leaves the row where it is until the next reshape, so Reparent replaces the item instead. Known control issue: under a filter, a match whose descendants also match stays collapsed, so those descendants stay hidden until you expand it.">
 
         <controls:SamplePresenter.Example>
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid Grid.Column="0" RowSpacing="4">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Manager relation (parent key = ManagerId)" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <!-- snippet -->
-                    <!-- Columns and the relation are declared in code. Per-level indent is a theme
-                         resource, not a property; set it on this table's Resources to retheme it only. -->
-                    <tv:TableView
-                        x:Name="ManagerTable"
-                        Grid.Row="1"
-                        AutomationProperties.AutomationId="HierarchyManagerTable"
-                        AutomationProperties.Name="Employees by manager"
-                        SelectionMode="Single"
-                        SelectionChanged="OnTableSelectionChanged"
-                        GridLinesVisibility="Horizontal"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableView.Resources>
-                            <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
-                        </tv:TableView.Resources>
-                    </tv:TableView>
-                    <!-- /snippet -->
-                </Grid>
-
-                <Grid Grid.Column="1" RowSpacing="4">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="Mentor relation (parent key = MentorId)" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <tv:TableView
-                        x:Name="MentorTable"
-                        Grid.Row="1"
-                        AutomationProperties.AutomationId="HierarchyMentorTable"
-                        AutomationProperties.Name="Employees by mentor"
-                        SelectionMode="Single"
-                        SelectionChanged="OnTableSelectionChanged"
-                        GridLinesVisibility="Horizontal"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableView.Resources>
-                            <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
-                        </tv:TableView.Resources>
-                    </tv:TableView>
-                </Grid>
-            </Grid>
+            <!-- snippet -->
+            <!-- The per-level indent is a theme resource, not a property; set it in the table's Resources. -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="HierarchyTable"
+                AutomationProperties.Name="People by parent relation"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableView.Resources>
+                    <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
+                </tv:TableView.Resources>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTextColumn Header="#" Width="80" Binding="{Binding EmployeeId}"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
                 <controls:RailSection
                     IsFirst="True"
-                    Header="Shaping"
-                    Description="Applied to both tables. Filter matches names and keeps each match's ancestors; sort orders each sibling set; grouping buckets the roots by department.">
-                    <TextBox x:Name="FilterBox" Header="Filter" PlaceholderText="Name contains..."
-                             AutomationProperties.AutomationId="HierarchyFilterBox"
-                             TextChanged="Filter_Changed" HorizontalAlignment="Stretch"/>
-                    <ComboBox x:Name="SortCombo" Header="Sort" SelectionChanged="Sort_Changed"
-                              AutomationProperties.AutomationId="HierarchySortSelector"
-                              HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Authored order" IsSelected="True"/>
+                    Header="Relation"
+                    Description="ParentBy is declared again with the chosen parent key, over the same rows. With live shaping, an edit to a key or a sorted, filtered or grouped value reshapes the tree in place.">
+                    <ComboBox
+                        x:Name="RelationSelector"
+                        AutomationProperties.AutomationId="HierarchyRelationSelector"
+                        Header="Parent relation"
+                        SelectedIndex="0"
+                        SelectionChanged="OnRelationChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Manager" Tag="Manager"/>
+                        <ComboBoxItem Content="Mentor" Tag="Mentor"/>
+                    </ComboBox>
+                    <ToggleSwitch
+                        x:Name="LiveToggle"
+                        AutomationProperties.AutomationId="HierarchyLiveShapingToggle"
+                        Header="Live shaping"
+                        IsOn="True"
+                        Toggled="OnLiveToggled"/>
+                </controls:RailSection>
+
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="Hierarchy"
+                    InitialMode="hierarchy"
+                    HierarchyColumnHeader="Name"
+                    Description="This page starts in Hierarchy. Grouped hierarchy adds GroupBy on the same source: it buckets the roots, and every root keeps its subtree. Expand all and Collapse all call ExpandAllRows and CollapseAllRows (and the group versions when grouped).">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Office" Tag="Office"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                </controls:ShapingOptions>
+
+                <controls:RailSection
+                    Header="Filter and sort"
+                    Description="Filter matches names and keeps each match's ancestors. Sort uses a key selector and orders each sibling set; header clicks sort the same way.">
+                    <TextBox
+                        x:Name="FilterBox"
+                        AutomationProperties.AutomationId="HierarchyFilterBox"
+                        Header="Filter by name"
+                        PlaceholderText="Name contains"
+                        TextChanged="OnFilterChanged"
+                        HorizontalAlignment="Stretch"/>
+                    <ComboBox
+                        x:Name="SortCombo"
+                        AutomationProperties.AutomationId="HierarchySortSelector"
+                        Header="Sort"
+                        SelectedIndex="0"
+                        SelectionChanged="OnSortChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Source order"/>
                         <ComboBoxItem Content="Name ascending"/>
                         <ComboBoxItem Content="Name descending"/>
-                        <ComboBoxItem Content="Title ascending"/>
+                        <ComboBoxItem Content="Role ascending"/>
                     </ComboBox>
-                    <ToggleSwitch x:Name="GroupToggle" Header="Group roots by department"
-                                  AutomationProperties.AutomationId="HierarchyGroupToggle"
-                                  Toggled="Group_Toggled"/>
-                    <!-- On: edits reshape the tree in place. Off: rows stay put until the next
-                         reshape; Reparent replaces the item instead. -->
-                    <ToggleSwitch x:Name="LiveToggle" Header="Live shaping" IsOn="True"
-                                  AutomationProperties.AutomationId="HierarchyLiveShapingToggle"
-                                  Toggled="Live_Toggled"/>
                 </controls:RailSection>
 
                 <controls:RailSection
                     Header="Actions"
-                    Description="Add and remove edit the shared collection, so both tables follow. Reparent, Rename and Next department change one property of the selected row.">
+                    Description="Add and remove change the collection; Reparent, Rename and Next department change one property of the selected row. Watch the table and the Last action readout.">
                     <StackPanel Spacing="8">
-                        <Button Content="Expand all" Click="ExpandAll_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyExpandAllButton"/>
-                        <Button Content="Collapse all" Click="CollapseAll_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyCollapseAllButton"/>
-                        <Button Content="Add report to selected" Click="AddReport_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyAddReportButton"/>
-                        <Button Content="Add root" Click="AddRoot_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyAddRootButton"/>
-                        <Button Content="Reparent selected" Click="Reparent_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyReparentButton"/>
-                        <Button Content="Rename selected" Click="Rename_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyRenameButton"/>
-                        <Button Content="Next department" Click="NextDept_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyNextDeptButton"/>
-                        <Button Content="Remove selected" Click="Remove_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyRemoveButton"/>
-                        <Button Content="Reset data" Click="Reset_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyResetButton"/>
-                        <Button x:Name="PerfButton" Content="Run 100k perf probe" Click="Perf_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                AutomationProperties.AutomationId="HierarchyPerfButton"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyAddReportButton"
+                            Content="Add a report to the selected row"
+                            Click="OnAddReportClick"
+                            ToolTipService.ToolTip="Adds a person whose manager and mentor are the selected row; with no row selected, a root."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyAddRootButton"
+                            Content="Add a root"
+                            Click="OnAddRootClick"
+                            ToolTipService.ToolTip="Adds a person with no manager and no mentor."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyReparentButton"
+                            Content="Reparent the selected row"
+                            Click="OnReparentClick"
+                            ToolTipService.ToolTip="Moves the selected row under another parent in the current relation, never under itself or its own subtree."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyRenameButton"
+                            Content="Rename the selected row"
+                            Click="OnRenameClick"
+                            ToolTipService.ToolTip="Adds or removes a 'zz' prefix, which sorts last and changes what a name filter matches."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyNextDeptButton"
+                            Content="Move the selected row to the next department"
+                            Click="OnNextDepartmentClick"
+                            ToolTipService.ToolTip="Grouped, a root moves to another group with its subtree; a nested row only changes its cell."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyRemoveButton"
+                            Content="Remove the selected row"
+                            Click="OnRemoveClick"
+                            ToolTipService.ToolTip="Its children become orphan roots: their parent key no longer matches a row."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyResetButton"
+                            Content="Reset the data"
+                            Click="OnResetClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="PerfButton"
+                            AutomationProperties.AutomationId="HierarchyPerfButton"
+                            Content="Run the 100,000-row probe"
+                            Click="OnPerfClick"
+                            ToolTipService.ToolTip="Times ParentBy, Sort and ExpandAllRows against a GroupBy baseline over 100,000 rows; the result appears in Perf probe."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
                     </StackPanel>
                 </controls:RailSection>
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Hierarchy">
-                    <TextBlock x:Name="SelectedText" controls:StatusPanel.Label="Selected" Text="(none)"/>
+                    <TextBlock x:Name="SelectedText" controls:StatusPanel.Label="Selected" Text="(none)" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="FilterText" controls:StatusPanel.Label="Filter" Text="(none)" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="SortText" controls:StatusPanel.Label="Sort" Text="Source order"/>
                     <TextBlock x:Name="LiveText" controls:StatusPanel.Label="Live shaping" Text="On"/>
-                    <TextBlock x:Name="StatusText" controls:StatusPanel.Label="Perf probe" Text="(not run)" FontFamily="Consolas" IsTextSelectionEnabled="True"/>
+                    <TextBlock x:Name="StatusText" controls:StatusPanel.Label="Perf probe" Text="(not run)" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                 </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>

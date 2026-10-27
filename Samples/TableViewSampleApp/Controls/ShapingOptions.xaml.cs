@@ -209,6 +209,19 @@ public sealed partial class ShapingOptions : UserControl
         return this;
     }
 
+    // Switches the parent relation. Under a Hierarchy mode ParentBy is declared again, which replaces
+    // the relation and resets row expansion.
+    public void SetRelation(ParentRelation relation)
+    {
+        _relation = relation;
+        UpdateHierarchyItems();
+        if (_parentDeclared)
+        {
+            _parentDeclared = false;
+            Apply(announce: false);
+        }
+    }
+
     // Pages that reattach a new source re-apply the current mode with this.
     public bool IsShaped => AppliedMode != "flat";
 
@@ -270,7 +283,7 @@ public sealed partial class ShapingOptions : UserControl
         ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(mode, key, SelectedKeyLabel, announce, elapsedMilliseconds, AppliedText, message));
     }
 
-    // <snippet Groups>
+    // <snippet Groups Hierarchy>
     // Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
     // so under both each root keeps its subtree.
     private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
