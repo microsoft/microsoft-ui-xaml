@@ -16,10 +16,15 @@ namespace WinUIProfiler.Engine.Storage;
 // - Other events between a tick's start and stop belong to that tick's frame. The code uses the latest frame number seen
 //   on the thread, which in recorded sessions is always the tick's.
 // - Other events between ticks belong to the frame that renders them, so they are held until the thread's next event
-//   with a FrameNumber.
-// Threads that never report a frame number (the render and image-decode threads) are not attributed.
+//   with a FrameNumber. So are a thread's events before its first one, such as the rest of a tick in progress when the
+//   recording started.
+// Threads that never report a frame number (the render and image-decode threads) are not attributed; only their first
+// MaxHeldBeforeFirstFrame events are held.
 internal sealed class FrameIndex : IDisposable
 {
+    // A UI thread reports a frame number within a tick, far sooner than this.
+    private const int MaxHeldBeforeFirstFrame = 100_000;
+
     // Where an event type keeps its frame number, whether it marks a tick, and its bucket.
     private sealed record EventShape(int FrameNumberField, int IsStartField, string Bucket);
 
@@ -105,7 +110,7 @@ internal sealed class FrameIndex : IDisposable
         {
             Attribute(sequence, profilerEvent.ThreadId, thread.Latest, shape.Bucket);
         }
-        else if (thread.Latest != 0)
+        else if (thread.Latest != 0 || thread.Held.Count < MaxHeldBeforeFirstFrame)
         {
             thread.Held.Add((sequence, shape.Bucket));
         }

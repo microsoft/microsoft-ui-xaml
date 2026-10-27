@@ -14,7 +14,9 @@ namespace WinUIProfiler.Engine.Storage;
 // DependencyObject_Enter, PeerAssociated and ContentChanged's content also carry other DependencyObjects, so their
 // mentions of an address are held until the address is known to be a UI element. DependencyObject_Enter reports the
 // type each time an object enters the tree: a different type at a known address means the memory was reused by a new
-// object, so a new element starts there. Reuse by an object of the same type can't be detected.
+// object, so a new element starts there. The new object's parent, peer and layout events can come before that, so
+// the old element's mentions since it (or its last child) left the tree move to the new one. Reuse by an object of the
+// same type can't be detected.
 internal sealed class ObjectIndex : IDisposable
 {
     // Mentions held per address: a UI element is confirmed within a few, other objects never are.
@@ -30,7 +32,7 @@ internal sealed class ObjectIndex : IDisposable
     }
 
     // Where an event type mentions UI elements, and for DependencyObject_Enter where its type and name are.
-    private sealed record EventRoles((int Field, Role Role)[] Fields, int ObjectField, int TypeField, int NameField);
+    private sealed record EventRoles((int Field, Role Role)[] Fields, int ObjectField, int TypeField, int NameField, bool LeavesTree);
 
     private sealed class Element(long id, long address, string? type, string? name)
     {
@@ -39,6 +41,8 @@ internal sealed class ObjectIndex : IDisposable
         public string? Type { get; set; } = type;
         public string? Name { get; set; } = name;
         public long LastSequence { get; set; }
+        // The last ElementLeftTree that named it, as the element leaving or as a leaving child's parent; 0 if none.
+        public long LeftSequence { get; set; }
         // False once trimming deleted its row; the next mention writes it again.
         public bool Stored { get; set; }
     }
@@ -86,7 +90,8 @@ internal sealed class ObjectIndex : IDisposable
         var fields = profilerEvent.Fields;
         if (roles.TypeField >= 0 && Address(fields[roles.ObjectField].Value) is var entered && entered != 0)
         {
-            ObserveType(entered, fields[roles.TypeField].Value as string, roles.NameField >= 0 ? fields[roles.NameField].Value as string : null);
+            ObserveType(entered, fields[roles.TypeField].Value as string, roles.NameField >= 0 ? fields[roles.NameField].Value as string : null,
+                transaction);
         }
 
         foreach (var (field, role) in roles.Fields)
@@ -97,17 +102,11 @@ internal sealed class ObjectIndex : IDisposable
                 continue;
             }
 
-            if (elements.TryGetValue(address, out var element))
+            Record(address, sequence, field, role);
+            if (roles.LeavesTree)
             {
-                Mention(sequence, element, field);
-            }
-            else if (role == Role.UIElement)
-            {
-                Confirm(address, sequence, field);
-            }
-            else
-            {
-                Hold(address, sequence, field);
+                // Both of ElementLeftTree's fields are UI-element-only, so the element is known now.
+                elements[address].LeftSequence = sequence;
             }
         }
     }
@@ -186,12 +185,12 @@ internal sealed class ObjectIndex : IDisposable
         // Only the start form of DependencyObject_Enter carries the type and name.
         var entered = profilerEvent.Name == "DependencyObject_Enter" && Array.IndexOf(names, "Type") >= 0;
         roles = new(fields.ToArray(), Array.IndexOf(names, "ObjectPointer"), entered ? Array.IndexOf(names, "Type") : -1,
-            entered ? Array.IndexOf(names, "Name") : -1);
+            entered ? Array.IndexOf(names, "Name") : -1, profilerEvent.Name == "ElementLeftTree");
         rolesByType[typeId] = roles;
         return roles;
     }
 
-    private void ObserveType(long address, string? type, string? name)
+    private void ObserveType(long address, string? type, string? name, SqliteTransaction transaction)
     {
         if (string.IsNullOrEmpty(type))
         {
@@ -204,9 +203,14 @@ internal sealed class ObjectIndex : IDisposable
         {
             if (element.Type is not null && element.Type != type)
             {
-                // The memory was reused: the element's history ends here and a new object starts.
+                // The memory was reused: the element's history ends when it left the tree and a new object starts.
                 elements.Remove(address);
                 held[address] = new Held { Type = type, Name = name };
+                if (element.LeftSequence > 0)
+                {
+                    MoveToNewObject(element, transaction);
+                }
+
                 return;
             }
 
@@ -235,6 +239,60 @@ internal sealed class ObjectIndex : IDisposable
 
         // A first sighting, or a different type replacing an object that was never a UI element.
         held[address] = new Held { Type = type, Name = name };
+    }
+
+    // Takes the stored mentions after the element last left the tree from it and records them again for the new object
+    // at its address. Rare (a few per thousand elements), so they are read back rather than kept in memory.
+    private void MoveToNewObject(Element element, SqliteTransaction transaction)
+    {
+        var moved = new List<(long Sequence, int Field, long TypeId)>();
+        using (var select = connection.CreateCommand())
+        {
+            select.Transaction = transaction;
+            select.CommandText = """
+                SELECT r.Seq, r.Field, e.TypeId FROM ObjectEvents r JOIN Events e ON e.Seq = r.Seq
+                WHERE r.ObjectId = $id AND r.Seq > $left
+                ORDER BY r.Seq, r.Field
+                """;
+            select.Parameters.AddWithValue("$id", element.Id);
+            select.Parameters.AddWithValue("$left", element.LeftSequence);
+            using var reader = select.ExecuteReader();
+            while (reader.Read())
+            {
+                moved.Add((reader.GetInt64(0), reader.GetInt32(1), reader.GetInt64(2)));
+            }
+        }
+
+        if (moved.Count == 0)
+        {
+            return;
+        }
+
+        Sql.Execute(connection, "DELETE FROM ObjectEvents WHERE ObjectId = $id AND Seq > $left", transaction,
+            ("$id", element.Id), ("$left", element.LeftSequence));
+        // Its leaving event may already be trimmed.
+        Sql.Execute(connection, "DELETE FROM Objects WHERE ObjectId = $id AND NOT EXISTS (SELECT 1 FROM ObjectEvents WHERE ObjectId = $id)",
+            transaction, ("$id", element.Id));
+        foreach (var (sequence, field, typeId) in moved)
+        {
+            Record(element.Address, sequence, field, Array.Find(rolesByType[typeId].Fields, item => item.Field == field).Role);
+        }
+    }
+
+    private void Record(long address, long sequence, int field, Role role)
+    {
+        if (elements.TryGetValue(address, out var element))
+        {
+            Mention(sequence, element, field);
+        }
+        else if (role == Role.UIElement)
+        {
+            Confirm(address, sequence, field);
+        }
+        else
+        {
+            Hold(address, sequence, field);
+        }
     }
 
     private void Confirm(long address, long sequence, int field)

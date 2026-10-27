@@ -228,8 +228,10 @@ mentions it.
   the address is known to be a UI element, then saved with it. The type and
   `x:Name` come from `DependencyObject_Enter`.
 - The runtime reuses freed addresses. When `DependencyObject_Enter` reports a
-  different type at a known address, a new element starts there. Reuse by an
-  object of the same type can't be told apart.
+  different type at a known address, a new element starts there. The new
+  object's peer, parent and layout events can come first, so the old element's
+  mentions since it (or its last child) left the tree move to the new one.
+  Reuse by an object of the same type can't be told apart.
 - The type is the nearest built-in type: a `TabViewItem` shows as
   `ListViewItem`, and an app's own control as its built-in base class.
 - Other objects (brushes, transforms, composition nodes, visuals, surfaces)
@@ -248,7 +250,9 @@ The writer also records which frame each UI-thread event belongs to
 - Events that carry `FrameNumber` (`DependencyObject_Enter`, `ApplyTemplate`,
   `GoToStateOptimized`, ...) belong to that frame. Other events between a
   tick's start and stop belong to that tick's frame; events between ticks
-  belong to the next frame, the one that renders them.
+  belong to the next frame, the one that renders them. So do a thread's events
+  before its first frame number, such as the rest of a tick in progress when
+  the recording started.
 - Events on threads that never report a frame number (the render and image
   decode threads) are not attributed, nor are a UI thread's last events if no
   frame number follows them.
