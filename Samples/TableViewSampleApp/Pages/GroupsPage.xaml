@@ -73,8 +73,8 @@
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
-                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
                 <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>
                 <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value."/>
@@ -101,9 +101,25 @@
                     </ComboBox>
                 </controls:RailSection>
 
+                <controls:RailSection
+                    Header="First column"
+                    Description="The first column hosts the group indent and, under Hierarchy, the expander chevron. Compare an image column with a text column there.">
+                    <ComboBox
+                        x:Name="FirstColumnSelector"
+                        AutomationProperties.AutomationId="GroupsFirstColumnSelector"
+                        Header="First column"
+                        SelectedIndex="0"
+                        SelectionChanged="OnFirstColumnChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Photo" Tag="Photo"/>
+                        <ComboBoxItem Content="Text (Name)" Tag="Text"/>
+                    </ComboBox>
+                </controls:RailSection>
+
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Groups"
+                    ArrangesHierarchyColumn="False"
                     InitialMode="grouped"
                     Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>

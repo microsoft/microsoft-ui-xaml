@@ -336,4 +336,30 @@ public sealed partial class GroupsPage : SamplePageBase
         _removed.Clear();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0:N0} rows; the grouping applies to them again", restored));
     }
+    private void OnFirstColumnChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        var photo = SampleShaping.SelectedTag(FirstColumnSelector, "Photo") == "Photo";
+        SetFirstColumn(photo ? PhotoColumn : NameColumn);
+        SetLastAction(photo ? "First column is now Photo" : "First column is now Name (text)");
+    }
+
+    // <snippet>
+    // TableView.Columns is the live column collection: moving an entry moves the column. The first
+    // visible column hosts the group indent and the expander chevron.
+    private void SetFirstColumn(TableViewColumn first)
+    {
+        var columns = PeopleTable.Columns;
+        var from = columns.IndexOf(first);
+        if (from > 0)
+        {
+            columns.RemoveAt(from);
+            columns.Insert(0, first);
+        }
+    }
+    // </snippet>
 }

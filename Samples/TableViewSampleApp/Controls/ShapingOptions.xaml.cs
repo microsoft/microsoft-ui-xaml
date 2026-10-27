@@ -129,6 +129,10 @@ public sealed partial class ShapingOptions : UserControl
     // Header of the column that hosts the chevron and indent in the Hierarchy modes.
     public string HierarchyColumnHeader { get; set; } = "Name";
 
+    // False when the page orders its own columns (a First column option): the Hierarchy modes then
+    // leave the column order and widths alone.
+    public bool ArrangesHierarchyColumn { get; set; } = true;
+
     public Func<Action, long>? TimeCall { get; set; }
 
     public TableView? Table => _table;
@@ -275,7 +279,10 @@ public sealed partial class ShapingOptions : UserControl
         AppliedMode = mode;
         AppliedKey = key;
         _parentDeclared = IsHierarchicalMode(mode);
-        ArrangeHierarchyColumn(_parentDeclared);
+        if (ArrangesHierarchyColumn)
+        {
+            ArrangeHierarchyColumn(_parentDeclared);
+        }
         _groupDeclaredAt = IsGrouped ? ++_declarations : -1;
 
         UpdateGating();

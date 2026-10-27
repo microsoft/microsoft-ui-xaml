@@ -108,6 +108,19 @@ private void OnAddPersonClick(object sender, RoutedEventArgs e)
     People.Add(person);
 }
 
+// TableView.Columns is the live column collection: moving an entry moves the column. The first
+// visible column hosts the group indent and the expander chevron.
+private void SetFirstColumn(TableViewColumn first)
+{
+    var columns = PeopleTable.Columns;
+    var from = columns.IndexOf(first);
+    if (from > 0)
+    {
+        columns.RemoveAt(from);
+        columns.Insert(0, first);
+    }
+}
+
 // From Controls\ShapingOptions.xaml.cs
 // Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
 // so under both each root keeps its subtree.

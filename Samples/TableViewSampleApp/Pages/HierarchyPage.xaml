@@ -30,8 +30,8 @@
                 <tv:TableView.Resources>
                     <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
                 </tv:TableView.Resources>
-                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
                 <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <tv:TableViewTextColumn Header="#" Width="80" Binding="{Binding EmployeeId}"/>
@@ -63,11 +63,26 @@
                         Toggled="OnLiveToggled"/>
                 </controls:RailSection>
 
+                <controls:RailSection
+                    Header="First column"
+                    Description="The first column hosts the indent and the expander chevron. Compare a text column with an image column there.">
+                    <ComboBox
+                        x:Name="FirstColumnSelector"
+                        AutomationProperties.AutomationId="HierarchyFirstColumnSelector"
+                        Header="First column"
+                        SelectedIndex="1"
+                        SelectionChanged="OnFirstColumnChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Photo" Tag="Photo"/>
+                        <ComboBoxItem Content="Text (Name)" Tag="Text"/>
+                    </ComboBox>
+                </controls:RailSection>
+
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Hierarchy"
                     InitialMode="hierarchy"
-                    HierarchyColumnHeader="Name"
+                    ArrangesHierarchyColumn="False"
                     Description="This page starts in Hierarchy. Grouped hierarchy adds GroupBy on the same source: it buckets the roots, and every root keeps its subtree. Expand all and Collapse all call ExpandAllRows and CollapseAllRows (and the group versions when grouped).">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
