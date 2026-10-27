@@ -7077,7 +7077,7 @@ namespace Microsoft.UI.Xaml.Controls
     [ContentProperty("ZoomedInView")]
     [Implements(typeof(Microsoft.Internal.FrameworkUdk.IBackButtonPressedListener))]
     [Guids(ClassGuid = "ce486330-0cc2-400f-8a75-945c018a8506")]
-    public sealed class SemanticZoom
+    public class SemanticZoom
      : Microsoft.UI.Xaml.Controls.Control
     {
         [Comment("Gets or sets the ISemanticZoomInformation view for the SemanticZoom's content.")]
