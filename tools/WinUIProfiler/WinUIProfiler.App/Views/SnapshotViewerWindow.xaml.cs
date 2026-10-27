@@ -97,7 +97,7 @@ public sealed partial class SnapshotViewerWindow : Window
         {
             var group = new TreeViewNode
             {
-                Content = new SnapshotTreeLabel(Format("SnapshotRootFormat", root.Id, root.ThreadId))
+                Content = new SnapshotTreeLabel(Format("SnapshotRootFormat", root.XamlRootAddress, root.ThreadId))
             };
             roots.Add(root.Id, group);
             foreach (var node in rootNodes[root.Id]) group.Children.Add(CreateNode(kind, node));

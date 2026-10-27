@@ -55,7 +55,7 @@
   <data name="SnapshotMatches.AutomationProperties.Name" xml:space="preserve"><value>Direct snapshot node matches</value></data>
   <data name="SnapshotXamlDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected XAML node properties</value></data>
   <data name="SnapshotCompositionDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected Composition node properties</value></data>
-  <data name="SnapshotRootFormat" xml:space="preserve"><value>XamlRoot #{0} | thread {1}</value></data>
+  <data name="SnapshotRootFormat" xml:space="preserve"><value>XamlRoot ({0}) | thread {1}</value></data>
   <data name="SnapshotSelectNode" xml:space="preserve"><value>Select a node to inspect its direct object mappings.</value></data>
   <data name="SnapshotNoMapping" xml:space="preserve"><value>No direct mapping. No ancestor or geometry-based mapping is inferred.</value></data>
   <data name="SnapshotMatchesFormat" xml:space="preserve"><value>{0:N0} direct match(es). All matches are highlighted; choose a match to reveal it.</value></data>
