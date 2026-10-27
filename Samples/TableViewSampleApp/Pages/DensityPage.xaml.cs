@@ -38,13 +38,15 @@ public sealed partial class DensityPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Density ------------------------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the // snippet:skip
@@ -54,14 +56,13 @@ public sealed partial class DensityPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));
+        var density = Enum.Parse<TableViewDensity>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
         PeopleTable.Density = density;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Density -> {0}", density));
     }
-
     // </snippet>
+
     // ---- Actions ------------------------------------------------------------------------
-    // <snippet>
 
     private void OnMoveGroupClick(object sender, RoutedEventArgs e)
     {
@@ -72,7 +73,7 @@ public sealed partial class DensityPage : SamplePageBase
         }
 
         var key = IsGrouped ? AppliedGroupKey : nameof(Person.Department);
-        var from = SampleShaping.KeyOf(person, key); // snippet:skip
+        var from = SampleShaping.KeyOf(person, key);
         switch (key)
         {
             case nameof(Person.Role):
@@ -91,7 +92,6 @@ public sealed partial class DensityPage : SamplePageBase
         ReapplyIfGroupedOn(key);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
-    // </snippet>
 
     private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {

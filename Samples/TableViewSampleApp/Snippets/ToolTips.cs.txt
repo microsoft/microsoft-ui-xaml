@@ -1,8 +1,5 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
-
-// The control sorts the TableViewSource itself when a header is clicked; no app code is
-// needed for the Name, Department and Salary columns.
 AttachCellToolTips();
 ApplyHeaderToolTips("original");
 
@@ -51,7 +48,7 @@ private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
 
 private void OnHeaderToolTipsChanged(object sender, SelectionChangedEventArgs e)
 {
-    ApplyHeaderToolTips(SampleShaping.SelectedTag(HeaderToolTipsSelector, "original"));
+    ApplyHeaderToolTips((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
 }
 
 private void ApplyHeaderToolTips(string mode)

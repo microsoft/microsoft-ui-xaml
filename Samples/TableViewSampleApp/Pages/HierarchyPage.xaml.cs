@@ -46,7 +46,9 @@ public sealed partial class HierarchyPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
@@ -83,7 +85,9 @@ public sealed partial class HierarchyPage : SamplePageBase
         Source.IsLiveShaping = ((ToggleSwitch)sender).IsOn;
         SetLastAction(Source.IsLiveShaping ? "IsLiveShaping -> True" : "IsLiveShaping -> False: edits wait for the next reshape");
     }
+    // </snippet>
 
+    // <snippet>
     private void OnFilterChanged(object sender, TextChangedEventArgs e)
     {
         var text = ((TextBox)sender).Text.Trim();
@@ -101,7 +105,9 @@ public sealed partial class HierarchyPage : SamplePageBase
             ? "Filter cleared"
             : string.Format(CultureInfo.CurrentCulture, "Filter -> \u201C{0}\u201D: {1:N0} matches, {2:N0} rows with their ancestors", text, People.Count(p => Matches(p, text)), Relation.CountWithAncestors(People, p => Matches(p, text))));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnSortChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsLoaded) // snippet:skip
@@ -188,7 +194,6 @@ public sealed partial class HierarchyPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}; {1:N0} child row(s) became orphan roots", selected.FullName, children));
     }
 
-    // <snippet>
     // Moves the selected row under another parent, never under itself or its own subtree (a cycle).
     // With live shaping a key change reparents in place; without it, replace the item so the
     // collection change carries the new key.
@@ -248,7 +253,6 @@ public sealed partial class HierarchyPage : SamplePageBase
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "No other parent for {0} without a cycle", selected.FullName));
     }
-    // </snippet>
 
     private void OnResetClick(object sender, RoutedEventArgs e)
     {

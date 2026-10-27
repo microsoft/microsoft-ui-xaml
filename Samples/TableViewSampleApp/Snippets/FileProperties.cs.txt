@@ -22,7 +22,7 @@ private void ShowFile(FileInfo file)
 
 private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
 {
-    switch (SampleShaping.SelectedTag(FilterSelector, "all"))
+    switch ((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag)
     {
         case "dates":
             Source.Filter(item => item is FilePropertyEntry { IsDate: true });
@@ -37,36 +37,4 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
             Source.ClearFilter();
             break;
     }
-}
-
-private void OnMoveSectionClick(object sender, RoutedEventArgs e)
-{
-    if (PropTable.SelectedItem is not FilePropertyEntry entry)
-    {
-        return;
-    }
-
-    var from = entry.Section;
-    entry.Section = SampleShaping.Next(s_sections, from);
-
-    // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
-    ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
-}
-
-private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
-{
-    if (PropTable.SelectedItem is not FilePropertyEntry entry)
-    {
-        return;
-    }
-
-    // A collection change: the source drops the row (and an emptied section) by itself.
-    Entries.Remove(entry);
-}
-
-// Never blank: TableViewSource fails fast on an empty group identity.
-private static object KeyOf(FilePropertyEntry? entry, string key)
-{
-    var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
-    return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
 }

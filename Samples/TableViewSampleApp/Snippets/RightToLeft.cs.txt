@@ -1,6 +1,7 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+// PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.
 public ObservableCollection<Person> People { get; } = RtlPersonData.Mixed();
 
 public TableViewSource Source { get; }
@@ -8,55 +9,4 @@ public TableViewSource Source { get; }
 private void OnRtlToggled(object sender, RoutedEventArgs e)
 {
     PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-}
-
-private void OnFilterChanged(object sender, TextChangedEventArgs e)
-{
-    var term = ApplyFilter();
-}
-
-private string ApplyFilter()
-{
-    var term = FilterBox.Text.Trim();
-    if (term.Length == 0)
-    {
-        Source.ClearFilter();
-    }
-    else
-    {
-        // Filter reshapes the same source in place and composes with GroupBy and the sort. It
-        // evaluates the predicate on a reshape only, so an edit to a matched value re-applies it.
-        Source.Filter(item => item is Person person && Matches(person, term));
-    }
-
-    return term;
-}
-
-private static bool Matches(Person person, string term) =>
-    person.FullName.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-    || person.Department.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-    || person.Office.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-    || person.Bio.Contains(term, StringComparison.CurrentCultureIgnoreCase);
-
-private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
-{
-    var direction = FirstNameColumn.SortDirection == SortDirection.Ascending
-        ? SortDirection.Descending
-        : SortDirection.Ascending;
-    PeopleTable.SortByColumn(FirstNameColumn, direction);
-}
-
-// TableView.Columns is the live column collection: moving an entry moves the column.
-private void MoveColumn(TableViewColumn column, int offset)
-{
-    var columns = PeopleTable.Columns;
-    var from = columns.IndexOf(column);
-    var to = from + offset;
-    if (from < 0 || to < 0 || to >= columns.Count)
-    {
-        return;
-    }
-
-    columns.RemoveAt(from);
-    columns.Insert(to, column);
 }

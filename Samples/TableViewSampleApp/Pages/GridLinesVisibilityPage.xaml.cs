@@ -52,13 +52,15 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Grid lines and banding ---------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="3") before the table exists. // snippet:skip
@@ -67,7 +69,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
+        PeopleTable.GridLinesVisibility = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag switch
         {
             "None" => TableViewGridLinesVisibility.None,
             "Horizontal" => TableViewGridLinesVisibility.Horizontal,
@@ -76,7 +78,9 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         };
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "GridLinesVisibility -> {0}", PeopleTable.GridLinesVisibility));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
     {
         if (PeopleTable is null || RowBandingText is null) // snippet:skip
@@ -84,7 +88,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+        var custom = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "custom";
         PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
         SetLastAction(custom
             ? "Row banding -> custom RowBackground / AlternatingRowBackground"
@@ -220,7 +224,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         // Moves along the key the Group key selector names, so the row always changes group
         // when grouped (and the same value changes when flat).
         var key = Shaping.SelectedKey;
-        var from = SampleShaping.KeyOf(person, key); // snippet:skip
+        var from = SampleShaping.KeyOf(person, key);
         using (BeginBulkUpdate())
         {
             switch (key)

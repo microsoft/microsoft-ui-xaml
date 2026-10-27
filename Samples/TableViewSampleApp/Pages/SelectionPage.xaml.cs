@@ -42,13 +42,15 @@ public sealed partial class SelectionPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Selection mode -----------------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="1"), before the table exists. // snippet:skip
@@ -57,51 +59,63 @@ public sealed partial class SelectionPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var single = SampleShaping.SelectedTag(SelectionModeSelector, "Single") == "Single";
+        var single = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "Single";
         PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
         SetLastAction(single ? "Selection mode -> Single" : "Selection mode -> None");
     }
+    // </snippet>
 
     private bool IsSingleMode => PeopleTable.SelectionMode == TableViewSelectionMode.Single;
 
-    // </snippet>
     // ---- Selection from code --------------------------------------------------------------
-    // <snippet>
 
     private void OnSelectFirstClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: false);
 
     private void OnSelectLastClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: true);
 
-    // Select takes a display index, and group headers take indexes too but cannot be selected,
-    // so walk in from the end until IsSelected confirms a row took the selection.
     private void SelectDisplayedRow(bool fromEnd)
     {
-        var which = fromEnd ? "last" : "first"; // snippet:skip
+        var which = fromEnd ? "last" : "first";
         if (!IsSingleMode)
         {
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ignored Select {0}: SelectionMode is None.", which));
             return;
         }
 
-        var max = People.Count + (IsGrouped ? GroupCount() : 0) - 1;
-        for (var step = 0; step <= max; step++)
+        var index = SelectFirstSelectable(People.Count + (IsGrouped ? GroupCount() : 0) - 1, fromEnd);
+        if (index >= 0)
         {
-            var index = fromEnd ? max - step : step;
-            PeopleTable.Select(index);
-            if (PeopleTable.IsSelected(index))
-            {
-                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Select({0}) selected the {1} row, {2}", index, which, Describe(PeopleTable.SelectedItem)));
-                return;
-            }
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Select({0}) selected the {1} row, {2}", index, which, Describe(PeopleTable.SelectedItem)));
+            return;
         }
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "No {0} row to select: every row is hidden in a collapsed group.", which));
     }
 
+    // <snippet>
+    // Select takes a display index; group headers take indexes too but cannot be selected, so walk
+    // in from one end until IsSelected confirms a row took the selection.
+    private int SelectFirstSelectable(int lastIndex, bool fromEnd)
+    {
+        for (var step = 0; step <= lastIndex; step++)
+        {
+            var index = fromEnd ? lastIndex - step : step;
+            PeopleTable.Select(index);
+            if (PeopleTable.IsSelected(index))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+    // </snippet>
+
     // Group headers take display indexes too.
     private int GroupCount() =>
         People.Select(p => SampleShaping.GroupIdentity(SampleShaping.KeyOf(p, AppliedGroupKey))).Distinct(StringComparer.Ordinal).Count();
 
+    // <snippet>
     private void OnClearSelectionClick(object sender, RoutedEventArgs e)
     {
         var had = PeopleTable.SelectedItem; // snippet:skip
@@ -151,7 +165,6 @@ public sealed partial class SelectionPage : SamplePageBase
             ReferenceEquals(PeopleTable.SelectedItem, person) ? "still on that person" : "no longer on that person"));
     }
 
-    // <snippet>
     private void OnInsertAboveClick(object sender, RoutedEventArgs e)
     {
         if (PeopleTable.SelectedItem is not Person selected)
@@ -167,21 +180,21 @@ public sealed partial class SelectionPage : SamplePageBase
         person.Department = selected.Department;
         person.Office = selected.Office;
         person.IsActive = selected.IsActive;
-        PersonData.ReportToDepartmentHead(person, People); // snippet:skip
+        PersonData.ReportToDepartmentHead(person, People);
 
-        var before = _changeCount; // snippet:skip
+        var before = _changeCount;
         People.Insert(People.IndexOf(selected), person);
 
-        // A SelectionChanged raised by the insert lands before this continuation runs. // snippet:skip
-        EnqueueIfLoaded(() => // snippet:skip
-        { // snippet:skip
+        // A SelectionChanged raised by the insert lands before this continuation runs.
+        EnqueueIfLoaded(() =>
+        {
             SetLastAction(string.Format(
                 CultureInfo.CurrentCulture,
                 "Inserted {0} above {1}; {2}",
                 person.FullName,
                 selected.FullName,
                 _changeCount == before ? "no SelectionChanged was raised" : "SelectionChanged was raised"));
-        }); // snippet:skip
+        });
     }
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
@@ -194,17 +207,15 @@ public sealed partial class SelectionPage : SamplePageBase
 
         People.Remove(selected);
 
-        EnqueueIfLoaded(() => // snippet:skip
-        { // snippet:skip
+        EnqueueIfLoaded(() =>
+        {
             SetLastAction(PeopleTable.SelectedItem is null
                 ? string.Format(CultureInfo.CurrentCulture, "Removed {0}; the selection cleared", selected.FullName)
                 : string.Format(CultureInfo.CurrentCulture, "Removed {0}; the selection moved to {1}", selected.FullName, Describe(PeopleTable.SelectedItem)));
-        }); // snippet:skip
+        });
     }
 
-    // </snippet>
     // ---- Events ---------------------------------------------------------------------------
-    // <snippet>
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
@@ -212,7 +223,6 @@ public sealed partial class SelectionPage : SamplePageBase
         _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
         RefreshReadouts();
     }
-    // </snippet>
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {

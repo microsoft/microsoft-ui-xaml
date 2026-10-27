@@ -1,9 +1,3 @@
-// The cell template binds this static state; reset it so a new visit starts from the
-// defaults the rail shows.
-WrapState.TextWrapping = TextWrapping.Wrap;
-WrapState.TextTrimming = TextTrimming.None;
-WrapState.MaxLines = 0;
-
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
@@ -21,7 +15,7 @@ private void OnWrapToggled(object sender, RoutedEventArgs e)
 
 private void OnMaxLinesChanged(object sender, SelectionChangedEventArgs e)
 {
-    _maxLines = int.TryParse(SampleShaping.SelectedTag(MaxLinesSelector, "0"), NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
+    _maxLines = int.TryParse((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag, NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
     ApplyTextState();
 }
 

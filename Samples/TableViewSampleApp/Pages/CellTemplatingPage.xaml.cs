@@ -38,13 +38,15 @@ public sealed partial class CellTemplatingPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Join date editor: swap the column's CellTemplate at run time -----------------------
-    // <snippet>
 
+    // <snippet>
     private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the // snippet:skip
@@ -54,7 +56,7 @@ public sealed partial class CellTemplatingPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var full = SampleShaping.SelectedTag(JoinDateEditorSelector, "calendar") == "datepicker";
+        var full = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "datepicker";
         var resources = Application.Current.Resources;
         JoinDateColumn.CellTemplate = (DataTemplate)resources[full ? "JoinDatePickerTemplate" : "JoinCalendarDateTemplate"];
         JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);
@@ -125,7 +127,7 @@ public sealed partial class CellTemplatingPage : SamplePageBase
             return;
         }
 
-        var from = person.Department; // snippet:skip
+        var from = person.Department;
         var to = SampleShaping.Next(PersonData.Departments, person.Department);
         using (BeginBulkUpdate())
         {

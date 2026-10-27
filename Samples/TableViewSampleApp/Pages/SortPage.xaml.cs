@@ -51,44 +51,63 @@ public sealed partial class SortPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Programmatic sort: one column at a time; a new sort replaces the previous one -------
+
     // <snippet>
-
     private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, SortDirection.Descending);
+    // </snippet>
 
+    // <snippet>
     private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, SortDirection.Ascending);
+    // </snippet>
 
+    // <snippet>
     private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, SortDirection.Descending);
+    // </snippet>
 
+    // <snippet>
     private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, SortDirection.Ascending);
+    // </snippet>
 
+    // <snippet>
     private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, SortDirection.Ascending);
+    // </snippet>
 
+    // <snippet>
     private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, SortDirection.Descending);
+    // </snippet>
 
+    // <snippet>
+    // Sorting is not live: after a sorted value changes, sort again to move the row.
     private void SortBy(TableViewColumn column, SortDirection direction)
     {
         TeamsTable.SortByColumn(column, direction);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn({0}, {1})", ColumnLabel(column), direction));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnTogglePointsClick(object sender, RoutedEventArgs e)
     {
         TeamsTable.ToggleSortDirection(PointsColumn);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "ToggleSortDirection(Pts) -> {0}", PointsColumn.SortDirection));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnClearSortClick(object sender, RoutedEventArgs e)
     {
         TeamsTable.ClearSort();
         SetLastAction("ClearSort(): rows are back in source order");
     }
-
     // </snippet>
+
 
     // Sorted fires after the sort state is applied and the header arrow is published: header
     // clicks and the API calls above alike. Column is null when the sort was cleared.
@@ -118,7 +137,6 @@ public sealed partial class SortPage : SamplePageBase
     // The control sorts when asked and when the collection changes. A PropertyChanged on the
     // sorted value does NOT re-position the row by itself, so the page applies the active sort
     // again whenever a value it depends on changes.
-    // <snippet>
 
     private bool ResortIfSortedOn(params string[] propertyNames)
     {
@@ -146,10 +164,10 @@ public sealed partial class SortPage : SamplePageBase
 
     private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (IsBulkUpdating) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (IsBulkUpdating)
+        {
+            return;
+        }
 
         if (sender is not LeagueTeam team || e.PropertyName is null)
         {
@@ -199,7 +217,6 @@ public sealed partial class SortPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // </snippet>
 
     // ---- Actions ----------------------------------------------------------------------------
 
@@ -255,7 +272,7 @@ public sealed partial class SortPage : SamplePageBase
             return;
         }
 
-        var from = team.NextMatchText; // snippet:skip
+        var from = team.NextMatchText;
         using (BeginBulkUpdate())
         {
             team.NextMatchDate = team.NextMatchDate.AddDays(7);

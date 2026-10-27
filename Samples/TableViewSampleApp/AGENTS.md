@@ -164,9 +164,13 @@ and checked in. A named region (`// <snippet Groups Sort>`) in a shared or data 
 those pages' snippets; a snippet whose first line is `// snippet:manual` opts out. Keep each region
 readable on its own (declare, or take as parameters, the values it uses).
 
-A snippet shows what an app needs to reproduce the demo, as the WinUI Gallery samples do, and it is
-the page's real code: get there by choosing the region boundaries and keeping the page source clean,
-not by having the tool rewrite it.
+A snippet shows only the code an app has to write to get the page's feature, as the WinUI Gallery
+samples do, and it is the page's real code: get there by choosing the region boundaries (split a
+method so the essential part is its own small method) and keeping the page source clean, not by
+having the tool rewrite it. Ask "what is the minimal code for what this page teaches?": sample-only
+helpers (`ShapingOptions`/`Shaping` plumbing, `SampleShaping` pickers, `EnqueueIfLoaded`, readouts,
+visual-tree walks, timers, scroll workarounds, test fixtures) and demo actions that are not the
+feature stay outside the regions. A tiny snippet is fine.
 
 - XAML: only the TableView, its columns and the templates and resources it uses. Regions inside
   `SamplePresenter.Options` (the rail) are ignored, so option controls never appear; keep other

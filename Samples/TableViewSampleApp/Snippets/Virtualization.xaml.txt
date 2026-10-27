@@ -1,5 +1,4 @@
-<!-- No virtualization switch: bind a large source and only the rows in or near the viewport are realized. Width
-     tokens, never Auto: Auto re-measures against whichever rows happen to be realized. -->
+<!-- Fixed or star widths, never Auto: an Auto column is measured from whichever rows are realized. -->
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="Virtualized people"

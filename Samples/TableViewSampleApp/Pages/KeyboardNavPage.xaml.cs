@@ -57,7 +57,9 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
@@ -91,7 +93,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // <snippet>
     // In-cell editors write the model; re-bucket when the grouped-on value changed, because
     // GroupBy takes a delegate and cannot follow PropertyChanged.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
@@ -113,7 +114,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
                 break;
         }
     }
-    // </snippet>
 
     // ---- Assessment fixture -----------------------------------------------------------------
 
@@ -222,7 +222,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             AutomationProperties.SetName(AssessmentTable, "Accessibility regression records");
         }
 
-        ExpectedObservationsText.Text = ExpectedObservations(Scenario); // snippet:skip
+        ExpectedObservationsText.Text = ExpectedObservations(Scenario);
     }
 
     private static string ExpectedObservations(string scenario) =>

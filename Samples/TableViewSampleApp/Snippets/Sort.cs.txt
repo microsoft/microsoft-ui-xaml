@@ -17,6 +17,7 @@ private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(Kick
 
 private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, SortDirection.Descending);
 
+// Sorting is not live: after a sorted value changes, sort again to move the row.
 private void SortBy(TableViewColumn column, SortDirection direction)
 {
     TeamsTable.SortByColumn(column, direction);
@@ -30,73 +31,4 @@ private void OnTogglePointsClick(object sender, RoutedEventArgs e)
 private void OnClearSortClick(object sender, RoutedEventArgs e)
 {
     TeamsTable.ClearSort();
-}
-
-private bool ResortIfSortedOn(params string[] propertyNames)
-{
-    var column = SampleShaping.ActiveSortColumn(TeamsTable);
-    if (column is null || !propertyNames.Contains(SampleShaping.SortPathOf(column)))
-    {
-        return false;
-    }
-
-    // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
-    // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
-    _isResorting = true;
-    try
-    {
-        Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
-        OnSortRedeclared();
-    }
-    finally
-    {
-        _isResorting = false;
-    }
-
-    return true;
-}
-
-private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
-{
-    if (sender is not LeagueTeam team || e.PropertyName is null)
-    {
-        return;
-    }
-
-    switch (e.PropertyName)
-    {
-        case nameof(LeagueTeam.NextMatchDate):
-            break;
-        case nameof(LeagueTeam.Kickoff):
-            break;
-        case nameof(LeagueTeam.IsSeeded):
-            break;
-        case nameof(LeagueTeam.Team):
-            break;
-        default:
-            return;
-    }
-
-    // Let the in-cell editor finish its own update first, then re-group and re-sort once for
-    // every property edited in this turn.
-    if (_pendingProperties.Count == 0)
-    {
-        EnqueueIfLoaded(ApplyPendingEdits);
-    }
-
-    _pendingProperties.Add(e.PropertyName);
-}
-
-private void ApplyPendingEdits()
-{
-    var properties = new List<string>(_pendingProperties);
-    _pendingProperties.Clear();
-    foreach (var property in properties)
-    {
-        ReapplyIfGroupedOn(property);
-    }
-
-    // The text-date column sorts by NextMatchText, which follows NextMatchDate.
-    properties.Add(nameof(LeagueTeam.NextMatchText));
-    ResortIfSortedOn(properties.ToArray());
 }

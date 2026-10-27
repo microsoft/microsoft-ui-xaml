@@ -42,13 +42,11 @@ public sealed partial class TextWrapPage : SamplePageBase
 
     public TextWrapPage()
     {
-        // <snippet>
         // The cell template binds this static state; reset it so a new visit starts from the
         // defaults the rail shows.
         WrapState.TextWrapping = TextWrapping.Wrap;
         WrapState.TextTrimming = TextTrimming.None;
         WrapState.MaxLines = 0;
-        // </snippet>
 
         foreach (var person in People)
         {
@@ -71,13 +69,15 @@ public sealed partial class TextWrapPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Wrapping, max lines and width --------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void OnWrapToggled(object sender, RoutedEventArgs e)
     {
         // Toggled fires during InitializeComponent (IsOn="True"); the ctor already set WrapState. // snippet:skip
@@ -89,7 +89,9 @@ public sealed partial class TextWrapPage : SamplePageBase
         ApplyTextState();
         SetLastAction(WrapToggle.IsOn ? "TextWrapping -> Wrap" : "TextWrapping -> NoWrap");
     }
+    // </snippet>
 
+    // <snippet>
     private void OnMaxLinesChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="0"). // snippet:skip
@@ -98,13 +100,15 @@ public sealed partial class TextWrapPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        _maxLines = int.TryParse(SampleShaping.SelectedTag(MaxLinesSelector, "0"), NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
+        _maxLines = int.TryParse((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag, NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
         ApplyTextState();
         SetLastAction(_maxLines == 0
             ? "MaxLines -> unlimited"
             : string.Format(CultureInfo.CurrentCulture, "MaxLines -> {0}", _maxLines));
     }
+    // </snippet>
 
+    // <snippet>
     // The one writer of WrapState, so the toggle and the max-lines picker never overwrite each
     // other. Every Bio cell binds WrapState, which is what makes the setting survive recycling.
     private void ApplyTextState()
@@ -119,7 +123,9 @@ public sealed partial class TextWrapPage : SamplePageBase
         MaxLinesSelector.IsEnabled = wrapOn; // snippet:skip
         QueueRowMeasure(); // snippet:skip
     }
+    // </snippet>
 
+    // <snippet>
     private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         AutomationProperties.SetItemStatus((Slider)sender, string.Format(CultureInfo.CurrentCulture, "{0:N0} pixels", e.NewValue)); // snippet:skip

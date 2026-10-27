@@ -120,7 +120,6 @@ public sealed partial class GroupsPage
         }
     }
 
-    // <snippet Groups>
     private void NoteHeaderExpansion(DependencyObject? source, bool? desired)
     {
         while (source is not null && source is not TableViewGroupHeader)
@@ -153,5 +152,4 @@ public sealed partial class GroupsPage
             expanded ? "Expanded" : "Collapsed",
             group.KeyText));
     }
-    // </snippet>
 }

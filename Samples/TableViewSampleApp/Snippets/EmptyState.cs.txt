@@ -5,12 +5,6 @@ public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
 public TableViewSource Source { get; }
 
-private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
-{
-    var tag = SampleShaping.SelectedTag(DataSourceSelector, "Populated");
-    ApplyDataSource(tag);
-}
-
 private void ApplyDataSource(string tag)
 {
     switch (tag)

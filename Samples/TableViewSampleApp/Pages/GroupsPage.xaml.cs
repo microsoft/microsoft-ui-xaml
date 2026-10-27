@@ -74,44 +74,45 @@ public sealed partial class GroupsPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; }
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Group header template ----------------------------------------------------------
-    // <snippet>
 
     private void OnHeaderTemplateChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (PeopleTable is null || HeaderTemplateSelector is null) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (PeopleTable is null || HeaderTemplateSelector is null)
+        {
+            return;
+        }
 
         ApplyGroupHeaderTemplate();
-        if (IsLoaded) // snippet:skip
-        { // snippet:skip
+        if (IsLoaded)
+        {
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Group header template -> {0}", SampleShaping.Label(HeaderTemplateSelector)));
-        } // snippet:skip
+        }
     }
 
+    // <snippet>
     private void ApplyGroupHeaderTemplate()
     {
-        PeopleTable.GroupHeaderTemplate = SampleShaping.SelectedTag(HeaderTemplateSelector, "builtin") == "custom"
+        PeopleTable.GroupHeaderTemplate = (string)((ComboBoxItem)HeaderTemplateSelector.SelectedItem).Tag == "custom"
             ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
             : null;
     }
-
     // </snippet>
+
     // ---- In-cell edits --------------------------------------------------------------------
-    // <snippet>
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (IsBulkUpdating) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (IsBulkUpdating)
+        {
+            return;
+        }
 
         if (sender is not Person person)
         {
@@ -131,9 +132,9 @@ public sealed partial class GroupsPage : SamplePageBase
                     person.FullName,
                     SampleShaping.KeyOf(person, e.PropertyName)));
                 break;
-            case nameof(Person.JoinDate): // snippet:skip
+            case nameof(Person.JoinDate):
                 SetLastAction(string.Format(CultureInfo.CurrentCulture, "Join date -> {0:d} for {1}", person.JoinDate, person.FullName));
-                break; // snippet:skip
+                break;
         }
     }
 
@@ -175,7 +176,6 @@ public sealed partial class GroupsPage : SamplePageBase
             }
         });
     }
-    // </snippet>
 
     // ---- Actions ----------------------------------------------------------------------------
 
@@ -231,7 +231,6 @@ public sealed partial class GroupsPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0:N0} rows (every 4th) to the next department", moved));
     }
 
-    // <snippet>
     // Adding and removing rows needs no GroupBy call: the projection follows collection changes.
     private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {
@@ -263,11 +262,10 @@ public sealed partial class GroupsPage : SamplePageBase
             }
         }
 
-        PersonData.ReportToDepartmentHead(person, People); // snippet:skip
+        PersonData.ReportToDepartmentHead(person, People);
         People.Add(person);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, GroupInView(key)(person)));
     }
-    // </snippet>
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
     {

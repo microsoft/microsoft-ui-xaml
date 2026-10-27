@@ -39,21 +39,22 @@ public sealed partial class EmptyStatePage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Data source: the ways of being empty ---------------------------------------------
-    // <snippet>
 
     private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0"), and when an action moves the // snippet:skip
-        // selector to match what it just did; neither is a user choice. // snippet:skip
-        if (!IsLoaded || _syncingDataSource) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        // Fires during InitializeComponent (SelectedIndex="0"), and when an action moves the
+        // selector to match what it just did; neither is a user choice.
+        if (!IsLoaded || _syncingDataSource)
+        {
+            return;
+        }
 
         var tag = SampleShaping.SelectedTag(DataSourceSelector, "Populated");
         ApplyDataSource(tag);
@@ -65,6 +66,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
         });
     }
 
+    // <snippet>
     private void ApplyDataSource(string tag)
     {
         switch (tag)
@@ -92,7 +94,9 @@ public sealed partial class EmptyStatePage : SamplePageBase
                 break;
         }
     }
+    // </snippet>
 
+    // <snippet>
     private void AttachSource()
     {
         if (!_sourceAttached)

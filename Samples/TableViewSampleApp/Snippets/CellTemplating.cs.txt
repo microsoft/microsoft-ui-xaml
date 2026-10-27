@@ -7,7 +7,7 @@ public TableViewSource Source { get; }
 
 private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
 {
-    var full = SampleShaping.SelectedTag(JoinDateEditorSelector, "calendar") == "datepicker";
+    var full = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "datepicker";
     var resources = Application.Current.Resources;
     JoinDateColumn.CellTemplate = (DataTemplate)resources[full ? "JoinDatePickerTemplate" : "JoinCalendarDateTemplate"];
     JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);

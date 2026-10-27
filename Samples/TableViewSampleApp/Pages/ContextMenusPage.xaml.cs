@@ -40,13 +40,15 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Header menus -------------------------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     // A header menu item has no row item to bind to, so each column gets its own menu and the
     // handler closes over that column.
     private void AttachHeaderMenus()
@@ -70,13 +72,17 @@ public sealed partial class ContextMenusPage : SamplePageBase
             _headerMenus[column] = menu;
         }
     }
+    // </snippet>
 
+    // <snippet>
     private void HideColumn(TableViewColumn column)
     {
         column.Visibility = Visibility.Collapsed;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Hid the {0} column", column.Header));
     }
+    // </snippet>
 
+    // <snippet>
     private void ShowAllColumns()
     {
         foreach (var column in PeopleTable.Columns)
@@ -86,15 +92,17 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
         SetLastAction("Showed all columns");
     }
-
     // </snippet>
-    // ---- Cell and row menu items ----------------------------------------------------------------
-    // <snippet>
 
+    // ---- Cell and row menu items ----------------------------------------------------------------
+
+    // <snippet>
     // MenuFlyout has no item filter: cache the XAML items and re-add this row kind's subset on each
     // open. Re-adding (not Visibility) leaves the IsActive bindings in charge.
     private List<MenuFlyoutItemBase>? _rowMenuItems;
+    // </snippet>
 
+    // <snippet>
     private void OnRowMenuOpening(object sender, object e)
     {
         var menu = (MenuFlyout)sender;
@@ -112,7 +120,9 @@ public sealed partial class ContextMenusPage : SamplePageBase
             }
         }
     }
+    // </snippet>
 
+    // <snippet>
     // A menu item inherits the requested row item as its DataContext.
     private void OnCopyNameClick(object sender, RoutedEventArgs e)
     {
@@ -121,6 +131,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
             CopyText(person.FullName);
         }
     }
+    // </snippet>
 
     private void OnCopyEmailClick(object sender, RoutedEventArgs e)
     {
@@ -176,6 +187,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
         }
     }
 
+    // <snippet>
     // A group header menu item's DataContext is the header's TableViewGroupInfo.
     private void OnEmailGroupClick(object sender, RoutedEventArgs e)
     {
@@ -184,6 +196,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Emailed {0}", group.KeyText));
         }
     }
+    // </snippet>
 
     private void OnRemoveClick(object sender, RoutedEventArgs e)
     {
@@ -204,10 +217,9 @@ public sealed partial class ContextMenusPage : SamplePageBase
         SetLastAction("Restored the list");
     }
 
-    // </snippet>
     // ---- Options ------------------------------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     // Setting a menu property to null removes that candidate; the request falls through.
     private void OnNameMenuToggled(object sender, RoutedEventArgs e)
     {
@@ -219,15 +231,16 @@ public sealed partial class ContextMenusPage : SamplePageBase
         NameColumn.CellContextFlyout = NameMenuToggle.IsOn ? _nameCellMenu : null;
         SetLastAction(NameMenuToggle.IsOn ? "Name cell menu on" : "Name cell menu off (Name cells use the row menu)");
     }
+    // </snippet>
 
     // The row menu lives in an implicit row style. Removing or adding an implicit style updates
     // the realized rows on the next layout pass; recycled rows pick it up when they are reused.
     private void OnRowMenuToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (!IsLoaded)
+        {
+            return;
+        }
 
         PeopleTable.Resources.Remove(typeof(TableViewRow));
         if (RowMenuToggle.IsOn)
@@ -240,10 +253,10 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
     private void OnHeaderMenuToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (!IsLoaded)
+        {
+            return;
+        }
 
         foreach (var (column, menu) in _headerMenus)
         {
@@ -252,7 +265,6 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
         SetLastAction(HeaderMenuToggle.IsOn ? "Header menus on" : "Header menus off (headers fall through to ContextFlyout)");
     }
-    // </snippet>
 
     private void CopyText(string text)
     {

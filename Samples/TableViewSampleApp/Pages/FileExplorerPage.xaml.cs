@@ -59,10 +59,12 @@ public sealed partial class FileExplorerPage : SamplePageBase
         TrackLifetime(OpenInitialFolder);
     }
 
-    // Folder contents replace the items of this one collection; the source is never rebuilt.
     // <snippet>
+    // Folder contents replace the items of this one collection; the source is never rebuilt.
     public ObservableCollection<FileSystemEntry> Entries { get; } = new();
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
@@ -75,7 +77,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
     }
 
     // ---- Navigation (the folder is read on a background thread) ---------------------------
-    // <snippet>
 
     private async Task NavigateAsync(string path, bool addToHistory, string verb)
     {
@@ -114,8 +115,8 @@ public sealed partial class FileExplorerPage : SamplePageBase
         }
 
         AddressBar.Text = _currentDir;
-        BackButton.IsEnabled = _history.Count > 0; // snippet:skip
-        UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null; // snippet:skip
+        BackButton.IsEnabled = _history.Count > 0;
+        UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null;
         if (focusState != FocusState.Unfocused)
         {
             FocusFirstRowAfterLayout(focusState);
@@ -123,7 +124,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1} ({2:N0} items)", verb, DisplayName(_currentDir), Entries.Count));
     }
-    // </snippet>
 
     private FocusState TableFocusState()
     {
@@ -267,8 +267,8 @@ public sealed partial class FileExplorerPage : SamplePageBase
     }
 
     // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     {
         if (FilterSelector is null) // snippet:skip
@@ -276,7 +276,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var filter = SampleShaping.SelectedTag(FilterSelector, "all");
+        var filter = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag;
         switch (filter)
         {
             case "folders":
@@ -299,6 +299,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleCount())); // snippet:skip
         } // snippet:skip
     }
+    // </snippet>
 
     // Nested, a filter also keeps each match's folders.
     private int VisibleCount() => SampleShaping.SelectedTag(FilterSelector, "all") switch
@@ -308,7 +309,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
         "none" => 0,
         _ => Entries.Count,
     };
-    // </snippet>
 
     // ---- Actions ------------------------------------------------------------------------
 
@@ -353,7 +353,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // <snippet>
     // A sort declared BEFORE GroupBy orders the groups: newest first reads Today, Yesterday, ...
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
@@ -391,6 +390,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
 
+    // <snippet>
     private static string ModifiedBucket(DateTimeOffset modified)
     {
         var days = (DateTime.Now.Date - modified.LocalDateTime.Date).TotalDays;

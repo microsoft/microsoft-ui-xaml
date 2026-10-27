@@ -20,10 +20,6 @@ private void OnColumnToggle(object sender, RoutedEventArgs e)
     column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
 }
 
-private void OnMoveLeftClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(-1);
-
-private void OnMoveRightClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(+1);
-
 private void MoveSelectedColumn(int direction)
 {
     if (SelectedColumn() is not { } column)

@@ -50,13 +50,15 @@ public sealed partial class FilterPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(60);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Columns, built in code from the shared templates -------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void BuildColumns()
     {
         var resources = Application.Current.Resources;
@@ -102,20 +104,26 @@ public sealed partial class FilterPage : SamplePageBase
             HeaderToolTip = "Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view.",
         });
     }
+    // </snippet>
 
+    // <snippet>
     // Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
     private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
-
     // </snippet>
+
     // ---- Filtering --------------------------------------------------------------------------
+
     // <snippet>
-
     private string Query => SearchBox?.Text?.Trim() ?? string.Empty;
+    // </snippet>
 
+    // <snippet>
     private bool ActiveOnly => ActiveOnlyToggle?.IsOn == true;
+    // </snippet>
 
     private bool HasFilter => Query.Length > 0 || ActiveOnly;
 
+    // <snippet>
     private void OnSearchChanged(object sender, TextChangedEventArgs e)
     {
         if (!IsLoaded) // snippet:skip
@@ -136,7 +144,9 @@ public sealed partial class FilterPage : SamplePageBase
             ? string.Format(CultureInfo.CurrentCulture, "Filter(query \u201C{0}\u201D): {1}", Query, ShownSummary())
             : "Query cleared: " + ShownSummary());
     }
+    // </snippet>
 
+    // <snippet>
     private void OnActiveToggled(object sender, RoutedEventArgs e)
     {
         if (!IsLoaded) // snippet:skip
@@ -147,7 +157,9 @@ public sealed partial class FilterPage : SamplePageBase
         ApplyFilter();
         SetLastAction((ActiveOnly ? "Active only -> On: " : "Active only -> Off: ") + ShownSummary());
     }
+    // </snippet>
 
+    // <snippet>
     // ItemsSource is never reassigned, so selection, scroll offset and group state survive.
     private void ApplyFilter()
     {
@@ -164,7 +176,9 @@ public sealed partial class FilterPage : SamplePageBase
 
         RefreshReadouts();
     }
+    // </snippet>
 
+    // <snippet>
     private static bool Matches(Person person, string query, bool activeOnly)
     {
         if (activeOnly && !person.IsActive)
@@ -178,17 +192,20 @@ public sealed partial class FilterPage : SamplePageBase
             || Contains(person.Role, query)
             || Contains(person.Email, query);
     }
+    // </snippet>
 
+    // <snippet>
     private static bool Contains(string? value, string query) =>
         value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+    // </snippet>
 
     // An edit does not re-run the predicate or the group key selector; apply both once it settles.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (IsBulkUpdating || _refreshQueued) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (IsBulkUpdating || _refreshQueued)
+        {
+            return;
+        }
 
         if (sender is not Person person || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
         {
@@ -196,10 +213,10 @@ public sealed partial class FilterPage : SamplePageBase
         }
 
         var property = e.PropertyName;
-        _refreshQueued = true; // snippet:skip
+        _refreshQueued = true;
         EnqueueIfLoaded(() =>
         {
-            _refreshQueued = false; // snippet:skip
+            _refreshQueued = false;
             ReapplyIfGroupedOn(property);
             ApplyFilter();
             SetLastAction(string.Format(
@@ -209,7 +226,6 @@ public sealed partial class FilterPage : SamplePageBase
                 person.FullName));
         });
     }
-    // </snippet>
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {

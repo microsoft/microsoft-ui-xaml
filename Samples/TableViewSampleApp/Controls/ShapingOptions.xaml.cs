@@ -290,17 +290,15 @@ public sealed partial class ShapingOptions : UserControl
         ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(mode, key, SelectedKeyLabel, announce, elapsedMilliseconds, AppliedText, message));
     }
 
-    // <snippet Groups Hierarchy>
     // Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
     // so under both each root keeps its subtree.
     private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
     {
         if (relation is not null && IsHierarchicalMode(mode))
         {
-            // A second ParentBy replaces the relation and resets expansion, so declare it once.
             if (!hadParentBy)
             {
-                source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+                NestRows(source, relation);
             }
         }
         else if (hadParentBy)
@@ -310,14 +308,26 @@ public sealed partial class ShapingOptions : UserControl
 
         if (mode is "grouped" or "groupedHierarchy")
         {
-            // The key selector receives the ROW; the identity selector receives the KEY.
-            source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+            GroupRows(source, groupKeyOf);
         }
         else
         {
             source.ClearGroupBy();
         }
     }
+
+    // <snippet Hierarchy>
+    // ParentBy takes each row's key and its parent's key. A second ParentBy replaces the relation and
+    // resets expansion, so declare it once.
+    private static void NestRows(TableViewSource source, ParentRelation relation) =>
+        source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+    // </snippet>
+
+    // <snippet Groups>
+    // The key selector receives the ROW and the identity selector the KEY. GroupBy takes a delegate,
+    // so call it again after a row's grouped-on value changes.
+    private static void GroupRows(TableViewSource source, Func<object?, object> groupKeyOf) =>
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
     // </snippet>
 
     private static bool IsHierarchicalMode(string mode) => mode is "hierarchy" or "groupedHierarchy";

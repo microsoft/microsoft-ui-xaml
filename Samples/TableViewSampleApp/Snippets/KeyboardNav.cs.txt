@@ -5,23 +5,3 @@ PeopleTable.ItemsSource = Source;
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
 public TableViewSource Source { get; }
-
-// In-cell editors write the model; re-bucket when the grouped-on value changed, because
-// GroupBy takes a delegate and cannot follow PropertyChanged.
-private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
-{
-    if (sender is not Person person)
-    {
-        return;
-    }
-
-    switch (e.PropertyName)
-    {
-        case nameof(Person.IsActive):
-            ReapplyIfGroupedOn(e.PropertyName);
-            break;
-        case nameof(Person.Office):
-            ReapplyIfGroupedOn(e.PropertyName);
-            break;
-    }
-}

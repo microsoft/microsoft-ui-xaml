@@ -38,9 +38,6 @@ public sealed partial class ToolTipsPage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
-
-        // The control sorts the TableViewSource itself when a header is clicked; no app code is
-        // needed for the Name, Department and Salary columns.
         AttachCellToolTips();
         ApplyHeaderToolTips("original");
         // </snippet>
@@ -49,13 +46,15 @@ public sealed partial class ToolTipsPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Cell tooltips ----------------------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void AttachCellToolTips()
     {
         // A tooltip on an image cell: the person's name.
@@ -73,7 +72,9 @@ public sealed partial class ToolTipsPage : SamplePageBase
 
         // Salary deliberately gets nothing, so it is easy to confirm no tooltip appears.
     }
+    // </snippet>
 
+    // <snippet>
     private void DetachCellToolTips()
     {
         // Clearing the binding retracts the tooltip; there is no separate remove call.
@@ -82,7 +83,9 @@ public sealed partial class ToolTipsPage : SamplePageBase
         BioColumn.CellToolTipBinding = null;
         DepartmentColumn.CellToolTipBinding = null;
     }
+    // </snippet>
 
+    // <snippet>
     private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
     {
         // Fires during InitializeComponent (IsOn="True"); the constructor attaches the bindings. // snippet:skip
@@ -102,11 +105,11 @@ public sealed partial class ToolTipsPage : SamplePageBase
             SetLastAction("Cell tooltips -> detached (CellToolTipBinding = null)");
         }
     }
-
     // </snippet>
-    // ---- Header tooltips --------------------------------------------------------------------
-    // <snippet>
 
+    // ---- Header tooltips --------------------------------------------------------------------
+
+    // <snippet>
     private void OnHeaderToolTipsChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsLoaded) // snippet:skip
@@ -114,10 +117,12 @@ public sealed partial class ToolTipsPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        ApplyHeaderToolTips(SampleShaping.SelectedTag(HeaderToolTipsSelector, "original"));
+        ApplyHeaderToolTips((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Header tooltips -> {0}", SampleShaping.Label(HeaderToolTipsSelector)));
     }
+    // </snippet>
 
+    // <snippet>
     private void ApplyHeaderToolTips(string mode)
     {
         switch (mode)

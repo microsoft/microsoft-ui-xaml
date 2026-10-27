@@ -36,13 +36,15 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<SupportTicket> Tickets { get; } = TicketData.Queue();
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
     // ---- Headers visibility -------------------------------------------------------------
-    // <snippet>
 
+    // <snippet>
     private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
     {
         // Fires during InitializeComponent (SelectedIndex="0") before the table exists. // snippet:skip
@@ -51,16 +53,16 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
+        TicketsTable.HeadersVisibility = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "None"
             ? TableViewHeadersVisibility.None
             : TableViewHeadersVisibility.Column;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", TicketsTable.HeadersVisibility));
     }
-
     // </snippet>
-    // ---- Sorting from code --------------------------------------------------------------
-    // <snippet>
 
+    // ---- Sorting from code --------------------------------------------------------------
+
+    // <snippet>
     private void OnSortByDueClick(object sender, RoutedEventArgs e)
     {
         // The header click does the same thing; SortByColumn is the only way while it is hidden.
@@ -78,7 +80,6 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         SetLastAction("ClearSort(): rows back in filing order");
     }
 
-    // <snippet>
     // Raised for header clicks and for SortByColumn / ClearSort alike.
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
     {
@@ -86,7 +87,6 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
             ? "None"
             : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
     }
-    // </snippet>
 
     // ---- Edits and actions --------------------------------------------------------------
 
@@ -108,7 +108,6 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         }
     }
 
-    // <snippet>
     private void OnEscalateClick(object sender, RoutedEventArgs e)
     {
         if (TicketsTable.SelectedItem is not SupportTicket ticket)
@@ -132,7 +131,6 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         ReapplyIfGroupedOn(nameof(SupportTicket.Priority));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Escalated {0} from {1} to {2}", ticket.TicketId, from, to));
     }
-    // </snippet>
 
     private void OnFileTicketClick(object sender, RoutedEventArgs e)
     {

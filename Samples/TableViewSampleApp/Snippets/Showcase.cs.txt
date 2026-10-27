@@ -1,5 +1,3 @@
-Vibrant = true;
-FillPeople(100);
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
@@ -7,58 +5,15 @@ public ObservableCollection<Person> People { get; } = new();
 
 public TableViewSource Source { get; }
 
-// Person raises PropertyChanged, so only the changed cells re-run their bindings and tint converters.
-private bool UpdateLiveRows()
-{
-    var flipped = false;
-    foreach (var person in People.Take(LiveRowCount))
-    {
-        var next = Math.Clamp(person.Salary + ((_liveRandom.NextDouble() - 0.5) * 12_000), 110_000, MaxSalary);
-        person.Salary = Math.Round(next / 100.0) * 100.0;
-        if (_liveRandom.NextDouble() < 0.15)
-        {
-            person.IsActive = !person.IsActive;
-            flipped = true;
-        }
-    }
-
-    return flipped;
-}
-
-// Neither grouping nor sorting observes PropertyChanged: re-apply whichever is keyed on a changed value.
-private void ReshapeAfterLiveUpdate(bool flipped)
-{
-    if (flipped)
-    {
-        ReapplyIfGroupedOn(nameof(Person.IsActive));
-    }
-
-    ResortIfSortedOn(nameof(Person.Salary), nameof(Person.IsActive));
-}
-
-private void OnVibrantToggled(object sender, RoutedEventArgs e)
-{
-    Vibrant = VibrantToggle.IsOn;
-
-    // The tint converters read Vibrant, which no binding observes. Re-assigning the
-    // CellTemplate regenerates the realized cells of just the two tinted columns.
-    foreach (var column in new[] { DepartmentColumn, SalaryColumn })
-    {
-        var template = column.CellTemplate;
-        column.CellTemplate = null;
-        column.CellTemplate = template;
-    }
-}
-
 private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
 {
-    var mode = Enum.Parse<TableViewSelectionMode>(SampleShaping.SelectedTag(SelectionModeSelector, "Single"));
+    var mode = Enum.Parse<TableViewSelectionMode>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
     PeopleTable.SelectionMode = mode;
 }
 
 private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
 {
-    var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
+    var visibility = Enum.Parse<TableViewHeadersVisibility>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
     PeopleTable.HeadersVisibility = visibility;
 }
 
@@ -71,28 +26,4 @@ private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
 
     var show = checkBox.IsChecked == true;
     column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-}
-
-// The control sorts when the sort is applied; re-declaring the same path on the source re-reads
-// every key, so a row whose sorted value changed moves.
-private void ResortIfSortedOn(params string[] propertyNames)
-{
-    var column = SampleShaping.ActiveSortColumn(PeopleTable);
-    if (column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
-    {
-        return;
-    }
-
-    _isResorting = true;
-    try
-    {
-        Source.Sort(column.SortMemberPath, column.SortDirection);
-        OnSortRedeclared();   // keeps a sort that ordered the groups doing so
-    }
-    finally
-    {
-        _isResorting = false;
-    }
-
-    // Sort raises a Reset, and the control keeps the selection on the same item.
 }

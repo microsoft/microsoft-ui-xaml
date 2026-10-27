@@ -7,7 +7,7 @@ public TableViewSource Source { get; }
 
 private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
 {
-    PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
+    PeopleTable.GridLinesVisibility = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag switch
     {
         "None" => TableViewGridLinesVisibility.None,
         "Horizontal" => TableViewGridLinesVisibility.Horizontal,
@@ -18,7 +18,7 @@ private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
 
 private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
 {
-    var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+    var custom = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "custom";
     PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
 }
 

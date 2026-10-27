@@ -7,32 +7,6 @@ public TableViewSource Source { get; }
 
 private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 {
-    var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));
+    var density = Enum.Parse<TableViewDensity>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
     PeopleTable.Density = density;
-}
-
-private void OnMoveGroupClick(object sender, RoutedEventArgs e)
-{
-    if (PeopleTable.SelectedItem is not Person person)
-    {
-        return;
-    }
-
-    var key = IsGrouped ? AppliedGroupKey : nameof(Person.Department);
-    switch (key)
-    {
-        case nameof(Person.Role):
-            person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
-            break;
-        case nameof(Person.IsActive):
-            person.IsActive = !person.IsActive;
-            break;
-        default:
-            person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
-            break;
-    }
-
-    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
-    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
-    ReapplyIfGroupedOn(key);
 }

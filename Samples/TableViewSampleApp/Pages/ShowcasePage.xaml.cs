@@ -43,9 +43,9 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     public ShowcasePage()
     {
-        // <snippet>
         Vibrant = true;
         FillPeople(100);
+        // <snippet>
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
@@ -73,7 +73,9 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     // <snippet>
     public ObservableCollection<Person> People { get; } = new();
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
 
@@ -144,7 +146,6 @@ public sealed partial class ShowcasePage : SamplePageBase
         RefreshReadouts();
     }
 
-    // <snippet>
     // Person raises PropertyChanged, so only the changed cells re-run their bindings and tint converters.
     private bool UpdateLiveRows()
     {
@@ -176,10 +177,10 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     private void OnVibrantToggled(object sender, RoutedEventArgs e)
     {
-        if (!_ready) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
+        if (!_ready)
+        {
+            return;
+        }
 
         Vibrant = VibrantToggle.IsOn;
 
@@ -194,7 +195,6 @@ public sealed partial class ShowcasePage : SamplePageBase
 
         SetLastAction(Vibrant ? "Vibrant cells -> On" : "Vibrant cells -> Off");
     }
-    // </snippet>
 
     // ---- Table options --------------------------------------------------------------------
 
@@ -232,11 +232,13 @@ public sealed partial class ShowcasePage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var mode = Enum.Parse<TableViewSelectionMode>(SampleShaping.SelectedTag(SelectionModeSelector, "Single"));
+        var mode = Enum.Parse<TableViewSelectionMode>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
         PeopleTable.SelectionMode = mode;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SelectionMode -> {0}", mode));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!_ready) // snippet:skip
@@ -244,11 +246,13 @@ public sealed partial class ShowcasePage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
+        var visibility = Enum.Parse<TableViewHeadersVisibility>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
         PeopleTable.HeadersVisibility = visibility;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", visibility));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
     {
         if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
@@ -276,7 +280,6 @@ public sealed partial class ShowcasePage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} ({1})", args.Column.Header, args.Direction));
     }
 
-    // <snippet>
     // The control sorts when the sort is applied; re-declaring the same path on the source re-reads
     // every key, so a row whose sorted value changed moves.
     private void ResortIfSortedOn(params string[] propertyNames)
@@ -301,7 +304,6 @@ public sealed partial class ShowcasePage : SamplePageBase
         // Sort raises a Reset, and the control keeps the selection on the same item.
         RefreshReadouts();
     }
-    // </snippet>
 
     // ---- In-cell edits ----------------------------------------------------------------------
 
