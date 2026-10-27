@@ -1,5 +1,6 @@
 #include "PipeServer.h"
 #include "ReplayGuard.h"
+#include "TreeSnapshot.h"
 #include <objbase.h>
 #include <algorithm>
 #include <sddl.h>
@@ -65,8 +66,9 @@ namespace WinUIProfiler::Tap
         }
     }
 
-    PipeServer::PipeServer(Bootstrap input, std::function<void(PipeServer*)> callback)
-        : bootstrap(std::move(input)), finished(std::move(callback)),
+    PipeServer::PipeServer(Bootstrap input, Microsoft::WRL::ComPtr<IXamlDiagnostics> xaml,
+        std::function<void(PipeServer*)> callback)
+        : bootstrap(std::move(input)), diagnostics(std::move(xaml)), finished(std::move(callback)),
           stop(CreateEventW(nullptr, TRUE, FALSE, nullptr)),
           initialized(stop.Get() ? S_OK : HRESULT_FROM_WIN32(GetLastError()))
     {
@@ -262,6 +264,35 @@ namespace WinUIProfiler::Tap
             {
                 response = EncodeCapabilities(header.RequestId);
             }
+            else if (header.Type == MessageType::TakeSnapshot)
+            {
+                TreeSnapshotResult snapshot;
+                std::string failure;
+                result = CaptureTreeSnapshot(diagnostics.Get(), stop.Get(), command.CaptureId,
+                    bootstrap.Target.CreationTime, snapshot, failure);
+                if (FAILED(result))
+                {
+                    response = EncodeAcknowledgement(header.RequestId,
+                        result == E_NOINTERFACE ? CommandStatus::Unsupported :
+                        result == HRESULT_FROM_WIN32(ERROR_CANCELLED) ? CommandStatus::Cancelled : CommandStatus::Failed,
+                        command.CaptureId, failure.empty() ? FailureReason("TAP tree snapshot", result) : failure);
+                }
+                else
+                {
+                    if (snapshot.Json.empty() || snapshot.Json.size() > MaximumSnapshotBytes)
+                        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                    uint32_t index{};
+                    for (size_t offset = 0; offset < snapshot.Json.size(); offset += SnapshotChunkBytes)
+                    {
+                        auto chunk = EncodeSnapshotChunk(header.RequestId, command.CaptureId, index++,
+                            snapshot.Json.data() + offset, std::min(SnapshotChunkBytes, snapshot.Json.size() - offset));
+                        result = Transfer(chunk.data(), static_cast<DWORD>(chunk.size()), true,
+                            GetTickCount64() + OperationMilliseconds);
+                        if (FAILED(result)) return result;
+                    }
+                    response = EncodeSnapshotResult(header.RequestId, command.CaptureId, index, snapshot.Json.size());
+                }
+            }
             else if (header.Type == MessageType::Disconnect)
             {
                 response = EncodeAcknowledgement(header.RequestId, CommandStatus::Completed, GUID_NULL, "");
@@ -270,7 +301,7 @@ namespace WinUIProfiler::Tap
             else
             {
                 response = EncodeAcknowledgement(header.RequestId, CommandStatus::Unsupported, command.CaptureId,
-                    "This TAP supports transport and hello only; this command is unsupported.");
+                    "This TAP supports transport, hello and tree snapshots only; this command is unsupported.");
             }
             result = Transfer(response.data(), static_cast<DWORD>(response.size()), true,
                 GetTickCount64() + OperationMilliseconds);
@@ -299,6 +330,7 @@ namespace WinUIProfiler::Tap
         if (FAILED(result)) TraceFailure(result);
         DisconnectNamedPipe(pipe.Get());
         pipe.Reset();
+        diagnostics.Reset();
         if (finished) finished(this);
         finished = {};
         if (SUCCEEDED(apartment)) CoUninitialize();

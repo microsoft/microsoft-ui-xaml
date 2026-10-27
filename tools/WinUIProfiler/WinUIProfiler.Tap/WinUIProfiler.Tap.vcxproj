@@ -50,11 +50,15 @@
     <ClCompile Include="Tap.cpp" />
     <ClCompile Include="PipeServer.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="TreeSnapshot.cpp" />
     <ClInclude Include="Tap.h" />
     <ClInclude Include="PipeServer.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="ReplayGuard.h" />
+    <ClInclude Include="TreeSnapshot.h" />
+    <ClInclude Include="TreeSnapshotJson.h" />
     <None Include="WinUIProfiler.Tap.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="TreeSnapshot.Projections.targets" />
 </Project>
