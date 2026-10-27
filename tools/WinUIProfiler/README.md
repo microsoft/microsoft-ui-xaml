@@ -50,10 +50,10 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-While connected, the app counts the target's XAML ETW events but does not record
-them yet. There is no recording database, frame processing, heap capture or
-instrumented-product dependency in the app yet. The profiler UI uses its pinned
-SDK runtime; it does not replace the target's loaded runtime.
+While connected, the app saves the target's XAML ETW events to a session file.
+There is no object or frame view, heap capture or instrumented-product
+dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
+not replace the target's loaded runtime.
 
 ## Build and run
 
@@ -159,8 +159,9 @@ already running, when the app declares no executable, or when the launched
 process runs a different executable than its manifest declares.
 
 Events go through a queue of 65,536 events to one processing thread that runs
-the event processors (`Processing\EventPipeline.cs`). The only processor today
-counts events (`Processing\EventCounter.cs`).
+the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
+the events 1, 2, 3... Today the processors count events
+(`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
 
 The connection panel shows the count per provider, events lost by ETW, and
 events dropped because the queue was full. When the queue is full, new events
@@ -174,10 +175,46 @@ providers enabled in the processes it filters on. Sessions are named
 whose profiler process no longer exists. To stop one by hand, find it with
 `logman query -ets` and run `logman stop <name> -ets`.
 
+### Session files
+
+While connected, the app saves every event it receives to a SQLite file, one
+per connection, in `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
+`<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
+2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
+so events are still only dropped at the queue.
+
+| Table | Contents |
+| --- | --- |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler |
+| `EventTypes` | One row per provider, event name, opcode and field layout: the field names and their .NET types, such as `Int64,Int32,String,Boolean` |
+| `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
+
+JSON has no Infinity or NaN, so those values are stored as the strings
+`"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
+
+A session file is limited to 500 MB. Before a batch would take it past the
+limit, the oldest events are deleted, `SessionInfo.CompleteFromSeq` records the
+first event still stored, and the connection panel says from when the file is
+complete. While recording, the file is in WAL mode, so it can be read at the
+same time, for example with the CLI; when the session ends, it is left as a
+single `.sqlite` file. A write error stops the recording, keeps what was saved,
+and the panel shows why. Session files are not deleted by the profiler.
+
+ETW timestamps an event separately in each session that receives it, so the
+same event recorded by `logman` and by the app differs by a few microseconds.
+
+`Seq` numbers the events 1, 2, 3... in arrival order, without gaps (after
+trimming it starts later). In the sessions measured, arrival order matched
+timestamp order, but ETW does not guarantee that across processors, and two
+events can have the same timestamp: to order events by time, sort by `Qpc`,
+then `Seq`.
+
 ### Recorded, from a trace file
 
 To record a trace, use `logman`. Then inspect it with `WinUIProfiler.Cli`, which
-reads the file through `Ingestion\OfflineEtlSource.cs`. Run from this directory:
+reads the file through `Ingestion\OfflineEtlSource.cs`. The CLI reads session
+files the same way, and `record` writes a session file from a trace. Run from
+this directory:
 
 ```powershell
 '{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0x100000 5',
@@ -191,6 +228,8 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli processes xaml.etl                      # event count per process, to find the PID
 & $cli summary xaml.etl --pid <pid>            # event counts for that process
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
+& $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
+& $cli summary session.sqlite                  # a session file holds one process; --pid is optional
 ```
 
 ## Limitations

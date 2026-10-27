@@ -68,6 +68,20 @@ public sealed partial class MainWindow : Window
 
     private string Text(string key) => strings.GetString(key);
     private string Format(string key, params object?[] values) => string.Format(CultureInfo.CurrentCulture, Text(key), values);
+
+    // Status lines stay on one line; the tooltip holds the full details.
+    private static void SetLine(TextBlock line, string text, string? details)
+    {
+        if (line.Text != text)
+        {
+            line.Text = text;
+        }
+
+        if (!Equals(ToolTipService.GetToolTip(line), details))
+        {
+            ToolTipService.SetToolTip(line, details);
+        }
+    }
     private TargetLaunchKind Kind => Mode.SelectedIndex switch
     {
         0 => TargetLaunchKind.Unpackaged,
@@ -92,7 +106,8 @@ public sealed partial class MainWindow : Window
             (SnapshotStatus, "SnapshotStatusAutomation"),
             (ConnectionStatus, "StatusAutomation"),
             (ConnectionIdentity, "IdentityAutomation"),
-            (EtwSummary, "EtwAutomation")
+            (EtwSummary, "EtwAutomation"),
+            (RecordingSummary, "RecordingAutomation")
         })
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
@@ -170,11 +185,12 @@ public sealed partial class MainWindow : Window
             AutomationProperties.SetItemStatus(ConnectionStatus, model.State);
             var connection = model.Connection;
             var scope = connection?.Scope;
-            ConnectionIdentity.Text = scope is null ? "" : Format("IdentityFormat",
-scope.Process.ProcessId,
-scope.Process.CreationTimeFileTime,
-connection!.LastHelloUtc?.ToLocalTime().ToString("T", CultureInfo.CurrentCulture),
-connection.RuntimePath);
+            SetLine(ConnectionIdentity,
+                scope is null ? "" : Format("IdentityFormat", scope.Process.ProcessId, Path.GetDirectoryName(connection!.RuntimePath)),
+                scope is null ? null : Format("IdentityDetailsFormat",
+                    scope.Process.CreationTimeFileTime is { } created ? DateTime.FromFileTime(created).ToString("G", CultureInfo.CurrentCulture) : null,
+                    connection!.LastHelloUtc?.ToLocalTime().ToString("T", CultureInfo.CurrentCulture),
+                    connection.RuntimePath));
             AutomationProperties.SetItemStatus(ConnectionIdentity,
 JsonSerializer.Serialize(new
 {
@@ -188,9 +204,32 @@ JsonSerializer.Serialize(new
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
             var etw = model.Etw;
-            EtwSummary.Text = model.EtwError is { } etwError ? Format("EtwUnavailable", etwError)
-                : etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
-                    etw.XamlEvents, etw.ProfilerEvents, etw.LostEvents, etw.DroppedEvents);
+            if (model.EtwError is { } etwError)
+            {
+                var message = Format("EtwUnavailable", etwError);
+                SetLine(EtwSummary, message, message);
+            }
+            else
+            {
+                SetLine(EtwSummary,
+                    etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
+                        etw.XamlEvents, etw.ProfilerEvents, etw.LostEvents, etw.DroppedEvents),
+                    etw is null ? null : Format("EtwDetailsFormat", Text(etw.FromProcessStart ? "EtwCoverageProcessStart" : "EtwCoverageConnection")));
+            }
+
+            var recording = model.Recording;
+            if (model.RecordingError is { } recordingError)
+            {
+                SetLine(RecordingSummary, recordingError, recordingError);
+            }
+            else
+            {
+                SetLine(RecordingSummary,
+                    recording is null ? "" : Format(recording.CompleteFromSeconds is null ? "RecordingFormat" : "RecordingTrimmedFormat",
+                        Path.GetFileName(recording.Path), recording.StoredEvents, recording.FileBytes / 1024.0 / 1024,
+                        recording.LimitBytes / 1024 / 1024, recording.CompleteFromSeconds ?? 0),
+                    recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
+            }
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
@@ -245,7 +284,8 @@ WorkingDirectoryText.Text,
 Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
 Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
-selectedTarget?.CreationTimeFileTime);
+selectedTarget?.CreationTimeFileTime,
+Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUIProfiler", "Sessions"));
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy)
