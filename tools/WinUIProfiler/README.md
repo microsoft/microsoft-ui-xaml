@@ -50,7 +50,8 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-While connected, the app saves the target's XAML ETW events to a session file.
+While connected, the app saves the target's XAML ETW events, and the kernel's
+GPU memory events for it, to a session file.
 There is no object or frame view, heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
@@ -122,19 +123,29 @@ errors and scope limitations are included in the JSON rather than fabricated val
 
 ## XAML events
 
-`WinUIProfiler.Core` reads the XAML TraceLogging events of one process, live or
-from a recorded `.etl` file. Each event becomes a
-`ProfilerEvent` (`Events\ProfilerEvent.cs`). TraceLogging events carry their own
-field names and types, so no manifest is needed. Manifest events on the same
-providers are skipped.
+`WinUIProfiler.Core` reads the XAML TraceLogging events of one process, and the
+kernel's GPU memory events for it, live or from a recorded `.etl` file. Each
+event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`). TraceLogging events
+carry their own field names and types, so no manifest is needed. Manifest events
+on the XAML providers are skipped. The GPU memory events are manifest events,
+decoded with the manifest installed with Windows.
 
-| Provider | GUID | TraceLogging events |
+| Provider | GUID | Events read |
 | --- | --- | --- |
 | Microsoft-Windows-XAML | `531a35ab-63ce-4bcf-aa98-f88c7a89e455` | Frames (`CoreServices_Frame`), objects entering the tree (`DependencyObject_Enter`), and layout, focus and other operations with element IDs |
 | Microsoft-Windows-XAML-Profiler | `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d` | Tree, composition and graphics events |
+| Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
 Events with element IDs and all Microsoft-Windows-XAML-Profiler events are only
-in builds with `XamlProfilerEnabled`.
+in builds with `XamlProfilerEnabled`. The GPU memory events come from Windows,
+whatever the build. They carry the values `IDXGIAdapter3::QueryVideoMemoryInfo`
+returns, which earlier builds also reported in the profiler's `GpuMemorySnapshot`
+event. The kernel writes them when the usage or budget changes, and
+writes the current values when the process opens a GPU adapter and when a
+session requests capture state. The System process writes some of them, such as
+those written when the process exits, which bring the usage down to 0. So they
+are matched to the process by their `ProcessId` field, which becomes the
+event's process ID.
 
 Microsoft-Windows-XAML is enabled with keyword `0x100000`. No manifest event
 uses that keyword, so ETW drops them at the source and only TraceLogging events
@@ -159,6 +170,12 @@ The app reads ETW with one real-time session per connection
   so its launch timing is unchanged.
 - **Attach:** the session filters on the process ID from the start and reads
   from the time of connection.
+
+The GPU memory events are enabled without a process filter, because the System
+process writes some of the target's; the events of other processes are skipped
+as they are read. When reading starts, the session requests capture state, so
+an attached target also gets its current values. If the GPU memory events
+cannot be enabled, the session still reads the XAML events.
 
 The panel says whether the counts start at process start or at connection. A
 launch starts at connection when activation returns a packaged app that was
@@ -218,21 +235,24 @@ then `Seq`.
 
 ### Recorded, from a trace file
 
-To record a trace, use `logman`. Then inspect it with `WinUIProfiler.Cli`, which
+To record a trace, use `logman`. Start it before the app: the kernel writes the
+app's starting GPU memory values when the app opens a GPU adapter, and after
+that only changes. Then inspect the trace with `WinUIProfiler.Cli`, which
 reads the file through `Ingestion\OfflineEtlSource.cs`. The CLI reads session
 files the same way, and `record` writes a session file from a trace. Run from
 this directory:
 
 ```powershell
 '{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0x100000 5',
-'{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5' | Set-Content providers.txt
+'{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
+'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5' | Set-Content providers.txt
 logman create trace XamlTrace -o xaml.etl -pf providers.txt -ets
 # ... use the target app ...
 logman stop XamlTrace -ets
 
 dotnet build .\WinUIProfiler.Cli\WinUIProfiler.Cli.csproj -c Release
 $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
-& $cli processes xaml.etl                      # event count per process, to find the PID
+& $cli processes xaml.etl                      # event counts of the processes with XAML events, to find the PID
 & $cli summary xaml.etl --pid <pid>            # event counts for that process
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
