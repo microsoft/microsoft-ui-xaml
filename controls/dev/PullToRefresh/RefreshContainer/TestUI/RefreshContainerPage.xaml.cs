@@ -54,6 +54,11 @@ namespace MUXControlsTestApp
             base.OnNavigatedFrom(e);
             containerTimer.Stop();
             visualizerTimer.Stop();
+            if (scrollAwayRenderingHooked)
+            {
+                CompositionTarget.Rendering -= ScrollAway_Rendering;
+                scrollAwayRenderingHooked = false;
+            }
         }
 
         private void OnMainPageLoaded(object sender, RoutedEventArgs e)
@@ -84,6 +89,48 @@ namespace MUXControlsTestApp
             var sv = VisualTreeHelper.GetChild(boarderChild, 0);
             var sbas = (ScrollViewer)sv;
             sbas.ViewChanging += Sv_ViewChanging;
+            listScrollViewer = sbas;
+            sbas.ViewChanged += Sv_ViewChanged;
+            this.ScrollAwayDuringPullCheckBox.Checked += ScrollAwayDuringPullCheckBox_Toggled;
+            this.ScrollAwayDuringPullCheckBox.Unchecked += ScrollAwayDuringPullCheckBox_Toggled;
+        }
+
+        private ScrollViewer listScrollViewer;
+        private bool scrollAwayStarted;
+        private bool scrollAwayFinished;
+
+        private void ScrollAwayDuringPullCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            scrollAwayStarted = false;
+            scrollAwayFinished = false;
+            if (scrollAwayProvider != null)
+            {
+                scrollAwayProvider.InteractionRatioChanged -= ScrollAwayProvider_InteractionRatioChanged;
+                scrollAwayProvider.IsInteractingForRefreshChanged -= ScrollAwayProvider_IsInteractingForRefreshChanged;
+                scrollAwayProvider = null;
+            }
+            if (scrollAwayRenderingHooked)
+            {
+                CompositionTarget.Rendering -= ScrollAway_Rendering;
+                scrollAwayRenderingHooked = false;
+            }
+            this.StateTransitions.Text = "";
+            this.ScrollAwayTrace.Text = "";
+        }
+
+        // First ChangeView: the adapter sees ViewChanging while the pull is Interacting but the current offset is still 0.
+        // Second ChangeView (once the first one is applied): the current offset is now beyond the adapter's threshold.
+        private void Sv_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            if (scrollAwayStarted && !scrollAwayFinished && listScrollViewer.VerticalOffset >= 199.0)
+            {
+                scrollAwayFinished = true;
+                // The first scroll has landed. It started while the offset was still inside the adapter's 1 DIP threshold,
+                // so it must not have cancelled the pull; record that before the second scroll, which starts beyond it.
+                scrollAwayInteractingAfterFirstScroll = scrollAwayProvider != null && scrollAwayProvider.IsInteractingForRefresh;
+                UpdateScrollAwayTrace();
+                listScrollViewer.ChangeView(null, 250.0, null, true /*disableAnimation*/);
+            }
         }
 
         private void RCRefreshRequestedComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -257,7 +304,97 @@ namespace MUXControlsTestApp
         private void RefreshVisualizer_RefreshStateChanged(RefreshVisualizer sender, RefreshStateChangedEventArgs args)
         {
             UpdateStatesComboBox(args.NewState);
+            this.StateTransitions.Text += args.OldState + "->" + args.NewState + ";";
+            if (this.ScrollAwayDuringPullCheckBox.IsChecked == true && !scrollAwayStarted && args.NewState == RefreshVisualizerState.Interacting)
+            {
+                scrollAwayStarted = true;
+                scrollAwayRatioAtCancel = double.NaN;
+                scrollAwayMaxRatioAfterCancel = double.NaN;
+                scrollAwayOffsetAtCancel = double.NaN;
+                scrollAwayInteractingAfterFirstScroll = null;
+                scrollAwayProvider = ((IRefreshVisualizerPrivate)sender).InfoProvider;
+                scrollAwayProvider.InteractionRatioChanged += ScrollAwayProvider_InteractionRatioChanged;
+                scrollAwayProvider.IsInteractingForRefreshChanged += ScrollAwayProvider_IsInteractingForRefreshChanged;
+                if (!scrollAwayRenderingHooked)
+                {
+                    CompositionTarget.Rendering += ScrollAway_Rendering;
+                    scrollAwayRenderingHooked = true;
+                }
+                listScrollViewer.ChangeView(null, 200.0, null, true /*disableAnimation*/);
+            }
+            else if (scrollAwayStarted && double.IsNaN(scrollAwayRatioAtCancel) && args.OldState == RefreshVisualizerState.Interacting && args.NewState == RefreshVisualizerState.Idle)
+            {
+                // The provider writes every tracker position to its composition property set before it throttles
+                // InteractionRatioChanged, so this is the ratio at the moment of the cancel.
+                scrollAwayRatioAtCancel = ReadScrollAwayRatio();
+                UpdateScrollAwayTrace();
+            }
         }
+
+        // Shows whether the pull was still going on when the interaction was cancelled: a ratio that keeps growing after
+        // the cancel means the finger was still dragging, i.e. the cancel did not come from the end of the manipulation.
+        // The ratio is sampled from the provider's composition property (updated on every tracker change), not from the
+        // throttled InteractionRatioChanged event arguments.
+        private void ScrollAwayProvider_InteractionRatioChanged(IRefreshInfoProvider sender, RefreshInteractionRatioChangedEventArgs args)
+        {
+            SampleScrollAwayRatio();
+        }
+
+        private void ScrollAway_Rendering(object sender, object e)
+        {
+            SampleScrollAwayRatio();
+        }
+
+        // Records the ScrollViewer's offset (in DIPs) at the instant the provider stops interacting for refresh, i.e. the
+        // offset the adapter's threshold check saw when it cancelled the pull.
+        private void ScrollAwayProvider_IsInteractingForRefreshChanged(IRefreshInfoProvider sender, object args)
+        {
+            if (!sender.IsInteractingForRefresh && double.IsNaN(scrollAwayOffsetAtCancel))
+            {
+                scrollAwayOffsetAtCancel = listScrollViewer.VerticalOffset;
+                UpdateScrollAwayTrace();
+            }
+        }
+
+        private void SampleScrollAwayRatio()
+        {
+            if (scrollAwayProvider == null || double.IsNaN(scrollAwayRatioAtCancel))
+            {
+                return;
+            }
+            double ratio = ReadScrollAwayRatio();
+            if (!double.IsNaN(ratio) && (double.IsNaN(scrollAwayMaxRatioAfterCancel) || ratio > scrollAwayMaxRatioAfterCancel))
+            {
+                scrollAwayMaxRatioAfterCancel = ratio;
+                UpdateScrollAwayTrace();
+            }
+        }
+
+        private double ReadScrollAwayRatio()
+        {
+            float ratio;
+            if (scrollAwayProvider != null &&
+                scrollAwayProvider.CompositionProperties.TryGetScalar(scrollAwayProvider.InteractionRatioCompositionProperty, out ratio) == Microsoft.UI.Composition.CompositionGetValueStatus.Succeeded)
+            {
+                return ratio;
+            }
+            return double.NaN;
+        }
+
+        private void UpdateScrollAwayTrace()
+        {
+            this.ScrollAwayTrace.Text = "ratioAtCancel=" + scrollAwayRatioAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+                ";maxRatioAfterCancel=" + scrollAwayMaxRatioAfterCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+                ";offsetAtCancel=" + scrollAwayOffsetAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+                ";interactingAfterFirstScroll=" + (scrollAwayInteractingAfterFirstScroll.HasValue ? scrollAwayInteractingAfterFirstScroll.Value.ToString() : "NotRecorded");
+        }
+
+        private IRefreshInfoProvider scrollAwayProvider;
+        private bool scrollAwayRenderingHooked;
+        private double scrollAwayRatioAtCancel = double.NaN;
+        private double scrollAwayMaxRatioAfterCancel = double.NaN;
+        private double scrollAwayOffsetAtCancel = double.NaN;
+        private bool? scrollAwayInteractingAfterFirstScroll;
 
         private void ResetStates_Click(object sender, RoutedEventArgs e)
         {
@@ -288,35 +425,16 @@ namespace MUXControlsTestApp
             set;
         }
 
-        async private void containerTimer_Tick(object sender, object e)
+        // DispatcherTimer ticks on the UI thread. (The previous CoreApplication.MainView dispatcher hop is not available in the
+        // desktop test app and threw E_ILLEGAL_METHOD_CALL, crashing the app after every refresh.)
+        private void containerTimer_Tick(object sender, object e)
         {
-            CoreDispatcher disp = Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher;
-            if (disp.HasThreadAccess)
-            {
-                containerTimer_TickImpl();
-            }
-            else
-            {
-                await disp.RunAsync(CoreDispatcherPriority.Normal, () =>
-                 {
-                     containerTimer_TickImpl();
-                 });
-            }
+            containerTimer_TickImpl();
         }
-        async private void visualizerTimer_Tick(object sender, object e)
+
+        private void visualizerTimer_Tick(object sender, object e)
         {
-            CoreDispatcher disp = Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher;
-            if (disp.HasThreadAccess)
-            {
-                visualizerTimer_TickImpl();
-            }
-            else
-            {
-                await disp.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    visualizerTimer_TickImpl();
-                });
-            }
+            visualizerTimer_TickImpl();
         }
 
         private void containerTimer_TickImpl()
@@ -339,6 +457,46 @@ namespace MUXControlsTestApp
                 this.VisualizerRefreshCompletionDeferral.Dispose();
                 this.VisualizerRefreshCompletionDeferral = null;
             }
+        }
+    }
+
+    // A Panel that is itself an IRefreshInfoProvider. It is referenced from RefreshContainerPage.xaml so that the app's
+    // XAML type information knows it, which lets API tests use it as the "Root" of a custom RefreshContainer template.
+    public sealed partial class RefreshInfoProviderPanel : Grid, IRefreshInfoProvider
+    {
+        private readonly Microsoft.UI.Composition.CompositionPropertySet compositionProperties;
+
+        public RefreshInfoProviderPanel()
+        {
+            compositionProperties = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(this).Compositor.CreatePropertySet();
+            compositionProperties.InsertScalar(InteractionRatioCompositionProperty, 0.0f);
+        }
+
+        public void RaiseInteractionRatioChangedEvent(float interactionRatio)
+        {
+            InteractionRatioChanged?.Invoke(this, PullToRefreshHelperTestApi.CreateRefreshInteractionRatioChangedEventArgsInstance(interactionRatio));
+        }
+
+        public double ExecutionRatio => 0.8;
+        public Microsoft.UI.Composition.CompositionPropertySet CompositionProperties => compositionProperties;
+        public string InteractionRatioCompositionProperty => "InteractionRatio";
+        public bool IsInteractingForRefresh => false;
+
+        public event TypedEventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged;
+#pragma warning disable CS0067 // Required by IRefreshInfoProvider; this provider never interacts.
+        public event TypedEventHandler<IRefreshInfoProvider, object> IsInteractingForRefreshChanged;
+#pragma warning restore CS0067
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshCompleted;
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshStarted;
+
+        public void OnRefreshCompleted()
+        {
+            RefreshCompleted?.Invoke(this, null);
+        }
+
+        public void OnRefreshStarted()
+        {
+            RefreshStarted?.Invoke(this, null);
         }
     }
 }
