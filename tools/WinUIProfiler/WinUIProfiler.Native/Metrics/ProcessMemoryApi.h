@@ -5,7 +5,7 @@
 
 namespace wup::detail
 {
-using MemoryQuery = BOOL (WINAPI*)(HANDLE, PPROCESS_MEMORY_COUNTERS, DWORD);
+using MemoryQuery = BOOL(WINAPI*)(HANDLE, PPROCESS_MEMORY_COUNTERS, DWORD);
 struct ProcessMemoryApi
 {
     MemoryQuery query;
@@ -16,6 +16,6 @@ struct ProcessMemoryApi
     decltype(&GetLastError) last_error;
     WupMetricSource source = WupProcessMemoryEx2;
 };
-uint32_t CaptureMemoryWithApi(void* process, const WupMemoryRequest* request,
-    WupMemoryResult* output, uint32_t output_size, const ProcessMemoryApi& api) noexcept;
+uint32_t CaptureMemoryWithApi(void* process, const WupMemoryRequest* request, WupMemoryResult* output,
+    uint32_t output_size, const ProcessMemoryApi& api) noexcept;
 }

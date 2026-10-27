@@ -5,7 +5,8 @@
 namespace wup
 {
 constexpr uint32_t MaxGroups = WUP_MAX_CPU_GROUPS;
-struct CpuCapture {
+struct CpuCapture
+{
     WupCpuSnapshot snapshot;
     WupCpuGroup groups[MaxGroups];
     uint32_t os_error;

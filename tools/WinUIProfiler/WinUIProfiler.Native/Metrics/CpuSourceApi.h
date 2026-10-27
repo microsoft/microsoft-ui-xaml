@@ -6,11 +6,16 @@ namespace wup::detail
 {
 struct ProcessorTimes
 {
-    int64_t idle, kernel, user, dpc, isr;
-    uint32_t interrupt_count, spare;
+    int64_t idle;
+    int64_t kernel;
+    int64_t user;
+    int64_t dpc;
+    int64_t isr;
+    uint32_t interrupt_count;
+    uint32_t spare;
 };
-using QueryEx = LONG (NTAPI*)(ULONG, void*, ULONG, void*, ULONG, ULONG*);
-using Inventory = BOOL (WINAPI*)(DWORD*, DWORD, DWORD*);
+using QueryEx = LONG(NTAPI*)(ULONG, void*, ULONG, void*, ULONG, ULONG*);
+using Inventory = BOOL(WINAPI*)(DWORD*, DWORD, DWORD*);
 struct CpuSourceApi
 {
     QueryEx query;

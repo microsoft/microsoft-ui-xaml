@@ -16,8 +16,8 @@ struct GpuSourceApi
     decltype(&GetTickCount64) tick;
     decltype(&GetLastError) last_error;
 };
-uint32_t CaptureGpuWithApi(void* process, const WupGpuRequest* request,
-    WupGpuSnapshot* output, uint32_t output_size, const GpuSourceApi& api) noexcept;
-PDH_STATUS ReadGpuPdhArrayWithApi(PDH_HCOUNTER counter, uint32_t pid, WupGpuSnapshot& result,
-    uint32_t& observed, uint32_t& malformed, decltype(&PdhGetRawCounterArrayW) read, bool require_engine = true);
+uint32_t CaptureGpuWithApi(void* process, const WupGpuRequest* request, WupGpuSnapshot* output, uint32_t output_size,
+    const GpuSourceApi& api) noexcept;
+PDH_STATUS ReadGpuPdhArrayWithApi(PDH_HCOUNTER counter, uint32_t pid, WupGpuSnapshot& result, uint32_t& observed,
+    uint32_t& malformed, decltype(&PdhGetRawCounterArrayW) read, bool require_engine = true);
 }
