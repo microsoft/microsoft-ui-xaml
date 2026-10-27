@@ -53,14 +53,14 @@ private void ScrollToRow(int number, string message)
         scroller.ChangeView(null, Math.Max(0, offset), null, disableAnimation: true);
         PeopleTable.UpdateLayout();
 
-        if (FindRealizedRow(target) is { } row)
+        if (FindVisibleRow(target) is { } row)
         {
             row.StartBringIntoView();
             break;
         }
 
-        // Not realized yet: measure how far off the estimate was from any realized row.
-        if (FindRealizedRow(null) is not { DataContext: Person landed } || !indexes.TryGetValue(landed, out var landedIndex))
+        // Not in the viewport yet: measure how far off the estimate was from any visible row.
+        if (FindVisibleRow(null) is not { DataContext: Person landed } || !indexes.TryGetValue(landed, out var landedIndex))
         {
             break;
         }
@@ -69,8 +69,8 @@ private void ScrollToRow(int number, string message)
     }
 }
 
-// The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
-// visible rows that intersect the body viewport.
+// The control exposes no visible-row count, so walk the visual tree for TableViewRow and count the
+// containers that are shown and intersect the body viewport.
 private static bool InViewport(TableViewRow row, ScrollViewer scroller)
 {
     if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)

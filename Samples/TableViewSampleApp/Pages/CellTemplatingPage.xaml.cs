@@ -149,7 +149,7 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         // Success is reported by OnDetailsOpened.
         if (!PersonCellTemplates.TryOpenDetails(PeopleTable, person))
         {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "The row for {0} is not on screen; scroll to it first.", person.FullName));
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "The row for {0} is not realized; scroll to it first.", person.FullName));
         }
     }
 }

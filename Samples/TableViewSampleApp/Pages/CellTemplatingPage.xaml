@@ -45,7 +45,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Join date editor"
-                    Description="Sets TableViewTemplateColumn.CellTemplate on the Join date column; the visible rows regenerate their cells. The compact CalendarDatePicker fits a 170 px column, the full DatePicker needs 310 px.">
+                    Description="Sets TableViewTemplateColumn.CellTemplate on the Join date column; the realized rows regenerate their cells. The compact CalendarDatePicker fits a 170 px column, the full DatePicker needs 310 px.">
                     <!-- snippet -->
                     <ComboBox
                         x:Name="JoinDateEditorSelector"
@@ -63,7 +63,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="CellTemplating"
-                    Description="Grouping re-realizes the templated cells from the pool, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping realizes the templated cells again in reused row containers, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

@@ -20,9 +20,9 @@ namespace TableViewSampleApp.Pages;
 
 /// <summary>
 /// Row virtualization over a large in-memory set. The control raises no realization event and
-/// exposes no realized-row count, so the readouts walk the visual tree for TableViewRow (a public
-/// type) and sample it twice a second. "Realized rows" counts the rows that intersect the
-/// viewport; "Row pool" counts every container the table keeps.
+/// exposes no row counts, so the readouts walk the visual tree for TableViewRow (a public type)
+/// and sample it twice a second. "Visible rows" counts the rows that intersect the viewport;
+/// "Row containers" counts every TableViewRow in the tree, realized (cache buffer included) or recycled.
 /// </summary>
 public sealed partial class VirtualizationPage : SamplePageBase
 {
@@ -49,7 +49,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
 
     private void OnSamplerTick(object? sender, object e) => RefreshReadouts();
 
-    protected override void OnShapingApplying(ShapingApplyingEventArgs e) => _peakPool = 0;
+    protected override void OnShapingApplying(ShapingApplyingEventArgs e) => _peakContainers = 0;
 
     // ---- Dataset ------------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
         _people = new ObservableCollection<Person>(PersonData.Many(count));
         _source = TableViewSource.From(_people);
         PeopleTable.ItemsSource = _source;
-        _peakPool = 0; // snippet:skip
+        _peakContainers = 0; // snippet:skip
 
         // A new source starts flat; give it the current shaping.
         Shaping.Attach(PeopleTable, _source);
@@ -114,7 +114,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
             columns[columns.IndexOf(DepartmentChipColumn)] = _departmentTextColumn;
         }
 
-        _peakPool = 0;
+        _peakContainers = 0;
         SetLastAction(TemplateColumnsToggle.IsOn
             ? "Template columns -> On (Photo, Department chip, Active)"
             : "Template columns -> Off (text only)");
@@ -153,7 +153,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
 
     // <snippet>
     // Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
-    // ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
+    // ScrollViewer to an estimated offset and correct it from a visible row. Assumes no sort, every
     // group and row expanded and a uniform row height.
     private void ScrollToRow(int number, string message)
     {
@@ -196,14 +196,14 @@ public sealed partial class VirtualizationPage : SamplePageBase
             scroller.ChangeView(null, Math.Max(0, offset), null, disableAnimation: true);
             PeopleTable.UpdateLayout();
 
-            if (FindRealizedRow(target) is { } row)
+            if (FindVisibleRow(target) is { } row)
             {
                 row.StartBringIntoView();
                 break;
             }
 
-            // Not realized yet: measure how far off the estimate was from any realized row.
-            if (FindRealizedRow(null) is not { DataContext: Person landed } || !indexes.TryGetValue(landed, out var landedIndex))
+            // Not in the viewport yet: measure how far off the estimate was from any visible row.
+            if (FindVisibleRow(null) is not { DataContext: Person landed } || !indexes.TryGetValue(landed, out var landedIndex))
             {
                 break;
             }
@@ -285,7 +285,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
     }
 
     // A row in the viewport whose item is the target, or any item when target is null.
-    private TableViewRow? FindRealizedRow(object? target)
+    private TableViewRow? FindVisibleRow(object? target)
     {
         var scroller = FindBodyScroller(PeopleTable);
         return scroller is null
@@ -313,8 +313,8 @@ public sealed partial class VirtualizationPage : SamplePageBase
     }
 
     // <snippet>
-    // The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
-    // visible rows that intersect the body viewport.
+    // The control exposes no visible-row count, so walk the visual tree for TableViewRow and count the
+    // containers that are shown and intersect the body viewport.
     private static bool InViewport(TableViewRow row, ScrollViewer scroller)
     {
         if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)
@@ -328,11 +328,10 @@ public sealed partial class VirtualizationPage : SamplePageBase
     // </snippet>
 
     /// <summary>
-    /// Counts TableViewRow containers. A row is "realized" when it is visible and its bounds
-    /// intersect the body viewport; containers the table parks off screen or hides (for example
-    /// after Collapse all) count toward the pool only.
+    /// Counts TableViewRow containers: all of them (realized, including the cache buffer beyond the
+    /// viewport, and recycled ones awaiting reuse), and the visible ones that intersect the viewport.
     /// </summary>
-    private (int Visible, int Pool, double RowHeight) CountRows()
+    private (int Visible, int Containers, double RowHeight) CountRows()
     {
         var scroller = FindBodyScroller(PeopleTable);
         if (scroller is null || scroller.ViewportHeight <= 0)
@@ -340,11 +339,11 @@ public sealed partial class VirtualizationPage : SamplePageBase
             return (0, 0, 0);
         }
 
-        int visible = 0, pool = 0;
+        int visible = 0, containers = 0;
         double rowHeight = 0;
         foreach (var row in RowContainers(scroller))
         {
-            pool++;
+            containers++;
             if (InViewport(row, scroller))
             {
                 visible++;
@@ -352,6 +351,6 @@ public sealed partial class VirtualizationPage : SamplePageBase
             }
         }
 
-        return (visible, pool, rowHeight);
+        return (visible, containers, rowHeight);
     }
 }

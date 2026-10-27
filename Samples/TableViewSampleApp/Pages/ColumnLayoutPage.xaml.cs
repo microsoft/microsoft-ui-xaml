@@ -113,7 +113,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Templated("Department", "DepartmentChipTemplate", Auto()));
                 WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
-                ModeDescription.Text = "Auto: every column sizes to its header and the widest cell on screen, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.";
+                ModeDescription.Text = "Auto: every column sizes to its header and the widest realized cell, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.";
                 break;
 
             case "Star":

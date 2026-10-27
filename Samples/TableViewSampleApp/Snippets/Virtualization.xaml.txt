@@ -1,4 +1,4 @@
-<!-- No virtualization switch: bind a large source and only the viewport's rows are realized. Width
+<!-- No virtualization switch: bind a large source and only the rows in or near the viewport are realized. Width
      tokens, never Auto: Auto re-measures against whichever rows happen to be realized. -->
 <tv:TableView
     x:Name="PeopleTable"

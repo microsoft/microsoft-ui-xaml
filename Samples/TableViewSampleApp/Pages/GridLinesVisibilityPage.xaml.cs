@@ -204,7 +204,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         var person = People[2];
         SetLastAction(SampleShaping.SelectItem(PeopleTable, person)
             ? string.Format(CultureInfo.CurrentCulture, "Selected {0}", person.FullName)
-            : string.Format(CultureInfo.CurrentCulture, "{0} has no row on screen (collapsed group?); expand the groups first.", person.FullName));
+            : string.Format(CultureInfo.CurrentCulture, "{0} has no displayed row (collapsed group?); expand the groups first.", person.FullName));
     }
 
     // <snippet>
