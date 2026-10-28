@@ -244,6 +244,7 @@ void TableView::OnColumnsVectorChanged(
                     // A re-inserted / recycled column instance may carry a stale grow-only accumulator
                     // from a prior position or table; clear it so it re-grows from its content here.
                     colImpl->ResetDesiredWidthInternal();
+                    RestoreSortOfMovedColumn(col);
                 }
                 else
                 {
@@ -266,10 +267,7 @@ void TableView::OnColumnsVectorChanged(
                 // A column that has left Columns must not stay the active sort. Reshaping here
                 // would run inside the VectorChanged callback, so the clear is deferred until the
                 // collection has settled.
-                if (PurgeColumnFromSortState(col))
-                {
-                    QueueClearSortAfterColumnRemoval();
-                }
+                PurgeLeavingColumnFromSortState(col);
             }
             m_trackedColumns.erase(m_trackedColumns.begin() + index);
         }
@@ -283,10 +281,7 @@ void TableView::OnColumnsVectorChanged(
             if (oldCol)
             {
                 winrt::get_self<TableViewColumn>(oldCol)->SetOwningTableViewInternal(nullptr);
-                if (PurgeColumnFromSortState(oldCol))
-                {
-                    QueueClearSortAfterColumnRemoval();
-                }
+                PurgeLeavingColumnFromSortState(oldCol);
             }
             if (index < sender.Size())
             {
@@ -305,6 +300,7 @@ void TableView::OnColumnsVectorChanged(
                         {
                             newColImpl->ResetDesiredWidthInternal();
                         }
+                        RestoreSortOfMovedColumn(newCol);
                     }
                     else
                     {

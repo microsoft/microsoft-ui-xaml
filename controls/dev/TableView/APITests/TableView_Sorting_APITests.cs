@@ -1263,6 +1263,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies moving or re-setting the sorted column in Columns keeps its sort.")]
+        public void VerifyMovingSortedColumnKeepsSort()
+        {
+            TableView tableView = null;
+            TableViewColumn name = null;
+            var sortedEvents = new List<SortDirection>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = tableView.Columns[0];
+                Verify.IsTrue(tableView.SortByColumn(name, SortDirection.Ascending), "Precondition: the Name column sorts.");
+                tableView.Sorted += (s, e) => sortedEvents.Add(e.Direction);
+            });
+
+            SettleLayout(tableView);
+
+            // IObservableVector has no Move: RemoveAt + Insert of the same instance is the move.
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns.RemoveAt(0);
+                tableView.Columns.Insert(1, name);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, tableView.Columns.IndexOf(name), "Precondition: the Name column moved.");
+                Verify.AreEqual(SortDirection.Ascending, name.SortDirection, "A moved column keeps its sort.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "the rows must stay sorted by the moved column");
+                Verify.AreEqual(0, sortedEvents.Count, "A move changes no sort, so Sorted must not be raised.");
+
+                tableView.Columns[1] = name;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, name.SortDirection, "Re-setting the same column keeps its sort.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "the rows must stay sorted after the column is re-set in place");
+                Verify.AreEqual(0, sortedEvents.Count, "Re-setting the same column changes no sort.");
+
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending),
+                    "Another column must still sort after the move.");
+                Verify.AreEqual(SortDirection.None, name.SortDirection, "The new sort replaces the moved column's.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a column sort and a TableViewSource sort reconcile, last writer winning.")]
         public void VerifySortReconcilesWithTableViewSourceSort()
         {

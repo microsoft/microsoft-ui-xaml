@@ -508,6 +508,7 @@ void TableView::ResetSortStateForNewItemsSource()
     // Silent, unlike ClearSort: there is no reshape to perform because the source is being rebuilt
     // from scratch, and the data set is already gone by the time a handler could react, so this is
     // not a cancellable Sorting nor a Sorted the app could act on.
+    m_sortedColumnPendingRemoval = nullptr;
     if (m_sortedColumns.empty() && m_tableViewSourceSort.AxisToken.empty())
     {
         return;
@@ -1186,6 +1187,7 @@ void TableView::QueueClearSortAfterColumnRemoval(){
             if (auto strongThis = weakThis.get())
             {
                 strongThis->m_clearSortAfterColumnRemovalQueued = false;
+                strongThis->m_sortedColumnPendingRemoval = nullptr;
                 // RecomputeSortDPsAndRaiseInternal's stale-clear guard drops this if the app
                 // applied a new sort on a different column in the meantime.
                 strongThis->RecomputeSortDPsAndRaiseInternal(nullptr, false);
@@ -1195,7 +1197,44 @@ void TableView::QueueClearSortAfterColumnRemoval(){
     else
     {
         m_clearSortAfterColumnRemovalQueued = false;
+        m_sortedColumnPendingRemoval = nullptr;
     }
+}
+
+void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& column)
+{
+    const bool wasSorted = std::any_of(m_sortedColumns.begin(), m_sortedColumns.end(),
+        [&column](auto const& sorted) { return sorted.get() == column; });
+    const auto direction = column.SortDirection();
+    if (!PurgeColumnFromSortState(column))
+    {
+        return;
+    }
+
+    if (wasSorted && direction != winrt::SortDirection::None)
+    {
+        m_sortedColumnPendingRemoval = winrt::make_weak(column);
+        m_sortedColumnPendingRemovalDirection = direction;
+    }
+    QueueClearSortAfterColumnRemoval();
+}
+
+void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
+{
+    if (!m_clearSortAfterColumnRemovalQueued || !column || m_sortedColumnPendingRemoval.get() != column)
+    {
+        return;
+    }
+    m_sortedColumnPendingRemoval = nullptr;
+
+    // A sort applied since the removal replaced this one.
+    if (!m_sortedColumns.empty())
+    {
+        return;
+    }
+
+    winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(m_sortedColumnPendingRemovalDirection);
+    m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, column });
 }
 
 void TableView::AnnounceSortChange(const winrt::hstring& announcement){

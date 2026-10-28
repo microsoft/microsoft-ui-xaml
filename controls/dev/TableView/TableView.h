@@ -1230,6 +1230,13 @@ private:
     // re-enter the collection that is still mutating, so the reshape runs on the next turn.
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
+    // Removes `column` from the sort state; queues the clear when it was sorted.
+    void PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& column);
+    // IObservableVector has no Move, so RemoveAt + InsertAt of the same instance before the queued
+    // clear runs is a move: the column gets its sort back and the clear finds nothing to do.
+    void RestoreSortOfMovedColumn(const winrt::TableViewColumn& column);
+    winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
+    winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected
