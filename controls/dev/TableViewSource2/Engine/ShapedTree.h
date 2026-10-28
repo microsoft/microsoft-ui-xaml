@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include <winrt/Windows.Foundation.h>
@@ -20,7 +21,8 @@
 // representation" and "Reading rows by position".
 //
 // The shaped tree does not copy the source tree. Only group headers are new nodes (GroupNode); rows
-// are references (ShapedRef) to existing SourceRecords.
+// are the existing SourceRecords. Both derive from ShapedNode (Engine/ShapeState.h), so a
+// ShapedNode* is the one node handle used throughout.
 //
 //   shaped root (GroupNode, never displayed)
 //     ├─ GroupNode  (GroupLevel 0)          only while GroupBy is active
@@ -37,70 +39,24 @@
 //     never through a group.
 //   - Applying or removing GroupBy rebuilds GroupNodes (O(n) bucketing); the source tree is
 //     untouched. Engine state for records lives in each record's ShapeState slot.
-//   - ShapedRef and GroupNode stay native: the engine, ShapedTree, the WinRT visible list and the
+//   - ShapedNode and GroupNode stay native: the engine, ShapedTree, the WinRT visible list and the
 //     row metadata provider. TableView sees items and the TableViewRowInfo / TableViewGroupInfo
 //     derived from them.
-//   - UI-thread affine, like SourceTable. Each GroupNode is heap-allocated and owned by its parent
-//     group (GroupNode::Subgroups; top-level groups by the shaped root), so GroupNode* and
-//     ShapedRef stay valid until the engine drops the group, and dropping a group frees its
-//     subtree.
-
-struct GroupNode;
-
-// One slot in a shaped child list: a GroupNode or a SourceRecord, distinguished by the low pointer
-// bit (1 = group; both pointees are at least 2-byte aligned). Non-owning; one pointer wide.
-// IsGroup() is the only group test: a source parent (ShapedChildCount() > 0) is expandable but is
-// not a group.
-struct ShapedRef
-{
-    ShapedRef() noexcept = default;
-
-    static ShapedRef FromRecord(SourceRecord* record) noexcept;
-    static ShapedRef FromGroup(GroupNode* group) noexcept;
-
-    bool IsNull() const noexcept;
-    bool IsGroup() const noexcept;
-
-    // Null if this slot holds the other kind.
-    GroupNode* Group() const noexcept;
-    SourceRecord* Record() const noexcept;
-
-    // Parent in the shaped tree, O(1). Null only for the shaped root (and a null ref):
-    //   group: GroupNode::Parent
-    //   nested record: Record()->Parent (source parent)
-    //   top-level record: Record()->Shape.Group (bottom-level group, or the shaped root when
-    //   ungrouped)
-    // The one upward walk used by ShapedTree (IndexOf, IsShown, count propagation), set size,
-    // parent identity and "go to parent". There is no stored visible list (P1).
-    ShapedRef ShapedParent() const noexcept;
-
-    // Children this node has in the shaped tree, O(1). The single rule for expandability
-    // (IsExpandable = ShapedChildCount() > 0), ChildCount on a record row, SizeOfSet (called on
-    // ShapedParent()) and the expander chrome the owner re-reads (P9):
-    //   group or shaped root: Group()->Children.size()
-    //   record, ChildrenShaped set: Record()->Shape.ShapedChildren.size()
-    //   record otherwise: Record()->Children.size()
-    // Not Record()->HasChildren(): under a filter that reads the source tree and stays true when
-    // every child is filtered out. Not stored; derived on demand.
-    uint32_t ShapedChildCount() const noexcept;
-
-    // Same node (same tagged pointer).
-    bool operator==(ShapedRef const& other) const noexcept;
-    bool operator!=(ShapedRef const& other) const noexcept;
-
-private:
-    friend struct ShapedRefHash;
-
-    static constexpr uintptr_t c_groupTag = 1;
-
-    uintptr_t m_bits{ 0 };
-};
+//   - UI-thread affine, like SourceTable. Each GroupNode except the shaped root is heap-allocated
+//     and owned by the engine's identity map (GroupMap, ShapingEngine::m_groupsByIdentity), so a
+//     GroupNode* stays valid until the engine drops the group. Tree links (Parent, Children) are
+//     non-owning; only empty groups are pruned, so a pruned group never has live subgroups.
+//   - Two parent links, never merged: SourceRecord::Parent (source tree) and GroupNode::Parent.
+//     ShapedNode::ShapedParent() derives the shaped parent from them and ShapeState::Group.
 
 // A group header in the shaped tree, or the shaped root. Group headers are engine-owned and exist
 // only while GroupBy is active (all are dropped when it is cleared); the shaped root is
 // ShapedTree's and lives as long as the engine. Surfaced to consumers as TableViewGroupInfo (Key, ItemCount, Level = GroupLevel).
-struct GroupNode
+// VisibleDescendantCount, IndexInParent and ChildRows are on the ShapedNode base (Kind = Group).
+struct GroupNode : ShapedNode
 {
+    GroupNode() noexcept : ShapedNode(ShapedNodeKind::Group) {}
+
     // The GroupBy selector's result for this bucket; empty on the shaped root. Tracked through the
     // owning TableViewSource2 (an object key may reference the VM; see SourceTable's Reference
     // tracking). Optional so the engine can drop it while the owner is alive.
@@ -116,49 +72,24 @@ struct GroupNode
     // Not the header text (that is StringifyGroupKey, culture-formatted and possibly colliding).
     winrt::hstring Identity;
 
-    // Containing group; nullptr only on the shaped root.
+    // Containing group; nullptr only on the shaped root. Non-owning.
     GroupNode* Parent{ nullptr };
 
-    // Level among group headers: top-level groups = 0. Also the group's ShapedDepth(). Unused on
-    // the shaped root.
-    uint16_t GroupLevel{ 0 };
-
     // Subgroups (all IsGroup()), or, for a bottom-level group, top-level records after filter and
-    // sort. Never mixed. Non-owning and in display order: the subgroups are owned by Subgroups. On the shaped root: top-level groups, or top-level records when ungrouped.
+    // sort. Never mixed. Non-owning and in display order (groups are owned by the engine's
+    // GroupMap). On the shaped root: top-level groups, or top-level records when ungrouped.
     // Bottom-level is not stored or tested here: the engine knows it from its group-level count
     // (GroupLevel + 1 == count; the shaped root when count == 0). Children cannot tell an empty
     // group's kind.
-    std::vector<ShapedRef> Children;
-
-    // Owns this group's subgroups (decided: parent owns subgroups). Same set as the group entries
-    // of Children, in no particular order; empty for a bottom-level group. Destroying a group
-    // destroys its subtree. A surgical prune unlinks the group (ShapedTree::Unlink, which raises its
-    // event) before moving it from here to the engine's retired list, destroyed when the commit
-    // ends (P8). A rebuild builds the new set aside, swaps it in under the root between
-    // ShapedTree::BeginReset and EndReset, and only then destroys the old set.
-    std::vector<std::unique_ptr<GroupNode>> Subgroups;
+    std::vector<ShapedNode*> Children;
 
     // Bucketed top-level records after filter (descendants not counted, as v1 GroupItemCount).
     // Children.size() for a bottom-level group; the sum over subgroups otherwise.
     uint32_t ItemCount{ 0 };
 
-    // Rows this node's own subtree contributes below it (headers and data rows), given its own and
-    // its descendants' expansion and ignoring its ancestors': 0 when collapsed. Lets ShapedTree
-    // find a node's visible position and report only the affected range. Maintained by
-    // ShapedTree; valid for every node in the shaped tree, shown or hidden (decided, P6).
-    // For source parents the same count lives in the record's ShapeState slot.
-    uint32_t VisibleDescendantCount{ 0 };
-
-    // Visible-row index over Children, entry j = 1 + child j's VisibleDescendantCount (decided,
-    // P1). Total() equals VisibleDescendantCount when expanded; on the shaped root it is the
-    // visible list's Size(). Written by ShapedTree; kept for every group, shown or hidden,
-    // expanded or not (P6), unless marked stale (P7; rebuilt on its next read).
-    FenwickTree ChildRows;
-
-    // Position in the parent's Children (decided, P2); 0 on the shaped root. Written by
-    // ShapedTree::Link / Unlink (renumbering the later siblings) and by a rebuild. Valid while the
-    // group is in the tree, shown or not.
-    uint32_t IndexInParent{ 0 };
+    // Level among group headers: top-level groups = 0. Also the group's ShapedDepth(). Unused on
+    // the shaped root. Follows ItemCount so the two share one 8-byte slot.
+    uint16_t GroupLevel{ 0 };
 
     // The header's row value in the visible list (decided, V2): an internal GroupHeaderRow token
     // holding Key and Identity only, created on the first ShapedCollectionView::GetAtCore and reused after, so
@@ -169,15 +100,12 @@ struct GroupNode
     bool IsRoot() const noexcept { return Parent == nullptr; }
 };
 
-// Hash of the tagged pointer, for ShapedRef-keyed maps.
-struct ShapedRefHash
-{
-    size_t operator()(ShapedRef const& ref) const noexcept;
-};
-
-static_assert(alignof(SourceRecord) >= 2, "ShapedRef uses the low pointer bit as the group tag");
-static_assert(alignof(GroupNode) >= 2, "ShapedRef uses the low pointer bit as the group tag");
-static_assert(sizeof(ShapedRef) == sizeof(void*), "ShapedRef must stay one pointer wide");
+// Owner of every live GroupNode except the shaped root (decided, E2 + E3: the engine's identity map
+// owns, replacing per-parent Subgroups). Keyed by GroupNode::Identity. Surgical prune extracts the
+// one emptied group (it has no live subgroups: an empty group's subgroups are pruned first) into
+// the engine's retired list; a rebuild builds a new map aside and swaps it in; teardown clears it.
+// Destruction order does not matter: ~GroupNode never touches Parent or Children.
+using GroupMap = std::unordered_map<winrt::hstring, std::unique_ptr<GroupNode>>;
 
 // Row events from ShapedTree (decided, P8: inline, replaces P4's FlatDelta and publish overlay).
 // Raised as each change is made, so a handler that reads the tree sees exactly the list the event
@@ -237,13 +165,14 @@ struct IShapedRowsListener
 // mirrors it. A node that is not linked is never reached by a read.
 //
 // Expansion state: records use ShapeFlags::Expanded (and OverlayCollapsed, F5) on their
-// ShapeState; groups use GroupExpansion, keyed by GroupNode::Identity (owned by ShapingManager).
+// ShapeState; groups use GroupExpansion, keyed by GroupNode::Identity (owned here, m_groupExpansion:
+// the tree is its only reader and writer, and lives exactly as long as the state must).
 //
 // Owns no app object. Calls no app code itself; its listener may. UI-thread affine.
 class ShapedTree final
 {
 public:
-    explicit ShapedTree(GroupExpansion& groupExpansion);
+    ShapedTree() = default;
 
     ShapedTree(ShapedTree const&) = delete;
     ShapedTree& operator=(ShapedTree const&) = delete;
@@ -253,8 +182,8 @@ public:
 
     // ---- Root -------------------------------------------------------------------------------
 
-    // Stable for the tree's lifetime (decided): a rebuild swaps its Children and Subgroups. Owns
-    // the top-level groups through Subgroups, and so (transitively) every GroupNode (E2).
+    // Stable for the tree's lifetime (decided): a rebuild swaps its Children. Owns no group: every
+    // other GroupNode is owned by the engine's GroupMap (E2).
     GroupNode& Root() noexcept;
     GroupNode const& Root() const noexcept;
 
@@ -274,29 +203,29 @@ public:
     //      CurrentChildRows(node).Find(r); child = the c-th shaped child; r -= before; if r == 0
     //      return child; r -= 1; node = child }. O(depth x log k).
     // Stores the result in the cursor (mutable).
-    ShapedRef GetAt(uint32_t index) const;
+    ShapedNode* GetAt(uint32_t index) const;
 
     // Index of node in the visible list, or nullopt when an ancestor is collapsed. One upward walk
     // that checks IsShown and sums FlatIndexOf's terms together, O(depth x log k). The cursor is
     // not consulted. The view maps nullopt to -1 for WinRT.
-    std::optional<uint32_t> IndexOf(ShapedRef node) const;
+    std::optional<uint32_t> IndexOf(ShapedNode* node) const;
 
     // Every ancestor of node is expanded. O(depth).
-    bool IsShown(ShapedRef node) const;
+    bool IsShown(ShapedNode* node) const;
 
     // Effective expansion. Group: GroupExpansion. Record: context row (fails the filter, in the
     // shaped tree) ? !OverlayCollapsed : Expanded (F5). Feeds TableViewRowInfo::IsExpanded.
-    bool IsExpanded(ShapedRef node) const;
+    bool IsExpanded(ShapedNode* node) const;
 
     // Number of visible rows below node: its VisibleDescendantCount (valid shown or hidden, P6).
     // For a bottom-level group this is the size of its header band (R3).
-    uint32_t ShownDescendantCount(ShapedRef node) const;
+    uint32_t ShownDescendantCount(ShapedNode* node) const;
 
     // ---- Structure (engine write phase only) ------------------------------------------------
     //
     // noexcept: the engine's write phase cannot throw. Vector capacity is reserved in its compute
-    // phase (E4). The engine still owns group lifetime (Subgroups, its identity map, the retired
-    // list); these calls own position, counts and events.
+    // phase (E4). The engine still owns group lifetime (its GroupMap and the retired list);
+    // these calls own position, counts and events.
 
     // node is now at index in parent's shaped child list. For a list the engine owns (a group's
     // Children, a record's ShapedChildren) Link inserts it; for a source-owned list (ChildrenShaped
@@ -304,8 +233,8 @@ public:
     // ChildRows stale, set node's counts (isMove: kept from before its Unlink; otherwise
     // ComputeSubtreeCounts, O(subtree)), PropagateCount(parent, +span) through the first collapsed
     // ancestor, invalidate the cursor, and if node is shown raise OnRowsInserted(IndexOf(node),
-    // span, isMove). span = 1 + VisibleDescendantCount(node).
-    void Link(ShapedRef node, ShapedRef parent, uint32_t index, bool isMove) noexcept;
+    // span, isMove). span = 1 + node->VisibleDescendantCount.
+    void Link(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept;
 
     // Mirror of Link: index = IndexOf(node) and span, taken first (only the siblings before node
     // matter, so this holds even when SourceTable has already erased node from a source-owned
@@ -313,15 +242,24 @@ public:
     // PropagateCount(parent, -span); for a group, GroupExpansion::Erase for it and every group in
     // its subtree unless isMove (F4); invalidate the cursor; raise OnRowsRemoved if it was shown.
     // node's own counts are left as they are (a move keeps them).
-    void Unlink(ShapedRef node, bool isMove) noexcept;
+    void Unlink(ShapedNode* node, bool isMove) noexcept;
 
     // Bracket a rebuild. BeginReset raises OnRowsResetting before anything is swapped. The engine
-    // then swaps the new Children / Subgroups in under the root (writing IndexInParent as it
-    // builds), and EndReset sets groupLevelCount, recomputes every count (ComputeSubtreeCounts from
-    // the root: post-order over every shaped node, O(n), P6), invalidates the cursor and raises
-    // OnRowsReset. A commit either resets or links, never both.
+    // then swaps the new root Children and GroupMap in (writing IndexInParent as it
+    // builds), and EndReset:
+    //   1. prunes group expansion (F4): GroupExpansion::Clear when newGroupSelector (old
+    //      identities mean other keys), else RetainOnly(liveGroups) (the engine's
+    //      m_groupsByIdentity). The replaced groups are still alive (the engine destroys them
+    //      after EndReset, P5), so no freed key address can be reused before the prune;
+    //   2. sets groupLevelCount and recomputes every count (ComputeSubtreeCounts from the root:
+    //      post-order over every shaped node, O(n), P6), reading the pruned expansion;
+    //   3. invalidates the cursor and raises OnRowsReset.
+    // A commit either resets or links, never both.
     void BeginReset() noexcept;
-    void EndReset(uint16_t groupLevelCount) noexcept;
+    void EndReset(
+        uint16_t groupLevelCount,
+        GroupMap const& liveGroups,
+        bool newGroupSelector) noexcept;
 
     // ---- Expansion --------------------------------------------------------------------------
     //
@@ -334,24 +272,24 @@ public:
     // raises OnRowsInserted(IndexOf(node) + 1, count). Hidden: the same flag and count work and no
     // event; the rows appear when the ancestor expands. False if already expanded or not
     // expandable.
-    bool Expand(ShapedRef node);
+    bool Expand(ShapedNode* node);
 
     // Reverse of Expand: the count drops to 0, ChildRows is kept for the next Expand, ancestors are
     // updated, and if shown OnRowsRemoved is raised. O(depth x log k). Expand / Collapse of a
     // context row (F5) write only ShapeFlags::OverlayCollapsed.
-    bool Collapse(ShapedRef node);
+    bool Collapse(ShapedNode* node);
 
     // Expands a record and every record below it. Sets the flags first, then
     // ComputeSubtreeCounts(node), O(subtree), propagates, and if shown raises one OnRowsInserted of
     // the newly revealed rows after node. Records only: the manager never passes a group.
-    bool ExpandSubtree(ShapedRef node);
+    bool ExpandSubtree(ShapedNode* node);
 
     // Makes node shown by expanding its collapsed ancestors (decided, #20), bottom-up: every one but
     // the topmost is hidden (flag and count only), then the topmost as Expand does: one event for
     // every revealed row. Node itself is not expanded. False when already shown. Precondition: node
     // is in the shaped tree (ShapingEngine::InShapedTree). O(depth x log k), plus O(k) per stale
     // list on the path.
-    bool Reveal(ShapedRef node);
+    bool Reveal(ShapedNode* node);
 
     // One verb per axis. Each sets the state, then recomputes every count and raises one reset
     // (OnRowsResetting, then OnRowsReset).
@@ -363,65 +301,53 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Teardown: empties the root's Children and Subgroups (destroying every group), clears the
-    // cursor and the listener. Raises nothing. Called from ShapingEngine::Clear(), before
+    // Teardown: empties the root's Children (destroys nothing; the engine then clears its
+    // GroupMap), clears the cursor and the listener, and drops every group expansion exception (GroupExpansion::Clear;
+    // no group is left, and the baseline is a user preference that stays). Raises nothing. Called from ShapingEngine::Clear(), before
     // SourceTable::Clear() destroys the records the tree points to. Idempotent.
     void Clear() noexcept;
 
 private:
     // Writes the bit IsExpanded reads: OverlayCollapsed for a context row, else Expanded or
     // GroupExpansion.
-    void SetExpanded(ShapedRef node, bool expanded);
-
-    // The node's own VisibleDescendantCount (GroupNode or the record's ShapeState).
-    uint32_t& VisibleDescendantCount(ShapedRef node) const;
+    void SetExpanded(ShapedNode* node, bool expanded);
 
     // Walks up from parent: adds delta to the entry for the child below it in that ancestor's
     // ChildRows (Add at the child's IndexInParent; skipped if the list is stale, P7), then, if the
     // ancestor is expanded, to its own count and continues; a collapsed ancestor ends the walk (its
     // own count stays 0). Shown or not (P6). O(depth x log k).
-    void PropagateCount(ShapedRef parent, int64_t delta) noexcept;
+    void PropagateCount(ShapedNode* parent, int64_t delta) noexcept;
 
     // Precondition: IsShown(node). Sum up the ancestors of
-    // CurrentChildRows(parent).PrefixSum(IndexInParent(n)) + (parent is the root ? 0 : 1).
-    uint32_t FlatIndexOf(ShapedRef node) const;
-
-    // The node's ChildRows (GroupNode or the record's ShapeState).
-    FenwickTree& ChildRows(ShapedRef node) const;
-
-    // The node's IndexInParent (GroupNode or the record's ShapeState) (P2).
-    static uint32_t IndexInParent(ShapedRef node) noexcept;
-
-    // The j-th child in node's shaped child list: Children for a group or the root, ShapedChildren
-    // or SourceRecord::Children for a record (as ShapedChildCount). O(1).
-    static ShapedRef ShapedChildAt(ShapedRef node, uint32_t j) noexcept;
+    // CurrentChildRows(parent).PrefixSum(n->IndexInParent) + (parent is the root ? 0 : 1).
+    uint32_t FlatIndexOf(ShapedNode* node) const;
 
     // Rewrites IndexInParent for parent's children from index on. O(k - index).
-    static void Renumber(ShapedRef parent, uint32_t index) noexcept;
+    static void Renumber(ShapedNode* parent, uint32_t index) noexcept;
 
-    // ChildRows(node).Build over its shaped children, entry j = 1 + VisibleDescendantCount of
+    // node->ChildRows.Build over its shaped children, entry j = 1 + VisibleDescendantCount of
     // child j, clearing the stale bit. O(k).
-    void RebuildChildRows(ShapedRef node) const;
+    void RebuildChildRows(ShapedNode* node) const;
 
-    // ChildRows(node), rebuilt first if stale (P7). Every read of a list's ChildRows goes through
+    // node->ChildRows, rebuilt first if stale (P7). Every read of a list's ChildRows goes through
     // it, so a list edited several times in one commit is rebuilt at most once per read in between,
     // O(k) each. Const because GetAt is: it touches only the stale bit and the tree's storage,
     // logically unchanged.
-    FenwickTree& CurrentChildRows(ShapedRef node) const;
+    FenwickTree& CurrentChildRows(ShapedNode* node) const;
 
     // Post-order over node's subtree (every shaped node, shown or not): sets each
     // VisibleDescendantCount from its children's and its expansion, and builds ChildRows for every
     // expanded node, leaving a collapsed node's list stale (P7). O(subtree). Used by EndReset,
     // Link of a new node, ExpandSubtree and SetAll* (P6).
-    void ComputeSubtreeCounts(ShapedRef node) noexcept;
+    void ComputeSubtreeCounts(ShapedNode* node) noexcept;
 
     // Display-order neighbours among shown nodes, for the cursor (P3). Next: the first shaped
     // child if node is expanded and has one, else the next sibling (IndexInParent + 1) of node or
     // of its nearest ancestor that has one. Previous: the previous sibling's last shown
     // descendant (descend through last children while expanded), else the parent. Null past either
     // end (the root is never returned).
-    ShapedRef NextShown(ShapedRef node) const noexcept;
-    ShapedRef PreviousShown(ShapedRef node) const noexcept;
+    ShapedNode* NextShown(ShapedNode* node) const noexcept;
+    ShapedNode* PreviousShown(ShapedNode* node) const noexcept;
 
     // Clears the cursor. Called by every entry point that changes the tree or a count (P3).
     void InvalidateCursor() const noexcept;
@@ -435,14 +361,15 @@ private:
     GroupNode m_root;
     uint16_t m_groupLevelCount{ 0 };
 
-    // Group expansion, keyed by GroupNode::Identity. Owned by ShapingManager.
-    GroupExpansion& m_groupExpansion;
+    // Group expansion, keyed by GroupNode::Identity. Read and written only here: Expand / Collapse /
+    // SetAllGroupsExpanded write it, Unlink Erases (F4), EndReset prunes, Clear clears.
+    GroupExpansion m_groupExpansion;
 
     // Not owned; ShapingManager.
     IShapedRowsListener* m_listener{ nullptr };
 
     // Last GetAt answer (decided, P3: a single cursor, invalidated on any tree or count change rather
     // than adjusted). Mutable: GetAt is a const read. m_cursorNode null means empty.
-    mutable ShapedRef m_cursorNode;
+    mutable ShapedNode* m_cursorNode{ nullptr };
     mutable uint32_t m_cursorIndex{ 0 };
 };

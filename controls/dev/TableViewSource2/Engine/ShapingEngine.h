@@ -61,8 +61,7 @@ public:
         ITrackerHandleManager const* trackerOwner,
         SourceTable const& source,
         ShapeDelegates& delegates,
-        PathEvaluator& paths,
-        GroupExpansion& groupExpansion);
+        PathEvaluator& paths);
 
     ShapingEngine(ShapingEngine const&) = delete;
     ShapingEngine& operator=(ShapingEngine const&) = delete;
@@ -78,15 +77,15 @@ public:
     ShapedTree& Tree() noexcept;
     ShapedTree const& Tree() const noexcept;
 
-    // Every live group by Identity (m_groupsByIdentity). ShapingManager prunes GroupExpansion
-    // against it after each rebuild (F4).
-    std::unordered_map<winrt::hstring, GroupNode*> const& GroupsByIdentity() const noexcept;
+    // Every live group by Identity (m_groupsByIdentity). ShapingManager resolves a group row key
+    // through it (V3); Rebuild hands it to Tree().EndReset, which prunes group expansion (F4).
+    GroupMap const& GroupsByIdentity() const noexcept;
 
     // The node is in the shaped tree: a group (emptied groups are pruned, E9), or a record for which
     // InShapedParent holds at every record level up to its top-level record. O(depth). A record that
     // fails the filter and is no ancestor of a match is not. ShapingManager::Reveal checks it
     // before expanding anything (#20).
-    static bool InShapedTree(ShapedRef node) noexcept;
+    static bool InShapedTree(ShapedNode* node) noexcept;
 
     // ---- Entry points -----------------------------------------------------------------------
     // Each is one unit of work. Called inside a commit scope opened by ShapingManager.
@@ -132,13 +131,14 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Drops every GroupNode (and its tracked Key) through Tree().Clear(), every record's SortKeys
-    // and ShapedChildren, and resets Applied() to the empty spec. Called by ShapingManager::Clear()
+    // Calls Tree().Clear() (unlinks the root's Children), then drops every GroupNode (and its
+    // tracked Key) by clearing m_groupsByIdentity and m_retired, every record's SortKeys and
+    // ShapedChildren, and resets Applied() to the empty spec. Called by ShapingManager::Clear()
     // before SourceTable::Clear(). Idempotent.
     void Clear();
 
     // Destroys the groups pruned since the last call (m_retired). ShapingManager calls it after
-    // OnShapingApplied, and from Clear(). Until then a pruned group stays alive, so a ShapedRef
+    // OnShapingApplied, and from Clear(). Until then a pruned group stays alive, so a GroupNode*
     // that a handler took from an earlier read stays valid for the whole commit (P8).
     void ReleaseRetired() noexcept;
 
@@ -169,9 +169,9 @@ private:
 
     // Group lifecycle in surgical edits (decided, E9). Compute: walks the staged GroupSegments down
     // from the root through m_groupsByIdentity and allocates the missing tail of the chain (keys
-    // tracked, map nodes and every vector's capacity reserved) into the StagedRecord, so the write
-    // phase cannot throw. Write: links the record into the detached chain, then NewGroupChain under
-    // NewGroupParent (one Tree().Link for its subtree), inserts the map nodes, and adds 1 to
+    // tracked, owning map nodes and every vector's capacity reserved) into the StagedRecord, so the
+    // write phase cannot throw. Write: links the record into the detached chain, then NewGroupChain
+    // under NewGroupParent (one Tree().Link for its subtree), inserts the map nodes, and adds 1 to
     // ItemCount up the chain. Placement among siblings: by key comparison for Ascending / Descending; appended for None (sticky: existing
     // groups never move on a surgical edit, the next rebuild restores exact first-appearance order).
     void StageGroupChain(StagedRecord& staged);
@@ -199,13 +199,17 @@ private:
     // node that leaves (the highest ancestor group with no other member, else the record) and
     // calls Tree().Unlink once for it (F1; this also erases the expansion entries of the groups
     // it drops, F4). Then takes the detached chain apart, subtracts 1 from ItemCount up the
-    // remaining chain, and erases each emptied group from m_groupsByIdentity and its parent's
-    // Subgroups (moving it to m_retired). Stops at the shaped root.
+    // remaining chain, and extracts each emptied group from m_groupsByIdentity into m_retired
+    // (O(1) each; it has no live subgroups, since they emptied and were pruned first: debug-asserted).
+    // Stops at the shaped root.
     void PruneEmptyGroups(GroupNode* group) noexcept;
 
     // The one rebuild routine behind Apply, Reapply and ApplyItemsChanged: compute into a
     // StagedReapply, then the noexcept write phase calls Tree().BeginReset, swaps it in under the
     // root and calls Tree().EndReset.
+    // Closes with Tree().EndReset(levels, m_groupsByIdentity, newGroupSelector), where
+    // newGroupSelector is true when a group level present in both Applied() and `desired` has a
+    // different Key (a level only appended or removed keeps the other identities' meaning).
     // `only` empty: the re-reads `delta` names (Filter, GroupKey, Sort) cover every record.
     // `only` non-empty (live shaping, E7): they cover only those records, routed by PropertyName,
     // re-reading every sort level; the re-sorts still run over all cached keys.
@@ -218,21 +222,22 @@ private:
 
     ShapeSpec m_applied;
 
-    // Owns the shaped root, and through it every GroupNode (E2). Stable for the engine's lifetime.
+    // Owns the shaped root (no other group). Stable for the engine's lifetime.
     ShapedTree m_tree;
 
-    // Every live group by GroupNode::Identity (decided, E3). Non-owning: Subgroups owns. A record's
+    // Every live group by GroupNode::Identity (decided, E3), and their owner (E2). A record's
     // group at each level is found by extending the parent's Identity with the key's
     // ValueKey::ToObjectLookupKey segment (value types by typed value, reference types by IUnknown
     // identity, null as "null:"), the same string a new group gets as its Identity. Also serves
     // Identity -> node for expansion restore and reveal. Entries are added when a group is created
     // and erased in the same write phase that drops it; a rebuild builds a new map aside and swaps
-    // it in with the new groups. Empty while ungrouped. The shaped root is not in it.
-    std::unordered_map<winrt::hstring, GroupNode*> m_groupsByIdentity;
+    // it in (the old groups are destroyed with the old map when the commit returns). Empty while
+    // ungrouped. The shaped root is not in it.
+    GroupMap m_groupsByIdentity;
 
     // Groups pruned by surgical edits since the last ReleaseRetired. Unlinked from the tree and the
     // map, so no read reaches them; kept alive until the commit ends because a listener may hold a
-    // ShapedRef from an earlier read (P8). A rebuild's old groups are not retired (P5): they are
+    // node pointer from an earlier read (P8). A rebuild's old groups are not retired (P5): they are
     // destroyed after EndReset, when the owner has seen the Reset.
     std::vector<std::unique_ptr<GroupNode>> m_retired;
 
@@ -251,29 +256,28 @@ private:
         std::vector<winrt::hstring> GroupSegments;
         std::vector<winrt::Windows::Foundation::IInspectable> GroupKeys;
         // Surgical insert while grouped (E9): the missing tail of the record's group chain,
-        // allocated during compute. NewGroupChain is the topmost new group (it owns the rest
-        // through Subgroups); NewGroupParent is the existing group it is linked under (the root for
-        // a new top-level group). NewGroupEntries are the map nodes for the new groups. All empty
-        // when every level already exists.
-        std::unique_ptr<GroupNode> NewGroupChain;
+        // allocated during compute. NewGroupEntries are the owning map nodes for the new groups
+        // (inserted into m_groupsByIdentity by the write phase); NewGroupChain is the topmost of
+        // them (non-owning), NewGroupParent the existing group it is linked under (the root for a
+        // new top-level group). All empty when every level already exists.
+        std::vector<GroupMap::node_type> NewGroupEntries;
+        GroupNode* NewGroupChain{ nullptr };
         GroupNode* NewGroupParent{ nullptr };
-        std::vector<std::unordered_map<winrt::hstring, GroupNode*>::node_type> NewGroupEntries;
         // Surgical insert, move or key change (E5): from PlacementIndex, in the shaped parent list
         // without the record. Unused by a rebuild.
         uint32_t ShapedIndex{ 0 };
     };
 
     // Everything Reapply builds aside: per-record results in pre-order, every parent's new
-    // ShapedChildren, the new root Children / Subgroups and the new group map. Commit calls
-    // Tree().BeginReset (the owner captures anchors in OnResetting), swaps these in under the root,
-    // calls Tree().EndReset, then destroys the old groups (which end up in here) when the commit
+    // ShapedChildren, the new root Children and the new (owning) group map. Commit calls
+    // Tree().BeginReset (the owner captures anchors in OnResetting), swaps these in, calls
+    // Tree().EndReset, then destroys the old groups (the old map ends up in here) when the commit
     // returns.
     struct StagedReapply
     {
         std::vector<StagedRecord> Records;
         std::vector<std::pair<SourceRecord*, std::vector<SourceRecord*>>> ShapedChildren;
-        std::vector<ShapedRef> RootChildren;
-        std::vector<std::unique_ptr<GroupNode>> RootSubgroups;
-        std::unordered_map<winrt::hstring, GroupNode*> GroupsByIdentity;
+        std::vector<ShapedNode*> RootChildren;
+        GroupMap GroupsByIdentity;
     };
 };

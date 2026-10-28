@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -19,11 +20,12 @@
 // a v2 type: no change handler (ShapedTree toggles state itself and raises the events), and a
 // single-key Erase for the incremental prune.
 //
-// Owned by ShapingManager; read and written only by ShapedTree. Holds no app object (keys are
+// Owned, read and written only by ShapedTree (m_groupExpansion). Holds no app object (keys are
 // identity strings, not group key objects). UI-thread affine.
 //
-// Pruned so entries exist only for live groups (decided, F4): Erase on a surgical group drop,
-// RetainOnly after every engine rebuild, Clear on a new GroupBy selector. Identity embeds a
+// Pruned so entries exist only for live groups (decided, F4): Erase on a surgical group drop
+// (ShapedTree::Unlink), RetainOnly at every rebuild (ShapedTree::EndReset), Clear on a new GroupBy
+// selector (EndReset) and at teardown (ShapedTree::Clear). Identity embeds a
 // reference key's IUnknown address, so a stale entry could be inherited by a new key at a freed
 // address.
 //
@@ -48,13 +50,14 @@ public:
     // group in the removed subtree). O(1).
     void Erase(winrt::hstring const& identity);
 
-    // Prune: after any engine rebuild (filter, sort, regroup, Reapply, E7 bulk). Keeps only the
-    // exceptions whose identity is a live group (ShapingEngine::GroupsByIdentity, built while the
-    // old tree still held its keys). O(exceptions).
-    void RetainOnly(std::unordered_map<winrt::hstring, GroupNode*> const& liveGroups);
+    // Prune: at every engine rebuild's ShapedTree::EndReset (filter, sort, regroup, Reapply, E7
+    // bulk). Keeps only the exceptions whose identity is a live group (the engine's
+    // m_groupsByIdentity, built while the old tree still held its keys). O(exceptions).
+    // Spelled out rather than GroupMap (Engine/ShapedTree.h), which includes this header.
+    void RetainOnly(std::unordered_map<winrt::hstring, std::unique_ptr<GroupNode>> const& liveGroups);
 
-    // GroupBy with a new selector: old identities mean other keys, so every exception is dropped.
-    // The baseline is kept: an ExpandAllGroups / CollapseAllGroups is a user preference that survives a regroup
+    // GroupBy with a new selector (old identities mean other keys) and teardown: every exception
+    // is dropped. The baseline is kept: an ExpandAllGroups / CollapseAllGroups is a user preference that survives a regroup
     // (v1 resets to expanded instead).
     void Clear();
 

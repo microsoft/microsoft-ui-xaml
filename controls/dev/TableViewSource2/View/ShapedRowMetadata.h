@@ -15,7 +15,7 @@ class ShapingManager;
 // An adapter (decided, R1): implements the existing ITableViewRowMetadataProvider, so TableView
 // consumes v2 exactly as it consumes v1 TableViewSource::GetRowMetadata(). TableViewSource2 returns
 // it as a shared_ptr. It holds no shaping logic: every call forwards to ShapingManager's row-metadata
-// helpers, which own the engine (and its ShapedTree), the group expansion model and the SourceTable.
+// helpers, which own the engine (and its ShapedTree, which owns group expansion) and the SourceTable.
 //
 // Stateless: no CollectionChanged subscriptions and no caches (v1 RowMetadataProvider keeps three
 // event tokens, an identity -> index map and a header-index list, all rebuilt on change). Every

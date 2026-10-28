@@ -16,7 +16,6 @@
 
 #include "Shaping/IShapingOwner.h"
 #include "Source/SourceTable.h"
-#include "Engine/GroupExpansion.h"
 #include "Engine/ShapedTree.h"
 #include "Engine/ShapingEngine.h"
 #include "Spec/ShapeSpec.h"
@@ -171,7 +170,7 @@ public:
     uint32_t RowCount() const noexcept;
 
     // m_engine.Tree().GetAt(index); the view maps it to the row value and key. Throws E_BOUNDS.
-    ShapedRef RowAt(uint32_t index) const;
+    ShapedNode* RowAt(uint32_t index) const;
 
     // Row key -> flat index (V3). A "g|" key: m_engine.GroupsByIdentity(). Otherwise a record key:
     // SourceRecord::TryParseIdentity, then SourceTable::TryFindByAddress (always on, so it works
@@ -197,36 +196,36 @@ public:
 
     // ---- Row metadata (read and driven by ShapedRowMetadata only) --------------------------
 
-    // TableViewRowInfo for RowAt(index), built on demand from the ShapedRef (spec field table):
+    // TableViewRowInfo for RowAt(index), built on demand from the node (spec field table):
     // Kind, Level (ShapedDepth), IsExpandable, IsExpanded (ShapedTree::IsExpanded), ChildCount,
     // ParentIdentity, PositionInSet (IndexInParent + 1, O(1), P2), SizeOfSet. Never stored: read
     // from the tree as it is, which is the list the last event described (P8). Throws E_BOUNDS.
     TableViewRowInfo RowInfo(uint32_t index) const;
 
-    // Row key -> node, the first half of IndexOfKey (V3/D4 dispatch). Shown or not. nullopt when
+    // Row key -> node, the first half of IndexOfKey (V3/D4 dispatch). Shown or not. nullptr when
     // unknown.
-    std::optional<ShapedRef> TryResolveKey(winrt::hstring const& key) const;
+    ShapedNode* TryResolveKey(winrt::hstring const& key) const;
 
     // Expand (true), collapse (false) or toggle (nullopt) one node: ShapedTree::Expand / Collapse
     // inside a commit scope (#19: throws while an apply runs), whose events go out as they happen. Returns whether the
     // state changed; false when node is not expandable. Typed, not keyed (decided, R2): keys stay
     // a TableView-interface concern. Per-item expand is internal only (decided, #20): a public
-    // per-item API is a TableView API item (Phase 6) and will resolve to a ShapedRef and call this.
-    bool SetExpanded(ShapedRef node, std::optional<bool> desired);
+    // per-item API is a TableView API item (Phase 6) and will resolve to a ShapedNode* and call this.
+    bool SetExpanded(ShapedNode* node, std::optional<bool> desired);
 
     // ShapedTree::SetAllGroupsExpanded / SetAllRowsExpanded for the axis (one Reset). Same scope
     // rule.
     void SetAllExpanded(ExpansionAxis axis, bool expanded);
 
     // ShapedTree::ExpandSubtree. No-op for a group or when !IsHierarchical(). Same scope rule.
-    void ExpandSubtree(ShapedRef node);
+    void ExpandSubtree(ShapedNode* node);
 
     // Reveal (decided, #20; internal, public API deferred to Phase 6): nullopt, with nothing
     // changed, when ShapingEngine::InShapedTree(node) is false (filtered out). Otherwise
     // ShapedTree::Reveal (one insert event, or nothing when already shown), and returns
     // ShapedTree::IndexOf(node). Same scope rule. Callers: a future ScrollIntoView(item), selection
     // by item, jumping to a filter match.
-    std::optional<uint32_t> Reveal(ShapedRef node);
+    std::optional<uint32_t> Reveal(ShapedNode* node);
 
     // The source tree has a hierarchy (SourceTable's hierarchy kind is not None).
     bool IsHierarchical() const noexcept;
@@ -267,7 +266,9 @@ private:
     //   one entry                -> m_engine.ApplyItemChanged (surgical);
     //   more than c_bulkThreshold -> m_engine.ApplyItemsChanged (re-read dirty records only, then
     //                               one structural rebuild and a stable Reset).
-    // Empties m_liveDirty and clears both flags first. Skipped while m_liveHoldCount > 0 (#18 O4:
+    // Moves m_liveDirty into a local batch and clears m_liveAllDirty and m_liveDrainPosted before
+    // any shaping, so a re-entrant OnItemChanged (app code run by the drain) lands in the fresh
+    // map and posts the next drain. Skipped while m_liveHoldCount > 0 (#18 O4:
     // an in-progress cell edit or pointer press, v1 m_liveShapingHold) or a DeferRefresh is open;
     // EndLiveShapingHold and the outermost EndDeferRefresh post it again.
     void DrainLiveChanges();
@@ -286,7 +287,7 @@ private:
     // The single path from the tree to consumers, whatever made the change (an engine commit, an
     // expansion verb, or an expand-all verb). Each call runs while the engine or tree is mid-write,
     // so all are noexcept: a throw from a handler is caught into m_listenerFault, every later event
-    // of the commit is suppressed, and EndCommit raises one Reset and rethrows. Item lists are
+    // of the commit is suppressed, EndCommit raises one Reset, and AfterCommit rethrows. Item lists are
     // CountOnlyItemList placeholders (D3); Replace is never raised (O6).
 
     // ShapedCollectionView::NotifyRemoved / NotifyAdded. Accumulates m_changes: isMove sets Order
@@ -301,21 +302,36 @@ private:
     void OnRowsReset() noexcept override;
 
     // ---- Commit scope (#19, P8) -------------------------------------------------------------
-    // Every engine entry point and expansion verb runs between these, through one RAII scope.
+    // Every engine entry point and expansion verb runs between these, through one RAII scope:
+    //   { CommitScope scope{ *this, retired }; m_engine.Apply(...); }  // ~CommitScope: EndCommit
+    //   AfterCommit();                                                 // only on normal exit
     // BeginCommit: m_isApplying, SourceTable::BeginFreeze, m_changes / m_moveNet / m_listenerFault
-    // cleared. EndCommit (also on unwind):
+    // / m_resyncDue cleared.
+    //
+    // EndCommit runs from the scope's destructor (also on unwind), so it never throws: a throw
+    // from a destructor terminates the process. It only closes the scope:
     //   - m_moveNet != 0 -> Membership (rows moved and the count changed: not a pure reorder).
     //   - m_listenerFault set -> NotifyReset, so the view and the repeater agree again.
     //   - m_owner->OnShapingApplied({m_changes, retired}) if m_changes != None or retired is
     //     non-empty (O2, O3, O5, P9). Skipped on unwind from an engine throw (nothing was written).
-    //   - ShapingEngine::ReleaseRetired, SourceTable::EndFreeze (ResyncSource as decided by #19),
-    //     m_isApplying cleared.
-    //   - Rethrows m_listenerFault (the first handler exception).
+    //     A throw from it is caught into m_listenerFault (if still empty).
+    //   - ShapingEngine::ReleaseRetired, SourceTable::EndFreeze, m_isApplying cleared.
+    //   - EndFreeze reported a pending change: on unwind, ResyncSource(post: true) (AfterCommit
+    //     will not run, and nothing runs while the exception unwinds into the app); otherwise
+    //     m_resyncDue is set.
+    // On unwind a recorded m_listenerFault is dropped: the engine's exception propagates.
     // retired: the SourceChange's Removed records when called from OnSourceChanged (alive until
     // that handler returns); empty for verbs, expansion and live shaping. No owner: the owner
     // calls are skipped; no view yet: the tree has no listener and nothing is raised.
     void BeginCommit();
-    void EndCommit(std::span<SourceRecord const* const> retired, bool unwinding);
+    void EndCommit(std::span<SourceRecord const* const> retired, bool unwinding) noexcept;
+
+    // Called by the verb or handler that opened the scope, after the scope object is gone, when no
+    // exception escaped it. Takes and clears m_resyncDue and m_listenerFault, then:
+    //   - m_resyncDue: ResyncSource(post: m_listenerFault set), so an app exception is never
+    //     followed by a synchronous re-read before it reaches the app.
+    //   - Rethrows m_listenerFault (the first handler exception).
+    void AfterCommit();
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
@@ -373,10 +389,15 @@ private:
     // binding, converter or element factory in an event handler) is not applied to the table, so
     // records and links never change under the engine or the tree. When EndFreeze reports a pending
     // change, ResyncSource runs SourceTable::Refresh(), whose Reset goes to Reapply().
-    // It runs synchronously once; it is posted instead when the scope ended by an exception, or
-    // when the resync's own apply was disturbed again (one resync per turn, so an app that mutates
-    // on every callback cannot loop).
-    void ResyncSource(bool post);
+    // It runs synchronously once, from AfterCommit (never from the scope's destructor); it is
+    // posted instead when the scope ended by an exception, when a handler faulted, or when the
+    // resync's own apply was disturbed again (one resync per turn, so an app that mutates on every
+    // callback cannot loop).
+    // Never throws: Refresh() runs app code and validation, so a throw is caught, the table stays
+    // as it was (SourceTable keeps m_pendingReset / m_outOfSync), and one retry is posted
+    // (m_resyncPosted); the verb that opened the scope has already succeeded. A posted retry that
+    // throws is swallowed; the next source notification, Refresh or verb retries.
+    void ResyncSource(bool post) noexcept;
     bool m_resyncPosted{ false };
 
     // Live-shaping changes pending for the next DrainLiveChanges (E7). Keys are raw record
@@ -388,22 +409,20 @@ private:
     bool m_liveAllDirty{ false };     // ItemChanged(nullptr): the drain does Reapply()
     bool m_liveDrainPosted{ false };
 
-    // Group expansion, keyed by GroupNode::Identity. Read and written by the engine's ShapedTree.
-    // Pruned (decided, F4): after every engine commit that reset, this calls
-    // RetainOnly(m_engine.GroupsByIdentity()); ShapedTree::Unlink Erases on a surgical group drop;
-    // cleared when GroupBy gets a new selector. Declared before m_engine, which references it.
-    GroupExpansion m_groupExpansion;
-
     // Source tree + applied spec -> shaped tree (ShapedTree, P10). Every entry point is bracketed
     // here by the commit scope. Built in the constructor's member-init list after m_sourceTable is
-    // created (it binds to *m_sourceTable), with m_trackerOwner, m_delegates, m_paths and
-    // m_groupExpansion.
+    // created (it binds to *m_sourceTable), with m_trackerOwner, m_delegates and m_paths. Group
+    // expansion lives in its ShapedTree (reached through Tree()).
     ShapingEngine m_engine;
 
     // The current commit (P8): what its events did, the net row count of its move events, and the
-    // first exception a handler threw. Cleared by BeginCommit, read by EndCommit.
+    // first exception a handler threw. Cleared by BeginCommit, read by EndCommit; m_listenerFault is
+    // rethrown by AfterCommit.
     ShapingChangeFlags m_changes{ ShapingChangeFlags::None };
     int64_t m_moveNet{ 0 };
     std::exception_ptr m_listenerFault;
+
+    // EndFreeze reported a source change during a commit that ended normally; AfterCommit resyncs.
+    bool m_resyncDue{ false };
 
 };

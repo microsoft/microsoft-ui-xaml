@@ -38,7 +38,14 @@ enum class WatchState : uint8_t
     Subscribed,
 };
 
-struct SourceRecord
+// Derives from ShapedNode (Engine/ShapeState.h, Kind = Record), so a record is a node of the shaped
+// tree as it stands: the shaped tree's per-node counts and position live on that base. The source
+// tree (Parent / Children below) is not the shaped tree: the base has no parent link, so a walk
+// over Parent stays on records.
+//
+// Field order packs the small fields (Depth, Watch) together, which absorbs the padding ShapeState
+// adds by keeping its one-byte Flags apart from the base.
+struct SourceRecord : ShapedNode
 {
     SourceRecord(
         ITrackerHandleManager const* owner,
@@ -61,10 +68,6 @@ struct SourceRecord
     // One QI at creation.
     ObjectAddress Address{ 0 };
 
-    // Live-shaping subscription; empty token when not subscribed. Revoked in ~SourceRecord().
-    winrt::event_token PropertyChangedToken{};
-    WatchState Watch{ WatchState::Unchecked };
-
     // ---- Source tree (written only by SourceTable) ------------------------------------------
     //
     // The tree the source describes, built by ParentBy / ChildrenBy; flat sources leave every record
@@ -85,11 +88,21 @@ struct SourceRecord
 
     bool HasChildren() const noexcept { return !Children.empty(); }
 
+    // ---- Live-shaping subscription -----------------------------------------------------------
+    //
+    // Watch follows Depth so the two share one 8-byte slot.
+    WatchState Watch{ WatchState::Unchecked };
+
+    // Empty token when not subscribed. Revoked in ~SourceRecord().
+    winrt::event_token PropertyChangedToken{};
+
     // ---- Engine state (written only by the engine and its ShapedTree) ------------------------
     //
-    // Stored inline (Engine/ShapeState.h): filter flags, cached sort keys, filtered and sorted
-    // children, VisibleDescendantCount. Tree links stay in Parent/Children above. Cached keys are
-    // tracker_refs, so ~SourceRecord destroys them with Item, under the same teardown rules.
+    // The per-node counts and position (VisibleDescendantCount, IndexInParent, ChildRows) are on
+    // the ShapedNode base. The record-only rest is stored inline (Engine/ShapeState.h): filter
+    // flags, cached sort keys, filtered and sorted children, the group link. Tree links stay in
+    // Parent/Children above. Cached keys are tracker_refs, so ~SourceRecord destroys them with
+    // Item, under the same teardown rules.
     ShapeState Shape;
 
     // Logical identity, formatted on first use and then cached. The only way to read it.

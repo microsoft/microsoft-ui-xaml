@@ -7,6 +7,9 @@ by folder. The full design and the decisions behind it are in
 Legend: solid arrows are ownership or reads, thick arrows are events, dotted arrows are local or
 helper relationships.
 
+<details>
+<summary><b>Layer diagram</b></summary>
+
 ```mermaid
 flowchart TB
     App(["App / TableView"])
@@ -37,7 +40,7 @@ flowchart TB
         ENG["ShapingEngine<br/>compute then noexcept write<br/>Apply / Reapply / ApplyItemsChanged"]
         STG["StagedRecord / StagedReapply<br/>per-call compute buffer"]
         TREE["ShapedTree<br/>rows by position, counts, cursor, expand<br/>Link / Unlink, BeginReset / EndReset"]
-        GN["GroupNode<br/>Key, Children, Subgroups, ItemCount"]
+        GN["GroupNode<br/>Key, Children, ItemCount<br/>owned by the engine's GroupMap"]
         GE["GroupExpansion<br/>group Identity to expanded"]
         FW["FenwickTree<br/>ChildRows per sibling list"]
     end
@@ -53,7 +56,6 @@ flowchart TB
     TVS -->|"owns"| SM
     TVS -.-> DRH
     SM -->|"owns"| ENG
-    SM -->|"owns"| GE
     SM -->|"owns"| SD
     SM -->|"owns"| PE
     SM -->|"holds desired"| SS
@@ -69,7 +71,7 @@ flowchart TB
     ENG -->|"reads keys via"| PE
     ENG -->|"reads"| ST
     TREE -->|"owns root"| GN
-    TREE -->|"uses"| GE
+    TREE -->|"owns"| GE
     TREE -->|"counts in"| FW
     TREE -->|"writes ShapeState"| SR
     GN -->|"Children"| SR
@@ -85,6 +87,8 @@ flowchart TB
     SCV ==>|"CollectionChanged"| App
 ```
 
+</details>
+
 ## Layers
 
 - **Source/** mirrors the app's data: records and their `Parent` / `Children` links. It knows
@@ -94,9 +98,8 @@ flowchart TB
 - **Engine/** computes filter, sort and grouping. `ShapingEngine` computes into a local
   `StagedRecord` / `StagedReapply` buffer, then writes in a `noexcept` phase. `ShapedTree` is the
   only owner of the rows: it holds the group root, the visible-row counts (`FenwickTree` per
-  sibling list), the cursor and the expansion verbs, and it writes the tree-owned `ShapeState`
-  fields.
+  sibling list), the cursor, the expansion verbs and `GroupExpansion` (pruned at each
+  `EndReset`), and it writes the tree-owned `ShapeState` fields.
 - **Shaping/** coordinates one commit. `ShapingManager` listens to `SourceTable` and to the tree
-  (`IShapedRowsListener`), turns tree events into view notifications and owner callbacks, and owns
-  `GroupExpansion` so expansion state outlives an engine rebuild.
+  (`IShapedRowsListener`) and turns tree events into view notifications and owner callbacks.
 - **View/** holds read-only adapters over `ShapedTree`; no rows are stored there.

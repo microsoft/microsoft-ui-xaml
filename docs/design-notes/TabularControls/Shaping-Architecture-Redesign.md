@@ -35,9 +35,9 @@ controls/dev/TableViewSource2/
     PathEvaluator.h                              PathEvaluator (cached SortMemberPathResolver per sort path)
     ShapeDelegates.h                             ShapeDelegates (tracker_ref'd app delegates)
   Engine/                                        shaping engine and the shaped tree
-    ShapedTree.h                                 ShapedRef, ShapedRefHash, GroupNode, IShapedRowsListener,
+    ShapedTree.h                                 GroupNode, IShapedRowsListener,
                                                  ShapedTree (shaped root, counts, reads, expansion, row events)
-    ShapeState.h                                 ShapeState, ShapeFlags (engine state inline on SourceRecord)
+    ShapeState.h                                 ShapedNode (node base), ShapeState, ShapeFlags (engine state inline on SourceRecord)
     FenwickTree.h                                FenwickTree (per-list visible-row index, P1)
     GroupExpansion.h                             GroupExpansion (group expansion model, keyed by GroupNode::Identity)
     ShapingEngine.h                              ShapingEngine (applied spec, ShapedTree, entry points)
@@ -74,7 +74,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
-| 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedRef`, `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
+| 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
 | 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token `GroupHeaderRow`; row metadata `ShapedRowMetadata` | `View/GroupHeaderRow.h`, `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h` | Declared, not implemented |
 | 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the visible-list and row-metadata helpers, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
@@ -83,7 +83,8 @@ table serves as both the shared identity store and the cached full set that shap
 Four diagrams, one per area: public surface, source layer and coordinator (below); then the spec,
 the engine, and the shaped tree with its row events. `ShapingManager` appears in each as the hub.
 
-### Public surface, source layer and coordinator
+<details>
+<summary><b>Public surface, source layer and coordinator</b></summary>
 
 ```mermaid
 classDiagram
@@ -170,7 +171,6 @@ classDiagram
         -PathEvaluator m_paths
         -optional~tracker_ref~ItemsSourceView~~ m_view
         -shared_ptr~ShapedRowMetadata~ m_rowMetadata
-        -GroupExpansion m_groupExpansion
         -ShapingEngine m_engine
         -unordered_map~SourceRecord*, hstring~ m_liveDirty
         -bool m_liveAllDirty
@@ -180,12 +180,12 @@ classDiagram
         -uint32 c_bulkThreshold$
         +View() ItemsSourceView
         +RowCount() uint32
-        +RowAt(index) ShapedRef
+        +RowAt(index) ShapedNode*
         +IndexOfKey(key) optional~uint32~
         +IndexOfItem(value) optional~uint32~
         +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
         +RowInfo(index) TableViewRowInfo
-        +TryResolveKey(key) optional~ShapedRef~
+        +TryResolveKey(key) ShapedNode*
         +SetExpanded(node, desired) bool
         +SetAllExpanded(axis, expanded)
         +ExpandSubtree(node)
@@ -306,6 +306,13 @@ classDiagram
         -optional~tracker_ref~TableViewChildrenSelector2~~ m_childrenSelector
         -unordered_map~SourceRecord const*, unique_ptr~ChildFeed~~ m_childFeeds
         -vector~StagedNode~ m_staged
+    }
+
+    class ChildFeed {
+        +SourceRecordWeakPtr Owner
+        +optional~CollectionAccessor2~ Accessor
+        +event_token EventToken
+        +vector~SourceRecordPtr~ Records
     }
 
     class SourceTable {
@@ -441,6 +448,10 @@ classDiagram
     SourceHierarchy ..> ISourceHierarchyHost : host passed per call
     SourceHierarchy <|-- ParentKeyHierarchy
     SourceHierarchy <|-- ChildCollectionsHierarchy
+    ChildCollectionsHierarchy "1" *-- "0..*" ChildFeed : m_childFeeds (one per non-null child collection)
+    ChildFeed "1" *-- "0..*" SourceRecord : Records (sole strong refs to child records)
+    ChildFeed ..> SourceRecord : Owner (weak)
+    SourceRecord "1" o-- "0..*" SourceRecord : Children (non-owning, source order)
     TableViewSource2 ..> TableViewPredicate
     TableViewSource2 ..> TableViewKeySelector
     TableViewSource2 ..> TableViewComparer2
@@ -448,7 +459,274 @@ classDiagram
     TableViewSource2 ..> SortDirection
 ```
 
-### Spec layer
+</details>
+
+<details>
+<summary><b>Engine layer</b></summary>
+
+```mermaid
+classDiagram
+    direction TB
+
+    class ShapingManager {
+        <<native coordinator>>
+        -ShapingEngine m_engine
+    }
+
+    class ShapingEngine {
+        -ITrackerHandleManager* m_trackerOwner
+        -SourceTable const& m_source
+        -ShapeDelegates& m_delegates
+        -PathEvaluator& m_paths
+        -ShapeSpec m_applied
+        -ShapedTree m_tree
+        -GroupMap m_groupsByIdentity
+        -vector~unique_ptr~GroupNode~~ m_retired
+        +Applied() ShapeSpec
+        +Tree() ShapedTree
+        +GroupsByIdentity() GroupMap
+        +InShapedTree(node)$ bool
+        +Apply(desired, delta)
+        +Reapply(desired)
+        +ApplySourceChange(change)
+        +ApplyItemChanged(record, propertyName)
+        +ApplyItemsChanged(changes)
+        +Clear()
+        +ReleaseRetired()
+        -InShapedParent(record)$ bool
+        -StageGroupChain(staged)
+        -PlacementIndex(staged, sourceIndex) uint32
+        -PruneEmptyGroups(group)
+        -Rebuild(desired, delta, only)
+    }
+
+    class LiveChange {
+        +SourceRecord* Record
+        +hstring PropertyName
+    }
+
+    class StagedRecord {
+        <<private, compute phase>>
+        +SourceRecord* Record
+        +bool PassesFilter
+        +vector~tracker_ref~IInspectable~~ SortKeys
+        +vector~hstring~ GroupSegments
+        +vector~IInspectable~ GroupKeys
+        +vector~GroupMap node_type~ NewGroupEntries
+        +GroupNode* NewGroupChain
+        +GroupNode* NewGroupParent
+        +uint32 ShapedIndex
+    }
+
+    class StagedReapply {
+        <<private, compute phase>>
+        +vector~StagedRecord~ Records
+        +vector~pair~SourceRecord*, vector~SourceRecord*~~~ ShapedChildren
+        +vector~ShapedNode*~ RootChildren
+        +GroupMap GroupsByIdentity
+    }
+
+    class ShapedNode {
+        <<base, no vtable>>
+        +ShapedNodeKind Kind
+        +uint32 VisibleDescendantCount
+        +uint32 IndexInParent
+        +FenwickTree ChildRows
+        +IsGroup() bool
+        +AsRecord() SourceRecord*
+        +AsGroup() GroupNode*
+        +ShapedParent() ShapedNode*
+        +ShapedChildCount() uint32
+        +ShapedChildAt(j) ShapedNode*
+    }
+
+    class GroupNode {
+        +optional~tracker_ref~IInspectable~~ Key
+        +hstring Identity
+        +GroupNode* Parent
+        +vector~ShapedNode*~ Children
+        +uint32 ItemCount
+        +uint16 GroupLevel
+        +IInspectable HeaderRow
+        +IsRoot() bool
+    }
+
+    class FenwickTree {
+        -vector~uint32~ m_tree
+        -bool m_stale
+        +Size() uint32
+        +Total() uint32
+        +Build(size, countOf)
+        +Add(j, delta)
+        +MarkStale()
+        +IsStale() bool
+        +PrefixSum(j) uint32
+        +Find(r) Hit
+        +Clear()
+    }
+
+    class ShapeState {
+        <<on SourceRecord.Shape>>
+        +ShapeFlags Flags
+        +vector~optional~tracker_ref~~ SortKeys
+        +vector~SourceRecord*~ ShapedChildren
+        +GroupNode* Group
+    }
+
+    class ShapeFlags {
+        <<flags>>
+        PassesFilter
+        ChildrenShaped
+        SortKeysValid
+        Expanded
+        OverlayCollapsed
+        PlacementMark
+    }
+
+    class ShapedTree {
+        <<see View layer>>
+        -GroupNode m_root
+        +Link(node, parent, index, isMove)
+        +Unlink(node, isMove)
+        +BeginReset()
+        +EndReset(groupLevelCount, liveGroups, newGroupSelector)
+    }
+
+    class SourceRecord {
+        +SourceRecord* Parent
+        +vector~SourceRecord*~ Children
+        +uint16 Depth
+        +ShapeState Shape
+    }
+
+    ShapingManager *-- ShapingEngine
+    ShapingEngine *-- ShapedTree : m_tree, Link / Unlink / BeginReset / EndReset
+    ShapedTree *-- GroupNode : m_root (stable)
+    ShapingEngine "1" *-- "0..*" GroupNode : m_groupsByIdentity owns every other group
+    ShapingEngine ..> LiveChange : ApplyItemsChanged
+    ShapingEngine ..> StagedReapply : Rebuild compute
+    StagedReapply "1" *-- "0..*" StagedRecord
+    ShapedNode <|-- GroupNode : Kind = Group
+    ShapedNode <|-- SourceRecord : Kind = Record
+    ShapedNode *-- FenwickTree : ChildRows
+    GroupNode "1" o-- "0..*" ShapedNode : Children (non-owning)
+    SourceRecord *-- ShapeState : Shape
+    ShapeState --> ShapeFlags
+    ShapeState ..> GroupNode : Group (top-level records)
+```
+
+</details>
+
+<details>
+<summary><b>View layer: shaped tree reads and row events</b></summary>
+
+```mermaid
+classDiagram
+    direction TB
+
+    class ShapingManager {
+        <<native coordinator>>
+        -ShapingEngine m_engine
+        -ShapingChangeFlags m_changes
+        -int64 m_moveNet
+        -exception_ptr m_listenerFault
+        -bool m_resyncDue
+        -BeginCommit()
+        -EndCommit(retired, unwinding)
+        -AfterCommit()
+    }
+
+    class IShapedRowsListener {
+        <<interface>>
+        +OnRowsRemoved(index, count, isMove)
+        +OnRowsInserted(index, count, isMove)
+        +OnRowsResetting()
+        +OnRowsReset()
+    }
+
+    class ShapedTree {
+        -GroupNode m_root
+        -uint16 m_groupLevelCount
+        -GroupExpansion m_groupExpansion
+        -IShapedRowsListener* m_listener
+        -ShapedNode* m_cursorNode
+        -uint32 m_cursorIndex
+        +SetListener(listener)
+        +Root() GroupNode
+        +GroupLevelCount() uint16
+        +Size() uint32
+        +GetAt(index) ShapedNode*
+        +IndexOf(node) optional~uint32~
+        +IsShown(node) bool
+        +IsExpanded(node) bool
+        +ShownDescendantCount(node) uint32
+        +Link(node, parent, index, isMove)
+        +Unlink(node, isMove)
+        +BeginReset()
+        +EndReset(groupLevelCount, liveGroups, newGroupSelector)
+        +Expand(node) bool
+        +Collapse(node) bool
+        +ExpandSubtree(node) bool
+        +Reveal(node) bool
+        +SetAllGroupsExpanded(expanded)
+        +SetAllRowsExpanded(expanded)
+        +Clear()
+        -SetExpanded(node, expanded)
+        -PropagateCount(parent, delta)
+        -FlatIndexOf(node) uint32
+        -CurrentChildRows(node) FenwickTree&
+        -Renumber(parent, index)$
+        -RebuildChildRows(node)
+        -ComputeSubtreeCounts(node)
+        -NextShown(node) ShapedNode*
+        -PreviousShown(node) ShapedNode*
+        -InvalidateCursor()
+    }
+
+    class GroupExpansion {
+        -bool m_baselineExpanded
+        -set~hstring~ m_exceptions
+        +IsExpanded(identity) bool
+        +SetExpanded(identity, expanded)
+        +SetAll(expanded)
+        +Erase(identity)
+        +RetainOnly(liveGroups)
+        +Clear()
+    }
+
+    class ShapingChangeFlags {
+        <<flags>>
+        None
+        Reset
+        Membership
+        Order
+    }
+
+    class ShapedCollectionView {
+        <<WinRT, derives ItemsSourceView>>
+        +NotifyRemoved(index, count)
+        +NotifyAdded(index, count)
+        +NotifyReset()
+    }
+
+    class IShapingOwner {
+        <<interface>>
+        +OnResetting()
+        +OnShapingApplied(ShapingAppliedArgs)
+    }
+
+    ShapingManager ..|> IShapedRowsListener
+    ShapedTree *-- GroupExpansion : m_groupExpansion, by Identity
+    ShapedTree --> IShapedRowsListener : m_listener, one call per change
+    ShapingManager --> ShapingChangeFlags : m_changes
+    ShapingManager ..> ShapedCollectionView : forwards each event as Remove, Add or Reset
+    ShapingManager ..> IShapingOwner : OnResetting, then OnShapingApplied(Changes, Retired)
+```
+
+</details>
+
+<details>
+<summary><b>Spec layer</b></summary>
 
 ```mermaid
 classDiagram
@@ -565,274 +843,8 @@ classDiagram
     PathEvaluator "1" *-- "0..*" SortMemberPathResolver : one per sort path
 ```
 
-### Engine layer
+</details>
 
-```mermaid
-classDiagram
-    direction TB
-
-    class ShapingManager {
-        <<native coordinator>>
-        -ShapingEngine m_engine
-    }
-
-    class ShapingEngine {
-        -ITrackerHandleManager* m_trackerOwner
-        -SourceTable const& m_source
-        -ShapeDelegates& m_delegates
-        -PathEvaluator& m_paths
-        -ShapeSpec m_applied
-        -ShapedTree m_tree
-        -unordered_map~hstring, GroupNode*~ m_groupsByIdentity
-        -vector~unique_ptr~GroupNode~~ m_retired
-        +Applied() ShapeSpec
-        +Tree() ShapedTree
-        +GroupsByIdentity() unordered_map~hstring, GroupNode*~
-        +InShapedTree(node)$ bool
-        +Apply(desired, delta)
-        +Reapply(desired)
-        +ApplySourceChange(change)
-        +ApplyItemChanged(record, propertyName)
-        +ApplyItemsChanged(changes)
-        +Clear()
-        +ReleaseRetired()
-        -InShapedParent(record)$ bool
-        -StageGroupChain(staged)
-        -PlacementIndex(staged, sourceIndex) uint32
-        -PruneEmptyGroups(group)
-        -Rebuild(desired, delta, only)
-    }
-
-    class LiveChange {
-        +SourceRecord* Record
-        +hstring PropertyName
-    }
-
-    class StagedRecord {
-        <<private, compute phase>>
-        +SourceRecord* Record
-        +bool PassesFilter
-        +vector~tracker_ref~IInspectable~~ SortKeys
-        +vector~hstring~ GroupSegments
-        +vector~IInspectable~ GroupKeys
-        +unique_ptr~GroupNode~ NewGroupChain
-        +GroupNode* NewGroupParent
-        +vector~unordered_map node_type~ NewGroupEntries
-        +uint32 ShapedIndex
-    }
-
-    class StagedReapply {
-        <<private, compute phase>>
-        +vector~StagedRecord~ Records
-        +vector~pair~SourceRecord*, vector~SourceRecord*~~~ ShapedChildren
-        +vector~ShapedRef~ RootChildren
-        +vector~unique_ptr~GroupNode~~ RootSubgroups
-        +unordered_map~hstring, GroupNode*~ GroupsByIdentity
-    }
-
-    class ShapedRef {
-        <<tagged pointer>>
-        -uintptr m_bits
-        +FromRecord(record)$ ShapedRef
-        +FromGroup(group)$ ShapedRef
-        +IsNull() bool
-        +IsGroup() bool
-        +Group() GroupNode*
-        +Record() SourceRecord*
-        +ShapedParent() ShapedRef
-        +ShapedChildCount() uint32
-    }
-
-    class ShapedRefHash {
-        +operator()(ref) size_t
-    }
-
-    class GroupNode {
-        +optional~tracker_ref~IInspectable~~ Key
-        +hstring Identity
-        +GroupNode* Parent
-        +uint16 GroupLevel
-        +vector~ShapedRef~ Children
-        +vector~unique_ptr~GroupNode~~ Subgroups
-        +uint32 ItemCount
-        +uint32 VisibleDescendantCount
-        +FenwickTree ChildRows
-        +uint32 IndexInParent
-        +IInspectable HeaderRow
-        +IsRoot() bool
-    }
-
-    class FenwickTree {
-        -vector~uint32~ m_tree
-        -bool m_stale
-        +Size() uint32
-        +Total() uint32
-        +Build(size, countOf)
-        +Add(j, delta)
-        +MarkStale()
-        +IsStale() bool
-        +PrefixSum(j) uint32
-        +Find(r) Hit
-        +Clear()
-    }
-
-    class ShapeState {
-        <<on SourceRecord.Shape>>
-        +ShapeFlags Flags
-        +uint32 VisibleDescendantCount
-        +uint32 IndexInParent
-        +FenwickTree ChildRows
-        +vector~optional~tracker_ref~~ SortKeys
-        +vector~SourceRecord*~ ShapedChildren
-        +GroupNode* Group
-    }
-
-    class ShapeFlags {
-        <<flags>>
-        PassesFilter
-        ChildrenShaped
-        SortKeysValid
-        Expanded
-        OverlayCollapsed
-        PlacementMark
-    }
-
-    class ShapedTree {
-        <<see View layer>>
-        -GroupNode m_root
-        +Link(node, parent, index, isMove)
-        +Unlink(node, isMove)
-        +BeginReset()
-        +EndReset(groupLevelCount)
-    }
-
-    class SourceRecord {
-        +ShapeState Shape
-    }
-
-    ShapingManager *-- ShapingEngine
-    ShapingEngine *-- ShapedTree : m_tree, Link / Unlink / BeginReset / EndReset
-    ShapedTree *-- GroupNode : m_root (stable), owns every group via Subgroups
-    ShapingEngine ..> LiveChange : ApplyItemsChanged
-    ShapingEngine ..> StagedReapply : Rebuild compute
-    StagedReapply "1" *-- "0..*" StagedRecord
-    GroupNode "1" *-- "0..*" GroupNode : Subgroups
-    GroupNode "1" o-- "0..*" ShapedRef : Children (non-owning)
-    ShapedRef ..> GroupNode : tag bit 1
-    ShapedRef ..> SourceRecord : tag bit 0
-    ShapedRefHash ..> ShapedRef
-    SourceRecord *-- ShapeState : Shape
-    ShapeState --> ShapeFlags
-    ShapeState ..> GroupNode : Group (top-level records)
-```
-
-### View layer: shaped tree reads and row events
-
-```mermaid
-classDiagram
-    direction TB
-
-    class ShapingManager {
-        <<native coordinator>>
-        -GroupExpansion m_groupExpansion
-        -ShapingEngine m_engine
-        -ShapingChangeFlags m_changes
-        -int64 m_moveNet
-        -exception_ptr m_listenerFault
-        -BeginCommit()
-        -EndCommit(retired, unwinding)
-    }
-
-    class IShapedRowsListener {
-        <<interface>>
-        +OnRowsRemoved(index, count, isMove)
-        +OnRowsInserted(index, count, isMove)
-        +OnRowsResetting()
-        +OnRowsReset()
-    }
-
-    class ShapedTree {
-        -GroupNode m_root
-        -uint16 m_groupLevelCount
-        -GroupExpansion& m_groupExpansion
-        -IShapedRowsListener* m_listener
-        -ShapedRef m_cursorNode
-        -uint32 m_cursorIndex
-        +SetListener(listener)
-        +Root() GroupNode
-        +GroupLevelCount() uint16
-        +Size() uint32
-        +GetAt(index) ShapedRef
-        +IndexOf(node) optional~uint32~
-        +IsShown(node) bool
-        +IsExpanded(node) bool
-        +ShownDescendantCount(node) uint32
-        +Link(node, parent, index, isMove)
-        +Unlink(node, isMove)
-        +BeginReset()
-        +EndReset(groupLevelCount)
-        +Expand(node) bool
-        +Collapse(node) bool
-        +ExpandSubtree(node) bool
-        +Reveal(node) bool
-        +SetAllGroupsExpanded(expanded)
-        +SetAllRowsExpanded(expanded)
-        +Clear()
-        -SetExpanded(node, expanded)
-        -PropagateCount(parent, delta)
-        -FlatIndexOf(node) uint32
-        -ChildRows(node) FenwickTree&
-        -CurrentChildRows(node) FenwickTree&
-        -IndexInParent(node)$ uint32
-        -ShapedChildAt(node, j)$ ShapedRef
-        -Renumber(parent, index)$
-        -RebuildChildRows(node)
-        -ComputeSubtreeCounts(node)
-        -NextShown(node) ShapedRef
-        -PreviousShown(node) ShapedRef
-        -InvalidateCursor()
-    }
-
-    class GroupExpansion {
-        -bool m_baselineExpanded
-        -set~hstring~ m_exceptions
-        +IsExpanded(identity) bool
-        +SetExpanded(identity, expanded)
-        +SetAll(expanded)
-        +Erase(identity)
-        +RetainOnly(liveGroups)
-        +Clear()
-    }
-
-    class ShapingChangeFlags {
-        <<flags>>
-        None
-        Reset
-        Membership
-        Order
-    }
-
-    class ShapedCollectionView {
-        <<WinRT, derives ItemsSourceView>>
-        +NotifyRemoved(index, count)
-        +NotifyAdded(index, count)
-        +NotifyReset()
-    }
-
-    class IShapingOwner {
-        <<interface>>
-        +OnResetting()
-        +OnShapingApplied(ShapingAppliedArgs)
-    }
-
-    ShapingManager *-- GroupExpansion
-    ShapingManager ..|> IShapedRowsListener
-    ShapedTree --> GroupExpansion : group expansion by Identity
-    ShapedTree --> IShapedRowsListener : m_listener, one call per change
-    ShapingManager --> ShapingChangeFlags : m_changes
-    ShapingManager ..> ShapedCollectionView : forwards each event as Remove, Add or Reset
-    ShapingManager ..> IShapingOwner : OnResetting, then OnShapingApplied(Changes, Retired)
-```
 
 ## 1. Public verb API
 
@@ -1072,6 +1084,52 @@ untracked strong reference.
 | Recovery from a dropped change | The next `OnRecordPropertyChanged` on the owning thread does `m_itemChangeDropped->exchange(false)`; if it was set, it first raises `ItemChanged(nullptr, L"")` so the coordinator re-evaluates every record, then delivers the current change. `Refresh()` and `SetLiveShaping(false)` clear the flag, since both already resynchronize or stop tracking. |
 | Coalescing | Not done in `SourceTable`. Repeated changes are coalesced per dispatcher turn by the coordinator (Phase 5). |
 
+**Threading review: dropped-change recovery (proposed, open).** The *cannot marshal* and
+*Recovery* rows above protect against almost nothing reachable:
+
+- When a change can be dropped:
+  - `TryEnqueue` fails only once the queue is shutting down (`ShutdownQueueAsync`, UI thread
+    exiting). The queue is unbounded, so a busy UI thread never fails a post. The UI thread is
+    going away, so the "next change on the owning thread" that triggers recovery never comes.
+  - No queue: `Create()` ran on a thread without a `DispatcherQueue` (a test host). The
+    coordinator's `PostLiveDrain` and resync retry have no queue either, so live shaping is broken
+    as a whole, not just the off-thread case.
+- Recovery is lazy even when reachable: `ItemChanged(nullptr)` rides in on the next on-thread
+  change, so with no further change the view stays stale until a verb or `Refresh`.
+- Nothing exercises it. v2 has no tests yet. In v1 the same mechanism
+  (`m_liveShapingChangeDropped`, `ShapedItemsSource.cpp:84–108`, `:2935`) came in with the
+  squash merge `866ba81a1c`, with no test or bug behind it. `TableView_LiveShaping_APITests` runs
+  only on the UI thread. v1 does support a no-queue test host, by restoring synchronously
+  (`ShapedItemsSource.cpp:3028`) rather than posting.
+- Platform precedent: no WinUI items control marshals data notifications.
+  - TreeView's only `TryEnqueue` calls (`TreeViewItem.cpp:745`, `TreeViewList.cpp:337`) push its
+    own `IsExpanded` update past layout; node and child-collection changes are assumed on the UI
+    thread.
+  - ListView's `CollectionView` and `CollectionViewSource` are `DependencyObject`s.
+    `DependencyObject::CheckThread()` (`DependencyObject.cpp:427`) returns `RPC_E_WRONG_THREAD`
+    off-thread; source `VectorChanged` and binding `PropertyChanged` are not marshalled, and the
+    app must `DispatcherQueue.TryEnqueue` itself.
+  - v1 and v2's off-thread item marshalling is therefore a convenience beyond the platform, and
+    the dropped-change flag has no counterpart.
+- Do not require a queue in `Create()` (rejected). `TableViewSource2` is not a
+  `DependencyObject`, and `From()` is legitimately called off the UI thread: view models built in
+  `Task.Run`, headless view-model tests, sources built before any UI. A throw there would be
+  stricter than the platform and surface far from the real use.
+
+Proposal:
+
+1. Remove `m_itemChangeDropped`, `ItemChanged(nullptr)` and `ShapingManager::m_liveAllDirty`.
+2. Treat a failed `TryEnqueue` as shutdown and ignore it silently.
+3. Bind the thread to the owner, not to creation: capture `m_ownerQueue` and the thread id at
+   `TrySetOwner` (always the UI thread), or at the first verb when there is no owner yet.
+   Caveat: "state belongs to the creating thread" becomes "the owning thread", so a source built
+   on a pool thread is handed to the UI thread; the subscriptions taken at `Create()` need
+   re-checking (v1 has the same exposure).
+4. No owner and no queue (headless or test): drain synchronously at the next verb or `Refresh`,
+   never inside the app's setter. This is v1's test-host fallback, moved to a safe point.
+5. (open) Keep off-thread item `PropertyChanged` marshalling as a convenience (v1 parity), or
+   drop it and document the platform's UI-thread rule.
+
 **Null and duplicate items:**
 
 Rejected in **all modes**, shaped or not. Every lookup key therefore maps to at most one record,
@@ -1140,7 +1198,7 @@ tree (below).
 | `SourceRecord* Parent` | Source parent; `nullptr` for top-level records | Reparent, ancestor walk for filter-with-ancestors |
 | `std::vector<SourceRecord*> Children` | Non-owning, source order | Shaped tree reads it directly when no filter or sort is active (no copy) |
 | `uint16_t Depth` | Top level = 0; never changed by grouping | Indent = spacer offset + per-level indent × `Depth`; `ShapedDepth()` |
-| `HasChildren()` | Derived from `Children` | Source-tree checks only. Not expandability: under a filter it stays true when every child is filtered out; rows use `ShapedRef::ShapedChildCount()` |
+| `HasChildren()` | Derived from `Children` | Source-tree checks only. Not expandability: under a filter it stays true when every child is filtered out; rows use `ShapedNode::ShapedChildCount()` |
 
 Not in the source tree (decided by the shaped tree section): expanded state (`ShapeFlags::Expanded`
 on the record's engine slot; the group expansion model keyed by `GroupNode::Identity`), group membership and group level (`GroupNode`), visible flag (presence in the visible
@@ -1289,8 +1347,8 @@ keeps `m_topLevel` in source order. Every `SourceRecord` keeps its item invarian
   group comes from its `ShapeState::Group` (top-level record → bottom-level `GroupNode`, written by
   the engine), never from `record->Parent`; a nested record's group is that of its top-level ancestor.
 - The shaped root is always an engine-owned `GroupNode`; there is no source root record.
-- `ShapedRef` tags the low pointer bit, so `SourceRecord` and `GroupNode` must have `alignof >= 2`
-  (`static_assert` next to `ShapedRef`).
+- `SourceRecord` and `GroupNode` share the `ShapedNode` base, which has no parent field:
+  `record->Parent` stays source-only (see *Shaped tree representation*).
 - Rejected: a sentinel `SourceRecord` with no item. It removes the one branch in `SiblingsOf`, but
   moves an `IsRoot()` check into every reader (filter-with-ancestors, find-group-of-ancestor, live
   shaping, validation, lookups, `Records()` / `Size()`), and a missed check treats the root as data.
@@ -1304,8 +1362,8 @@ keeps `m_topLevel` in source order. Every `SourceRecord` keeps its item invarian
   through `Reapply()` (see *Bulk threshold* in §6 *Change pipeline*).
 - **Visible-descendant counts for source parents (decided).** The visible list needs a count of
   visible descendants per node to find a node's flat index and splice only its range (see §6
-  *Change pipeline*). `GroupNode` holds it for groups; source
-  parents hold it in their `ShapeState` slot (see "Engine state storage").
+  *Change pipeline*). Every shaped node holds it on its `ShapedNode` base, groups and source
+  parents alike (see *Shaped tree representation*).
 - **Indent without per-row writes (spacer column).** Applying or removing grouping must not write a
   level to every row. Data rows store only `SourceRecord.Depth`, which never changes with grouping.
   Group-level indent is one shared offset, like Avalonia's `RowGroupSpacerColumn`:
@@ -1320,51 +1378,68 @@ keeps `m_topLevel` in source order. Every `SourceRecord` keeps its item invarian
   - Its `resetGrouping` writes `level = 0` and clears the shaped child arrays on every leaf.
   - Its `FlattenStage` calls `setUiLevel` on every visible row on every run.
 
-#### Shaped tree representation (decided: option A, tagged reference)
+#### Shaped tree representation (decided: shared `ShapedNode` base, replaces the tagged `ShapedRef`)
 
-The shaped tree does not copy the source tree. Only group headers are new nodes; rows are
-references to existing `SourceRecord`s.
+The shaped tree does not copy the source tree. Only group headers are new nodes; rows are the
+existing `SourceRecord`s. Both derive from a non-polymorphic `ShapedNode` base, so a `ShapedNode*`
+is the one node handle: one pointer, `nullptr` for "no node", compared and hashed as a pointer.
 
-Declared in `Engine/ShapedTree.h`:
+Declared in `Engine/ShapeState.h` (base) and `Engine/ShapedTree.h` (`GroupNode`):
 
 ```cpp
-// One slot in a shaped child list: a group or a source record (low pointer bit = tag).
-struct ShapedRef
-{
-    static ShapedRef FromRecord(SourceRecord*) noexcept;
-    static ShapedRef FromGroup(GroupNode*) noexcept;
-    bool IsNull() const noexcept;
-    bool IsGroup() const noexcept;
-    GroupNode* Group() const noexcept;      // null if this slot holds a record
-    SourceRecord* Record() const noexcept;  // null if this slot holds a group
-    ShapedRef ShapedParent() const noexcept;     // shaped parent, O(1); null only for the root
-    uint32_t ShapedChildCount() const noexcept;  // shaped children, O(1); see below
-    bool operator==(ShapedRef const&) const noexcept;  // same tagged pointer (and !=)
-private:
-    uintptr_t m_bits;
-};
-// static_assert: alignof(SourceRecord) >= 2, alignof(GroupNode) >= 2, sizeof(ShapedRef) == pointer
+enum class ShapedNodeKind : uint8_t { Record, Group };
 
-struct GroupNode                       // engine-owned; headers exist only while grouping is active
+struct ShapedNode                      // no vtable; protected non-virtual destructor; no copy
+{
+    ShapedNodeKind const Kind;         // fixed at construction; sits in the padding before the counts
+    uint32_t VisibleDescendantCount;   // own subtree's rows, ignoring ancestors; 0 when collapsed (P6)
+    uint32_t IndexInParent;            // position in the shaped parent list; ShapedTree-written (P2)
+    FenwickTree ChildRows;             // over the shaped children: 1 + VisibleDescendantCount each (P1)
+
+    bool IsGroup() const noexcept;
+    SourceRecord* AsRecord() noexcept; // null if a group (const overloads too)
+    GroupNode* AsGroup() noexcept;     // null if a record
+    ShapedNode* ShapedParent() const noexcept;           // shaped parent, O(1); null only for the root
+    uint32_t ShapedChildCount() const noexcept;          // shaped children, O(1); see below
+    ShapedNode* ShapedChildAt(uint32_t j) const noexcept;
+    // Deliberately no parent field: see "Two parent links" below.
+};
+
+struct SourceRecord : ShapedNode { /* Kind = Record; item, source tree, ShapeState Shape */ };
+
+struct GroupNode : ShapedNode          // Kind = Group; headers exist only while grouping is active
 {
     optional<tracker_ref<IInspectable>> Key;  // empty on the shaped root
     hstring Identity;                  // group key path (parent's Identity + this Key); empty on the root
-    GroupNode* Parent;                 // nullptr only on the shaped root
-    uint16_t GroupLevel;               // top-level groups = 0; the header's ShapedDepth()
-    std::vector<ShapedRef> Children;   // subgroups, or top-level records after filter and sort; non-owning, display order
-    std::vector<std::unique_ptr<GroupNode>> Subgroups;  // owns the subgroups (same set as Children's groups)
+    GroupNode* Parent;                 // nullptr only on the shaped root; non-owning
+    std::vector<ShapedNode*> Children; // subgroups, or top-level records after filter and sort; non-owning, display order
     uint32_t ItemCount;                // bucketed top-level records (descendants not counted)
-    uint32_t VisibleDescendantCount;   // own subtree's rows, ignoring ancestors; 0 when collapsed
-    FenwickTree ChildRows;             // over Children: 1 + VisibleDescendantCount each (P1)
-    uint32_t IndexInParent;            // position in Parent->Children; engine-written (P2)
+    uint16_t GroupLevel;               // top-level groups = 0; the header's ShapedDepth(); shares ItemCount's 8-byte slot
     mutable IInspectable HeaderRow;    // GroupHeaderRow token, created on first GetAtCore (V2); null on the root
     bool IsRoot() const noexcept;      // Parent == nullptr
 };
+
+// Owner of every group except the shaped root (ShapingEngine::m_groupsByIdentity).
+using GroupMap = std::unordered_map<hstring, std::unique_ptr<GroupNode>>;
 ```
 
-- Engine-owned: each group is heap-allocated and owned by its parent's `Subgroups` (the shaped
-  root owns the top-level groups), so `GroupNode*` and `ShapedRef` stay valid until the engine
-  drops the group (§6 *Shaping engine*, group storage).
+- **Two parent links, never merged (decided).** `SourceRecord::Parent` (`SourceRecord*`, source
+  tree, `SourceTable`-owned, null for a top-level record) and `GroupNode::Parent` (`GroupNode*`)
+  stay on the derived types. A single base `Parent` cannot serve both: for a top-level record the
+  source parent is null but the shaped parent is a group. Hoisting it would let a source walk
+  (filter-with-ancestors, `Depth`, reparent, `SiblingsOf`) step into a group, which has no item.
+  `ShapedParent()` derives the shaped parent from the typed links and `Shape.Group`.
+- **What the base holds.** Only what `ShapedTree` maintains on every node (the counts and position),
+  so its walks read `node->X` with no kind branch. Record-only engine state (`ShapeFlags`,
+  `SortKeys`, `ShapedChildren`, `Group`) stays in `ShapeState`.
+- **Size.** `Kind` takes padding before `VisibleDescendantCount`, so the base costs nothing extra.
+  `ShapeFlags` stays in `ShapeState`, which leaves 7 bytes of padding there (a 1-byte field before
+  8-byte ones; MSVC does not share padding across subobjects); `SourceRecord` places `Watch` beside
+  `Depth` to win the same 8 bytes back, so a record's size is unchanged.
+
+- Engine-owned: each group except the shaped root is heap-allocated and owned by the engine's
+  `GroupMap` (`m_groupsByIdentity`), so a `GroupNode*` stays valid until the engine drops the
+  group. `Parent` and `Children` are non-owning (§6 *Shaping engine*, group storage).
 - `ItemCount` counts bucketed top-level records only, matching v1 `GroupItemCount`.
 - **Bottom level is derived by the engine**, not stored or asked of the node: a group is
   bottom-level when `GroupLevel + 1 == groupLevelCount`; the shaped root is when
@@ -1384,7 +1459,7 @@ struct GroupNode                       // engine-owned; headers exist only while
     group key, must find the old group when the item is gone or its old key is no longer
     computable.
   - Needed by `ShapedTree`: every upward walk (`IndexOf`, `IsShown`, count propagation) crosses
-    from a top-level record into its group exactly once. `ShapedRef::ShapedParent()` makes that
+    from a top-level record into its group exactly once. `ShapedNode::ShapedParent()` makes that
     O(1); a map would cost a hash (and an engine-internal dependency) on every walk.
   - A row's owning group is then: header → `GroupNode::Parent`; record → climb `Parent` to the
     top-level record (O(depth)), then `Shape.Group`. Used for group-scoped actions (collapse this
@@ -1395,7 +1470,7 @@ struct GroupNode                       // engine-owned; headers exist only while
     drift).
 
 - **The shaped root is always a `GroupNode`.** Without grouping, `_root` (shaped) holds
-  `ShapedRef`s to the filtered and sorted top-level records and no other group exists. There is
+  pointers to the filtered and sorted top-level records and no other group exists. There is
   no grouped/ungrouped mode: the same walk handles both.
 - **Children of a source parent, after filter and sort:**
   - With no filter and no sort, they are read straight from `SourceRecord::Children` (no copy).
@@ -1415,12 +1490,14 @@ struct GroupNode                       // engine-owned; headers exist only while
     `Expanded` / `OverlayCollapsed` and the engine's transient `PlacementMark`; an ancestor of a match
     stays visible because its `ShapedChildren` is non-empty, see *Ancestors of matches*), `SortKeys` (one cached key per sort level;
     comparer levels hold none), `ShapedChildren` (the filtered and sorted children) and
-    `VisibleDescendantCount`. Tree links come from the record's existing `Parent`/`Children`.
+    `Group`. The per-node counts and position (`VisibleDescendantCount`, `IndexInParent`,
+    `ChildRows`) are on the record's `ShapedNode` base, shared with `GroupNode`. Tree links come
+    from the record's existing `Parent`/`Children`.
     Group membership is the `Group` pointer (top-level records only); the key stays on
     `GroupNode::Key`, so no group key is cached on the record.
   - Why not parallel `ShapedRecord` nodes: they must mirror every add, remove, reparent and
     Reset, and need a record-to-node back-pointer for `ItemChanged`, removal and selection.
-    `ShapedRef`, the visible list and identity (record address) stay unchanged with state on the record.
+    Node handles, the visible list and identity (record address) stay unchanged with state on the record.
   - What we give up: building a new shaped tree beside the live one and swapping (not needed: a
     failing full apply stages its results in a temporary buffer and moves them into each record's
     `Shape` only at commit, see *Misbehaving records*; a `Reset` replaces the list), and several shaped
@@ -1435,14 +1512,14 @@ struct GroupNode                       // engine-owned; headers exist only while
     rule for when to free. `Engine/ShapeState.h` is a leaf header (standard library, WinRT,
     `tracker_ref`), so `Source/` depends on it and not on the engine. Revisit if the fixed size
     grows.
-- **Group vs. source node:** `ShapedRef::IsGroup()`.
+- **Group vs. source node:** `ShapedNode::IsGroup()` (`Kind`).
   - A source parent (`ShapedChildCount() > 0`) is expandable but is not a group.
-  - **`ShapedRef::ShapedChildCount()` (decided).** The node's child count in the shaped tree, O(1),
-    derived and never stored: `Group()->Children.size()` for a group or the shaped root;
-    `Record()->Shape.ShapedChildren.size()` when the record's `ChildrenShaped` flag is set;
-    `Record()->Children.size()` otherwise. It is the single rule for `IsExpandable`
+  - **`ShapedNode::ShapedChildCount()` (decided).** The node's child count in the shaped tree, O(1),
+    derived and never stored: `AsGroup()->Children.size()` for a group or the shaped root;
+    `AsRecord()->Shape.ShapedChildren.size()` when the record's `ChildrenShaped` flag is set;
+    `AsRecord()->Children.size()` otherwise. It is the single rule for `IsExpandable`
     (`ShapedChildCount() > 0`), a record row's `ChildCount`, `SizeOfSet` (on `ShapedParent()`) and the
-    expander chrome the owner re-reads (P9). `Record()->HasChildren()` is not used for these: it reads the
+    expander chrome the owner re-reads (P9). `HasChildren()` is not used for these: it reads the
     source tree, so a parent whose children are all filtered out would show an empty expander.
   - This avoids AG Grid's mix-up, where `rowNode.group` is also true for tree-data parents and
     user rows need a separate `sourceRowIndex >= 0` check.
@@ -1450,7 +1527,7 @@ struct GroupNode                       // engine-owned; headers exist only while
   changes. Applying or removing grouping rebuilds `GroupNode`s (O(n) bucketing) and writes only the
   engine-owned `ShapeState::Group` of each top-level record during that same visit; no shaped
   level is stored anywhere.
-- **`ShapedRef::ShapedParent()` (decided).** The node's parent in the shaped tree, O(1), never
+- **`ShapedNode::ShapedParent()` (decided).** The node's parent in the shaped tree, O(1), never
   stored: `GroupNode::Parent` for a group, `SourceRecord::Parent` for a nested record,
   `Shape.Group` for a top-level record. Null only for the shaped root. It is the single upward
   step for `ShapedTree`'s walks, set size, parent identity and "go to parent".
@@ -1459,9 +1536,9 @@ struct GroupNode                       // engine-owned; headers exist only while
 grouped + hierarchical. **It is not stored (decided, P1):** the visible list is the shaped tree
 read through its counts (see *Reading rows by position* below). There is no `m_rows`.
 
-- **Entries are bare `ShapedRef`s (decided).** A `VisibleRow { ShapedRef Ref; }` wrapper was
+- **Entries are bare `ShapedNode*`s (decided).** A `VisibleRow { ShapedNode* Node; }` wrapper was
   dropped: it held one public field, so it hid nothing and added only a name. `GetAt` returns the
-  pointer-sized `ShapedRef` by value.
+  node pointer.
 
 - **The shaped parent is not stored (decided).** `ShapedParent()` is O(1) for every kind of
   node, so set size, parent identity and "go to parent" take one path for every row without a
@@ -1502,9 +1579,9 @@ private:
 };
 ```
 
-- **P1: a Fenwick tree per sibling list, no stored visible list.** `GroupNode::ChildRows` (over
-  `Children`) and `ShapeState::ChildRows` (over `ShapedChildren`, or `SourceRecord::Children`
-  when `ChildrenShaped` is clear). Entry j is `1 + VisibleDescendantCount` of child j, so
+- **P1: a Fenwick tree per sibling list, no stored visible list.** `ShapedNode::ChildRows`, over
+  `GroupNode::Children` for a group, and over `Shape.ShapedChildren` (or `SourceRecord::Children`
+  when `ChildrenShaped` is clear) for a record. Entry j is `1 + VisibleDescendantCount` of child j, so
   `Total()` is the parent's `VisibleDescendantCount` and the shaped root's is `Size()`.
   - `GetAt(i)`: from the shaped root with `r = i`, at each level `Find(r)` gives the child `c` and
     the rows before it; `r -= RowsBefore`; `r == 0` returns `c`, otherwise `r -= 1` and descend
@@ -1634,13 +1711,14 @@ through `ShapedTree`'s walk (P1); it holds no copy.
     never both, so no event is raised for a change a `Reset` will replace.
   - **Group lifetime.** `PruneEmptyGroups` does not destroy an emptied group during the commit; it
     moves it to the engine's `m_retired`, destroyed by `ReleaseRetired()` after
-    `OnShapingApplied`. A handler may still hold a `ShapedRef` from an earlier read. Records need
+    `OnShapingApplied`. A handler may still hold a `ShapedNode*` from an earlier read. Records need
     nothing new: `SourceTable` destroys them only after its `SourceChanged` handler returns, and
     the commit runs inside it.
   - **Handler exceptions.** The write phase is `noexcept`, and its events now run app handlers
     (the repeater's, a binding's). The listener catches into `m_listenerFault`, suppresses the
     rest of the commit's events, lets the engine finish, raises one `Reset` so the view and the
-    repeater agree again, and rethrows at the end of the commit scope.
+    repeater agree again, and rethrows from `AfterCommit`, once the scope has closed (never from
+    its destructor; see *Source change during an apply*).
   - **Re-entrancy.** All inside the #19 apply scope: a handler that calls a verb throws, and a
     source change it causes is frozen.
   - Event args: `Remove` and `Add` carry size-only placeholder item lists (the repeater reads only
@@ -1656,8 +1734,7 @@ through `ShapedTree`'s walk (P1); it holds no copy.
   - Superseded: P4 (publish overlay over a recorded `FlatDelta`), and before it V4 (a stored
     visible list one splice behind the tree).
 - **Reset path (decided, P5; revises #18 O2; placement simplified by P8).** `ShapedTree::BeginReset`
-  raises `OnRowsResetting` before the engine swaps the new `Children` / `Subgroups` in under the
-  root; the manager forwards it to the owner's `OnResetting`. `EndReset` then recomputes every count
+  raises `OnRowsResetting` before the engine swaps the new root `Children` and group map in; the manager forwards it to the owner's `OnResetting`. `EndReset` then recomputes every count
   and raises `OnRowsReset`. Nothing is staged. A rebuild's old groups are destroyed when the commit
   returns instead of being retired.
   - The owner still does not read rows through the view in `OnResetting`: for a source `Reset`,
@@ -1754,8 +1831,13 @@ through `ShapedTree`'s walk (P1); it holds no copy.
     per context row, erasure on every removal path, and address reuse if missed), and no
     auto-expand (matches hidden under collapsed context rows).
 - **Groups: an expansion model, for groups only.** `GroupNode`s are rebuilt on every `GroupKey`
-  change, so their state is kept outside the node, keyed by `GroupNode::Identity`. Owned by
-  `ShapingManager` (`m_groupExpansion`), read and written by `ShapedTree`.
+  change, so their state is kept outside the node, keyed by `GroupNode::Identity`. Owned, read
+  and written only by `ShapedTree` (`m_groupExpansion`; decided, moved from `ShapingManager`).
+  The tree is its only user, and lives exactly as long as the state must (the engine and tree are
+  never replaced), so the manager kept it only to relay prune calls the engine can make itself.
+  Group state for a group with no node (pre-set by key, or kept while a group is pruned) would not
+  need it back in the manager either: entries are keyed by `Identity`, not by node, so the tree
+  would only gain a key-based entry point.
 - **`GroupExpansion` (decided: new v2 type, `Engine/GroupExpansion.h`).** Stores only exceptions to
   a baseline (default expanded, as v1), so `ExpandAllGroups`/`CollapseAllGroups` (`SetAll`) are O(1) and a
   group that does not exist yet gets the baseline. Prune operations: `RetainOnly` (after any rebuild, F4),
@@ -1797,15 +1879,19 @@ through `ShapedTree`'s walk (P1); it holds no copy.
   exist:
   - Every engine rebuild, not only a regroup (decided, F4): filter, sort, `Reapply` and the E7
     bulk rebuild destroy groups too. The engine builds the new groups while the old tree still
-    holds its keys, so a freed key address cannot be reused mid-rebuild. After a commit whose
-    delta is `IsReset`, `ShapingManager` calls `RetainOnly(m_engine.GroupsByIdentity())`, which
-    drops every exception whose group no longer exists, O(exceptions). Pruning only on regroup
+    holds its keys, so a freed key address cannot be reused mid-rebuild. `Rebuild` closes with
+    `ShapedTree::EndReset(levels, m_groupsByIdentity, newGroupSelector)`, which calls
+    `RetainOnly` before recomputing counts (the replaced groups are destroyed only after `EndReset`),
+    dropping every exception whose group no longer exists, O(exceptions). Pruning only on regroup
     was rejected: a stale entry could be inherited by a new reference key allocated at a freed
     address (the hazard pruning exists to close). Never pruning was rejected for the same reason.
   - Incremental: a surgical group drop erases its entry. `ShapedTree::Unlink` of a `GroupNode`
     without `isMove` calls `Erase` for the node and every group in its subtree (with F1 the node is the
     topmost group that leaves, and its subtree is a single-member chain).
-  - `GroupBy` with a new selector clears every entry (old identities mean other keys).
+  - `GroupBy` with a new selector clears every entry (old identities mean other keys): `Rebuild`
+    passes `newGroupSelector` when a group level present in both `Applied()` and the desired spec
+    has a different `Key`; a level only appended or removed keeps the others' identities, and
+    `RetainOnly` drops the ones that vanished. `ShapedTree::Clear()` (teardown) also clears.
   - Consequence: a group that disappears and returns (a filter hides all its rows, or live
     shaping empties it) comes back in the default state.
   - Rejected: keep entries past their group with a `weak_ref` to object keys (state survives a
@@ -1821,26 +1907,26 @@ through `ShapedTree`'s walk (P1); it holds no copy.
   are `ShapedTree` verbs only: they run no app code before their event and cannot throw.
 
 **Visible-list entry vs. `TableViewRowInfo`.** They are not the same thing:
-- A visible row is one pointer-sized `ShapedRef` into the shaped tree, found by
+- A visible row is one `ShapedNode*` into the shaped tree, found by
   `ShapedTree::GetAt` (P1); nothing is stored per row.
 - `TableViewRowInfo` is the consumer-facing metadata snapshot returned by
   `ITableViewRowMetadataProvider::GetRowInfo(index)`. The v2 provider builds it on demand, in O(1),
-  from the `ShapedRef` at that index (`Ref` below); it is never stored per row (storing it would duplicate state
+  from the `ShapedNode*` at that index (`node` below); it is never stored per row (storing it would duplicate state
   and bring back per-row writes when grouping or expansion changes).
 
 | `TableViewRowInfo` field | Derived from |
 |---|---|
-| Kind | `Ref.IsGroup()` |
+| Kind | `node->IsGroup()` |
 | Level | `ShapedDepth()` |
-| IsExpandable | `Ref.ShapedChildCount() > 0` (always true for a group header: empty groups are dropped) |
+| IsExpandable | `node->ShapedChildCount() > 0` (always true for a group header: empty groups are dropped) |
 | IsExpanded | record: `ShapeFlags::Expanded`; group: expansion model, by `GroupNode::Identity` |
-| ChildCount | `GroupNode::ItemCount`, or `Ref.ShapedChildCount()` for a record |
-| ParentIdentity | `Ref.ShapedParent().Record()->Identity()` when the shaped parent is a record; empty otherwise |
-| PositionInSet | `IndexInParent(Ref) + 1`, O(1) (P2) |
-| SizeOfSet | `Ref.ShapedParent().ShapedChildCount()` |
+| ChildCount | `GroupNode::ItemCount`, or `node->ShapedChildCount()` for a record |
+| ParentIdentity | `node->ShapedParent()->AsRecord()->Identity()` when the shaped parent is a record; empty otherwise |
+| PositionInSet | `node->IndexInParent + 1`, O(1) (P2) |
+| SizeOfSet | `node->ShapedParent()->ShapedChildCount()` |
 
-Everything else is read through `Ref`:
-- Kind comes from the tag.
+Everything else is read through `node`:
+- Kind comes from `ShapedNode::Kind`.
 - `Depth` and expandability come from the record or group.
 - Expanded comes from the record's `ShapeFlags::Expanded`, or the group expansion model by `GroupNode::Identity`.
 - Indent = spacer offset (group-level count) + per-level indent × `Depth`.
@@ -1874,21 +1960,21 @@ Everything else is read through `Ref`:
   - Rejected: `ShapingManager` implementing the interface itself (TableView holds the provider as a
     `shared_ptr`; the manager is a `unique_ptr` member), and a new v2 interface (TableView changes,
     or two paths until v1 is retired).
-- **Expansion (R2: typed entry points).** `ShapingManager::SetExpanded(ShapedRef, optional<bool>)`
+- **Expansion (R2: typed entry points).** `ShapingManager::SetExpanded(ShapedNode*, optional<bool>)`
   (nullopt toggles; returns whether the state changed, false when not expandable),
-  `SetAllExpanded(ExpansionAxis {Groups, Rows}, bool)` and `ExpandSubtree(ShapedRef)` (new
+  `SetAllExpanded(ExpansionAxis {Groups, Rows}, bool)` and `ExpandSubtree(ShapedNode*)` (new
   `ShapedTree::ExpandSubtree`: flags over the record subtree, one insert event for the revealed rows; no-op
   for a group or a flat source). The adapter resolves the interface's string key with
   `TryResolveKey` (the first half of `IndexOfKey`). Each runs inside the #19 apply scope and the
   manager's commit scope, like an engine commit; called while an apply runs, it throws, like a verb. A future
-  public per-item expand (#20, Phase 6) will resolve to a `ShapedRef` and reuse these.
+  public per-item expand (#20, Phase 6) will resolve to a `ShapedNode*` and reuse these.
   - Rejected: key-based entry points on the manager (its API takes the interface's shape, and #20
     would need a second path).
 - **Reveal and per-item expansion (decided, #20).**
   - **Reveal (internal now).** Expands every collapsed ancestor of a node so it becomes shown; the
     node itself is not expanded. `ShapedRowMetadata::Reveal(key)` (new
     `ITableViewRowMetadataProvider::Reveal`, default -1 so v1 is untouched) resolves the key with
-    `TryResolveKey` and calls `ShapingManager::Reveal(ShapedRef)`. That returns nullopt (-1 through
+    `TryResolveKey` and calls `ShapingManager::Reveal(ShapedNode*)`. That returns nullopt (-1 through
     the interface), changing nothing, when `ShapingEngine::InShapedTree(node)` is false (filtered
     out); otherwise it runs `ShapedTree::Reveal` in a commit scope and returns `IndexOf(node)`.
     `ShapedTree::Reveal` collects the ancestors that read collapsed (record `Expanded`, the group
@@ -1900,7 +1986,7 @@ Everything else is read through `Ref`:
   - **Per-item expand / collapse (internal only).** Stays on `ITableViewRowMetadataProvider`
     (`Expand` / `Collapse` / `Toggle` by key), the one path for `TableView`, keyboard and UIA. A
     public per-item API (e.g. `TableView.Expand(item)`, next to the four expand-all verbs already on
-    `TableView`) is a Phase 6 `TableView` API item; it resolves to a `ShapedRef` and calls
+    `TableView`) is a Phase 6 `TableView` API item; it resolves to a `ShapedNode*` and calls
     `SetExpanded`.
   - **Filter auto-expand:** decided earlier (F5, *Expansion*).
   - Rejected: a public `TableViewSource2.Reveal(item)` now (sets public precedent before
@@ -1925,7 +2011,7 @@ Everything else is read through `Ref`:
   reflect later changes of the same commit. The owner re-reads realized chrome in
   `OnShapingApplied` (P9).
 
-**Effect on downstream code.** `ShapedRef` and `GroupNode` stay native: the engine, the
+**Effect on downstream code.** `ShapedNode` and `GroupNode` stay native: the engine, the
 shaped tree, the WinRT visible list and the row metadata provider. `TableView` sees one list of
 items plus `TableViewRowInfo` / `TableViewGroupInfo`, and branches on group vs. row, never on whether
 grouping is on:
@@ -1942,7 +2028,7 @@ The v1 `IsTableViewSourceGrouped()` branches, and the O(n) scan in
 |---|---|---|
 | Visible-list types | Five, by `ProjectionKind` (`m_rows`, plus the grouped and hierarchical adapters' `Entries()`) | None stored: one tree walk over the shaped tree (P1) |
 | Duplicate state | `m_rows` is kept up to date even when grouped or hierarchical, though not displayed | Shaped tree only, plus a Fenwick tree per shown sibling list |
-| Row metadata | A provider per kind; some values found by scanning | Read through the `ShapedRef`, built on demand |
+| Row metadata | A provider per kind; some values found by scanning | Read through the `ShapedNode*`, built on demand |
 | Source change when grouped or hierarchical | Full `Refresh()`: re-read the source, new provider, possibly a new view object | Shaped tree is updated; only the affected range is spliced |
 | Object the repeater is bound to | Can be swapped on `Refresh` | Same object for the control's lifetime |
 
@@ -1959,8 +2045,14 @@ The v1 `IsTableViewSourceGrouped()` branches, and the O(n) scan in
   - Polymorphism adds a vtable pointer to every record.
   - A row → group link needs either rewriting `Parent` (corrupting the source tree) or a
     `ShapedParent` written on every row when grouping changes.
-- **Shared `ShapedNodeBase { Kind }` base for `SourceRecord` and `GroupNode`.** Viable, but adds
-  1 byte plus padding to every record for no gain over the tag bit.
+- **Tagged `ShapedRef` (low pointer bit = group/record) instead of a shared base.** Formerly
+  chosen; replaced by `ShapedNode`. It needed `ShapedRefHash`, `operator==`, `alignof`
+  `static_assert`s and kind-branching helpers for every per-node count and position, and a
+  debugger shows only an integer. The earlier size objection to a base was wrong: `Kind` fits in
+  padding before `VisibleDescendantCount`. Keeping `ShapeFlags` in `ShapeState` costs 8 bytes of
+  padding, won back by placing `SourceRecord::Watch` beside `Depth`.
+- **A `Parent` field on the shared base.** See *Two parent links* above: source walks would reach
+  groups, and a top-level record's source and shaped parents differ.
 
 ## 5. Shape spec
 
@@ -2253,7 +2345,7 @@ Decisions and open questions:
   | Owner | Owns |
   |---|---|
   | `TableViewSource2` | `m_items` and `std::unique_ptr<ShapingManager>`. Validates verb arguments and forwards; returns itself for chaining. |
-  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`), the group expansion model (`m_groupExpansion`, a `GroupExpansion`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`), the row metadata provider and the WinRT visible list. |
+  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`, which owns the group expansion model), the row metadata provider and the WinRT visible list. |
 
 - **Pipeline.** Spec verbs edit `m_desired`, then `ApplyDesiredSpec()` runs
   `Diff(applied, desired)` → engine apply, whose `ShapedTree` calls raise row events on the visible
@@ -2299,6 +2391,18 @@ Decisions and open questions:
     exception (never run while it unwinds into the app), or when the resync's own apply was
     disturbed again (at most one resync per turn, so an app that mutates on every callback cannot
     loop).
+  - Nothing throws out of the scope's destructor. `Refresh()` runs app code (enumeration) and
+    validation, and a listener fault must reach the app, but a throw from a destructor terminates
+    the process, during unwinding and outside it. So the destructor's `EndCommit` is `noexcept`:
+    it closes the scope (`OnShapingApplied`, whose throw it catches into `m_listenerFault`;
+    `ReleaseRetired`; `EndFreeze`) and records whether a resync is due (`m_resyncDue`). On unwind
+    it posts the resync instead. The verb or handler that opened the scope then calls
+    `AfterCommit()` after the scope object is gone: it runs the synchronous `ResyncSource` (posted
+    instead when a handler faulted), then rethrows `m_listenerFault`. If that `Refresh()` throws, the
+    exception is caught: the table stays as it was with `m_pendingReset` / `m_outOfSync` set, one
+    retry is posted (`m_resyncPosted`), and nothing reaches the app, whose verb already succeeded.
+    If the posted retry throws too, it is swallowed. The next source notification (handled as a
+    re-read while out of sync), `Refresh` or verb retries.
   - A failed apply is still consistent: nothing was written, cached keys and the replayed source
     are shaped with `Applied()`, and `Diff(applied, desired)` catches up on the next verb.
   - `ItemChanged` needs no freeze: E7 only adds to the dirty set and posts a drain.
@@ -2356,7 +2460,7 @@ membership only through it.
 class ShapedTree final
 {
 public:
-    explicit ShapedTree(GroupExpansion& groupExpansion);
+    ShapedTree() = default;                           // owns m_root and m_groupExpansion
     void SetListener(IShapedRowsListener* listener) noexcept;   // ShapingManager
 
     GroupNode& Root() noexcept;                       // stable; a rebuild swaps its children
@@ -2364,23 +2468,25 @@ public:
 
     // Visible list (P1-P3)
     uint32_t Size() const noexcept;
-    ShapedRef GetAt(uint32_t index) const;            // O(depth x log k); cursor for i +/- 1
-    std::optional<uint32_t> IndexOf(ShapedRef) const; // nullopt when an ancestor is collapsed
-    bool IsShown(ShapedRef) const;
-    bool IsExpanded(ShapedRef) const;                 // includes the F5 context-row overlay
-    uint32_t ShownDescendantCount(ShapedRef) const;   // R3 band size
+    ShapedNode* GetAt(uint32_t index) const;          // O(depth x log k); cursor for i +/- 1
+    std::optional<uint32_t> IndexOf(ShapedNode*) const; // nullopt when an ancestor is collapsed
+    bool IsShown(ShapedNode*) const;
+    bool IsExpanded(ShapedNode*) const;                 // includes the F5 context-row overlay
+    uint32_t ShownDescendantCount(ShapedNode*) const;   // R3 band size
 
     // Structure: engine write phase only; each raises its event (P8)
-    void Link(ShapedRef node, ShapedRef parent, uint32_t index, bool isMove) noexcept;
-    void Unlink(ShapedRef node, bool isMove) noexcept;
+    void Link(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept;
+    void Unlink(ShapedNode* node, bool isMove) noexcept;
     void BeginReset() noexcept;                       // OnRowsResetting
-    void EndReset(uint16_t groupLevelCount) noexcept; // counts post-order, OnRowsReset
+    void EndReset(uint16_t groupLevelCount,           // prune expansion (F4), counts post-order,
+                  GroupMap const& liveGroups,         // OnRowsReset
+                  bool newGroupSelector) noexcept;
 
     // Expansion: ShapingManager, inside the #19 scope and a commit scope
-    bool Expand(ShapedRef);
-    bool Collapse(ShapedRef);
-    bool ExpandSubtree(ShapedRef);
-    bool Reveal(ShapedRef);
+    bool Expand(ShapedNode*);
+    bool Collapse(ShapedNode*);
+    bool ExpandSubtree(ShapedNode*);
+    bool Reveal(ShapedNode*);
     void SetAllGroupsExpanded(bool);                  // reset
     void SetAllRowsExpanded(bool);                    // reset
 
@@ -2392,7 +2498,7 @@ public:
   engine cannot build or edit the tree without it, and the visible list, the row metadata provider
   and the owner only read it. Owning the counts next to the structure removes the second copy of
   the tree's shape the `Flattener` kept (`m_root`, `m_groupLevelCount`) and the sink protocol that
-  kept them in step. `GroupExpansion` moved with it to `Engine/`.
+  kept them in step. `GroupExpansion` moved with it to `Engine/`, and is now owned by it.
 - **`Link` / `Unlink` (decided, F1 kept).** One call at the topmost node that enters or leaves the
   shaped tree, with its subtree. The engine builds a new node's chain (E8, E9) or a new group's
   subtree detached (plain writes, no events), then links it once.
@@ -2428,7 +2534,7 @@ public:
 - **Root lifetime (decided: one stable root).** The tree owns the shaped root by value; its
   address never changes. A rebuild builds the new child groups aside, then swaps them under the
   same root, so the "old tree kept on throw" rule still holds. Rejected: a new root per rebuild
-  (any held root `ShapedRef` goes stale).
+  (any held root `ShapedNode*` goes stale).
 - **Teardown order (decided).** `ShapingManager::Clear()` first calls
   `ShapedCollectionView::Detach()` and `ShapedRowMetadata::Detach()` (both hold a raw
   `ShapingManager*`, D2/R4), then `ShapingEngine::Clear()`, which calls `ShapedTree::Clear()`
@@ -2646,12 +2752,11 @@ class ShapingEngine
 public:
     ShapingEngine(ITrackerHandleManager const* trackerOwner,   // GroupNode::Key, SortKeys
                   SourceTable const& source,                   // TopLevel(), Parent / Children / Depth
-                  ShapeDelegates& delegates, PathEvaluator& paths,
-                  GroupExpansion& groupExpansion);             // ShapingManager's; for m_tree
+                  ShapeDelegates& delegates, PathEvaluator& paths);
 
     ShapeSpec const& Applied() const noexcept;                 // Diff(applied, desired); sort indicators
     ShapedTree& Tree() noexcept;                               // root, counts, reads, expansion (P10)
-    std::unordered_map<hstring, GroupNode*> const& GroupsByIdentity() const noexcept;  // F4 prune
+    GroupMap const& GroupsByIdentity() const noexcept;        // V3 key lookup
 
     void Apply(ShapeSpec const& desired, ShapeDelta delta);    // Rebuild(desired, delta)
     void Reapply(ShapeSpec const& desired);                    // Rebuild(desired, All)
@@ -2663,8 +2768,8 @@ public:
 
 private:
     ShapeSpec m_applied;
-    ShapedTree m_tree;                                         // owns the stable root and, through it, every group
-    std::unordered_map<winrt::hstring, GroupNode*> m_groupsByIdentity;  // non-owning
+    ShapedTree m_tree;                                         // owns the stable root only
+    GroupMap m_groupsByIdentity;                               // Identity -> owning unique_ptr, every non-root group
     std::vector<std::unique_ptr<GroupNode>> m_retired;         // pruned, alive until the commit ends (P8)
     struct StagedRecord;                                       // per-call compute results (E4)
     struct StagedReapply;                                      // Reapply's whole new tree, aside
@@ -2677,10 +2782,10 @@ private:
 };
 ```
 
-- **Ownership (decided).** `ShapingManager` owns `ShapingEngine m_engine` by value, declared after
-  `m_groupExpansion` and built in the constructor's member-init list after `m_sourceTable`. The
-  engine owns the `ShapedTree` by value (P10) and holds references to `SourceTable`,
-  `ShapeDelegates`, `PathEvaluator` and `GroupExpansion`; the coordinator outlives all of them.
+- **Ownership (decided).** `ShapingManager` owns `ShapingEngine m_engine` by value, built in the
+  constructor's member-init list after `m_sourceTable`. The engine owns the `ShapedTree` by value
+  (P10), which owns the stable root and `GroupExpansion`; the engine owns every other group (`m_groupsByIdentity`); the engine holds references to
+  `SourceTable`, `ShapeDelegates` and `PathEvaluator`; the coordinator outlives all of them.
   The manager sets itself as the tree's listener on the first `View()` call. It never reads the app collection.
 - **Entry points (decided).** One per kind of work: `Apply` (a verb, with its `ShapeDelta`),
   `Reapply` (full rebuild), `ApplySourceChange` (one item), `ApplyItemChanged` (live shaping),
@@ -2699,25 +2804,36 @@ private:
     the manager.
   - The engine brackets the commit itself: it would need the owner, the freeze and the change
     flags, which belong to the coordinator.
-- **Group storage (decided: the parent owns its subgroups).** `GroupNode::Subgroups` is a
-  `std::vector<std::unique_ptr<GroupNode>>` next to `Children`; the shaped root owns the top-level
-  groups, so the engine owns every group transitively. `Children` stays the non-owning,
-  display-ordered `ShapedRef` list; `Subgroups` holds the same groups in no particular order (empty
-  for a bottom-level group). Heap nodes keep `GroupNode*` and `ShapedRef` stable; dropping a group
-  frees its subtree. Order: a surgical prune calls `Tree().Unlink` before erasing the group from
-  its parent's `Subgroups` (O(siblings) find, swap-and-pop) and moving it to `m_retired`,
-  destroyed by `ReleaseRetired()` after `OnShapingApplied` (a listener may still hold a
-  `ShapedRef` from an earlier read, P8). A rebuild calls `BeginReset`, swaps the new set in under
-  the root, calls `EndReset`, then destroys the old set when the commit returns (P5). v1 instead ref-counts COM
-  `ShapedGroup`s held by a key-path cache, so a group's lifetime is spread across holders.
+- **Group storage (decided: the engine's identity map owns every group; revised from per-parent
+  `Subgroups`).** `m_groupsByIdentity` is a `GroupMap`
+  (`unordered_map<hstring, unique_ptr<GroupNode>>`): it already held every live group exactly
+  once for lookup (E3), so it is also the owner. The shaped root is a `ShapedTree` member and is not
+  in it. `Children` stays the non-owning, display-ordered `ShapedNode*` list, and `Parent` the
+  non-owning upward link. Heap nodes keep `GroupNode*` stable.
+  - Surgical prune: `Tree().Unlink`, then `extract` the group from the map into `m_retired`
+    (O(1) on average), destroyed by `ReleaseRetired()` after `OnShapingApplied` (a listener may
+    still hold a `ShapedNode*` from an earlier read, P8). Only empty groups are pruned and an
+    empty group's subgroups are pruned before it (`ItemCount` is their sum), so the subtree is
+    always the one node; a debug assert checks it has no group children.
+  - Rebuild: build a new map aside, `BeginReset`, swap it and the root's `Children` in, `EndReset`;
+    the old map (all old groups) is destroyed when the commit returns (P5).
+  - Teardown: `ShapedTree::Clear()` empties the root's `Children`; the engine then clears the map
+    and `m_retired`. Destruction order is free: `~GroupNode` never touches `Parent` or `Children`.
+  - v1 instead ref-counts COM `ShapedGroup`s held by a key-path cache, so a group's lifetime is
+    spread across holders.
   Rejected:
+  - `GroupNode::Subgroups` (`vector<unique_ptr<GroupNode>>`, parent owns its subgroups; the
+    earlier decision): the same set as the group entries of `Children` in a second list, 24 bytes
+    per group, two structures to update on every add, prune and rebuild, and an O(siblings) find
+    with swap-and-pop on prune. Its one advantage, "dropping a group frees its subtree", is unused
+    because a prune only ever drops one empty group.
   - Engine-wide pool (`std::deque<GroupNode>` plus a free list): fewer allocations, but reused
     slots make stale pointers hard to catch, and a rebuild needs deferred release. Group counts
     are small (hundreds), so per-node allocation is not a concern.
-  - Ownership inside the E3 per-parent keyed map: one structure for find and own, but ties
-    storage to the key-hashing decision. E3 may still add a non-owning index.
+  - Ownership inside a per-parent keyed map (E3 alternative): one structure per parent, and no
+    global `Identity` → node lookup.
 - **Group lookup (decided: one engine-wide map by `Identity`).** `m_groupsByIdentity` maps
-  `GroupNode::Identity` to the live group (non-owning). To place a record, the engine walks down
+  `GroupNode::Identity` to the live group (and owns it, above). To place a record, the engine walks down
   the levels, extending the parent's `Identity` with that level's key segment
   (`ValueKey::ToObjectLookupKey`: value types by typed value, reference types by `IUnknown`
   identity, null as `"null:"`, as v1). A miss creates the group with that string as its `Identity`.
@@ -2733,7 +2849,7 @@ private:
   `ShapeState`. Each entry point builds a local object: `StagedRecord` (record, passes filter, sort
   keys, group key segments and objects) for each evaluated record; `Reapply` adds a
   `StagedReapply` holding the records in pre-order, every parent's new `ShapedChildren`, the new
-  root `Children` / `Subgroups` and the new `m_groupsByIdentity`. The write phase only moves these
+  root `Children` and the new (owning) `m_groupsByIdentity`. The write phase only moves these
   in (`noexcept`), calls the tree, and destroys the buffer (with the old groups swapped into it).
   Surgical paths stage 1..k `StagedRecord`s the same way. Rejected:
   - A second, pending `ShapeState` slot on every record: no per-rebuild allocation, but the slot
@@ -2796,7 +2912,7 @@ private:
     parent, and inserts the map nodes. The expansion baseline applies (*Expansion*).
   - Prune: when a record leaves a bottom-level group, find the topmost node that leaves (the
     highest ancestor group with no other member, else the record itself) and call `Tree().Unlink`
-    once for it (F1). Then take the detached chain apart, and erase every emptied group from the map and from its parent's `Children` and `Subgroups`; stops at the
+    once for it (F1). Then take the detached chain apart, and extract every emptied group from the map into `m_retired` (O(1) each; it has no live subgroups, they emptied first); stops at the
     shaped root. Empty groups are never shown. Same 0↔1 walk as *Ancestors of matches* (E8).
   - **Tree-call granularity (decided, F1).** E8 and E9 share one rule: one `Link` / `Unlink` per
     edit, at the topmost node that enters or leaves, so each edit is one contiguous event. With
@@ -2837,12 +2953,35 @@ private:
     re-reads limited to the dirty records, the re-sorts over all cached keys, so
     app code runs O(k) times and the result is one stable `Reset` the owner re-anchors.
   - `ItemChanged(nullptr)` (a dropped off-thread change) sets `m_liveAllDirty`; the drain does
-    `Reapply()`.
+    `Reapply()`. Proposed for removal: see *Threading review: dropped-change recovery* under the
+    `SourceTable` threading rules. If kept, the other full rebuilds (a `SourceTable` `Reset`, any
+    `Reapply`) must also clear `m_liveAllDirty`, or the next drain does a redundant `Reapply`.
   - Dirty-set hygiene: `OnSourceChanged` erases removed records and their descendants before the
     engine applies the change; a `SourceTable` `Reset` or any `Reapply` empties the set; a verb
     drains it synchronously first, so `Rebuild` never runs over stale keys of a dirty record;
     `Clear()` empties it, so a drain posted before teardown is a no-op (the posted callback also
     holds a weak reference to the owning `TableViewSource2`).
+  - Drain mechanics. Only the drain callback is posted, not the changes: `m_liveDrainPosted`
+    keeps at most one in the queue, and the callback carries no data. `m_liveDirty` holds the
+    pending set (coalesced, unordered; each entry re-reads the record's current values, so only
+    the final state matters). Everything runs on the UI thread: off-thread `PropertyChanged` is
+    marshalled by `SourceTable`, so it lands after a running drain returns.
+  - Re-entrancy during a drain. The drain runs app code (predicates, key delegates, getters, and
+    handlers of the `CollectionChanged` it raises); a property set there re-enters `OnItemChanged`
+    synchronously. Implementation requirements:
+    - Clear `m_liveDrainPosted` and `m_liveAllDirty`, and move `m_liveDirty` into a local batch,
+      **before** any shaping. A re-entrant change then lands in the fresh map and posts the next
+      drain (next turn). Clearing the posted flag at the end would strand it until an unrelated
+      event or verb.
+    - A re-entrant source removal (app code removes an item mid-drain) is erased from
+      `m_liveDirty` by `OnSourceChanged`, but not from the in-flight batch, which would then hold a
+      dangling `SourceRecord*`. (open) Options: reject source changes during a drain like the #19
+      in-apply guard (confirm what `OnSourceChanged` does during an apply), have `OnSourceChanged`
+      also erase from the in-flight batch, or key the batch by a removal-safe identity.
+    - An app that sets a property from inside a getter or predicate drains once per turn
+      indefinitely. Accepted (app-caused, bounded to once per turn, no recursion); document it.
+    - (open) If the engine call throws: the batch is dropped or re-queued. Decide with the verb
+      exception rules (applied spec stays old).
   - Hold during a cell edit: the drain is skipped while the owner holds live shaping, so the
     edited row does not move away under the editor; releasing the last hold posts a drain. v1 has
     the same hold (`m_liveShapingHold`). Decided with #18 (O4): a counted
@@ -2942,7 +3081,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 ### Phase 4 — Shaping engine (`Engine/ShapingEngine.h/.cpp`)
 - [x] Declare `ShapingEngine` (`Engine/ShapingEngine.h`): references, applied spec, stable root,
       entry points, `Clear`; the manager brackets each commit (§6 *Shaping engine*).
-- [x] Group storage: `GroupNode::Subgroups` (parent owns subgroups) (E2).
+- [x] Group storage: the engine's `GroupMap` (`m_groupsByIdentity`) owns every group;
+      `GroupNode::Subgroups` removed (E2, revised).
 - [x] Group lookup: `m_groupsByIdentity` (E3).
 - [x] Staging: `StagedRecord`, `StagedReapply` (E4).
 - [x] Apply paths: `Rebuild` driven by `ShapeDelta` (E6; the former `RebuildStage` / `StagesFor` merged into it).
@@ -2954,10 +3094,13 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `LiveChange`, `Rebuild` scoped to dirty records (E7).
 - [x] Surgical placement and tie order: `PlacementIndex`, `ShapeFlags::PlacementMark`,
       `StagedRecord::ShapedIndex` (E5).
-- [ ] Shaped tree node types `ShapedRef`, `GroupNode` (`Engine/ShapedTree.h`): declared, no
+- [ ] Shaped tree node types `ShapedNode` (`Engine/ShapeState.h`), `GroupNode` (`Engine/ShapedTree.h`): declared, no
       implementation.
 - [x] Decide where engine state lives: an engine-owned `ShapeState` slot on `SourceRecord`.
 - [x] Declare `ShapeState` (`Engine/ShapeState.h`, stored inline) and add `SourceRecord::Shape`.
+- [x] Replace the tagged `ShapedRef` / `ShapedRefHash` with a non-polymorphic `ShapedNode` base
+      shared by `SourceRecord` and `GroupNode` (counts, position, `ChildRows`; no parent field).
+      The `SourceRecord` constructor must pass `ShapedNodeKind::Record` to the base.
 - [ ] Run filter, sort, group, and hierarchy over `SourceTable::TopLevel()` and
       `SourceRecord::Children` without re-enumerating the underlying collection.
 - [ ] Map shaped output back to `SourceRecord*` in O(1) via `SourceTable::TryFindByRawPointer`.
@@ -3004,8 +3147,11 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       moved `GroupExpansion` to `Engine/`. Earlier items above that name the flattener, the sink,
       `FlatDelta`, `RowStateEdit`, `m_departed`, `m_touchedLists` or the publish overlay record
       the history; P8–P10 supersede them.
-- [ ] Implement `ShapedTree` (`Engine/ShapedTree.cpp`) and `ShapedRef::ShapedChildCount`,
-      `operator==`, `ShapedRefHash`.
+- [x] Move `GroupExpansion` ownership from `ShapingManager` to `ShapedTree` (`m_groupExpansion`
+      by value); `EndReset(groupLevelCount, liveGroups, newGroupSelector)` prunes it (F4) and
+      `ShapedTree::Clear()` clears it. The manager and engine no longer hold or pass it.
+- [ ] Implement `ShapedTree` (`Engine/ShapedTree.cpp`) and `ShapedNode` helpers
+      (`ShapedParent`, `ShapedChildCount`, `ShapedChildAt`).
 
 The coordinator reacts to live-shaping events but does not own subscriptions; those live in
 `SourceTable` (Phase 1).
@@ -3132,8 +3278,8 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   `Shaping/ShapingManager.h` has no `.cpp` (Phase 1.4 / Phase 5).
 - `Source/SourceRecord.h`, `Source/SourceTable.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
-- `Engine/ShapedTree.h` (`ShapedRef`, `GroupNode`, `IShapedRowsListener`, `ShapedTree`),
-  `Engine/ShapeState.h` (`ShapeState`), `Engine/FenwickTree.h` and `Engine/GroupExpansion.h` are
+- `Engine/ShapedTree.h` (`GroupNode`, `IShapedRowsListener`, `ShapedTree`),
+  `Engine/ShapeState.h` (`ShapedNode`, `ShapeState`), `Engine/FenwickTree.h` and `Engine/GroupExpansion.h` are
   declared only (Phases 4–5).
 - `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h` and `Spec/PathEvaluator.h` are declared only
   (Phase 2); `ShapingManager` declares the members that own them (§6).
