@@ -104,9 +104,11 @@ private:
     void OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnAnimatedIconLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void UpdateAnimatedIconState();
-    void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
+    void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool syncWithHost = false);
     bool IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon);
-    winrt::hstring MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool isSelected);
+    static bool IsTemplateDrivenAnimatedIconState(winrt::hstring const& stateString);
+    static winrt::hstring GetPropagatedAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
+    winrt::hstring MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, winrt::hstring const& current, bool isSelected);
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 
