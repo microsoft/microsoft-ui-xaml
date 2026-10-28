@@ -11,16 +11,15 @@
 
     <controls:SamplePresenter
         Header="Virtualization"
-        Description="TableView virtualizes its rows by default: bind 50,000 people and only the rows in the viewport get a TableViewRow, which is recycled as you scroll. Pick a row count in the rail, scroll, and watch Realized rows stay near the number of visible rows while Rows grows. The Template columns switch adds a photo, a chip and a checkbox to every realized row, so you can compare the realized-row cost with plain text. Grouping with TableViewSource.GroupBy keeps the same behaviour, because group headers are realized only when visible."
+        Description="TableView virtualizes its rows by default: bind 50,000 people and only the rows in or near the viewport are realized, each in a TableViewRow; as you scroll, rows that leave that range are recycled and their containers reused. Pick a row count in the rail, scroll, and watch Visible rows stay near the number of rows that fit in the viewport while Rows grows. The Template columns switch adds a photo, a chip and a checkbox to every realized row, so you can compare the per-row cost with plain text. Grouping with TableViewSource.GroupBy keeps the same behaviour, because group headers are realized the same way."
         Snippet="Virtualization"
         StretchExample="True"
-        TryIt="Pick 50,000 rows and drag the scroll thumb quickly; Realized rows stays near the visible count. Click Scroll to row 25,000, then switch Shaping to Grouped and click Collapse all: Realized rows drops to zero while only group headers show."
-        WhatToLookFor="Realized rows counts the TableViewRow containers that are visible in the viewport; Row pool counts every container the table keeps, including spares parked off screen. Neither grows with Rows: 100 or 50,000 rows realize about the same number. After Collapse all, Realized rows drops to zero while the pool stays, ready for the next expand. Renaming a far row costs nothing until you scroll to it.">
+        TryIt="Pick 50,000 rows and drag the scroll thumb quickly; Visible rows stays near the number of rows that fit in the viewport. Click Scroll to row 25,000, then switch Shaping to Grouped and click Collapse all: Visible rows drops to zero while only group headers show."
+        WhatToLookFor="Visible rows counts the TableViewRow containers that intersect the viewport. Row containers counts every TableViewRow in the visual tree: the realized rows, which include a cache buffer beyond the viewport for scrolling, plus recycled containers waiting to be reused. Neither grows with Rows: 100 or 50,000 rows need about the same number. After Collapse all, Visible rows drops to zero while the row containers stay in the tree, ready for reuse on the next expand. Renaming a row that is not realized costs nothing until you scroll to it.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
-            <!-- No virtualization switch: bind a large source and only the viewport's rows are realized. Width
-                 tokens, never Auto: Auto re-measures against whichever rows happen to be realized. -->
+            <!-- Fixed or star widths, never Auto: an Auto column is measured from whichever rows are realized. -->
             <tv:TableView
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="VirtualizationTable"
@@ -28,12 +27,12 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}" CanSort="False"/>
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
-                <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" CanSort="False"/>
-                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Role}" CanSort="False"/>
+                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="200" Binding="{Binding FullName}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}" CanSort="False"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -67,7 +66,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Virtualization"
-                    Description="Grouping the large set adds header rows, and Realized rows should still follow the viewport rather than the group count. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping the large set adds header rows, and Visible rows should still follow the viewport rather than the group count. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
@@ -91,8 +90,8 @@
                             AutomationProperties.AutomationId="VirtualizationRenameFarRowButton"
                             Content="Rename a far row and scroll to it"
                             Click="OnRenameFarRowClick"
-                            ToolTipService.ToolTip="Changes the Role of a row that is not realized, then scrolls to it: the recycled row shows the new value."
-                            AutomationProperties.HelpText="Changes the Role of a row that is not realized, then scrolls to it: the recycled row shows the new value."
+                            ToolTipService.ToolTip="Changes the Role of a row that is not realized, then scrolls to it: the row realized for it shows the new value."
+                            AutomationProperties.HelpText="Changes the Role of a row that is not realized, then scrolls to it: the row realized for it shows the new value."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button
@@ -117,10 +116,10 @@
                 </controls:RailSection>
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Virtualization">
-                    <TextBlock x:Name="RealizedRowsText" controls:StatusPanel.Label="Realized rows" Text="0"/>
-                    <TextBlock x:Name="RealizedShareText" controls:StatusPanel.Label="Realized share" Text="—"/>
-                    <TextBlock x:Name="RowPoolText" controls:StatusPanel.Label="Row pool" Text="0"/>
-                    <TextBlock x:Name="PeakPoolText" controls:StatusPanel.Label="Peak pool" Text="0"/>
+                    <TextBlock x:Name="RealizedRowsText" controls:StatusPanel.Label="Visible rows" Text="0"/>
+                    <TextBlock x:Name="RealizedShareText" controls:StatusPanel.Label="Visible share" Text="—"/>
+                    <TextBlock x:Name="RowPoolText" controls:StatusPanel.Label="Row containers" Text="0"/>
+                    <TextBlock x:Name="PeakPoolText" controls:StatusPanel.Label="Peak row containers" Text="0"/>
                     <TextBlock x:Name="RowHeightText" controls:StatusPanel.Label="Row height" Text="—"/>
                     <TextBlock x:Name="ColumnsText" controls:StatusPanel.Label="Columns" Text="0"/>
                 </controls:StatusPanel>

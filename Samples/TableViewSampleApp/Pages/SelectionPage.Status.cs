@@ -33,8 +33,10 @@ public sealed partial class SelectionPage
         SelectLastButton.IsEnabled = single;
     }
 
+    // <snippet Selection>
     private static string DescribeAll(IList<object>? items) =>
         items is null || items.Count == 0 ? "none" : string.Join(", ", items.Select(Describe));
 
     private static string Describe(object? item) => item is Person person ? person.FullName : "(none)";
+    // </snippet>
 }

@@ -46,6 +46,12 @@ public sealed class LeagueTeam : INotifyPropertyChanged
         set => Set(ref _team, value);
     }
 
+    /// <summary>Stable row key: Team is editable, so the parent relation keys on this instead.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Id of the senior club a reserve (B) or academy (U21) side belongs to; null for a senior club.</summary>
+    public int? ParentId { get; set; }
+
     /// <summary>Football association the club belongs to (England, Spain, …).</summary>
     public string Country
     {

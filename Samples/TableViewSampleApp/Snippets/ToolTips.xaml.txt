@@ -9,31 +9,26 @@
     </Grid>
 </DataTemplate>
 
-<!-- … -->
-
 <tv:TableView
     x:Name="PeopleTable"
-    AutomationProperties.AutomationId="ToolTipsTable"
     AutomationProperties.Name="People with tooltips"
     ItemsSource="{x:Bind Source}"
-    SelectionMode="Single"
-    VerticalAlignment="Stretch"
-    MinHeight="320">
+    SelectionMode="Single">
     <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
-    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
                                  CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
                              Binding="{Binding FullName}"
                              HeaderToolTip="Full name, as entered"/>
-    <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+    <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140"
                              Binding="{Binding Bio}" CanSort="False"/>
-    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
                                  HeaderToolTip="Team the person reports into"/>
     <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
-    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
                              Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
                              HeaderToolTip="Salary"/>
-    <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
+    <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="74"
                                  CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
 </tv:TableView>
