@@ -19,6 +19,7 @@ internal static class SessionSchema
             QpcFrequency INTEGER,      -- for a recorded trace, derived from the events
             StartQpc INTEGER,          -- time zero of the recording; for a recorded trace, its first event
             StartedUtc TEXT NOT NULL,
+            StartedQpc INTEGER,        -- QPC read with StartedUtc, to place UTC times such as ProcessCreatedUtc on the QPC clock (live)
             Source TEXT NOT NULL,      -- Live or Trace
             EtlPath TEXT,
             Coverage TEXT NOT NULL,    -- ProcessStart, Connection or Trace

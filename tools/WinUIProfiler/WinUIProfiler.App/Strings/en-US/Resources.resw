@@ -169,7 +169,7 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected; there is no object or frame view yet.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected; the Frames tab reads it.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
@@ -179,4 +179,48 @@
   <data name="SelectTarget" xml:space="preserve"><value>Select</value></data>
   <data name="LoadingTargets" xml:space="preserve"><value>Loading targets...</value></data>
   <data name="NoTargets" xml:space="preserve"><value>No matching targets.</value></data>
+  <data name="TargetSettings.AutomationProperties.Name" xml:space="preserve"><value>Target and launch settings</value></data>
+  <data name="TargetSettingsHeader" xml:space="preserve"><value>Target and launch settings</value></data>
+  <data name="TargetSummaryFormat" xml:space="preserve"><value>Target: {0} {1}</value></data>
+  <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
+  <data name="FramesTab.Header" xml:space="preserve"><value>Frames</value></data>
+  <data name="OpenSessionFile.Content" xml:space="preserve"><value>Open session file...</value></data>
+  <data name="FramesReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
+  <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, or open a saved session file.</value></data>
+  <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} frames</value></data>
+  <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} frames | older events were trimmed</value></data>
+  <data name="LaunchItemFormat" xml:space="preserve"><value>frame {0:N0} at {1:N1} ms</value></data>
+  <data name="LaunchFromProcessFormat" xml:space="preserve"><value>Drawn frames after the process started: {0}</value></data>
+  <data name="LaunchFromRecordingFormat" xml:space="preserve"><value>Drawn frames after the recording started: {0}</value></data>
+  <data name="FramesHeaderNumber.Text" xml:space="preserve"><value>Frame</value></data>
+  <data name="FramesHeaderDrawnAt.Text" xml:space="preserve"><value>Drawn at (ms)</value></data>
+  <data name="FramesHeaderDraw.Text" xml:space="preserve"><value>Draw (ms)</value></data>
+  <data name="FramesHeaderXaml.Text" xml:space="preserve"><value>XAML</value></data>
+  <data name="FramesHeaderComposition.Text" xml:space="preserve"><value>Composition</value></data>
+  <data name="FramesHeaderOther.Text" xml:space="preserve"><value>Other</value></data>
+  <data name="FrameList.AutomationProperties.Name" xml:space="preserve"><value>Frames</value></data>
+  <data name="FramesHeaderNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame number on the UI thread. * marks the latest frame, which may still be in progress.</value></data>
+  <data name="FramesHeaderDrawnAt.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the frame was drawn, from the start of the recording.</value></data>
+  <data name="FramesHeaderDraw.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How long the drawing tick took. A warning icon marks more than 16.7 ms.</value></data>
+  <data name="FramesHeaderXaml.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about XAML objects: the tree, templates, visual states and loading.</value></data>
+  <data name="FramesHeaderComposition.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about composition nodes, visuals and surfaces.</value></data>
+  <data name="FramesHeaderOther.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Everything else: layout, rendering and scheduling.</value></data>
+  <data name="SelectFramePrompt" xml:space="preserve"><value>Select a frame to see its events.</value></data>
+  <data name="SelectEventPrompt" xml:space="preserve"><value>Select an event to see its fields.</value></data>
+  <data name="FrameTitleFormat" xml:space="preserve"><value>Frame {0:N0} | thread {1} | {2} tick(s), the first at {3:N1} ms | drawn at {4:N1} ms | {5:N1} ms in ticks</value></data>
+  <data name="Buckets.AutomationProperties.Name" xml:space="preserve"><value>Event group</value></data>
+  <data name="BucketAll.Text" xml:space="preserve"><value>All</value></data>
+  <data name="BucketXaml.Text" xml:space="preserve"><value>XAML</value></data>
+  <data name="BucketComposition.Text" xml:space="preserve"><value>Composition</value></data>
+  <data name="BucketOther.Text" xml:space="preserve"><value>Other</value></data>
+  <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>Filter by name, text, or value (42 or 0x1A2B)</value></data>
+  <data name="FilterBox.AutomationProperties.Name" xml:space="preserve"><value>Filter the frame's events</value></data>
+  <data name="EventList.AutomationProperties.Name" xml:space="preserve"><value>Events of the selected frame</value></data>
+  <data name="PreviousEvents.Content" xml:space="preserve"><value>Previous</value></data>
+  <data name="NextEvents.Content" xml:space="preserve"><value>Next</value></data>
+  <data name="PositionNoEvents" xml:space="preserve"><value>No events</value></data>
+  <data name="PositionNoMatches" xml:space="preserve"><value>No matching events</value></data>
+  <data name="PositionFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0}</value></data>
+  <data name="PositionFilteredFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0} matching</value></data>
+  <data name="EventDetails.AutomationProperties.Name" xml:space="preserve"><value>Fields of the selected event</value></data>
 </root>
