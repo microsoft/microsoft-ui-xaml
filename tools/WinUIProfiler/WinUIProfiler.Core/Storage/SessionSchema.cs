@@ -35,7 +35,8 @@ internal static class SessionSchema
             Name TEXT NOT NULL,
             Opcode INTEGER NOT NULL,
             FieldNames TEXT NOT NULL,  -- comma-separated names; the Nth names the Nth value in Events.Payload
-            FieldTypes TEXT NOT NULL); -- comma-separated .NET type names (FieldType), one per value
+            FieldTypes TEXT NOT NULL,  -- comma-separated .NET type names (FieldType), one per value
+            TraceLogging INTEGER NOT NULL); -- 1 for a TraceLogging event, 0 for a manifest event
         CREATE TABLE Events (
             Seq INTEGER PRIMARY KEY,   -- arrival order: 1, 2, 3...
             Qpc INTEGER NOT NULL,

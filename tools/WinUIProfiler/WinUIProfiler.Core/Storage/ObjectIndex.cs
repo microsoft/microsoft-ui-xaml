@@ -9,8 +9,11 @@ namespace WinUIProfiler.Engine.Storage;
 // The UI elements the events mention, and for each element the events that mention it. Runs on the session writer's
 // thread inside its transactions, so a mention is saved and trimmed together with its event.
 //
-// There are no create or destroy events. An address is known to be a UI element once it appears in a field that only
-// ever holds a CUIElement* (tree, child, popup, layout, template, visual state, render and composition-link events).
+// Only TraceLogging events on Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are read, and none of them
+// creates or destroys an object. Manifest events use the same field names for other objects too: BeginStoryboard's
+// ElementId is the storyboard, and the ParentId of Microsoft-Windows-XAML-Diagnostics' PeerCreated is a framework peer.
+// An address is known to be a UI element once it appears in a field that only ever holds a CUIElement* (tree, child,
+// popup, layout, template, visual state, render and composition-link events).
 // DependencyObject_Enter, PeerAssociated and ContentChanged's content also carry other DependencyObjects, so their
 // mentions of an address are held until the address is known to be a UI element. DependencyObject_Enter reports the
 // type each time an object enters the tree: a different type at a known address means the memory was reused by a new
@@ -198,11 +201,14 @@ internal sealed class ObjectIndex : IDisposable
 
         var names = profilerEvent.Fields.Select(field => field.Name).ToArray();
         var fields = new List<(int, Role)>();
-        for (var i = 0; i < names.Length; i++)
+        if (profilerEvent is { TraceLogging: true, Provider: XamlProvider.Xaml or XamlProvider.XamlProfiler })
         {
-            if (RoleOf(profilerEvent.Name, names[i]) is { } role)
+            for (var i = 0; i < names.Length; i++)
             {
-                fields.Add((i, role));
+                if (RoleOf(profilerEvent.Name, names[i]) is { } role)
+                {
+                    fields.Add((i, role));
+                }
             }
         }
 

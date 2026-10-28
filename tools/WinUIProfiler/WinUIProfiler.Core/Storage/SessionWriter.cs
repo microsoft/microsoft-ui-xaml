@@ -54,9 +54,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly SqliteCommand insertType;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
-    // Event types written so far, by provider, name and opcode. Usually one layout each; a field that is sometimes
-    // null gives a second.
-    private readonly Dictionary<(XamlProvider, string, int), List<EventLayout>> types = [];
+    // Event types written so far, by provider, kind (TraceLogging or manifest), name and opcode. Usually one layout
+    // each; a field that is sometimes null gives a second.
+    private readonly Dictionary<(XamlProvider, bool, string, int), List<EventLayout>> types = [];
     private long typeCount;
     private readonly ArrayBufferWriter<byte> payload = new();
     private readonly Utf8JsonWriter json;
@@ -88,10 +88,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer), ("$thread", SqliteType.Integer), ("$type", SqliteType.Integer),
             ("$payload", SqliteType.Text));
         insertType = Sql.Prepare(connection, """
-            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes)
-            VALUES ($id, $provider, $name, $opcode, $names, $types)
+            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging)
+            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging)
             """, ("$id", SqliteType.Integer), ("$provider", SqliteType.Text), ("$name", SqliteType.Text), ("$opcode", SqliteType.Integer),
-            ("$names", SqliteType.Text), ("$types", SqliteType.Text));
+            ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer));
 
         // The payload is never embedded in HTML, so only the escaping JSON requires is applied and type names stay readable.
         json = new(payload, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
@@ -283,7 +283,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private long TypeId(ProfilerEvent profilerEvent)
     {
         var fields = profilerEvent.Fields;
-        var key = (profilerEvent.Provider, profilerEvent.Name, profilerEvent.Opcode);
+        var key = (profilerEvent.Provider, profilerEvent.TraceLogging, profilerEvent.Name, profilerEvent.Opcode);
         if (!types.TryGetValue(key, out var layouts))
         {
             types[key] = layouts = [];
@@ -305,6 +305,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         insertType.Parameters["$opcode"].Value = profilerEvent.Opcode;
         insertType.Parameters["$names"].Value = string.Join(',', layout.Names);
         insertType.Parameters["$types"].Value = string.Join(',', layout.Types);
+        insertType.Parameters["$tracelogging"].Value = profilerEvent.TraceLogging;
         insertType.ExecuteNonQuery();
         layouts.Add(layout);
         typeCount = layout.Id;

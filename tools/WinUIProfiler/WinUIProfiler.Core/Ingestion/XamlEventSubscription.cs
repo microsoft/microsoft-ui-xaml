@@ -14,6 +14,9 @@ namespace WinUIProfiler.Engine.Ingestion;
 // here.
 internal static class XamlEventSubscription
 {
+    // WINEVENT_CHANNEL_TRACELOGGING (winmeta.h). Manifest events on the same providers use other channels.
+    private const int TraceLoggingChannel = 11;
+
     // Microsoft-Windows-DxgKrnl VidMmProcessBudgetChange and VidMmProcessUsageChange: a process's GPU memory budget
     // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
     private const int VidMmProcessBudgetChange = 366;
@@ -82,8 +85,8 @@ internal static class XamlEventSubscription
 #pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
         var timestampQpc = data.TimeStampQPC;
 #pragma warning restore CS0618
-        return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider, data.EventName,
-            (int)data.Opcode, CopyFields(data, provider));
+        return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider,
+            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider));
     }
 
     private static EventField[] CopyFields(TraceEvent data, XamlProvider provider)

@@ -165,7 +165,9 @@ they are decoded with system XAML's manifest. One event differs: WinUI's
 the frame drew, so `Ingestion\XamlEventSubscription.cs` decodes it. An event
 the registered manifest does not describe, such as one WinUI added that the
 installed Windows does not have, is not delivered. The GPU memory events are
-decoded with the kernel's manifest.
+decoded with the kernel's manifest. `ProfilerEvent.TraceLogging` tells
+TraceLogging events from manifest events: the same field name can hold
+different objects in the two.
 
 While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML
 source position of the objects it parses, which `ElementCreatedWithSource`
@@ -241,7 +243,7 @@ so events are still only dropped at the queue.
 | Table | Contents |
 | --- | --- |
 | `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler |
-| `EventTypes` | One row per provider, event name, opcode and field layout: the field names and their .NET types, such as `Int64,Int32,String,Boolean` |
+| `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element the events mention: address, type and `x:Name` (see below) |
 | `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the element's address. An event can mention several elements, such as `ChildAdded`'s parent and child |
@@ -272,9 +274,13 @@ then `Seq`.
 
 While saving events, the writer also indexes the UI elements they mention
 (`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
-mentions with their events. There are no create or destroy events, so an
-element's lifetime in the file is from the first to the last event that
-mentions it.
+mentions with their events. Only the TraceLogging events of
+Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, and
+none of them creates or destroys an object, so an element's lifetime in the
+file is from the first to the last of them that mentions it. Manifest events
+use the same field names for other objects too: `BeginStoryboard`'s
+`ElementId` is the storyboard, and the `ParentId` of
+Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
 
 - An address is a UI element once it appears in a field that only ever holds a
   `CUIElement*` (listed in `ObjectIndex.RoleOf`).
@@ -318,6 +324,9 @@ The writer also records which frame each UI-thread event belongs to
 - Buckets: `Xaml` for the tree, `DependencyObject_Enter`, templates, visual
   states and loading; `Composition` for composition node, WUC visual and
   surface events; `Other` for everything else (layout, rendering, scheduling).
+  They go by the TraceLogging events' names, so manifest events about the same
+  work, such as `ApplyTemplate/Start` or Microsoft-Windows-XAML-Diagnostics'
+  `ElementAdded`, are `Other`.
 
 ### Recorded, from a trace file
 
