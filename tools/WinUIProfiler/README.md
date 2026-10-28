@@ -243,6 +243,10 @@ so events are still only dropped at the queue.
 | `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler |
 | `EventTypes` | One row per provider, event name, opcode and field layout: the field names and their .NET types, such as `Int64,Int32,String,Boolean` |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
+| `Objects` | One row per UI element the events mention: address, type and `x:Name` (see below) |
+| `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the element's address. An event can mention several elements, such as `ChildAdded`'s parent and child |
+| `Frames` | One row per frame on a UI thread: thread, frame number, ticks, and their timing (see below) |
+| `FrameEvents` | One row per UI-thread event: `Seq`, its `FrameId`, and its bucket: `Xaml`, `Composition` or `Other` |
 
 JSON has no Infinity or NaN, so those values are stored as the strings
 `"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
@@ -263,6 +267,57 @@ trimming it starts later). In the sessions measured, arrival order matched
 timestamp order, but ETW does not guarantee that across processors, and two
 events can have the same timestamp: to order events by time, sort by `Qpc`,
 then `Seq`.
+
+### UI elements
+
+While saving events, the writer also indexes the UI elements they mention
+(`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
+mentions with their events. There are no create or destroy events, so an
+element's lifetime in the file is from the first to the last event that
+mentions it.
+
+- An address is a UI element once it appears in a field that only ever holds a
+  `CUIElement*` (listed in `ObjectIndex.RoleOf`).
+- `DependencyObject_Enter`, `PeerAssociated` and `ContentChanged`'s content
+  also carry other objects, so their mentions of an address are kept back until
+  the address is known to be a UI element, then saved with it. The type and
+  `x:Name` come from `DependencyObject_Enter`.
+- The runtime reuses freed addresses. When `DependencyObject_Enter` reports a
+  different type at a known address, a new element starts there. The new
+  object's peer, parent and layout events can come first, so the old element's
+  mentions since it (or its last child) left the tree move to the new one.
+  Reuse by an object of the same type can't be told apart.
+- The type is the nearest built-in type: a `TabViewItem` shows as
+  `ListViewItem`, and an app's own control as its built-in base class.
+- Other objects (brushes, transforms, composition nodes, visuals, surfaces)
+  are not indexed; they can still be found in `Events`.
+
+### Frames
+
+The writer also records which frame each UI-thread event belongs to
+(`Storage\FrameIndex.cs`), in the same transaction.
+
+- `CoreServices_Frame` marks the start and end of every UI-thread tick with the
+  core's frame counter, which only advances when a tick submits composition
+  commands. A tick with nothing to submit keeps the number, so a frame is
+  usually one tick, sometimes a few short ticks that drew nothing and then the
+  one that drew. Frames are per UI thread.
+- Events that carry `FrameNumber` (`DependencyObject_Enter`, `ApplyTemplate`,
+  `GoToStateOptimized`, ...) belong to that frame. Other events between a
+  tick's start and stop belong to that tick's frame; events between ticks
+  belong to the next frame, the one that renders them. So do a thread's events
+  before its first frame number, such as the rest of a tick in progress when
+  the recording started.
+- Events on threads that never report a frame number (the render and image
+  decode threads) are not attributed, nor are a UI thread's last events if no
+  frame number follows them.
+- `StartQpc` to `EndQpc` spans all of a frame's ticks, including idle time
+  between them; `LastTickStartQpc` to `EndQpc` is the tick that drew;
+  `TickTimeQpc` is the time spent in its ticks. A thread's latest frame may not
+  have drawn yet.
+- Buckets: `Xaml` for the tree, `DependencyObject_Enter`, templates, visual
+  states and loading; `Composition` for composition node, WUC visual and
+  surface events; `Other` for everything else (layout, rendering, scheduling).
 
 ### Recorded, from a trace file
 
@@ -293,6 +348,10 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
+& $cli objects session.sqlite --type Button    # UI elements, with first/last seen and event counts
+& $cli timeline session.sqlite --object <id>   # the events that mention one element (or --address 0x...)
+& $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
+& $cli frames session.sqlite --frame <id> --bucket Xaml   # one frame's events
 ```
 
 ## Limitations

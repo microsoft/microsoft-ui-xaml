@@ -30,8 +30,9 @@ public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? 
 // from that many seconds after the recording started.
 public sealed record RecordingStatus(string Path, long StoredEvents, long FileBytes, long LimitBytes, double? CompleteFromSeconds);
 
-// Writes a session's events to its SQLite file from a writer thread, one transaction per batch. Process waits while
-// the writer is behind, so the ETW reader's queue stays the only place events are dropped.
+// Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the UI element
+// index (ObjectIndex) and the frame index (FrameIndex) in the same transactions. Process waits while the writer is
+// behind, so the ETW reader's queue stays the only place events are dropped.
 public sealed class SessionWriter : IEventProcessor, IDisposable
 {
     public const long DefaultLimitBytes = 500L * 1024 * 1024;
@@ -43,13 +44,16 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private const double TrimAt = 0.9;
     private const int TrimFraction = 20;
 
-    // Space an event row takes besides its payload: its other columns and B-tree cell overhead.
-    private const int RowOverheadBytes = 40;
+    // Space an event takes besides its payload: its other columns, B-tree cell overhead, and its rows in the frame and
+    // UI element indexes.
+    private const int RowOverheadBytes = 100;
 
     private readonly BlockingCollection<(long Sequence, ProfilerEvent Event)> queue = new(16_384);
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertEvent;
     private readonly SqliteCommand insertType;
+    private readonly ObjectIndex objects;
+    private readonly FrameIndex frames;
     // Event types written so far, by provider, name and opcode. Usually one layout each; a field that is sometimes
     // null gives a second.
     private readonly Dictionary<(XamlProvider, string, int), List<EventLayout>> types = [];
@@ -79,25 +83,20 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         startQpc = start.StartQpc ?? 0;
         pageSize = Sql.Scalar(connection, "PRAGMA page_size");
         fileBytes = Sql.Scalar(connection, "PRAGMA page_count") * pageSize;
-        insertEvent = connection.CreateCommand();
-        insertEvent.CommandText = "INSERT INTO Events (Seq, Qpc, ThreadId, TypeId, Payload) VALUES ($seq, $qpc, $thread, $type, $payload)";
-        foreach (var name in new[] { "$seq", "$qpc", "$thread", "$type", "$payload" })
-        {
-            insertEvent.Parameters.Add(name, name == "$payload" ? SqliteType.Text : SqliteType.Integer);
-        }
-
-        insertType = connection.CreateCommand();
-        insertType.CommandText = """
+        insertEvent = Sql.Prepare(connection,
+            "INSERT INTO Events (Seq, Qpc, ThreadId, TypeId, Payload) VALUES ($seq, $qpc, $thread, $type, $payload)",
+            ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer), ("$thread", SqliteType.Integer), ("$type", SqliteType.Integer),
+            ("$payload", SqliteType.Text));
+        insertType = Sql.Prepare(connection, """
             INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes)
             VALUES ($id, $provider, $name, $opcode, $names, $types)
-            """;
-        foreach (var name in new[] { "$id", "$provider", "$name", "$opcode", "$names", "$types" })
-        {
-            insertType.Parameters.Add(name, name is "$id" or "$opcode" ? SqliteType.Integer : SqliteType.Text);
-        }
+            """, ("$id", SqliteType.Integer), ("$provider", SqliteType.Text), ("$name", SqliteType.Text), ("$opcode", SqliteType.Integer),
+            ("$names", SqliteType.Text), ("$types", SqliteType.Text));
 
         // The payload is never embedded in HTML, so only the escaping JSON requires is applied and type names stay readable.
         json = new(payload, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+        objects = new(connection);
+        frames = new(connection);
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
     }
@@ -140,7 +139,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             DataSource = path,
             Mode = SqliteOpenMode.ReadWriteCreate,
-            Pooling = false
+            Pooling = false,
+            // The writer keeps every reference valid; the bundled SQLite would otherwise check each one on insert and delete.
+            ForeignKeys = false
         }.ToString());
         try
         {
@@ -255,12 +256,15 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             for (var i = 0; i < batch.Count; i++)
             {
                 var (sequence, profilerEvent) = batch[i];
+                var typeId = TypeId(profilerEvent);
                 insertEvent.Parameters["$seq"].Value = sequence;
                 insertEvent.Parameters["$qpc"].Value = profilerEvent.TimestampQpc;
                 insertEvent.Parameters["$thread"].Value = profilerEvent.ThreadId;
-                insertEvent.Parameters["$type"].Value = TypeId(profilerEvent);
+                insertEvent.Parameters["$type"].Value = typeId;
                 insertEvent.Parameters["$payload"].Value = payloads[i];
                 insertEvent.ExecuteNonQuery();
+                objects.Add(sequence, typeId, profilerEvent, transaction);
+                frames.Add(sequence, typeId, profilerEvent, transaction);
             }
 
             UpdateTimeBase(batch[0].Event, batch[^1].Event, transaction);
@@ -375,6 +379,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             long qpc;
             using (var transaction = connection.BeginTransaction())
             {
+                objects.Trim(cutoff, transaction);
+                frames.Trim(cutoff, transaction);
                 Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
                 qpc = Sql.Scalar(connection, "SELECT Qpc FROM Events WHERE Seq = $cutoff", transaction, ("$cutoff", cutoff));
                 Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
@@ -419,6 +425,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         finally
         {
             json.Dispose();
+            objects.Dispose();
+            frames.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();

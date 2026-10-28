@@ -18,6 +18,9 @@ internal static class CliApplication
           WinUIProfiler.Cli summary <trace.etl | session.sqlite> [--pid <pid>]
           WinUIProfiler.Cli dump <trace.etl | session.sqlite> [--pid <pid>] [--name <text>] [--max <count>]
           WinUIProfiler.Cli record <trace.etl> --pid <pid> --out <session.sqlite> [--limit-mb <size>]
+          WinUIProfiler.Cli objects <session.sqlite> [--type <text>] [--name <text>]
+          WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
+          WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other]]
 
           processes  Counts the events of each process with XAML events, to find the target PID.
                      A session file shows its process.
@@ -26,6 +29,10 @@ internal static class CliApplication
                      name contains <text>; --max limits the output (default 1000, 0 = all).
           record     Writes one process's events from a trace to a new session file, as the
                      app does while connected. --limit-mb is the size limit (default 500).
+          objects    Lists the UI elements in a session file. --type and --name filter them.
+          timeline   Prints the events that mention one UI element, marking the field that holds it.
+          frames     Lists the frames per UI thread. --frame prints one frame's events, optionally
+                     of one bucket.
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
           and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls) and the kernel's
@@ -34,7 +41,7 @@ internal static class CliApplication
         """;
 
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
-        string? OutputPath, long LimitBytes)
+        string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -62,6 +69,9 @@ internal static class CliApplication
                 "processes" => Processes(options, output, cancellationToken),
                 "summary" => Summary(options, output, cancellationToken),
                 "record" => Record(options, output, error, cancellationToken),
+                "objects" => Objects(options, output),
+                "timeline" => Timeline(options, output, cancellationToken),
+                "frames" => Frames(options, output, cancellationToken),
                 _ => Dump(options, output, cancellationToken)
             };
         }
@@ -79,7 +89,7 @@ internal static class CliApplication
 
     private static Options Parse(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record"))
+        if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "objects" or "timeline" or "frames"))
         {
             throw new ArgumentException("Expected a command and a trace or session file path.");
         }
@@ -87,6 +97,11 @@ internal static class CliApplication
         int? processId = null;
         string? nameFilter = null;
         string? outputPath = null;
+        string? typeFilter = null;
+        long? objectId = null;
+        long? address = null;
+        long? frameId = null;
+        string? bucket = null;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
         for (var i = 2; i < args.Length; i++)
@@ -98,7 +113,7 @@ internal static class CliApplication
                     processId = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var pid) && pid > 0
                         ? pid : throw new ArgumentException("--pid must be a positive process ID.");
                     break;
-                case "--name" when args[0] == "dump":
+                case "--name" when args[0] is "dump" or "objects":
                     nameFilter = value;
                     break;
                 case "--max" when args[0] == "dump":
@@ -112,6 +127,24 @@ internal static class CliApplication
                     limitBytes = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var megabytes) && megabytes > 0
                         ? megabytes * 1024L * 1024 : throw new ArgumentException("--limit-mb must be a positive size in MB.");
                     break;
+                case "--type" when args[0] == "objects":
+                    typeFilter = value;
+                    break;
+                case "--object" when args[0] == "timeline":
+                    objectId = long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0
+                        ? id : throw new ArgumentException("--object must be an element ID from 'objects'.");
+                    break;
+                case "--address" when args[0] == "timeline":
+                    address = ParseAddress(value) ?? throw new ArgumentException("--address must be a hex (0x...) or decimal address.");
+                    break;
+                case "--frame" when args[0] == "frames":
+                    frameId = long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var frame) && frame > 0
+                        ? frame : throw new ArgumentException("--frame must be a frame ID from 'frames'.");
+                    break;
+                case "--bucket" when args[0] == "frames":
+                    bucket = Array.Find(["Xaml", "Composition", "Other"], name => name.Equals(value, StringComparison.OrdinalIgnoreCase))
+                        ?? throw new ArgumentException("--bucket must be Xaml, Composition or Other.");
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option {args[i]}.");
             }
@@ -119,7 +152,23 @@ internal static class CliApplication
             i++;
         }
 
-        var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes);
+        var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
+            typeFilter, objectId, address, frameId, bucket);
+        if (options.Command is "objects" or "timeline" or "frames" && !options.IsSessionFile)
+        {
+            throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
+        }
+
+        if (options.Command == "timeline" && (objectId is null) == (address is null))
+        {
+            throw new ArgumentException("timeline requires either --object <id> or --address <address>.");
+        }
+
+        if (bucket is not null && frameId is null)
+        {
+            throw new ArgumentException("--bucket needs --frame <id>.");
+        }
+
         if (options.Command is "summary" or "dump" or "record" && !options.IsSessionFile && processId is null)
         {
             throw new ArgumentException($"{args[0]} on a trace requires --pid.");
@@ -238,9 +287,7 @@ internal static class CliApplication
                     return;
                 }
 
-                var fields = string.Join(" ", profilerEvent.Fields.Select(field => $"{field.Name}={Format(field.Name, field.Value)}"));
-                output.WriteLine($"{profilerEvent.RelativeMilliseconds,12:F3} {profilerEvent.ThreadId,6} {ShortName(profilerEvent.Provider),-9} " +
-                    $"{profilerEvent.Name} {fields}");
+                output.WriteLine(FormatEvent(profilerEvent, null));
                 if (options.Max > 0 && ++printed >= options.Max)
                 {
                     limit.Cancel();
@@ -283,9 +330,81 @@ internal static class CliApplication
         return 0;
     }
 
+    private static int Objects(Options options, TextWriter output)
+    {
+        var all = SessionFile.ReadObjects(options.InputPath);
+        var selected = all.Where(element =>
+            (options.TypeFilter is not { } type || element.Type?.Contains(type, StringComparison.OrdinalIgnoreCase) == true) &&
+            (options.NameFilter is not { } name || element.Name?.Contains(name, StringComparison.OrdinalIgnoreCase) == true)).ToList();
+        output.WriteLine($"{"ID",7}  {"Type",-32} {"Name",-24} {"Address",-14} {"First (ms)",12} {"Last (ms)",12} {"Events",7}");
+        foreach (var element in selected)
+        {
+            output.WriteLine($"{element.ObjectId,7}  {ShortType(element.Type),-32} {element.Name ?? "",-24} 0x{element.Address,-12:X} " +
+                $"{element.FirstMilliseconds,12:F3} {element.LastMilliseconds,12:F3} {element.Events,7}");
+        }
+
+        output.WriteLine($"{selected.Count} of {all.Count} UI elements.");
+        return 0;
+    }
+
+    private static int Timeline(Options options, TextWriter output, CancellationToken cancellationToken)
+    {
+        var selected = SessionFile.ReadObjects(options.InputPath, options.ObjectId, options.Address);
+        if (selected.Count == 0)
+        {
+            output.WriteLine(options.ObjectId is { } id ? $"No UI element with ID {id}." : $"No UI element at 0x{options.Address:X}.");
+            return 0;
+        }
+
+        foreach (var element in selected)
+        {
+            output.WriteLine($"UI element {element.ObjectId}: {element.Type ?? "type not seen"}" +
+                (element.Name is null ? "" : $" \"{element.Name}\"") + $" at 0x{element.Address:X}, {element.Events} events");
+            SessionFile.ReadTimeline(options.InputPath, element.ObjectId,
+                (profilerEvent, field) => output.WriteLine(FormatEvent(profilerEvent, field)), cancellationToken);
+            output.WriteLine();
+        }
+
+        return 0;
+    }
+
+    private static int Frames(Options options, TextWriter output, CancellationToken cancellationToken)
+    {
+        var frames = SessionFile.ReadFrames(options.InputPath, options.FrameId);
+        if (options.FrameId is not { } frameId)
+        {
+            output.WriteLine($"{"ID",7} {"Thread",7} {"Frame",7} {"Ticks",6} {"Start (ms)",12} {"Span (ms)",10} {"Draw (ms)",10} " +
+                $"{"Tick time",10} {"Events",7} {"Xaml",6} {"Comp",6} {"Other",6}");
+            foreach (var frame in frames)
+            {
+                output.WriteLine($"{frame.FrameId,7} {frame.ThreadId,7} {frame.FrameNumber,7} {frame.Ticks,6} " +
+                    $"{Milliseconds(frame.StartMilliseconds),12} {Milliseconds(frame.EndMilliseconds - frame.StartMilliseconds),10} " +
+                    $"{Milliseconds(frame.EndMilliseconds - frame.LastTickStartMilliseconds),10} {Milliseconds(frame.TickMilliseconds),10} " +
+                    $"{frame.Events,7} {frame.Xaml,6} {frame.Composition,6} {frame.Other,6}{(frame.Drawn ? "" : "  (latest; may not have drawn)")}");
+            }
+
+            output.WriteLine($"{frames.Count} frames on {frames.Select(frame => frame.ThreadId).Distinct().Count()} UI thread(s).");
+            return 0;
+        }
+
+        if (frames.Count == 0)
+        {
+            output.WriteLine($"No frame with ID {frameId}.");
+            return 0;
+        }
+
+        var selected = frames[0];
+        output.WriteLine($"Frame {selected.FrameNumber} on thread {selected.ThreadId}: {selected.Ticks} tick(s), {selected.Events} events " +
+            $"({selected.Xaml} Xaml, {selected.Composition} Composition, {selected.Other} Other)");
+        SessionFile.ReadFrameEvents(options.InputPath, frameId, options.Bucket,
+            (profilerEvent, bucket) => output.WriteLine(FormatEvent(profilerEvent, bucket)), cancellationToken);
+        return 0;
+    }
+
     private static void WriteSessionInfo(SessionFileInfo info, TextWriter output)
     {
-        output.WriteLine($"Stored: {info.StoredEvents} events; source {info.Source}, coverage {info.Coverage}; " +
+        output.WriteLine($"Stored: {info.StoredEvents} events, {info.UIElements} UI elements, {info.Frames} frames; " +
+            $"source {info.Source}, coverage {info.Coverage}; " +
             $"ended: {info.EndReason ?? "not recorded (still recording, or stopped unexpectedly)"}.");
         if (info.CompleteFromSeq is { } completeFrom)
         {
@@ -302,6 +421,24 @@ internal static class CliApplication
         XamlProvider.MicrosoftUIXamlControls => "MUXC",
         _ => "DxgKrnl"
     };
+
+    private static string ShortType(string? type) => type is null ? "?" : type[(type.LastIndexOf('.') + 1)..];
+
+    private static string Milliseconds(double? value) => value is { } milliseconds
+        ? milliseconds.ToString("F3", CultureInfo.InvariantCulture) : "-";
+
+    // tag is shown in brackets after the event name: the field that holds a timeline's element, or the event's bucket.
+    private static string FormatEvent(ProfilerEvent profilerEvent, string? tag)
+    {
+        var fields = string.Join(" ", profilerEvent.Fields.Select(item => $"{item.Name}={Format(item.Name, item.Value)}"));
+        return $"{profilerEvent.RelativeMilliseconds,12:F3} {profilerEvent.ThreadId,6} {ShortName(profilerEvent.Provider),-9} " +
+            $"{profilerEvent.Name}{(tag is null ? "" : $" [{tag}]")} {fields}";
+    }
+
+    private static long? ParseAddress(string text) =>
+        text.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+            ? long.TryParse(text.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex) ? hex : null
+            : long.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number : null;
 
     // Element IDs, pointers and handles arrive as Int64; print them in hex like a debugger would.
     private static string Format(string name, object? value) => value switch
