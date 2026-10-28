@@ -41,7 +41,7 @@ public sealed partial class SortPage : SamplePageBase
         InitializeComponent();
         // </snippet>
         TeamsTable.SelectionChanged += OnTeamsSelectionChanged;
-        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key)));
+        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key), LeagueData.ParentClub));
         TrackItems(Teams, OnTeamChanged);
 
         // A callback queued just before the page unloaded never runs; start clean on the next Loaded.
@@ -223,11 +223,11 @@ public sealed partial class SortPage : SamplePageBase
 
     private void OnAwardWinClick(object sender, RoutedEventArgs e)
     {
-        // The lowest-ranked team that has a loss to overturn, against the strongest rival in its
-        // group that has a win to give back. Both keep Played = W + D + L, and the two extra goals
+        // The lowest-ranked senior club that has a loss to overturn, against the strongest rival in
+        // its group that has a win to give back. Both keep Played = W + D + L, and the two extra goals
         // count once as goals for and once as goals against, so the group's ΣGF = ΣGA still holds.
         var team = Teams
-            .Where(t => t.Losses > 0 && Teams.Any(r => r != t && r.Group == t.Group && r.Wins > 0))
+            .Where(t => t.ParentId is null && t.Losses > 0 && Teams.Any(r => r != t && r.ParentId is null && r.Group == t.Group && r.Wins > 0))
             .OrderBy(t => t.Points).ThenBy(t => t.GoalDifference)
             .FirstOrDefault();
         if (team is null)
@@ -237,7 +237,7 @@ public sealed partial class SortPage : SamplePageBase
         }
 
         var rival = Teams
-            .Where(r => r != team && r.Group == team.Group && r.Wins > 0)
+            .Where(r => r != team && r.ParentId is null && r.Group == team.Group && r.Wins > 0)
             .OrderByDescending(r => r.Points).ThenByDescending(r => r.GoalDifference)
             .First();
 
@@ -336,10 +336,11 @@ public sealed partial class SortPage : SamplePageBase
 
     private void OnRemoveTeamClick(object sender, RoutedEventArgs e)
     {
-        var team = Teams.LastOrDefault(t => t.Group == "A");
+        // A senior club with no B or U21 side, so no row is left without its parent.
+        var team = Teams.LastOrDefault(t => t.Group == "A" && t.ParentId is null && !Teams.Any(c => c.ParentId == t.Id));
         if (team is null)
         {
-            SetLastAction("Group A is already empty.");
+            SetLastAction("Group A has no club left to remove; a seed keeps its B and U21 sides.");
             return;
         }
 
