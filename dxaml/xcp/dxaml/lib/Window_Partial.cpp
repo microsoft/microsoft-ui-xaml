@@ -181,6 +181,27 @@ _Check_return_ HRESULT Window::put_TitleImpl(_In_opt_ HSTRING value)
     return S_OK;
 }
 
+_Check_return_ HRESULT Window::get_PlacementIdImpl(_Out_ HSTRING* value)
+{
+    *value = nullptr;
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        IFC_RETURN(E_NOTIMPL);
+    }
+    IFC_RETURN(m_spWindowImpl->get_PlacementIdImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_PlacementIdImpl(_In_opt_ HSTRING value)
+{
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        IFC_RETURN(E_NOTIMPL);
+    }
+    IFC_RETURN(m_spWindowImpl->put_PlacementIdImpl(value));
+    return S_OK;
+}
+
 IFACEMETHODIMP Window::add_Activated(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
     IFC_RETURN(m_spWindowImpl->add_Activated(pHandler, pToken));
@@ -959,4 +980,3 @@ _Check_return_ HRESULT Window::put_HeightImpl(DOUBLE value)
     IFC_RETURN(m_spWindowImpl->put_HeightImpl(value));
     return S_OK;
 }
-

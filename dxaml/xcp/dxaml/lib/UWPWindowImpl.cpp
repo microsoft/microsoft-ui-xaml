@@ -419,6 +419,17 @@ _Check_return_ HRESULT UWPWindowImpl::put_TitleImpl(_In_opt_ HSTRING value)
     return S_OK;
 }
 
+_Check_return_ HRESULT UWPWindowImpl::get_PlacementIdImpl(_Out_ HSTRING* value)
+{
+    *value = nullptr;
+    return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_PlacementIdImpl(_In_opt_ HSTRING /*value*/)
+{
+    return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
+}
+
 _Check_return_ HRESULT UWPWindowImpl::ActivateImpl()
 {
     HRESULT hr = S_OK;

@@ -31,6 +31,8 @@ namespace DirectUI
             virtual _Check_return_ HRESULT get_DispatcherImpl(_Outptr_result_maybenull_ wuc::ICoreDispatcher** pValue) = 0;
             virtual _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue) = 0;
             virtual _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) = 0;
+            virtual _Check_return_ HRESULT get_PlacementIdImpl(_Out_ HSTRING* value) = 0;
+            virtual _Check_return_ HRESULT put_PlacementIdImpl(_In_opt_ HSTRING value) = 0;
             IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken)  = 0;
             IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) = 0;
             IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) = 0;

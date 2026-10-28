@@ -64,6 +64,22 @@ _Check_return_ HRESULT CWindow::SetValue(_In_ const SetValueParams& args)
         }
         return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
 
+    case KnownPropertyIndex::Window_PlacementId:
+        {
+            ctl::ComPtr<DirectUI::Window> window;
+            IFC_RETURN(DirectUI::DXamlCore::GetCurrent()->GetPeer<DirectUI::Window>(this, &window));
+
+            xstring_ptr value;
+            if (!args.m_value.IsNullOrUnset())
+            {
+                IFC_RETURN(args.m_value.GetString(value));
+            }
+            xruntime_string_ptr runtimeValue;
+            IFC_RETURN(value.Promote(&runtimeValue));
+            IFC_RETURN(window->put_PlacementId(runtimeValue.GetHSTRING()));
+        }
+        return S_OK;
+
     // Window_SystemBackdrop is a private property that can only be set by the parser.  Any put or
     // get operations at the DXaml layer do not call in to the core layer.
     case KnownPropertyIndex::Window_SystemBackdrop:
