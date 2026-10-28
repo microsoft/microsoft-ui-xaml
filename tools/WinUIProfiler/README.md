@@ -51,8 +51,8 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file.
-There is no object or frame view, heap capture or instrumented-product
+GPU memory events for it, to a session file, and the Frames tab shows its frames.
+There is no object view, heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
 
@@ -241,7 +241,7 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
 | `EventTypes` | One row per provider, event name, opcode and field layout: the field names and their .NET types, such as `Int64,Int32,String,Boolean` |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element the events mention: address, type and `x:Name` (see below) |
@@ -320,6 +320,27 @@ The writer also records which frame each UI-thread event belongs to
   states and loading; `Composition` for composition node, WUC visual and
   surface events; `Other` for everything else (layout, rendering, scheduling).
 
+### Frames tab
+
+The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
+file once a second while connected: only the frames that changed since the last
+read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
+the tab reads the file again. **Open session file...** shows a saved file
+instead, until the next connection.
+
+- Each frame shows when it was drawn (the end of its drawing tick), how long
+  the drawing tick took (the bar is full at 50 ms; a warning icon marks more
+  than 16.7 ms) and its events per bucket. `*` marks a thread's latest frame.
+  Ticks that draw nothing keep the frame number, so after an idle period a
+  frame's first tick can be long before it was drawn; the frame's title shows
+  both. Each column header's tooltip says what the column is.
+- Selecting a frame shows its events, 100 per page, all or one bucket. The
+  filter keeps events whose name or a string field contains the text; a number
+  (`42`, `0x1A2B`) matches numeric fields with exactly that value.
+- For a launch recorded from process start, the tab gives when the first ten
+  drawn frames of the first UI thread ended, from the process's creation;
+  otherwise from the start of the recording. A trimmed file no longer has them.
+
 ### Recorded, from a trace file
 
 To record a trace, use `logman`. Start it before the app: the kernel writes the
@@ -347,7 +368,7 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli objects session.sqlite --type Button    # UI elements, with first/last seen and event counts
 & $cli timeline session.sqlite --object <id>   # the events that mention one element (or --address 0x...)
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
-& $cli frames session.sqlite --frame <id> --bucket Xaml   # one frame's events
+& $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
 
 ## Limitations
