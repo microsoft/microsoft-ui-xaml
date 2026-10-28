@@ -222,12 +222,22 @@ NavigationView::NavigationView()
         });
 
     m_topNavigationItemProperties.SetChangeHandler(
-        [weakThis, queue = DispatcherQueue()](const winrt::IInspectable& item, const winrt::hstring&)
+        [weakThis, queue = DispatcherQueue()](const winrt::IInspectable& item, const winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs&)
         {
-            winrt::check_hresult(queue.HasThreadAccess() ? S_OK : RPC_E_WRONG_THREAD);
-            if (auto strongThis = weakThis.get())
+            const auto onChanged = [weakThis, item]()
             {
-                winrt::get_self<NavigationView>(strongThis)->OnTopNavigationItemPropertyChanged(item);
+                if (auto strongThis = weakThis.get())
+                {
+                    winrt::get_self<NavigationView>(strongThis)->OnTopNavigationItemPropertyChanged(item);
+                }
+            };
+            if (queue.HasThreadAccess())
+            {
+                onChanged();
+            }
+            else
+            {
+                queue.TryEnqueue(onChanged);
             }
         });
 

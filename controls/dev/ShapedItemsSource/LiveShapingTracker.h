@@ -19,8 +19,9 @@ class LiveShapingTracker
 public:
     using ChangeHandler = std::function<void(
         winrt::IInspectable const& item,
-        winrt::hstring const& propertyName)>;
+        winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)>;
 
+    // Event arguments may be UI-affine; consumers must dispatch before reading them.
     void SetChangeHandler(ChangeHandler handler) { m_changeHandler = std::move(handler); }
 
     // Idempotent: re-subscribing an already-tracked item is a no-op.

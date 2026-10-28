@@ -114,6 +114,7 @@ private:
 
     void UpdateRepeaterItemsSource();
     void OnChildrenChanged(bool isCollectionChange);
+    void InvalidateTopNavigationItemWidth(bool isCollectionChange = false);
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);

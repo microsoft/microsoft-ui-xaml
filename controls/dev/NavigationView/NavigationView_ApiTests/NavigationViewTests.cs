@@ -2307,6 +2307,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyTopNavigationViewVisualPropertyChangesRefreshOverflowWidths()
+        {
+            foreach (var property in new[] { "Icon", "InfoBadge", "Content" })
+            {
+                foreach (var useSource in new[] { false, true })
+                {
+                    foreach (var openOverflow in new[] { false, true })
+                    {
+                        NavigationView navView = null;
+                        NavigationViewItem first = null;
+                        NavigationViewItem changing = null;
+                        ItemsRepeater primaryRepeater = null;
+                        Button overflowButton = null;
+                        Action<bool> setWide = null;
+                        double availableWidth = 0;
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            first = new NavigationViewItem { Content = "First", Width = 100 };
+                            changing = new NavigationViewItem { Content = "Item" };
+                            if (property != "Icon") { changing.Icon = new SymbolIcon(Symbol.Home); }
+                            var items = new ObservableCollection<NavigationViewItem> { first, changing };
+                            navView = new NavigationView
+                            {
+                                PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                                IsSettingsVisible = false,
+                                IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                                Width = 800,
+                                Height = 300
+                            };
+                            if (useSource) { navView.MenuItemsSource = items; }
+                            else { foreach (var item in items) { navView.MenuItems.Add(item); } }
+                            navView.SelectedItem = first;
+                            setWide = wide =>
+                            {
+                                switch (property)
+                                {
+                                    case "Icon": changing.Icon = wide ? new SymbolIcon(Symbol.Home) : null; break;
+                                    case "InfoBadge": changing.InfoBadge = wide ? new InfoBadge { Value = 99, Width = 80 } : null; break;
+                                    case "Content": changing.Content = wide ? "A much longer navigation item label" : "Item"; break;
+                                }
+                            };
+                            Content = navView;
+                            Content.UpdateLayout();
+                            primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                            var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                            var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                            topGrid.Measure(infiniteSize);
+                            var smallWidth = topGrid.DesiredSize.Width;
+                            setWide(true);
+                            Content.UpdateLayout();
+                            topGrid.Measure(infiniteSize);
+                            Verify.IsTrue(topGrid.DesiredSize.Width - smallWidth >= 20);
+                            availableWidth = (smallWidth + topGrid.DesiredSize.Width) / 2;
+                            navView.Width = availableWidth;
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                            overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                            if (openOverflow)
+                            {
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                                provider.Invoke();
+                            }
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() => setWide(false));
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(availableWidth, navView.Width);
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                                property + ": shrinking an overflow item must invalidate its cached width.");
+                            Verify.AreEqual(first, navView.SelectedItem);
+                            Verify.AreEqual(0, changing.MenuItems.Count);
+                            overflowButton.Flyout.Hide();
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyTopNavigationViewObservesPhasedChildSource()
         {
             foreach (var templateKey in new[] { "UnphasedItem", "PhasedItem", "LatePhasedItem" })
