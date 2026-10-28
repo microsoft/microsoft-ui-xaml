@@ -1,23 +1,24 @@
 Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
+public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
 
-// ---- Programmatic sort: one column at a time; a new sort replaces the previous one -------
+public TableViewSource Source { get; }
 
-private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, TableViewSortDirection.Descending);
+private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, SortDirection.Descending);
 
-private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, TableViewSortDirection.Ascending);
+private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, SortDirection.Ascending);
 
-private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, TableViewSortDirection.Descending);
+private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, SortDirection.Descending);
 
-private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, TableViewSortDirection.Ascending);
+private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, SortDirection.Ascending);
 
-private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, TableViewSortDirection.Ascending);
+private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, SortDirection.Ascending);
 
-private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, TableViewSortDirection.Descending);
+private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, SortDirection.Descending);
 
-private void SortBy(TableViewColumn column, TableViewSortDirection direction)
+// Sorting is not live: after a sorted value changes, sort again to move the row.
+private void SortBy(TableViewColumn column, SortDirection direction)
 {
     TeamsTable.SortByColumn(column, direction);
 }
@@ -32,144 +33,9 @@ private void OnClearSortClick(object sender, RoutedEventArgs e)
     TeamsTable.ClearSort();
 }
 
-// Sorted fires after the sort state is applied and the header arrow is published: header
-// clicks and the API calls above alike. Column is null when the sort was cleared.
+// Sorted fires after the sort is applied and the header arrow is shown: header clicks and the
+// API calls above alike. Column is null when the sort was cleared.
 private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
 {
-    _sortedFiredCount++;
-    _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
-
-    // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction,
-    // possibly on a later turn: that is not a new sort, so keep the action's own narration.
-    var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection;
-    _reportedSortColumn = args.Column;
-    _reportedSortDirection = args.Direction;
-    if (_isResorting || unchanged)
-    {
-        return;
-    }
-}
-
-// ---- Re-sorting after a value change -----------------------------------------------------
-//
-// The control sorts when asked and when the collection changes. A PropertyChanged on the
-// sorted value does NOT re-position the row by itself, so the page applies the active sort
-// again whenever a value it depends on changes.
-
-private bool ResortIfSortedOn(params string[] propertyNames)
-{
-    var column = SampleShaping.ActiveSortColumn(TeamsTable);
-    if (column is null || !propertyNames.Contains(SampleShaping.SortPathOf(column)))
-    {
-        return false;
-    }
-
-    // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
-    // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
-    _isResorting = true;
-    try
-    {
-        Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
-        OnSortRedeclared();
-    }
-    finally
-    {
-        _isResorting = false;
-    }
-
-    return true;
-}
-
-private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
-{
-    if (sender is not LeagueTeam team || IsBulkUpdating || e.PropertyName is null)
-    {
-        return;
-    }
-
-    switch (e.PropertyName)
-    {
-        case nameof(LeagueTeam.NextMatchDate):
-            break;
-        case nameof(LeagueTeam.Kickoff):
-            break;
-        case nameof(LeagueTeam.IsSeeded):
-            break;
-        case nameof(LeagueTeam.Team):
-            break;
-        default:
-            return;
-    }
-
-    // Let the in-cell editor finish its own update first, then re-group and re-sort once for
-    // every property edited in this turn.
-    if (_pendingProperties.Count == 0)
-    {
-        EnqueueIfLoaded(ApplyPendingEdits);
-    }
-
-    _pendingProperties.Add(e.PropertyName);
-}
-
-private void ApplyPendingEdits()
-{
-    var properties = new List<string>(_pendingProperties);
-    _pendingProperties.Clear();
-    foreach (var property in properties)
-    {
-        ReapplyIfGroupedOn(property);
-    }
-
-    // The text-date column sorts by NextMatchText, which follows NextMatchDate.
-    properties.Add(nameof(LeagueTeam.NextMatchText));
-    ResortIfSortedOn(properties.ToArray());
-}
-
-// …
-
-private void OnPostponeClick(object sender, RoutedEventArgs e)
-{
-    if (TeamsTable.SelectedItem is not LeagueTeam team)
-    {
-        return;
-    }
-
-    using (BeginBulkUpdate())
-    {
-        team.NextMatchDate = team.NextMatchDate.AddDays(7);
-    }
-
-    var resorted = ResortIfSortedOn(nameof(LeagueTeam.NextMatchDate), nameof(LeagueTeam.NextMatchText));
-}
-
-// …
-
-// From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
-{
-    if (relation is not null && IsHierarchicalMode(mode))
-    {
-        // A second ParentBy replaces the relation and resets expansion, so declare it once.
-        if (!hadParentBy)
-        {
-            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
-        }
-    }
-    else if (hadParentBy)
-    {
-        source.ClearParentBy();
-    }
-
-    if (mode is "grouped" or "groupedHierarchy")
-    {
-        // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
-    }
-    else
-    {
-        source.ClearGroupBy();
-    }
+    _lastSortedColumn = args.Column is null ? "cleared" : string.Format(CultureInfo.CurrentCulture, "{0} {1}", args.Column.Header, args.Direction);
 }

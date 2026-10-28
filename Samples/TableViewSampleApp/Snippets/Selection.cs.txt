@@ -2,98 +2,41 @@ Source = TableViewSource.From(People);     // created once; reshaped in place, n
 InitializeComponent();
 PeopleTable.ItemsSource = Source;
 
-// …
+public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
 
-// ---- Selection mode -----------------------------------------------------------------
+public TableViewSource Source { get; }
 
-private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
+// Select takes a display index; group headers take indexes too but cannot be selected, so walk
+// in from one end until IsSelected confirms a row took the selection.
+private int SelectFirstSelectable(int lastIndex, bool fromEnd)
 {
-    // Fires during InitializeComponent (SelectedIndex="1"), before the table exists.
-    if (PeopleTable is null || SelectFirstButton is null)
+    for (var step = 0; step <= lastIndex; step++)
     {
-        return;
-    }
-
-    var single = SampleShaping.SelectedTag(SelectionModeSelector, "Single") == "Single";
-    PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
-}
-
-private bool IsSingleMode => PeopleTable.SelectionMode == TableViewSelectionMode.Single;
-
-// ---- Selection from code --------------------------------------------------------------
-
-private void OnSelectFirstClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: false);
-
-private void OnSelectLastClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: true);
-
-/// <summary>
-/// Selects the first or last row in DISPLAY order. Select(index) takes a display index, and
-/// when the table is grouped every group header takes one too, so the last row's index is
-/// rows + groups - 1, not People.Count - 1. Select ignores header and out-of-range indexes,
-/// so the sample walks in from the end until IsSelected confirms a row took the selection.
-/// </summary>
-private void SelectDisplayedRow(bool fromEnd)
-{
-    if (!IsSingleMode)
-    {
-        return;
-    }
-
-    var max = People.Count + (IsGrouped ? GroupCount() : 0) - 1;
-    for (var step = 0; step <= max; step++)
-    {
-        var index = fromEnd ? max - step : step;
+        var index = fromEnd ? lastIndex - step : step;
         PeopleTable.Select(index);
         if (PeopleTable.IsSelected(index))
         {
-            return;
+            return index;
         }
     }
-}
 
-// Group headers take display indexes too.
-private int GroupCount() =>
-    People.Select(p => SampleShaping.GroupIdentity(SampleShaping.KeyOf(p, AppliedGroupKey))).Distinct(StringComparer.Ordinal).Count();
+    return -1;
+}
 
 private void OnClearSelectionClick(object sender, RoutedEventArgs e)
 {
     PeopleTable.DeselectAll();
 }
 
-// …
-
-private void OnInsertAboveClick(object sender, RoutedEventArgs e)
-{
-    if (PeopleTable.SelectedItem is not Person selected)
-    {
-        return;
-    }
-
-    // The next person from the shared dataset, placed in the selected person's group.
-    var next = (InitialRows + _insertedCount) % PersonData.All.Count;
-    var person = PersonData.Take(next + 1)[next];
-    _insertedCount++;
-    person.Department = selected.Department;
-    person.Office = selected.Office;
-    person.IsActive = selected.IsActive;
-
-    People.Insert(People.IndexOf(selected), person);
-}
-
-private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
-{
-    if (PeopleTable.SelectedItem is not Person selected)
-    {
-        return;
-    }
-
-    People.Remove(selected);
-}
-
-// ---- Events ---------------------------------------------------------------------------
-
+// Raised after the selection has settled, so sender.SelectedItem and SelectedIndex hold the new
+// state. Replacing a selection raises one event with both the removed and the added row.
 private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
 {
-    _changeCount++;
     _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
 }
+
+// From Pages\SelectionPage.Status.cs
+private static string DescribeAll(IList<object>? items) =>
+    items is null || items.Count == 0 ? "none" : string.Join(", ", items.Select(Describe));
+
+private static string Describe(object? item) => item is Person person ? person.FullName : "(none)";

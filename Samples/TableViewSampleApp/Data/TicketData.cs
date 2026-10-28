@@ -110,7 +110,6 @@ public static class TicketData
         };
     }
 
-    // <snippet HeadersVisibility>
     // Never empty: GroupBy fails fast on an empty group identity.
     public static object GroupKeyOf(SupportTicket? ticket, string key)
     {
@@ -123,7 +122,6 @@ public static class TicketData
 
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
-    // </snippet>
 
     private static string TicketId(int number) => "INC-" + number;
 }

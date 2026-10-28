@@ -15,7 +15,17 @@ class TableViewCellAutomationPeer :
     public ReferenceTracker<TableViewCellAutomationPeer, winrt::implementation::TableViewCellAutomationPeerT, winrt::IVirtualizedItemProvider>
 {
 public:
+    // Lets TableViewCell skip the public constructor's argument validation.
+    struct TrustedOwnerTag {};
+
+    // Throws E_INVALIDARG for arguments that cannot describe a cell.
     TableViewCellAutomationPeer(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewRow const& row,
+        winrt::TableViewColumn const& column,
+        int32_t columnIndex);
+    TableViewCellAutomationPeer(
+        TrustedOwnerTag,
         winrt::FrameworkElement const& cell,
         winrt::TableViewRow const& row,
         winrt::TableViewColumn const& column,

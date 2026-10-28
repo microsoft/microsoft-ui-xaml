@@ -64,6 +64,60 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Generic::FrameworkElementTests<xaml_controls::ScrollViewer>::CanEnterAndLeaveLiveTree();
     }
 
+    void ScrollViewerIntegrationTests::HandledReleasePreservesAnotherPointerPress()
+    {
+        xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+        xaml_controls::Border^ surface = nullptr;
+        xaml_controls::Button^ button = nullptr;
+        auto buttonReleaseHandled = std::make_shared<bool>(false);
+
+        RunOnUIThread([&]()
+        {
+            surface = ref new xaml_controls::Border();
+            surface->Width = 120;
+            surface->Height = 80;
+            surface->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Blue);
+            button = ref new xaml_controls::Button();
+            button->Width = 120;
+            button->Height = 80;
+            button->Content = L"Handled release";
+            button->AddHandler(xaml::UIElement::PointerReleasedEvent,
+                ref new xaml_input::PointerEventHandler(
+                    [buttonReleaseHandled](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
+                    {
+                        *buttonReleaseHandled = args->Handled;
+                    }), true);
+
+            auto panel = ref new xaml_controls::StackPanel();
+            panel->Orientation = xaml_controls::Orientation::Horizontal;
+            panel->Children->Append(surface);
+            panel->Children->Append(button);
+            scrollViewer = ref new xaml_controls::ScrollViewer();
+            scrollViewer->Width = 300;
+            scrollViewer->Height = 150;
+            scrollViewer->IsTabStop = true;
+            scrollViewer->HorizontalScrollMode = xaml_controls::ScrollMode::Disabled;
+            scrollViewer->VerticalScrollMode = xaml_controls::ScrollMode::Disabled;
+            scrollViewer->Content = panel;
+            TestServices::WindowHelper->WindowContent = scrollViewer;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { VERIFY_IS_TRUE(button->Focus(xaml::FocusState::Keyboard)); });
+
+        TestServices::InputHelper->DynamicPressCenter(surface, 0, 0, PointerFinger::Finger1);
+        TestServices::InputHelper->DynamicPressCenter(button, 0, 0, PointerFinger::Finger2);
+        TestServices::InputHelper->DynamicRelease(PointerFinger::Finger2);
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::InputHelper->DynamicRelease(PointerFinger::Finger1);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(*buttonReleaseHandled);
+            VERIFY_IS_TRUE(scrollViewer->Equals(xaml_input::FocusManager::GetFocusedElement(scrollViewer->XamlRoot)));
+        });
+    }
+
     void ScrollViewerIntegrationTests::CanScrollToHorizontalOffset()
     {
         DoScrollToOffset(ChangeViewDirectionHorizontal, true /*canScroll*/);

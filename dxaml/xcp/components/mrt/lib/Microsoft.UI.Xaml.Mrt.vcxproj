@@ -29,6 +29,7 @@
         <ClInclude Include="..\inc\ModernResourceProvider.h"/>
         <ClInclude Include="..\inc\MRTKnownQualifierNames.h"/>
         <ClInclude Include="..\inc\MRTResource.h"/>
+        <ClInclude Include="..\inc\ResourceMemory.h"/>
     </ItemGroup>
 
     <ItemGroup>
