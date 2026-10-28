@@ -365,8 +365,9 @@ internal static class CliApplication
         {
             output.WriteLine($"UI element {element.ObjectId}: {element.Type ?? "type not seen"}" +
                 (element.Name is null ? "" : $" \"{element.Name}\"") + $" at 0x{element.Address:X}, {element.Events} events");
-            SessionFile.ReadTimeline(options.InputPath, element.ObjectId,
-                (profilerEvent, field) => output.WriteLine(FormatEvent(profilerEvent, field)), cancellationToken);
+            SessionFile.ReadTimeline(options.InputPath, element.ObjectId, 0, -1,
+                (profilerEvent, fields, frame) => output.WriteLine(FormatEvent(profilerEvent,
+                    string.Join(", ", fields) + (frame is null ? "" : $", frame {frame}"))), cancellationToken);
             output.WriteLine();
         }
 
@@ -402,7 +403,7 @@ internal static class CliApplication
         output.WriteLine($"Frame {selected.FrameNumber} on thread {selected.ThreadId}: {selected.Ticks} tick(s), {selected.Events} events " +
             $"({selected.Xaml} Xaml, {selected.Composition} Composition, {selected.Other} Other)");
         SessionFile.ReadFrameEvents(options.InputPath, frameId, options.Bucket, options.EventFilter, 0, -1,
-            (profilerEvent, bucket) => output.WriteLine(FormatEvent(profilerEvent, bucket)), cancellationToken);
+            (profilerEvent, bucket, _) => output.WriteLine(FormatEvent(profilerEvent, bucket)), cancellationToken);
         return 0;
     }
 

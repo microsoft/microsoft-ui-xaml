@@ -7,6 +7,20 @@ namespace WinUIProfiler.App.Views;
 
 internal static class SnapshotTreeExpansion
 {
+    // The tree node whose item contains an element, such as the source of a double-tap; null outside the items.
+    public static TreeViewNode? NodeAt(TreeView tree, object? source)
+    {
+        for (var element = source as DependencyObject; element is not null && element != tree; element = VisualTreeHelper.GetParent(element))
+        {
+            if (element is TreeViewItem item)
+            {
+                return tree.NodeFromContainer(item);
+            }
+        }
+
+        return null;
+    }
+
     public static void ScrollIntoView(TreeView tree, TreeViewNode node, CancellationToken token)
     {
         if (!tree.DispatcherQueue.TryEnqueue(() =>

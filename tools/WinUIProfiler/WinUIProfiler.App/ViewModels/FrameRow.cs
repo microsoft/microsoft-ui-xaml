@@ -11,9 +11,10 @@ namespace WinUIProfiler.App.ViewModels;
 // A frame in the Frames tab. While a session records, its latest frames still change, so a row is updated in place.
 public sealed class FrameRow(SessionFrame frame) : INotifyPropertyChanged
 {
-    // The drawing tick's bar is full at this length; at 60 frames a second a frame has 16.7 ms.
+    // A draw this long fills the bar.
     private const double FullBarMilliseconds = 50;
     private const double BarWidthPixels = 56;
+    // At 60 frames a second, a frame has 16.7 ms.
     private const double FrameBudgetMilliseconds = 1000.0 / 60;
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -20,6 +20,7 @@ namespace WinUIProfiler.App;
 public sealed partial class MainWindow : Window
 {
     private readonly LiveSessionViewModel model = new();
+    private readonly SessionSource session = new();
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
     private MetricHistory? renderedHistory;
     private long renderedSamples = -1;
@@ -46,6 +47,14 @@ public sealed partial class MainWindow : Window
         model.PropertyChanged += Model_PropertyChanged;
         AppWindow.Closing += AppWindow_Closing;
         FramesPanel.Owner = AppWindow.Id;
+        ElementsPanel.Owner = AppWindow.Id;
+        FramesPanel.Source = session;
+        ElementsPanel.Source = session;
+        FramesPanel.ElementRequested += (_, objectId) =>
+        {
+            Tabs.SelectedItem = ElementsTab;
+            ElementsPanel.ShowElement(objectId);
+        };
         UpdateTargetSummary();
         Refresh();
     }
@@ -261,7 +270,7 @@ JsonSerializer.Serialize(new
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
             }
 
-            FramesPanel.ShowRecording(recording?.Path, model.State == "Connected");
+            session.ShowRecording(recording?.Path, model.State == "Connected");
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
@@ -414,6 +423,7 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 viewer = new(entry);
                 snapshotWindows.Add(entry.Saved.CaptureId, viewer);
                 viewer.Closed += (_, _) => snapshotWindows.Remove(entry.Saved.CaptureId);
+                viewer.ElementRequested += ShowSnapshotElement;
             }
             viewer.Activate();
         }
@@ -421,6 +431,15 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
         {
             model.ReportError(error);
         }
+    }
+
+    // A snapshot window asked for a XAML node's element: show its history in the Elements tab.
+    private void ShowSnapshotElement(object? sender, SnapshotElement node)
+    {
+        if (closing) return;
+        Tabs.SelectedItem = ElementsTab;
+        ElementsPanel.ShowSnapshotElement(node);
+        Activate();
     }
 
     private void SnapshotDiffPicker_Opening(object sender, object args)
@@ -449,6 +468,7 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 viewer = new(before, after);
                 snapshotDiffWindows.Add(key, viewer);
                 viewer.Closed += (_, _) => snapshotDiffWindows.Remove(key);
+                viewer.ElementRequested += ShowSnapshotElement;
             }
             SnapshotDiffPicker.Hide();
             viewer.Activate();
