@@ -143,7 +143,7 @@ classDiagram
         +uint32 OldIndex
         +uint32 NewIndex
         +vector~SourceRecord*~ Added
-        +vector~SourceRecord*~ Removed
+        +vector~SourceRecord const*~ Removed
     }
 
     class IShapingOwner {
@@ -175,8 +175,12 @@ classDiagram
         -GroupExpansion m_groupExpansion
         -Flattener m_flattener
         -ShapingEngine m_engine
-        -map~SourceRecord*, hstring~ m_liveDirty
+        -unordered_map~SourceRecord*, hstring~ m_liveDirty
+        -bool m_liveAllDirty
+        -bool m_liveDrainPosted
         -bool m_isApplying
+        -bool m_resyncPosted
+        -uint32 c_bulkThreshold$
         +View() ItemsSourceView
         +RowCount() uint32
         +RowAt(index) ShapedRef
@@ -199,13 +203,15 @@ classDiagram
         +RemoveOwnerReleasedWaiter(waiter)
         -vector~OwnerReleasedWaiter~ m_ownerReleasedWaiters
         +ContainsItem(item) bool
-        +BeginLiveShapingHold()
+        +BeginLiveShapingHold() noexcept
         +EndLiveShapingHold()
         +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
         +Refresh()
         +BeginDeferRefresh()
         +EndDeferRefresh()
+        +IsRefreshDeferred() bool
         -uint32 m_deferDepth
+        -bool m_refreshRequested
         +IsLiveShaping : bool
         +Clear()
         -OnSourceChanged(change)
@@ -257,16 +263,22 @@ classDiagram
         -hstring m_identity
         +Key() IInspectable
         +Identity() hstring
+        +TryGetGroupHeaderRow(value)$ com_ptr~GroupHeaderRow~
     }
 
     class ISourceHierarchyHost {
         <<interface>>
-        +CreateRecord(item, parent) SourceRecordPtr
+        +TrackerOwner() ITrackerHandleManager*
+        +WeakHost() weak_ptr~ISourceHierarchyHost~
+        +CurrentHierarchy() SourceHierarchy*
+        +RootRecords() vector~SourceRecordPtr~
+        +CreateRecord(item) SourceRecordPtr
         +ReleaseRecord(record)
-        +SiblingsOf(parent)
-        +Reparent(record, parent)
+        +ValidateIncoming(items, replacing)
+        +SiblingsOf(parent) vector~SourceRecord*~
+        +Reparent(record, newParent, index)
         +AdmitChange() bool
-        +RaiseSourceChanged(change)
+        +RaiseSourceChanged(kind, oldParent, newParent, oldIndex, newIndex, added, removed)
         +RequestReset()
     }
 
@@ -276,24 +288,26 @@ classDiagram
         +MatchForRefresh(host, rootMatches, removed)
         +Commit(host, added)
         +CollectIncoming(item, items)
-        +OnInserted(host, records)
-        +OnRemoving(host, records)
-        +OnMoved(host, records)
+        +OnInserted(host, record)
+        +OnRemoving(host, record)
+        +OnMoved(host, record, fromIndex, toIndex)
         +Reevaluate(host, record, propertyName)
         +TakeChildRecords(host, removed)
         +Release(host)
     }
 
     class ParentKeyHierarchy {
-        -tracker_ref~TableViewKeySelector~ m_keySelector
-        -tracker_ref~TableViewKeySelector~ m_parentKeySelector
-        -map~NodeKey, SourceRecord*~ m_keyIndex
-        -map~SourceRecord*, NodeKeys~ m_nodeKeys
+        -optional~tracker_ref~TableViewKeySelector~~ m_keySelector
+        -optional~tracker_ref~TableViewKeySelector~~ m_parentKeySelector
+        -unordered_map~hstring, SourceRecord*~ m_keyIndex
+        -unordered_map~SourceRecord const*, NodeKeys~ m_nodeKeys
+        -unordered_map~hstring, uint32~ m_stagedKeyIndex
+        -vector~NodeKeys~ m_stagedNodeKeys
     }
 
     class ChildCollectionsHierarchy {
-        -tracker_ref~TableViewChildrenSelector2~ m_childrenSelector
-        -map~SourceRecord*, ChildFeed~ m_childFeeds
+        -optional~tracker_ref~TableViewChildrenSelector2~~ m_childrenSelector
+        -unordered_map~SourceRecord const*, unique_ptr~ChildFeed~~ m_childFeeds
         -vector~StagedNode~ m_staged
     }
 
@@ -305,10 +319,10 @@ classDiagram
         -vector~SourceRecord*~ m_topLevel
         -unique_ptr~SourceHierarchy~ m_hierarchy
         -optional~unique_ptr~SourceHierarchy~~ m_pendingHierarchy
-        -map~void*, SourceRecord*~ m_rawLookup
-        -map~ObjectAddress, SourceRecord*~ m_addressLookup
+        -unordered_map~void*, SourceRecord*~ m_rawLookup
+        -unordered_map~ObjectAddress, SourceRecord*~ m_addressLookup
         -bool m_identityIndexEnabled
-        -map~hstring, SourceRecord*~ m_identityIndex
+        -unordered_map~hstring, SourceRecord*~ m_identityIndex
         -bool m_liveShapingEnabled
         -DispatcherQueue m_ownerQueue
         -DWORD m_ownerThreadId
@@ -318,6 +332,7 @@ classDiagram
         -bool m_isDispatching
         -uint32 m_freezeDepth
         -bool m_pendingReset
+        -uint32 m_resetHoldDepth
         -bool m_outOfSync
         +Create(owner, source)$ shared_ptr~SourceTable~
         +Refresh()
@@ -334,6 +349,7 @@ classDiagram
         +SetItemChangedHandler(handler)
         +BeginFreeze()
         +EndFreeze() bool
+        +IsFrozen() bool
         +BeginHoldResets()
         +EndHoldResets() bool
         +SetLiveShaping(enabled)
@@ -352,8 +368,10 @@ classDiagram
         -OnSourceBindableVectorChanged()
         -MatchRecords(items, removed)
         -CommitRecords(items, matches, added)
+        -ValidateItems(items)$
         -InsertAt / RemoveAt / ReplaceAt / Move
-        -RaiseSourceChanged(kind, oldIndex, newIndex, added, removed)
+        -ResetTreeToFlat()
+        -RaiseSourceChanged(kind, oldParent, newParent, oldIndex, newIndex, added, removed)
         -DrainPendingChanges()
         -SubscribeRecordPropertyChanged(record)
         -UnsubscribeRecordPropertyChanged(record)
@@ -372,6 +390,7 @@ classDiagram
         +HasChildren() bool
         -hstring m_identity
         +Identity() hstring
+        +TryParseIdentity(identity)$ optional~ObjectAddress~
     }
 
     class WatchState {
@@ -562,17 +581,17 @@ classDiagram
 
     class ShapingEngine {
         -ITrackerHandleManager* m_trackerOwner
-        -SourceTable& m_source
+        -SourceTable const& m_source
         -ShapeDelegates& m_delegates
         -PathEvaluator& m_paths
         -IShapedEditSink& m_sink
         -ShapeSpec m_applied
         -GroupNode m_root
-        -map~hstring, GroupNode*~ m_groupsByIdentity
+        -unordered_map~hstring, GroupNode*~ m_groupsByIdentity
         -vector~unique_ptr~GroupNode~~ m_retired
         +Applied() ShapeSpec
         +Root() GroupNode
-        +GroupsByIdentity() map
+        +GroupsByIdentity() unordered_map~hstring, GroupNode*~
         +InShapedTree(node)$ bool
         +Apply(desired, delta)
         +Reapply(desired)
@@ -608,22 +627,22 @@ classDiagram
         <<private, compute phase>>
         +SourceRecord* Record
         +bool PassesFilter
-        +vector~tracker_ref~ SortKeys
+        +vector~tracker_ref~IInspectable~~ SortKeys
         +vector~hstring~ GroupSegments
         +vector~IInspectable~ GroupKeys
         +unique_ptr~GroupNode~ NewGroupChain
         +GroupNode* NewGroupParent
-        +vector~node_type~ NewGroupEntries
+        +vector~unordered_map node_type~ NewGroupEntries
         +uint32 ShapedIndex
     }
 
     class StagedReapply {
         <<private, compute phase>>
         +vector~StagedRecord~ Records
-        +vector~pair~ ShapedChildren
+        +vector~pair~SourceRecord*, vector~SourceRecord*~~~ ShapedChildren
         +vector~ShapedRef~ RootChildren
         +vector~unique_ptr~GroupNode~~ RootSubgroups
-        +map~hstring, GroupNode*~ GroupsByIdentity
+        +unordered_map~hstring, GroupNode*~ GroupsByIdentity
     }
 
     class ShapedRef {
@@ -744,7 +763,7 @@ classDiagram
         -vector~ShapedRef~ m_staged
         -FlatDelta m_pending
         -vector~ShapedRef~ m_departed
-        -map~ShapedRef, RowStateField~ m_dirty
+        -unordered_map~ShapedRef, RowStateField, ShapedRefHash~ m_dirty
         -GroupExpansion& m_groupExpansion
         -GroupNode* m_root
         -uint16 m_groupLevelCount
@@ -1367,9 +1386,11 @@ struct GroupNode                       // engine-owned; headers exist only while
     hstring Identity;                  // group key path (parent's Identity + this Key); empty on the root
     GroupNode* Parent;                 // nullptr only on the shaped root
     uint16_t GroupLevel;               // top-level groups = 0; the header's ShapedDepth()
-    std::vector<ShapedRef> Children;   // subgroups, or top-level records after filter and sort
+    std::vector<ShapedRef> Children;   // subgroups, or top-level records after filter and sort; non-owning, display order
+    std::vector<std::unique_ptr<GroupNode>> Subgroups;  // owns the subgroups (same set as Children's groups)
     uint32_t ItemCount;                // bucketed top-level records (descendants not counted)
     uint32_t VisibleDescendantCount;   // own subtree's rows, ignoring ancestors; 0 when collapsed
+    mutable IInspectable HeaderRow;    // GroupHeaderRow token, created on first GetAtCore (V2); null on the root
     bool IsRoot() const noexcept;      // Parent == nullptr
 };
 ```
@@ -1423,7 +1444,8 @@ struct GroupNode                       // engine-owned; headers exist only while
   and parallel nodes (WPF `LiveShapingItem`, Avalonia `HierarchicalRow`, Glazed Lists
   `TreeList.Node`) remain. We put the state on the record:
   - Each `SourceRecord` carries one engine-owned `ShapeState Shape` (`Engine/ShapeState.h`). It
-    holds `ShapeFlags` (`PassesFilter`, `ChildrenShaped`, `SortKeysValid`; an ancestor of a match
+    holds `ShapeFlags` (`PassesFilter`, `ChildrenShaped`, `SortKeysValid`, plus the flattener's
+    `Expanded` / `OverlayCollapsed` and the engine's transient `PlacementMark`; an ancestor of a match
     stays visible because its `ShapedChildren` is non-empty, see *Ancestors of matches*), `SortKeys` (one cached key per sort level;
     comparer levels hold none), `ShapedChildren` (the filtered and sorted children) and
     `VisibleDescendantCount`. Tree links come from the record's existing `Parent`/`Children`.
@@ -2272,6 +2294,7 @@ struct RowStateEdit
 struct FlatDelta
 {
     bool IsReset = false;                 // bulk: stable Reset; Splices and States are empty
+    ShapingChangeFlags Changes = None;    // set by the flattener; ShapingManager adds Order to a sort-only Reset
     std::vector<FlatSplice> Splices;      // applied to m_rows and published one at a time (V4)
     std::vector<RowStateEdit> States;     // after all splices
 };
@@ -2698,8 +2721,9 @@ public:
 
     void Apply(ShapeSpec const& desired, ShapeDelta delta);    // Rebuild(desired, StagesFor(delta))
     void Reapply(ShapeSpec const& desired);                    // Rebuild(desired, All)
-    void ApplySourceChange(SourceChange const&);               // one item (k <= c_bulkThreshold)
-    void ApplyItemChanged(SourceRecord*, winrt::hstring const& propertyName);  // live shaping
+    void ApplySourceChange(SourceChange const&);               // one notification, k <= c_bulkThreshold items (any subtree size)
+    void ApplyItemChanged(SourceRecord*, winrt::hstring const& propertyName);  // live shaping, one record
+    void ApplyItemsChanged(std::span<LiveChange const>);       // live shaping, k > 1 coalesced records (E7 Y2)
     void Clear();                                              // groups, keys; applied = empty
     void ReleaseRetired() noexcept;                            // after Publish: destroy pruned groups (V4)
 
@@ -2714,7 +2738,10 @@ private:
     static bool InShapedParent(SourceRecord const&) noexcept;  // PassesFilter || !ShapedChildren.empty() (E8)
     void StageGroupChain(StagedRecord&);                       // compute: allocate missing groups (E9)
     void PruneEmptyGroups(GroupNode*) noexcept;                // write: ItemCount, retire empty groups (E9, V4)
-    void Rebuild(ShapeSpec const&, RebuildStage);              // behind Apply and Reapply (E6)
+    static RebuildStage StagesFor(ShapeDelta) noexcept;        // verb delta -> stages (E6)
+    uint32_t PlacementIndex(StagedRecord const&, std::optional<uint32_t> sourceIndex);  // surgical placement (E5)
+    void Rebuild(ShapeSpec const&, RebuildStage,
+                 std::span<LiveChange const> only = {});       // behind Apply, Reapply, ApplyItemsChanged (E6, E7)
 };
 ```
 
