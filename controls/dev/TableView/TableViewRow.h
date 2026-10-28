@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "TableViewRow.g.h"
+#include "TableViewContextMenu.h"
 #include "TableViewRow.properties.h"
 
 #include <optional>
@@ -39,18 +40,23 @@ public:
     // Keeps the body one tab stop, and expands a tree row's subtree; see the definition.
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
-    // Updates the weak owner ref, column subscription, and realized cells.
-    void SetOwningTableViewInternal(winrt::TableView const& owner);
-    void EnsureOwningTableViewInternal(winrt::TableView const& owner);
+    // Updates the weak owner ref, column subscription, and realized cells. Both return true when the
+    // cell rebuild also refreshed the row chrome (grid lines and row background).
+    bool SetOwningTableViewInternal(winrt::TableView const& owner);
+    bool EnsureOwningTableViewInternal(winrt::TableView const& owner);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    // Row automation peer ShowContextMenu. False when TableView left it alone, so the peer falls
+    // back to the framework (TableView.ContextFlyout and ancestors).
+    bool ShowContextMenuFromPeer();
 
     void RefreshGridLines();
-    void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state);
+    void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh = true);
     void RefreshRowBackground();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
@@ -109,6 +115,7 @@ public:
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
+    void RefreshCellToolTips();
     // Raises NameProperty changed on cell peers that already exist; creates none.
     void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
@@ -142,6 +149,7 @@ public:
 
 private:
     void ResetCellAutomationNames();
+    bool HasCellAutomationPeers() const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
@@ -177,6 +185,14 @@ private:
     winrt::TableViewColumn ResolvePressedColumn(
         const winrt::IInspectable& originalSource,
         const winrt::Point& hostPoint);
+    void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void ProcessContextRequest(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> MakeRowContextMenuTarget();
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::ContextRequestedEventArgs const& args);
 
     void OnDataContextChanged(
         const winrt::FrameworkElement& sender,
@@ -210,7 +226,8 @@ private:
     bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
     void UpdateExpanderGutterClip();
 
-    void RebuildCells(bool updateExistingCellPeerItems = true);
+    // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
+    bool RebuildCells(bool updateExistingCellPeerItems = true);
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
@@ -239,6 +256,8 @@ private:
     bool m_cellsArranged{ false };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};

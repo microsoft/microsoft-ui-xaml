@@ -33,6 +33,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string OffsetField = "offset";
         internal const string NoneValue = "none";
 
+        // Shows a TableView whose template has no ScrollViewer, inside an app ScrollViewer, and focuses its row 0.
+        internal const string ShowScrollerlessTableButton = "ShowScrollerlessTableButton";
+
+        // Read-only TextBox describing that table, in the same format as Readout:
+        //   focused=<id|none>       Id of the item whose row holds focus
+        //   inview=<True|False>     whether that row lies fully inside the app ScrollViewer's viewport
+        //   offset=<v>              the app ScrollViewer's VerticalOffset
+        internal const string ScrollerlessReadout = "ScrollerlessReadout";
+
+        internal const string FocusedField = "focused";
+        internal const string InViewField = "inview";
+
+        internal const int ScrollerlessItemCount = 50;
+
         internal static readonly string[] Columns = { "Name", "Quantity", "Code" };
         internal static readonly int[] ColumnWidths = { 200, 120, 160 };
 

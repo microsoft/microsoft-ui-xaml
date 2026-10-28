@@ -2968,7 +2968,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         RunOnUIThread([&]()
         {
             auto defaultStyleControl = ref new DefaultStyleControl();
-            TestServices::WindowHelper->WindowContent = defaultStyleControl;
+            auto root = ref new Grid();
+            root->Children->Append(defaultStyleControl);
+            TestServices::WindowHelper->WindowContent = root;
         });
         TestServices::WindowHelper->WaitForIdle();
 
@@ -2983,7 +2985,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         RunOnUIThread([&]()
         {
             auto defaultStyleResourceUriControl = ref new DefaultStyleResourceUriControl();
-            TestServices::WindowHelper->WindowContent = defaultStyleResourceUriControl;
+            auto root = ref new Grid();
+            root->Children->Append(defaultStyleResourceUriControl);
+            TestServices::WindowHelper->WindowContent = root;
         });
 
         TestServices::WindowHelper->WaitForIdle();
@@ -2999,7 +3003,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         RunOnUIThread([&]()
         {
             auto defaultStyleResourceUriControl = ref new DefaultStyleResourceUriControlWithEmptyDefaultStyleKey();
-            TestServices::WindowHelper->WindowContent = defaultStyleResourceUriControl;
+            auto root = ref new Grid();
+            root->Children->Append(defaultStyleResourceUriControl);
+            TestServices::WindowHelper->WindowContent = root;
         });
 
         TestServices::WindowHelper->WaitForIdle();
@@ -3015,7 +3021,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         RunOnUIThread([&]()
         {
             auto defaultStyleResourceUriControl = ref new DefaultStyleResourceUriControlWithInvalidDefaultStyleKey();
-            TestServices::WindowHelper->WindowContent = defaultStyleResourceUriControl;
+            auto root = ref new Grid();
+            root->Children->Append(defaultStyleResourceUriControl);
+            TestServices::WindowHelper->WindowContent = root;
         });
 
         TestServices::WindowHelper->WaitForIdle();

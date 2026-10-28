@@ -3317,6 +3317,8 @@ HRESULT CCoreServices::TryLoadXamlResourceHelper(
 
     if (foundResource)
     {
+        // For text XAML, pBuffer borrows from *ppMemory. The caller must retain
+        // the memory object until it has finished consuming those bytes.
         *ppMemory = spResourceMem.detach();
 
         if (pBuffer)

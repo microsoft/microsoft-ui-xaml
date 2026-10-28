@@ -580,6 +580,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Space and Enter on the focused last group header of a scrolled grouped table toggle it without jumping the viewport away from it.")]
+        public void GroupHeaderKeyboardToggleAtBottomKeepsViewport()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(GroupedPagingPivotItem)) { Verify.Fail(GoToButton(GroupedPagingPivotItem) + " was not found."); return; }
+
+                UIObject table = GetTable(GroupedPagingTable);
+                if (table == null) { return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized group headers and rows."); return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+
+                int lastHeader = (GroupedPagingItemCount - 1) * 2;
+                Verify.AreEqual(lastHeader, FlattenedIndexOfGroupedPagingFocus(table), "Precondition: End then Up focuses the last group header.");
+
+                bool expanded = true;
+                foreach (Key key in new[] { Key.Space, Key.Space, Key.Enter, Key.Enter })
+                {
+                    expanded = !expanded;
+                    UIObject before = FindFocusedRow(GetRowsHost(table));
+                    if (before == null) { Verify.Fail("Precondition: a body container holds focus."); return; }
+                    var beforeBounds = before.BoundingRectangle;
+
+                    KeyboardHelper.PressKey(key);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(lastHeader, FlattenedIndexOfGroupedPagingFocus(table), "Focus must stay on the toggled header after " + key + ".");
+                    UIObject after = FindFocusedRow(GetRowsHost(table));
+                    if (after == null) { Verify.Fail("Focus must stay in the body after " + key + "."); return; }
+                    Verify.AreEqual(expanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                        new ExpandCollapseImplementation(after).ExpandCollapseState, key + " must toggle the group.");
+                    var afterBounds = after.BoundingRectangle;
+                    Log.Comment("{0}: header bounds {1} -> {2}, table {3}.", key, beforeBounds, afterBounds, table.BoundingRectangle);
+
+                    Verify.IsTrue(IsFullyInGroupedPagingViewport(table, afterBounds),
+                        string.Format("The toggled header must stay fully in view after {0}: bounds {1}, table {2}.", key, afterBounds, table.BoundingRectangle));
+                    // Collapsing at the end of the extent moves the header down by at most its group's row.
+                    Verify.IsLessThanOrEqual(Math.Abs(afterBounds.Top - beforeBounds.Top), beforeBounds.Height + 1,
+                        string.Format("The viewport must not jump after {0}: header top {1} -> {2}.", key, beforeBounds.Top, afterBounds.Top));
+                }
+            }
+        }
+
         // The flattened index of the focused GroupedPagingTableView container (header 2n, row 2n+1), or -1.
         private static int FlattenedIndexOfGroupedPagingFocus(UIObject table)
         {
@@ -1397,13 +1448,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (IDL:156-158).")]
+        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanSort).")]
         public void HeaderClickDoesNotSortColumnWithCanSortFalse()
         {
-            // TableView.idl:156-158 states the gate as a fact about the CLICK: "Per-column opt-out for the
-            // click-to-sort UX. Default true. When false the header click handler ignores this column;
-            // programmatic SortByColumn still works." No API test can assert that sentence - API 7 can only
-            // cover the programmatic half - so the route test is the only place the opt-out is checked.
+            // The only check of the click half of CanSort; API tests cover SortByColumn/ToggleSortDirection.
             //
             // The ReadOnlyCity column of BasicTableView is authored CanSort="False"; Age is CanSort="True".
             // Clicking Age afterwards is a NEGATIVE CONTROL and is the point of the test: without it, a click

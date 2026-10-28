@@ -22,7 +22,44 @@
 #include <tuple>
 #include <vector>
 
+namespace
+{
+    winrt::FrameworkElement CellForPublicConstructor(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewRow const& row,
+        winrt::TableViewColumn const& column,
+        int32_t columnIndex)
+    {
+        if (!cell || !row || !column || columnIndex < 0)
+        {
+            throw winrt::hresult_invalid_argument();
+        }
+
+        // A row not yet owned by a TableView has no column set to check against.
+        if (auto const table = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
+        {
+            if (winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
+                static_cast<uint32_t>(columnIndex) >= table.Columns().Size())
+            {
+                throw winrt::hresult_invalid_argument();
+            }
+        }
+
+        return cell;
+    }
+}
+
 TableViewCellAutomationPeer::TableViewCellAutomationPeer(
+    winrt::FrameworkElement const& cell,
+    winrt::TableViewRow const& row,
+    winrt::TableViewColumn const& column,
+    int32_t columnIndex)
+    : TableViewCellAutomationPeer(TrustedOwnerTag{}, CellForPublicConstructor(cell, row, column, columnIndex), row, column, columnIndex)
+{
+}
+
+TableViewCellAutomationPeer::TableViewCellAutomationPeer(
+    TrustedOwnerTag,
     winrt::FrameworkElement const& cell,
     winrt::TableViewRow const& row,
     winrt::TableViewColumn const& column,
@@ -149,6 +186,26 @@ void TableViewCellAutomationPeer::SetFocusCore()
     }
 
     __super::SetFocusCore();
+}
+
+void TableViewCellAutomationPeer::ShowContextMenuCore()
+{
+    // Same tracking rule as SetFocusCore: a recycled cell must not raise a request for another item.
+    auto const row = m_row.get();
+    auto const cell = row && GetTrackedTableForRow(row) ? GetRealizedCellFromRow(row) : nullptr;
+    if (!cell)
+    {
+        ThrowElementNotAvailable();
+    }
+
+    if (cell == Owner())
+    {
+        __super::ShowContextMenuCore();
+    }
+    else if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(cell))
+    {
+        peer.ShowContextMenu();
+    }
 }
 
 hstring TableViewCellAutomationPeer::GetNameCore()

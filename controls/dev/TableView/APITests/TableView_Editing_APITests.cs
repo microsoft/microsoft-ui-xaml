@@ -6,8 +6,10 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -547,6 +549,208 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Asha", items[0].Name, "The cancel must leave the pre-edit value in place.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CanSort = false clear queued behind a sort on another column, both requested from CellEditEnding, does not clear that newer sort.")]
+        public void VerifyQueuedCanSortClearDoesNotClearNewerSortRequestedDuringEditEnding()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                var role = tableView.Columns[1];
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (requested)
+                    {
+                        return;
+                    }
+                    requested = true;
+                    tableView.SortByColumn(role, SortDirection.Ascending);
+                    name.CanSort = false;
+                };
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Asha K");
+                Verify.IsNull(error, "The commit must succeed.");
+                Verify.IsTrue(requested, "Precondition: CellEditEnding requested both changes.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The opted-out column must not stay sorted.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection,
+                    "The stale opt-out clear must not remove the newer sort on another column.");
+                var roles = GetProjectedItems(tableView).Select(item => ((EditablePerson)item).Role).ToList();
+                Verify.AreEqual("Architect,Designer,Engineer", string.Join(",", roles), "The rows must stay sorted by Role.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out made from a BeginningEdit handler, cancelled or not, still clears the opted-out sort.")]
+        [TestProperty("data:Change", "{CanSortCancel, CanSortContinue, CanUserSortColumnsCancel}")]
+        public void VerifySortOptOutDuringBeginningEditClearsSort()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            int clearedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                tableView.Sorted += (s, e) =>
+                {
+                    if (e.Direction == SortDirection.None)
+                    {
+                        clearedCount++;
+                    }
+                };
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (requested)
+                    {
+                        return;
+                    }
+                    requested = true;
+                    if (change == "CanUserSortColumnsCancel")
+                    {
+                        tableView.CanUserSortColumns = false;
+                    }
+                    else
+                    {
+                        name.CanSort = false;
+                    }
+                    e.Cancel = change != "CanSortContinue";
+                };
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), "Pilot");
+                Log.Comment($"SetValue: {error?.Message ?? "succeeded"}");
+                Verify.IsTrue(requested, "Precondition: BeginningEdit opted the sort out.");
+                if (change == "CanSortContinue")
+                {
+                    Verify.IsNull(error, "An edit BeginningEdit let continue must accept the value.");
+                    Verify.AreEqual("Pilot", items[0].Role, "The value must be committed.");
+                    Verify.IsFalse(tableView.IsEditing, "The committed edit must be closed.");
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"{change}: the opted-out sort must be cleared.");
+                Verify.AreEqual(1, clearedCount, $"{change}: the clear must be reported once.");
+                var names = GetProjectedItems(tableView).Select(item => ((EditablePerson)item).Name).ToList();
+                Verify.AreEqual("Asha,Diego,Mei", string.Join(",", names), $"{change}: the rows must return to source order.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out made from a BeginningEdit handler that lets the edit open keeps the edit open, and clears the sort when the edit closes.")]
+        public void VerifySortOptOutDuringBeginningEditKeepsTheEditOpen()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            bool vetoClose = true;
+            int clearedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                tableView.Sorted += (s, e) =>
+                {
+                    if (e.Direction == SortDirection.None)
+                    {
+                        clearedCount++;
+                    }
+                };
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (!requested)
+                    {
+                        requested = true;
+                        name.CanSort = false;
+                    }
+                };
+                // Holds the edit open after SetValue so its state can be observed.
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), "Pilot");
+                Log.Comment($"SetValue: {error?.Message ?? "succeeded"}");
+                Verify.IsTrue(requested, "Precondition: BeginningEdit opted the sort out.");
+                Verify.IsNotNull(error, "Precondition: the vetoed commit is reported.");
+                Verify.AreEqual(unchecked((int)0x80004005), error.HResult, "The edit must open and only the vetoed commit fail.");
+                Verify.IsTrue(tableView.IsEditing, "The opened edit must stay open.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "The deferred sort clear must not close the open edit.");
+                Verify.AreEqual(0, clearedCount, "The sort clear waits for the edit to close.");
+
+                vetoClose = false;
+                Verify.IsTrue(tableView.CommitEdit(), "The edit commits.");
+                Verify.AreEqual("Pilot", items[0].Role, "The value must be committed.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The opted-out sort must be cleared once the edit closes.");
+                Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
+            });
+        }
     }
 
     // Category 10.5 of the TableView test plan: validation, teardown and reentrancy.
@@ -635,9 +839,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeX";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeX";
 
                 tableView.ItemsSource = new List<EditablePerson>();
             });
@@ -664,9 +867,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "Nope";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "Nope";
 
                 // Forced and outside layout, with the item still in the source: the pending value is
                 // transferred, then rejected by validation.
@@ -698,11 +900,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView = CreateEditableTable(items);
                 tableView.IsReadOnly = false;
-                focusSink = new Button { Content = "Sink" };
-                var host = new StackPanel();
-                host.Children.Add(focusSink);
-                host.Children.Add(tableView);
-                LoadContent(host);
+                focusSink = LoadWithFocusSink(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -719,9 +917,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // focus-loss commit of an invalid value is rejected and leaves the edit open.
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeX";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeX";
                 focusSink.Focus(FocusState.Programmatic);
             });
 
@@ -732,9 +929,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreNotEqual(FocusState.Unfocused, focusSink.FocusState, "Precondition: focus left the editor.");
                 Verify.IsTrue(tableView.IsEditing, "Precondition: the rejected focus-loss commit keeps the edit open.");
 
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must still host its editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeY";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeY";
             });
 
             // Row 0 leaves the realization window, so the repeater recycles it inside measure.
@@ -746,6 +942,135 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Asha", items[0].Name, "Recycling the edited row must not leave a rejected value on the item.");
                 Verify.IsFalse(tableView.IsEditing, "Recycling the edited row must close the edit.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus moving into a flyout the editor owns keeps the edit open, and the edit commits once focus leaves for good.")]
+        public void VerifyFocusInEditorOwnedFlyoutKeepsEditOpen()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            Flyout flyout = null;
+            Button flyoutButton = null;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = "Bea";
+                flyoutButton = new Button { Content = "Inside" };
+                flyout = new Flyout { Content = flyoutButton };
+                FlyoutBase.SetAttachedFlyout(editor, flyout);
+                FlyoutBase.ShowAttachedFlyout(editor);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => flyoutButton.Focus(FocusState.Programmatic));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(flyout.IsOpen, "Precondition: the editor's flyout is open.");
+                Verify.AreNotEqual(FocusState.Unfocused, flyoutButton.FocusState, "Precondition: focus is inside the flyout.");
+                Verify.IsTrue(tableView.IsEditing, "Focus inside a flyout the editor owns must not commit the edit.");
+                Verify.AreEqual("Asha", items[0].Name, "The pending value must not reach the item while the flyout is open.");
+                flyout.Hide();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => focusSink.Focus(FocusState.Programmatic));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "Focus leaving the editor after the flyout closes must commit the edit.");
+                Verify.AreEqual("Bea", items[0].Name, "The committed value must reach the item.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus moving into a popup the editor did not open commits the edit.")]
+        public void VerifyFocusInUnrelatedPopupCommitsEdit()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            Popup popup = null;
+            Button popupButton = null;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetEditorTextBox(tableView, items[0]).Text = "Bea";
+                popupButton = new Button { Content = "Elsewhere" };
+                popup = new Popup { Child = popupButton, XamlRoot = tableView.XamlRoot };
+                popup.IsOpen = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => popupButton.Focus(FocusState.Programmatic));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual(FocusState.Unfocused, popupButton.FocusState, "Precondition: focus is inside the unrelated popup.");
+                Verify.IsFalse(tableView.IsEditing, "Focus inside a popup the editor did not open must commit the edit.");
+                Verify.AreEqual("Bea", items[0].Name, "The committed value must reach the item.");
+                popup.IsOpen = false;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        // Opens an edit on the first item that stays open because its value fails validation.
+        private void OpenEditHeldByValidator(out TableView tableView, out List<EditablePerson> items, out Button focusSink)
+        {
+            TableView table = null;
+            List<EditablePerson> source = null;
+            Button sink = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = MakeEditableItems();
+                source[0].RejectPrefix = InvalidPrefix;
+
+                table = CreateEditableTable(source);
+                table.IsReadOnly = false;
+                sink = LoadWithFocusSink(table);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                CaptureSetValue(GetValueProvider(table, source[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(table.IsEditing, "Precondition: an edit is open.");
+                Verify.IsTrue(GetEditorTextBox(table, source[0]).Focus(FocusState.Programmatic), "Precondition: the editor takes focus.");
+            });
+            IdleSynchronizer.Wait();
+
+            tableView = table;
+            items = source;
+            focusSink = sink;
+        }
+
+        private static TextBox GetEditorTextBox(TableView tableView, object item)
+        {
+            var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, item));
+            Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+            return editors[0];
+        }
+
+        // Loads the table after a focusable button, which tests use to move focus off the editor.
+        private Button LoadWithFocusSink(TableView tableView)
+        {
+            var sink = new Button { Content = "Sink" };
+            var host = new StackPanel();
+            host.Children.Add(sink);
+            host.Children.Add(tableView);
+            LoadContent(host);
+            return sink;
         }
 
         [TestMethod]
@@ -789,11 +1114,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                focusSink = new Button { Content = "Sink" };
-                var host = new StackPanel();
-                host.Children.Add(focusSink);
-                host.Children.Add(tableView);
-                LoadContent(host);
+                focusSink = LoadWithFocusSink(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -808,9 +1129,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeX";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeX";
                 focusSink.Focus(FocusState.Programmatic);
             });
 
@@ -819,9 +1139,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(tableView.IsEditing, "Precondition: the rejected focus-loss commit keeps the edit open.");
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must still host its editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeY";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeY";
             });
 
             // Recycling row 0 inside measure transfers the invalid value and posts its rollback.
@@ -866,9 +1185,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                Verify.AreEqual("Name", AutomationProperties.GetName(editors[0]), "The editor's UIA name must be the column header text.");
+                var editor = GetEditorTextBox(tableView, items[0]);
+                Verify.AreEqual("Name", AutomationProperties.GetName(editor), "The editor's UIA name must be the column header text.");
             });
 
             RunOnUIThread.Execute(() => tableView.CancelEdit());
@@ -913,11 +1231,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                Verify.AreEqual("Full name", AutomationProperties.GetName(editors[0]),
+                var editor = GetEditorTextBox(tableView, items[0]);
+                Verify.AreEqual("Full name", AutomationProperties.GetName(editor),
                     "An object header has no string form; the editor must take the name its rendered header exposes.");
-                Verify.AreEqual("Full name", FrameworkElementAutomationPeer.CreatePeerForElement(editors[0]).GetName(),
+                Verify.AreEqual("Full name", FrameworkElementAutomationPeer.CreatePeerForElement(editor).GetName(),
                     "The editor's peer must report the same name.");
             });
 
@@ -955,9 +1272,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, editors[0].FontWeight.Weight,
+                var editor = GetEditorTextBox(tableView, items[0]);
+                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, editor.FontWeight.Weight,
                     "The editor must not set a local FontWeight that blocks the TableView's value.");
             });
 
@@ -1519,6 +1835,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(tableView.IsEditing, "And must close.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a BeginEdit whose editor creation throws rolls back: no edit is left open, the display cell and focus are restored, and a later edit works.")]
+        public void VerifyBeginEditThatThrowsRollsBackAndAllowsALaterEdit()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            var converter = new ArmableThrowingConverter();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateTableViewShell(items, 500, 300);
+                tableView.IsReadOnly = false;
+
+                // An explicit Source makes the editor's binding evaluate inside the editor factory, so
+                // an armed converter throws out of BeginEdit itself rather than into a swallowed refresh.
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = "Name",
+                    Binding = new Binding { Path = new PropertyPath("Name"), Source = items[0], Converter = converter, Mode = BindingMode.OneWay },
+                });
+                tableView.Columns.Add(MakeTextColumn("Role"));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            Grid cell = null;
+            UIElement displayContent = null;
+            RunOnUIThread.Execute(() =>
+            {
+                cell = GetRowCell(GetRowForItem(tableView, items[0]), 0);
+                displayContent = GetCellContent(cell);
+                GetCellPeer(tableView, items[0], columnIndex: 0).SetFocus();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(cell, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "Precondition: the cell has focus before the edit is attempted.");
+
+                converter.Armed = true;
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Asha Kapoor");
+                converter.Armed = false;
+
+                Verify.IsTrue(error != null, "The throwing editor factory must surface as a failed edit.");
+                Verify.IsFalse(tableView.IsEditing, "A BeginEdit that threw must not leave an edit open.");
+                Verify.IsTrue(ReferenceEquals(displayContent, GetCellContent(cell)), "The cell must show its display content again.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(cell, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "Focus must be back on the cell after the rollback.");
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Asha Kapoor");
+                Verify.IsTrue(error == null, $"A later edit on the same cell must start and commit. Instead: {error?.Message}");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha Kapoor", items[0].Name, "The later edit must commit.");
+                Verify.IsFalse(tableView.IsEditing, "And must close.");
+            });
+        }
+    }
+
+    // Throws from Convert only while armed, so the display cells build normally.
+    internal sealed class ArmableThrowingConverter : IValueConverter
+    {
+        public bool Armed { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (Armed)
+            {
+                throw new InvalidOperationException("Deliberate editor-binding failure.");
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
     }
 
     internal static class TableViewEditingTestHelpers
