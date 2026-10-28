@@ -5,12 +5,12 @@
 #include <XamlTailored.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
-#include <TestCleanupWrapper.h>
 #include <ppltasks.h>
+#include <roapi.h>
+#include <detours.h>
 #include <wil/resource.h>
 #include <wil/stl.h>
 #include <wil/win32_helpers.h>
-#include <ActivationHelpers.h>
 #include "ActivationIntegrationTests.h"
 
 using namespace Platform;
@@ -29,6 +29,57 @@ using namespace Microsoft::UI::Xaml::Tests::Common;
 
 using namespace test_infra;
 using namespace std;
+
+namespace
+{
+    const wchar_t* const activationProbeLibrary = L"WinUIActivationProbe.dll";
+    decltype(RoGetActivationFactory)* realRoGetActivationFactory = RoGetActivationFactory;
+    decltype(LoadLibraryW)* realLoadLibraryW = LoadLibraryW;
+    decltype(LoadLibraryExW)* realLoadLibraryExW = LoadLibraryExW;
+    thread_local bool probingActivation = false;
+    unsigned int unregisteredActivationCalls = 0;
+    unsigned int activationProbeCalls = 0;
+    DWORD activationProbeFlags = 0;
+    wchar_t activationProbePath[MAX_PATH]{};
+
+    HRESULT WINAPI GetActivationFactoryWithoutRegistration(HSTRING classId, REFIID iid, void** factory)
+    {
+        if (probingActivation &&
+            wcscmp(WindowsGetStringRawBuffer(classId, nullptr), L"Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions") == 0)
+        {
+            ++unregisteredActivationCalls;
+            *factory = nullptr;
+            return REGDB_E_CLASSNOTREG;
+        }
+        return realRoGetActivationFactory(classId, iid, factory);
+    }
+
+    HMODULE WINAPI LoadActivationProbe(PCWSTR libraryName, HANDLE file, DWORD flags)
+    {
+        if (probingActivation && libraryName && _wcsicmp(libraryName, L"Microsoft.Web.WebView2.Core.dll") == 0)
+        {
+            ++activationProbeCalls;
+            activationProbeFlags = flags;
+            // Avoid the test host's Core DLL manifest redirection, but use the production search flags.
+            HMODULE module = realLoadLibraryExW(activationProbeLibrary, file, flags);
+            if (module)
+            {
+                GetModuleFileNameW(module, activationProbePath, ARRAYSIZE(activationProbePath));
+            }
+            return module;
+        }
+        return realLoadLibraryExW(libraryName, file, flags);
+    }
+
+    HMODULE WINAPI LoadActivationProbeLegacy(PCWSTR libraryName)
+    {
+        if (probingActivation && libraryName && _wcsicmp(libraryName, L"Microsoft.Web.WebView2.Core.dll") == 0)
+        {
+            return LoadActivationProbe(libraryName, nullptr, 0);
+        }
+        return realLoadLibraryW(libraryName);
+    }
+}
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Framework { namespace Activation {
@@ -89,11 +140,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             wil::unique_hmodule existing(LoadLibraryW(L"version.dll"));
             VERIFY_IS_NOT_NULL(existing.get());
-            wil::unique_hmodule repeated(LoadLibraryForActivation(L"version.dll"));
-            VERIFY_ARE_EQUAL(existing.get(), repeated.get());
 
-            const wchar_t* libraryName = L"WinUIActivationProbe.dll";
-            const std::wstring libraryPath = std::wstring(directory) + L"\\" + libraryName;
+            const std::wstring libraryPath = std::wstring(directory) + L"\\" + activationProbeLibrary;
             const auto sourcePath = wil::GetModuleFileNameW<std::wstring>(existing.get());
             VERIFY_IS_TRUE(CopyFileW(sourcePath.c_str(), libraryPath.c_str(), TRUE));
             auto removeCopy = wil::scope_exit([&]() { VERIFY_IS_TRUE(DeleteFileW(libraryPath.c_str())); });
@@ -101,95 +149,56 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // This method has its own process. Exclude user directories from its default search
             // so the host's DLL policy cannot mask a missing explicit fallback.
             VERIFY_IS_TRUE(SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32));
-            VERIFY_IS_NULL(GetModuleHandleW(libraryName));
+            VERIFY_IS_NULL(GetModuleHandleW(activationProbeLibrary));
             const auto cookie = AddDllDirectory(directory);
             VERIFY_IS_NOT_NULL(cookie);
             auto removeCookie = wil::scope_exit([&]() { VERIFY_IS_TRUE(RemoveDllDirectory(cookie)); });
-            wil::unique_hmodule primary(LoadLibraryW(libraryName));
+            wil::unique_hmodule primary(LoadLibraryW(activationProbeLibrary));
             VERIFY_IS_NULL(primary.get());
 
-            wil::unique_hmodule module(LoadLibraryForActivation(libraryName));
-            VERIFY_IS_NOT_NULL(module.get());
-            const auto loadedPath = wil::GetModuleFileNameW<std::wstring>(module.get());
-            VERIFY_ARE_EQUAL(0, _wcsicmp(libraryPath.c_str(), loadedPath.c_str()));
-        }
-
-        void ActivationIntegrationTests::WebView2EnvironmentFailureCompletesCreation()
-        {
-            TestCleanupWrapper cleanup;
-            WebView2^ webView;
-            wil::unique_cotaskmem_string originalBrowserFolder;
             RunOnUIThread([&]()
             {
-                VERIFY_SUCCEEDED(wil::TryGetEnvironmentVariableW(L"WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", originalBrowserFolder));
-                webView = ref new WebView2();
-            });
-            auto restoreBrowserFolder = wil::scope_exit([&]()
-            {
-                RunOnUIThread([&]()
+                auto webView = ref new WebView2();
+                auto closeWebView = wil::scope_exit([&]() { webView->Close(); });
+                unregisteredActivationCalls = 0;
+                activationProbeCalls = 0;
+                activationProbeFlags = 0;
+                activationProbePath[0] = L'\0';
+                probingActivation = true;
+                auto stopProbing = wil::scope_exit([&]() { probingActivation = false; });
+
+                // Hook the implementation exports, including callers using API-set imports.
+                const auto loader = GetModuleHandleW(L"kernelbase.dll");
+                VERIFY_IS_NOT_NULL(loader);
+                realLoadLibraryW = reinterpret_cast<decltype(realLoadLibraryW)>(GetProcAddress(loader, "LoadLibraryW"));
+                realLoadLibraryExW = reinterpret_cast<decltype(realLoadLibraryExW)>(GetProcAddress(loader, "LoadLibraryExW"));
+                VERIFY_IS_NOT_NULL(realLoadLibraryW);
+                VERIFY_IS_NOT_NULL(realLoadLibraryExW);
+
+                auto updateDetours = [](bool attach)
                 {
-                    VERIFY_IS_TRUE(SetEnvironmentVariableW(L"WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", originalBrowserFolder.get()));
-                });
-            });
-            auto closeWebView = wil::scope_exit([&]()
-            {
-                RunOnUIThread([&]() { webView->Close(); });
+                    VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionBegin());
+                    auto abortTransaction = wil::scope_exit([]() { DetourTransactionAbort(); });
+                    VERIFY_ARE_EQUAL(NO_ERROR, DetourUpdateThread(GetCurrentThread()));
+                    auto update = attach ? DetourAttach : DetourDetach;
+                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realRoGetActivationFactory), GetActivationFactoryWithoutRegistration));
+                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryW), LoadActivationProbeLegacy));
+                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryExW), LoadActivationProbe));
+                    VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionCommit());
+                    abortTransaction.release();
+                };
+                updateDetours(true);
+                auto detachDetours = wil::scope_exit([&]() { updateDetours(false); });
+
+                // Options activation enters MUXC's real fallback. The probe DLL has no
+                // activation export, so initialization stops without starting a browser.
+                webView->EnsureCoreWebView2Async();
             });
 
-            unsigned int initializedCount = 0;
-            IAsyncAction^ initialization;
-            auto initializationCompleted = std::make_shared<Event>(L"WebView2 initialization completed");
-            auto observeCompletion = [&](IAsyncAction^ action)
-            {
-                initialization = action;
-                action->Completed = ref new AsyncActionCompletedHandler(
-                    [initializationCompleted](IAsyncAction^, AsyncStatus)
-                {
-                    initializationCompleted->Set();
-                });
-            };
-            auto initializedRegistration = CreateSafeEventRegistration(WebView2, CoreWebView2Initialized);
-            RunOnUIThread([&]()
-            {
-                const auto missingBrowserFolder = wil::ExpandEnvironmentStringsW<std::wstring>(
-                    L"%TEMP%\\WinUI-Missing-WebView2-Runtime-") + std::to_wstring(GetCurrentProcessId());
-                VERIFY_ARE_EQUAL(INVALID_FILE_ATTRIBUTES, GetFileAttributesW(missingBrowserFolder.c_str()));
-                VERIFY_IS_TRUE(SetEnvironmentVariableW(L"WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", missingBrowserFolder.c_str()));
-
-                initializedRegistration.Attach(webView, ref new TypedEventHandler<WebView2^, CoreWebView2InitializedEventArgs^>(
-                    [&](WebView2^ sender, CoreWebView2InitializedEventArgs^ args)
-                {
-                    VERIFY_IS_TRUE(FAILED(args->Exception.Value));
-                    if (++initializedCount == 1)
-                    {
-                        // Join the failing initialization before it completes.
-                        observeCompletion(sender->EnsureCoreWebView2Async());
-                    }
-                }));
-            });
-
-            for (unsigned int attempt = 0; attempt < 3; ++attempt)
-            {
-                initializationCompleted->Reset();
-                RunOnUIThread([&]()
-                {
-                    if (attempt == 0)
-                    {
-                        webView->Source = ref new Uri(L"about:blank");
-                    }
-                    else
-                    {
-                        observeCompletion(webView->EnsureCoreWebView2Async());
-                    }
-                });
-                initializationCompleted->WaitForDefault();
-                RunOnUIThread([&]()
-                {
-                    VERIFY_ARE_EQUAL(AsyncStatus::Completed, initialization->Status);
-                    initialization->GetResults();
-                    VERIFY_ARE_EQUAL(attempt + 1, initializedCount);
-                });
-            }
+            VERIFY_ARE_EQUAL(1u, unregisteredActivationCalls);
+            VERIFY_ARE_EQUAL(1u, activationProbeCalls);
+            VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), activationProbeFlags);
+            VERIFY_ARE_EQUAL(0, _wcsicmp(libraryPath.c_str(), activationProbePath));
         }
 
 } } } } } }

@@ -841,15 +841,6 @@ winrt::IAsyncAction WebView2::CreateCoreObjects(winrt::CoreWebView2Environment e
         XamlTelemetry::WebView2_CreateCoreObjects(true, reinterpret_cast<uint64_t>(this));
 
         m_creationInProgressAsync = std::make_unique<AsyncWebViewOperations>();
-        auto completeCreation = wil::scope_exit([this]()
-        {
-            m_isImplicitCreationInProgress = false;
-            m_isExplicitCreationInProgress = false;
-
-            // Clear the current operation before releasing callers that may retry initialization.
-            auto completedCreation = std::move(m_creationInProgressAsync);
-            completedCreation->StopWaiting();
-        });
         RegisterXamlEventHandlers();
 
         // We are about to attempt re-creation of the environment,
@@ -889,17 +880,17 @@ winrt::IAsyncOperation<winrt::CoreWebView2Environment> WebView2::CreateDefaultCo
 
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
 
+    // NOTE: To enable Anaheim logging, add: environmentOptions.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
+    winrt::CoreWebView2EnvironmentOptions environmentOptions = winrt::CoreWebView2EnvironmentOptions();
+
+    auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
+    if (applicationLanguagesList.Size() > 0)
+    {
+        environmentOptions.Language(applicationLanguagesList.GetAt(0));
+    }
+
     try
     {
-        // NOTE: To enable Anaheim logging, add: environmentOptions.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
-        winrt::CoreWebView2EnvironmentOptions environmentOptions = winrt::CoreWebView2EnvironmentOptions();
-
-        auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
-        if (applicationLanguagesList.Size() > 0)
-        {
-            environmentOptions.Language(applicationLanguagesList.GetAt(0));
-        }
-
         returnedValue = co_await winrt::CoreWebView2Environment::CreateWithOptionsAsync(browserInstall, userDataFolder, environmentOptions);
     }
     catch (winrt::hresult_error e)
@@ -950,6 +941,11 @@ winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent, 
         winrt::hresult hr = e.code().value;
         FireCoreWebView2Initialized(hr);
     }
+
+    m_isImplicitCreationInProgress = false;
+    m_isExplicitCreationInProgress = false;
+    m_creationInProgressAsync->StopWaiting();
+    m_creationInProgressAsync.reset();
 
     co_return;
 }

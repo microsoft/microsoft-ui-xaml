@@ -124,7 +124,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\inc\ActivationHelpers.h" />
     <ClInclude Include="..\inc\AutoHandle.h" />
     <ClInclude Include="..\inc\BoxHelpers.h" />
     <ClInclude Include="..\inc\BuildMacros.h" />
