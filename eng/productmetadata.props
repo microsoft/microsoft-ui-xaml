@@ -39,6 +39,10 @@
       <!-- This winmd isn't merged into any other winmd -->
       <Merge>false</Merge>
     </MRTWinMDs>
+    <StorageWinMD Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.Storage.winmd">
+      <ImplementationDll>Microsoft.WindowsAppRuntime.dll</ImplementationDll>
+      <Merge>false</Merge>
+    </StorageWinMD>
 
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.dll</ImplementationDll>
@@ -68,7 +72,7 @@
       <Merge>false</Merge>
     </WinUIEditWinMD>
 
-    <ExternalWinMDs Include="@(IxpWinMDs);@(MRTWinMDs);@(WinUIEditWinMD)"/>
+    <ExternalWinMDs Include="@(IxpWinMDs);@(MRTWinMDs);@(StorageWinMD);@(WinUIEditWinMD)"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -78,6 +82,7 @@
     <WinUIWinMDReferences Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd"/>
     <WinUIWinMDReferences Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Private.winmd" Condition="'$(IncludePrivateMetadata)'=='true'"/>
     <WinUIWinMDReferences Include="@(MRTWinMDs)" />
+    <WinUIWinMDReferences Include="@(StorageWinMD)"/>
     <WinUIWinMDReferences Include="@(WinUIEditWinMD)"/>
   </ItemGroup>
 
