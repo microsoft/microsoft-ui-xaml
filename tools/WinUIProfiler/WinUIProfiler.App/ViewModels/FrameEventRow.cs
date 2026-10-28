@@ -3,11 +3,12 @@
 
 using System.Globalization;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.App.ViewModels;
 
 // An event of the selected frame in the Frames tab.
-public sealed class FrameEventRow(ProfilerEvent profilerEvent, string bucket)
+public sealed class FrameEventRow(ProfilerEvent profilerEvent, string bucket, IReadOnlyList<ElementMention> mentions)
 {
     public string Time { get; } = profilerEvent.RelativeMilliseconds.ToString("N3", CultureInfo.CurrentCulture);
     public string Thread { get; } = profilerEvent.ThreadId.ToString(CultureInfo.CurrentCulture);
@@ -15,9 +16,11 @@ public sealed class FrameEventRow(ProfilerEvent profilerEvent, string bucket)
     public string Bucket { get; } = bucket;
     public string Fields { get; } = EventFormat.Fields(profilerEvent);
 
+    // The UI elements the event mentions, which the details pane links to.
+    public IReadOnlyList<ElementLink> Elements { get; } = [.. mentions.Select(mention => new ElementLink(mention))];
+
     // One field per line, for the details pane.
-    public string Details => $"{profilerEvent.Name} | {Bucket} | {Time} ms | thread {Thread}\n" + string.Join("\n",
-        profilerEvent.Fields.Select(item => $"{item.Name} = {EventFormat.Value(item.Name, item.Value)}"));
+    public string Details => $"{profilerEvent.Name} | {Bucket} | {Time} ms | thread {Thread}\n" + EventFormat.Lines(profilerEvent);
 
     public override string ToString() => $"{Time} ms | {Name} | {Fields}";
 }

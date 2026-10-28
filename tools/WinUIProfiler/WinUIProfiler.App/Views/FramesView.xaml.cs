@@ -24,11 +24,10 @@ public sealed partial class FramesView : UserControl
     private readonly DispatcherQueueTimer refreshTimer;
     private readonly DispatcherQueueTimer filterTimer;
     private readonly Dictionary<long, FrameRow> rows = [];
+    private SessionSource? source;
     private string? path;
     // Counts the files shown, so a read of an earlier one, or of this one before it was reopened, is dropped.
     private int shown;
-    private string? recordingPath;
-    private bool following = true;
     // The latest event the last read saw, and where the file was complete from then: trimming the oldest events changes it.
     private long? readSeq;
     private long? trimmedBefore;
@@ -37,6 +36,8 @@ public sealed partial class FramesView : UserControl
     private bool readAgain;
     private FrameRow? selected;
     private int offset;
+    // The frame, bucket, filter and offset of the event page shown.
+    private (long FrameId, string? Bucket, string? Filter, int Offset)? shownPage;
     private CancellationTokenSource? eventsRead;
 
     public FramesView()
@@ -58,27 +59,37 @@ public sealed partial class FramesView : UserControl
     // The window that owns the file picker.
     public WindowId Owner { get; set; }
 
-    // Follows the connection's session file, re-reading it every second while connected. Opening another file stops
-    // following until the next connection's file.
-    public void ShowRecording(string? sessionPath, bool connected)
+    // The file to show, re-read every second while the connection writes it.
+    public SessionSource? Source
     {
-        if (sessionPath is not null && sessionPath != recordingPath)
+        get => source;
+        set
         {
-            recordingPath = sessionPath;
-            following = true;
+            if (source is not null)
+            {
+                source.Changed -= Source_Changed;
+            }
+
+            source = value;
+            if (source is not null)
+            {
+                source.Changed += Source_Changed;
+                Source_Changed(source, EventArgs.Empty);
+            }
+        }
+    }
+
+    // Asks to show a UI element in the Elements tab.
+    public event EventHandler<long>? ElementRequested;
+
+    private void Source_Changed(object? sender, EventArgs args)
+    {
+        if (source!.Path != path)
+        {
+            Show(source.Path);
         }
 
-        if (!following)
-        {
-            return;
-        }
-
-        if (sessionPath != path)
-        {
-            Show(sessionPath);
-        }
-
-        if (connected && sessionPath is not null)
+        if (source.Live)
         {
             if (!refreshTimer.IsRunning)
             {
@@ -247,6 +258,7 @@ public sealed partial class FramesView : UserControl
         if (selected is not { } row || path is not { } file)
         {
             Events.Clear();
+            shownPage = null;
             EventDetails.Text = Text("SelectEventPrompt");
             Position.Text = "";
             PreviousButton.IsEnabled = NextButton.IsEnabled = false;
@@ -258,7 +270,8 @@ public sealed partial class FramesView : UserControl
         var frameId = row.Frame.FrameId;
         var bucket = Buckets.SelectedItem?.Tag as string;
         var filter = string.IsNullOrWhiteSpace(FilterBox.Text) ? null : FilterBox.Text;
-        var pageIsFull = grew && Events.Count == PageSize;
+        // Only the page that is shown, not one still being read, can be kept.
+        var pageIsFull = grew && shownPage == (frameId, bucket, filter, start) && Events.Count == PageSize;
         var keep = grew ? EventList.SelectedIndex : -1;
         try
         {
@@ -274,7 +287,7 @@ public sealed partial class FramesView : UserControl
                 var first = start >= count && count > 0 ? (int)((count - 1) / PageSize * PageSize) : start;
                 var events = new List<FrameEventRow>(PageSize);
                 SessionFile.ReadFrameEvents(file, frameId, bucket, filter, first, PageSize,
-                    (profilerEvent, eventBucket) => events.Add(new(profilerEvent, eventBucket)), cancellation.Token);
+                    (profilerEvent, eventBucket, mentions) => events.Add(new(profilerEvent, eventBucket, mentions)), cancellation.Token);
                 return (count, first, events);
             }, cancellation.Token);
             if (cancellation.IsCancellationRequested)
@@ -291,6 +304,7 @@ public sealed partial class FramesView : UserControl
                     Events.Add(item);
                 }
 
+                shownPage = (frameId, bucket, filter, first);
                 if (keep >= 0 && keep < Events.Count)
                 {
                     EventList.SelectedIndex = keep;
@@ -328,8 +342,16 @@ public sealed partial class FramesView : UserControl
         filterTimer.Start();
     }
 
-    private void EventList_SelectionChanged(object sender, SelectionChangedEventArgs args) =>
-        EventDetails.Text = (EventList.SelectedItem as FrameEventRow)?.Details ?? Text("SelectEventPrompt");
+    private void EventList_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+        var row = EventList.SelectedItem as FrameEventRow;
+        EventDetails.Text = row?.Details ?? Text("SelectEventPrompt");
+        ElementLinks.ItemsSource = row?.Elements;
+        ElementLinksPanel.Visibility = row?.Elements.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ElementLink_Click(object sender, RoutedEventArgs args) =>
+        ElementRequested?.Invoke(this, (long)((FrameworkElement)sender).Tag);
 
     private async void Open_Click(object sender, RoutedEventArgs args)
     {
@@ -342,9 +364,7 @@ public sealed partial class FramesView : UserControl
                 return;
             }
 
-            following = false;
-            refreshTimer.Stop();
-            Show(file.Path);
+            source?.Open(file.Path);
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

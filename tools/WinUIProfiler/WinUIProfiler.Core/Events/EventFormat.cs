@@ -21,6 +21,10 @@ public static class EventFormat
     public static string Fields(ProfilerEvent profilerEvent) =>
         string.Join(" ", profilerEvent.Fields.Select(field => $"{field.Name}={Value(field.Name, field.Value)}"));
 
+    // One field per line.
+    public static string Lines(ProfilerEvent profilerEvent) =>
+        string.Join("\n", profilerEvent.Fields.Select(field => $"{field.Name} = {Value(field.Name, field.Value)}"));
+
     private static bool IsIdentity(string name) =>
         name.EndsWith("Id", StringComparison.OrdinalIgnoreCase) ||
         name.EndsWith("Pointer", StringComparison.OrdinalIgnoreCase) ||

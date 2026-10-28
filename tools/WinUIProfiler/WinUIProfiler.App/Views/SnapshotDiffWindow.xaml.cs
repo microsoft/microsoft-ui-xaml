@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIProfiler.App.ViewModels;
 
@@ -44,6 +45,8 @@ public sealed partial class SnapshotDiffWindow : Window
     private SnapshotTreeKind matchTarget;
     private SnapshotDiffData? data;
     private bool closed, changingExpansion, synchronizing;
+
+    public event EventHandler<SnapshotElement>? ElementRequested;
 
     public SnapshotDiffWindow(SnapshotHistoryEntry baseline, SnapshotHistoryEntry comparison)
     {
@@ -224,6 +227,16 @@ public sealed partial class SnapshotDiffWindow : Window
     }
 
     private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args) => Populate(args.Node);
+
+    // Double-clicking a XAML node asks the main window to show its element's history in the Elements tab: as it was in
+    // the later snapshot, or in the earlier one for a removed node.
+    private void XamlTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
+    {
+        if (data is null || SnapshotTreeExpansion.NodeAt(XamlTree, args.OriginalSource)?.Content is not SnapshotDiffTreeItem { Difference: { } node }) return;
+        args.Handled = true;
+        ElementRequested?.Invoke(this, node.After is { } later
+            ? SnapshotElement.From(data.After.Document, later) : SnapshotElement.From(data.Before.Document, node.Before!));
+    }
 
     private void ChangesOnly_Click(object sender, RoutedEventArgs args)
     {

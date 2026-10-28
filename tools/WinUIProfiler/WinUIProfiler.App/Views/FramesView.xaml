@@ -135,10 +135,29 @@
                     <Border Grid.Column="1" Padding="12,8" CornerRadius="4"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <TextBlock x:Name="EventDetails" x:Uid="EventDetails" IsTextSelectionEnabled="True" TextWrapping="Wrap"
-                                       Style="{ThemeResource CaptionTextBlockStyle}" />
-                        </ScrollViewer>
+                        <Grid RowSpacing="8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <TextBlock x:Name="EventDetails" x:Uid="EventDetails" IsTextSelectionEnabled="True" TextWrapping="Wrap"
+                                           Style="{ThemeResource CaptionTextBlockStyle}" />
+                            </ScrollViewer>
+                            <!-- Outside the scrolling fields, so the links stay in view. -->
+                            <StackPanel x:Name="ElementLinksPanel" Grid.Row="1" Visibility="Collapsed">
+                                <TextBlock x:Uid="ElementLinksHeader" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                <ItemsControl x:Name="ElementLinks">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ElementLink">
+                                            <HyperlinkButton Tag="{x:Bind ObjectId}" Padding="0,2" Click="ElementLink_Click">
+                                                <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                            </HyperlinkButton>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
                 <Grid Grid.Row="2" ColumnSpacing="12">

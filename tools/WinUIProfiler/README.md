@@ -51,8 +51,9 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file, and the Frames tab shows its frames.
-There is no object view, heap capture or instrumented-product
+GPU memory events for it, to a session file. The Frames tab shows its frames and
+the Elements tab its UI elements.
+There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
 
@@ -114,6 +115,9 @@ History remains available across disconnect/reconnect for the current profiler
 session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
 No recording database, heap capture or MUX changes are required.
+
+Double-clicking a XAML node, in a snapshot's viewer or in a comparison, shows
+that element's history in the main window's Elements tab (see below).
 
 XAML properties include margin, horizontal/vertical alignment, layout slot,
 transformed bounds relative to the visual parent, render transform and origin,
@@ -326,7 +330,7 @@ The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
 file once a second while connected: only the frames that changed since the last
 read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
 the tab reads the file again. **Open session file...** shows a saved file
-instead, until the next connection.
+instead, in this tab and the Elements tab, until the next connection.
 
 - Each frame shows when it was drawn (the end of its drawing tick), how long
   the drawing tick took (the bar is full at 50 ms; a warning icon marks more
@@ -336,10 +340,32 @@ instead, until the next connection.
   both. Each column header's tooltip says what the column is.
 - Selecting a frame shows its events, 100 per page, all or one bucket. The
   filter keeps events whose name or a string field contains the text; a number
-  (`42`, `0x1A2B`) matches numeric fields with exactly that value.
+  (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the
+  selected event mentions UI elements, its details link to each one's history
+  in the Elements tab.
 - For a launch recorded from process start, the tab gives when the first ten
   drawn frames of the first UI thread ended, from the process's creation;
   otherwise from the start of the recording. A trimmed file no longer has them.
+
+### Elements tab
+
+The Elements tab (`Views\ElementsView.xaml`) lists the UI elements of the same
+session file, in the order they were first seen, with their type and name,
+address, when an event first and last mentioned them, and how many events do.
+The search box keeps elements whose type, name or address contains the text.
+Selecting an element shows its history: the events that mention it, 100 per
+page, each with the frame it belongs to. While connected, the tab reads the
+file once a second while it is shown, keeping the list's scroll position and
+selection.
+
+Snapshots don't record the runtime's element addresses, only each XAML
+object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
+`PeerAssociated`, `ElementEnteredTree`, `ChildAdded` and `ChildInserted` carry
+both an element's address and its WinRT object's, so
+`SessionFile.FindSnapshotElement` maps a snapshot node to the element that was
+at that address when the snapshot was taken. That needs the recording to have
+seen the element being created or added to the tree: a session attached to a
+running app finds only the elements added since.
 
 ### Recorded, from a trace file
 
@@ -366,7 +392,7 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
 & $cli objects session.sqlite --type Button    # UI elements, with first/last seen and event counts
-& $cli timeline session.sqlite --object <id>   # the events that mention one element (or --address 0x...)
+& $cli timeline session.sqlite --object <id>   # the events that mention one element, with their frames (or --address 0x...)
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
 & $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
