@@ -10,7 +10,7 @@ namespace WinUIProfiler.Engine.Storage;
 // thread inside its transactions, so a mention is saved and trimmed together with its event.
 //
 // There are no create or destroy events. An address is known to be a UI element once it appears in a field that only
-// ever holds a CUIElement* (tree, child, layout, template, visual state, render and composition-link events).
+// ever holds a CUIElement* (tree, child, popup, layout, template, visual state, render and composition-link events).
 // DependencyObject_Enter, PeerAssociated and ContentChanged's content also carry other DependencyObjects, so their
 // mentions of an address are held until the address is known to be a UI element. DependencyObject_Enter reports the
 // type each time an object enters the tree: a different type at a known address means the memory was reused by a new
@@ -19,7 +19,8 @@ namespace WinUIProfiler.Engine.Storage;
 // same type can't be detected.
 internal sealed class ObjectIndex : IDisposable
 {
-    // Mentions held per address: a UI element is confirmed within a few, other objects never are.
+    // Mentions held in memory per address: a UI element is confirmed within a few, other objects never are. Later ones
+    // wait in the temporary table HeldMentions, so confirming an address still saves all of its mentions.
     private const int MaxHeldMentions = 8;
 
     // Elements whose rows were all trimmed are remembered, so a later mention keeps their ID, type and name.
@@ -52,12 +53,17 @@ internal sealed class ObjectIndex : IDisposable
         public string? Type { get; set; }
         public string? Name { get; set; }
         public List<(long Sequence, int Field)> Mentions { get; } = new(2);
+        // True once mentions past MaxHeldMentions went to HeldMentions.
+        public bool Overflow { get; set; }
     }
 
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertObject;
     private readonly SqliteCommand updateObject;
     private readonly SqliteCommand insertMention;
+    private readonly SqliteCommand insertHeld;
+    private readonly SqliteCommand saveHeld;
+    private readonly SqliteCommand deleteHeld;
     private readonly Dictionary<long, EventRoles> rolesByType = [];
     private readonly Dictionary<long, Element> elements = [];
     private readonly Dictionary<long, Held> held = [];
@@ -73,6 +79,20 @@ internal sealed class ObjectIndex : IDisposable
             ("$id", SqliteType.Integer), ("$type", SqliteType.Text), ("$name", SqliteType.Text));
         insertMention = Sql.Prepare(connection, "INSERT INTO ObjectEvents (Seq, ObjectId, Field) VALUES ($seq, $object, $field)",
             ("$seq", SqliteType.Integer), ("$object", SqliteType.Integer), ("$field", SqliteType.Integer));
+        // Only the writer's connection sees a TEMP table, and it is not part of the session file.
+        Sql.Execute(connection, """
+            CREATE TEMP TABLE HeldMentions (
+                Address INTEGER NOT NULL,
+                Seq INTEGER NOT NULL,
+                Field INTEGER NOT NULL,
+                PRIMARY KEY (Address, Seq, Field)) WITHOUT ROWID
+            """);
+        insertHeld = Sql.Prepare(connection, "INSERT INTO temp.HeldMentions (Address, Seq, Field) VALUES ($address, $seq, $field)",
+            ("$address", SqliteType.Integer), ("$seq", SqliteType.Integer), ("$field", SqliteType.Integer));
+        saveHeld = Sql.Prepare(connection, """
+            INSERT INTO ObjectEvents (Seq, ObjectId, Field) SELECT Seq, $object, Field FROM temp.HeldMentions WHERE Address = $address
+            """, ("$address", SqliteType.Integer), ("$object", SqliteType.Integer));
+        deleteHeld = Sql.Prepare(connection, "DELETE FROM temp.HeldMentions WHERE Address = $address", ("$address", SqliteType.Integer));
     }
 
     // Records the UI elements the event mentions. Call right after inserting the event, in the same transaction.
@@ -87,6 +107,9 @@ internal sealed class ObjectIndex : IDisposable
         insertObject.Transaction = transaction;
         updateObject.Transaction = transaction;
         insertMention.Transaction = transaction;
+        insertHeld.Transaction = transaction;
+        saveHeld.Transaction = transaction;
+        deleteHeld.Transaction = transaction;
         var fields = profilerEvent.Fields;
         if (roles.TypeField >= 0 && Address(fields[roles.ObjectField].Value) is var entered && entered != 0)
         {
@@ -130,10 +153,11 @@ internal sealed class ObjectIndex : IDisposable
             elements.Remove(element.Address);
         }
 
+        Sql.Execute(connection, "DELETE FROM temp.HeldMentions WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
         foreach (var (address, entry) in held)
         {
             entry.Mentions.RemoveAll(mention => mention.Sequence < cutoff);
-            if (entry.Mentions.Count == 0)
+            if (entry.Mentions.Count == 0 && !entry.Overflow)
             {
                 held.Remove(address);
             }
@@ -141,11 +165,11 @@ internal sealed class ObjectIndex : IDisposable
     }
 
     // Which fields hold a UI element's address, from the runtime call sites (uielement.cpp, ContentControl.cpp,
-    // DXamlCore.cpp, depends.cpp) and checked on recorded sessions. Shared fields also hold other DependencyObjects.
+    // DXamlCore.cpp, depends.cpp, Popup.cpp) and checked on recorded sessions. Shared fields also hold other DependencyObjects.
     private static Role? RoleOf(string eventName, string fieldName) => fieldName switch
     {
         "ElementId" => eventName == "PeerAssociated" ? Role.Shared : Role.UIElement,
-        "ParentId" or "ChildId" or "UIElementId" or "ElementPointer" => Role.UIElement,
+        "ParentId" or "ChildId" or "UIElementId" or "ElementPointer" or "PopupId" => Role.UIElement,
         "OldContentId" or "NewContentId" => Role.Shared,
         "ObjectPointer" => eventName switch
         {
@@ -205,7 +229,7 @@ internal sealed class ObjectIndex : IDisposable
             {
                 // The memory was reused: the element's history ends when it left the tree and a new object starts.
                 elements.Remove(address);
-                held[address] = new Held { Type = type, Name = name };
+                StartHolding(address, type, name);
                 if (element.LeftSequence > 0)
                 {
                     MoveToNewObject(element, transaction);
@@ -238,6 +262,18 @@ internal sealed class ObjectIndex : IDisposable
         }
 
         // A first sighting, or a different type replacing an object that was never a UI element.
+        StartHolding(address, type, name);
+    }
+
+    // Holds the mentions of a new object at the address; those held for the object there before are dropped.
+    private void StartHolding(long address, string type, string? name)
+    {
+        if (held.TryGetValue(address, out var previous) && previous.Overflow)
+        {
+            deleteHeld.Parameters["$address"].Value = address;
+            deleteHeld.ExecuteNonQuery();
+        }
+
         held[address] = new Held { Type = type, Name = name };
     }
 
@@ -309,6 +345,15 @@ internal sealed class ObjectIndex : IDisposable
         }
 
         Mention(sequence, element, field);
+        if (entry?.Overflow == true)
+        {
+            // Earlier than this mention, so the element's last sequence stays this one.
+            saveHeld.Parameters["$address"].Value = address;
+            saveHeld.Parameters["$object"].Value = element.Id;
+            saveHeld.ExecuteNonQuery();
+            deleteHeld.Parameters["$address"].Value = address;
+            deleteHeld.ExecuteNonQuery();
+        }
     }
 
     private void Hold(long address, long sequence, int field)
@@ -321,7 +366,14 @@ internal sealed class ObjectIndex : IDisposable
         if (entry.Mentions.Count < MaxHeldMentions)
         {
             entry.Mentions.Add((sequence, field));
+            return;
         }
+
+        insertHeld.Parameters["$address"].Value = address;
+        insertHeld.Parameters["$seq"].Value = sequence;
+        insertHeld.Parameters["$field"].Value = field;
+        insertHeld.ExecuteNonQuery();
+        entry.Overflow = true;
     }
 
     // Mentions arrive in Seq order.
@@ -349,5 +401,8 @@ internal sealed class ObjectIndex : IDisposable
         insertObject.Dispose();
         updateObject.Dispose();
         insertMention.Dispose();
+        insertHeld.Dispose();
+        saveHeld.Dispose();
+        deleteHeld.Dispose();
     }
 }
