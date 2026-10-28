@@ -3495,6 +3495,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 source.ResetTo("A");
                 hostA.Children.Remove(repeater);
                 hostB.Children.Add(repeater);
+                // Read before any tick, so the state the deferred unload check will see is logged even if that check crashes.
+                int indexAfterReset = repeater.GetElementIndex(target);
+                int countAfterReset = repeater.ItemsSourceView.Count;
+                Verify.IsTrue(indexAfterReset >= countAfterReset, $"Precondition: right after the reset the repeater reports a stale index ({indexAfterReset}) outside the source ({countAfterReset} items)");
             });
             WaitForFrames(2);
             bool closed = WaitForTipState(tip, isOpen: false);
