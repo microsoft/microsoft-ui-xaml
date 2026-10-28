@@ -85,8 +85,8 @@ public:
     void ClearSort();
 
     // ---- Hierarchy verbs: forward to SourceTable, which raises one Reset -------------------
-    // While a DeferRefresh is open the table is frozen, so SourceTable stores the selectors as
-    // pending and builds them at the re-read in EndDeferRefresh.
+    // While a DeferRefresh is open SourceTable holds resets, so it stores the selectors as pending
+    // and builds them at the re-read in EndDeferRefresh.
 
     void ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey);
     void ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector);
@@ -100,11 +100,13 @@ public:
     void Refresh();
 
     // ---- DeferRefresh (decided) -------------------------------------------------------------
+    // WPF model: defers reshapes and re-reads, not incremental source changes.
     // Begin: throws while an apply runs (#19). The outermost Begin (depth 0 -> 1) calls
-    // SourceTable::BeginFreeze, so source changes are held and only set its pending reset (#19);
-    // the live-shaping drain is skipped while open (changes stay in m_liveDirty, as under a hold).
+    // SourceTable::BeginHoldResets: an incremental source change still reaches OnSourceChanged and
+    // is shaped surgically with the applied spec and published at once; a source Reset is held.
+    // The live-shaping drain is skipped while open (changes stay in m_liveDirty, as under a hold).
     // End: asserts depth > 0. Inner ends only decrement. The outermost end calls
-    // SourceTable::EndFreeze; if it reports a pending change, or m_refreshRequested is set, it
+    // SourceTable::EndHoldResets; if it reports a pending change, or m_refreshRequested is set, it
     // runs SourceTable::Refresh() (one re-read that also builds a pending hierarchy), whose Reset
     // goes to Reapply() with m_desired: one reshape, one Reset. Otherwise ApplyDesiredSpec()
     // (nothing when the spec did not change). Then PostLiveDrain if changes are pending. An
@@ -340,7 +342,7 @@ private:
     bool m_isApplying{ false };
 
     // Open DeferRefresh handles (WPF nesting). While > 0, verbs edit m_desired only, Refresh sets
-    // m_refreshRequested, the table is frozen and the live drain is skipped. Clear() resets both,
+    // m_refreshRequested, SourceTable holds resets and the live drain is skipped. Clear() resets both,
     // so a handle closed after teardown does nothing.
     uint32_t m_deferDepth{ 0 };
     bool m_refreshRequested{ false };

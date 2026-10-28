@@ -111,8 +111,10 @@ struct ShapeSpec
     // most one entry; the list leaves room for per-column filters.
     std::vector<FilterSpec> Filters;
 
-    // nullopt = not grouped.
-    std::optional<GroupSpec> Group;
+    // [0] = outermost group level. Empty = not grouped. The public GroupBy verb replaces the
+    // grouping, so today this holds at most one entry; the list matches the engine, which is
+    // N-level (GroupNode::GroupLevel, groupLevelCount), and leaves room for a multi-level API.
+    std::vector<GroupSpec> Groups;
 
     // [0] = highest priority. Empty = source order.
     std::vector<SortSpec> Sorts;

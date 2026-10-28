@@ -7,6 +7,7 @@
 #include <optional>
 #include <span>
 #include <unordered_map>
+#include <variant>
 
 #include <winrt/Windows.Foundation.h>
 
@@ -67,20 +68,19 @@ public:
     void Clear() noexcept;
 
 private:
-    enum class DelegateKind : uint8_t
-    {
-        Predicate,
-        KeySelector,
-        Comparer,
-    };
+    // The delegate as registered, kept in its own type so invocation needs no cast. The active
+    // alternative says which kind of delegate the entry holds: Passes, Key and Compare assert the
+    // one they expect (an id taken from the wrong spec slot), and Register asserts that an address
+    // already known is registered again as the same kind.
+    using TypedDelegate = std::variant<
+        tracker_ref<winrt::TableViewPredicate>,
+        tracker_ref<winrt::TableViewKeySelector>,
+        tracker_ref<winrt::TableViewComparer2>>;
 
     struct Entry
     {
-        DelegateKind Kind{ DelegateKind::Predicate };
-
-        // The delegate as registered, held through tracker_ref; queried for the typed delegate
-        // on invocation. Optional so Clear() can destroy it while the owner is alive.
-        std::optional<tracker_ref<winrt::Windows::Foundation::IUnknown>> Delegate;
+        // Optional so Clear() can destroy the tracker_ref while the owner is alive.
+        std::optional<TypedDelegate> Delegate;
     };
 
     DelegateId NextId() noexcept;

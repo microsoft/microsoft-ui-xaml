@@ -132,10 +132,10 @@ struct SourceChange
     uint32_t NewIndex{ 0 };
 
     // Add and Replace: the new subtree in pre-order (Added[0] is its root; a flat source carries
-    // one record). Reset: every record now in the table.
+    // one record). Reset: every record created by it (a record reused by Refresh() is not here).
     std::vector<SourceRecord*> const& Added;
 
     // Remove and Replace: the departed subtree in pre-order, alive (Item, Identity()) until the
-    // handler returns. Reset: every record that left.
+    // handler returns. Reset: every record that left (root and child; reused ones did not).
     std::vector<SourceRecord const*> const& Removed;
 };

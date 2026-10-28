@@ -33,13 +33,6 @@
 
 class SourceHierarchy;
 
-enum class HierarchyKind : uint8_t
-{
-    None,              // Flat: every record is top-level.
-    ParentKey,         // ParentBy(key, parentKey) over the root collection.
-    ChildCollections,  // ChildrenBy(childrenSelector), eagerly materialized.
-};
-
 // What a strategy may ask of its SourceTable. SourceTable implements it privately. Every member
 // runs on the UI thread.
 struct ISourceHierarchyHost
@@ -87,8 +80,11 @@ struct ISourceHierarchyHost
         std::vector<SourceRecord*> const& added,
         std::vector<SourceRecordPtr>& removed) = 0;
 
-    // A child change could not be applied incrementally (rejected, or out of sync): re-read
-    // everything with one Reset, as for a root collection that diverged.
+    // A child change was rejected (null/duplicate) after the child collection had already changed.
+    // Decided (no subtree-scoped Reset): sets SourceTable::m_outOfSync, exactly as a rejected root
+    // change does, so the next notification (root or any child collection) is handled as a
+    // whole-tree re-read (Refresh(): one Reset, unchanged records reused per feed) until one
+    // validates. Raises nothing itself.
     virtual void RequestReset() noexcept = 0;
 
 protected:
@@ -105,6 +101,24 @@ protected:
 //
 // Under DeferRefresh the verb only constructs the strategy and parks it unprepared in
 // SourceTable::m_pendingHierarchy; the re-read at the outermost Close prepares and commits it.
+//
+// Verb flow: Prepare(host, current root items); old->TakeChildRecords(host, removed);
+// old->Release(host); ResetTreeToFlat(); Commit(host, added); one Reset.
+//
+// Refresh flow (decided: reuse, per-feed match). SourceTable::Refresh() re-reads the tree with the
+// current strategy (or the parked one, which replaces it as in the verb flow):
+//   1. Read: re-enumerate the root, ValidateItems(), then Prepare(host, rootItems). Every app call
+//      and check; a throw leaves the table untouched.
+//   2. Match: SourceTable::MatchRecords() matches the root; MatchForRefresh() matches each feed.
+//      Every unmatched record leaves the lookups before anything is created, so an item that moved
+//      to another parent (or between the root and a child collection) gets a new record instead of
+//      colliding with its old one.
+//   3. Link: SourceTable::CommitRecords() creates the unmatched root records (no strategy hooks),
+//      ResetTreeToFlat(), then Commit() relinks every record, reusing the matched child records and
+//      creating the rest.
+//   4. One Reset: Added = records created, Removed = records that left (alive for the handler).
+// A reused record keeps its pointer, Identity(), PropertyChanged subscription and expansion flag.
+// A freshly constructed strategy has no feeds, so its Commit() creates every child record.
 class SourceHierarchy
 {
 public:
@@ -113,16 +127,35 @@ public:
     SourceHierarchy(SourceHierarchy const&) = delete;
     SourceHierarchy& operator=(SourceHierarchy const&) = delete;
 
-    virtual HierarchyKind Kind() const noexcept = 0;
+    // Evaluates the selectors over rootItems in root order (a verb passes the current root items,
+    // Refresh() the re-enumerated ones; ChildrenBy also enumerates every child collection
+    // recursively) and validates the whole tree, including duplicates across collections. Staged
+    // state is keyed by root position, not by record: under Refresh() the root is not matched yet.
+    // Throws hresult_invalid_argument with v1's messages; writes nothing outside the strategy.
+    virtual void Prepare(
+        ISourceHierarchyHost& host,
+        std::vector<winrt::Windows::Foundation::IInspectable> const& rootItems) = 0;
 
-    // Evaluates the selectors over the current records (ChildrenBy: enumerates every child
-    // collection recursively) and validates the whole tree. Throws hresult_invalid_argument with
-    // v1's messages; writes nothing outside the strategy.
-    virtual void Prepare(ISourceHierarchyHost& host) = 0;
+    // Refresh() only, between Prepare() and Commit(). rootMatches[i] is the existing root record
+    // kept at prepared root position i, or nullptr when position i gets a new record. ChildrenBy
+    // matches each kept record's feed against the staged children of the same position, with the
+    // root rules (raw pointer at the same position, then raw pointer or address among the
+    // unmatched); there is no matching across feeds. Every unmatched child record, with its
+    // subtree, and every feed not reached from a kept record (its owner left) is unsubscribed as
+    // needed and moved out of the lookups (host.ReleaseRecord) into removed. ParentBy: nothing
+    // (every record is a root record). No app calls.
+    virtual void MatchForRefresh(
+        ISourceHierarchyHost& host,
+        std::vector<SourceRecord*> const& rootMatches,
+        std::vector<SourceRecordPtr>& removed) = 0;
 
-    // Links every record from the prepared state (ChildrenBy: creates the child records and
-    // subscribes the feeds), then drops the scratch state. The caller raises the one Reset.
-    virtual void Commit(ISourceHierarchyHost& host) = 0;
+    // Links every record from the prepared state, with host.RootRecords() now in prepared root
+    // order, rewriting Parent / Children / Depth on every record. ChildrenBy reconciles each feed:
+    // reuses the records MatchForRefresh() kept, creates the rest through the host, swaps the
+    // accessor and subscription when the child collection object changed, and drops a feed whose
+    // collection is now null. Appends every record it creates to added (pre-order), then drops
+    // the scratch state. No app calls. The caller raises the one Reset.
+    virtual void Commit(ISourceHierarchyHost& host, std::vector<SourceRecord*>& added) = 0;
 
     // Appends the items an incoming root item brings, after the item itself, for validation
     // before anything is created. ParentBy: nothing. ChildrenBy: its whole subtree, pre-order.
@@ -149,9 +182,15 @@ public:
     // Returns true if the tree changed. Called before ItemChanged is forwarded.
     virtual bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) = 0;
 
+    // Before Release() when the strategy is replaced or cleared (a verb, or Refresh() committing a
+    // parked strategy): unsubscribes every feed and moves every child record out of the lookups
+    // (host.ReleaseRecord) into removed, so the Reset can report them while they are alive.
+    // ParentBy: nothing. No app calls.
+    virtual void TakeChildRecords(ISourceHierarchyHost& host, std::vector<SourceRecordPtr>& removed) = 0;
+
     // Unlinks nothing (the caller resets the tree to flat), but unsubscribes and destroys every
-    // child feed and its records (through host.ReleaseRecord), and drops the selectors and keys.
-    // Teardown-safe: no app calls, revokes through safe_get. Idempotent.
+    // child feed still held and its records (through host.ReleaseRecord), and drops the selectors
+    // and keys. Teardown-safe: no app calls, revokes through safe_get. Idempotent.
     virtual void Release(ISourceHierarchyHost& host) noexcept = 0;
 
 protected:
@@ -171,9 +210,14 @@ public:
         winrt::TableViewKeySelector const& keySelector,
         winrt::TableViewKeySelector const& parentKeySelector);
 
-    HierarchyKind Kind() const noexcept override { return HierarchyKind::ParentKey; }
-    void Prepare(ISourceHierarchyHost& host) override;
-    void Commit(ISourceHierarchyHost& host) override;
+    void Prepare(
+        ISourceHierarchyHost& host,
+        std::vector<winrt::Windows::Foundation::IInspectable> const& rootItems) override;
+    void MatchForRefresh(
+        ISourceHierarchyHost& host,
+        std::vector<SourceRecord*> const& rootMatches,
+        std::vector<SourceRecordPtr>& removed) override;
+    void Commit(ISourceHierarchyHost& host, std::vector<SourceRecord*>& added) override;
     void CollectIncoming(
         winrt::Windows::Foundation::IInspectable const& item,
         std::vector<winrt::Windows::Foundation::IInspectable>& items) const override;
@@ -181,6 +225,7 @@ public:
     void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record) noexcept override;
     void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) override;
     bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) override;
+    void TakeChildRecords(ISourceHierarchyHost& host, std::vector<SourceRecordPtr>& removed) override;
     void Release(ISourceHierarchyHost& host) noexcept override;
 
 private:
@@ -207,11 +252,13 @@ private:
         std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>> KeyObject;
     };
 
-    // Node key -> record, and record -> keys. Prepare() fills m_staged*; Commit() moves them here.
+    // Node key -> record, and record -> keys. Prepare() stages by root position (under Refresh()
+    // the records are not matched yet); Commit() resolves each position through
+    // host.RootRecords() and rebuilds these.
     std::unordered_map<winrt::hstring, SourceRecord*> m_keyIndex;
     std::unordered_map<SourceRecord const*, NodeKeys> m_nodeKeys;
-    std::unordered_map<winrt::hstring, SourceRecord*> m_stagedKeyIndex;
-    std::unordered_map<SourceRecord const*, NodeKeys> m_stagedNodeKeys;
+    std::unordered_map<winrt::hstring, uint32_t> m_stagedKeyIndex;  // node key -> root position
+    std::vector<NodeKeys> m_stagedNodeKeys;                         // by root position
 };
 
 // ChildrenBy(childrenSelector). Records() are the top level. Every other record is owned by its
@@ -226,9 +273,14 @@ public:
         ITrackerHandleManager const* owner,
         winrt::TableViewChildrenSelector2 const& childrenSelector);
 
-    HierarchyKind Kind() const noexcept override { return HierarchyKind::ChildCollections; }
-    void Prepare(ISourceHierarchyHost& host) override;
-    void Commit(ISourceHierarchyHost& host) override;
+    void Prepare(
+        ISourceHierarchyHost& host,
+        std::vector<winrt::Windows::Foundation::IInspectable> const& rootItems) override;
+    void MatchForRefresh(
+        ISourceHierarchyHost& host,
+        std::vector<SourceRecord*> const& rootMatches,
+        std::vector<SourceRecordPtr>& removed) override;
+    void Commit(ISourceHierarchyHost& host, std::vector<SourceRecord*>& added) override;
     void CollectIncoming(
         winrt::Windows::Foundation::IInspectable const& item,
         std::vector<winrt::Windows::Foundation::IInspectable>& items) const override;
@@ -236,11 +288,12 @@ public:
     void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record) noexcept override;
     void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) override;
     bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) override;
+    void TakeChildRecords(ISourceHierarchyHost& host, std::vector<SourceRecordPtr>& removed) override;
     void Release(ISourceHierarchyHost& host) noexcept override;
 
     // Entry points for the child-collection lambdas, after they locked the host, checked
-    // host.AdmitChange() and that host.CurrentHierarchy() == this. A rejected change sets the
-    // feed's OutOfSync and calls host.RequestReset().
+    // host.AdmitChange() and that host.CurrentHierarchy() == this. A rejected change calls
+    // host.RequestReset() and rethrows (into the app's Add / Insert / setter).
     void OnChildCollectionChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const& owner, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void OnChildVectorChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const& owner, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     void OnChildBindableVectorChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const& owner);
@@ -258,10 +311,6 @@ private:
 
         // Sole strong references to this collection's records, in Owner->Children order.
         std::vector<SourceRecordPtr> Records;
-
-        // Set when a change to this collection was rejected (null/duplicate). The next
-        // notification for this feed rebuilds its subtree as a Reset of that subtree.
-        bool OutOfSync{ false };
     };
 
     // Evaluates the selector for item and, recursively, its descendants, enumerating each non-null
@@ -288,7 +337,7 @@ private:
     // One feed per record with a non-null child collection.
     std::unordered_map<SourceRecord const*, std::unique_ptr<ChildFeed>> m_childFeeds;
 
-    // Prepare(): every item below the root records, pre-order, already validated, with the child
+    // Prepare(): every item below the root items, pre-order, already validated, with the child
     // collection it came from, so Commit() creates and subscribes without calling app code again.
     // Plain strong references: scratch state that lives only between Prepare() and Commit() (or the
     // throw), inside one verb or one re-read.
@@ -297,6 +346,7 @@ private:
         winrt::Windows::Foundation::IInspectable Item;
         winrt::Windows::Foundation::IInspectable ChildCollection;  // null: no feed
         uint32_t ChildCount{ 0 };                                  // nodes that follow, one level down
+        SourceRecord* Match{ nullptr };                            // MatchForRefresh(): record kept for Item
     };
     std::vector<StagedNode> m_staged;
 };

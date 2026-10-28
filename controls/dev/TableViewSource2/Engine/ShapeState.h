@@ -47,7 +47,8 @@ enum class ShapeFlags : uint8_t
     SortKeysValid = 0x4,
 
     // The record's rows are expanded. Records keep their own expansion (they survive reshapes and,
-    // through Reconcile, Resets); only groups need the expansion model. Default clear (collapsed).
+    // through the Refresh() match, Resets, including child records); only groups need the
+    // expansion model. Default clear (collapsed).
     // Written and read by the flattener (Expand/Collapse, ExpandAllRows/CollapseAllRows).
     Expanded = 0x8,
 

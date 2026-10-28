@@ -86,6 +86,8 @@
 //     one Reset. A change raised re-entrantly while frozen (decided, #19: inside a SourceChanged
 //     dispatch or a Freeze scope) is not applied: the table is left as it was, m_pendingReset is
 //     set, and the source is re-read with one Reset when the outermost dispatch or freeze ends.
+//     While resets are held (an open DeferRefresh), incremental changes are applied as usual but a
+//     Reset is not: it sets m_pendingReset and the table stops applying changes until the re-read.
 //     OPEN: under ParentBy one source change can produce several tree changes (an insert adopts
 //     existing orphans, each a Move from top level to the new item). Deliver them as an ordered
 //     batch in one dispatch, or collapse to Reset above a threshold.
@@ -163,8 +165,18 @@ public:
     // ---- Source lifecycle & records ---------------------------------------------------------
 
     // Re-enumerates the bound source (and, under ChildrenBy, every child collection; under ParentBy,
-    // every key) and reconciles against existing records (initial load, Reset, or explicit
-    // Refresh() for non-observable sources). No-op when detached.
+    // every key) and reconciles against existing records (initial load, Reset, out-of-sync
+    // recovery, the end of a freeze or reset hold, or explicit Refresh() for non-observable
+    // sources). No-op when detached. Decided (reuse, per-feed match), see SourceHierarchy:
+    //   1. Read: enumerate, ValidateItems(), strategy->Prepare(host, items) (the parked strategy if
+    //      any). A throw leaves the table untouched.
+    //   2. Match: MatchRecords() for the root, strategy->MatchForRefresh() for each child feed.
+    //      Unmatched records leave the lookups before anything is created.
+    //   3. Link: CommitRecords(), ResetTreeToFlat(), strategy->Commit(). A parked strategy replaces
+    //      the current one between 2 and 3 (TakeChildRecords(), Release()).
+    //   4. One Reset: Added = records created, Removed = records that left.
+    // A reused record keeps its pointer, Identity(), PropertyChanged subscription and expansion
+    // flag. Clears m_outOfSync and m_pendingReset.
     void Refresh();
 
     // Teardown (see Detach contract); must run on the UI thread while m_trackerOwner is alive.
@@ -194,18 +206,30 @@ public:
     [[nodiscard]] bool EndFreeze() noexcept;
     bool IsFrozen() const noexcept;
 
+    // ---- Reset hold (decided, DeferRefresh) -------------------------------------------------
+    // WPF model: an open DeferRefresh defers re-reads, not incremental changes. While held
+    // (depth > 0) and not frozen, an incremental root- or child-collection change is applied and
+    // raised as usual (the coordinator shapes it with the applied spec). A Reset (including a
+    // multi-item change reported as one, and every change while out of sync) is not re-read: it
+    // sets m_pendingReset, and from then on the table has diverged, so later notifications are
+    // handled as under a freeze until the re-read. Hierarchy verbs are parked (m_pendingHierarchy);
+    // the current tree keeps receiving changes. Nests. EndHoldResets returns true when the
+    // outermost hold ends with m_pendingReset set or a hierarchy parked; the caller then calls
+    // Refresh(), which re-reads once and commits the parked hierarchy.
+    void BeginHoldResets() noexcept;
+    [[nodiscard]] bool EndHoldResets() noexcept;
+
     // ---- Source tree (hierarchy) ------------------------------------------------------------
 
     // Top-level records of the source tree, in source order. Flat: the same records as Records().
     // Shaping walks these and SourceRecord::Children.
     std::vector<SourceRecord*> const& TopLevel() const noexcept;
 
-    // m_hierarchy->Kind(), or None when flat.
-    HierarchyKind GetHierarchyKind() const noexcept;
 
     // ParentBy and ChildrenBy construct the strategy, then Prepare() it (every app call and check;
-    // a throw leaves the previous tree and strategy in place), Release() the previous strategy,
-    // ResetTreeToFlat(), Commit() the new one and raise one Reset. Must be called on the UI thread.
+    // a throw leaves the previous tree and strategy in place), TakeChildRecords() and Release() the
+    // previous strategy, ResetTreeToFlat(), Commit() the new one and raise one Reset (Removed: the
+    // previous child records). Must be called on the UI thread.
     // ParentBy: evaluates both selectors once per record (key rules in ParentKeyHierarchy).
     void SetParentKeyHierarchy(
         winrt::TableViewKeySelector const& keySelector,
@@ -215,11 +239,12 @@ public:
     // record, and subscribes to every observable child collection at Commit().
     void SetChildCollectionHierarchy(winrt::TableViewChildrenSelector2 const& childrenSelector);
 
-    // Back to flat: Release() the strategy, ResetTreeToFlat(), then one Reset. No-op when flat.
-    // All three, while frozen (an open DeferRefresh; ShapingManager rejects them during an apply):
-    // park the unprepared strategy (nullptr for ClearHierarchy) in m_pendingHierarchy and set
-    // m_pendingReset, building nothing. The next Refresh() prepares and commits it in place of the
-    // current one.
+    // Back to flat: TakeChildRecords() and Release() the strategy, ResetTreeToFlat(), then one
+    // Reset. No-op when flat.
+    // All three, while resets are held (an open DeferRefresh; ShapingManager rejects them during an
+    // apply): park the unprepared strategy (nullptr for ClearHierarchy) in m_pendingHierarchy,
+    // building nothing; the current tree stays and keeps receiving changes. The next Refresh()
+    // prepares and commits it in place of the current one.
     void ClearHierarchy();
 
     // ---- Live shaping (per-record INotifyPropertyChanged) -----------------------------------
@@ -266,10 +291,21 @@ private:
     void OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     void OnSourceBindableVectorChanged();
 
-    // Rebuild against a fresh materialization: reuse by raw pointer at the same position, then by
-    // raw pointer or address among unmatched records; create the rest; remove what is left over.
-    // Callers validate with ValidateItems() first.
-    void Reconcile(std::vector<winrt::Windows::Foundation::IInspectable> const& items);
+    // Refresh() step 2 for the root collection: match a fresh, validated materialization against
+    // m_records, by raw pointer at the same position, then by raw pointer or address among the
+    // unmatched. Returns, per position of items, the kept record or nullptr. Moves every unmatched
+    // record out of m_records and the lookups into removed. Creates nothing, calls no app code.
+    std::vector<SourceRecord*> MatchRecords(
+        std::vector<winrt::Windows::Foundation::IInspectable> const& items,
+        std::vector<SourceRecordPtr>& removed);
+
+    // Refresh() step 3: rebuilds m_records in items order from the kept records, creating a record
+    // for each nullptr in matches (appended to added). Calls no strategy hook: the strategy links
+    // the tree in Commit().
+    void CommitRecords(
+        std::vector<winrt::Windows::Foundation::IInspectable> const& items,
+        std::vector<SourceRecord*> const& matches,
+        std::vector<SourceRecord*>& added);
 
     // Throws hresult_invalid_argument on a null item or an object that appears more than once.
     // No table state is touched.
@@ -369,10 +405,10 @@ private:
     // nothing.
     std::unique_ptr<SourceHierarchy> m_hierarchy;
 
-    // A hierarchy verb received while frozen (DeferRefresh): the unprepared strategy, or nullptr for
-    // ClearHierarchy; nullopt when none is pending. The next Refresh() prepares and commits it
-    // instead of re-preparing m_hierarchy: a throw discards it and leaves the current tree and
-    // strategy in place. A later verb while still frozen replaces it. Clear() drops it.
+    // A hierarchy verb received while resets are held (DeferRefresh): the unprepared strategy, or
+    // nullptr for ClearHierarchy; nullopt when none is pending. The next Refresh() prepares and
+    // commits it instead of re-preparing m_hierarchy: a throw discards it and leaves the current
+    // tree and strategy in place. A later verb while still held replaces it. Clear() drops it.
     std::optional<std::unique_ptr<SourceHierarchy>> m_pendingHierarchy;
 
     std::unordered_map<void*, SourceRecord*> m_rawLookup;
@@ -402,7 +438,11 @@ private:
     uint32_t m_freezeDepth{ 0 };
     bool m_pendingReset{ false };
 
-    // Set when an incremental notification was rejected (null/duplicate). The source has diverged
-    // from m_records, so every later notification is handled as a Reset until validation succeeds.
+    // Open reset holds (DeferRefresh). While > 0, a Reset sets m_pendingReset instead of re-reading.
+    uint32_t m_resetHoldDepth{ 0 };
+
+    // Set when an incremental notification was rejected (null/duplicate), from the root collection
+    // or, through RequestReset(), a child collection. The source has diverged, so every later
+    // notification (root or child) is handled as a whole-tree re-read until validation succeeds.
     bool m_outOfSync{ false };
 };

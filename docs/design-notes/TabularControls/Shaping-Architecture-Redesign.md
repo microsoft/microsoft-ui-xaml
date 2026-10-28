@@ -27,7 +27,9 @@ controls/dev/TableViewSource2/
   Source/                                        source layer: input collection + record table
     CollectionAccessor2.h
     SourceRecord.h                               SourceRecord, SourceChange
-    SourceTable.h                                SourceTable (records + source tree), HierarchyKind
+    SourceHierarchy.h                            ISourceHierarchyHost, SourceHierarchy, ParentKeyHierarchy,
+                                                 ChildCollectionsHierarchy
+    SourceTable.h                                SourceTable (records + shared source tree; owns the strategy)
   Spec/                                          shape spec: verbs in force (data) + delegate registry + path evaluator
     ShapeSpec.h                                  ShapeSpec, FilterSpec, SortSpec, GroupSpec, DelegateRef, ShapeDelta
     PathEvaluator.h                              PathEvaluator (cached SortMemberPathResolver per sort path)
@@ -71,13 +73,18 @@ table serves as both the shared identity store and the cached full set that shap
 | 1 | Public verb API | `TableViewSource2.idl` | Declared |
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
-| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
+| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine: `ShapingEngine`; shaped tree node types `ShapedRef`, `GroupNode`; per-record `ShapeState`; change contract `ShapedEdit`, `IShapedEditSink` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/ShapedEdit.h` | Engine surface, node types, record state and change contract declared; group storage, lookup and staging pending; not implemented |
 | 7 | Flattener and visible list: `FlatDelta`, `Flattener`; the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token `GroupHeaderRow`; row metadata `ShapedRowMetadata` | `View/FlatDelta.h`, `View/Flattener.h`, `View/GroupExpansion.h`, `View/GroupHeaderRow.h`, `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h` | Flattener, delta types, `ShapedCollectionView` and `ShapedRowMetadata` declared, not implemented |
 | 8 | Coordinator: `ShapingManager`; owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the visible-list and row-metadata helpers, owner notifications (#18), flattener, group expansion and engine declared; not implemented |
 
 ## Class diagram
+
+Four diagrams, one per area: public surface, source layer and coordinator (below); then the spec,
+the engine, and the flattener with its change types. `ShapingManager` appears in each as the hub.
+
+### Public surface, source layer and coordinator
 
 ```mermaid
 classDiagram
@@ -102,6 +109,13 @@ classDiagram
         +Refresh()
         +DeferRefresh() IClosable
         +IsLiveShaping : bool
+    }
+
+    class DeferRefreshHandle {
+        <<WinRT IClosable>>
+        -weak_ref~TableViewSource2~ m_source
+        -bool m_closed
+        +Close()
     }
 
     class CollectionAccessor2 {
@@ -138,6 +152,18 @@ classDiagram
         +OnShapingApplied(ShapingAppliedArgs)
     }
 
+    class ShapingAppliedArgs {
+        +ShapingChangeFlags Changes
+        +span~RowStateEdit~ States
+        +span~SourceRecord*~ Retired
+    }
+
+    class ExpansionAxis {
+        <<enum>>
+        Groups
+        Rows
+    }
+
     class ShapingManager {
         <<native coordinator>>
         -shared_ptr~SourceTable~ m_sourceTable
@@ -145,6 +171,11 @@ classDiagram
         -ShapeDelegates m_delegates
         -PathEvaluator m_paths
         -optional~tracker_ref~ItemsSourceView~~ m_view
+        -shared_ptr~ShapedRowMetadata~ m_rowMetadata
+        -GroupExpansion m_groupExpansion
+        -Flattener m_flattener
+        -ShapingEngine m_engine
+        -map~SourceRecord*, hstring~ m_liveDirty
         -bool m_isApplying
         +View() ItemsSourceView
         +RowCount() uint32
@@ -165,6 +196,9 @@ classDiagram
         +TrySetOwner(owner) bool
         +ReleaseOwner(owner)
         +AddOwnerReleasedWaiter(waiter, handler)
+        +RemoveOwnerReleasedWaiter(waiter)
+        -vector~OwnerReleasedWaiter~ m_ownerReleasedWaiters
+        +ContainsItem(item) bool
         +BeginLiveShapingHold()
         +EndLiveShapingHold()
         +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
@@ -193,6 +227,13 @@ classDiagram
         +NotifyAdded(index, count)
         +NotifyReset()
         +Detach()
+    }
+
+    class CountOnlyItemList {
+        <<WinRT IBindableVector, count only>>
+        -uint32 m_count
+        +Size() uint32
+        +GetAt(index) IInspectable
     }
 
     class ShapedRowMetadata {
@@ -231,14 +272,15 @@ classDiagram
 
     class SourceHierarchy {
         <<abstract>>
-        +Kind() HierarchyKind
-        +Prepare(host)
-        +Commit(host)
+        +Prepare(host, rootItems)
+        +MatchForRefresh(host, rootMatches, removed)
+        +Commit(host, added)
         +CollectIncoming(item, items)
         +OnInserted(host, records)
         +OnRemoving(host, records)
         +OnMoved(host, records)
         +Reevaluate(host, record, propertyName)
+        +TakeChildRecords(host, removed)
         +Release(host)
     }
 
@@ -292,6 +334,8 @@ classDiagram
         +SetItemChangedHandler(handler)
         +BeginFreeze()
         +EndFreeze() bool
+        +BeginHoldResets()
+        +EndHoldResets() bool
         +SetLiveShaping(enabled)
         +IsLiveShaping() bool
         +TryFindByRawPointer(item) SourceRecord*
@@ -306,7 +350,8 @@ classDiagram
         -OnSourceCollectionChanged(args)
         -OnSourceVectorChanged(args)
         -OnSourceBindableVectorChanged()
-        -Reconcile(items)
+        -MatchRecords(items, removed)
+        -CommitRecords(items, matches, added)
         -InsertAt / RemoveAt / ReplaceAt / Move
         -RaiseSourceChanged(kind, oldIndex, newIndex, added, removed)
         -DrainPendingChanges()
@@ -323,6 +368,7 @@ classDiagram
         +SourceRecord* Parent
         +vector~SourceRecord*~ Children
         +uint16 Depth
+        +ShapeState Shape
         +HasChildren() bool
         -hstring m_identity
         +Identity() hstring
@@ -359,6 +405,10 @@ classDiagram
     }
 
     TableViewSource2 *-- ShapingManager : unique_ptr (forwards verbs)
+    TableViewSource2 ..> DeferRefreshHandle : DeferRefresh() returns
+    ShapingManager ..> ExpansionAxis : SetAllExpanded
+    IShapingOwner ..> ShapingAppliedArgs
+    ShapedCollectionView ..> CountOnlyItemList : Remove and Add args
     ShapingManager *-- SourceTable : shared_ptr (shareable with consumers)
     ShapingManager *-- ShapedCollectionView : m_view (tracked, TableView also holds it)
     ShapedCollectionView ..> ShapingManager : raw back-pointer, nulled by Detach()
@@ -380,6 +430,424 @@ classDiagram
     TableViewSource2 ..> TableViewComparer2
     TableViewSource2 ..> TableViewChildrenSelector2
     TableViewSource2 ..> SortDirection
+```
+
+### Spec layer
+
+```mermaid
+classDiagram
+    direction TB
+
+    class ShapingManager {
+        <<native coordinator>>
+        -ShapeSpec m_desired
+        -ShapeDelegates m_delegates
+        -PathEvaluator m_paths
+    }
+
+    class ShapeSpec {
+        +vector~FilterSpec~ Filters
+        +vector~GroupSpec~ Groups
+        +vector~SortSpec~ Sorts
+        +operator==()
+    }
+
+    class FilterSpec {
+        +DelegateRef Predicate
+    }
+
+    class SortSpec {
+        +Kind SortKind
+        +hstring Path
+        +DelegateRef Delegate
+        +SortDirection Direction
+        +Matches(other) bool
+    }
+
+    class SortSpecKind {
+        <<enum SortSpec.Kind>>
+        Path
+        Key
+        Comparer
+    }
+
+    class GroupSpec {
+        +DelegateRef Key
+        +SortDirection Direction
+    }
+
+    class DelegateRef {
+        +DelegateId Id
+        +uint32 Version
+    }
+
+    class DelegateId {
+        <<enum uint32>>
+        None
+    }
+
+    class ShapeDelta {
+        <<flags>>
+        None
+        Sort
+        GroupOrder
+        GroupKey
+        Filter
+    }
+
+    class ShapeDelegates {
+        -ITrackerHandleManager* m_trackerOwner
+        -map~DelegateId, Entry~ m_entries
+        -map~void*, DelegateId~ m_idByAddress
+        -uint32 m_nextId
+        -uint32 m_nextVersion
+        +Register(predicate or keySelector or comparer) DelegateRef
+        +Retain(specsInUse)
+        +Passes(predicate, item) bool
+        +Key(keySelector, item) IInspectable
+        +Compare(comparer, x, y) int32
+        +Clear()
+    }
+
+    class ShapeDelegatesEntry {
+        <<ShapeDelegates.Entry>>
+        +optional~TypedDelegate~ Delegate
+    }
+
+    class TypedDelegate {
+        <<variant, private>>
+        tracker_ref~TableViewPredicate~
+        tracker_ref~TableViewKeySelector~
+        tracker_ref~TableViewComparer2~
+    }
+
+    class PathEvaluator {
+        -map~hstring, unique_ptr~SortMemberPathResolver~~ m_resolvers
+        +Value(path, item) IInspectable
+        +Retain(specsInUse)
+        +Clear()
+    }
+
+    class SortMemberPathResolver {
+        <<shared with v1>>
+    }
+
+    ShapingManager *-- ShapeSpec : m_desired
+    ShapingManager *-- ShapeDelegates
+    ShapingManager *-- PathEvaluator
+    ShapeSpec "1" *-- "0..*" FilterSpec
+    ShapeSpec "1" *-- "0..*" GroupSpec
+    ShapeSpec "1" *-- "0..*" SortSpec
+    SortSpec --> SortSpecKind
+    FilterSpec --> DelegateRef
+    SortSpec --> DelegateRef
+    GroupSpec --> DelegateRef
+    DelegateRef --> DelegateId
+    ShapeSpec ..> ShapeDelta : Diff(before, after)
+    ShapeDelegates "1" *-- "0..*" ShapeDelegatesEntry : by DelegateId
+    ShapeDelegatesEntry --> TypedDelegate
+    PathEvaluator "1" *-- "0..*" SortMemberPathResolver : one per sort path
+```
+
+### Engine layer
+
+```mermaid
+classDiagram
+    direction TB
+
+    class ShapingManager {
+        <<native coordinator>>
+        -ShapingEngine m_engine
+    }
+
+    class ShapingEngine {
+        -ITrackerHandleManager* m_trackerOwner
+        -SourceTable& m_source
+        -ShapeDelegates& m_delegates
+        -PathEvaluator& m_paths
+        -IShapedEditSink& m_sink
+        -ShapeSpec m_applied
+        -GroupNode m_root
+        -map~hstring, GroupNode*~ m_groupsByIdentity
+        -vector~unique_ptr~GroupNode~~ m_retired
+        +Applied() ShapeSpec
+        +Root() GroupNode
+        +GroupsByIdentity() map
+        +InShapedTree(node)$ bool
+        +Apply(desired, delta)
+        +Reapply(desired)
+        +ApplySourceChange(change)
+        +ApplyItemChanged(record, propertyName)
+        +ApplyItemsChanged(changes)
+        +Clear()
+        +ReleaseRetired()
+        -StagesFor(delta)$ RebuildStage
+        -InShapedParent(record)$ bool
+        -StageGroupChain(staged)
+        -PlacementIndex(staged, sourceIndex) uint32
+        -PruneEmptyGroups(group)
+        -Rebuild(desired, stages, only)
+    }
+
+    class LiveChange {
+        +SourceRecord* Record
+        +hstring PropertyName
+    }
+
+    class RebuildStage {
+        <<flags, private>>
+        Filter
+        GroupKeys
+        SortKeys
+        SortRows
+        SortGroups
+        All
+    }
+
+    class StagedRecord {
+        <<private, compute phase>>
+        +SourceRecord* Record
+        +bool PassesFilter
+        +vector~tracker_ref~ SortKeys
+        +vector~hstring~ GroupSegments
+        +vector~IInspectable~ GroupKeys
+        +unique_ptr~GroupNode~ NewGroupChain
+        +GroupNode* NewGroupParent
+        +vector~node_type~ NewGroupEntries
+        +uint32 ShapedIndex
+    }
+
+    class StagedReapply {
+        <<private, compute phase>>
+        +vector~StagedRecord~ Records
+        +vector~pair~ ShapedChildren
+        +vector~ShapedRef~ RootChildren
+        +vector~unique_ptr~GroupNode~~ RootSubgroups
+        +map~hstring, GroupNode*~ GroupsByIdentity
+    }
+
+    class ShapedRef {
+        <<tagged pointer>>
+        -uintptr m_bits
+        +FromRecord(record)$ ShapedRef
+        +FromGroup(group)$ ShapedRef
+        +IsNull() bool
+        +IsGroup() bool
+        +Group() GroupNode*
+        +Record() SourceRecord*
+        +ShapedParent() ShapedRef
+        +ShapedChildCount() uint32
+    }
+
+    class ShapedRefHash {
+        +operator()(ref) size_t
+    }
+
+    class GroupNode {
+        +optional~tracker_ref~IInspectable~~ Key
+        +hstring Identity
+        +GroupNode* Parent
+        +uint16 GroupLevel
+        +vector~ShapedRef~ Children
+        +vector~unique_ptr~GroupNode~~ Subgroups
+        +uint32 ItemCount
+        +uint32 VisibleDescendantCount
+        +IInspectable HeaderRow
+        +IsRoot() bool
+    }
+
+    class ShapeState {
+        <<on SourceRecord.Shape>>
+        +ShapeFlags Flags
+        +uint32 VisibleDescendantCount
+        +vector~optional~tracker_ref~~ SortKeys
+        +vector~SourceRecord*~ ShapedChildren
+        +GroupNode* Group
+    }
+
+    class ShapeFlags {
+        <<flags>>
+        PassesFilter
+        ChildrenShaped
+        SortKeysValid
+        Expanded
+        OverlayCollapsed
+        PlacementMark
+    }
+
+    class ShapedEdit {
+        +ShapedEditKind Kind
+        +ShapedRef Node
+        +ShapedRef Parent
+        +uint32 IndexInParent
+    }
+
+    class ShapedEditKind {
+        <<enum>>
+        Insert
+        Remove
+    }
+
+    class IShapedEditSink {
+        <<interface>>
+        +OnRemoving(edit)
+        +OnInserted(edit)
+        +OnRebuilt(root, groupLevelCount)
+    }
+
+    class SourceRecord {
+        +ShapeState Shape
+    }
+
+    ShapingManager *-- ShapingEngine
+    ShapingEngine *-- GroupNode : m_root (stable), owns every group via Subgroups
+    ShapingEngine ..> IShapedEditSink : m_sink (the Flattener), write phase only
+    ShapingEngine ..> LiveChange : ApplyItemsChanged
+    ShapingEngine ..> RebuildStage
+    ShapingEngine ..> StagedReapply : Rebuild compute
+    StagedReapply "1" *-- "0..*" StagedRecord
+    GroupNode "1" *-- "0..*" GroupNode : Subgroups
+    GroupNode "1" o-- "0..*" ShapedRef : Children (non-owning)
+    ShapedRef ..> GroupNode : tag bit 1
+    ShapedRef ..> SourceRecord : tag bit 0
+    ShapedRefHash ..> ShapedRef
+    SourceRecord *-- ShapeState : Shape
+    ShapeState --> ShapeFlags
+    ShapeState ..> GroupNode : Group (top-level records)
+    IShapedEditSink ..> ShapedEdit
+    ShapedEdit --> ShapedEditKind
+    ShapedEdit --> ShapedRef
+```
+
+### View layer: flattener and change types
+
+```mermaid
+classDiagram
+    direction TB
+
+    class ShapingManager {
+        <<native coordinator>>
+        -GroupExpansion m_groupExpansion
+        -Flattener m_flattener
+        -Publish(delta)
+    }
+
+    class IShapedEditSink {
+        <<interface>>
+        +OnRemoving(edit)
+        +OnInserted(edit)
+        +OnRebuilt(root, groupLevelCount)
+    }
+
+    class Flattener {
+        -vector~ShapedRef~ m_rows
+        -vector~ShapedRef~ m_staged
+        -FlatDelta m_pending
+        -vector~ShapedRef~ m_departed
+        -map~ShapedRef, RowStateField~ m_dirty
+        -GroupExpansion& m_groupExpansion
+        -GroupNode* m_root
+        -uint16 m_groupLevelCount
+        -bool m_inCommit
+        +Size() uint32
+        +GetAt(index) ShapedRef
+        +IndexOf(node) optional~uint32~
+        +GroupLevelCount() uint16
+        +IsExpanded(node) bool
+        +ShownDescendantCount(node) uint32
+        +ApplySplice(splice)
+        +ApplyReset()
+        +Rebuild(root, groupLevelCount)
+        +BeginCommit()
+        +EndCommit() FlatDelta
+        +AbortCommit()
+        +Expand(node) FlatDelta
+        +Collapse(node) FlatDelta
+        +ExpandSubtree(node) FlatDelta
+        +Reveal(node) FlatDelta
+        +ExpandAllGroups() FlatDelta
+        +CollapseAllGroups() FlatDelta
+        +ExpandAllRows() FlatDelta
+        +CollapseAllRows() FlatDelta
+        +Clear()
+        -IsShown(node) bool
+        -SetExpanded(node, expanded)
+        -PropagateCount(parent, delta)
+        -FlatIndexOf(node) uint32
+        -MarkDirty(node, fields)
+    }
+
+    class GroupExpansion {
+        -bool m_baselineExpanded
+        -set~hstring~ m_exceptions
+        +IsExpanded(identity) bool
+        +SetExpanded(identity, expanded)
+        +SetAll(expanded)
+        +Erase(identity)
+        +RetainOnly(liveGroups)
+        +Clear()
+    }
+
+    class FlatDelta {
+        +bool IsReset
+        +ShapingChangeFlags Changes
+        +vector~FlatSplice~ Splices
+        +vector~RowStateEdit~ States
+        +IsEmpty() bool
+    }
+
+    class FlatSplice {
+        +uint32 Index
+        +uint32 RemovedCount
+        +vector~ShapedRef~ Inserted
+    }
+
+    class RowStateEdit {
+        +uint32 Index
+        +RowStateField Fields
+    }
+
+    class RowStateField {
+        <<flags>>
+        None
+        ItemCount
+        Expandable
+        Expanded
+    }
+
+    class ShapingChangeFlags {
+        <<flags>>
+        None
+        Reset
+        Membership
+        Order
+        RowState
+    }
+
+    class ShapedCollectionView {
+        <<WinRT, derives ItemsSourceView>>
+        +NotifyRemoved(index, count)
+        +NotifyAdded(index, count)
+        +NotifyReset()
+    }
+
+    class IShapingOwner {
+        <<interface>>
+        +OnResetting()
+        +OnShapingApplied(ShapingAppliedArgs)
+    }
+
+    ShapingManager *-- Flattener
+    ShapingManager *-- GroupExpansion
+    Flattener ..|> IShapedEditSink
+    Flattener --> GroupExpansion : group expansion by Identity
+    Flattener *-- FlatDelta : m_pending
+    FlatDelta "1" *-- "0..*" FlatSplice
+    FlatDelta "1" *-- "0..*" RowStateEdit
+    FlatDelta --> ShapingChangeFlags
+    RowStateEdit --> RowStateField
+    ShapingManager ..> ShapedCollectionView : Publish splices as Remove and Add, or Reset
+    ShapingManager ..> IShapingOwner : Publish States and Changes
 ```
 
 ## 1. Public verb API
@@ -468,7 +936,7 @@ and that live exactly as long as the item stays in the source.
 | `Identity()` | The logical identity string: `"0x"` + `Address` in hex (fixed, D4; it is also the record's row key). It is formatted on first use and cached; this accessor is the only way to read it. |
 | `TryParseIdentity(identity)` (static) | Inverse of `Identity()`: the `Address` it encodes, or `nullopt` (a `g|` group key or garbage). Lets `ShapedCollectionView::IndexFromKey` resolve a record through `TryFindByAddress`, which is always on, instead of the identity index (D4). |
 | `PropertyChangedToken`, `Watch` | Live-shaping subscription state, revoked in `~SourceRecord()`. `NotObservable` records that an item has no `INotifyPropertyChanged`, so it is not probed again. |
-| `Parent`, `Children`, `Depth`, `HasChildren()` | Source-tree links, written only by `SourceTable`. Non-owning; flat sources leave every record top-level (`Parent == nullptr`) with no children. See *Hierarchy: the source tree in `SourceTable`*. |
+| `Parent`, `Children`, `Depth`, `HasChildren()` | Source-tree links, written only by `SourceTable`. Non-owning; flat sources leave every record top-level (`Parent == nullptr`) with no children. See *Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)*. |
 | `ShapeState Shape` | Engine state stored inline (`Engine/ShapeState.h`): filter flags, cached sort keys, filtered and sorted children, visible-descendant count. Written only by the engine and the flattener. See *Engine state storage*. |
 
 Records are not copyable. `SourceTable` holds the sole strong `shared_ptr<SourceRecord>` (`SourceRecordPtr`)
@@ -501,15 +969,17 @@ identity index     Identity      -> SourceRecord*   shaped only; selection, focu
 | Operation | Visibility | Behaviour |
 |---|---|---|
 | `Create(owner, source)` | Public (static) | The only way to build a table. `make_shared<SourceTable>(PrivateToken{}, owner)`, then private `AttachSource(source)`: resolves `CollectionAccessor2(owner, source)`, subscribes to change notifications (storing `m_sourceEventToken`), and performs the initial `Refresh()`. `owner` is the enclosing `TableViewSource2`'s `ITrackerHandleManager const*`. The constructor takes a private `PrivateToken`, so it is reachable by `make_shared` but not by callers; there is no default constructor. |
-| `Refresh()` | Public | Re-enumerates `m_sourceAccessor` and reconciles against existing records (initial load, `Reset`, or explicit `Refresh()` for non-observable sources). No-op when detached. |
-| `Clear()` | Public | Teardown, called by `~TableViewSource2()` on the UI thread while the owner is alive. Nulls both handlers (raises nothing), unsubscribes from the source and every child collection via `safe_get`, clears the lookups and key index wholesale, destroys the child feeds and their records, then every root record, resets `m_sourceAccessor`, and nulls `m_trackerOwner`. Idempotent. Afterwards the table is detached. |
-| `TopLevel()` / `SetParentKeyHierarchy` / `SetChildCollectionHierarchy` / `ClearHierarchy` | Public | Source tree. See *Hierarchy: the source tree in `SourceTable`*. |
+| `Refresh()` | Public | Re-enumerates `m_sourceAccessor` (and the hierarchy) and reconciles against existing records, reusing every record whose item is still in the same collection (initial load, `Reset`, out-of-sync recovery, the end of a freeze or reset hold, or explicit `Refresh()` for non-observable sources). One `Reset`. No-op when detached. See *Refresh: record reuse (decided)*. |
+| `Clear()` | Public | Teardown, called by `~TableViewSource2()` on the UI thread while the owner is alive. Nulls both handlers (raises nothing), drops `m_pendingHierarchy`, releases `m_hierarchy` (`SourceHierarchy::Release`: unsubscribes every child collection via `safe_get`, destroys the child feeds and their records, drops the selectors and key index), unsubscribes from the source, clears the lookups wholesale, then destroys every root record, resets `m_sourceAccessor`, and nulls `m_trackerOwner`. Idempotent. Afterwards the table is detached. |
+| `TopLevel()` / `SetParentKeyHierarchy` / `SetChildCollectionHierarchy` / `ClearHierarchy` | Public | Source tree. See *Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)*. |
 | `IsDetached()` | Public | True after `Clear()`. Every public entry point and event lambda returns early when detached. |
 | `SetSourceChangedHandler` | Public | Single handler (the coordinator) for normalized, record-level `SourceChange` notifications. See *Source change notification* below. |
 | `SetItemChangedHandler` | Public | Single handler (the coordinator) for per-record `PropertyChanged` notifications (`(SourceRecord*, hstring const& propertyName)`). See *Item property change notification* below. |
 | `BeginFreeze` / `EndFreeze` / `IsFrozen` | Public | While frozen, source notifications are not applied; they only set `m_pendingReset`. `EndFreeze` reports whether the outermost freeze must be followed by `Refresh()`. See *Re-entrancy* below (#19). |
+| `BeginHoldResets` / `EndHoldResets` | Public | `DeferRefresh` (WPF model): incremental changes are applied and raised as usual; a `Reset` only sets `m_pendingReset` (the table then stops applying changes until the re-read), and hierarchy verbs are parked. `EndHoldResets` reports whether the outermost hold must be followed by `Refresh()`. See *`DeferRefresh` (decided)*. |
 | `SetLiveShaping` / `IsLiveShaping` | Public | Enables or disables per-record `INotifyPropertyChanged` subscriptions across the table, irrespective of whether any shaping verbs are currently active. |
-| `Reconcile` / `InsertAt` / `RemoveAt` / `ReplaceAt` / `Move` | Private | Driven internally by `Refresh()` and `OnSourceCollectionChanged` / `OnSourceVectorChanged` / `OnSourceBindableVectorChanged`. Each ends in `RaiseSourceChanged`. |
+| `MatchRecords` / `CommitRecords` | Private | `Refresh()` steps for the root collection: match the validated materialization against `m_records` (position, then raw pointer, then address; unmatched records move out of `m_records` and the lookups into `removed`), then rebuild `m_records` in source order, creating the unmatched (no strategy hooks). |
+| `InsertAt` / `RemoveAt` / `ReplaceAt` / `Move` | Private | Driven internally by `OnSourceCollectionChanged` / `OnSourceVectorChanged` / `OnSourceBindableVectorChanged`. Each ends in `RaiseSourceChanged`. |
 | `ValidateItems` / `ValidateIncoming` | Private | Reject null and duplicate items before any mutation. See *Null and duplicate items* below. |
 | `RaiseSourceChanged` / `DrainPendingChanges` | Private | Raise the change, then destroy the removed records; after the outermost dispatch returns, `Refresh()` if a notification arrived while frozen. |
 | `SubscribeRecordPropertyChanged` / `UnsubscribeRecordPropertyChanged` / `OnRecordPropertyChanged` | Private | Manage each record's `PropertyChangedToken` and `WatchState`, and forward `PropertyChanged` to `m_itemChanged`. |
@@ -531,8 +1001,8 @@ struct SourceChange
     SourceRecord* NewParent;                          // Add, Replace, Move; nullptr = top level
     uint32_t OldIndex;                                // Remove, Replace, Move; within OldParent's children
     uint32_t NewIndex;                                // Add, Replace, Move; within NewParent's children
-    std::vector<SourceRecord*> const& Added;          // Add, Replace (subtree, pre-order); Reset (all new)
-    std::vector<SourceRecord const*> const& Removed;  // Remove, Replace (subtree, pre-order); Reset (all gone)
+    std::vector<SourceRecord*> const& Added;          // Add, Replace (subtree, pre-order); Reset (records created)
+    std::vector<SourceRecord const*> const& Removed;  // Remove, Replace (subtree, pre-order); Reset (records that left)
 };
 ```
 
@@ -570,7 +1040,7 @@ on `IsLiveShaping`, **never on which shaping verbs are active**:
 | Table lifetime | `SourceTable` derives from `enable_shared_from_this` and is always owned by `shared_ptr` (`Create()`). Items belong to the app and can outlive the table; a notification already in flight when `~SourceRecord()` revokes, or a revoke that fails on a torn-down event source, would otherwise call into a freed table. The source-change lambdas (`CollectionChanged` / `VectorChanged`) use the same `weak_from_this()` guard, mirroring v1 `ShapedItemsSource`. Because `weak_from_this()` is empty in the constructor, all subscriptions start in `AttachSource()` / `SetLiveShaping()`, never in the constructor. Weak pointers are locked only on the owning UI thread: a lock on a worker thread could become the last strong reference and run `~SourceTable()` (and its UI-affine revokes) there — v1 `TrackFlatItemPropertyChanged` has the same rule. |
 | Empty property name | Per the `INotifyPropertyChanged` convention, an empty or null `PropertyName` means "all properties changed". It is forwarded unchanged; the coordinator treats it as a change to every dependency of the active verbs. |
 | Null record | `ItemChanged(nullptr, L"")` means "unknown items changed": an off-thread change was dropped (see *Threading*). The coordinator re-evaluates every record against the active verbs. |
-| Reuse keeps subscriptions | `Reconcile` reuses records by raw pointer or address, so a `Reset` or `Refresh()` does not drop and re-create subscriptions for items that are still in the source. |
+| Reuse keeps subscriptions | `Refresh()` reuses records by raw pointer or address within the same collection (root or child feed), so a `Reset` or `Refresh()` does not drop and re-create subscriptions for items that are still there. |
 | Cost trade-off | With `IsLiveShaping` true and no verbs active, every observable item is still subscribed and every `PropertyChanged` is forwarded. This is deliberate: verb changes never walk the table to (un)subscribe, and the coordinator drops events cheaply when no verb reads the property. Apps that do not need live shaping leave `IsLiveShaping` false (the default) and pay nothing. |
 
 **Reference tracking and teardown:**
@@ -601,7 +1071,7 @@ untracked strong reference.
 |---|---|
 | Cost | Each record costs one `NewTrackerHandle` + `SetTrackerValue` on creation and one `DeleteTrackerHandle` on removal, the same as `Vector<IInspectable>`. A load or `Reset` of *n* items pays *n* of each. |
 | Single source token | `SubscribeToSourceChanges` binds exactly one interface (`INotifyCollectionChanged` > `IObservableVector` > `IBindableObservableVector`). `UnsubscribeFromSourceChanges` re-derives it with the same precedence; no kind is stored. |
-| No `tracker_ref` outlives the owner | `~tracker_ref` dereferences its owner even when empty. `Clear()` destroys every record, resets `m_sourceAccessor`, the selectors and the key index (all `std::optional` for this reason), and nulls `m_trackerOwner` while the owner is alive. |
+| No `tracker_ref` outlives the owner | `~tracker_ref` dereferences its owner even when empty. `Clear()` releases the hierarchy strategy (its selectors and key index are `std::optional` for this reason), destroys every record, resets `m_sourceAccessor`, and nulls `m_trackerOwner` while the owner is alive. |
 | Detached table | After `Clear()` the table is empty and owner-free, so it is safe to outlive `TableViewSource2` (consumer `shared_ptr`s, or a posted off-thread lambda that has the table locked). Every entry point and event lambda checks `IsDetached()` and returns. `~SourceTable()` asserts it was detached and never touches `m_trackerOwner`. |
 | GC-collected targets | `tracker_ref` holds no reference count; the owner's tracker handle does. When the GC collects a cycle (item ↔ VM ↔ `TableViewSource2`), items and the collection may already be collected when `final_release` → `~TableViewSource2()` → `Clear()` runs, and `tracker_ref::get()` would return a dangling pointer. So teardown never calls `get()`: handlers are nulled first (no consumer reads `Item` or `Identity()`), lookups are cleared wholesale (`RemoveFromLookups`, which reads `Item.get()`, is for incremental paths only), `~SourceRecord()` revokes via `Item.safe_get()`, and `UnsubscribeFromSourceChanges` uses the accessor's `AsXxx(true)`. Revoke failures are swallowed (`SafeRevoke`). |
 | Address reuse | The owner's tracker handle keeps each item alive until the record is destroyed, so a COM address cannot be reused while its record is in the table. The only exception is GC collection of the whole cycle, where nothing remains to observe the reused address. |
@@ -630,7 +1100,7 @@ and enabling the first verb needs no validation pass.
 | Error | `hresult_invalid_argument`, reusing v1 messages: "The same item object appears in the source more than once. Rows are identified by object identity, so two rows backed by one object cannot be told apart. Use a distinct object per row." / "A row could not be given a stable identity: null item". |
 | `Create()` / `Refresh()` | Validated upfront; the throw reaches the caller of `From(items)` or `Refresh()`. |
 | Incremental change (`InsertAt` / `ReplaceAt`) | The throw propagates out of the `CollectionChanged` / `VectorChanged` handler, i.e. into the app's `Add()` / `Insert()` / indexer. `ReplaceAt` with the same object at the same index is allowed. |
-| Out-of-sync recovery | After a rejected incremental change the source has already diverged from `m_records`. `m_outOfSync` is set and every later notification is handled as a `Reset` (re-enumerate + `ValidateItems`) instead of a positional delta. The first one that validates raises a single `Reset` and clears the flag; `Refresh()` does the same. Positional deltas are never applied on top of a diverged table. |
+| Out-of-sync recovery | After a rejected incremental change (root, or a child collection through `RequestReset`) the source has already diverged from the table. `m_outOfSync` is set and every later notification, root or child, is handled as a whole-tree re-read (`Refresh()`: re-enumerate + validate) instead of a positional delta. The first one that validates raises a single `Reset` and clears the flag; `Refresh()` does the same. Positional deltas are never applied on top of a diverged table. |
 | `Move` / `RemoveAt` | Cannot introduce null or duplicates; not validated. |
 
 **Lookups:**
@@ -648,7 +1118,7 @@ and enabling the first verb needs no validation pass.
 | Spec | Here | Why |
 |---|---|---|
 | D9: types in `TabularShaping` | In `TableViewSource2` | v1 stays untouched. The types can move down a layer when the hierarchy or rank code needs to hold records. |
-| D5/D6: `addressSet` for duplicates only | `m_addressLookup` (`ObjectAddress` → `SourceRecord*`) always on | Serves duplicate-object detection, `Reconcile` pass 3, and O(1) `TryFindByItem` fallback in one map; only `m_identityIndex` is toggled on/off with shaping. |
+| D5/D6: `addressSet` for duplicates only | `m_addressLookup` (`ObjectAddress` → `SourceRecord*`) always on | Serves duplicate-object detection, the address pass of the `Refresh()` match, and O(1) `TryFindByItem` fallback in one map; only `m_identityIndex` is toggled on/off with shaping. |
 | v1: null / duplicate items allowed while unshaped | Rejected in all modes | Keeps every lookup one-to-one (no multimap, no per-key chains or counters) and removes the mode-dependent validation pass when the first verb turns on. Accepted breaking change. |
 | D7/D9: projection stored inside `SourceRecordTable` | Split out of `SourceTable` | `SourceTable` strictly manages input source records, addresses, identities, and lookups; output projection belongs to the downstream stage. |
 | D10/D21: co-owned `shared_ptr` + `Retired` flag | Sole strong `shared_ptr` in `SourceTable`, no `Retired` flag | Downstream stages hold `SourceRecord*` and purge synchronously before destruction; `weak_ptr::lock()` alone rejects late async callbacks. |
@@ -656,7 +1126,7 @@ and enabling the first verb needs no validation pass.
 | v1 `ShapedItemsSource` & `CollectionAccessor`: plain `IInspectable` references to source and items | `tracker_ref` bound to `TableViewSource2` (`ITrackerHandleManager`) for both `CollectionAccessor2` and `SourceRecord::Item`, plus raw `event_token` instead of `winrt::event_revoker` | Matches `InspectingDataSource` and `Vector<IInspectable>`: lets the .NET GC collect cycles when the collection or row items hold back-references to the page/VM/source. `~TableViewSource2()` calls `m_shapingManager->Clear()` (which calls `SourceTable::Clear()`) so tracker handles are deleted while the owner is still alive. |
 | `ObjectAddress` type | Alias for `uintptr_t` | This branch has no `ObjectAddress` type. |
 
-### Hierarchy: the source tree in `SourceTable`
+### Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)
 
 With a hierarchy the tree must exist before any other verb runs:
 
@@ -669,9 +1139,14 @@ So the tree is part of the source, not of shaping:
 Shaping reads only `TopLevel()` and `SourceRecord::Parent` / `Children` / `Depth`, and does not care
 whether `ParentBy` or `ChildrenBy` built the tree.
 
-The tree lives **on `SourceRecord` and in `SourceTable`**; there is no separate tree object. Keeping
-it in the table gives one set of lookups, one validation path, one re-entrancy gate and queue, one
-`SourceChanged` and one `Clear()`.
+The tree's **links** live on `SourceRecord` (`Parent`, `Children`, `Depth`) and `SourceTable` keeps
+`m_topLevel` and the shared tree operations (`SiblingsOf`, `Reparent`, `UpdateDepths`,
+`ResetTreeToFlat`). How the tree is **built and maintained** is per verb and lives in a
+`SourceHierarchy` strategy that `SourceTable` owns (`m_hierarchy`; null = flat):
+`ParentKeyHierarchy` for `ParentBy`, `ChildCollectionsHierarchy` for `ChildrenBy`. Strategies reach
+the table only through `ISourceHierarchyHost`, so there is still one set of lookups, one validation
+path, one re-entrancy gate and queue, one `SourceChanged` and one `Clear()`. See *Source tree
+strategies* below.
 
 **Record fields.** The record carries the *source* tree only; everything shaped lives in the shaped
 tree (below).
@@ -694,12 +1169,11 @@ and the visible-descendant count live in the engine-owned `ShapeState` slot on t
 | Member | Purpose |
 |---|---|
 | `TopLevel()` / `m_topLevel` | Top-level records in source order (non-owning). Flat: mirrors `m_records`. |
-| `GetHierarchyKind()` / `HierarchyKind` | `m_hierarchy->Kind()`, or `None` when flat. `HierarchyKind` is declared in `Source/SourceHierarchy.h`. |
 | `SetParentKeyHierarchy(key, parentKey)` | `ParentBy`. Constructs a `ParentKeyHierarchy`, `Prepare`s it (validates the whole tree, throws before touching any record), releases the old strategy, `Commit`s, raises one `Reset`. |
 | `SetChildCollectionHierarchy(children)` | `ChildrenBy`. Same flow with a `ChildCollectionsHierarchy`: `Prepare` enumerates every child collection eagerly and recursively and validates; `Commit` creates child records and subscribes every observable child collection. |
 | `ClearHierarchy()` | Back to flat: releases the strategy; one `Reset`. |
 | `m_hierarchy` (private) | The current `SourceHierarchy` strategy; null = flat. Kept off `SourceRecord`, so flat tables pay nothing. |
-| `m_pendingHierarchy` (private) | A hierarchy verb received while frozen (`DeferRefresh`): the unprepared strategy, or nullptr for `ClearHierarchy`. |
+| `m_pendingHierarchy` (private) | A hierarchy verb received while resets are held (`DeferRefresh`): the unprepared strategy, or nullptr for `ClearHierarchy`. The current tree stays and keeps receiving changes until the re-read. |
 | `SiblingsOf(parent)`, `Reparent`, `UpdateDepths`, `ResetTreeToFlat` (private) | The shared tree operations; `SiblingsOf` and `Reparent` are also `ISourceHierarchyHost` members for the strategies. |
 
 **Source tree strategies (decided: split hierarchy out of `SourceTable`, option A)**
@@ -709,11 +1183,12 @@ a `SourceHierarchy` strategy owned as `std::unique_ptr` (null = flat).
 
 | Part | Detail |
 |---|---|
-| `SourceHierarchy` | `Kind()`; two-phase build `Prepare(host)` (every app call and check, writes only the strategy's scratch state, may throw) then `Commit(host)` (links every record; no app calls); `CollectIncoming(item, items)` (what an incoming root item brings, for validation); `OnInserted` / `OnRemoving` / `OnMoved` (root edits; a replace is remove then insert); `Reevaluate(host, record, property)` (live key or children-property edits); `Release(host)` (teardown-safe: unsubscribe feeds, release child records, drop selectors and keys). |
-| `ParentKeyHierarchy` | The two selectors, `NodeKeys` (with `KeyObject`), `m_keyIndex` / `m_nodeKeys`, and staged copies filled by `Prepare`. `MakeNodeKey`, `ValidateNoCycles`. `CollectIncoming` adds nothing. |
-| `ChildCollectionsHierarchy` | The children selector, `ChildFeed` (weak `Owner`, `optional<CollectionAccessor2>`, `event_token`, the sole strong `SourceRecordPtr`s in collection order, `OutOfSync`), `m_childFeeds`, and `m_staged` (pre-order `StagedNode`s: item, child collection, child count) so `Commit` creates and subscribes without calling app code again. Child-collection handlers are entry points the event lambdas call after locking the host and checking `AdmitChange()` and `CurrentHierarchy() == this`. |
-| `ISourceHierarchyHost` | Implemented privately by `SourceTable`: `TrackerOwner`, `WeakHost`, `CurrentHierarchy`, `RootRecords`, `CreateRecord` / `ReleaseRecord`, `ValidateIncoming`, `SiblingsOf` / `Reparent`, `AdmitChange` (the #19 gate), `RaiseSourceChanged`, `RequestReset`. |
-| Verb flow | Construct, `Prepare` (a throw leaves the old tree and strategy), `Release` the old, `ResetTreeToFlat`, `Commit`, one `Reset`. Under `DeferRefresh` the verb only parks the unprepared strategy in `m_pendingHierarchy`; the re-read at `Close` prepares and commits it. |
+| `SourceHierarchy` | Two-phase build `Prepare(host, rootItems)` (every app call and check over the given root items, staged by root position, writes only the strategy's scratch state, may throw) then `Commit(host, added)` (links every record, reusing kept child records and creating the rest; no app calls); `MatchForRefresh(host, rootMatches, removed)` (`Refresh()` only, between the two: per-feed match, unmatched records leave the lookups); `CollectIncoming(item, items)` (what an incoming root item brings, for validation); `OnInserted` / `OnRemoving` / `OnMoved` (root edits; a replace is remove then insert); `Reevaluate(host, record, property)` (live key or children-property edits); `TakeChildRecords(host, removed)` (before a strategy is replaced or cleared: unsubscribe feeds, move child records into the `Reset`'s `Removed`); `Release(host)` (teardown-safe: unsubscribe feeds, release child records, drop selectors and keys). |
+| `ParentKeyHierarchy` | The two selectors, `NodeKeys` (with `KeyObject`), `m_keyIndex` / `m_nodeKeys`, and staged copies filled by `Prepare`, keyed by root position and resolved through `RootRecords()` at `Commit`. `MakeNodeKey`, `ValidateNoCycles`. `CollectIncoming` adds nothing. |
+| `ChildCollectionsHierarchy` | The children selector, `ChildFeed` (weak `Owner`, `optional<CollectionAccessor2>`, `event_token`, the sole strong `SourceRecordPtr`s in collection order), `m_childFeeds`, and `m_staged` (pre-order `StagedNode`s: item, child collection, child count, and the `Match` kept by `MatchForRefresh`) so `Commit` creates and subscribes without calling app code again. Child-collection handlers are entry points the event lambdas call after locking the host and checking `AdmitChange()` and `CurrentHierarchy() == this`. |
+| `ISourceHierarchyHost` | Implemented privately by `SourceTable`: `TrackerOwner`, `WeakHost`, `CurrentHierarchy`, `RootRecords`, `CreateRecord` / `ReleaseRecord`, `ValidateIncoming`, `SiblingsOf` / `Reparent`, `AdmitChange` (the #19 gate), `RaiseSourceChanged`, `RequestReset` (a rejected child change: sets `m_outOfSync`). |
+| Verb flow | Construct, `Prepare` over the current root items (a throw leaves the old tree and strategy), `TakeChildRecords` and `Release` the old, `ResetTreeToFlat`, `Commit`, one `Reset`. Child records of the old strategy are not reused (a verb change). Under `DeferRefresh` the verb only parks the unprepared strategy in `m_pendingHierarchy`; the re-read at `Close` prepares and commits it. |
+| Refresh flow | Read (`Prepare` over the re-enumerated root), match (`MatchRecords`, `MatchForRefresh`), link (`CommitRecords`, `ResetTreeToFlat`, `Commit`), one `Reset`. See *Refresh: record reuse (decided)*. |
 
 Rejected: a `HierarchicalSourceTable` subclass (the hierarchy is set and cleared on a live table,
 and lookups, live shaping and removal all need hierarchy hooks); extracting only the child feeds
@@ -721,6 +1196,45 @@ into a `ChildFeedSet` (`SourceTable` keeps the per-kind branches); strategies as
 `SourceTable&` (no boundary at all); keeping everything in `SourceTable` (about a third of the
 class serves one verb). Cost: a virtual call per root edit while a hierarchy is active, and one more
 header.
+
+**Refresh: record reuse (decided: reuse, per-feed match).** A re-read creates a `SourceRecord`
+only for an item it cannot match, in the root collection and in every child collection alike.
+
+1. **Read.** Re-enumerate the root, `ValidateItems`, then `Prepare(host, rootItems)` on the
+   parked strategy if any, else the current one (`ChildrenBy` re-enumerates every child
+   collection; `ParentBy` re-reads every key). Every app call and check happens here; a throw
+   leaves the table untouched.
+2. **Match.** `MatchRecords` matches the root against `m_records`; `MatchForRefresh` matches each
+   kept record's feed against the staged children at the same position. Rules, per collection:
+   raw pointer at the same position, then raw pointer or address among the unmatched. There is no
+   matching across collections. Every unmatched record (with its subtree) moves out of the lookups
+   into `Removed` **before anything is created**, so an item that moved to another parent, or
+   between the root and a child collection, gets a new record instead of colliding with its old
+   one.
+3. **Link.** `CommitRecords` rebuilds `m_records` in source order, creating the unmatched root
+   records without strategy hooks. A parked strategy replaces the current one here
+   (`TakeChildRecords`, `Release`). `ResetTreeToFlat`, then `Commit` relinks every record
+   (`Parent` / `Children` / `Depth`), reusing kept child records, creating the rest, swapping a
+   feed's accessor and subscription when the child collection object changed, and dropping a feed
+   whose collection is now null.
+4. **Raise.** One `Reset`: `Added` = records created, `Removed` = records that left (alive for
+   the handler, destroyed after it).
+
+A reused record keeps its pointer, `Identity()`, `PropertyChanged` subscription and
+`ShapeFlags::Expanded`. Its shaping state is rewritten by the `Reapply()` the `Reset` triggers. An
+item without stable COM identity (a value boxed anew on every `GetAt`) never matches, so its record
+is recreated on every re-read.
+
+Rejected:
+- **Whole-tree matching through the existing lookups** (keeps a record that moved between
+  collections, at the cost of moving `SourceRecordPtr`s between feeds). Per-feed matching keeps
+  ownership local; a moved item is treated as remove plus add.
+- **Recreating every child record** (`Release` then `Commit`, the earlier implied behavior). It
+  loses expansion and re-subscribes every child on each re-read.
+- **Subtree-scoped `Reset` for a rejected child change.** It needs a new `SourceChange` kind that
+  the engine, the flattener and the owner must all handle. With reuse, a whole-tree re-read costs
+  only the enumeration. A rejected child change calls `RequestReset`, which sets `m_outOfSync`
+  like a rejected root change.
 
 `Records()` / `Size()` / `At()` stay the root collection (owning, source order). `ChildrenBy` records
 are owned by their feed and are not in `Records()`, but they are in the lookups, the identity index,
@@ -732,10 +1246,10 @@ validation and live shaping. Shaping walks `TopLevel()` and `Children`, never `R
 | One object, one position | Null and duplicate items are rejected across the whole tree, including child collections. Identity stays the item itself; there is no path-based identity. |
 | Last writer wins (assumed) | A new `ParentBy` / `ChildrenBy` replaces the previous tree. |
 | Verb change rewrites links | Setting or clearing the hierarchy rewrites `Parent` / `Children` / `Depth` on every record (O(n)) and raises one `Reset`. `Filter`, `Sort` and `GroupBy` never write to records. |
-| Ownership per collection | Under `ParentBy` source order differs from tree order, so `m_records` keeps owning in source order and `Parent` / `Children` are non-owning links. Under `ChildrenBy` the child feed owns. |
+| Ownership per collection | Under `ParentBy` source order differs from tree order, so `m_records` keeps owning in source order and `Parent` / `Children` are non-owning links. Under `ChildrenBy` the child feed (in `ChildCollectionsHierarchy::m_childFeeds`) owns. |
 | Reparent | A `ParentBy` key change moves the record and updates `Depth` for the whole moved subtree. |
-| Child collections are source | Their changes are tracked whether or not live shaping is on, through the same normalization, validation, re-entrancy gate and queue as the root collection. A rejected change sets that feed's `OutOfSync`; its next notification rebuilds the subtree as a `Reset` of that subtree. |
-| Key and children-property edits | A change to an existing item's key, parent key or children property is seen only through live shaping. `OnRecordPropertyChanged` re-evaluates it (reparent, or swap the feed) and raises the resulting `SourceChange` before forwarding `ItemChanged`. |
+| Child collections are source | Their changes are tracked whether or not live shaping is on, through the same normalization, validation, re-entrancy gate and queue as the root collection. A rejected change calls `RequestReset` (sets `m_outOfSync`): the next notification, root or child, is a whole-tree re-read with reuse. |
+| Key and children-property edits | A change to an existing item's key, parent key or children property is seen only through live shaping. `OnRecordPropertyChanged` calls `ReevaluateHierarchy`, which forwards to `m_hierarchy->Reevaluate` (`ParentKeyHierarchy`: reparent; `ChildCollectionsHierarchy`: swap the feed) and raises the resulting `SourceChange` through the host before `ItemChanged` is forwarded. |
 
 **`ParentBy` key rules** follow v1 (`Hierarchical-Data-Rows-Parent-Key-Design.md` §3):
 
@@ -762,7 +1276,7 @@ struct SourceChange
     SourceRecord* OldParent;                          // nullptr = top level
     SourceRecord* NewParent;                          // OldParent != NewParent on Move = reparent
     uint32_t OldIndex, NewIndex;                      // within the parent's children
-    std::vector<SourceRecord*> const& Added;          // subtree in pre-order; Reset: every record
+    std::vector<SourceRecord*> const& Added;          // subtree in pre-order; Reset: records created
     std::vector<SourceRecord const*> const& Removed;  // subtree in pre-order; alive for the handler
 };
 ```
@@ -770,11 +1284,16 @@ struct SourceChange
 **Threading, lifetime and teardown** follow the existing `SourceTable` contracts:
 
 - Child-collection notifications must arrive on the UI thread, like the root collection's.
-- Feed lambdas capture `weak_from_this()` plus the owner record's `weak_ptr`, and lock them only on
-  the UI thread.
-- Feed accessors, the selectors and object keys hold `tracker_ref`s bound to `m_trackerOwner`.
-- `Clear()` unsubscribes every feed via `safe_get`, destroys the child feeds and their records
-  first, then the root records, then resets `m_sourceAccessor` and nulls `m_trackerOwner`.
+- Feed lambdas capture `host.WeakHost()` (the table's `weak_from_this()`) plus the owner record's
+  `weak_ptr`, lock them only on the UI thread, and route only if `AdmitChange()` and
+  `CurrentHierarchy()` is still the strategy that subscribed (a replaced strategy's late event is
+  dropped).
+- Feed accessors, the selectors and object keys hold `tracker_ref`s bound to the host's
+  `TrackerOwner()` (`m_trackerOwner`).
+- `Clear()` calls `m_hierarchy->Release(host)` first (unsubscribe every feed via `safe_get`, destroy
+  the child feeds and their records, drop the selectors and keys), then the root records, then
+  resets `m_sourceAccessor` and nulls `m_trackerOwner`. `Release` is `noexcept` and never calls app
+  code.
 
 **Source root: no sentinel record.** Top-level records have `Parent == nullptr`, and `SourceTable`
 keeps `m_topLevel` in source order. Every `SourceRecord` keeps its item invariants (`Address`,
@@ -1096,7 +1615,7 @@ flattener's `m_rows` directly; it holds no copy.
 
 **Expansion (decided).**
 - **Records:** expansion is `ShapeFlags::Expanded` on the record's `ShapeState`. Records survive
-  reshapes and `Reapply()`, and `Reconcile` reuses them across `Reset`/`Refresh`, so the flag needs
+  reshapes and `Reapply()`, and the `Refresh()` match reuses them (root and child) across `Reset`/`Refresh`, so the flag needs
   no side model. A new record starts collapsed. A record that leaves takes its state with it.
   Confirmed: per-record flag, default collapsed (matches v1 and WCT tree rows). `ExpandAllRows` on
   records is O(n) (one flag write per record), accepted because it publishes a `Reset` anyway.
@@ -1348,15 +1867,16 @@ coordinator all read it. It is split in two (`Spec/`):
   struct SortSpec   { Kind SortKind /* Path | Key | Comparer */; hstring Path; DelegateRef Delegate;
                       SortDirection Direction /* None for Comparer */; bool Matches(SortSpec const&) const; };
   struct GroupSpec  { DelegateRef Key; SortDirection Direction; };
-  struct ShapeSpec  { vector<FilterSpec> Filters; optional<GroupSpec> Group; vector<SortSpec> Sorts; };
+  struct ShapeSpec  { vector<FilterSpec> Filters; vector<GroupSpec> Groups; vector<SortSpec> Sorts; };
 
   enum class ShapeDelta { None, Sort, GroupOrder, GroupKey, Filter };   // flags
   ShapeDelta Diff(ShapeSpec const& before, ShapeSpec const& after);  // pure; == means no work
   ```
 
 - **`ShapeDelegates`** (`Spec/ShapeDelegates.h`): the registry holding *how*: the app's
-  predicates, key selectors and comparers (`tracker_ref`, optional, destroyed by `Clear()` while
-  the owner is alive), deduplicated by `IUnknown` address so the same delegate object always gets
+  predicates, key selectors and comparers, each kept in its own type (a `std::variant` of typed
+  `tracker_ref`s, so invocation needs no cast and the active alternative checks that an id is used
+  for the right kind; optional, destroyed by `Clear()` while the owner is alive), deduplicated by `IUnknown` address so the same delegate object always gets
   the same `DelegateId`, and every `Register` call returns a new `Version`. `Retain(specsInUse)`
   releases delegates no spec in use refers to. UI-thread affine.
 - **`PathEvaluator`** (`Spec/PathEvaluator.h`): reads the keys of `Path` sort levels. A path is a
@@ -1432,8 +1952,14 @@ Decisions and open questions:
   `Filter` call replaces the existing filter, and `ClearFilter` removes it, so today the list
   holds at most one entry. The list leaves room for per-column filters later (v1's engine keys
   them by an axis token that no public verb exposes).
+- **Group levels (decided):** the spec holds a list of group levels (`ShapeSpec::Groups`, `[0]` =
+  outermost; empty = not grouped), like `Filters`. The engine, shaped tree and flattener are
+  already N-level (`GroupNode::GroupLevel`, `groupLevelCount`, `ShapedDepth`). The public API
+  stays single-level: `GroupBy` replaces the grouping and `ClearGroupBy` empties the list, so
+  today it holds at most one entry. A multi-level verb (Original Q3) is left to API review and
+  needs no spec-type change.
 - **Hierarchy:** `ParentBy` and `ChildrenBy` are mutually exclusive. Assumed: the last call replaces
-  the earlier one (see *Hierarchy: the source tree in `SourceTable`*). The tree itself lives in
+  the earlier one (see *Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)*). The tree itself lives in
   `SourceTable` and on `SourceRecord`, not in the spec. **Decided:** the selectors stay on the
   source side too (in `SourceTable`'s `SourceHierarchy` strategy), so a hierarchy change never produces a `ShapeDelta`; `SourceTable` raises a
   `Reset` `SourceChange` and the coordinator rebuilds from it.
@@ -1550,7 +2076,7 @@ Decisions and open questions:
     | `ParentBy` parent-key selector throws | Top level, like an orphan. |
     | `ParentBy` edit making a cycle or a self-parent | The edited record moves to the top level with its subtree; it moves to its proper parent once the key becomes valid. |
     | `ChildrenBy` children selector throws | Treated as a leaf (no child feed). |
-    | `ChildrenBy` item already elsewhere in the tree (including an ancestor, or twice in one collection) | The *Null and duplicate items* rule applies: the change is rejected (nothing written), and that feed's `OutOfSync` is set. Every later notification on that collection is handled as a `Reset` of its subtree and re-validated, so the collection stops updating until the app removes the duplicate. The root and other feeds stay live. Rejected alternative: skip only the duplicate edge, which keeps the rest of the collection live but needs a source-to-feed position map per feed and rules for promoting a skipped item when the original leaves, and gives flat and hierarchical sources two rules for one violation. |
+    | `ChildrenBy` item already elsewhere in the tree (including an ancestor, or twice in one collection) | The *Null and duplicate items* rule applies: the change is rejected (nothing written) and `RequestReset` sets `m_outOfSync`. Every later notification, root or child, is handled as a whole-tree re-read and re-validated, so the table stops updating until the app removes the duplicate (the same rule as a rejected root change). The re-read reuses every unchanged record. Rejected alternative: skip only the duplicate edge, which keeps the rest of the collection live but needs a source-to-feed position map per feed and rules for promoting a skipped item when the original leaves, and gives flat and hierarchical sources two rules for one violation. |
 
     Excluded records behave as filtered out and are re-evaluated on `ItemChanged`, `Refresh` or
     the next hierarchy verb. Under `ParentBy` a record has one parent key, so it is linked under
@@ -2407,8 +2933,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
   - `CollectionAccessor2.cpp`: port `Count`, `TryGetAt`, `Enumerate`, `GetAtUnchecked`.
   - `SourceRecord.cpp`: canonical `IUnknown` QI, lazy hex `Identity()`, `~SourceRecord()` token revoke.
   - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
-    upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_outOfSync` recovery), 3-pass `Reconcile`
-    (position → raw pointer → address), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
+    upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_outOfSync` recovery), the `Refresh()` match
+    (`MatchRecords` / `CommitRecords`: position → raw pointer → address; per-feed `MatchForRefresh`), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
     `RaiseSourceChanged` ordering, the freeze (`BeginFreeze` / `EndFreeze`, `m_pendingReset` → `Refresh`, #19), source change subscriptions, and
     `SetLiveShaping` / per-record `INotifyPropertyChanged` subscription + `ItemChanged` forwarding,
     off-thread marshalling to `m_ownerQueue` and dropped-change recovery, and `Clear()` detach
@@ -2540,24 +3066,36 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   `BeginDeferRefresh` throws while an apply runs (#19). Rejected: a `BeginDeferRefresh` /
   `EndDeferRefresh` pair in the IDL (an exception inside the block leaves the deferral open unless
   the app writes `try` / `finally`).
-- **Source changes while open (decided: freeze).** The outermost `BeginDeferRefresh` holds the #19
-  `SourceTable` freeze, so a collection change is not applied and only sets the pending reset; the
-  view stays as it was until `Close`, as during an apply. At the outermost end, `EndFreeze`
-  reports whether anything diverged. Rejected: shaping changes immediately with the applied spec
-  (work the `Close` reshape throws away, k events and then a Reset, and a separate `SourceTable`
-  counter for the hierarchy verbs).
-- **Hierarchy verbs (decided: the freeze is the deferral counter).** `ParentBy` / `ChildrenBy`
-  act on `SourceTable`, not the spec. While frozen, `SourceTable` stores the
-  unprepared strategy in `m_pendingHierarchy` (nullptr for `ClearHierarchy`) and sets the pending
-  reset; the re-read at `Close` prepares and commits the pending strategy instead of the current one (a throw
-  discards it and keeps the current tree). So the source is re-read once, the tree rebuilt once,
-  and the engine reshapes once with the new spec. Rejected: leaving hierarchy verbs undeferred
-  (two reshapes, an intermediate state visible), moving the hierarchy selectors into the spec
-  (contradicts `SourceTable` owning the tree), and a second counter beside the freeze.
+- **Source changes while open (decided: WPF model, incremental changes show).** WPF's
+  `DeferRefresh` defers only refreshes: `Filter`, `SortDescriptions`, `GroupDescriptions`,
+  `Refresh()`, a source `Reset` and the live-shaping rebuild go through `RefreshOrDefer()`, while
+  `ListCollectionView.ProcessCollectionChanged` applies Add / Remove / Replace / Move at once with
+  the old `ActiveFilter` / `ActiveComparer` and raises them (dotnet/wpf `CollectionView.cs`,
+  `ListCollectionView.cs`). We match it. The outermost `BeginDeferRefresh` calls
+  `SourceTable::BeginHoldResets`: an incremental change is applied to the table, raised, and
+  shaped surgically by the engine with the **applied** spec (the desired spec is not yet in
+  force), then published; the view shows it immediately. A source `Reset` (including a multi-item
+  change reported as one, and every change while out of sync) is not re-read: it sets the pending
+  reset, and from then on the table has diverged, so later notifications are handled as under the
+  #19 freeze until the re-read at `Close`. The #19 freeze still wraps every surgical apply.
+  - Unlike WPF, reads (`Count`, `GetAt`, `IndexOf`) do not throw while a handle is open: the
+    shaped view stays consistent with the applied spec and the changes applied so far.
+  - Accepted costs: shaping work the `Close` reshape redoes when the spec also changed, and k
+    incremental events followed by the `Close` Reset. Rejected: the freeze (nothing shows until
+    `Close`, which WPF apps do not expect).
+- **Hierarchy verbs (decided: parked under the reset hold).** `ParentBy` / `ChildrenBy` act on
+  `SourceTable`, not the spec. While resets are held, `SourceTable` stores the unprepared strategy
+  in `m_pendingHierarchy` (nullptr for `ClearHierarchy`); the current tree stays and keeps
+  receiving incremental changes, like the old shape. The re-read at `Close` prepares and commits
+  the pending strategy instead of the current one (a throw discards it and keeps the current
+  tree). So the source is re-read once, the tree rebuilt once, and the engine reshapes once with
+  the new spec. Rejected: leaving hierarchy verbs undeferred (two reshapes, an intermediate state
+  visible) and moving the hierarchy selectors into the spec (contradicts `SourceTable` owning the
+  tree).
 - **`Refresh()` while open (decided: deferred).** Sets `m_refreshRequested`; the outermost end
   re-reads once. Rejected: running immediately (two Resets, and a re-read inside the freeze), and
   throwing (surprising when every other verb is allowed).
-- **Outermost end.** `EndFreeze`; then, if it reported a pending change or `m_refreshRequested` is
+- **Outermost end.** `EndHoldResets`; then, if it reported a pending change or `m_refreshRequested` is
   set, `SourceTable::Refresh()`, whose Reset runs `Reapply()` with the desired spec; otherwise
   `ApplyDesiredSpec()` (nothing when the spec did not change). Then `PostLiveDrain` if live
   changes are pending: the drain is skipped while a handle is open (as under a hold), and a
@@ -2569,9 +3107,11 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   - [x] Declare `DeferRefresh()` in the IDL and `TableViewSource2`, and `DeferRefreshHandle`.
   - [x] Declare `BeginDeferRefresh` / `EndDeferRefresh` / `IsRefreshDeferred`, `m_deferDepth`,
         `m_refreshRequested` on `ShapingManager`.
-  - [x] Declare `SourceTable::m_pendingHierarchy` and the frozen behaviour of the hierarchy verbs.
-  - [ ] Implement (Phase 5) and test nesting, a throw from `Close`, and hierarchy plus spec verbs
-        in one handle.
+  - [x] Declare `SourceTable::m_pendingHierarchy`, `BeginHoldResets` / `EndHoldResets` and the
+        held behaviour of the hierarchy verbs.
+  - [ ] Implement (Phase 5) and test nesting, a throw from `Close`, hierarchy plus spec verbs
+        in one handle, an incremental source change shown under the applied spec while open, and
+        a source `Reset` held until `Close`.
 
 ## Open items
 

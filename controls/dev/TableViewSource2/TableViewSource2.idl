@@ -65,9 +65,10 @@ runtimeclass TableViewSource2
     void Refresh();
 
     // Batches verbs: while a returned handle is open, Filter, GroupBy, Sort, the hierarchy verbs,
-    // their Clear* forms and Refresh only record what they declare, and source collection changes
-    // are held. Closing the outermost handle (Dispose in C#) applies everything as one reshape and
-    // one Reset. Handles nest; an inner Close does nothing, and closing a handle twice is a no-op.
+    // their Clear* forms and Refresh only record what they declare. As in WPF, an incremental
+    // source collection change still shows at once, shaped with the filter, sort and grouping
+    // already applied; a source Reset and live-shaping updates wait. Closing the outermost handle
+    // (Dispose in C#) applies everything as one reshape and one Reset. Handles nest; an inner Close does nothing, and closing a handle twice is a no-op.
     // An exception from app code during the reshape is thrown from that Close.
     Windows.Foundation.IClosable DeferRefresh();
 
