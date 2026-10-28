@@ -1176,7 +1176,11 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
         if (auto const nvi = m_lastItemExpandedIntoFlyout.get())
         {
             child = nvi;
-            parent = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
+            // The flyout's owner can be a footer item, so continue from the root repeater that actually hosts it.
+            auto const ownerRepeater = GetParentItemsRepeaterForContainer(nvi);
+            parent = ownerRepeater && (ownerRepeater == m_leftNavFooterMenuRepeater.get() || ownerRepeater == m_topNavFooterMenuRepeater.get()) ?
+                ownerRepeater :
+                (IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get());
         }
     }
 
