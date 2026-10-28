@@ -100,7 +100,7 @@
                               SelectionMode="Single" CanDragItems="False" CanReorderItems="False"
                               ItemTemplate="{StaticResource DiffTreeTemplate}"
                               Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged"
-                              ItemInvoked="Tree_ItemInvoked" />
+                              ItemInvoked="Tree_ItemInvoked" DoubleTapped="XamlTree_DoubleTapped" />
                 </Grid>
                 <Grid Grid.Column="1" RowSpacing="8">
                     <Grid.RowDefinitions>

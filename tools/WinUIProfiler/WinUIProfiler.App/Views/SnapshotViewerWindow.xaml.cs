@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIProfiler.App.ViewModels;
 
@@ -40,6 +41,7 @@ public sealed partial class SnapshotViewerWindow : Window
     private bool closed;
     public SnapshotHistoryEntry Entry { get; }
     public SnapshotViewerData? Data { get; private set; }
+    public event EventHandler<SnapshotElement>? ElementRequested;
 
     public SnapshotViewerWindow(SnapshotHistoryEntry entry)
     {
@@ -123,6 +125,14 @@ public sealed partial class SnapshotViewerWindow : Window
 
     private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args) =>
         Populate(args.Node, sender == XamlTree ? SnapshotTreeKind.Xaml : SnapshotTreeKind.Composition);
+
+    // Double-clicking a XAML node asks the main window to show its element's history in the Elements tab.
+    private void XamlTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
+    {
+        if (Data is null || SnapshotTreeExpansion.NodeAt(XamlTree, args.OriginalSource)?.Content is not SnapshotTreeLabel { Node: { } node }) return;
+        args.Handled = true;
+        ElementRequested?.Invoke(this, SnapshotElement.From(Data.Document, node));
+    }
 
     private async void ExpandAll_Click(object sender, RoutedEventArgs args) =>
         await SetExpandedAsync(ReferenceEquals(sender, XamlExpandAll) ? XamlTree : CompositionTree, true);

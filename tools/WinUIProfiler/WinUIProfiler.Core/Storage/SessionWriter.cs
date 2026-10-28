@@ -153,7 +153,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             {
                 Sql.Execute(connection, SessionSchema.Create, transaction);
                 Sql.Execute(connection, $"PRAGMA user_version = {SessionSchema.Version}", transaction);
-                // Read together, so a UTC time maps onto this machine's QPC clock. A trace's QPC clock is another recording's.
+                // Read together, so a UTC time maps onto this machine's QPC clock. A trace was recorded earlier, maybe on
+                // another machine, so its events are on a different clock and StartedQpc stays empty for it.
                 var startedQpc = Stopwatch.GetTimestamp();
                 var startedUtc = DateTime.UtcNow;
                 Sql.Execute(connection, """

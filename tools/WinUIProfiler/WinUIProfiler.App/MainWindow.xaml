@@ -131,7 +131,7 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <TabView Grid.Row="3" VerticalAlignment="Stretch" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent">
+        <TabView x:Name="Tabs" Grid.Row="3" VerticalAlignment="Stretch" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent">
             <TabViewItem x:Uid="LiveMetricsTab" IsClosable="False">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="12" Padding="0,8,8,0">
@@ -143,6 +143,9 @@
             </TabViewItem>
             <TabViewItem x:Uid="FramesTab" IsClosable="False">
                 <views:FramesView x:Name="FramesPanel" />
+            </TabViewItem>
+            <TabViewItem x:Name="ElementsTab" x:Uid="ElementsTab" IsClosable="False">
+                <views:ElementsView x:Name="ElementsPanel" />
             </TabViewItem>
         </TabView>
     </Grid>
