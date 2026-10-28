@@ -104,6 +104,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies IItemContainerProvider.FindItemByProperty distinguishes group headers and data items under grouping.")]
+        public void VerifyItemContainerFindItemByPropertyUnderGrouping()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var peer = RequireTablePeer(tableView);
+                var itemContainer = peer.GetPattern(PatternInterface.ItemContainer) as IItemContainerProvider;
+                Verify.IsNotNull(itemContainer, "TableView peer must provide IItemContainerProvider.");
+
+                // 1. Finding by AutomationControlType.Group should find the first group header.
+                var firstGroup = itemContainer.FindItemByProperty(null, AutomationElementIdentifiers.ControlTypeProperty, AutomationControlType.Group);
+                Verify.IsNotNull(firstGroup, "FindItemByProperty should find the first group header by ControlType.Group.");
+
+                // Advancing past the first group header should find the second group header.
+                var secondGroup = itemContainer.FindItemByProperty(firstGroup, AutomationElementIdentifiers.ControlTypeProperty, AutomationControlType.Group);
+                Verify.IsNotNull(secondGroup, "FindItemByProperty should find the second group header when starting after the first.");
+                Verify.IsFalse(ReferenceEquals(firstGroup, secondGroup), "First and second group headers should be distinct providers.");
+
+                // Advancing past the second group header should return null.
+                var thirdGroup = itemContainer.FindItemByProperty(secondGroup, AutomationElementIdentifiers.ControlTypeProperty, AutomationControlType.Group);
+                Verify.IsNull(thirdGroup, "FindItemByProperty should return null after the last group header.");
+
+                // 2. Finding by AutomationControlType.DataItem should find a data row, not a group header.
+                var firstDataItem = itemContainer.FindItemByProperty(null, AutomationElementIdentifiers.ControlTypeProperty, AutomationControlType.DataItem);
+                Verify.IsNotNull(firstDataItem, "FindItemByProperty should find the first data item.");
+                Verify.IsFalse(ReferenceEquals(firstGroup, firstDataItem), "First data item must not match the group header.");
+
+                // 3. Finding by ClassNameProperty == "TableViewGroupHeader" should match group headers.
+                var headerByClass = itemContainer.FindItemByProperty(null, AutomationElementIdentifiers.ClassNameProperty, "TableViewGroupHeader");
+                Verify.IsNotNull(headerByClass, "FindItemByProperty should find group header by ClassName.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the Selection pattern is advertised under SelectionMode.Single and withheld under None.")]
         public void VerifySelectionPatternTracksSelectionMode()
         {
