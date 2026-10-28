@@ -314,7 +314,7 @@ _Check_return_ HRESULT CTextBlock::GetValue(
             }
             // else if m_pInlines is null then m_strText should already be set to whatever is in the TextBlock.Text property.
 
-            if (!m_strText.IsNullOrEmpty())
+            if (m_strText.GetCount() != 0)
             {
                 IFC_RETURN(SetPropertyIsLocal(pdp));
             }
@@ -483,7 +483,9 @@ _Check_return_ HRESULT CTextBlock::SetTextToInlineCollection()
         m_pressedHyperlink.reset();
     }
 
-    if (m_strText.IsNullOrEmpty())
+    // Use the count, not IsNullOrEmpty, which treats a leading NUL as empty. The DWrite
+    // layout uses the full counted string, so the inline Run must contain it too.
+    if (m_strText.GetCount() == 0)
     {
         IFC_RETURN(AddText(xstring_ptr::NullString(), RunFlagsSpaceDefault));
     }

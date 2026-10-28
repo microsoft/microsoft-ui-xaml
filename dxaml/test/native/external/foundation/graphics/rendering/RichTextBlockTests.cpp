@@ -142,6 +142,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
               TestServices::WindowHelper->WaitForIdle();
           }
 
+        void RichTextBlockTests::DoubleTapWordAfterEmptyParagraph()
+        {
+            TestCleanupWrapper cleanup;
+            RichTextBlock^ richTextBlock = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                // The first and last Paragraphs and the Span are empty, so they never create their
+                // InlineCollections. The word is centered so DoubleTap (which hits the element's center) lands on it.
+                auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                    L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <RichTextBlock x:Name='rtb' IsTextSelectionEnabled='True' Width='400' HorizontalAlignment='Left' TextAlignment='Center' FontSize='20'>"
+                    L"    <Paragraph/>"
+                    L"    <Paragraph><Span/>Hello</Paragraph>"
+                    L"    <Paragraph/>"
+                    L"  </RichTextBlock>"
+                    L"</StackPanel>"));
+                richTextBlock = safe_cast<RichTextBlock^>(rootPanel->FindName(L"rtb"));
+                VERIFY_IS_NOT_NULL(richTextBlock);
+                TestServices::WindowHelper->WindowContent = rootPanel;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            // Word selection maps the hit position back to a character index by walking every block
+            // from the start, so it passes through the empty Paragraph and the empty Span.
+            TestServices::InputHelper->DoubleTap(richTextBlock);
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"SelectedText: '%s'", richTextBlock->SelectedText->Data());
+                VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(richTextBlock->SelectedText, L"Hello"), 0);
+            });
+        }
+
         void RichTextBlockTests::NWRenderWUCFull()
         {
             RunOnUIThread([&]()

@@ -216,7 +216,8 @@ _Check_return_ HRESULT ShouldRemoveEmptyRun(
 
         // If the run is now empty, and came from content rather than an
         // explicit Run element, remove it altogether.
-        bShouldRemoveEmptyRun = value.AsString().IsNullOrEmpty();
+        // Use the count: IsNullOrEmpty also treats text with a leading NUL as empty.
+        bShouldRemoveEmptyRun = value.AsString().GetCount() == 0;
     }
 
     return S_OK;

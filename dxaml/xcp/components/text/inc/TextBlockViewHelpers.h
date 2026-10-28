@@ -22,21 +22,21 @@ public:
     // character position (adjusted for hidden positions) in the block. 
     // Returns true if adjustment is complete, returns false if there is more to do. 
     static bool AdjustPositionByCharacterCount(
-        _In_ CInlineCollection *inlines,
+        _In_opt_ CInlineCollection *inlines,
         _Inout_ int &charCount,
         _Inout_ int &adjustedPosition);
 
     // Takes a number of positions (visible and hidden) and returns the character index
     // at that position.
     static bool AdjustCharacterIndexByPosition(
-        _In_ CInlineCollection *inlines,
+        _In_opt_ CInlineCollection *inlines,
         _Inout_ int &charCount,
         _Inout_ int &position);
 
     static bool IsCSpanType(KnownTypeIndex typeIndex);
 
     static bool FindIUCPositionInInlines(
-        _In_ CInlineCollection* inlines,
+        _In_opt_ CInlineCollection* inlines,
         _In_ CInlineUIContainer* iuc,
         _Inout_ uint32_t &positionOfIUC);
 

@@ -1605,6 +1605,69 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
+        // Text that starts with a NUL used to be dropped from the TextBlock's inline Run while the
+        // DWrite layout still used the full string, so word selection walked off the end of the
+        // text container and crashed.
+        // Each input mode runs in its own test method. Swapping window content after a touch
+        // selection in the same test is not stable, even for plain text.
+        static void SelectWordInTextWithLeadingNull(bool useMouse, bool forceLineServices)
+        {
+            const wchar_t text[] = L"\0word";
+            TextBlock^ textBlock = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                auto rootPanel = ref new StackPanel();
+                rootPanel->Orientation = Orientation::Horizontal;
+                textBlock = ref new TextBlock();
+                textBlock->IsTextSelectionEnabled = true;
+                textBlock->FontSize = 20;
+                if (forceLineServices)
+                {
+                    // A non-default CharacterSpacing opts out of the DWrite fast path.
+                    textBlock->CharacterSpacing = 100;
+                }
+                textBlock->Text = ref new Platform::String(text, ARRAYSIZE(text) - 1);
+                rootPanel->Children->Append(textBlock);
+                TestServices::WindowHelper->WindowContent = rootPanel;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            if (useMouse)
+            {
+                TestServices::InputHelper->LeftMouseClick(textBlock);
+                TestServices::InputHelper->LeftMouseClick(textBlock);
+            }
+            else
+            {
+                TestServices::InputHelper->DoubleTap(textBlock);
+            }
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"SelectedText length: %u", textBlock->SelectedText->Length());
+                VERIFY_IS_TRUE(textBlock->SelectedText->Equals(L"word"));
+            });
+        }
+
+        void TextBlockTests::DoubleTapTextWithLeadingNull()
+        {
+            TestCleanupWrapper cleanup;
+            SelectWordInTextWithLeadingNull(false /*useMouse*/, false /*forceLineServices*/);
+        }
+
+        void TextBlockTests::DoubleClickTextWithLeadingNull()
+        {
+            TestCleanupWrapper cleanup;
+            SelectWordInTextWithLeadingNull(true /*useMouse*/, false /*forceLineServices*/);
+        }
+
+        void TextBlockTests::DoubleTapTextWithLeadingNullLineServices()
+        {
+            TestCleanupWrapper cleanup;
+            SelectWordInTextWithLeadingNull(false /*useMouse*/, true /*forceLineServices*/);
+        }
         void TextBlockTests::TextBlockWordBreakerNavigation()
         {
             TestCleanupWrapper cleanup;

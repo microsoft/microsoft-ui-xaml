@@ -8,10 +8,16 @@
 #include "InlineUIContainer.h"
 
 bool TextBlockViewHelpers::AdjustPositionByCharacterCount(
-    _In_ CInlineCollection *inlines,
+    _In_opt_ CInlineCollection *inlines,
     _Inout_ int &charCount,
     _Inout_ int &adjustedPosition)
 {
+    // Paragraphs and Spans create their InlineCollection lazily, so an empty one can be null.
+    if (inlines == nullptr)
+    {
+        return false;
+    }
+
     const auto& inlineCollection = inlines->GetCollection();
     for (auto inl : inlineCollection)
     {
@@ -87,10 +93,15 @@ bool TextBlockViewHelpers::AdjustPositionByCharacterCount(
 }
 
 bool TextBlockViewHelpers::AdjustCharacterIndexByPosition(
-    _In_ CInlineCollection *inlines,
+    _In_opt_ CInlineCollection *inlines,
     _Inout_ int &charCount,
     _Inout_ int &position)
 {
+    if (inlines == nullptr)
+    {
+        return false;
+    }
+
     const auto& inlineCollection = inlines->GetCollection();
     for (auto inl : inlineCollection)
     {
@@ -169,10 +180,15 @@ bool TextBlockViewHelpers::IsCSpanType(KnownTypeIndex typeIndex)
 }
 
 bool TextBlockViewHelpers::FindIUCPositionInInlines(
-    _In_ CInlineCollection* inlines,
+    _In_opt_ CInlineCollection* inlines,
     _In_ CInlineUIContainer* iuc,
     _Inout_ uint32_t &positionOfIUC)
 {
+    if (inlines == nullptr)
+    {
+        return false;
+    }
+
     const auto& inlineCollection = inlines->GetCollection();
     for (auto inl : inlineCollection)
     {

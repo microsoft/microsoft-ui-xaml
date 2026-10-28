@@ -49,6 +49,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(DoubleTapWordAfterEmptyParagraph)
+                TEST_METHOD_PROPERTY(L"Description", L"Double tap a word after an empty Paragraph selects the word without crashing.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(NWRenderWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Test the software render path - BitmapCache")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")

@@ -276,6 +276,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: TextBlockTests::WordBreakerSelection failing because tapping isn't selecting a word
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(DoubleTapTextWithLeadingNull)
+                TEST_METHOD_PROPERTY(L"Description", L"Double tap a TextBlock whose Text starts with a NUL character selects the word without crashing.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(DoubleClickTextWithLeadingNull)
+                TEST_METHOD_PROPERTY(L"Description", L"Double click a TextBlock whose Text starts with a NUL character selects the word without crashing.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(DoubleTapTextWithLeadingNullLineServices)
+                TEST_METHOD_PROPERTY(L"Description", L"Double tap a line services TextBlock whose Text starts with a NUL character selects the word without crashing.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(TextBlockWordBreakerNavigation)
                 TEST_METHOD_PROPERTY(L"Description", L"Ensure text in a TextBlock is properly broken up for navigation")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
