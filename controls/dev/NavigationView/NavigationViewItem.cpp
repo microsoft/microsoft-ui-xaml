@@ -62,12 +62,10 @@ void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
 void NavigationViewItem::OnNavigationViewItemBaseIsSelectedChanged()
 {
     UpdateVisualStateForPointer();
-    if (!IsInNavigationViewOwnedRepeater())
+    // Cleared and removed containers keep their weak owner, so check membership before its SelectionModel is read.
+    if (!IsInNavigationViewOwnedRepeater() && IsInNavigationViewMenu())
     {
-        if (auto const navigationView = GetNavigationView())
-        {
-            winrt::get_self<NavigationView>(navigationView)->OnNavigationViewItemIsSelectedPropertyChanged(*this, s_IsSelectedProperty);
-        }
+        winrt::get_self<NavigationView>(GetNavigationView())->OnNavigationViewItemIsSelectedPropertyChanged(*this, s_IsSelectedProperty);
     }
 }
 
@@ -201,33 +199,26 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
 void NavigationViewItem::UpdateRepeaterItemsSource()
 {
     m_itemsSourceViewCollectionChangedRevoker.revoke();
+    m_itemsSourceView.set(nullptr);
     if (!m_repeater && !GetNavigationView())
     {
         return;
     }
 
-    auto const itemsSource = [this]()
-    {
-        if (auto const menuItemsSource = MenuItemsSource())
-        {
-            return menuItemsSource;
-        }
-        return MenuItems().as<winrt::IInspectable>();
-    }();
-
-    auto sourceView = itemsSource.try_as<winrt::ItemsSourceView>();
-    if (!sourceView)
-    {
-        sourceView = winrt::ItemsSourceView(itemsSource);
-    }
-    auto items = sourceView;
+    winrt::ItemsSourceView items{ nullptr };
     if (auto repeater = m_repeater.get())
     {
-        repeater.ItemsSource(itemsSource);
+        repeater.ItemsSource(GetChildrenSource());
         items = repeater.ItemsSourceView();
     }
+    else if (MenuItemsSource())
+    {
+        // The revoker only holds the view weakly, so keep it alive while this unrealized item observes it.
+        items = GetChildrenItemsSourceView();
+        m_itemsSourceView.set(items);
+    }
 
-    if (m_repeater || MenuItemsSource())
+    if (items)
     {
         m_itemsSourceViewCollectionChangedRevoker = items.CollectionChanged(winrt::auto_revoke,
             [weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)](const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
@@ -239,22 +230,87 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
             });
     }
 
-    // A vector notification can arrive before the repeater's view updates its cached count.
-    UpdateNavigationViewForChildren(sourceView);
+    UpdateNavigationViewForChildren();
 }
 
-void NavigationViewItem::UpdateNavigationViewForChildren(const winrt::ItemsSourceView& items)
+winrt::IInspectable NavigationViewItem::GetChildrenSource()
+{
+    if (auto const menuItemsSource = MenuItemsSource())
+    {
+        return menuItemsSource;
+    }
+    return MenuItems().as<winrt::IInspectable>();
+}
+
+// A new view is used because a vector notification can arrive before the repeater's view updates its cached count.
+winrt::ItemsSourceView NavigationViewItem::GetChildrenItemsSourceView()
+{
+    auto const itemsSource = GetChildrenSource();
+    if (auto const itemsSourceView = itemsSource.try_as<winrt::ItemsSourceView>())
+    {
+        return itemsSourceView;
+    }
+    return winrt::ItemsSourceView(itemsSource);
+}
+
+bool NavigationViewItem::IsInNavigationViewMenu()
 {
     if (auto const navigationView = GetNavigationView())
     {
-        winrt::get_self<NavigationView>(navigationView)->UpdateSelectedItemFromMenuItems(items, navigationView.SelectedItem() != nullptr);
-        SetNavigationViewParentForItems(items, navigationView);
+        auto const indexPath = winrt::get_self<NavigationView>(navigationView)->GetIndexPathForContainer(*this);
+        if (indexPath.GetSize() < 2)
+        {
+            return false;
+        }
+        for (int i = 0; i < indexPath.GetSize(); i++)
+        {
+            if (indexPath.GetAt(i) < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void NavigationViewItem::UpdateNavigationViewForChildren()
+{
+    if (auto const navigationView = GetNavigationView())
+    {
+        if (navigationView.IsLoaded())
+        {
+            // Selecting during a collection notification can reset SelectionModel nodes whose handlers have not run yet.
+            DispatcherQueue().TryEnqueue(
+                winrt::DispatcherQueuePriority::Low,
+                winrt::DispatcherQueueHandler([weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)]()
+                {
+                    if (auto const item = weakThis.get())
+                    {
+                        winrt::get_self<NavigationViewItem>(item)->SelectPreselectedChildren();
+                    }
+                }));
+        }
+        else
+        {
+            SelectPreselectedChildren();
+        }
+        SetNavigationViewParentForItems(GetChildrenItemsSourceView(), navigationView);
     }
 }
 
-void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
+void NavigationViewItem::SelectPreselectedChildren()
 {
-    UpdateNavigationViewForChildren(sender.as<winrt::ItemsSourceView>());
+    if (IsInNavigationViewMenu())
+    {
+        auto const navigationView = GetNavigationView();
+        winrt::get_self<NavigationView>(navigationView)->UpdateSelectedItemFromMenuItems(GetChildrenItemsSourceView(), navigationView.SelectedItem() != nullptr);
+    }
+}
+
+void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
+{
+    UpdateNavigationViewForChildren();
     UpdateVisualStateForChevron();
 }
  
@@ -1384,6 +1440,7 @@ void NavigationViewItem::UnhookEventsAndClearFields()
     m_navigationViewItemPresenter.set(nullptr);
     m_toolTip.set(nullptr);
     m_repeater.set(nullptr);
+    m_itemsSourceView.set(nullptr);
     m_flyoutContentGrid.set(nullptr);
 }
 

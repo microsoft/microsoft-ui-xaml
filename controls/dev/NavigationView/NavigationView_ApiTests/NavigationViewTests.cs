@@ -1084,6 +1084,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyFooterRootPrecedesUnrealizedChildSelection()
+        {
+            NavigationView navView = null;
+            NavigationViewItem child = null;
+            NavigationViewItem footerRoot = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView { Width = 1000, Height = 600, PaneDisplayMode = NavigationViewPaneDisplayMode.Left };
+                var parent = new NavigationViewItem { Content = "Parent" };
+                child = new NavigationViewItem { Content = "Child", IsSelected = true };
+                parent.MenuItems.Add(child);
+                navView.MenuItems.Add(parent);
+                footerRoot = new NavigationViewItem { Content = "Footer", IsSelected = true };
+                navView.FooterMenuItems.Add(footerRoot);
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(footerRoot, navView.SelectedItem);
+                Verify.IsTrue(footerRoot.IsSelected);
+                Verify.IsFalse(child.IsSelected, "Only the first preselected item stays selected.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyChildAddedToUnrealizedMenuItemsSourceIsSelected()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.Left);
+            var children = new ObservableCollection<object>();
+            NavigationViewItem added = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var parent = (NavigationViewItem)navView.MenuItems[0];
+                children.Add(new NavigationViewItem { Content = "Existing" });
+                parent.MenuItemsSource = children;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                added = new NavigationViewItem { Content = "Added", IsSelected = true };
+                children.Add(added);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(VisualTreeHelper.GetParent(added));
+                Verify.AreEqual(added, navView.SelectedItem);
+            });
+        }
+
+        [TestMethod]
         public void VerifySingleSelection()
         {
             string navItemPresenter1CurrentState = string.Empty;

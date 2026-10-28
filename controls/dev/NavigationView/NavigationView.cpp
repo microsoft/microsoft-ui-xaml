@@ -711,16 +711,6 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
     UpdatePaneLayout();
     UpdatePaneOverlayGroup();
-
-    UpdateSelectionForMenuItems();
-    if (m_menuItemsSource)
-    {
-        NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
-    }
-    if (m_footerItemsSource)
-    {
-        NavigationViewItemBase::SetNavigationViewParentForItems(m_footerItemsSource, *this);
-    }
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -762,7 +752,12 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
     {
         UpdateSelectionForMenuItems();
     }
-    NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
+
+    // Owners select preselected descendants, and root items in both menus take precedence over them.
+    if (m_footerItemsSource)
+    {
+        NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
+    }
 }
 
 void NavigationView::UpdateLeftRepeaterItemSource(const winrt::IInspectable& items)
@@ -866,6 +861,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
             m_footerItemsSource = nullptr;
         }
 
+        const bool footerItemsSourceCreated = !m_footerItemsSource;
         if (!m_footerItemsSource)
         {
             m_footerItemsSource = winrt::ItemsSourceView(itemsSource);
@@ -895,6 +891,10 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
         if (!FooterMenuItemsSource())
         {
             UpdateSelectionForMenuItems();
+        }
+        if (footerItemsSourceCreated && m_menuItemsSource)
+        {
+            NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
         }
         NavigationViewItemBase::SetNavigationViewParentForItems(m_footerItemsSource, *this);
     }
@@ -2477,7 +2477,9 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // If this item has an associated container, we'll raise the SelectionChanged event on it immediately.
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
-            AnimateSelectionChanged(nvi);
+            // An unrealized descendant shows the indicator on its lowest visible ancestor.
+            const bool isUnrealizedDescendant = !winrt::VisualTreeHelper::GetParent(nvi) && GetIndexPathForContainer(nvi).GetSize() > 2;
+            AnimateSelectionChanged(isUnrealizedDescendant ? FindLowestLevelContainerToDisplaySelectionIndicator() : nvi);
             RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
         }
@@ -4922,7 +4924,7 @@ bool NavigationView::UpdateSelectedItemFromMenuItems(const winrt::ItemsSourceVie
     {
         if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
         {
-            if (item.IsSelected() && GetIndexPathForContainer(item).GetSize() > 1)
+            if (item.IsSelected())
             {
                 if (!foundFirstSelected)
                 {

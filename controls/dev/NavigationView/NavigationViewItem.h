@@ -114,7 +114,11 @@ private:
     bool IsOutOfControlBounds(const winrt::Point& point);
 
     void UpdateRepeaterItemsSource();
-    void UpdateNavigationViewForChildren(const winrt::ItemsSourceView& items);
+    winrt::IInspectable GetChildrenSource();
+    winrt::ItemsSourceView GetChildrenItemsSourceView();
+    bool IsInNavigationViewMenu();
+    void UpdateNavigationViewForChildren();
+    void SelectPreselectedChildren();
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
@@ -160,6 +164,7 @@ private:
     tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{ this };
     tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{ this };
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
+    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
     tracker_ref<winrt::Grid> m_flyoutContentGrid{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
 
