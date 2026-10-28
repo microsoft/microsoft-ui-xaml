@@ -216,7 +216,8 @@ JsonSerializer.Serialize(new
                 SetLine(EtwSummary,
                     etw is null ? "" : Format("EtwFormat", Text(etw.FromProcessStart ? "EtwFromProcessStart" : "EtwFromConnection"),
                         etw.XamlEvents, etw.ProfilerEvents, etw.GpuMemoryEvents, etw.LostEvents, etw.DroppedEvents),
-                    etw is null ? null : Format("EtwDetailsFormat", Text(etw.FromProcessStart ? "EtwCoverageProcessStart" : "EtwCoverageConnection")));
+                    etw is null ? null : Format("EtwDetailsFormat", Text(etw.FromProcessStart ? "EtwCoverageProcessStart" : "EtwCoverageConnection")) +
+                        (etw.GpuMemoryWarning is { } gpuMemoryWarning ? $"\n{gpuMemoryWarning}" : ""));
             }
 
             var recording = model.Recording;

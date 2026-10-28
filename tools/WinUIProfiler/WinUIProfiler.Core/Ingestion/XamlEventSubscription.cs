@@ -16,8 +16,8 @@ internal static class XamlEventSubscription
 
     // Microsoft-Windows-DxgKrnl VidMmProcessBudgetChange and VidMmProcessUsageChange: a process's GPU memory budget
     // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
-    private const int VidMmProcessBudgetChange = 366;
-    private const int VidMmProcessUsageChange = 367;
+    internal const int VidMmProcessBudgetChange = 366;
+    internal const int VidMmProcessUsageChange = 367;
 
     internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink)
     {
