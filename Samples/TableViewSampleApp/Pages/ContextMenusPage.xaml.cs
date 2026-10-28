@@ -53,7 +53,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
     // handler closes over that column.
     private void AttachHeaderMenus()
     {
-        foreach (var column in new TableViewColumn[] { NameColumn, DepartmentColumn, OfficeColumn, SalaryColumn })
+        foreach (var column in new TableViewColumn[] { NameColumn, DepartmentColumn, StatusColumn, OfficeColumn, SalaryColumn })
         {
             var hide = new MenuFlyoutItem
             {
@@ -183,7 +183,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
         if (sender is FrameworkElement { DataContext: Person person })
         {
             person.IsActive = !person.IsActive;
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is now {1}", person.FullName, person.IsActive ? "active" : "inactive"));
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} {1}", person.IsActive ? "Reactivated" : "Deactivated", person.FullName));
         }
     }
 

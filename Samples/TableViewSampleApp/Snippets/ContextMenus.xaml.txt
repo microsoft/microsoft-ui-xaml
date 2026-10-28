@@ -72,6 +72,9 @@
                              CellContextFlyout="{StaticResource NameCellMenu}"/>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <!-- Shows the IsActive value that the row menu's Deactivate and Reactivate items change. -->
+    <tv:TableViewTemplateColumn x:Name="StatusColumn" Header="Status" Width="120"
+                                 CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
     <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140"
                              Binding="{Binding Office}"/>
     <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
