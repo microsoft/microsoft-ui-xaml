@@ -34,7 +34,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
             TEST_METHOD_PROPERTY(L"Description",
-                L"Verify MUXC's DLL-name fallback requests C++/WinRT's LOAD_LIBRARY_SEARCH_DEFAULT_DIRS policy.")
+                L"Verify MUXC's DLL-name fallback matches C++/WinRT's LOAD_LIBRARY_SEARCH_DEFAULT_DIRS policy.")
         END_TEST_METHOD()
     };
 } } } } } }
