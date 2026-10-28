@@ -1139,6 +1139,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyRemovedBoundContainerIsSelectedResetCompletes()
+        {
+            NavigationView navView = null;
+            ObservableCollection<Category> categories = null;
+            Category removed = null;
+            bool containerDeselected = false;
+            ManualResetEvent loadedEvent = new(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                removed = new("Menu Item 2", "MI2", "Icon", null, false);
+                categories = new ObservableCollection<Category> {
+                    new("Menu Item 1", "MI1", "Icon", null, false),
+                    removed
+                };
+
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' IsSelected='{Binding SelectsOnInvoked, Mode=TwoWay}'/>
+</DataTemplate>")
+                };
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => navView.SelectedItem = removed);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var container = (NavigationViewItem)navView.ContainerFromMenuItem(removed);
+                Verify.IsTrue(container.IsSelected);
+                // Clearing the removed container's DataContext resets its bound IsSelected while it is still in the repeater.
+                container.RegisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, (sender, dp) => containerDeselected = !container.IsSelected);
+                categories.Remove(removed);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(containerDeselected);
+                Verify.IsNull(navView.SelectedItem);
+            });
+        }
+
+        [TestMethod]
         public void VerifySingleSelection()
         {
             string navItemPresenter1CurrentState = string.Empty;

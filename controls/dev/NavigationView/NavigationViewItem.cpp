@@ -257,7 +257,17 @@ bool NavigationViewItem::IsInNavigationViewMenu()
 {
     if (auto const navigationView = GetNavigationView())
     {
-        auto const indexPath = winrt::get_self<NavigationView>(navigationView)->GetIndexPathForContainer(*this);
+        auto const navigationViewImpl = winrt::get_self<NavigationView>(navigationView);
+        // A cleared container stays in its repeater until it is recycled, but its index is no longer valid.
+        if (auto const parentRepeater = navigationViewImpl->GetParentItemsRepeaterForContainer(*this))
+        {
+            if (parentRepeater.GetElementIndex(*this) < 0)
+            {
+                return false;
+            }
+        }
+
+        auto const indexPath = navigationViewImpl->GetIndexPathForContainer(*this);
         if (indexPath.GetSize() < 2)
         {
             return false;
