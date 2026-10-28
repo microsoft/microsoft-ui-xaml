@@ -5510,17 +5510,23 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
             const auto irIndex = inFooter ? index : m_topDataProvider.ConvertOriginalIndexToIndex(index);
 
         // Get the container of the first item
-        if (auto const container = ir.TryGetElement(irIndex))
+        if (ir)
         {
-            return container;
+            if (auto const container = ir.TryGetElement(irIndex))
+            {
+                return container;
+            }
         }
     }
     else
     {
-        if (auto container = inFooter ? m_leftNavFooterMenuRepeater.get().TryGetElement(index)
-            : m_leftNavRepeater.get().TryGetElement(index))
+        // A custom template may not have MenuItemsHost or FooterMenuItemsHost.
+        if (auto const ir = inFooter ? m_leftNavFooterMenuRepeater.get() : m_leftNavRepeater.get())
         {
-            return container.try_as<winrt::NavigationViewItemBase>();
+            if (auto container = ir.TryGetElement(index))
+            {
+                return container.try_as<winrt::NavigationViewItemBase>();
+            }
         }
     }
     return nullptr;
