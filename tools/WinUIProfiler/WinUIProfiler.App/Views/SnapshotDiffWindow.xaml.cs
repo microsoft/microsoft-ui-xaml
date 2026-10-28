@@ -278,7 +278,18 @@ public sealed partial class SnapshotDiffWindow : Window
     private void Tree_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
     {
         if (data is null || closed || synchronizing || changingExpansion) return;
-        if (sender == Tree(matchTarget) && synchronizedSelections.Remove(sender)) SelectNode(sender);
+        if (sender == Tree(matchTarget))
+        {
+            if (synchronizedSelections.Remove(sender)) SelectNode(sender);
+        }
+        else if (sender.SelectedNode?.Content is SnapshotDiffTreeItem { Difference: { } node })
+        {
+            try
+            {
+                UpdateDetails(sender == XamlTree ? SnapshotTreeKind.Xaml : SnapshotTreeKind.Composition, node);
+            }
+            catch (Exception error) { ReportError(error); }
+        }
     }
 
     private TreeView Tree(SnapshotTreeKind kind) => kind == SnapshotTreeKind.Xaml ? XamlTree : CompositionTree;
