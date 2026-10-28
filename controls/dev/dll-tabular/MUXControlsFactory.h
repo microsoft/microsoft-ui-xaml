@@ -29,7 +29,7 @@ private:
     static bool s_initialized;
 };
 
-namespace winrt::Microsoft::UI::Xaml::XamlTypeInfo
+namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::XamlTypeInfo
 {
     namespace factory_implementation { using XamlControlsTabularXamlMetaDataProvider = MUXControlsFactory; }
     namespace implementation { using XamlControlsTabularXamlMetaDataProvider = XamlMetadataProvider; }

@@ -6,7 +6,7 @@
 #include "common.h"
 #include "ResizeGripper.h"
 
-namespace winrt::Microsoft::UI::Private::Controls
+namespace winrt::Microsoft::UI::Private::Controls::Tabular
 {
     CppWinRTActivatableClassWithDPFactory(ResizeGripper)
 }

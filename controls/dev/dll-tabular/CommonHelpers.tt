@@ -78,8 +78,8 @@
     // DefaultStyle page.
     static readonly string[] s_privateTypesNeedingXamlMetadata = new string[]
     {
-        "Microsoft.UI.Private.Controls.SortIndicator",
-        "Microsoft.UI.Private.Controls.ResizeGripper",
+        "Microsoft.UI.Private.Controls.Tabular.SortIndicator",
+        "Microsoft.UI.Private.Controls.Tabular.ResizeGripper",
     };
 
     static bool ShouldIncludePrivateTypeInXamlMetadata(Type t)

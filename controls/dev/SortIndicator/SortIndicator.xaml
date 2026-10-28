@@ -2,7 +2,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:privatecontrols="using:Microsoft.UI.Private.Controls">
+    xmlns:privatecontrols="using:Microsoft.UI.Private.Controls.Tabular">
 
     <Style TargetType="privatecontrols:SortIndicator">
         <!-- Themed, not inherited, matching Expander's ExpanderChevronForeground: a ThemeResource

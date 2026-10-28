@@ -897,7 +897,7 @@ namespace MUXControlsTestApp
         {
             RunAfterDelay(() =>
             {
-                foreach (var gripper in FindDescendants<Microsoft.UI.Private.Controls.ResizeGripper>(BasicTableView))
+                foreach (var gripper in FindDescendants<Microsoft.UI.Private.Controls.Tabular.ResizeGripper>(BasicTableView))
                 {
                     gripper.ReleasePointerCaptures();
                 }

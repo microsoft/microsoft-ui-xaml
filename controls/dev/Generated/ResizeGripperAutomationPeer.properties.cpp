@@ -6,7 +6,7 @@
 #include "common.h"
 #include "ResizeGripperAutomationPeer.h"
 
-namespace winrt::Microsoft::UI::Private::Controls
+namespace winrt::Microsoft::UI::Private::Controls::Tabular
 {
     CppWinRTActivatableClassWithBasicFactory(ResizeGripperAutomationPeer)
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Private.Controls.Tabular;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -96,7 +96,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Both types are MUX_INTERNAL but projected into the test app as Microsoft.UI.Private.Controls;
+        // Both types are MUX_INTERNAL but projected into the test app as Microsoft.UI.Private.Controls.Tabular;
         // TableView_Sizing_APITests.cs already constructs a ResizeGripper the same way.
         [TestMethod]
         public void VerifySortIndicatorAndResizeGripperDefaultStylesResolve()

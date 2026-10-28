@@ -73,9 +73,9 @@
         $(GeneratedFilesDir)\Controls\Tabular\Primitives;
         $(GeneratedFilesDir)\Data;
         $(GeneratedFilesDir)\Media;
-        $(GeneratedFilesDir)\XamlTypeInfo;
+        $(GeneratedFilesDir)\Controls\Tabular\XamlTypeInfo;
         $(GeneratedFilesDir)\Microsoft\UI\Private\Composition\Effects;
-        $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Controls\Tabular;
         $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
         %(AdditionalIncludeDirectories);
         $(MiniWindowsSDKIncludePath);

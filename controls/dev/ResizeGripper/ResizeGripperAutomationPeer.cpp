@@ -31,7 +31,7 @@ ResizeGripperAutomationPeer::ResizeGripperAutomationPeer(winrt::ResizeGripper co
 
 hstring ResizeGripperAutomationPeer::GetClassNameCore()
 {
-    // Fixed string rather than hstring_name_of<>: the type lives in Microsoft.UI.Private.Controls,
+    // Fixed string rather than hstring_name_of<>: the type lives in Microsoft.UI.Private.Controls.Tabular,
     // and an internal namespace should not surface to assistive technology.
     return L"ResizeGripper";
 }

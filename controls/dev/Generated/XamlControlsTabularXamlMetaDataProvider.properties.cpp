@@ -6,7 +6,7 @@
 #include "common.h"
 #include "XamlControlsTabularXamlMetaDataProvider.h"
 
-namespace winrt::Microsoft::UI::Xaml::XamlTypeInfo
+namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::XamlTypeInfo
 {
     CppWinRTActivatableClassWithBasicFactory(XamlControlsTabularXamlMetaDataProvider)
 }

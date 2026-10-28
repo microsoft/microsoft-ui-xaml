@@ -6,7 +6,7 @@
 #include "common.h"
 #include "SortIndicator.h"
 
-namespace winrt::Microsoft::UI::Private::Controls
+namespace winrt::Microsoft::UI::Private::Controls::Tabular
 {
     CppWinRTActivatableClassWithDPFactory(SortIndicator)
 }

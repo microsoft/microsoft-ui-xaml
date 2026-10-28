@@ -3,9 +3,11 @@
 #define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular.Primitives
 #define MU_XCD_NAMESPACE Microsoft.UI.Xaml.Data
-// Do not change: must equal MUXC's value; a Tabular-specific child namespace breaks the cppwinrt projection.
-#define MU_PRIVATE_CONTROLS_NAMESPACE Microsoft.UI.Private.Controls
-#define MU_X_XTI_NAMESPACE Microsoft.UI.Xaml.XamlTypeInfo
+// Tabular-owned namespaces: MUXC already declares types in Microsoft.UI.Private.Controls and
+// Microsoft.UI.Xaml.XamlTypeInfo, and sharing a namespace makes the reference and component C++/WinRT
+// projections write the same header. See docs/design-notes/TabularControls/TableView-dev-spec.md.
+#define MU_PRIVATE_CONTROLS_NAMESPACE Microsoft.UI.Private.Controls.Tabular
+#define MU_X_XTI_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular.XamlTypeInfo
 
 namespace features
 {

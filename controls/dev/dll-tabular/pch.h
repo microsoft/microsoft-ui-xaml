@@ -396,29 +396,34 @@ void constexpr specialize_guids()
 // Primitives namespace is currently empty (no tabular primitives yet); its
 // forward-declared sub-namespaces keep the using-directives well-formed.
 #include "winrt/Microsoft.UI.Xaml.Controls.Tabular.h"
-// Framework-internal primitives (SortIndicator, ResizeGripper) live in the private namespace, which
-// Tabular shares verbatim with MUXC -- see MU_PRIVATE_CONTROLS_NAMESPACE in
-// Microsoft.UI.Xaml.Controls.Tabular.idl. The generated metadata provider names those types
-// unqualified, so alias the namespace here for the same reason the public Tabular one is aliased.
-#include "winrt/Microsoft.UI.Private.Controls.h"
+// Framework-internal primitives (SortIndicator, ResizeGripper) live in Tabular's private namespace
+// (MU_PRIVATE_CONTROLS_NAMESPACE in Microsoft.UI.Xaml.Controls.Tabular.idl) and the metadata provider in
+// MU_X_XTI_NAMESPACE. The generated metadata provider names those types unqualified, so alias these
+// namespaces here for the same reason the public Tabular one is aliased.
+#include "winrt/Microsoft.UI.Private.Controls.Tabular.h"
+#include "winrt/Microsoft.UI.Xaml.Controls.Tabular.XamlTypeInfo.h"
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular { namespace implementation {} namespace factory_implementation {} }
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives { namespace implementation {} namespace factory_implementation {} }
-namespace winrt::Microsoft::UI::Private::Controls { namespace implementation {} namespace factory_implementation {} }
+namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::XamlTypeInfo { namespace implementation {} namespace factory_implementation {} }
+namespace winrt::Microsoft::UI::Private::Controls::Tabular { namespace implementation {} namespace factory_implementation {} }
 namespace winrt
 {
     using namespace Microsoft::UI::Xaml::Controls::Tabular;
     using namespace Microsoft::UI::Xaml::Controls::Tabular::Primitives;
-    using namespace Microsoft::UI::Private::Controls;
+    using namespace Microsoft::UI::Xaml::Controls::Tabular::XamlTypeInfo;
+    using namespace Microsoft::UI::Private::Controls::Tabular;
     namespace implementation
     {
         using namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::implementation;
         using namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
-        using namespace winrt::Microsoft::UI::Private::Controls::implementation;
+        using namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::XamlTypeInfo::implementation;
+        using namespace winrt::Microsoft::UI::Private::Controls::Tabular::implementation;
     }
     namespace factory_implementation
     {
         using namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::factory_implementation;
         using namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::factory_implementation;
-        using namespace winrt::Microsoft::UI::Private::Controls::factory_implementation;
+        using namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::XamlTypeInfo::factory_implementation;
+        using namespace winrt::Microsoft::UI::Private::Controls::Tabular::factory_implementation;
     }
 }

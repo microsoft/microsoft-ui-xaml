@@ -54,21 +54,21 @@ Entry c_typeEntries[] =
 {
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Private.Controls.ResizeGripper",
+        L"Microsoft.UI.Private.Controls.Tabular.ResizeGripper",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Private.Controls.ResizeGripper",
+                (PCWSTR)L"Microsoft.UI.Private.Controls.Tabular.ResizeGripper",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IResizeGripperFactory>(L"Microsoft.UI.Private.Controls.ResizeGripper"); },
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IResizeGripperFactory>(L"Microsoft.UI.Private.Controls.Tabular.ResizeGripper"); },
                 /* Arg 4 - Populate properties func */ 
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
-                    winrt::IResizeGripperStatics statics = GetFactory<winrt::IResizeGripperStatics>(L"Microsoft.UI.Private.Controls.ResizeGripper");
+                    winrt::IResizeGripperStatics statics = GetFactory<winrt::IResizeGripperStatics>(L"Microsoft.UI.Private.Controls.Tabular.ResizeGripper");
                     {
                         xamlType.AddDPMember(L"DragOrientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.DragOrientationProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsDragging", L"Boolean", statics.IsDraggingProperty(), false /* isContent */);
@@ -84,23 +84,23 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Private.Controls.SortIndicator",
+        L"Microsoft.UI.Private.Controls.Tabular.SortIndicator",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Private.Controls.SortIndicator",
+                (PCWSTR)L"Microsoft.UI.Private.Controls.Tabular.SortIndicator",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISortIndicatorFactory>(L"Microsoft.UI.Private.Controls.SortIndicator"); },
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISortIndicatorFactory>(L"Microsoft.UI.Private.Controls.Tabular.SortIndicator"); },
                 /* Arg 4 - Populate properties func */ 
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
-                    winrt::ISortIndicatorStatics statics = GetFactory<winrt::ISortIndicatorStatics>(L"Microsoft.UI.Private.Controls.SortIndicator");
+                    winrt::ISortIndicatorStatics statics = GetFactory<winrt::ISortIndicatorStatics>(L"Microsoft.UI.Private.Controls.Tabular.SortIndicator");
                     {
-                        xamlType.AddDPMember(L"Direction", L"Microsoft.UI.Private.Controls.SortIndicatorDirection", statics.DirectionProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Direction", L"Microsoft.UI.Private.Controls.Tabular.SortIndicatorDirection", statics.DirectionProperty(), false /* isContent */);
                     }
 
                 });
@@ -713,17 +713,17 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider",
+        L"Microsoft.UI.Xaml.Controls.Tabular.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider",
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Object",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider"); },
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.Controls.Tabular.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider"); },
                 /* Arg 4 - Populate properties func */ 
                 nullptr
             );
@@ -752,13 +752,13 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Private.Controls.SortIndicatorDirection",
+        L"Microsoft.UI.Private.Controls.Tabular.SortIndicatorDirection",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make<EnumXamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Private.Controls.SortIndicatorDirection",
+                (PCWSTR)L"Microsoft.UI.Private.Controls.Tabular.SortIndicatorDirection",
                 /* Arg 2 - CreateFromString func */ 
                 (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
                 {

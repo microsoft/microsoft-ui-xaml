@@ -10,8 +10,6 @@
 #include <wrl\module.h>
 #include <roapi.h>
 #include <atomic>
-#include <algorithm>
-#include <array>
 #include <string_view>
 // MUXC-parity block: MUXC's dllmain pulls in the material-helper LifetimeHandler here. Inert in the
 // Tabular binary (MUXCONTROLS_TABULAR is always defined); kept guarded to ease twin-diffing vs MUXC.
@@ -55,12 +53,6 @@ using DllGetActivationFactory_t = HRESULT(WINAPI*)(HSTRING, IActivationFactory**
 std::atomic<DllGetActivationFactory_t> s_muxGetFactory{ nullptr };
 std::atomic<bool> s_muxFactoryResolved{ false };
 std::atomic<bool> s_bypassTraceEmitted{ false };
-
-// Tabular-owned namespaces outside its Microsoft.UI.Xaml.Controls.Tabular.* subtree.
-// Prefixes end in '.' so they only match a whole namespace component.
-constexpr std::array<std::wstring_view, 1> kTabularOwnedNamespacesOutsideSubtree{
-    L"Microsoft.UI.Xaml.XamlTypeInfo.",
-};
 
 DllGetActivationFactory_t GetMuxActivationFactoryFn()
 {
@@ -159,11 +151,7 @@ int32_t __stdcall MuxcActivationHandler(
     std::wstring_view name{ buf, len };
 
     if (name.starts_with(L"Microsoft.UI.Xaml.") &&
-        !name.starts_with(L"Microsoft.UI.Xaml.Controls.Tabular.") &&
-        std::none_of(
-            kTabularOwnedNamespacesOutsideSubtree.begin(),
-            kTabularOwnedNamespacesOutsideSubtree.end(),
-            [&name](std::wstring_view prefix) { return name.starts_with(prefix); }))
+        !name.starts_with(L"Microsoft.UI.Xaml.Controls.Tabular."))
     {
         // Route base framework types (Microsoft.UI.Xaml.*) to the in-proc framework dll (Microsoft.ui.xaml.dll);
         // the Tabular subtree falls through here. MUXC controls (Microsoft.UI.Xaml.Controls.*) live in the controls
