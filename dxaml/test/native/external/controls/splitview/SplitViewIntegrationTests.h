@@ -232,6 +232,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that a custom visual state manager completing synchronously off-tree still raises PaneOpened.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterUndeliveredNotification)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a synchronous completion an earlier app handler kept from SplitView cannot block later pane completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterFailedNotificationSetter)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an undelivered completion whose failure reached the IsPaneOpen setter cannot block later pane completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesOrderCompletionsWhenPaneOpeningClosesWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a close from PaneOpening is published after the open when a live template omits DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaisePaneClosedWhenBindingCallbackChangesDisplayMode)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a DisplayMode change from a TwoWay binding callback, raised before IsPaneOpen handling, cannot discard PaneClosed.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()
@@ -245,6 +261,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     private:
         void VerifyLightDismissReentrancyWithoutDisplayModeStates(bool closeAgain);
+        void VerifyPaneTransitionsAfterUndeliveredNotification(bool managerCatchesFailure);
 
         void ValidateLightDismissBehaviorWorker(
             xaml_controls::SplitViewDisplayMode displayMode,
