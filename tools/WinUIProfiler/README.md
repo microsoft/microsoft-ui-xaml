@@ -123,33 +123,63 @@ errors and scope limitations are included in the JSON rather than fabricated val
 
 ## XAML events
 
-`WinUIProfiler.Core` reads the XAML TraceLogging events of one process, and the
-kernel's GPU memory events for it, live or from a recorded `.etl` file. Each
-event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`). TraceLogging events
-carry their own field names and types, so no manifest is needed. Manifest events
-on the XAML providers are skipped. The GPU memory events are manifest events,
-decoded with the manifest installed with Windows.
+`WinUIProfiler.Core` reads all the events of the XAML providers for one process,
+and the kernel's GPU memory events for it, live or from a recorded `.etl` file.
+Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 
 | Provider | GUID | Events read |
 | --- | --- | --- |
-| Microsoft-Windows-XAML | `531a35ab-63ce-4bcf-aa98-f88c7a89e455` | Frames (`CoreServices_Frame`), objects entering the tree (`DependencyObject_Enter`), and layout, focus and other operations with element IDs |
+| Microsoft-Windows-XAML | `531a35ab-63ce-4bcf-aa98-f88c7a89e455` | Manifest events for frames, layout, parsing, resources, rendering, input and other runtime work. TraceLogging events for frames (`CoreServices_Frame`), objects entering the tree (`DependencyObject_Enter`), and layout, focus and other operations with element IDs |
+| Microsoft-Windows-XAML-Diagnostics | `59e7a714-73a4-4147-b47e-0957048c75c4` | Elements created (with their XAML file), added to and removed from the tree, property changes, measure and arrange overrides, invalidation, bindings, resources, animations and input |
 | Microsoft-Windows-XAML-Profiler | `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d` | Tree, composition and graphics events |
+| Microsoft.UI.Xaml | `2dc72f6e-e4d1-5f58-3245-09a4243799dd` | The runtime's telemetry events, such as the first UI thread frame (`FirstUiThreadFrameEnd`), D3D device sharing and loss, XAML islands, GC durations and fail-fasts |
+| Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
-Events with element IDs and all Microsoft-Windows-XAML-Profiler events are only
-in builds with `XamlProfilerEnabled`. The GPU memory events come from Windows,
-whatever the build. They carry the values `IDXGIAdapter3::QueryVideoMemoryInfo`
-returns, which earlier builds also reported in the profiler's `GpuMemorySnapshot`
-event. The kernel writes them when the usage or budget changes, and
-writes the current values when the process opens a GPU adapter and when a
-session requests capture state. The System process writes some of them, such as
-those written when the process exits, which bring the usage down to 0. So they
-are matched to the process by their `ProcessId` field, which becomes the
-event's process ID.
+The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
+events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
+from Windows, whatever the build. They carry the values
+`IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also reported
+in the profiler's `GpuMemorySnapshot` event. The kernel writes them when the
+usage or budget changes, and writes the current values when the process opens a
+GPU adapter and when a session requests capture state. The System process writes
+some of them, such as those written when the process exits, which bring the
+usage down to 0. So they are matched to the process by their `ProcessId` field,
+which becomes the event's process ID.
 
-Microsoft-Windows-XAML is enabled with keyword `0x100000`. No manifest event
-uses that keyword, so ETW drops them at the source and only TraceLogging events
-are delivered.
+The XAML providers are enabled with every keyword at level 5 (Verbose), so the
+events that have keyword bits are included: the telemetry events, and some
+TraceLogging events, such as the start of each `FrameworkElement_ApplyTemplate`,
+which carries the element's class and name. Not included are
+Microsoft-Windows-XAML's 16 events at its own levels above Verbose, written for
+every API call and for every object or property the parser sets, such as
+`ApiFunctionCallStart` and `CreateInstanceBegin`.
+
+TraceLogging events carry their own field names and types. Manifest events are
+decoded with the manifest Windows registers for their provider. WinUI does not
+register one: its Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics
+events share their IDs and fields with system XAML's (`Windows.UI.Xaml.dll`), so
+they are decoded with system XAML's manifest. One event differs: WinUI's
+`FrameInfo` (event 64, named `Frame`) has one field, `Value`, which is whether
+the frame drew, so `Ingestion\XamlEventSubscription.cs` decodes it. An event
+the registered manifest does not describe, such as one WinUI added that the
+installed Windows does not have, is not delivered. The GPU memory events are
+decoded with the kernel's manifest.
+
+While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML
+source position of the objects it parses, which `ElementCreatedWithSource`
+carries (and, in builds with `XamlProfilerEnabled`, `ElementEnteredTree`), and
+keeps setters and resource references for XAML diagnostics. That costs the
+target some memory and CPU time, as in any trace that enables the provider.
+Only XAML parsed while the provider is enabled has positions: a launch has them
+from the start, an attach only for XAML parsed after it. Compiled XAML without
+line information, as in the Store's WinUI 3 Gallery, has `LineNumber` and
+`ColumnNumber` 0.
+
+Launching the WinUI 3 Gallery from the app and recording for about 11 seconds
+wrote 116,000 to 138,000 events, 70 to 75 percent from Microsoft-Windows-XAML
+and nearly all the rest from Microsoft-Windows-XAML-Diagnostics: a 6 to 7 MB
+session file, with no events lost or dropped.
 
 Reading ETW needs an elevated process, or membership in the local Performance
 Log Users group.
@@ -237,16 +267,21 @@ then `Seq`.
 
 To record a trace, use `logman`. Start it before the app: the kernel writes the
 app's starting GPU memory values when the app opens a GPU adapter, and after
-that only changes. Then inspect the trace with `WinUIProfiler.Cli`, which
-reads the file through `Ingestion\OfflineEtlSource.cs`. The CLI reads session
-files the same way, and `record` writes a session file from a trace. Run from
-this directory:
+that only changes. `logman` enables the providers in every process, so other
+XAML processes, such as explorer, write to the trace too; the larger buffers
+(`-bs`, `-nb`) keep ETW from losing events. Then inspect the trace with
+`WinUIProfiler.Cli`, which reads the file through `Ingestion\OfflineEtlSource.cs`.
+The CLI reads session files the same way, and `record` writes a session file
+from a trace. Run from this directory:
 
 ```powershell
-'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0x100000 5',
+'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0xFFFFFFFFFFFFFFFF 5',
+'{59E7A714-73A4-4147-B47E-0957048C75C4} 0xFFFFFFFFFFFFFFFF 5',
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
+'{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
+'{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
 '{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5' | Set-Content providers.txt
-logman create trace XamlTrace -o xaml.etl -pf providers.txt -ets
+logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
 # ... use the target app ...
 logman stop XamlTrace -ets
 

@@ -8,13 +8,10 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// A real-time ETW session that reads one process's XAML TraceLogging events, and the kernel's GPU memory events
-// for it, while the profiler is connected.
+// A real-time ETW session that reads one process's events from the XAML providers, and the kernel's GPU memory
+// events for it, while the profiler is connected.
 public sealed class LiveEtwSource : IDisposable
 {
-    // The TraceLogging events read here have no keyword, so ETW always delivers them. No manifest event uses
-    // this bit, so asking only for it stops the runtime from writing manifest events we would skip anyway.
-    private const ulong TraceLoggingOnlyKeyword = 0x100000;
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
     private const ulong GpuMemoryKeyword = 0x4;
     private const string SessionPrefix = "WinUIProfiler-";
@@ -124,10 +121,20 @@ public sealed class LiveEtwSource : IDisposable
         }
     }
 
+    // Every keyword at Verbose: all the providers' events, including those ETW delivers only for their keyword bits:
+    // the telemetry events (such as MICROSOFT_KEYWORD_MEASURES), and some TraceLogging events, such as the start of
+    // each FrameworkElement_ApplyTemplate. Not included: Microsoft-Windows-XAML's few events at its own levels above
+    // Verbose, written for every API call or parsed object.
+    // While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML source position of the objects
+    // it parses (which ElementCreatedWithSource and, in builds with XamlProfilerEnabled, ElementEnteredTree carry),
+    // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
+    // parsed while it is enabled has positions, so a launch has them from the start.
     private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options)
     {
-        session.EnableProvider(XamlProviders.Xaml, TraceEventLevel.Verbose, TraceLoggingOnlyKeyword, options);
-        session.EnableProvider(XamlProviders.XamlProfiler, TraceEventLevel.Verbose, ulong.MaxValue, options);
+        foreach (var provider in XamlProviders.XamlIds)
+        {
+            session.EnableProvider(provider, TraceEventLevel.Verbose, ulong.MaxValue, options);
+        }
     }
 
     // The System process writes some of the target's GPU memory events (such as those written when it exits), so

@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Processing;
@@ -28,7 +29,8 @@ long? ExpectedCreationTimeFileTime = null,
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
-public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, int LostEvents,
+public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long DiagnosticsEvents, long ProfilerEvents,
+    long MicrosoftUIXamlEvents, long MicrosoftUIXamlControlsEvents, long GpuMemoryEvents, int LostEvents,
     long DroppedEvents);
 
 [SupportedOSPlatform("windows")]
@@ -76,7 +78,9 @@ public sealed class TargetConnection : IAsyncDisposable
         ? new DateTime(ticks, DateTimeKind.Utc) : null;
     public Task Completion => lifetime ?? Task.CompletedTask;
     public EtwStatus? Etw => eventCounter is { } counter && etw is { } source && pipeline is { } events
-        ? new(etwFromProcessStart, counter.XamlEvents, counter.ProfilerEvents, counter.GpuMemoryEvents, source.EventsLost,
+        ? new(etwFromProcessStart, counter.Count(XamlProvider.Xaml), counter.Count(XamlProvider.XamlDiagnostics),
+            counter.Count(XamlProvider.XamlProfiler), counter.Count(XamlProvider.MicrosoftUIXaml),
+            counter.Count(XamlProvider.MicrosoftUIXamlControls), counter.Count(XamlProvider.DxgKrnl), source.EventsLost,
             events.DroppedEvents) : null;
     // Set when the ETW session could not start or stopped with an error; process metrics keep working.
     public string? EtwError

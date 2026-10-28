@@ -8,27 +8,10 @@ namespace WinUIProfiler.Engine.Processing;
 // Counts events per provider; the app shows the totals while connected.
 public sealed class EventCounter : IEventProcessor
 {
-    private long xamlEvents;
-    private long profilerEvents;
-    private long gpuMemoryEvents;
+    private readonly long[] counts = new long[Enum.GetValues<XamlProvider>().Length];
 
-    public long XamlEvents => Interlocked.Read(ref xamlEvents);
-    public long ProfilerEvents => Interlocked.Read(ref profilerEvents);
-    public long GpuMemoryEvents => Interlocked.Read(ref gpuMemoryEvents);
+    public long Count(XamlProvider provider) => Interlocked.Read(ref counts[(int)provider]);
 
-    public void Process(long sequence, ProfilerEvent profilerEvent)
-    {
-        switch (profilerEvent.Provider)
-        {
-            case XamlProvider.Xaml:
-                Interlocked.Increment(ref xamlEvents);
-                break;
-            case XamlProvider.XamlProfiler:
-                Interlocked.Increment(ref profilerEvents);
-                break;
-            case XamlProvider.DxgKrnl:
-                Interlocked.Increment(ref gpuMemoryEvents);
-                break;
-        }
-    }
+    public void Process(long sequence, ProfilerEvent profilerEvent) =>
+        Interlocked.Increment(ref counts[(int)profilerEvent.Provider]);
 }
