@@ -133,6 +133,8 @@ VisualStateGroup::RaiseCurrentStateChanged(
     CurrentStateChangedEventSourceType* pChangedEventSource = nullptr;
     ctl::ComPtr<VisualStateChangedEventArgs> spArgs;
     xref_ptr<CVisualStateChangedEventArgs> coreArgs;
+    auto coreGroup = static_cast<CVisualStateGroup*>(GetHandle());
+    uint64_t sequence = 0;
 
     IFC(ctl::make(&spArgs));
     IFC(spArgs->put_OldState(pOldState));
@@ -140,10 +142,16 @@ VisualStateGroup::RaiseCurrentStateChanged(
     IFC(spArgs->put_Control(pControl));
 
     coreArgs.attach(static_cast<CVisualStateChangedEventArgs*>(spArgs->GetCorePeer()));
-    coreArgs->SetCurrentStateChangedSequence(static_cast<CVisualStateGroup*>(GetHandle())->NextCurrentStateChangedSequence());
+    sequence = coreGroup->NextCurrentStateChangedSequence();
+    coreArgs->SetCurrentStateChangedSequence(sequence);
 
     IFC(GetCurrentStateChangedEventSourceNoRef(&pChangedEventSource));
-    IFC(pChangedEventSource->Raise(pElement, spArgs.Get()));
+    hr = pChangedEventSource->Raise(pElement, spArgs.Get());
+    if (FAILED(hr))
+    {
+        // A failing handler stops delivery to the handlers after it.
+        coreGroup->MarkCurrentStateChangedUndelivered(sequence);
+    }
 
 Cleanup:
     RRETURN(hr);

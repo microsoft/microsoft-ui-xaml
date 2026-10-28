@@ -304,18 +304,24 @@ SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::I
 
     // A synchronous custom manager can report a newer completion before an older
     // queued notification, including one that advances a missing-state request.
+    const auto group = static_cast<CVisualStateGroup*>(m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle());
     while (!m_pendingPaneStateChanges.empty())
     {
         const auto expectedSequence = m_pendingPaneStateChanges.front().completionSequence;
         m_receivedPaneStateChanges.erase(m_receivedPaneStateChanges.begin(), m_receivedPaneStateChanges.lower_bound(expectedSequence));
+        std::optional<bool> receivedState;
         const auto received = m_receivedPaneStateChanges.find(expectedSequence);
-        if (received == m_receivedPaneStateChanges.end())
+        if (received != m_receivedPaneStateChanges.end())
+        {
+            receivedState = received->second;
+            m_receivedPaneStateChanges.erase(received);
+        }
+        else if (!group->IsCurrentStateChangedUndelivered(expectedSequence))
         {
             break;
         }
-        const auto receivedState = received->second;
-        m_receivedPaneStateChanges.erase(received);
-
+        // Otherwise an earlier app handler kept this notification from us; it will never
+        // arrive, so it is handled like a missing state.
         if (receivedState && *receivedState == m_pendingPaneStateChanges.front().isPaneOpen)
         {
             const bool isPaneOpen = m_pendingPaneStateChanges.front().isPaneOpen;
@@ -477,12 +483,29 @@ SplitView::OnBackButtonPressedImpl(_Out_ BOOLEAN* pHandled)
 
 _Check_return_ HRESULT SplitView::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
+    const bool isPaneOpenChange = args.m_pDP->GetIndex() == KnownPropertyIndex::SplitView_IsPaneOpen;
+    PaneRequest paneRequest;
+    if (isPaneOpenChange)
+    {
+        // Capture the request before the base class raises binding callbacks, which can
+        // change DisplayMode, request a light dismiss, or change IsPaneOpen again.
+        IFC_RETURN(BeginPaneRequest(!!args.m_pNewValue->AsBool(), &paneRequest));
+    }
+    auto abandonPaneRequest = wil::scope_exit([&]()
+    {
+        if (isPaneOpenChange)
+        {
+            IGNOREHR(AbandonPaneRequest(paneRequest));
+        }
+    });
+
     IFC_RETURN(SplitViewGenerated::OnPropertyChanged2(args));
 
     switch (args.m_pDP->GetIndex())
     {
         case KnownPropertyIndex::SplitView_IsPaneOpen:
-            IFC_RETURN(OnIsPaneOpenChanged(!!args.m_pNewValue->AsBool()));
+            IFC_RETURN(OnIsPaneOpenChanged(!!args.m_pNewValue->AsBool(), paneRequest));
+            abandonPaneRequest.release();
             break;
 
         case KnownPropertyIndex::SplitView_DisplayMode:
@@ -525,12 +548,13 @@ SplitView::ChangeVisualState(_In_ bool useTransitions)
 }
 
 _Check_return_ HRESULT
-SplitView::OnIsPaneOpenChanged(bool isOpen)
+SplitView::BeginPaneRequest(bool isOpen, _Out_ PaneRequest* request)
 {
+    *request = {};
     auto splitViewCore = static_cast<CSplitView*>(GetHandle());
     // Claim the executor's notification before visual-state or app callbacks reenter.
-    const bool isLightDismissClose = !isOpen && splitViewCore->ConsumeLightDismissClose();
-    const auto requestId = ++m_nextPaneRequestId;
+    request->isLightDismissClose = !isOpen && splitViewCore->ConsumeLightDismissClose();
+    request->id = ++m_nextPaneRequestId;
 
     if (isOpen)
     {
@@ -552,20 +576,34 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
             // No completion was created for the previous request: its animation
             // was interrupted, or its target state was missing from the template.
             m_pendingPaneStateChanges.back().isPaneOpen = isOpen;
-            m_pendingPaneStateChanges.back().requestId = requestId;
+            m_pendingPaneStateChanges.back().requestId = request->id;
         }
         else
         {
-            m_pendingPaneStateChanges.push_back({ sequence, requestId, isOpen });
+            m_pendingPaneStateChanges.push_back({ sequence, request->id, isOpen });
         }
     }
 
-    const HRESULT updateResult = UpdateVisualState();
-    if (FAILED(updateResult))
+    // If the display modes states changing event was not registered, then the opened/closed
+    // work is done when the request finishes. This could be the case if the SplitView has
+    // been re-templated to remove the 'DisplayModeStates' state group.
+    request->usesFallback = !m_displayModeStateChangedEventHandler;
+    if (request->usesFallback)
+    {
+        m_fallbackPaneStateChanges.push_back({ request->id, isOpen, false });
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+SplitView::AbandonPaneRequest(const PaneRequest& request)
+{
+    if (!request.isVisualStateUpdated && m_tpDisplayModeStates)
     {
         const auto failed = std::find_if(m_pendingPaneStateChanges.begin(), m_pendingPaneStateChanges.end(),
-            [requestId](const auto& change) { return change.requestId == requestId; });
-        if (failed != m_pendingPaneStateChanges.end() && m_tpDisplayModeStates)
+            [&request](const auto& change) { return change.requestId == request.id; });
+        if (failed != m_pendingPaneStateChanges.end())
         {
             const auto group = static_cast<CVisualStateGroup*>(m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle());
             if (failed->completionSequence > group->GetCurrentStateChangedSequence())
@@ -578,7 +616,42 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
             m_receivedPaneStateChanges.clear();
         }
     }
-    IFC_RETURN(updateResult);
+
+    if (request.usesFallback)
+    {
+        const auto abandoned = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
+            [&request](const auto& change) { return change.requestId == request.id; });
+        if (abandoned != m_fallbackPaneStateChanges.end())
+        {
+            m_fallbackPaneStateChanges.erase(abandoned);
+        }
+        // Newer requests that finished behind this one can publish now.
+        IFC_RETURN(PublishFallbackPaneStateChanges());
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+SplitView::PublishFallbackPaneStateChanges()
+{
+    while (!m_fallbackPaneStateChanges.empty() && m_fallbackPaneStateChanges.front().isComplete)
+    {
+        const bool isPaneOpen = m_fallbackPaneStateChanges.front().isPaneOpen;
+        m_fallbackPaneStateChanges.pop_front();
+        IFC_RETURN(OnPaneOpenedOrClosed(isPaneOpen));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+SplitView::OnIsPaneOpenChanged(bool isOpen, PaneRequest& request)
+{
+    auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+
+    IFC_RETURN(UpdateVisualState());
+    request.isVisualStateUpdated = true;
 
     if (isOpen)
     {
@@ -594,7 +667,7 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     {
         // Call into the core object to raise the PaneClosing event, which is raised asynchronously.
         // This will also restore focus to whichever element had focus when the pane opened.
-        IFC_RETURN(splitViewCore->OnPaneClosing(isLightDismissClose));
+        IFC_RETURN(splitViewCore->OnPaneClosing(request.isLightDismissClose));
     }
 
     // Synchronous visual-state or app callbacks may have reversed this request,
@@ -613,13 +686,15 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
         IFC_RETURN(TeardownOuterDismissLayer());
     }
 
-    // If the display modes states changing event was not registered, then
-    // do the opened/closed work here instead. This could be the case if
-    // the SplitView has been re-templated to remove the 'DisplayModeStates'
-    // state group.
-    if (!m_displayModeStateChangedEventHandler)
+    if (request.usesFallback)
     {
-        IFC_RETURN(OnPaneOpenedOrClosed(isOpen));
+        const auto completed = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
+            [&request](const auto& change) { return change.requestId == request.id; });
+        if (completed != m_fallbackPaneStateChanges.end())
+        {
+            completed->isComplete = true;
+        }
+        IFC_RETURN(PublishFallbackPaneStateChanges());
     }
 
     return S_OK;

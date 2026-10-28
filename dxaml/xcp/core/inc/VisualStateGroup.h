@@ -47,6 +47,30 @@ public:
     uint64_t GetCurrentStateChangedSequence() const { return m_currentStateChangedSequence; }
     uint64_t NextCurrentStateChangedSequence() { return ++m_currentStateChangedSequence; }
 
+    // A failing CurrentStateChanged handler stops a synchronous raise, so later handlers never
+    // receive that notification. Listeners that wait for a sequence can treat it as lost.
+    void MarkCurrentStateChangedUndelivered(uint64_t sequence)
+    {
+        // Failures are rare, so keep only the most recent few.
+        if (m_undeliveredCurrentStateChangedSequences.size() == 8)
+        {
+            m_undeliveredCurrentStateChangedSequences.erase(m_undeliveredCurrentStateChangedSequences.begin());
+        }
+        m_undeliveredCurrentStateChangedSequences.push_back(sequence);
+    }
+
+    bool IsCurrentStateChangedUndelivered(uint64_t sequence) const
+    {
+        for (const auto undelivered : m_undeliveredCurrentStateChangedSequences)
+        {
+            if (undelivered == sequence)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     enum VisualStateGroupEvent
     {
         VisualStateEventChanging = 0,
@@ -63,6 +87,7 @@ private:
     CVisualState *m_pCurrentState;
     std::unique_ptr<std::vector<REQUEST>> m_eventList;
     uint64_t m_currentStateChangedSequence{ 0 };
+    std::vector<uint64_t> m_undeliveredCurrentStateChangedSequences;
 
 #pragma region Legacy VSM
 public:
