@@ -9,8 +9,6 @@
 #include <roapi.h>
 #include <detours.h>
 #include <wil/resource.h>
-#include <wil/stl.h>
-#include <wil/win32_helpers.h>
 #include "ActivationIntegrationTests.h"
 
 using namespace Platform;
@@ -32,15 +30,13 @@ using namespace std;
 
 namespace
 {
-    const wchar_t* const activationProbeLibrary = L"WinUIActivationProbe.dll";
     decltype(RoGetActivationFactory)* realRoGetActivationFactory = RoGetActivationFactory;
     decltype(LoadLibraryW)* realLoadLibraryW = LoadLibraryW;
     decltype(LoadLibraryExW)* realLoadLibraryExW = LoadLibraryExW;
     thread_local bool probingActivation = false;
     unsigned int unregisteredActivationCalls = 0;
-    unsigned int activationProbeCalls = 0;
-    DWORD activationProbeFlags = 0;
-    wchar_t activationProbePath[MAX_PATH]{};
+    unsigned int activationLoadCalls = 0;
+    DWORD activationLoadFlags = 0;
 
     HRESULT WINAPI GetActivationFactoryWithoutRegistration(HSTRING classId, REFIID iid, void** factory)
     {
@@ -54,28 +50,24 @@ namespace
         return realRoGetActivationFactory(classId, iid, factory);
     }
 
-    HMODULE WINAPI LoadActivationProbe(PCWSTR libraryName, HANDLE file, DWORD flags)
+    HMODULE WINAPI ObserveActivationLoad(PCWSTR libraryName, HANDLE file, DWORD flags)
     {
         if (probingActivation && libraryName && _wcsicmp(libraryName, L"Microsoft.Web.WebView2.Core.dll") == 0)
         {
-            ++activationProbeCalls;
-            activationProbeFlags = flags;
-            // Avoid the test host's Core DLL manifest redirection, but use the production search flags.
-            HMODULE module = realLoadLibraryExW(activationProbeLibrary, file, flags);
-            if (module)
-            {
-                GetModuleFileNameW(module, activationProbePath, ARRAYSIZE(activationProbePath));
-            }
-            return module;
+            ++activationLoadCalls;
+            activationLoadFlags = flags;
+            // Stop after observing the request; no Core DLL or browser is needed.
+            SetLastError(ERROR_MOD_NOT_FOUND);
+            return nullptr;
         }
         return realLoadLibraryExW(libraryName, file, flags);
     }
 
-    HMODULE WINAPI LoadActivationProbeLegacy(PCWSTR libraryName)
+    HMODULE WINAPI ObserveLegacyActivationLoad(PCWSTR libraryName)
     {
         if (probingActivation && libraryName && _wcsicmp(libraryName, L"Microsoft.Web.WebView2.Core.dll") == 0)
         {
-            return LoadActivationProbe(libraryName, nullptr, 0);
+            return ObserveActivationLoad(libraryName, nullptr, 0);
         }
         return realLoadLibraryW(libraryName);
     }
@@ -127,43 +119,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void ActivationIntegrationTests::ActivationLibrarySearchesAddedDirectories()
+        void ActivationIntegrationTests::ActivationLibraryUsesCppWinRTSearchPolicy()
         {
-            wchar_t temporaryPath[MAX_PATH]{};
-            const auto temporaryLength = GetTempPathW(ARRAYSIZE(temporaryPath), temporaryPath);
-            VERIFY_IS_TRUE(temporaryLength > 0 && temporaryLength < ARRAYSIZE(temporaryPath));
-            wchar_t directory[MAX_PATH]{};
-            VERIFY_IS_TRUE(GetTempFileNameW(temporaryPath, L"wva", 0, directory) != 0);
-            VERIFY_IS_TRUE(DeleteFileW(directory));
-            VERIFY_IS_TRUE(CreateDirectoryW(directory, nullptr));
-            auto removeDirectory = wil::scope_exit([&]() { VERIFY_IS_TRUE(RemoveDirectoryW(directory)); });
-
-            wil::unique_hmodule existing(LoadLibraryW(L"version.dll"));
-            VERIFY_IS_NOT_NULL(existing.get());
-
-            const std::wstring libraryPath = std::wstring(directory) + L"\\" + activationProbeLibrary;
-            const auto sourcePath = wil::GetModuleFileNameW<std::wstring>(existing.get());
-            VERIFY_IS_TRUE(CopyFileW(sourcePath.c_str(), libraryPath.c_str(), TRUE));
-            auto removeCopy = wil::scope_exit([&]() { VERIFY_IS_TRUE(DeleteFileW(libraryPath.c_str())); });
-
-            // This method has its own process. Exclude user directories from its default search
-            // so the host's DLL policy cannot mask a missing explicit fallback.
-            VERIFY_IS_TRUE(SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32));
-            VERIFY_IS_NULL(GetModuleHandleW(activationProbeLibrary));
-            const auto cookie = AddDllDirectory(directory);
-            VERIFY_IS_NOT_NULL(cookie);
-            auto removeCookie = wil::scope_exit([&]() { VERIFY_IS_TRUE(RemoveDllDirectory(cookie)); });
-            wil::unique_hmodule primary(LoadLibraryW(activationProbeLibrary));
-            VERIFY_IS_NULL(primary.get());
-
             RunOnUIThread([&]()
             {
                 auto webView = ref new WebView2();
                 auto closeWebView = wil::scope_exit([&]() { webView->Close(); });
                 unregisteredActivationCalls = 0;
-                activationProbeCalls = 0;
-                activationProbeFlags = 0;
-                activationProbePath[0] = L'\0';
+                activationLoadCalls = 0;
+                activationLoadFlags = 0;
                 probingActivation = true;
                 auto stopProbing = wil::scope_exit([&]() { probingActivation = false; });
 
@@ -182,23 +146,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     VERIFY_ARE_EQUAL(NO_ERROR, DetourUpdateThread(GetCurrentThread()));
                     auto update = attach ? DetourAttach : DetourDetach;
                     VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realRoGetActivationFactory), GetActivationFactoryWithoutRegistration));
-                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryW), LoadActivationProbeLegacy));
-                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryExW), LoadActivationProbe));
+                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryW), ObserveLegacyActivationLoad));
+                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryExW), ObserveActivationLoad));
                     VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionCommit());
                     abortTransaction.release();
                 };
                 updateDetours(true);
                 auto detachDetours = wil::scope_exit([&]() { updateDetours(false); });
 
-                // Options activation enters MUXC's real fallback. The probe DLL has no
-                // activation export, so initialization stops without starting a browser.
-                webView->EnsureCoreWebView2Async();
-            });
+                // Options activation enters MUXC's real fallback after the forced registration failure.
+                auto initialization = webView->EnsureCoreWebView2Async();
+                VERIFY_ARE_EQUAL(AsyncStatus::Error, initialization->Status);
+                VERIFY_ARE_EQUAL(REGDB_E_CLASSNOTREG, initialization->ErrorCode.Value);
 
-            VERIFY_ARE_EQUAL(1u, unregisteredActivationCalls);
-            VERIFY_ARE_EQUAL(1u, activationProbeCalls);
-            VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), activationProbeFlags);
-            VERIFY_ARE_EQUAL(0, _wcsicmp(libraryPath.c_str(), activationProbePath));
+                VERIFY_ARE_EQUAL(1u, unregisteredActivationCalls);
+                VERIFY_ARE_EQUAL(1u, activationLoadCalls);
+                VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), activationLoadFlags);
+            });
         }
 
 } } } } } }
