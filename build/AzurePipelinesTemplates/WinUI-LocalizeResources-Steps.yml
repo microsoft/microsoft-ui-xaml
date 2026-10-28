@@ -99,6 +99,25 @@ steps:
       packagesToPush: '${{ parameters.nupkgDir }}\Microsoft.Internal.WinUILocalizationResources.${{ parameters.packageVersion }}.nupkg'
       packageParentPath: '${{ parameters.nupkgDir }}'
 
+  - task: NuGetToolInstaller@1
+    displayName: 'Ensure NuGet is available for shine-oss publishing'
+
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate to shine-oss feed'
+    inputs:
+      azureDevOpsServiceConnection: ShineOSS-AzureDevOps-Push
+      feedUrl: https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json
+
+  - task: CmdLine@2
+    displayName: 'NuGet-Localization-Resources push to shine-oss WinUI-Dependencies feed'
+    inputs:
+      script: >-
+        nuget.exe push "${{ parameters.nupkgDir }}\Microsoft.Internal.WinUILocalizationResources.${{ parameters.packageVersion }}.nupkg"
+        -Source "https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json"
+        -ApiKey AzureArtifacts
+        -NonInteractive
+        -SkipDuplicate
+
   # Check for changes and create a new branch if required
   - powershell: |
       & "$env:Build_SourcesDirectory\build\PipelineScripts\ApplyLocalizationUpdates.ps1" `

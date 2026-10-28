@@ -157,7 +157,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ComponentConnector
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateConnectCallsOnControlTemplates()
         {
             using (var helper = new ComponentConnectorTestHelper())

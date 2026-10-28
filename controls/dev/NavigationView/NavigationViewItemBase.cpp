@@ -24,6 +24,15 @@ void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedE
     {
         SetNavigationViewParent(SharedHelpers::GetAncestorOfType<winrt::NavigationView>(*this));
     }
+    else if (!IsInNavigationViewOwnedRepeater())
+    {
+        // The item may have been moved to a different NavigationView. Keep the current reference if no ancestor is found
+        // (for example when the item is hosted in a popup).
+        if (auto const navigationView = SharedHelpers::GetAncestorOfType<winrt::NavigationView>(*this))
+        {
+            SetNavigationViewParent(navigationView);
+        }
+    }
 }
 
 NavigationViewRepeaterPosition NavigationViewItemBase::Position() const

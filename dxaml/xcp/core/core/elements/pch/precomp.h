@@ -152,5 +152,9 @@ const XFLOAT ARC_AS_BEZIER = 0.55228475f; // (sqrt(2) - 1) * 4/3
 #include "AutomationPeerCollection.h"
 
 #include "MUX-ETWEvents.h"
+
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif
 #include "SizeUtil.h"
 #include <Microsoft.UI.Xaml.private.h>

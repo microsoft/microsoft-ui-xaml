@@ -49,7 +49,7 @@
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#0AFFFFFF" />       <!-- SubtleFillColorTertiary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#0FFFFFFF" />           <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" /> <!-- AccentFillColorDefault (Dark) -->
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5DFFFFFF" />
 
             <!-- Row foregrounds -->
@@ -64,8 +64,7 @@
             <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
                  visible step above row banding and proportional parity with the Light theme. -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26FFFFFF" />                       <!-- ~15% white (#26 alpha) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#C5FFFFFF" />                       <!-- TextFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#12FFFFFF" />                        <!-- ControlStrokeColorDefault -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#15FFFFFF" />                        <!-- DividerStrokeColorDefault -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#0FFFFFFF" />            <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#0AFFFFFF" />                <!-- SubtleFillColorTertiary -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#FFFFFF" />               <!-- TextFillColorPrimary (the header's inherited rest foreground) -->
@@ -74,14 +73,13 @@
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.77</x:Double>                                       <!-- TextFillColorSecondary over TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
-            <!-- Grid lines. DividerStrokeColorDefault (~16% white on Dark) — visible above row
-                 banding without dominating the surface. Earlier ControlStrokeColorDefault (~7%
-                 white) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29FFFFFF" />                               <!-- DividerStrokeColorDefault (Dark) — bumped 8.2%→16.1% for readability over banding -->
+            <!-- Grid lines -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#15FFFFFF" />                               <!-- DividerStrokeColorDefault -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#19000000" />                            <!-- CardStrokeColorDefault -->
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -98,7 +96,7 @@
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#06000000" />       <!-- SubtleFillColorTertiary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#09000000" />           <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" /> <!-- AccentFillColorDefault (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5C000000" />
 
             <!-- Row foregrounds -->
@@ -113,8 +111,7 @@
             <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
                  clearer contrast above row banding (matches WPF DataGrid header strip). -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26000000" />                       <!-- ~15% black (#26 alpha) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#9E000000" />                       <!-- TextFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- ControlStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- DividerStrokeColorDefault (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#09000000" />            <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#06000000" />                <!-- SubtleFillColorTertiary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#E4000000" />            <!-- TextFillColorPrimary (Light; the header's inherited rest foreground) -->
@@ -123,14 +120,13 @@
             <!-- Group header surfaces (parity with Default theme) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#14000000" />                  <!-- subtle group-header band, a touch darker than the rows (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>                                        <!-- TextFillColorSecondary over TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
-            <!-- Grid lines. DividerStrokeColorDefault (~16% black on Light) — visible above row
-                 banding without dominating the surface. Earlier ControlStrokeColorDefault (~6%
-                 black) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29000000" />                               <!-- DividerStrokeColorDefault (Light) -->
+            <!-- Grid lines -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#0F000000" />                               <!-- DividerStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#0F000000" />                            <!-- CardStrokeColorDefault (Light) -->
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -158,7 +154,6 @@
 
             <!-- Header surfaces -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -174,6 +169,7 @@
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

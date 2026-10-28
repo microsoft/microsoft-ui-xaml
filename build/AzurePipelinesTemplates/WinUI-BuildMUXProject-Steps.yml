@@ -42,6 +42,9 @@ parameters:
   runStaticAnalysis: true
   projectCaching: false
   buildProductOnly: false
+  # Monobuild supplies repository-aware indexing before the first upload; standalone defaults are unchanged.
+  indexSources: true
+  prePublishSymbolsSteps: []
   # When set (mono-build test pipeline only), download the WinUI product from the parent mono-build
   # instead of rebuilding it: for Release x86/x64/arm64 jobs, skip the Microsoft.UI.Xaml.sln product
   # build and lay the mono-build's Build-WinUI-<plat>-Release output into BuildOutput\bin so
@@ -538,12 +541,16 @@ steps:
         !**\tools\!($(buildPlatform))\GenXbf.dll
       targetFolder: $(ob_outputDirectory)\packaging
 
+  - ${{ each step in parameters.prePublishSymbolsSteps }}:
+    - ${{ step }}
+
   - task: PublishSymbols@2
     displayName: 'Publish full symbols to internal symbol server'
     condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
     inputs:
       SearchPattern: '${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Symbols\Product\**\*.pdb'
       SymbolServerType: 'TeamServices'
+      IndexSources: ${{ parameters.indexSources }}
     # There is a bug which causes this task to fail if LIB includes an inaccessible path (even though it does not depend on it).
     # To work around this issue, we just force LIB to be any dir that we know exists.
     env:

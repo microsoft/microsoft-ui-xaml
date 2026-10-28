@@ -1772,9 +1772,14 @@ bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
 {
     auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
     auto const scroller = m_bodyScroller.get();
-    if (!frameworkElement || !scroller)
+    if (!frameworkElement)
     {
         return false;
+    }
+    if (!scroller)
+    {
+        // No body scroller: let focus's own bring-into-view reach the app's scroller.
+        return true;
     }
 
     const double viewportHeight = scroller.ViewportHeight();
@@ -2147,6 +2152,14 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
 
     if (bodyItem)
     {
+        // A group toggle's rescued focus may sit on a cached row or header; revealing it would jump the body.
+        if (m_pendingGroupFocusLayoutToken.value &&
+            IsBodyFocusInContainer(bodyItem))
+        {
+            args.Handled(true);
+            return;
+        }
+
         // Focus raises its padded request asynchronously. When keys move focus faster than that,
         // the request arrives for a container focus has already left, whose position may now be
         // a recycled or estimated one; honoring it scrolled the body back to the top.

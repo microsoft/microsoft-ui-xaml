@@ -36,6 +36,7 @@
             </VariableSizedWrapGrid.Resources>
             <StackPanel>
                 <TextBlock Text="Common tests"/>
+                <Button x:Name="NavigateToPointerFocusPage" AutomationProperties.Name="NavigationView Pointer Focus Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Pointer Focus Test</Button>
                 <Button x:Name="NavigationViewPage" AutomationProperties.Name="NavigationView Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Test</Button>
                 <Button x:Name="NavigationViewInfoBadgePage" AutomationProperties.Name="NavigationView Info Badge Test" Margin="2" HorizontalAlignment="Stretch">NavigationView InfoBadge Test</Button>
                 <Button x:Name="NavigationViewCompactPaneLengthTestPage" AutomationProperties.Name="NavigationView compact pane length test" Margin="2" HorizontalAlignment="Stretch">NavigationView compact pane length test</Button>
