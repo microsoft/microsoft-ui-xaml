@@ -74,8 +74,8 @@
   <data name="InvalidEndpoint" xml:space="preserve"><value>Select a whole diagnostics endpoint number between 1 and 65535.</value></data>
   <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | WinUI from {1}</value></data>
   <data name="IdentityDetailsFormat" xml:space="preserve"><value>Process started {0}&#10;Last TAP heartbeat {1}&#10;WinUI runtime {2}</value></data>
-  <data name="EtwFormat" xml:space="preserve"><value>{0} | XAML&#160;{1:N0} | Diagnostics&#160;{2:N0} | Profiler&#160;{3:N0} | MUX&#160;{4:N0} | MUXC&#160;{5:N0} | GPU&#160;memory&#160;{6:N0} | lost&#160;{7:N0} | dropped&#160;{8:N0}</value></data>
-  <data name="EtwDetailsFormat" xml:space="preserve"><value>{0}&#10;XAML: Microsoft-Windows-XAML events&#10;Diagnostics: Microsoft-Windows-XAML-Diagnostics events&#10;Profiler: Microsoft-Windows-XAML-Profiler events&#10;MUX: Microsoft.UI.Xaml telemetry events&#10;MUXC: Microsoft.UI.Xaml.Controls telemetry events&#10;GPU memory: the kernel's GPU memory usage and budget events for the process (Microsoft-Windows-DxgKrnl)&#10;Lost: events ETW could not deliver&#10;Dropped: events the profiler discarded because its queue was full</value></data>
+  <data name="EtwFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | GPU memory {3:N0} | lost {4:N0} | dropped {5:N0}</value></data>
+  <data name="EtwDetailsFormat" xml:space="preserve"><value>{0}&#10;XAML: Microsoft-Windows-XAML, Microsoft-Windows-XAML-Diagnostics, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls events&#10;Profiler: Microsoft-Windows-XAML-Profiler events&#10;GPU memory: the kernel's GPU memory usage and budget events for the process (Microsoft-Windows-DxgKrnl)&#10;Lost: events ETW could not deliver&#10;Dropped: events the profiler discarded because its queue was full</value></data>
   <data name="EtwFromProcessStart" xml:space="preserve"><value>ETW from process start</value></data>
   <data name="EtwFromConnection" xml:space="preserve"><value>ETW from connection</value></data>
   <data name="EtwCoverageProcessStart" xml:space="preserve"><value>Every event since the process started is included.</value></data>

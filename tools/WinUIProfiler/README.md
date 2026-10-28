@@ -139,21 +139,22 @@ Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
 events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
 from Windows, whatever the build. They carry the values
-`IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also reported
-in the profiler's `GpuMemorySnapshot` event. The kernel writes them when the
-usage or budget changes, and writes the current values when the process opens a
-GPU adapter and when a session requests capture state. The System process writes
-some of them, such as those written when the process exits, which bring the
-usage down to 0. So they are matched to the process by their `ProcessId` field,
-which becomes the event's process ID.
+`IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
+reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
+when the usage or budget changes, and writes the current values when the
+process opens a GPU adapter and when a session requests capture state. The
+System process writes some of them, such as those written when the process
+exits, which bring the usage down to 0. So they are matched to the process by
+their `ProcessId` field, which becomes the event's process ID.
 
-The XAML providers are enabled with every keyword at level 5 (Verbose), so the
-events that have keyword bits are included: the telemetry events, and some
-TraceLogging events, such as the start of each `FrameworkElement_ApplyTemplate`,
-which carries the element's class and name. Not included are
-Microsoft-Windows-XAML's 16 events at its own levels above Verbose, written for
-every API call and for every object or property the parser sets, such as
-`ApiFunctionCallStart` and `CreateInstanceBegin`.
+The XAML providers are enabled with every keyword at level 5 (Verbose). That
+includes the telemetry events, which have keyword bits, and the TraceLogging
+events the runtime writes only while the matching manifest event is enabled,
+such as the start of each `FrameworkElement_ApplyTemplate`, which carries the
+element's class and name. Not included are Microsoft-Windows-XAML's 16 events
+at its own levels above Verbose, written for every API call and for every
+object or property the parser sets, such as `ApiFunctionCallStart` and
+`CreateInstanceBegin`.
 
 TraceLogging events carry their own field names and types. Manifest events are
 decoded with the manifest Windows registers for their provider. WinUI does not
@@ -217,11 +218,11 @@ the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
 the events 1, 2, 3... Today the processors count events
 (`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
 
-The connection panel shows the count per provider, events lost by ETW, and
-events dropped because the queue was full. When the queue is full, new events
-are dropped and counted rather than stopping the session. The session stops
-when the connection ends; the last counts stay visible. If the session cannot
-start, the panel shows why and the metrics keep working.
+The connection panel shows the event counts, events lost by ETW, and events
+dropped because the queue was full. When the queue is full, new events are
+dropped and counted rather than stopping the session. The session stops when
+the connection ends; the last counts stay visible. If the session cannot start,
+the panel shows why and the metrics keep working.
 
 An ETW session outlives a profiler that crashes or is killed, and keeps the
 providers enabled in the processes it filters on. Sessions are named

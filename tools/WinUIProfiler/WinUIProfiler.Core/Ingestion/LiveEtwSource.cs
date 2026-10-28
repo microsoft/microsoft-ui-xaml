@@ -121,10 +121,11 @@ public sealed class LiveEtwSource : IDisposable
         }
     }
 
-    // Every keyword at Verbose: all the providers' events, including those ETW delivers only for their keyword bits:
-    // the telemetry events (such as MICROSOFT_KEYWORD_MEASURES), and some TraceLogging events, such as the start of
-    // each FrameworkElement_ApplyTemplate. Not included: Microsoft-Windows-XAML's few events at its own levels above
-    // Verbose, written for every API call or parsed object.
+    // Every keyword at Verbose: all the providers' events, including the telemetry events, which have keyword bits
+    // (such as MICROSOFT_KEYWORD_MEASURES), and the TraceLogging events the runtime writes only while the matching
+    // manifest event is enabled, such as the start of each FrameworkElement_ApplyTemplate. Not included:
+    // Microsoft-Windows-XAML's few events at its own levels above Verbose, written for every API call or parsed
+    // object.
     // While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML source position of the objects
     // it parses (which ElementCreatedWithSource and, in builds with XamlProfilerEnabled, ElementEnteredTree carry),
     // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
