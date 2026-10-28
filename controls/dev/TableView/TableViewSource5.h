@@ -1,0 +1,212 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+#include "pch.h"
+#include "common.h"
+
+#include <functional>
+#include <memory>
+#include <optional>
+
+#include "TableViewSource5.g.h"
+#include "ITableViewSource.h"
+#include "TableViewRowInfo.h"
+#include "TableViewTipTypes.h"
+
+namespace cw5 { class ShapedItemsSource; }
+
+// The control-facing face of the shaping stack: a fluent verb surface, and the one place that
+// decides what a projected row MEANS to a TableView.
+//
+// It owns no projection. Filtering, sorting, grouping, source subscriptions, incremental change
+// application, and identity tracking all live in ShapedItemsSource below it; this class
+// translates public WinRT delegates into that engine's vocabulary, turns the shape the engine
+// produced into an ItemsSourceView plus a row-metadata provider, and tells the owning TableView
+// when the projection it cached is no longer the one being shown.
+//
+// Reference-tracked (like ItemsRepeater's ItemsSourceView) rather than a plain projected class.
+// This is the standard WinUI mechanism for a WinRT type that holds references to app-supplied
+// (possibly managed) objects: ReferenceTracker gives two things this type needs --
+//   1. final_release marshals the delete to the DispatcherQueue captured at construction, so the
+//      whole teardown cascade (~TableViewSource5 -> m_engine drop -> ~ShapedItemsSource -> revoke)
+//      always runs on the owning UI thread even when the CLR finalizes this source off-thread.
+//      That is why ShapedItemsSource needs no thread guard of its own.
+//   2. tracker_ref members let the GC walk this native object's strong refs to managed objects and
+//      collect reference cycles.
+// Costs: abi_enter enforces UI-thread affinity on every projected call, and each instance composes
+// a DependencyObject inner. Both are acceptable for a UI-thread-affine items source.
+//
+// Implements ITableViewSource, the internal contract TableView binds through.
+class TableViewSource5 :
+    public ReferenceTracker<TableViewSource5, winrt::implementation::TableViewSource5T, winrt::composable, winrt::composing, ::ITableViewSource>
+{
+public:
+    // No parameterless constructor: TableViewSource5 is not activatable in IDL (only the static
+    // From(items) factory is projected). Instances are created via winrt::make with the items ctor.
+    ~TableViewSource5();
+    explicit TableViewSource5(winrt::IInspectable const& items);
+
+    static winrt::TableViewSource5 From(winrt::IInspectable const& items);
+    static winrt::TableViewSource5 From(winrt::IInspectable const& items, winrt::TableViewIdentitySelector const& keySelector);
+
+    // Single, always-first predicate: each Filter() replaces the previous predicate and runs
+    // before sort/group shaping.
+    winrt::ITableViewShapingSource Filter(winrt::TableViewPredicate const& predicate);
+    winrt::ITableViewShapingSource GroupBy(winrt::TableViewKeySelector const& key);
+    winrt::ITableViewShapingSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
+    winrt::ITableViewShapingSource ParentBy(winrt::TableViewKeySelector const&, winrt::TableViewKeySelector const&) { throw winrt::hresult_not_implemented(); }
+    winrt::ITableViewShapingSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
+    winrt::ITableViewShapingSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::TableViewSource5 SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::ITableViewShapingSource ClearFilter();
+    winrt::ITableViewShapingSource ClearGroupBy();
+    winrt::ITableViewShapingSource ClearParentBy() { throw winrt::hresult_not_implemented(); }
+    winrt::ITableViewShapingSource ClearSort();
+    // ITableViewShapingSource verbs this variant does not support: its hierarchy is ChildrenWith only.
+    winrt::ITableViewShapingSource ChildrenWith(winrt::TableViewChildrenSelector const& childrenSelector);
+    winrt::ITableViewShapingSource ChildrenWith(winrt::TableViewChildrenSelector const& childrenSelector, winrt::TableViewHasChildrenPredicate const& hasChildrenSelector);
+    winrt::ITableViewShapingSource ClearChildrenWith();
+    winrt::ITableViewShapingSource ParentBy(winrt::TableViewIdentitySelector const&) { throw winrt::hresult_not_implemented(); }
+    winrt::TableViewSource5 ClearSort(winrt::hstring const& sortAxisToken);
+    // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
+    // app declared through the fluent Sort verb (which is untokenized and so unaddressable by
+    // token). Keeps the control's single-axis contract true when both front-ends are used.
+    winrt::TableViewSource5 ClearSortsExcept(winrt::hstring const& sortAxisToken);
+    // ITableViewSource sort commands, over the verbs above.
+    void ReplaceSortAxis(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken,
+        winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction) override
+    {
+        SortReplacing(previousSortAxisToken, sortAxisToken, key, sortMemberPath, direction);
+    }
+    void ClearAllSortAxes() override { ClearSort(); }
+    void ClearSortAxis(winrt::hstring const& sortAxisToken) override { ClearSort(sortAxisToken); }
+    void ClearSortAxesExcept(winrt::hstring const& sortAxisToken) override { ClearSortsExcept(sortAxisToken); }
+    // Internal: the active sort axes in precedence order, so the owner can detect an axis it does
+    // not own and, when that axis names a property, attribute it to a column. ActiveSortAxisInfo is
+    // ITableViewSource's, so the engine's own struct stays out of the control's headers.
+    std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const override;
+
+    // The axis token a path-declared sort owns. Exposed so the owning control can recognize its
+    // own path-based axis, and so re-sorting one path replaces it instead of stacking.
+    static winrt::hstring SortAxisTokenForPath(winrt::hstring const& sortMemberPath);
+
+    bool IsLiveShaping() const;
+    void IsLiveShaping(bool value);
+
+    // UI-thread affine after construction/binding: shaping verbs and projection mutation must
+    // run on the owning UI thread. Only source change notifications are marshaled back here.
+    winrt::ItemsSourceView GetItemsSourceView() override;
+    TableViewRowMetadataProvider GetRowMetadata() override;
+    // True when the source is ACTUALLY projected as grouped rows. This is the effective shape,
+    // not the caller's intent: grouping is only in effect once a GroupBy selector produced a
+    // usable projection, and until then the rows are raw items, not GroupedEntry. Consumers use
+    // this to decide how to interpret a row DataContext, so reporting intent here would make them
+    // read a flat item as a GroupedEntry.
+    bool IsGrouped() const override;
+    // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
+    // node expansion. Header rows never match.
+    bool ContainsShapedItem(winrt::IInspectable const& item) const override;
+
+    // Internal: the owning TableView caches the projection (ItemsSourceView, row metadata and
+    // grouped-ness) when it binds, so it must be told when a shaping verb swaps that projection
+    // for a different one. Held weakly - the owner holds this source via ItemsSource.
+    //
+    // The owner is taken as IInspectable because only its IDENTITY matters here, for the
+    // single-owner check below. Naming TableView would invert the dependency (rule 5): this type
+    // sits below the control in the shaping stack. For the same reason the owner INSTALLS the two
+    // handlers below rather than being called back into by name - the same shape as the handlers
+    // this class installs on its own engine.
+    //
+    // Returns false, and leaves the existing owner bound, when a different live TableView owns it.
+    bool SetOwningTableView(winrt::IInspectable const& owner) override;
+    // Detaches `owner`; a no-op when another TableView owns this source.
+    void ReleaseOwningTableView(winrt::IInspectable const& owner) override;
+    // True when a TableView other than `candidate` owns this source.
+    bool IsOwnedByOther(winrt::IInspectable const& candidate) const override
+    {
+        auto const owner = m_owningTableView.get();
+        return owner && owner != candidate;
+    }
+    // A refused TableView waits here. On release, waiters run in order until one claims the
+    // source; each waiter that runs is dropped. Keyed by the waiter's identity, one entry each.
+    void AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler) override;
+    void RemoveOwnerReleasedHandler(winrt::IInspectable const& waiter) override;
+    // Raised after a rebuild changed the projected shape (grouped <-> flat), which swaps the
+    // ItemsSourceView and row-metadata provider the owner cached.
+    void SetProjectionChangedHandler(std::function<void()> handler) override { m_projectionChanged = std::move(handler); }
+    // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
+    // unchanged and only the order moved.
+    void SetShapingChangedHandler(std::function<void(bool)> handler) override { m_shapingChanged = std::move(handler); }
+    using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t, bool failed,
+        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind,
+        TableViewTip::ContainedFaults)>;
+    void SetShapingTipHandlers(
+        winrt::IInspectable const& owner,
+        std::function<uint64_t(TableViewTip::Operation, bool)> begin,
+        ShapingTipCompleted complete);
+    // The owner holds live restores while its cell editor is open and resumes them when it
+    // closes (see ShapedItemsSource::SetLiveShapingHold).
+    void SetLiveShapingHold(std::function<bool()> isHeld) override;
+    void ResumeHeldLiveShaping() override;
+    // Lets the owner refresh a custom comparer's ranks as items change (see
+    // ShapedItemsSource::SetLiveItemChangedHook).
+    void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) override;
+    // Lets the owner drop comparer ranks for rows that left the source (see
+    // ShapedItemsSource::SetRowsReleasedHook).
+    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) override;
+    // Lets the owner learn that live shaping reacted to an item change (see
+    // ShapedItemsSource::SetLiveItemReshapeHandler).
+    void SetLiveItemReshapeHandler(std::function<void()> handler) override;
+    // Lets the owner restamp realized rows patched in place (see
+    // ShapedItemsSource::SetRowsMetadataChangedHook).
+    void SetRowsMetadataChangedHook(std::function<void()> hook) override;
+    // Applies a hierarchy structure change the engine has coalesced to the next dispatcher turn,
+    // so a verb that reads or acts on rows sees the current projection.
+    void FlushPendingChanges() override;
+    // False when sorting would fail because the rows include a null item or one object twice.
+    bool CanApplySort() const override;
+
+private:
+    struct ShapingTip;
+    struct ShapingTipHandlers
+    {
+        std::function<uint64_t(TableViewTip::Operation, bool)> begin;
+        ShapingTipCompleted complete;
+    };
+    winrt::TableViewSource5 SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    // Re-derives everything this class caches from the shape the engine just produced.
+    void OnProjectionRebuilt();
+    TableViewRowItemKeySelector MakeIdentitySelector() const;
+    // Raised after a rebuild changes the projected shape (grouped <-> flat), which swaps the
+    // ItemsSourceView and row-metadata provider the owner cached.
+    void NotifyOwnerProjectionChanged();
+    // Tells the owner a shaping verb rewrote the projection, so it can raise the UIA
+    // structure-changed event that a programmatic reshape has no other trigger for.
+    void NotifyOwnerShapingChanged(bool reorderOnly);
+
+    std::shared_ptr<cw5::ShapedItemsSource> m_engine{};
+    // Weak, and typed as IInspectable rather than TableView: this slot exists only to detect a
+    // second owner binding, and the owning TableView references this source through its
+    // ItemsSource property, so a strong back-pointer would be a cycle.
+    winrt::weak_ref<winrt::IInspectable> m_owningTableView{ nullptr };
+    // Installed by the owner in SetOwningTableView's caller and cleared when it detaches, so a
+    // source that has been swapped out cannot drive its former owner.
+    std::function<void()> m_projectionChanged{};
+    std::function<void(bool)> m_shapingChanged{};
+    std::shared_ptr<ShapingTipHandlers> m_shapingTipHandlers;
+    ShapingTip* m_shapingTip{};
+    uint64_t m_ownerGeneration{};
+    uint32_t m_notificationDepth{};
+    struct OwnerReleasedWaiter
+    {
+        winrt::weak_ref<winrt::IInspectable> Waiter;
+        std::function<void()> Handler;
+    };
+    std::vector<OwnerReleasedWaiter> m_ownerReleasedWaiters{};
+    // tracker_ref so the GC can walk this strong reference into the (possibly managed) projected
+    // rows and collect any cycle; also swaps to null safely during finalization.
+    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
+    TableViewRowMetadataProvider m_rowMetadata{};
+};

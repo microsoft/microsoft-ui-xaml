@@ -1251,6 +1251,7 @@ void TableView::ResetPendingBeginEdit()
 
 bool TableView::BeginEdit()
 {
+    FlushPendingSourceChanges();
     winrt::IInspectable item{ nullptr };
     winrt::TableViewColumn column{ nullptr };
     if (!TryResolveCurrentCellForEdit(item, column))
@@ -1263,6 +1264,7 @@ bool TableView::BeginEdit()
 
 bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
+    FlushPendingSourceChanges();
     if (IsReadOnly() || !item || !column || column.IsReadOnly() || !IsColumnInColumns(*this, column))
     {
         return false;
@@ -1414,6 +1416,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
 
 bool TableView::CommitEdit()
 {
+    FlushPendingSourceChanges();
     return CommitEditInternal(EditingUnit::Cell);
 }
 
@@ -1424,6 +1427,7 @@ bool TableView::CommitEditInternal(EditingUnit unit)
 
 bool TableView::CancelEdit()
 {
+    FlushPendingSourceChanges();
     return CancelEditInternal(EditingUnit::Cell);
 }
 

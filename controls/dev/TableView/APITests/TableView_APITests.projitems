@@ -23,6 +23,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_ToolTips_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource3_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource45_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource6_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_DataBinding_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Sorting_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Grouping_APITests.cs" />

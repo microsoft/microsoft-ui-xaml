@@ -46,6 +46,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ITableViewSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource5.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource6.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider5.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSourceRegistry.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
@@ -69,6 +75,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource2.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource3.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource4.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource5.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource6.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSourceRegistry.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRowTemplateSelector.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
@@ -97,6 +107,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource3.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource5.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource6.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider5.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSourceRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Editing.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_EditingInput.cpp" />

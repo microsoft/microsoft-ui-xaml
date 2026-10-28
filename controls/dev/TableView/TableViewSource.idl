@@ -86,6 +86,52 @@ runtimeclass TableViewSource2 : [default] ITableViewShapingSource
     static TableViewSource2 From(Object items, TableViewIdentitySelector keySelector);
 }
 
+// TableViewSource2 with incremental structure updates: expansion, source edits and live changes
+// splice the pre-order row array instead of rebuilding it, falling back to a rebuild for edits
+// whose effects are not local. Behaves the same as TableViewSource2.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource3 : [default] ITableViewShapingSource
+{
+    // Throws E_INVALIDARG: this variant needs a key selector.
+    static TableViewSource3 From(Object items);
+    [method_name("FromWithKey")]
+    static TableViewSource3 From(Object items, TableViewIdentitySelector keySelector);
+}
+
+// Benchmark variant: the ChildrenWith engine with the parent-structure cache. Hierarchy is ChildrenWith only; ParentBy and a row key throw
+// E_NOTIMPL.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource4 : [default] ITableViewShapingSource
+{
+    static TableViewSource4 From(Object items);
+    [method_name("FromWithKey")]
+    static TableViewSource4 From(Object items, TableViewIdentitySelector keySelector);
+}
+
+// Benchmark variant: the latest ChildrenWith engine (eager index, coalescing, incremental filter and adapter). Hierarchy is ChildrenWith only; ParentBy and a row key throw
+// E_NOTIMPL.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource5 : [default] ITableViewShapingSource
+{
+    static TableViewSource5 From(Object items);
+    [method_name("FromWithKey")]
+    static TableViewSource5 From(Object items, TableViewIdentitySelector keySelector);
+}
+
+// Benchmark variant: a ChildrenWith engine that never flattens. Rows stay in the model's own tree, each wrapper counting its
+// visible subtree; an index is resolved by walking down by those counts. ParentBy and a row key throw E_NOTIMPL.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource6 : [default] ITableViewShapingSource
+{
+    static TableViewSource6 From(Object items);
+    [method_name("FromWithKey")]
+    static TableViewSource6 From(Object items, TableViewIdentitySelector keySelector);
+}
+
 // Creates a source by variant name, so a harness can switch source implementations without a
 // rebuild of its own. Every variant implements ITableViewShapingSource and binds to TableView.
 [MUX_PREVIEW]

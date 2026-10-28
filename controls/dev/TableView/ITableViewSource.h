@@ -64,6 +64,12 @@ struct __declspec(uuid("04ee5ded-4ad2-4678-8a98-675665560e71")) __declspec(novta
     virtual void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) = 0;
     // Lets the owner learn that live shaping reacted to an item change.
     virtual void SetLiveItemReshapeHandler(std::function<void()> handler) = 0;
+    // Optional. Lets the owner restamp realized rows whose metadata a source patched in place,
+    // without a collection change.
+    virtual void SetRowsMetadataChangedHook(std::function<void()> /*hook*/) {}
+    // Optional. Applies a change the source deferred to the next dispatcher turn, so an owner verb
+    // that addresses rows by index or item acts on the current projection.
+    virtual void FlushPendingChanges() {}
 
     // --- Column-header sort ---
     // False when sorting would fail because the rows include a null item or one object twice.

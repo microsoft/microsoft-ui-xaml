@@ -1,0 +1,1276 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
+#include "common.h"
+#include "HierarchicalSourceAdapter4.h"
+#include "RuntimeProfiler.h"
+#include "ShapingHelpers.h"
+#include "ShapingRevoke.h"
+
+#include <algorithm>
+#include <string>
+#include <string_view>
+#include <utility>
+
+#include <winrt/Microsoft.UI.Xaml.Interop.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+
+namespace ShapingHelpers {}
+namespace cw4
+{
+namespace ShapingHelpers { using namespace ::ShapingHelpers; }
+
+
+namespace
+{
+    // The root sibling set's parent path. Doubles as the prefix sentinel meaning "the walk
+    // enumerated the roots in full", so root-level intent is prunable on exactly the same rule as
+    // every deeper level rather than being a special case.
+    constexpr std::wstring_view c_nodeKeyPrefix{ L"node:" };
+}
+
+HierarchicalSourceAdapter::HierarchicalSourceAdapter()
+{
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_HierarchicalSourceAdapter);
+
+    auto queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+    if (!queue)
+    {
+        throw winrt::hresult_error(RPC_E_WRONG_THREAD, L"HierarchicalSourceAdapter must be constructed on a UI thread.");
+    }
+    m_uiQueue = winrt::make_weak(queue);
+
+    // One view over the stable entries vector, handed to every consumer.
+    m_entriesView = winrt::ItemsSourceView{ m_entries };
+
+    // THE load-bearing line of this constructor. RowExpansionModel defaults to EXPANDED and stores
+    // intent only where it differs from that default, which is right for grouping (a grid of
+    // collapsed headers would hide all data on first paint) and fatal here: IsExpanded() would
+    // answer true for every path nobody has touched, so Emit would descend into everything and the
+    // visible-only walk would degenerate into a full O(tree) realization on the very first
+    // Rebuild. Set before the changed handler is attached, so establishing the baseline does not
+    // raise a Change into a half-constructed adapter.
+    m_expansion.SetDefaultExpanded(false);
+
+    m_expansion.SetChangedHandler(
+        [this](ShapingHelpers::RowExpansionModel::Change const& change)
+        {
+            OnExpansionChanged(change);
+        });
+}
+
+HierarchicalSourceAdapter::~HierarchicalSourceAdapter()
+{
+    DetachFromSource();
+}
+
+void HierarchicalSourceAdapter::Source(winrt::IInspectable const& roots)
+{
+    AssertNotInShapeSiblings();
+
+    if (m_source == roots)
+    {
+        return;
+    }
+
+    DetachFromSource();
+    m_source = roots;
+    m_detachedQuietly = false;
+    AttachToSource();
+    Rebuild();
+}
+
+void HierarchicalSourceAdapter::DetachSourceQuietly()
+{
+    DetachFromSource();
+    m_source = nullptr;
+    m_detachedQuietly = true;
+}
+
+void HierarchicalSourceAdapter::ChildrenSelector(ShapingHelpers::ChildrenFn fn)
+{
+    AssertNotInShapeSiblings();
+
+    m_childrenSelector = std::move(fn);
+
+    // The cache trusts an observed node without asking the selector again, so a different selector
+    // must not inherit what the previous one discovered. An injected cache belongs to its owner,
+    // which resets it when it re-declares the selector.
+    if (m_ownsStructure && m_structure)
+    {
+        m_structure->Reset();
+    }
+    Rebuild();
+}
+
+void HierarchicalSourceAdapter::HasChildrenSelector(ShapingHelpers::HasChildrenFn fn)
+{
+    AssertNotInShapeSiblings();
+
+    m_hasChildrenSelector = std::move(fn);
+    Rebuild();
+}
+
+void HierarchicalSourceAdapter::ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn)
+{
+    // Reassigning from inside the callback would destroy the std::function currently executing.
+    AssertNotInShapeSiblings();
+
+    m_shapeSiblings = std::move(fn);
+
+    // Every shaped list the private cache holds came from the previous callback. An injected cache
+    // is invalidated by its owner, which knows when the shape actually changed -- it re-installs an
+    // equivalent callback on every refresh.
+    if (m_ownsStructure && m_structure)
+    {
+        m_structure->InvalidateShapedChildren();
+    }
+    Rebuild();
+}
+
+void HierarchicalSourceAdapter::ReleaseCallbacks()
+{
+    // Same reason the setters assert: clearing m_shapeSiblings from inside itself would destroy
+    // the std::function currently executing.
+    AssertNotInShapeSiblings();
+
+    m_childrenSelector = nullptr;
+    m_hasChildrenSelector = nullptr;
+    m_shapeSiblings = nullptr;
+    m_isContext = nullptr;
+
+    // The private cache pins the app's items and child collections and holds a subscription on
+    // each; retracting the hierarchy releases them. An injected cache belongs to its owner, which
+    // releases it on the same edge.
+    if (m_ownsStructure && m_structure)
+    {
+        m_structure->Reset();
+    }
+
+    // Deliberately no Rebuild: the caller has already detached the source and dropped the projection
+    // callback, and the three setters' own rebuilds would publish three Resets over rows the
+    // non-hierarchical projection is about to replace wholesale.
+}
+
+void HierarchicalSourceAdapter::StructureCache(HierarchyStructureCachePtr cache)
+{
+    AssertNotInShapeSiblings();
+
+    if (m_structure == cache)
+    {
+        return;
+    }
+
+    if (m_ownsStructure && m_structure)
+    {
+        m_structure->Reset();
+    }
+
+    m_structure = std::move(cache);
+    m_ownsStructure = false;
+}
+
+HierarchyStructureCachePtr const& HierarchicalSourceAdapter::EnsureStructure()
+{
+    if (!m_structure)
+    {
+        // Not in the constructor: the change handler needs weak_from_this, which is only valid once
+        // the adapter is owned by a shared_ptr.
+        m_structure = std::make_shared<HierarchyStructureCache>();
+        m_ownsStructure = true;
+        m_structure->ChangedHandler(
+            [weakThis = weak_from_this()]()
+            {
+                if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
+            });
+    }
+    return m_structure;
+}
+
+void HierarchicalSourceAdapter::ProjectionChanged(std::function<void()> fn){
+    m_projectionChanged = std::move(fn);
+}
+
+void HierarchicalSourceAdapter::RaiseProjectionChanged(){
+    // Copied before invoking: the handler is free to re-declare the hierarchy (which reassigns
+    // m_projectionChanged) and must not destroy the std::function it is running inside.
+    if (auto const handler = m_projectionChanged)
+    {
+        handler();
+    }
+}
+
+// --- Path identity ------------------------------------------------------------------------------
+winrt::hstring HierarchicalSourceAdapter::MakePathKey(winrt::hstring const& parentPath, winrt::hstring const& itemIdentity)
+{
+    return parentPath + L"/" + itemIdentity;
+}
+
+bool HierarchicalSourceAdapter::IsNodePathKey(winrt::hstring const& key)
+{
+    const std::wstring_view view{ key.c_str(), key.size() };
+
+    // "node:" alone is the ROOT SIBLING SET's parent path, never a row, so a real node key is
+    // strictly longer and carries at least one separator.
+    return view.size() > c_nodeKeyPrefix.size() + 1 &&
+        view.compare(0, c_nodeKeyPrefix.size(), c_nodeKeyPrefix) == 0 &&
+        view[c_nodeKeyPrefix.size()] == L'/';
+}
+
+winrt::hstring HierarchicalSourceAdapter::ParentPathOf(winrt::hstring const& pathKey)
+{
+    const std::wstring_view view{ pathKey.c_str(), pathKey.size() };
+    const auto lastSeparator = view.find_last_of(L'/');
+    if (lastSeparator == std::wstring_view::npos)
+    {
+        // Not a path this adapter minted. Returning the key unchanged cannot match any enumerated
+        // prefix, so the prune leaves it alone -- the non-destructive answer for a key we do not
+        // recognise.
+        return pathKey;
+    }
+
+    return winrt::hstring{ view.substr(0, lastSeparator) };
+}
+
+// --- The one responsibility: materialize the visible rows ----------------------------------------
+
+void HierarchicalSourceAdapter::Rebuild()
+{
+    // Projection mutations are UI-thread-affine. Source notifications are required to arrive on the
+    // owning UI thread and reach here synchronously; off-thread delivery is app misuse.
+    AssertRebuildOnUiThread();
+
+    // The published rows stay as they are until Source() re-attaches and rebuilds once.
+    if (m_detachedQuietly)
+    {
+        return;
+    }
+
+    ++m_rebuildSerial;
+
+    if (m_rebuildInFlight)
+    {
+        // A change notification raised synchronously inside ReplaceAll, or a ShapeSiblings callback
+        // that violated its contract, re-entered Rebuild. Don't drop it (that would leave m_entries
+        // stale) and don't nest it -- remember it and run one coalesced follow-up after unwind.
+        m_pendingRebuild = true;
+        return;
+    }
+
+    bool runPending = false;
+
+    // One structure pass across every coalesced iteration, so a node validated by the first walk
+    // is not re-validated by a re-entrant follow-up that reaches it unchanged.
+    auto const structure = EnsureStructure();
+    HierarchyStructureCache::Pass pass{ structure };
+
+    do
+    {
+        m_rebuildInFlight = true;
+        m_pendingRebuild = false;
+        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
+        {
+            m_rebuildInFlight = false;
+            runPending = m_pendingRebuild;
+            m_pendingRebuild = false;
+        });
+
+        // Everything the walk produces goes into LOCALS, so a walk that throws -- a cycle, an
+        // over-deep chain, a duplicate path key -- leaves the previously published projection
+        // exactly as it was.
+        std::vector<winrt::IInspectable> built;
+        std::vector<NodeRow> descriptors;
+        std::unordered_set<winrt::hstring> liveKeys;
+        std::unordered_set<winrt::hstring> enumeratedPrefixes;
+
+        const auto source = Source();
+        if (source)
+        {
+            // The roots are walked in full, so root-level intent is prunable. Not on a null source:
+            // that is a transient detach between re-declarations (each setter rebuilds while the
+            // owner repopulates the roots), and pruning against "no roots" would discard every
+            // node's expansion intent on every refresh.
+            enumeratedPrefixes.insert(winrt::hstring{ c_nodeKeyPrefix });
+
+            auto roots = ShapingHelpers::EnumerateInspectableItems(source);
+
+            // A private cache measures reachability from the roots it is handed here; an injected
+            // one is told the full, unfiltered root set by its owner. Not on a null source -- that
+            // is a transient detach between re-declarations, and treating it as "no roots" would
+            // release the whole cache moments before the same tree is walked again.
+            if (m_ownsStructure)
+            {
+                structure->Roots(roots);
+            }
+
+            // The root sibling set is shaped by layer 2 before it reaches us (it is handed in as
+            // Source), so it is NOT re-shaped here. Deeper levels are shaped as the walk reaches
+            // them, because their membership is not knowable until then.
+            std::unordered_set<winrt::hstring> ancestorIds;
+
+            // Sibling positions count within each root segment (one per group bucket).
+            std::vector<size_t> segments = m_rootSegments;
+            size_t segmentTotal = 0;
+            for (auto const segment : segments)
+            {
+                segmentTotal += segment;
+            }
+            if (segments.empty() || segmentTotal != roots.size())
+            {
+                segments.assign(1, roots.size());
+            }
+
+            size_t segmentStart = 0;
+            for (auto const segment : segments)
+            {
+                const auto segmentEnd = segmentStart + segment;
+                const auto siblingCount = static_cast<int32_t>(std::count_if(
+                    roots.begin() + segmentStart, roots.begin() + segmentEnd, [](auto const& root) { return root != nullptr; }));
+                int32_t siblingIndex = 0;
+                for (size_t i = segmentStart; i < segmentEnd; ++i)
+                {
+                    auto const& root = roots[i];
+                    if (!root)
+                    {
+                        continue;
+                    }
+
+                    Emit(root, 0, winrt::hstring{ c_nodeKeyPrefix }, ++siblingIndex, siblingCount, ancestorIds, built, descriptors, liveKeys, enumeratedPrefixes);
+                }
+                segmentStart = segmentEnd;
+            }
+
+            // Deliberately no sweep of what this walk did not reach: a collapsed subtree keeps its
+            // cached children and subscriptions so re-expanding it is free. Nodes are released only
+            // once a removal makes them unreachable (see HierarchyStructureCache::Sweep).
+        }
+        // The index map is built into a LOCAL. Both the reserve and the inserts allocate, and
+        // filling m_indexByPathKey in place means a failure part-way leaves a published map that
+        // describes only some of the published descriptors -- worse than either the old or the new
+        // state, because RowMetadataProvider would resolve some identities and silently miss others.
+        std::unordered_map<winrt::hstring, int32_t> indexByPathKey;
+        indexByPathKey.reserve(descriptors.size());
+        for (size_t i = 0; i < descriptors.size(); ++i)
+        {
+            indexByPathKey.emplace(descriptors[i].NodeKey, static_cast<int32_t>(i));
+        }
+
+        // Publish the descriptor side-table and the index map BEFORE the Reset, so a consumer that
+        // reacts synchronously to the collection change sees metadata that already agrees with the
+        // rows it is being told about. Both hand-offs are moves and cannot throw, so the pair goes
+        // live together or not at all.
+        auto previousDescriptors = std::exchange(m_descriptors, std::move(descriptors));
+        auto previousIndex = std::exchange(m_indexByPathKey, std::move(indexByPathKey));
+        m_indexByItemValid = false;
+
+        // ReplaceAll has two failure modes that want OPPOSITE answers, and the exception cannot tell
+        // them apart. It assigns the container first and raises the single Reset afterwards, so:
+        //   - a throw from the assignment leaves the OLD rows published, and the new metadata has to
+        //     be rolled back or it describes rows nobody can see;
+        //   - a throw out of a consumer's Reset handler happens once the new rows are already live,
+        //     and rolling back there would be the actual corruption -- old metadata over new rows.
+        // So the guard decides on the published row count instead. The count is conclusive: an
+        // assignment that fits in the existing capacity cannot allocate and so cannot throw, meaning
+        // a failed assignment always implies a growth that did not happen, and the old count must
+        // therefore differ from the one we were trying to publish.
+        const auto publishedCount = static_cast<uint32_t>(built.size());
+        auto publishGuard = wil::scope_exit([this, publishedCount, &previousDescriptors, &previousIndex]() noexcept
+        {
+            if (m_entries.Size() == publishedCount)
+            {
+                // The rows went in; only a handler objected. The new pair is the coherent one.
+                return;
+            }
+
+            m_descriptors = std::move(previousDescriptors);
+            m_indexByPathKey = std::move(previousIndex);
+            m_indexByItemValid = false;
+        });
+
+        // One Reset for the whole projection.
+        m_entries.ReplaceAll(built);
+        publishGuard.release();
+
+        // Pruned only once the new projection is actually live. Pruning first would drop intent for
+        // keys the rollback path then brings back, so a node that stayed visible would quietly
+        // resolve to the baseline expansion rather than to what the user chose. Nothing observes
+        // intent during the Reset, so deferring it costs no coherence.
+        // Not while the owner reports a partial shape (a filter): a node the filter hides is
+        // absent from the walk but still alive, and clearing the filter must restore its intent.
+        if (!m_partialShape)
+        {
+            PruneExpansionIntent(liveKeys, enumeratedPrefixes);
+        }
+
+        // resetGuard runs here, publishing into runPending whether a re-entrant request arrived.
+    } while (runPending);
+
+    // One coherent edge for the whole rebuild, after the last iteration has published.
+    RaiseProjectionChanged();
+}
+
+void HierarchicalSourceAdapter::Emit(
+    winrt::IInspectable const& item,
+    int32_t depth,
+    winrt::hstring const& parentPath,
+    int32_t siblingIndex,
+    int32_t siblingCount,
+    std::unordered_set<winrt::hstring>& ancestorIds,
+    std::vector<winrt::IInspectable>& built,
+    std::vector<NodeRow>& descriptors,
+    std::unordered_set<winrt::hstring>& liveKeys,
+    std::unordered_set<winrt::hstring>& enumeratedPrefixes)
+{
+    if (depth >= c_maxHierarchyDepth)
+    {
+        // Emit recurses, so an adversarially deep (but acyclic) chain would overflow the stack
+        // before any allocator complained. Throw rather than truncate: a silently truncated tree is
+        // a data bug the app never learns about.
+        throw winrt::hresult_invalid_argument(
+            L"The hierarchy is deeper than the supported maximum (256 levels). Check the "
+            L"WithChildren(...) children selector for an unintentionally deep or self-extending "
+            L"structure.");
+    }
+
+    // One identity per node, shared by the path key and the cycle check below. Minted once per
+    // object by the structure cache and reused by every later walk.
+    auto* const structure = EnsureStructure().get();
+    const auto selfId = structure->Identity(item);
+    const auto path = MakePathKey(parentPath, selfId);
+
+    // Cycle detection is path-local by construction: the same object under two different parents is
+    // not a cycle and stays legal, while an item that is its own ancestor is rejected.
+    if (ancestorIds.find(selfId) != ancestorIds.end())
+    {
+        throw winrt::hresult_invalid_argument(
+            L"The hierarchy contains a cycle: an item appears as its own ancestor. Check the "
+            L"WithChildren(...) children selector -- a node must not reach itself through its own "
+            L"descendants.");
+    }
+
+    // Whether the node is expandable. With a HasChildrenSelector this costs one app call and no
+    // enumeration, which is the entire point of the overload: it is what keeps a collapsed subtree
+    // genuinely unrealized. Without one, the only way to answer is to enumerate, which realizes one
+    // level below every visible row.
+    bool hasChildren = false;
+    int32_t childCount = -1;
+
+    // The node's children, from the structure cache: an observed collection is trusted until it
+    // raises a change, and anything else is re-asked at most once per pass. The cache also owns the
+    // subscription to that collection, and keeps it whether or not
+    // the node is expanded: without a HasChildrenSelector a COLLAPSED node still realizes its
+    // children here, purely to answer expandability, and an app removing the last child while the
+    // parent stays collapsed must still reach the adapter or the row keeps a chevron that opens
+    // onto nothing.
+    if (m_hasChildrenSelector)
+    {
+        try
+        {
+            hasChildren = m_hasChildrenSelector(item);
+        }
+        catch (...)
+        {
+            hasChildren = false;
+        }
+        // ChildCount stays -1: expandable, but nobody has enumerated, so the count is genuinely
+        // unknown. That is the lazy contract, not a missing value.
+    }
+    else if (m_childrenSelector)
+    {
+        childCount = static_cast<int32_t>(structure->ChildrenOf(item, m_childrenSelector)->size());
+        hasChildren = childCount > 0;
+    }
+
+    const bool isContext = m_isContext && m_isContext(item);
+    const bool isExpanded = hasChildren && (isContext ? IsContextExpanded(path) : m_expansion.IsExpanded(path));
+
+    NodeRow row;
+    row.Item = item;
+    row.NodeKey = path;
+    if (depth > 0)
+    {
+        row.ParentKey = parentPath;
+    }
+    row.SiblingIndex = siblingIndex;
+    row.SiblingCount = siblingCount;
+    row.Depth = depth;
+    row.ChildCount = childCount;
+    row.HasChildren = hasChildren;
+    row.IsExpanded = isExpanded;
+    row.IsContext = isContext;
+
+    built.push_back(item);
+    descriptors.push_back(std::move(row));
+
+    // A path key must be unique, and a collision is never benign: m_indexByPathKey would map one
+    // key to one of two rows, so metadata lookups and expansion toggles would silently address the
+    // wrong row. It means the same object appears twice in one sibling set, which is the same
+    // duplicate-identity bug ShapedItemsSource already rejects outright -- so reject it here too,
+    // at the level that can name the offending position.
+    if (!liveKeys.insert(path).second)
+    {
+        throw winrt::hresult_invalid_argument(
+            L"The hierarchy contains the same item twice under one parent. Row identity is per "
+            L"object, so duplicate siblings cannot be told apart. Check the WithChildren(...) "
+            L"children selector -- each item must appear at most once in a given child set.");
+    }
+
+    if (!isExpanded)
+    {
+        return;
+    }
+
+    // Expanded: now the children must be realized whether or not HasChildrenSelector spared us
+    // earlier, and shaped as their own sibling set. The cache hands back the shaped set it already
+    // holds when neither the list nor the shape has changed since it was produced.
+    auto const children = ShapedChildren(item);
+
+    // The count is only knowable once the set is realized AND shaped -- a filter may have removed
+    // some -- so it is written back here rather than at push time.
+    descriptors.back().ChildCount = static_cast<int32_t>(children->size());
+
+    if (children->empty())
+    {
+        // Expandability was promised (by a HasChildrenSelector, or by a child set that has since
+        // emptied) but nothing survives to show: the selector returned none, or ShapeSiblings
+        // filtered them all away. Publishing HasChildren here would draw a chevron on a row with
+        // nothing under it, and IsExpanded would mark it open onto an empty run. It is a leaf for
+        // this publish. The recorded intent is deliberately left alone, so the node re-expands by
+        // itself if children come back.
+        descriptors.back().HasChildren = false;
+        descriptors.back().IsExpanded = false;
+        return;
+    }
+
+    // This child set was seen in full, so intent stored beneath it is safe to prune.
+    enumeratedPrefixes.insert(path);
+
+    const auto childSiblingCount = static_cast<int32_t>(
+        std::count_if(children->begin(), children->end(), [](auto const& child) { return child != nullptr; }));
+    int32_t childSiblingIndex = 0;
+
+    ancestorIds.insert(selfId);
+    for (auto const& child : *children)
+    {
+        if (!child)
+        {
+            continue;
+        }
+
+        Emit(child, depth + 1, path, ++childSiblingIndex, childSiblingCount, ancestorIds, built, descriptors, liveKeys, enumeratedPrefixes);
+    }
+    ancestorIds.erase(selfId);
+}
+
+void HierarchicalSourceAdapter::PruneExpansionIntent(
+    std::unordered_set<winrt::hstring> const& liveKeys,
+    std::unordered_set<winrt::hstring> const& enumeratedPrefixes)
+{
+    m_expansion.RetainOnlyUnder(liveKeys, enumeratedPrefixes, &HierarchicalSourceAdapter::ParentPathOf);
+}
+
+// --- Expansion -----------------------------------------------------------------------------------
+
+bool HierarchicalSourceAdapter::IsNodeExpanded(winrt::hstring const& pathKey) const
+{
+    if (m_isContext)
+    {
+        int32_t index = -1;
+        if (TryGetIndexForPathKey(pathKey, index))
+        {
+            if (auto const* row = TryGetNodeRow(index); row && row->IsContext)
+            {
+                return IsContextExpanded(pathKey);
+            }
+        }
+    }
+    return m_expansion.IsExpanded(pathKey);
+}
+
+void HierarchicalSourceAdapter::ContextSelector(std::function<bool(winrt::IInspectable const&)> fn)
+{
+    AssertNotInShapeSiblings();
+    m_isContext = std::move(fn);
+}
+
+void HierarchicalSourceAdapter::ResetContextOverlay()
+{
+    m_contextDefaultExpanded = true;
+    m_contextOverrides.clear();
+}
+
+void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& pathKey, bool isExpanded)
+{
+    AssertNotInShapeSiblings();
+
+    if (pathKey.empty())
+    {
+        return;
+    }
+
+    if (m_isContext)
+    {
+        int32_t index = -1;
+        if (TryGetIndexForPathKey(pathKey, index))
+        {
+            if (auto const* row = TryGetNodeRow(index); row && row->IsContext)
+            {
+                // Context rows toggle the filter overlay, never persistent intent.
+                if (IsContextExpanded(pathKey) != isExpanded)
+                {
+                    if (isExpanded == m_contextDefaultExpanded)
+                    {
+                        m_contextOverrides.erase(pathKey);
+                    }
+                    else
+                    {
+                        m_contextOverrides.insert(pathKey);
+                    }
+                }
+                if (row->HasChildren && row->IsExpanded != isExpanded)
+                {
+                    ApplySingleNodeToggle(pathKey, isExpanded);
+                }
+                return;
+            }
+        }
+    }
+    if (m_expansion.IsExpanded(pathKey) == isExpanded)
+    {
+        // Intent already agrees. Normally that means the projection does too -- but a previous
+        // materialization can have failed after the intent was committed (a cycle or an over-deep
+        // chain throws out of the walk), which would otherwise trap the node: every retry would
+        // early-return here and the user could never expand it again. If the node is materialized
+        // and disagrees with the intent, reconcile instead of returning.
+        int32_t index = -1;
+        if (TryGetIndexForPathKey(pathKey, index))
+        {
+            if (auto const* row = TryGetNodeRow(index); row && row->HasChildren && row->IsExpanded != isExpanded)
+            {
+                Rebuild();
+            }
+        }
+        return;
+    }
+
+    // Through the model, not around it, so a programmatic ExpandAll and a per-node toggle share a
+    // path. The model raises Changed -> OnExpansionChanged -> splice or Rebuild.
+    m_expansion.SetExpanded(pathKey, isExpanded);
+}
+
+void HierarchicalSourceAdapter::ExpandAll()
+{
+    AssertNotInShapeSiblings();
+
+    // Moves the BASELINE, so nodes that do not exist yet also arrive expanded. On a large or lazy
+    // tree this realizes everything the children selector can reach, bounded only by the cycle and
+    // depth guards -- the inherent cost of "expand everything" over a materialized axis.
+    m_contextDefaultExpanded = true;
+    m_contextOverrides.clear();
+    const auto serial = m_rebuildSerial;
+    m_expansion.SetAllExpanded(true);
+    if (m_isContext && serial == m_rebuildSerial)
+    {
+        // The intent baseline did not move, but the context overlay may have.
+        Rebuild();
+    }
+}
+
+void HierarchicalSourceAdapter::CollapseAll()
+{
+    AssertNotInShapeSiblings();
+
+    m_contextDefaultExpanded = false;
+    m_contextOverrides.clear();
+    const auto serial = m_rebuildSerial;
+    m_expansion.SetAllExpanded(false);
+    if (m_isContext && serial == m_rebuildSerial)
+    {
+        Rebuild();
+    }
+}
+
+void HierarchicalSourceAdapter::ExpandSubtree(winrt::hstring const& nodeKey)
+{
+    AssertNotInShapeSiblings();
+
+    int32_t index = -1;
+    if (!m_childrenSelector || m_rebuildInFlight || !TryGetIndexForPathKey(nodeKey, index))
+    {
+        return;
+    }
+    auto const* const root = TryGetNodeRow(index);
+    if (!root || !root->Item)
+    {
+        return;
+    }
+
+    // Collect every node of the shaped subtree that has children, inside one structure pass.
+    struct Pending
+    {
+        winrt::IInspectable Item;
+        winrt::hstring Path;
+        int32_t Depth;
+    };
+    std::vector<std::pair<winrt::hstring, winrt::IInspectable>> expandable;
+    {
+        auto const structure = EnsureStructure();
+        HierarchyStructureCache::Pass pass{ structure };
+
+        std::unordered_set<winrt::hstring> visited;
+        std::vector<Pending> pending{ { root->Item, nodeKey, root->Depth } };
+        while (!pending.empty())
+        {
+            auto current = std::move(pending.back());
+            pending.pop_back();
+
+            // A path revisiting an ancestor is a cycle, and an over-deep chain is rejected: both are
+            // left for the Rebuild below to diagnose.
+            if (current.Depth >= c_maxHierarchyDepth || !visited.insert(current.Path).second)
+            {
+                continue;
+            }
+
+            auto const children = ShapedChildren(current.Item);
+            if (children->empty())
+            {
+                continue;
+            }
+            expandable.emplace_back(current.Path, current.Item);
+
+            const std::wstring_view currentPath{ current.Path.c_str(), current.Path.size() };
+            for (auto const& child : *children)
+            {
+                if (!child)
+                {
+                    continue;
+                }
+                auto const childId = structure->Identity(child);
+                const std::wstring needle = L"/" + std::wstring{ childId.c_str(), childId.size() };
+                if ((std::wstring{ currentPath } + L"/").find(needle + L"/") != std::wstring::npos)
+                {
+                    continue;
+                }
+                pending.push_back({ child, MakePathKey(current.Path, childId), current.Depth + 1 });
+            }
+        }
+    }
+
+    // Write all intent with change notifications coalesced (OnExpansionChanged defers while a
+    // rebuild is in flight), then publish once.
+    {
+        m_rebuildInFlight = true;
+        auto resetGuard = wil::scope_exit([this]() noexcept
+        {
+            m_rebuildInFlight = false;
+            m_pendingRebuild = false;
+        });
+
+        for (auto const& [path, item] : expandable)
+        {
+            if (m_isContext && m_isContext(item))
+            {
+                if (m_contextDefaultExpanded)
+                {
+                    m_contextOverrides.erase(path);
+                }
+                else
+                {
+                    m_contextOverrides.insert(path);
+                }
+            }
+            else
+            {
+                m_expansion.SetExpanded(path, true);
+            }
+        }
+    }
+
+    Rebuild();
+}
+
+void HierarchicalSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change)
+{
+    AssertRebuildOnUiThread();
+
+    if (m_rebuildInFlight)
+    {
+        // A change raised synchronously while a Rebuild/splice is unwinding. m_expansion already
+        // reflects the new intent, so remember it and let the outer operation run one coalesced
+        // Rebuild afterward rather than nesting.
+        m_pendingRebuild = true;
+        return;
+    }
+
+    // Only a single-node toggle can be a ranged splice. A baseline move (ExpandAll/CollapseAll) or
+    // a multi-key batch shifts the whole visible-row set, for which a full Rebuild ending in one
+    // Reset is both correct and cheapest.
+    if (change.AffectsAllKeys || change.Keys.size() != 1)
+    {
+        Rebuild();
+        return;
+    }
+
+    ApplySingleNodeToggle(change.Keys.front(), change.IsExpanded);
+}
+
+void HierarchicalSourceAdapter::ApplySingleNodeToggle(winrt::hstring const& pathKey, bool isExpanded)
+{
+    if (m_rebuildInFlight)
+    {
+        m_pendingRebuild = true;
+        return;
+    }
+
+    bool runPending = false;
+    bool applied = false;
+    {
+        m_rebuildInFlight = true;
+        m_pendingRebuild = false;
+        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
+        {
+            m_rebuildInFlight = false;
+            runPending = m_pendingRebuild;
+            m_pendingRebuild = false;
+        });
+
+        applied = TryApplyExpansionSplice(pathKey, isExpanded);
+    }
+
+    // A re-entrant request, or a splice that couldn't resolve the node, resolves to a single
+    // authoritative Rebuild after the guard unwinds.
+    if (runPending || !applied)
+    {
+        Rebuild();
+    }
+}
+
+bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& pathKey, bool expand)
+{
+    // The two structures must already agree, or a ranged splice computed from one and applied to
+    // both would silently corrupt the pairing. Rebuild is authoritative.
+    if (m_descriptors.size() != static_cast<size_t>(m_entries.Size()))
+    {
+        return false;
+    }
+
+    int32_t index = -1;
+    if (!TryGetIndexForPathKey(pathKey, index) || index < 0 || static_cast<size_t>(index) >= m_descriptors.size())
+    {
+        // The node isn't materialized in the projection (it is behind a collapsed ancestor, or the
+        // projection is mid-reshape); let Rebuild reconcile from source.
+        return false;
+    }
+
+    auto& node = m_descriptors[static_cast<size_t>(index)];
+    if (node.IsExpanded == expand)
+    {
+        return true;  // Already coherent for this node.
+    }
+
+    if (!node.HasChildren)
+    {
+        // Intent was recorded for a leaf. Nothing to splice, and the projection is already right.
+        return true;
+    }
+
+    const int32_t nodeDepth = node.Depth;
+
+    if (!expand)
+    {
+        // Collapse: a node's visible descendants are exactly the contiguous run of rows after it
+        // whose Depth exceeds its own, up to the first row that does not.
+        int32_t runEnd = index + 1;
+        while (static_cast<size_t>(runEnd) < m_descriptors.size() && m_descriptors[static_cast<size_t>(runEnd)].Depth > nodeDepth)
+        {
+            ++runEnd;
+        }
+
+        // The collapsed run's cached children and subscriptions are deliberately KEPT, here and by
+        // every later rebuild: they are what makes re-expanding this node cheap (no selector call,
+        // no enumeration, no re-shape). They are released only when the node leaves the tree.
+
+        // Descriptor first: RemoveRows raises the vector notification, and the node's own row must
+        // already read "collapsed" by the time anyone reacts to it.
+        m_descriptors[static_cast<size_t>(index)].IsExpanded = false;
+        RemoveRows(index + 1, runEnd - (index + 1));
+        RaiseProjectionChanged();
+        return true;
+    }
+
+    // Expand: emit this node's subtree into temporaries, honouring nested intent, then insert the
+    // run. Nothing the walk produces touches published state until the walk has completed, so a
+    // throw out of Emit (cycle, over-deep chain, duplicate sibling) leaves the projection exactly
+    // as it was. The splice then declines rather than propagating, and the caller's authoritative
+    // Rebuild re-raises the same diagnostic from a single place -- one recovery policy instead of
+    // two that must agree.
+    if (!m_childrenSelector)
+    {
+        return false;
+    }
+
+    // A splice pass: shares validation across the subtree it emits.
+    auto const structure = EnsureStructure();
+    HierarchyStructureCache::Pass pass{ structure };
+
+    auto const children = ShapedChildren(node.Item);
+
+    if (children->empty())
+    {
+        // The node was marked expandable but has nothing left to show -- the last child was removed
+        // from a collection that raised no notification, or a HasChildrenSelector promised children
+        // the selector no longer returns. Splicing anyway would publish an expanded, empty, still
+        // expandable row that only an unrelated rebuild could clear. Decline instead: the caller's
+        // authoritative Rebuild re-walks the node, sees the empty set, republishes it as a leaf and
+        // restamps the realized rows.
+        return false;
+    }
+
+    std::vector<winrt::IInspectable> built;
+    std::vector<NodeRow> descriptors;
+    std::unordered_set<winrt::hstring> liveKeys;
+    std::unordered_set<winrt::hstring> enumeratedPrefixes;
+
+    // The ancestor set for a splice starts from this node's own path rather than empty, so cycle
+    // detection stays as strong as it is during a full walk.
+    std::unordered_set<winrt::hstring> ancestorIds;
+    {
+        const std::wstring_view view{ pathKey.c_str(), pathKey.size() };
+        auto cursor = view;
+        while (true)
+        {
+            const auto lastSeparator = cursor.find_last_of(L'/');
+            if (lastSeparator == std::wstring_view::npos)
+            {
+                break;
+            }
+            ancestorIds.insert(winrt::hstring{ cursor.substr(lastSeparator + 1) });
+            cursor = cursor.substr(0, lastSeparator);
+        }
+    }
+
+    try
+    {
+        const auto childSiblingCount = static_cast<int32_t>(
+            std::count_if(children->begin(), children->end(), [](auto const& child) { return child != nullptr; }));
+        int32_t childSiblingIndex = 0;
+        for (auto const& child : *children)
+        {
+            if (!child)
+            {
+                continue;
+            }
+
+            Emit(child, nodeDepth + 1, pathKey, ++childSiblingIndex, childSiblingCount, ancestorIds, built, descriptors, liveKeys, enumeratedPrefixes);
+        }
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    // Emit's own uniqueness check only covers the run being spliced, because its live-key set is
+    // local to this walk. A new key colliding with one ALREADY in the projection is the same
+    // corruption from outside that window, so check against the published map too and hand the
+    // decision to Rebuild, which sees the whole tree at once.
+    for (auto const& descriptor : descriptors)
+    {
+        if (m_indexByPathKey.find(descriptor.NodeKey) != m_indexByPathKey.end())
+        {
+            return false;
+        }
+    }
+
+    // The node's own descriptor is updated BEFORE the insertion, for the same reason the collapse
+    // path does it: InsertRows raises the vector notification, and a consumer reacting to it must
+    // see the parent already reading "expanded" with its resolved child count.
+    {
+        auto& refreshed = m_descriptors[static_cast<size_t>(index)];
+        refreshed.IsExpanded = true;
+        refreshed.ChildCount = static_cast<int32_t>(children->size());
+    }
+
+    InsertRows(index + 1, built, descriptors);
+    RaiseProjectionChanged();
+    return true;
+}
+
+// --- The triple invariant ------------------------------------------------------------------------
+
+void HierarchicalSourceAdapter::InsertRows(
+    int32_t index,
+    std::vector<winrt::IInspectable> const& items,
+    std::vector<NodeRow> const& descriptors)
+{
+    MUX_ASSERT(items.size() == descriptors.size());
+    if (items.empty())
+    {
+        return;
+    }
+
+    const int32_t count = static_cast<int32_t>(items.size());
+
+    // Metadata FIRST, rows last. m_entries.InsertAt raises CollectionChanged synchronously, so any
+    // consumer that reacts to it must find the descriptor side-table and the index map already
+    // agreeing with the rows it is being told about. The reverse order publishes a torn triple.
+    m_descriptors.insert(m_descriptors.begin() + index, descriptors.begin(), descriptors.end());
+    m_indexByItemValid = false;
+
+    // Shift every tracked index at or after the insertion point. O(visible rows) in integer
+    // compares -- the cost RowIdentity documents for the same reason: a hash map keyed by identity
+    // cannot reach "every entry at or after this position" without visiting all of them. A splice
+    // at the tail shifts nothing, which is the common bulk-load shape.
+    for (auto& entry : m_indexByPathKey)
+    {
+        if (entry.second >= index)
+        {
+            entry.second += count;
+        }
+    }
+
+    for (int32_t i = 0; i < count; ++i)
+    {
+        m_indexByPathKey[descriptors[static_cast<size_t>(i)].NodeKey] = index + i;
+    }
+
+    uint32_t insertAt = static_cast<uint32_t>(index);
+    for (auto const& item : items)
+    {
+        m_entries.InsertAt(insertAt++, item);
+    }
+}
+
+void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
+{
+    if (count <= 0)
+    {
+        return;
+    }
+
+    // Metadata first, for the same reason InsertRows does it.
+    for (int32_t i = 0; i < count; ++i)
+    {
+        m_indexByPathKey.erase(m_descriptors[static_cast<size_t>(index + i)].NodeKey);
+    }
+
+    m_descriptors.erase(m_descriptors.begin() + index, m_descriptors.begin() + index + count);
+    m_indexByItemValid = false;
+
+    for (auto& entry : m_indexByPathKey)
+    {
+        if (entry.second >= index)
+        {
+            entry.second -= count;
+        }
+    }
+
+    for (int32_t i = 0; i < count; ++i)
+    {
+        m_entries.RemoveAt(static_cast<uint32_t>(index));
+    }
+}
+
+// --- Lookups --------------------------------------------------------------------------------------
+
+HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeRow(int32_t index) const
+{
+    if (index < 0 || static_cast<size_t>(index) >= m_descriptors.size())
+    {
+        return nullptr;
+    }
+
+    return &m_descriptors[static_cast<size_t>(index)];
+}
+
+HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeRowForItem(winrt::IInspectable const& item) const
+{
+    if (!item)
+    {
+        return nullptr;
+    }
+
+    // O(1) against a cache rebuilt lazily after any mutation, rather than the O(visible rows) scan
+    // this used to be. The scan was not expensive by itself, but the grouped hierarchical path
+    // performs it once per row, and an identity-index rebuild performs it once per row per row.
+    EnsureItemIndex();
+
+    const auto found = m_indexByItem.find(winrt::get_abi(item));
+    if (found == m_indexByItem.end() ||
+        found->second < 0 ||
+        static_cast<size_t>(found->second) >= m_descriptors.size())
+    {
+        return nullptr;
+    }
+
+    return &m_descriptors[static_cast<size_t>(found->second)];
+}
+
+void HierarchicalSourceAdapter::EnsureItemIndex() const
+{
+    if (m_indexByItemValid)
+    {
+        return;
+    }
+
+    m_indexByItem.clear();
+    m_indexByItem.reserve(m_descriptors.size());
+
+    // Front to back with first-match-wins, which is what the linear scan answered: an object that
+    // appears at two places in the tree resolves to its topmost row, as it always has.
+    for (size_t i = 0; i < m_descriptors.size(); ++i)
+    {
+        if (auto const& descriptorItem = m_descriptors[i].Item)
+        {
+            m_indexByItem.emplace(winrt::get_abi(descriptorItem), static_cast<int32_t>(i));
+        }
+    }
+
+    m_indexByItemValid = true;
+}
+
+bool HierarchicalSourceAdapter::TryGetIndexForPathKey(winrt::hstring const& pathKey, int32_t& index) const{
+    index = -1;
+    if (pathKey.empty())
+    {
+        return false;
+    }
+
+    const auto found = m_indexByPathKey.find(pathKey);
+    if (found == m_indexByPathKey.end())
+    {
+        return false;
+    }
+
+    index = found->second;
+    return true;
+}
+
+// --- Threading ------------------------------------------------------------------------------------
+
+bool HierarchicalSourceAdapter::OnUiThread() const
+{
+    auto const queue = m_uiQueue.get();
+    return queue && queue.HasThreadAccess();
+}
+
+void HierarchicalSourceAdapter::AssertRebuildOnUiThread() const
+{
+    // A source bound off the UI thread captures no queue, so affinity can't be proven either way
+    // and the assert stands down rather than firing on something it cannot judge.
+    MUX_ASSERT(!m_uiQueue.get() || OnUiThread());
+}
+
+// --- Source / node subscription ---------------------------------------------------------------------
+
+void HierarchicalSourceAdapter::AttachToSource()
+{
+    auto src = Source();
+    if (!src)
+    {
+        return;
+    }
+
+    m_attachedSourceForRevocation = src;
+
+    // Notifications are required on the owning UI thread and applied synchronously as a full
+    // Rebuild + Reset. INotifyCollectionChanged first -- typed CLR ObservableCollection<T> won't
+    // surface as IObservableVector.
+    if (auto incc = src.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
+    {
+        m_outerCollectionChangedToken = incc.CollectionChanged(
+            [weakThis = weak_from_this()](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
+            });
+    }
+    else if (auto obs = src.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
+    {
+        m_outerVectorChangedToken = obs.VectorChanged(
+            [weakThis = weak_from_this()](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
+            });
+    }
+    else if (auto bobs = src.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
+    {
+        m_outerBindableVectorChangedToken = bobs.VectorChanged(
+            [weakThis = weak_from_this()](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
+            });
+    }
+}
+
+void HierarchicalSourceAdapter::DetachFromSource()
+{
+    auto attached = m_attachedSourceForRevocation;
+    if (attached)
+    {
+        if (m_outerCollectionChangedToken.value != 0)
+        {
+            if (auto incc = attached.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
+            {
+                ShapingHelpers::SafeRevokeWith([&] { incc.CollectionChanged(m_outerCollectionChangedToken); });
+            }
+        }
+        if (m_outerVectorChangedToken.value != 0)
+        {
+            if (auto obs = attached.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
+            {
+                ShapingHelpers::SafeRevokeWith([&] { obs.VectorChanged(m_outerVectorChangedToken); });
+            }
+        }
+        if (m_outerBindableVectorChangedToken.value != 0)
+        {
+            if (auto bobs = attached.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
+            {
+                ShapingHelpers::SafeRevokeWith([&] { bobs.VectorChanged(m_outerBindableVectorChangedToken); });
+            }
+        }
+    }
+    m_outerCollectionChangedToken = {};
+    m_outerVectorChangedToken = {};
+    m_outerBindableVectorChangedToken = {};
+    m_attachedSourceForRevocation = nullptr;
+
+    // The per-node children subscriptions live in the structure cache, NOT here: a detach is how
+    // every re-declaration starts, and releasing them would throw away the cache the next walk is
+    // about to reuse. They go when their node leaves the tree or the cache is reset.
+}
+
+HierarchyStructureCache::Children HierarchicalSourceAdapter::ShapedChildren(winrt::IInspectable const& item)
+{
+    auto* const structure = EnsureStructure().get();
+    if (!m_shapeSiblings)
+    {
+        return structure->ChildrenOf(item, m_childrenSelector);
+    }
+    return structure->ShapedChildrenOf(item, m_childrenSelector,
+        [this](std::vector<winrt::IInspectable>& siblings) { InvokeShapeSiblings(siblings); });
+}
+
+void HierarchicalSourceAdapter::InvokeShapeSiblings(std::vector<winrt::IInspectable>& siblings)
+{
+    if (!m_shapeSiblings)
+    {
+        return;
+    }
+
+    // Set even if the callback throws: the flag must describe the stack, not the outcome.
+    m_inShapeSiblings = true;
+    auto guard = wil::scope_exit([this]() noexcept { m_inShapeSiblings = false; });
+
+    m_shapeSiblings(siblings);
+}
+
+void HierarchicalSourceAdapter::AssertNotInShapeSiblings() const
+{
+    // ShapeSiblings runs mid-walk, over structures that are half-built by definition. A mutator
+    // called from inside it cannot be honoured in place, so m_rebuildInFlight absorbs it into a
+    // redundant rebuild rather than corrupting anything -- correct, but silently wasteful and a
+    // sign of a real bug upstream. Assert in chk so it gets found at authoring time.
+    MUX_ASSERT_MSG(!m_inShapeSiblings, "ShapeSiblings must not call back into the adapter.");
+}
+
+} // namespace cw4

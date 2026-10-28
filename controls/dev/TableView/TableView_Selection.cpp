@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "ITableViewSource.h"
 
 #include <utility>
 #include <vector>
@@ -886,9 +887,23 @@ void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
     SelectRowIndexFromInteraction(index, false /* toggle */);
 }
 
+// Applies a change the active source deferred to the next dispatcher turn, so a verb that addresses
+// rows by index or item sees the current projection. A no-op for sources that never defer.
+void TableView::FlushPendingSourceChanges()
+{
+    if (auto const source = m_activeSource.get())
+    {
+        if (auto const impl = TryGetTableViewSource(source))
+        {
+            impl->FlushPendingChanges();
+        }
+    }
+}
+
 // ----- Public API -----
 void TableView::Select(int32_t index)
 {
+    FlushPendingSourceChanges();
     if (index < 0)
     {
         // Explicit "select nothing".
@@ -925,6 +940,7 @@ void TableView::Deselect(int32_t index)
 
 bool TableView::IsSelected(int32_t index)
 {
+    FlushPendingSourceChanges();
     // Ask the model rather than comparing against the single selected index, so this stays correct
     // when Multiple lands. The guard is required: SelectionModel::IsSelected asserts on index < 0.
     if (index < 0 || !m_selectionModel || index >= GetItemsSourceCount())
@@ -938,6 +954,7 @@ bool TableView::IsSelected(int32_t index)
 
 void TableView::DeselectAll()
 {
+    FlushPendingSourceChanges();
     ClearPendingSelection();
     ApplySelection(-1, true);
 }

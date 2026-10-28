@@ -1384,22 +1384,16 @@ void ShapedItemsSource2::ApplyPresented(UpdateReason reason)
         lastNew = it->second;
         ++retained;
     }
-    auto const edits = (oldEnd - prefix - retained) + (newEnd - prefix - retained);
+    auto edits = (oldEnd - prefix - retained) + (newEnd - prefix - retained);
 
-    if (!ordered || edits > c_maxIncrementalEdits)
+    // The old position of each new row, or SIZE_MAX for an inserted one.
+    std::vector<size_t> oldIndexOf;
+    // A retained row is replaced when its object changed (a replaced item, a re-minted header)
+    // or, outside a pure expansion the consumer restamps itself, when its metadata moved.
+    bool const restamp = reason != UpdateReason::Expansion;
+    if (ordered && edits <= c_maxIncrementalEdits)
     {
-        std::vector<winrt::IInspectable> objects;
-        objects.reserve(newCount);
-        for (auto const pos : m_visible)
-        {
-            objects.push_back(PresentedObjectAt(pos));
-        }
-        m_presented.ReplaceAll(objects);
-    }
-    else
-    {
-        // The old position of each new row, or SIZE_MAX for an inserted one.
-        std::vector<size_t> oldIndexOf(newCount, SIZE_MAX);
+        oldIndexOf.assign(newCount, SIZE_MAX);
         for (size_t k = 0; k < prefix; ++k)
         {
             oldIndexOf[k] = k;
@@ -1416,6 +1410,33 @@ void ShapedItemsSource2::ApplyPresented(UpdateReason reason)
             }
         }
 
+        // Restamps count as edits: a change that shifts every row's metadata (a group header
+        // added above a whole tree) is cheaper as one reset than as a replace per row.
+        if (restamp)
+        {
+            for (size_t k = 0; k < newCount && edits <= c_maxIncrementalEdits; ++k)
+            {
+                auto const old = oldIndexOf[k];
+                if (old != SIZE_MAX && !(m_presentedSignatures[old] == newSignatures[k]))
+                {
+                    ++edits;
+                }
+            }
+        }
+    }
+
+    if (!ordered || edits > c_maxIncrementalEdits)
+    {
+        std::vector<winrt::IInspectable> objects;
+        objects.reserve(newCount);
+        for (auto const pos : m_visible)
+        {
+            objects.push_back(PresentedObjectAt(pos));
+        }
+        m_presented.ReplaceAll(objects);
+    }
+    else
+    {
         for (size_t k = oldEnd; k-- > prefix;)
         {
             if (!newMiddle.contains(m_presentedIds[k]))
@@ -1431,9 +1452,6 @@ void ShapedItemsSource2::ApplyPresented(UpdateReason reason)
             }
         }
 
-        // A retained row is replaced when its object changed (a replaced item, a re-minted header)
-        // or, outside a pure expansion the consumer restamps itself, when its metadata moved.
-        bool const restamp = reason != UpdateReason::Expansion;
         for (size_t k = 0; k < newCount; ++k)
         {
             auto const old = oldIndexOf[k];

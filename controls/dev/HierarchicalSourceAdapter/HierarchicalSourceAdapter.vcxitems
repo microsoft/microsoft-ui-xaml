@@ -16,8 +16,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyContract4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyStructureCache4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter5.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyContract5.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyStructureCache5.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyIndex5.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HierarchyStructureCache4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter5.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HierarchyStructureCache5.cpp" />
   </ItemGroup>
 </Project>

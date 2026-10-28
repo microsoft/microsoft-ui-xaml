@@ -1903,6 +1903,13 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
                     TableViewTelemetry::Feature::LiveShaping);
             }
         });
+        sourceImpl->SetRowsMetadataChangedHook([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->QueueRefreshRealizedRowHierarchyState();
+            }
+        });
 
         if (IsLoaded())
         {

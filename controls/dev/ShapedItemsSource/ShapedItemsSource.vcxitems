@@ -30,6 +30,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LiveShapingTracker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource5.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource6.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)VisibleRowList6.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)RowIdentity.cpp" />
@@ -37,5 +42,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)LiveShapingTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource3.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource5.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource6.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)VisibleRowList6.cpp" />
   </ItemGroup>
 </Project>

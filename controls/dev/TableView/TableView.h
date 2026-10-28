@@ -565,6 +565,7 @@ public:
 
     // Deferred and coalesced: element indices are only trustworthy after the repeater reconciles.
     void QueueRefreshRealizedRowHierarchyState();
+    void FlushPendingSourceChanges();
 
     // Rewired whenever the pipeline re-reads the row view.
     void UpdateRowHierarchyResetSubscription();
