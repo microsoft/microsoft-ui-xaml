@@ -215,7 +215,7 @@ launch starts at connection when activation returns a packaged app that was
 already running, when the app declares no executable, or when the launched
 process runs a different executable than its manifest declares.
 
-Events go through a queue of 65,536 events to one processing thread that runs
+Events go through a queue of 131,072 events to one processing thread that runs
 the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
 the events 1, 2, 3... Today the processors count events
 (`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
