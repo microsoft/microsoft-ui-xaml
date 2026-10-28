@@ -23,8 +23,8 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapedEdit.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapingEngine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Engine\FenwickTree.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapedTree.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapeState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\IShapingOwner.h" />
@@ -37,9 +37,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Spec\ShapeDelegates.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Spec\ShapeSpec.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource2.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)View\FlatDelta.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)View\Flattener.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)View\GroupExpansion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Engine\GroupExpansion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\GroupHeaderRow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedCollectionView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedRowMetadata.h" />

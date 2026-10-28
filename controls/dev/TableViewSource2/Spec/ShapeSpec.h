@@ -123,17 +123,25 @@ struct ShapeSpec
     bool operator==(ShapeSpec const&) const = default;
 };
 
-// What the engine has to redo to go from one spec to the next. Flags, so independent changes
-// (for example group order and row sort) combine. Hierarchy changes are not here; they arrive from
-// SourceTable as a Reset. The engine caches keys per record (ShapeState); Sort and GroupKey
-// invalidate the affected cached keys.
+// What the engine has to redo to go from one spec to the next, and the stage set of its one
+// rebuild routine (decided, E6: replaces a separate engine-private RebuildStage). Flags, so
+// independent changes (for example group order and row sort) combine. Hierarchy changes are not
+// here; they arrive from SourceTable as a Reset. The engine caches keys per record (ShapeState);
+// Sort and GroupKey invalidate the affected cached keys.
+//
+// Each flag re-runs app code for the records it covers; the re-sorts follow from the flags:
+// rows are re-sorted within each parent / group when Sort, GroupKey or Filter is set, and groups
+// within each parent group when GroupOrder, GroupKey or Filter is set (new members and new groups
+// must be ordered; the comparers run over cached keys).
 enum class ShapeDelta : uint8_t
 {
     None = 0x0,
-    Sort = 0x1,         // re-read changed sort levels, re-sort rows within each parent / group
+    Sort = 0x1,         // re-read changed sort levels (every level for a live re-read), re-sort rows
     GroupOrder = 0x2,   // re-sort groups only
     GroupKey = 0x4,     // re-read group keys, re-bucket; row order within groups reuses SortKeys
-    Filter = 0x8,       // re-test every record (no source re-read); reuse cached keys where valid
+    Filter = 0x8,       // re-test every record (no source re-read); reuse cached keys where valid;
+                        // a full pass also clears OverlayCollapsed (F5)
+    All = 0xF,          // Reapply: re-run everything
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeDelta);
 

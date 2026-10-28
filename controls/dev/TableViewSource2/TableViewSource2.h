@@ -86,7 +86,7 @@ private:
     tracker_ref<winrt::IInspectable> m_items{ this };
 
     // The coordinator: owns SourceTable, the desired spec, the delegate registry, and later the
-    // engine, flattener and View. Its tracker_refs are bound to this, so ~TableViewSource2() calls
+    // engine (with its ShapedTree) and View. Its tracker_refs are bound to this, so ~TableViewSource2() calls
     // m_shapingManager->Clear() while this object is still alive.
     std::unique_ptr<ShapingManager> m_shapingManager;
 };

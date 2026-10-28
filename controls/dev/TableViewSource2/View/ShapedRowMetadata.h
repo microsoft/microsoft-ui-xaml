@@ -15,11 +15,11 @@ class ShapingManager;
 // An adapter (decided, R1): implements the existing ITableViewRowMetadataProvider, so TableView
 // consumes v2 exactly as it consumes v1 TableViewSource::GetRowMetadata(). TableViewSource2 returns
 // it as a shared_ptr. It holds no shaping logic: every call forwards to ShapingManager's row-metadata
-// helpers, which own the flattener, the engine, the group expansion model and the SourceTable.
+// helpers, which own the engine (and its ShapedTree), the group expansion model and the SourceTable.
 //
 // Stateless: no CollectionChanged subscriptions and no caches (v1 RowMetadataProvider keeps three
 // event tokens, an identity -> index map and a header-index list, all rebuilt on change). Every
-// answer is read live from the shaped tree and the published m_rows.
+// answer is read live from the shaped tree, which matches the last raised event (P8).
 //
 // Key space: the row key (V3), the same string as ShapedCollectionView::KeyFromIndex. Records:
 // SourceRecord::Identity() ("0x" + address); groups: GroupNode::Identity ("g|" ...). v1's "group:"
@@ -46,7 +46,7 @@ public:
     // The row key of RowAt(index) (V3). Empty when out of range or detached.
     winrt::hstring GetIdentity(int32_t index) override;
 
-    // ShapingManager::IndexOfKey (V3/D4, mid-publish rule V4). False when unknown, hidden or detached.
+    // ShapingManager::IndexOfKey (V3/D4). False when unknown, hidden or detached.
     bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) override;
 
     // ---- Expansion (R2) ---------------------------------------------------------------------

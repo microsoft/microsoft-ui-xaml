@@ -85,7 +85,7 @@ struct SourceRecord
 
     bool HasChildren() const noexcept { return !Children.empty(); }
 
-    // ---- Engine state (written only by the engine and the flattener) ------------------------
+    // ---- Engine state (written only by the engine and its ShapedTree) ------------------------
     //
     // Stored inline (Engine/ShapeState.h): filter flags, cached sort keys, filtered and sorted
     // children, VisibleDescendantCount. Tree links stay in Parent/Children above. Cached keys are

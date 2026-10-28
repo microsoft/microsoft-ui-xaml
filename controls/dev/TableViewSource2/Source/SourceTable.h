@@ -199,7 +199,7 @@ public:
     // links and lookups stay exactly as they were, so the coordinator can iterate TopLevel() and
     // Children and hold raw SourceRecord pointers across app code. A notification only sets
     // m_pendingReset (the source has diverged). Nests. ShapingManager freezes around every engine
-    // call and Publish. EndFreeze returns true when the outermost freeze ends with m_pendingReset
+    // call and its events (the commit scope). EndFreeze returns true when the outermost freeze ends with m_pendingReset
     // set; the caller then calls Refresh() (re-read, one Reset), now or posted. Item
     // PropertyChanged is not affected (it never mutates the table).
     void BeginFreeze() noexcept;

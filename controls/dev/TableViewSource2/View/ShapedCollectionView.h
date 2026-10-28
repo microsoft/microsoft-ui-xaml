@@ -12,7 +12,7 @@ class ShapingManager;
 // The visible list TableView binds to (declarations only). See
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "WinRT visible list".
 //
-// A virtual, read-only collection over the flattener's m_rows (V1): it holds no copy. Derives from
+// A virtual, read-only collection over ShapedTree's walk (V1, P1, P10): it holds no copy. Derives from
 // ItemsSourceView inside the controls DLL, as InspectingDataSource does (D1), and
 // ShapingManager::View() returns it as is; ItemsRepeater uses an ItemsSourceView it is given
 // without wrapping it. One object per ShapingManager, created on the first View() and kept for the
@@ -25,10 +25,11 @@ class ShapingManager;
 // Back-reference (D2): a non-owning ShapingManager*, nulled by Detach() from ShapingManager::Clear().
 // TableView may hold the view after its TableViewSource2 is torn down; once detached, Count is 0,
 // GetAt throws E_BOUNDS and every key or item lookup returns -1. Every lookup goes through the
-// manager, which owns the flattener, the engine, the SourceTable and the mid-publish checks (V4).
+// manager, which owns the engine (and its ShapedTree) and the SourceTable.
 //
-// Publishing (V4): ShapingManager::Publish applies one splice to m_rows, then calls NotifyRemoved /
-// NotifyAdded for it, so Count and GetAt match every event; a bulk delta calls NotifyReset once.
+// Events (P8): ShapedTree raises each change as it makes it; ShapingManager, its listener, calls
+// NotifyRemoved or NotifyAdded right away, so Count and GetAt already match every event. A rebuild
+// or expand-all calls NotifyReset once. Nothing is recorded or replayed.
 //
 // UI-thread affine.
 class ShapedCollectionView :
@@ -44,7 +45,7 @@ public:
     // ShapingManager::RowCount(); 0 once detached.
     int32_t GetSizeCore() override;
 
-    // m_rows[index] mapped to its row value: the app item, or the group's GroupHeaderRow (created
+    // ShapedTree::GetAt(index) (tree walk with cursor, P1/P3) mapped to its row value: the app item, or the group's GroupHeaderRow (created
     // and cached on GroupNode::HeaderRow on first read). Throws E_BOUNDS out of range or detached.
     winrt::IInspectable GetAtCore(int index) override;
 
@@ -66,12 +67,12 @@ public:
 
 #pragma endregion
 
-    // ---- Publishing (called only by ShapingManager::Publish) -------------------------------
+    // ---- Events (called only by ShapingManager's IShapedRowsListener) ----------------------
 
-    // A ranged Remove of count rows at index. m_rows must already reflect it.
+    // A ranged Remove of count rows at index. The tree already reflects it (P8).
     void NotifyRemoved(uint32_t index, uint32_t count);
 
-    // A ranged Add of count rows at index. m_rows must already reflect it.
+    // A ranged Add of count rows at index. The tree already reflects it (P8).
     void NotifyAdded(uint32_t index, uint32_t count);
 
     // One stable Reset: the repeater re-reads Count and reuses elements by key.

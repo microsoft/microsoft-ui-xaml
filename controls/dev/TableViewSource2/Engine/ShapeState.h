@@ -10,6 +10,7 @@
 #include <winrt/Windows.Foundation.h>
 
 #include "tracker_ref.h"
+#include "Engine/FenwickTree.h"
 
 struct GroupNode;
 struct SourceRecord;
@@ -17,16 +18,16 @@ struct SourceRecord;
 // Engine state stored inline on every SourceRecord (declarations only).
 // See docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Engine state storage".
 //
-// A leaf header: only the standard library, WinRT and tracker_ref. SourceRecord.h includes it, so
-// Source/ depends on this one header and not on the engine.
+// A leaf header: only the standard library, WinRT, tracker_ref and FenwickTree (itself a leaf).
+// SourceRecord.h includes it, so Source/ depends on these headers and not on the engine.
 //
 // Inline, not a lazily allocated unique_ptr: the large parts are vectors, which allocate nothing
 // until used, so inline costs only the fixed fields per record and avoids a heap allocation per
 // record when shaping starts, a pointer hop and null check on every access, and a rule for when to
 // free. Revisit if the fixed size grows.
 //
-// Written only by the engine (and the flattener for VisibleDescendantCount, Expanded and
-// OverlayCollapsed). The source tree links
+// Written only by the engine (and its ShapedTree for IndexInParent, VisibleDescendantCount,
+// ChildRows, Expanded and OverlayCollapsed). The source tree links
 // (SourceRecord::Parent/Children) are never written here. UI-thread affine.
 enum class ShapeFlags : uint8_t
 {
@@ -49,12 +50,12 @@ enum class ShapeFlags : uint8_t
     // The record's rows are expanded. Records keep their own expansion (they survive reshapes and,
     // through the Refresh() match, Resets, including child records); only groups need the
     // expansion model. Default clear (collapsed).
-    // Written and read by the flattener (Expand/Collapse, ExpandAllRows/CollapseAllRows).
+    // Written and read by ShapedTree (Expand / Collapse, SetAllRowsExpanded).
     Expanded = 0x8,
 
     // Filter auto-expand overlay (decided, F5). A context row (in the shaped tree, failing the
     // filter) shows expanded unless this is set; toggling a context row writes only this bit, so
-    // Expanded keeps the user's state for when the filter is cleared. Written by the flattener;
+    // Expanded keeps the user's state for when the filter is cleared. Written by ShapedTree;
     // cleared by the engine's full Filter stage (filter added, changed or removed, Reapply), not by
     // a live re-read or a surgical edit. Ignored on a record that passes the filter.
     OverlayCollapsed = 0x10,
@@ -72,10 +73,26 @@ struct ShapeState
     ShapeFlags Flags{ ShapeFlags::None };
 
     // Rows this record's own subtree contributes below it, given its own and its descendants'
-    // expansion and ignoring its ancestors': 0 when collapsed. Valid only while the record is
-    // shown (every ancestor expanded); undefined while hidden and recomputed when revealed (F2).
-    // Same meaning as GroupNode::VisibleDescendantCount. Maintained by the flattener.
+    // expansion and ignoring its ancestors': 0 when collapsed. Valid for every record in the shaped
+    // tree, shown or hidden (decided, P6, replaces F2), so expanding a node never re-walks its
+    // subtree. Same meaning as GroupNode::VisibleDescendantCount. Maintained by ShapedTree.
     uint32_t VisibleDescendantCount{ 0 };
+
+    // Position in the record's shaped parent list (decided, P2): its source parent's shaped child
+    // list, its bottom-level group's Children, or the shaped root's Children. Lets IndexOf ask the
+    // parent's ChildRows for the rows before this record in O(log k) instead of searching the
+    // list, and gives PositionInSet in O(1). Structural, so always valid while the record is in the
+    // shaped tree, shown or not; undefined otherwise. Written by ShapedTree::Link / Unlink
+    // (surgical insert / remove / move, including a source edit to an unshaped Children list) and
+    // by a rebuild, renumbering the later siblings, O(k).
+    uint32_t IndexInParent{ 0 };
+
+    // Visible-row index over this record's shaped child list (ShapedChildren when ChildrenShaped is
+    // set, SourceRecord::Children otherwise), entry j = 1 + child j's VisibleDescendantCount
+    // (decided, P1). Total() equals VisibleDescendantCount when expanded. Written by ShapedTree;
+    // kept for every record in the shaped tree, shown or hidden, expanded or not (P6), unless
+    // marked stale (P7: rebuilt on its next read).
+    FenwickTree ChildRows;
 
     // One cached key per SortSpec of the applied spec, in level order. Path and Key levels hold the
     // value read once per record (PathEvaluator / ShapeDelegates); Comparer levels hold nothing (the
@@ -98,7 +115,7 @@ struct ShapeState
     // Parent is null), so this is the only upward link from a record to a GroupNode. Non-owning.
     // Written by the engine when it places or moves a top-level record (bucketing, re-bucketing, a
     // GroupBy change); read by the engine to find the old group on remove or a group-key change,
-    // and through ShapedRef::ShapedParent() by the flattener's ancestor walks. Replaces a
+    // and through ShapedRef::ShapedParent() by ShapedTree's ancestor walks. Replaces a
     // record -> group map. The group key is not cached here: it lives on GroupNode::Key.
     GroupNode* Group{ nullptr };
 };

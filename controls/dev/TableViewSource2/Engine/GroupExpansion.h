@@ -16,10 +16,10 @@
 //
 // Stores only exceptions to a baseline, so ExpandAllGroups / CollapseAllGroups are O(1) and a group that does
 // not exist yet resolves to the baseline. Same scheme as v1 ShapingHelpers::RowExpansionModel, but
-// a v2 type: no change handler (the flattener toggles state itself and builds the delta), and a
+// a v2 type: no change handler (ShapedTree toggles state itself and raises the events), and a
 // single-key Erase for the incremental prune.
 //
-// Owned by ShapingManager; read and written only by the Flattener. Holds no app object (keys are
+// Owned by ShapingManager; read and written only by ShapedTree. Holds no app object (keys are
 // identity strings, not group key objects). UI-thread affine.
 //
 // Pruned so entries exist only for live groups (decided, F4): Erase on a surgical group drop,
@@ -44,8 +44,8 @@ public:
     // ExpandAllGroups / CollapseAllGroups: moves the baseline and drops every exception.
     void SetAll(bool expanded);
 
-    // Prune: a group dropped by a surgical change (Flattener::OnRemoving, once per group in the
-    // removed subtree). O(1).
+    // Prune: a group dropped by a surgical change (ShapedTree::Unlink without isMove, once per
+    // group in the removed subtree). O(1).
     void Erase(winrt::hstring const& identity);
 
     // Prune: after any engine rebuild (filter, sort, regroup, Reapply, E7 bulk). Keeps only the

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <exception>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -15,12 +16,12 @@
 
 #include "Shaping/IShapingOwner.h"
 #include "Source/SourceTable.h"
+#include "Engine/GroupExpansion.h"
+#include "Engine/ShapedTree.h"
 #include "Engine/ShapingEngine.h"
 #include "Spec/ShapeSpec.h"
 #include "Spec/ShapeDelegates.h"
 #include "Spec/PathEvaluator.h"
-#include "View/Flattener.h"
-#include "View/GroupExpansion.h"
 #include "View/ShapedCollectionView.h"
 #include "View/ShapedRowMetadata.h"
 
@@ -31,14 +32,15 @@
 // a thin WinRT shell: it validates verb arguments and forwards here.
 //
 //   Owns:  SourceTable (records and source tree), the desired ShapeSpec, ShapeDelegates,
-//          PathEvaluator, the group expansion model, the flattener, the engine (applied spec,
-//          shaped tree), the visible list (ShapedCollectionView, handed to TableView) and the row
-//          metadata provider (ShapedRowMetadata).
-//   Runs:  verb -> Diff(applied, desired) -> engine apply -> flat delta -> publish to the
-//          visible list. Local changes go engine -> IShapedEditSink (m_flattener) as ShapedEdits;
-//          reshapes go through Reapply() and publish a stable Reset ("Change pipeline").
+//          PathEvaluator, the group expansion model, the engine (applied spec, ShapedTree), the
+//          visible list (ShapedCollectionView, handed to TableView) and the row metadata provider
+//          (ShapedRowMetadata).
+//   Runs:  verb -> Diff(applied, desired) -> engine apply, inside one commit scope. The tree
+//          raises each row event as the engine makes the change (P8); this object is its
+//          IShapedRowsListener and forwards each to the view. Local changes are surgical Link /
+//          Unlink; reshapes go through Reapply() and raise a stable Reset ("Change pipeline").
 //   Hears: SourceTable::SourceChanged and ItemChanged; it is their only subscriber.
-//   Tells: the owner (IShapingOwner, #18) before a Reset and after each published unit of work.
+//   Tells: the owner (IShapingOwner, #18) before a Reset and after each unit of work.
 //
 // Unlike v1 ShapedItemsSource it is plain C++, not the WinRT collection the repeater binds to.
 // That collection is ShapedCollectionView, an ItemsSourceView subclass View() returns as is; it
@@ -58,7 +60,7 @@ enum class ExpansionAxis : uint8_t
     Rows,     // records: ShapeFlags::Expanded / OverlayCollapsed
 };
 
-class ShapingManager
+class ShapingManager final : private IShapedRowsListener
 {
 public:
     // Creates the SourceTable over `items` (SourceTable::Create, initial load) and installs this
@@ -161,24 +163,23 @@ public:
     winrt::ItemsSourceView View();
 
     // ---- Visible list (read by ShapedCollectionView only) ---------------------------------
-    // Every read the view makes goes through these, so the flattener, the engine, the SourceTable
-    // and the mid-publish rule (V4) stay behind one object.
+    // Every read the view makes goes through these, so the tree, the engine and the SourceTable
+    // stay behind one object. Inside an event the tree already reflects the change the event
+    // describes (P8), so no read needs a mapping.
 
-    // Flattener::Size(): the published state.
+    // m_engine.Tree().Size().
     uint32_t RowCount() const noexcept;
 
-    // Flattener::GetAt(index); the view maps it to the row value and key. Throws E_BOUNDS.
+    // m_engine.Tree().GetAt(index); the view maps it to the row value and key. Throws E_BOUNDS.
     ShapedRef RowAt(uint32_t index) const;
 
     // Row key -> flat index (V3). A "g|" key: m_engine.GroupsByIdentity(). Otherwise a record key:
     // SourceRecord::TryParseIdentity, then SourceTable::TryFindByAddress (always on, so it works
-    // without the identity index, D4). Then Flattener::IndexOf. Mid-publish (V4), IndexOf answers
-    // for the final state, so the result is checked against m_rows and, if they disagree, m_rows
-    // is searched. nullopt when unknown or hidden.
+    // without the identity index, D4). Then ShapedTree::IndexOf. nullopt when unknown or hidden.
     std::optional<uint32_t> IndexOfKey(winrt::hstring const& key) const;
 
     // Row value -> flat index: a GroupHeaderRow by its Identity, else SourceTable::TryFindByItem.
-    // Same IndexOf and mid-publish rule as IndexOfKey. nullopt when unknown or hidden.
+    // Then ShapedTree::IndexOf. nullopt when unknown or hidden.
     std::optional<uint32_t> IndexOfItem(winrt::IInspectable const& value) const;
 
     // ---- Owner queries (decided: narrow queries, no Source() accessor) ----------------------
@@ -197,34 +198,33 @@ public:
     // ---- Row metadata (read and driven by ShapedRowMetadata only) --------------------------
 
     // TableViewRowInfo for RowAt(index), built on demand from the ShapedRef (spec field table):
-    // Kind, Level (ShapedDepth), IsExpandable, IsExpanded (Flattener::IsExpanded), ChildCount,
-    // ParentIdentity, PositionInSet (O(siblings)), SizeOfSet. Never stored. Mid-publish (V4) the
-    // row comes from m_rows but per-node fields from the final tree; the RowStateEdits that follow
-    // the splices bring the owner up to date. Throws E_BOUNDS.
+    // Kind, Level (ShapedDepth), IsExpandable, IsExpanded (ShapedTree::IsExpanded), ChildCount,
+    // ParentIdentity, PositionInSet (IndexInParent + 1, O(1), P2), SizeOfSet. Never stored: read
+    // from the tree as it is, which is the list the last event described (P8). Throws E_BOUNDS.
     TableViewRowInfo RowInfo(uint32_t index) const;
 
     // Row key -> node, the first half of IndexOfKey (V3/D4 dispatch). Shown or not. nullopt when
     // unknown.
     std::optional<ShapedRef> TryResolveKey(winrt::hstring const& key) const;
 
-    // Expand (true), collapse (false) or toggle (nullopt) one node: Flattener::Expand / Collapse,
-    // then Publish, inside the #19 apply scope (throws while an apply runs). Returns whether the
+    // Expand (true), collapse (false) or toggle (nullopt) one node: ShapedTree::Expand / Collapse
+    // inside a commit scope (#19: throws while an apply runs), whose events go out as they happen. Returns whether the
     // state changed; false when node is not expandable. Typed, not keyed (decided, R2): keys stay
     // a TableView-interface concern. Per-item expand is internal only (decided, #20): a public
     // per-item API is a TableView API item (Phase 6) and will resolve to a ShapedRef and call this.
     bool SetExpanded(ShapedRef node, std::optional<bool> desired);
 
-    // Flattener::ExpandAll* / CollapseAll* for the axis, then Publish (a Reset). Same scope rule.
+    // ShapedTree::SetAllGroupsExpanded / SetAllRowsExpanded for the axis (one Reset). Same scope
+    // rule.
     void SetAllExpanded(ExpansionAxis axis, bool expanded);
 
-    // Flattener::ExpandSubtree, then Publish. No-op for a group or when !IsHierarchical(). Same
-    // scope rule.
+    // ShapedTree::ExpandSubtree. No-op for a group or when !IsHierarchical(). Same scope rule.
     void ExpandSubtree(ShapedRef node);
 
     // Reveal (decided, #20; internal, public API deferred to Phase 6): nullopt, with nothing
     // changed, when ShapingEngine::InShapedTree(node) is false (filtered out). Otherwise
-    // Flattener::Reveal, then Publish (one splice, or nothing when already shown), and returns
-    // Flattener::IndexOf(node). Same scope rule. Callers: a future ScrollIntoView(item), selection
+    // ShapedTree::Reveal (one insert event, or nothing when already shown), and returns
+    // ShapedTree::IndexOf(node). Same scope rule. Callers: a future ScrollIntoView(item), selection
     // by item, jumping to a filter match.
     std::optional<uint32_t> Reveal(ShapedRef node);
 
@@ -232,9 +232,8 @@ public:
     bool IsHierarchical() const noexcept;
 
     // R3, v1 meaning: index is a data row; walk ShapedParent up to its bottom-level group (O(depth));
-    // position = index - IndexOf(group) (1-based), size = Flattener::ShownDescendantCount(group).
-    // False when ungrouped, a header, or out of range. Mid-publish: IndexOf is checked against
-    // m_rows as in IndexOfKey.
+    // position = index - IndexOf(group) (1-based), size = ShapedTree::ShownDescendantCount(group).
+    // False when ungrouped, a header, or out of range.
     bool TryGetGroupMembership(uint32_t index, uint32_t& positionInGroup, uint32_t& groupSize) const;
 
     // ---- Lifetime ---------------------------------------------------------------------------
@@ -242,8 +241,8 @@ public:
     // Teardown: m_owner = nullptr and m_ownerReleasedWaiters cleared without running them (no
     // callbacks during teardown), then
     // ShapedCollectionView::Detach() (it holds a raw ShapingManager*), then
-    // ShapedRowMetadata::Detach() (same reason), then Flattener::Clear() (it holds raw record pointers), then ShapingEngine::Clear()
-    // (drops groups and tracked keys), then SourceTable::Clear()
+    // ShapedRowMetadata::Detach() (same reason), then ShapingEngine::Clear() (ShapedTree::Clear,
+    // which drops the listener, the cursor and every group; then tracked keys), then SourceTable::Clear()
     // (detach, handlers nulled, records destroyed), ShapeDelegates::Clear(),
     // PathEvaluator::Clear(), m_view.reset(), m_rowMetadata.reset(). Must run on the UI thread while m_trackerOwner is alive. Idempotent.
     void Clear();
@@ -263,7 +262,7 @@ private:
     // returns if it is gone.
     void PostLiveDrain();
 
-    // The posted callback, and the synchronous flush before a verb. One commit, one Publish:
+    // The posted callback, and the synchronous flush before a verb. One commit:
     //   m_liveAllDirty           -> Reapply();
     //   one entry                -> m_engine.ApplyItemChanged (surgical);
     //   more than c_bulkThreshold -> m_engine.ApplyItemsChanged (re-read dirty records only, then
@@ -275,7 +274,7 @@ private:
 
     // Applies Diff(applied, desired); then Retain()s the delegates and paths both specs use. A
     // sort-only Diff (sort or group direction changed, nothing else) adds ShapingChangeFlags::Order
-    // to the Reset it publishes; any other reshape adds Membership (#18 O5).
+    // to the Reset it raises; any other reshape adds Membership (#18 O5).
     void ApplyDesiredSpec();
 
     // Rebuilds the shaped tree from SourceTable::Records() with the desired spec. Never reads
@@ -283,20 +282,40 @@ private:
     // dropped-ItemChanged recovery.
     void Reapply();
 
-    // The single path from a FlatDelta to consumers, whatever produced it (an engine commit,
-    // Expand / Collapse, or an expand-all verb). Decided (V4, #18):
-    //   - Surgical: for each splice in order, Flattener::ApplySplice, then
-    //     ShapedCollectionView::NotifyRemoved (if RemovedCount) and NotifyAdded (if Inserted is
-    //     non-empty). Item lists are CountOnlyItemList placeholders (D3); Replace is never raised (O6).
-    //   - Bulk: m_owner->OnResetting() (old rows still readable, O2), Flattener::ApplyReset, then
-    //     ShapedCollectionView::NotifyReset.
-    //   - Then m_owner->OnShapingApplied({delta.Changes, delta.States, retired}) if the delta is
-    //     non-empty or retired is non-empty (O2, O3, O5), then ShapingEngine::ReleaseRetired.
+    // ---- IShapedRowsListener (decided, P8) --------------------------------------------------
+    // The single path from the tree to consumers, whatever made the change (an engine commit, an
+    // expansion verb, or an expand-all verb). Each call runs while the engine or tree is mid-write,
+    // so all are noexcept: a throw from a handler is caught into m_listenerFault, every later event
+    // of the commit is suppressed, and EndCommit raises one Reset and rethrows. Item lists are
+    // CountOnlyItemList placeholders (D3); Replace is never raised (O6).
+
+    // ShapedCollectionView::NotifyRemoved / NotifyAdded. Accumulates m_changes: isMove sets Order
+    // and adds +-count to m_moveNet; any other call sets Membership.
+    void OnRowsRemoved(uint32_t index, uint32_t count, bool isMove) noexcept override;
+    void OnRowsInserted(uint32_t index, uint32_t count, bool isMove) noexcept override;
+
+    // m_owner->OnResetting() (anchors, O2 / P5: the tree still holds the old rows).
+    void OnRowsResetting() noexcept override;
+
+    // ShapedCollectionView::NotifyReset; sets ShapingChangeFlags::Reset.
+    void OnRowsReset() noexcept override;
+
+    // ---- Commit scope (#19, P8) -------------------------------------------------------------
+    // Every engine entry point and expansion verb runs between these, through one RAII scope.
+    // BeginCommit: m_isApplying, SourceTable::BeginFreeze, m_changes / m_moveNet / m_listenerFault
+    // cleared. EndCommit (also on unwind):
+    //   - m_moveNet != 0 -> Membership (rows moved and the count changed: not a pure reorder).
+    //   - m_listenerFault set -> NotifyReset, so the view and the repeater agree again.
+    //   - m_owner->OnShapingApplied({m_changes, retired}) if m_changes != None or retired is
+    //     non-empty (O2, O3, O5, P9). Skipped on unwind from an engine throw (nothing was written).
+    //   - ShapingEngine::ReleaseRetired, SourceTable::EndFreeze (ResyncSource as decided by #19),
+    //     m_isApplying cleared.
+    //   - Rethrows m_listenerFault (the first handler exception).
     // retired: the SourceChange's Removed records when called from OnSourceChanged (alive until
-    // that handler returns); empty for verbs, expansion and live shaping.
-    // Runs inside the #19 apply scope: a handler that calls a verb throws. An empty delta with no
-    // retired records raises nothing. No owner: the owner calls are skipped.
-    void Publish(FlatDelta const& delta, std::span<SourceRecord const* const> retired = {});
+    // that handler returns); empty for verbs, expansion and live shaping. No owner: the owner
+    // calls are skipped; no view yet: the tree has no listener and nothing is raised.
+    void BeginCommit();
+    void EndCommit(std::span<SourceRecord const* const> retired, bool unwinding);
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
@@ -308,9 +327,10 @@ private:
     ShapeDelegates m_delegates;
     PathEvaluator m_paths;
 
-    // Cached result of View(): the ShapedCollectionView (Publish reaches it through
+    // Cached result of View(): the ShapedCollectionView (the listener reaches it through
     // winrt::get_self<ShapedCollectionView>). Tracked, because TableView holds it too. Null until
-    // the first View(): Publish then raises nothing. std::optional because ~tracker_ref
+    // the first View(), which also calls m_engine.Tree().SetListener(this): until then nothing is
+    // raised. std::optional because ~tracker_ref
     // dereferences the owner; Clear() detaches and resets it while the owner is alive.
     std::optional<tracker_ref<winrt::ItemsSourceView>> m_view;
 
@@ -335,7 +355,7 @@ private:
 
     // A source notification with more than this many items (a range event, or an insert adopting
     // several orphans under ParentBy) goes through Reapply() and one stable Reset instead of
-    // ShapedEdits. Descendants carried by an item do not count. 1 matches v1 ShapedItemsSource.
+    // surgical Link / Unlink. Descendants carried by an item do not count. 1 matches v1 ShapedItemsSource.
     static constexpr uint32_t c_bulkThreshold = 1;
 
     // Re-entrancy guard: a verb or Refresh while an apply runs throws.
@@ -348,11 +368,10 @@ private:
     bool m_refreshRequested{ false };
 
     // Source change during an apply (decided, #19: freeze, then one deferred Reset). Every engine
-    // entry point and its Publish run inside one scope: m_isApplying, SourceTable::BeginFreeze,
-    // Flattener::BeginCommit, the engine call, EndCommit -> Publish, EndFreeze. A source change
-    // raised by app code inside that scope (a predicate, comparer or key selector, or a binding,
-    // converter or element factory during Publish) is not applied to the table, so records and
-    // links never change under the engine or the flattener. When EndFreeze reports a pending
+    // entry point and expansion verb runs inside one commit scope (BeginCommit / EndCommit). A
+    // source change raised by app code inside it (a predicate, comparer or key selector, or a
+    // binding, converter or element factory in an event handler) is not applied to the table, so
+    // records and links never change under the engine or the tree. When EndFreeze reports a pending
     // change, ResyncSource runs SourceTable::Refresh(), whose Reset goes to Reapply().
     // It runs synchronously once; it is posted instead when the scope ended by an exception, or
     // when the resync's own apply was disturbed again (one resync per turn, so an app that mutates
@@ -369,20 +388,22 @@ private:
     bool m_liveAllDirty{ false };     // ItemChanged(nullptr): the drain does Reapply()
     bool m_liveDrainPosted{ false };
 
-    // Group expansion, keyed by GroupNode::Identity. Read and written by m_flattener. Pruned
-    // (decided, F4): after every engine commit whose delta is IsReset, this calls
-    // RetainOnly(m_engine.GroupsByIdentity()); the flattener Erases on a surgical group drop;
-    // cleared when GroupBy gets a new selector. Declared before m_flattener, which references it.
+    // Group expansion, keyed by GroupNode::Identity. Read and written by the engine's ShapedTree.
+    // Pruned (decided, F4): after every engine commit that reset, this calls
+    // RetainOnly(m_engine.GroupsByIdentity()); ShapedTree::Unlink Erases on a surgical group drop;
+    // cleared when GroupBy gets a new selector. Declared before m_engine, which references it.
     GroupExpansion m_groupExpansion;
 
-    // Shaped tree -> visible list; the engine's IShapedEditSink.
-    Flattener m_flattener{ m_groupExpansion };
-
-    // Source tree + applied spec -> shaped tree. Declared after m_flattener, its IShapedEditSink.
-    // Every entry point is bracketed here: m_flattener.BeginCommit(), the engine call,
-    // EndCommit() -> Publish, with a scope that calls AbortCommit() if the call throws.
-    // Built in the constructor's member-init list after m_sourceTable is created (it binds to
-    // *m_sourceTable), with m_trackerOwner, m_delegates, m_paths and m_flattener.
+    // Source tree + applied spec -> shaped tree (ShapedTree, P10). Every entry point is bracketed
+    // here by the commit scope. Built in the constructor's member-init list after m_sourceTable is
+    // created (it binds to *m_sourceTable), with m_trackerOwner, m_delegates, m_paths and
+    // m_groupExpansion.
     ShapingEngine m_engine;
+
+    // The current commit (P8): what its events did, the net row count of its move events, and the
+    // first exception a handler threw. Cleared by BeginCommit, read by EndCommit.
+    ShapingChangeFlags m_changes{ ShapingChangeFlags::None };
+    int64_t m_moveNet{ 0 };
+    std::exception_ptr m_listenerFault;
 
 };
