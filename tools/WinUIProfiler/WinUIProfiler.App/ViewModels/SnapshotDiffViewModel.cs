@@ -185,7 +185,8 @@ public sealed class SnapshotDiffData
             if (!ReferenceEquals(oldParent, newParent)) node.Change |= SnapshotChange.Moved;
         }
         // Compare surviving siblings, so insertions/removals do not make all later children look reordered.
-        foreach (var group in matched.Where(node => !node.Change.HasFlag(SnapshotChange.Moved))
+        foreach (var group in matched.Where(node => node.After!.ParentId is not null &&
+            !node.Change.HasFlag(SnapshotChange.Moved))
             .GroupBy(node => (newRoots[node.After!.RootId], node.After.ParentId)))
         {
             token.ThrowIfCancellationRequested();
