@@ -35,6 +35,7 @@ namespace WinUIProfiler::Tap
         constexpr size_t MaxBytes = 64 * 1024 * 1024;
         constexpr size_t MaxEntries = 131072;
         constexpr size_t MaxPropertiesBytes = 64 * 1024;
+        constexpr size_t MaxTextCharacters = 4096;
         constexpr size_t MaxRoots = 1024;
         constexpr unsigned MaxDepth = 1024;
         constexpr ULONGLONG DeadlineMs = 20000;
@@ -87,6 +88,55 @@ namespace WinUIProfiler::Tap
         std::string Value(float v) { return Number(v); }
         std::string Value(bool v) { return v ? "true" : "false"; }
         std::string Value(const winrt::hstring& v) { return String(v); }
+        std::string Value(winrt::Windows::Foundation::Point v)
+        { return "{\"x\":" + Number(v.X) + ",\"y\":" + Number(v.Y) + "}"; }
+        std::string Value(winrt::Windows::Foundation::Rect v)
+        {
+            return "{\"x\":" + Number(v.X) + ",\"y\":" + Number(v.Y) +
+                ",\"width\":" + Number(v.Width) + ",\"height\":" + Number(v.Height) + "}";
+        }
+        std::string Value(X::Thickness v)
+        {
+            return "{\"left\":" + Number(v.Left) + ",\"top\":" + Number(v.Top) +
+                ",\"right\":" + Number(v.Right) + ",\"bottom\":" + Number(v.Bottom) + "}";
+        }
+        std::string Value(X::HorizontalAlignment v)
+        {
+            switch (v)
+            {
+            case X::HorizontalAlignment::Left: return "\"Left\"";
+            case X::HorizontalAlignment::Center: return "\"Center\"";
+            case X::HorizontalAlignment::Right: return "\"Right\"";
+            case X::HorizontalAlignment::Stretch: return "\"Stretch\"";
+            default: Fail(E_UNEXPECTED);
+            }
+        }
+        std::string Value(X::VerticalAlignment v)
+        {
+            switch (v)
+            {
+            case X::VerticalAlignment::Top: return "\"Top\"";
+            case X::VerticalAlignment::Center: return "\"Center\"";
+            case X::VerticalAlignment::Bottom: return "\"Bottom\"";
+            case X::VerticalAlignment::Stretch: return "\"Stretch\"";
+            default: Fail(E_UNEXPECTED);
+            }
+        }
+        std::string Value(winrt::Windows::UI::Color v)
+        {
+            constexpr char digits[] = "0123456789ABCDEF";
+            std::string color = "#";
+            for (const auto channel : { v.A, v.R, v.G, v.B })
+            { color += digits[channel >> 4]; color += digits[channel & 15]; }
+            return Quote(color);
+        }
+        std::string Value(X::Media::Matrix v)
+        {
+            return "[" + Number(v.M11) + "," + Number(v.M12) + "," + Number(v.M21) +
+                "," + Number(v.M22) + "," + Number(v.OffsetX) + "," + Number(v.OffsetY) + "]";
+        }
+        std::string Value(const X::Media::Brush& v);
+        std::string Value(const X::Media::Transform& v);
         std::string Value(winrt::Windows::Foundation::Numerics::float2 v)
         { return "[" + Number(v.x) + "," + Number(v.y) + "]"; }
         std::string Value(winrt::Windows::Foundation::Numerics::float3 v)
@@ -116,6 +166,65 @@ namespace WinUIProfiler::Tap
             }
             std::string Finish() { return Json + "}"; }
         };
+        std::string Value(const X::Media::Brush& v)
+        {
+            if (!v) return "null";
+            Properties properties;
+            properties.Read("type", [&] { return winrt::get_class_name(v); });
+            properties.Read("opacity", [&] { return v.Opacity(); });
+            if (const auto solid = v.try_as<X::Media::SolidColorBrush>())
+                properties.Read("color", [&] { return solid.Color(); });
+            return properties.Finish();
+        }
+        std::string Value(const X::Media::Transform& v)
+        {
+            if (!v) return "null";
+            Properties properties;
+            properties.Read("type", [&] { return winrt::get_class_name(v); });
+            if (const auto composite = v.try_as<X::Media::CompositeTransform>())
+            {
+                properties.Read("translateX", [&] { return composite.TranslateX(); });
+                properties.Read("translateY", [&] { return composite.TranslateY(); });
+                properties.Read("rotation", [&] { return composite.Rotation(); });
+                properties.Read("scaleX", [&] { return composite.ScaleX(); });
+                properties.Read("scaleY", [&] { return composite.ScaleY(); });
+                properties.Read("skewX", [&] { return composite.SkewX(); });
+                properties.Read("skewY", [&] { return composite.SkewY(); });
+                properties.Read("centerX", [&] { return composite.CenterX(); });
+                properties.Read("centerY", [&] { return composite.CenterY(); });
+            }
+            else if (const auto translate = v.try_as<X::Media::TranslateTransform>())
+            {
+                properties.Read("x", [&] { return translate.X(); });
+                properties.Read("y", [&] { return translate.Y(); });
+            }
+            else if (const auto rotate = v.try_as<X::Media::RotateTransform>())
+            {
+                properties.Read("angle", [&] { return rotate.Angle(); });
+                properties.Read("centerX", [&] { return rotate.CenterX(); });
+                properties.Read("centerY", [&] { return rotate.CenterY(); });
+            }
+            else if (const auto scale = v.try_as<X::Media::ScaleTransform>())
+            {
+                properties.Read("scaleX", [&] { return scale.ScaleX(); });
+                properties.Read("scaleY", [&] { return scale.ScaleY(); });
+                properties.Read("centerX", [&] { return scale.CenterX(); });
+                properties.Read("centerY", [&] { return scale.CenterY(); });
+            }
+            else if (const auto skew = v.try_as<X::Media::SkewTransform>())
+            {
+                properties.Read("angleX", [&] { return skew.AngleX(); });
+                properties.Read("angleY", [&] { return skew.AngleY(); });
+                properties.Read("centerX", [&] { return skew.CenterX(); });
+                properties.Read("centerY", [&] { return skew.CenterY(); });
+            }
+            else if (const auto matrix = v.try_as<X::Media::MatrixTransform>())
+                properties.Read("matrix", [&] { return matrix.Matrix(); });
+            else if (const auto group = v.try_as<X::Media::TransformGroup>())
+                properties.Read("matrix", [&] { return group.Value(); });
+            else Fail(E_NOTIMPL);
+            return properties.Finish();
+        }
         struct Identity
         {
             winrt::com_ptr<IUnknown> Ref;
@@ -232,6 +341,8 @@ namespace WinUIProfiler::Tap
                     properties.Read("opacity", [&] { return element.Opacity(); });
                     properties.Read("visibility", [&] { return winrt::hstring(element.Visibility() ==
                         X::Visibility::Visible ? L"Visible" : L"Collapsed"); });
+                    properties.Read("renderTransform", [&] { return element.RenderTransform(); });
+                    properties.Read("renderTransformOrigin", [&] { return element.RenderTransformOrigin(); });
                     const auto framework = element.try_as<X::FrameworkElement>();
                     if (framework)
                     {
@@ -241,6 +352,32 @@ namespace WinUIProfiler::Tap
                         properties.Read("actualHeight", [&] { return framework.ActualHeight(); });
                         properties.Read("width", [&] { return framework.Width(); });
                         properties.Read("height", [&] { return framework.Height(); });
+                        properties.Read("margin", [&] { return framework.Margin(); });
+                        properties.Read("horizontalAlignment", [&] { return framework.HorizontalAlignment(); });
+                        properties.Read("verticalAlignment", [&] { return framework.VerticalAlignment(); });
+                        properties.Read("layoutSlot", [&] { return X::Controls::Primitives::LayoutInformation::GetLayoutSlot(framework); });
+                        properties.Read("boundsInParent", [&]
+                        {
+                            const auto parent = X::Media::VisualTreeHelper::GetParent(element).try_as<X::UIElement>();
+                            return element.TransformToVisual(parent).TransformBounds({ 0, 0,
+                                static_cast<float>(framework.ActualWidth()), static_cast<float>(framework.ActualHeight()) });
+                        });
+                    }
+                    if (const auto control = element.try_as<X::Controls::Control>())
+                        properties.Read("background", [&] { return control.Background(); });
+                    else if (const auto panel = element.try_as<X::Controls::Panel>())
+                        properties.Read("background", [&] { return panel.Background(); });
+                    else if (const auto border = element.try_as<X::Controls::Border>())
+                        properties.Read("background", [&] { return border.Background(); });
+                    if (const auto text = element.try_as<X::Controls::TextBlock>())
+                    {
+                        properties.Read("text", [&]
+                        {
+                            auto value = text.Text();
+                            if (value.size() > MaxTextCharacters) Fail(HRESULT_FROM_WIN32(ERROR_MORE_DATA));
+                            return value;
+                        });
+                        properties.Read("foreground", [&] { return text.Foreground(); });
                     }
                     properties.Read("elementVisualAvailable", [&]
                     {
@@ -560,6 +697,9 @@ namespace WinUIProfiler::Tap
                 "\"Composition includes all descendants exposed by ContainerVisual.Children and public ancestors of handout visuals, not private compositor trees.\","
                 "\"No core/HWCompNode or lifetime-ID mapping is exposed; addresses are debugger metadata only.\","
                 "\"Property errors and unsupported values are recorded explicitly inside properties.\","
+                "\"XAML properties are allow-listed SDK getters, not every dependency or app-defined property; TextBlock text over 4096 UTF-16 code units is recorded as an error.\","
+                "\"XAML boundsInParent includes transforms but not clipping; parentless nodes use their visual root. TransformGroup captures its combined matrix.\","
+                "\"Brush capture includes type and opacity, plus ARGB color for SolidColorBrush; other brush content is not captured.\","
                 "\"Unresolvable diagnostic Add handles during discovery: " +
                 std::to_string(job->UnresolvedHandles) + ".\"]}";
             if (result.Json.size() > MaxBytes) Fail(HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW));

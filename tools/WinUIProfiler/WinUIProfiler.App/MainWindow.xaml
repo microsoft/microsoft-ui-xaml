@@ -6,6 +6,14 @@
     xmlns:views="using:WinUIProfiler.App.Views">
     <Grid x:Name="Root" Padding="24" RowSpacing="12"
           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <DataTemplate x:Key="SnapshotChoiceTemplate" x:DataType="vm:SnapshotHistoryEntry">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind CaptureId}" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+            </DataTemplate>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -77,6 +85,32 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                <Button x:Name="CompareSnapshotsButton" x:Uid="SnapshotDiffChoose" IsEnabled="False">
+                    <Button.Flyout>
+                        <Flyout x:Name="SnapshotDiffPicker" Opening="SnapshotDiffPicker_Opening">
+                            <Flyout.FlyoutPresenterStyle>
+                                <Style TargetType="FlyoutPresenter">
+                                    <Setter Property="MaxWidth" Value="640" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                                </Style>
+                            </Flyout.FlyoutPresenterStyle>
+                            <StackPanel Spacing="12">
+                                <TextBlock x:Uid="SnapshotDiffPickerNotice" TextWrapping="Wrap" />
+                                <ComboBox x:Name="SnapshotDiffBefore" x:Uid="SnapshotDiffBefore"
+                                          ItemsSource="{x:Bind Snapshots}" HorizontalAlignment="Stretch"
+                                          ItemTemplate="{StaticResource SnapshotChoiceTemplate}"
+                                          SelectionChanged="SnapshotDiffSelection_Changed" />
+                                <ComboBox x:Name="SnapshotDiffAfter" x:Uid="SnapshotDiffAfter"
+                                          ItemsSource="{x:Bind Snapshots}" HorizontalAlignment="Stretch"
+                                          ItemTemplate="{StaticResource SnapshotChoiceTemplate}"
+                                          SelectionChanged="SnapshotDiffSelection_Changed" />
+                                <Button x:Name="CompareSelectedSnapshots" x:Uid="SnapshotDiffCompare"
+                                        IsEnabled="False" Click="CompareSnapshots_Click" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
             </StackPanel>
         </Grid>
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

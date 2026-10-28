@@ -105,13 +105,45 @@ reuses its open viewer; different snapshots can be compared in separate windows.
 Tree labels include the XAML object's COM identity address or the Composition
 visual's IVisual interface address. Each tree has Expand all and Collapse all
 buttons; expanding includes descendants that have not yet been realized.
-Composition node details hide known default-valued properties. Non-default
-values, unknown properties and property errors remain visible; XAML details and
-the complete saved snapshot JSON are unchanged.
+XAML and Composition node details hide known default-valued properties, including
+the XAML identity render-transform matrix. Non-default values, unknown properties,
+computed XAML geometry and property errors remain visible. Theme-dependent brush
+colors are not assumed to be defaults. The complete saved snapshot JSON and
+comparisons retain all captured values, including changes back to defaults.
 History remains available across disconnect/reconnect for the current profiler
 session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
 No recording database, heap capture or MUX changes are required.
+
+XAML properties include margin, horizontal/vertical alignment, layout slot,
+transformed bounds relative to the visual parent, render transform and origin,
+and backgrounds on controls, panels and borders. Parentless bounds use the visual
+root; bounds do not account for clipping or prove on-screen visibility.
+TextBlocks also include text and foreground. Brushes include type/opacity and,
+for solid brushes, `#AARRGGBB` color; other brush content is not captured.
+Standard render transforms include their numeric properties; transform groups
+include their combined `[m11, m12, m21, m22, offsetX, offsetY]` matrix.
+Text over 4,096 UTF-16 code units is recorded as an explicit property error, not
+silently truncated. This is a fixed SDK-property list, not arbitrary app getters,
+all dependency properties, bindings or resources. New properties appear in both
+the viewer and comparison; existing saved snapshots are not modified.
+
+Select **Compare snapshots...** in history to choose **Before** and **After**
+captures from the same process instance (PID and creation time). The comparison
+highlights additions, removals, reparenting, sibling reordering, changed properties,
+and affected ancestor subtrees in both trees. Select a node for before/after values
+and parent locations; turn off **Show only changed subtrees** for unchanged context.
+Selecting either tree also reveals its directly mapped counterparts in the other
+tree. The match picker identifies mappings from Before, After, or both captures.
+Unchanged matches and their ancestors remain visible while the changes-only filter
+is enabled; link icons distinguish these correlations from actual changes.
+The merged view uses the After hierarchy, retaining removed nodes at their old
+parents. Matching is best-effort by UI thread, XamlRoot address, canonical COM
+identity address and type, never capture-local node IDs. Address reuse cannot be
+distinguished from a surviving object; cross-root moves appear as removals/additions.
+All captured properties are compared, including default values, with semantic JSON
+equality. Insertions/removals alone do not mark surviving siblings as reordered.
+Visibility-property changes are shown, not inferred rendered visibility.
 
 Root discovery uses public `IVisualTreeService` callbacks on the target's UI
 threads; traversal uses `VisualTreeHelper`, `ElementCompositionPreview` and
