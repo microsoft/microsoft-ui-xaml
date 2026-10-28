@@ -15,7 +15,9 @@ public sealed class LiveEtwSource : IDisposable
     // The TraceLogging events read here have no keyword, so ETW always delivers them. No manifest event uses
     // this bit, so asking only for it stops the runtime from writing manifest events we would skip anyway.
     private const ulong TraceLoggingOnlyKeyword = 0x100000;
-    // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
+    // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events. It also covers the
+    // kernel's other video memory events of every process, such as residency changes, which are far more frequent,
+    // so only the usage and budget events are enabled.
     private const ulong GpuMemoryKeyword = 0x4;
     private const string SessionPrefix = "WinUIProfiler-";
 
@@ -25,6 +27,7 @@ public sealed class LiveEtwSource : IDisposable
     private int eventsLost;
     private bool reading;
     private bool disposed;
+    private volatile string? gpuMemoryWarning;
 
     private LiveEtwSource(TraceEventSession session)
     {
@@ -33,6 +36,10 @@ public sealed class LiveEtwSource : IDisposable
     }
 
     public Exception? Failure { get; private set; }
+
+    // Why the kernel's GPU memory events could not be enabled or their current values requested; null when they
+    // were. The XAML events are read either way.
+    public string? GpuMemoryWarning => gpuMemoryWarning;
 
     // Events ETW dropped because its buffers were full. Still readable after Dispose.
     public int EventsLost
@@ -114,8 +121,7 @@ public sealed class LiveEtwSource : IDisposable
             // Open the consumer side before enabling, so events written before reading starts are kept.
             _ = session.Source;
             EnableProviders(session, options);
-            EnableGpuMemory(session);
-            return new(session);
+            return new(session) { gpuMemoryWarning = EnableGpuMemory(session) };
         }
         catch
         {
@@ -130,19 +136,24 @@ public sealed class LiveEtwSource : IDisposable
         session.EnableProvider(XamlProviders.XamlProfiler, TraceEventLevel.Verbose, ulong.MaxValue, options);
     }
 
-    // The System process writes some of the target's GPU memory events (such as those written when it exits), so
-    // the provider is enabled for every process and XamlEventSubscription keeps the target's by their ProcessId
-    // field. A kernel provider writes only to sessions in nonpaged memory, which TraceEventSession uses. Best
-    // effort: without these events the session still reads the XAML events.
-    private static void EnableGpuMemory(TraceEventSession session)
+    // Enables the GPU memory usage and budget events of every process: ETW applies process filters to user-mode
+    // providers only, and the System process writes some of the target's events (such as those written when it
+    // exits), so XamlEventSubscription keeps the target's by their ProcessId field. A kernel provider writes only to
+    // sessions in nonpaged memory, which TraceEventSession uses. Best effort: returns why it failed, and the session
+    // still reads the XAML events.
+    private static string? EnableGpuMemory(TraceEventSession session)
     {
         try
         {
-            session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, GpuMemoryKeyword);
+            session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, GpuMemoryKeyword, new()
+            {
+                EventIDsToEnable = [XamlEventSubscription.VidMmProcessBudgetChange, XamlEventSubscription.VidMmProcessUsageChange]
+            });
+            return null;
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
-            Trace.TraceWarning($"Could not enable the kernel's GPU memory events: {error.Message}");
+            return Warn($"Could not enable the kernel's GPU memory events: {error.Message}");
         }
     }
 
@@ -151,19 +162,31 @@ public sealed class LiveEtwSource : IDisposable
     // before the session started also gets its current values.
     private void CaptureGpuMemoryState()
     {
+        string? captureWarning = null;
         try
         {
             session.CaptureState(XamlProviders.DxgKrnl, GpuMemoryKeyword);
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
-            Trace.TraceWarning($"Could not request the kernel's GPU memory state: {error.Message}");
+            captureWarning = Warn($"Could not request the kernel's GPU memory state: {error.Message}");
         }
+
+        // CaptureState enables the provider again without the event ID filter, so enable it again with the filter. Of
+        // the state written in between, events other than the usage and budget events are skipped as they are read.
+        gpuMemoryWarning = EnableGpuMemory(session) ?? captureWarning;
+    }
+
+    private static string Warn(string message)
+    {
+        Trace.TraceWarning(message);
+        return message;
     }
 
     // A session outlives a profiler that crashed or was killed, and keeps the providers enabled in the processes
-    // it filters on (for a launch, every new process with that executable name). Sessions are named
-    // WinUIProfiler-<profiler process ID>-<unique ID>; stop those whose profiler process no longer exists.
+    // it filters on (for a launch, every new process with that executable name), and the kernel's GPU memory events
+    // for every process. Sessions are named WinUIProfiler-<profiler process ID>-<unique ID>; stop those whose
+    // profiler process no longer exists.
     private static void StopAbandonedSessions()
     {
         foreach (var name in TraceEventSession.GetActiveSessionNames())

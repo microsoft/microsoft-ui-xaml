@@ -171,11 +171,17 @@ The app reads ETW with one real-time session per connection
 - **Attach:** the session filters on the process ID from the start and reads
   from the time of connection.
 
-The GPU memory events are enabled without a process filter, because the System
-process writes some of the target's; the events of other processes are skipped
-as they are read. When reading starts, the session requests capture state, so
-an attached target also gets its current values. If the GPU memory events
-cannot be enabled, the session still reads the XAML events.
+The GPU memory events are enabled for every process: a process filter does not
+narrow a kernel provider's events, and the System process writes some of the
+target's. Keyword `0x4` also covers the kernel's other video memory events of
+every process, such as residency changes, which are far more frequent, so the
+session enables only events 366 and 367 (an event ID filter); the events of
+other processes are skipped as they are read. When reading starts, the session
+requests capture state, so an attached target also gets its current values.
+Capture state enables the provider again without the filter, so the session
+applies the filter again right after. If the GPU memory events cannot be
+enabled, the session still reads the XAML events, and the tooltip of the
+panel's ETW line says why.
 
 The panel says whether the counts start at process start or at connection. A
 launch starts at connection when activation returns a packaged app that was
@@ -194,7 +200,8 @@ when the connection ends; the last counts stay visible. If the session cannot
 start, the panel shows why and the metrics keep working.
 
 An ETW session outlives a profiler that crashes or is killed, and keeps the
-providers enabled in the processes it filters on. Sessions are named
+providers enabled in the processes it filters on, and the kernel's GPU memory
+events for every process. Sessions are named
 `WinUIProfiler-<profiler process ID>-<unique ID>`; starting a session stops any
 whose profiler process no longer exists. To stop one by hand, find it with
 `logman query -ets` and run `logman stop <name> -ets`.
@@ -237,10 +244,11 @@ then `Seq`.
 
 To record a trace, use `logman`. Start it before the app: the kernel writes the
 app's starting GPU memory values when the app opens a GPU adapter, and after
-that only changes. Then inspect the trace with `WinUIProfiler.Cli`, which
-reads the file through `Ingestion\OfflineEtlSource.cs`. The CLI reads session
-files the same way, and `record` writes a session file from a trace. Run from
-this directory:
+that only changes. `logman` cannot filter by event ID, so the trace also holds
+the kernel's other keyword `0x4` events, of every process; the CLI skips them.
+Then inspect the trace with `WinUIProfiler.Cli`, which reads the file through
+`Ingestion\OfflineEtlSource.cs`. The CLI reads session files the same way, and
+`record` writes a session file from a trace. Run from this directory:
 
 ```powershell
 '{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0x100000 5',

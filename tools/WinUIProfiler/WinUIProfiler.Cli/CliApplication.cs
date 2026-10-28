@@ -296,10 +296,12 @@ internal static class CliApplication
     {
         XamlProvider.Xaml => "XAML",
         XamlProvider.XamlProfiler => "XAML-Prof",
-        _ => "DxgKrnl"
+        XamlProvider.DxgKrnl => "DxgKrnl",
+        _ => provider.ToString()
     };
 
-    // Element IDs, pointers and handles arrive as Int64; print them in hex like a debugger would.
+    // XAML element IDs, pointers and handles arrive as Int64; print them in hex like a debugger would. Other numbers,
+    // such as the kernel's pDxgAdapter, print in decimal.
     private static string Format(string name, object? value) => value switch
     {
         null => "null",

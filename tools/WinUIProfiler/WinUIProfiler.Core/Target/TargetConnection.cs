@@ -27,9 +27,10 @@ long? ExpectedCreationTimeFileTime = null,
     string? SessionDirectory = null);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
-// included; otherwise the counts start when the profiler connected.
+// included; otherwise the counts start when the profiler connected. GpuMemoryWarning says why the kernel's GPU memory
+// events could not be enabled or their current values requested; null when they were.
 public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, int LostEvents,
-    long DroppedEvents);
+    long DroppedEvents, string? GpuMemoryWarning);
 
 [SupportedOSPlatform("windows")]
 public sealed class TargetConnection : IAsyncDisposable
@@ -77,7 +78,7 @@ public sealed class TargetConnection : IAsyncDisposable
     public Task Completion => lifetime ?? Task.CompletedTask;
     public EtwStatus? Etw => eventCounter is { } counter && etw is { } source && pipeline is { } events
         ? new(etwFromProcessStart, counter.XamlEvents, counter.ProfilerEvents, counter.GpuMemoryEvents, source.EventsLost,
-            events.DroppedEvents) : null;
+            events.DroppedEvents, source.GpuMemoryWarning) : null;
     // Set when the ETW session could not start or stopped with an error; process metrics keep working.
     public string? EtwError
     {
