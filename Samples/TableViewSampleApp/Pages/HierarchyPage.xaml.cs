@@ -447,7 +447,7 @@ public sealed partial class HierarchyPage : SamplePageBase
     {
         var columns = PeopleTable.Columns;
         var from = columns.IndexOf(PhotoColumn);
-        if ((from == 0) == photoFirst)
+        if (from < 0 || (from == 0) == photoFirst)
         {
             return;
         }
