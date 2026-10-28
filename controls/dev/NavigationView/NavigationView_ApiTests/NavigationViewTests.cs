@@ -3834,6 +3834,209 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an AnimatedIcon carrying a pointer state from a hovered item takes the pointer state of the selected, non-hovered item it moves to, while an app-defined state is preserved (GitHub #11080).")]
+        public void VerifyMovedAnimatedIconTakesPointerStateOfNewHost()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                itemA = new NavigationViewItem() { Content = "A", Icon = icon };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemA);
+            RunOnUIThread.Execute(() =>
+            {
+                var presenterA = (Control)VisualTreeUtils.FindVisualChildByName(itemA, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterA, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(icon), "Hovered selected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // B is selected and not hovered. A is still hovered, so the released icon keeps A's template-driven
+            // pointer state, and AnimatedIcon doesn't copy B's state on load because it already has one.
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                var presenterA = (Control)VisualTreeUtils.FindVisualChildByName(itemA, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterA, "PointerOver", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Precondition: released icon retains hovered A's pointer state");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Icon moved from hovered A to selected, non-hovered B");
+
+                var presenterB = (Control)VisualTreeUtils.FindVisualChildByName(itemB, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterB, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(icon), "Hovered selected item B");
+                var presenterB = (Control)VisualTreeUtils.FindVisualChildByName(itemB, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterB, "Selected", true));
+                itemB.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // An app-defined state is not a template-driven pointer state and is left alone when the icon loads.
+            RunOnUIThread.Execute(() =>
+            {
+                AnimatedIcon.SetState(icon, "Custom");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Custom", AnimatedIcon.GetState(icon), "App-defined state survives moving into selected item B");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem doesn't reset a hosted AnimatedIcon's state on detach once the app has changed it, even if the app restored the value the item wrote (GitHub #11080).")]
+        public void VerifyAppRestoredAnimatedIconStateIsNotResetOnDetach()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item wrote Selected");
+
+                AnimatedIcon.SetState(icon, "Custom");
+                Verify.AreEqual("Custom", AnimatedIcon.GetState(icon), "App-defined state on a hosted icon");
+                AnimatedIcon.SetState(icon, "Selected");
+
+                item.Icon = null;
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "App-restored state survives clearing the Icon");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the reset of a replaced AnimatedIcon causes the app to replace NavigationViewItem.Icon again, the latest icon is the one the item observes (GitHub #11080).")]
+        public void VerifyAnimatedIconReplacedDuringResetIsObserved()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon iconA = null;
+            AnimatedIcon iconB = null;
+            AnimatedIcon iconC = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                iconA = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                iconB = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                iconC = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Item", Icon = iconA };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(iconA), "Selected item with icon A");
+
+                bool replaced = false;
+                iconA.RegisterPropertyChangedCallback(AnimatedIcon.StateProperty, (sender, dp) =>
+                {
+                    if (!replaced && AnimatedIcon.GetState(iconA) == "Normal")
+                    {
+                        replaced = true;
+                        item.Icon = iconC;
+                    }
+                });
+
+                item.Icon = iconB;
+                Verify.IsTrue(replaced, "Precondition: resetting icon A replaced the Icon again");
+                Verify.AreEqual(iconC, item.Icon, "Latest replacement wins");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(iconC), "Latest icon C on the selected item");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(iconC), "Latest icon C gets the deferred hover state mapped");
+                iconC.Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(iconC), "Latest icon C follows its Source change");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         // AnimatedIconTestHooks records the transition AnimatedIcon last resolved (e.g. "NormalToSelected"); it is
         // updated on the layout pass after the State change, so poll for it.
         static bool WaitForAnimatedIconSegment(AnimatedIcon icon, Func<string, bool> predicate, int timeoutMs = 5000)
