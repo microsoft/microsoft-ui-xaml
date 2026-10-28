@@ -495,8 +495,12 @@ _Check_return_ HRESULT BaseContentRenderer::MaskCombinedRenderHelper(
 
             alphaMaskOffset.x = static_cast<float>(XcpFloor(fillBounds.left * scaleX));
             alphaMaskOffset.y = static_cast<float>(XcpFloor(fillBounds.top * scaleY));
-            alphaMaskWidth = XcpCeiling( (XcpCeiling(fillBounds.right) - XcpFloor(fillBounds.left)) * scaleX );
-            alphaMaskHeight = XcpCeiling( (XcpCeiling(fillBounds.bottom) - XcpFloor(fillBounds.top)) * scaleY );
+            // Round the scaled edges before subtracting.
+            // At 175%, [9, 18] becomes [15.75, 31.5].
+            // - Subtracting before rounding gives size 9px, which at 175% is 15.75px, which gets ceiling to 16px.
+            // - But the boundaries actually get floored down to 15px and ceilinged up to 32px, which is a size of 17px. Producing a 16px surface will clip an antialiased edge off.
+            alphaMaskWidth = static_cast<uint32_t>(XcpCeiling(fillBounds.right * scaleX) - alphaMaskOffset.x);
+            alphaMaskHeight = static_cast<uint32_t>(XcpCeiling(fillBounds.bottom * scaleY) - alphaMaskOffset.y);
         }
         else
         {
