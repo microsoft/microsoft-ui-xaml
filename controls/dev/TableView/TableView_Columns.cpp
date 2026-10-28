@@ -132,6 +132,7 @@ void TableView::DetachAllColumnOwners()
         }
     }
     m_trackedColumns.clear();
+    CancelPendingSortRestore();
 
     if (purgedSortState)
     {

@@ -446,6 +446,7 @@ bool TableView::IsSortLitOnlyByApp() const
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
+    CancelPendingSortRestore();
     FlushDeferredEditReshapes();
     if (m_sortedColumns.empty())
     {
@@ -508,7 +509,7 @@ void TableView::ResetSortStateForNewItemsSource()
     // Silent, unlike ClearSort: there is no reshape to perform because the source is being rebuilt
     // from scratch, and the data set is already gone by the time a handler could react, so this is
     // not a cancellable Sorting nor a Sorted the app could act on.
-    m_sortedColumnPendingRemoval = nullptr;
+    CancelPendingSortRestore();
     if (m_sortedColumns.empty() && m_tableViewSourceSort.AxisToken.empty())
     {
         return;
@@ -532,6 +533,7 @@ void TableView::ResetSortStateForNewItemsSource()
 // v1 is single-column sort, so applying a direction always clears every other column first.
 void TableView::ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
+    CancelPendingSortRestore();
     for (auto const& weakColumn : m_sortedColumns)
     {
         if (auto sortedColumn = weakColumn.get(); sortedColumn && sortedColumn != column)
@@ -1087,6 +1089,7 @@ void TableView::ReconcileSortStateWithSource()
         // The app declared a sort while ours was installed. Last writer wins, so ours goes: left
         // alone it would keep whichever axis was declared FIRST as the primary sort, which is the
         // hidden-precedence case this reconciliation exists to prevent.
+        CancelPendingSortRestore();
         auto const reconcileGuard = BeginControlInitiatedSortScope();
         tableViewSourceImpl->ClearSort(ownToken);
     }
@@ -1139,6 +1142,7 @@ void TableView::ReconcileSortStateWithSource()
     // Silent, like ResetSortStateForNewItemsSource: the app already owns the ordering by the time
     // we get here, so there is nothing to cancel and no reshape of our own to perform. Sorted is
     // still raised so an app tracking sort state sees the chevrons move.
+    CancelPendingSortRestore();
     for (auto const& weakColumn : m_sortedColumns)
     {
         if (auto column = weakColumn.get(); column && column != matchedColumn)
@@ -1227,8 +1231,9 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
     }
     m_sortedColumnPendingRemoval = nullptr;
 
-    // A sort applied since the removal replaced this one.
-    if (!m_sortedColumns.empty())
+    // A sort applied since the removal replaced this one. A column that opted out while detached
+    // never told the table; one lit only by the app's source sort keeps it, as when attached.
+    if (!m_sortedColumns.empty() || (!CanSortColumn(column) && !IsSortLitOnlyByApp()))
     {
         return;
     }

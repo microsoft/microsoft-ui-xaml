@@ -1235,6 +1235,8 @@ private:
     // IObservableVector has no Move, so RemoveAt + InsertAt of the same instance before the queued
     // clear runs is a move: the column gets its sort back and the clear finds nothing to do.
     void RestoreSortOfMovedColumn(const winrt::TableViewColumn& column);
+    // Any other change to the sort or to the columns while the column is out makes the restore stale.
+    void CancelPendingSortRestore() { m_sortedColumnPendingRemoval = nullptr; }
     winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
     winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
 
