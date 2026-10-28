@@ -32,6 +32,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingPipeline.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel1a.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex1a.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel4.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel5.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingRevoke.h" />
@@ -42,6 +44,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingPipeline.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel1a.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex1a.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel4.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel5.cpp" />
   </ItemGroup>

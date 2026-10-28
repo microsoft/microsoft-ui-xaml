@@ -110,6 +110,16 @@ runtimeclass TableViewSource4 : [default] ITableViewShapingSource
     static TableViewSource4 From(Object items, TableViewIdentitySelector keySelector);
 }
 
+// Benchmark variant: the v1 engine with the ParentBy perf-parity changes (commit 8d335f4b3). A row key throws E_NOTIMPL.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource1a : [default] ITableViewShapingSource
+{
+    static TableViewSource1a From(Object items);
+    [method_name("FromWithKey")]
+    static TableViewSource1a From(Object items, TableViewIdentitySelector keySelector);
+}
+
 // Benchmark variant: the latest ChildrenWith engine (eager index, coalescing, incremental filter and adapter). Hierarchy is ChildrenWith only; ParentBy and a row key throw
 // E_NOTIMPL.
 [MUX_PREVIEW]

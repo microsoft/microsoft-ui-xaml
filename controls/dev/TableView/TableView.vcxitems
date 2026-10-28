@@ -47,6 +47,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource1a.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider1a.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource4.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider4.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource5.h" />
@@ -76,6 +78,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource2.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource3.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource1a.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource4.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource5.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource6.properties.cpp" />
@@ -108,6 +111,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource2.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource3.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource1a.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider1a.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource4.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider4.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource5.cpp" />

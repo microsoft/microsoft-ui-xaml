@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter1a.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter4.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyContract4.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchyStructureCache4.h" />
@@ -26,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter1a.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter4.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchyStructureCache4.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter5.cpp" />
