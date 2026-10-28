@@ -1408,8 +1408,13 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 
     if (m_OrientationChangedPendingAnimation)
     {
-        m_OrientationChangedPendingAnimation = false;
-        AnimateSelectionChangedToSelectedItem();
+        // Layout can run before the new pane has realized the selected item's container, e.g. while the NavigationView is in a
+        // collapsed subtree. Keep the restore pending then; MeasureOverride hooks this handler again on the next measure.
+        if (FindLowestLevelContainerToDisplaySelectionIndicator() || NavigationViewItemOrSettingsContentFromData(SelectedItem()))
+        {
+            m_OrientationChangedPendingAnimation = false;
+            AnimateSelectionChangedToSelectedItem();
+        }
     }
 }
 
