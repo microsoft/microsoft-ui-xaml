@@ -337,7 +337,7 @@ instead, in this tab and the Elements tab, until the next connection.
   than 16.7 ms) and its events per bucket. `*` marks a thread's latest frame.
   Ticks that draw nothing keep the frame number, so after an idle period a
   frame's first tick can be long before it was drawn; the frame's title shows
-  both. Each column header's tooltip says what the column is.
+  both.
 - Selecting a frame shows its events, 100 per page, all or one bucket. The
   filter keeps events whose name or a string field contains the text; a number
   (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the

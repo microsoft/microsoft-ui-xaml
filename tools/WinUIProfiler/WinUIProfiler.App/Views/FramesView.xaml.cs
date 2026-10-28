@@ -203,8 +203,8 @@ public sealed partial class FramesView : UserControl
         }
     }
 
-    // Launch: when the first drawn frames of the first UI thread ended, from process start when the recording saw it. A
-    // trimmed file no longer has them.
+    // Shows when the first drawn frames of the first UI thread ended: from process start if the recording saw it,
+    // otherwise from the start of the recording. Not shown for a trimmed file, which no longer has them.
     private void ShowSummary(SessionFileInfo info)
     {
         FileSummary.Text = Format(info.CompleteFromSeq is null ? "FramesFileFormat" : "FramesFileTrimmedFormat",

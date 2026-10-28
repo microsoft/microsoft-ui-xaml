@@ -88,7 +88,8 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
-            <Grid Grid.Column="1" RowSpacing="8">
+            <Grid Grid.Column="1" RowSpacing="8" Padding="16,0,0,0" BorderThickness="1,0,0,0"
+                  BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />

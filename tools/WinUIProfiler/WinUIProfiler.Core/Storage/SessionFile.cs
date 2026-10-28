@@ -203,17 +203,17 @@ public static class SessionFile
 
     // The frames with stored events, in the order they were first seen: all, or the one with an ID.
     public static IReadOnlyList<SessionFrame> ReadFrames(string path, long? frameId = null) =>
-        ReadFrames(path, frameId, null).Frames;
+        QueryFrames(path, frameId, null).Frames;
 
     // The frames that changed after a read that saw events up to a Seq (null for all frames), in the order they were
     // first seen, and the Seq to pass next time. Trimming is not a change; it changes CompleteFromSeq instead.
     public static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadChangedFrames(string path, long? afterSeq) =>
-        ReadFrames(path, null, afterSeq);
+        QueryFrames(path, null, afterSeq);
 
     // A frame's ticks and events only change with an event attributed to it, and whether it drew changes when a later
     // frame appears on its thread. So the frames that changed after a Seq are, on each thread with events after it, the
     // frames from the one below the lowest of those on.
-    private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadFrames(string path, long? frameId, long? afterSeq)
+    private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) QueryFrames(string path, long? frameId, long? afterSeq)
     {
         using var connection = Open(path);
         using var transaction = connection.BeginTransaction(deferred: true);
