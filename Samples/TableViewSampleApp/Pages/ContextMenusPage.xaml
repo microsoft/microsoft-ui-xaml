@@ -21,9 +21,8 @@
             </MenuFlyoutItem>
         </MenuFlyout>
 
-        <!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
-             blank space past the last column. An implicit TableViewRow style sets it on every row.
-             OnRowMenuOpening keeps untagged items plus those tagged for the row's kind. -->
+        <!-- The row menu covers cells without their own CellContextFlyout and the space past the last column;
+             an implicit TableViewRow style sets it on every row. -->
         <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
             <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
                 <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
@@ -59,7 +58,7 @@
         Description="TableView picks one context menu per request. A column's CellContextFlyout wins over the row's own ContextFlyout, set here through an implicit TableViewRow style, and a column's HeaderContextFlyout covers its header. Group headers get their menu from an implicit TableViewGroupHeader style. When none applies, the request falls through to the table's own ContextFlyout. Menu items inherit the requested row item as their DataContext. Opening a menu moves keyboard focus to the row but never changes the selection."
         Snippet="ContextMenus"
         StretchExample="True"
-        TryIt="Right-click a Name cell for its own menu, then any other cell for the row menu. Right-click a header and hide that column. Press Shift+F10 or the Menu key on a focused row or header. Choose Hierarchy in Shaping: managers (rows with reports) also show Email team. Deactivate or Reactivate shows depending on the person's status. Group by Department and right-click a group header for its own menu."
+        TryIt="Right-click a Name cell for its own menu, then any other cell for the row menu. Right-click a header and hide that column. Press Shift+F10 or the Menu key on a focused row or header. Choose Hierarchy in Shaping: managers (rows with reports) also show Email team. Choose Deactivate on an active person: the Status chip turns Inactive at once, and the row menu offers Reactivate next time. Group by Department and right-click a group header for its own menu."
         WhatToLookFor="Menu items inherit the row item as DataContext: the Name menu shows that person's e-mail, and one shared row menu copies, moves or removes whichever person you clicked. The row menu's Opening handler reads MenuFlyout.Target (the row, also for a cell request) to pick items for its kind; Deactivate/Reactivate bind Visibility to the Person. Each header has its own menu, so it knows which column to hide. Right-clicking another row moves focus without changing the selection. Turn a menu off to watch the request fall through to the next one.">
 
         <controls:SamplePresenter.Example>
@@ -93,16 +92,19 @@
                     </MenuFlyout>
                 </tv:TableView.ContextFlyout>
                 <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
                                              CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
                                          Binding="{Binding FullName}"
                                          CellContextFlyout="{StaticResource NameCellMenu}"/>
-                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                              CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}"
+                <!-- Shows the IsActive value that the row menu's Deactivate and Reactivate items change. -->
+                <tv:TableViewTemplateColumn x:Name="StatusColumn" Header="Status" Width="120"
+                                             CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
+                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140"
                                          Binding="{Binding Office}"/>
-                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
                                          Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
             </tv:TableView>
             <!-- /snippet -->
