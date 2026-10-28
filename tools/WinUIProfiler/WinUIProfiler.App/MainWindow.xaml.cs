@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -28,6 +29,7 @@ public sealed partial class MainWindow : Window
     private volatile bool closing;
     private bool closeAllowed;
     private bool refreshing;
+    private bool? settingsFoldedFor;
     private bool initialSnapshotPending;
     private CancellationTokenSource? snapshotOperation;
     private SavedTreeSnapshot? snapshot;
@@ -38,10 +40,26 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         Title = Text("AppTitle");
         AppWindow.Resize(new SizeInt32(1280, 1050));
+        Root.Loaded += SizeToDisplay;
         SetNames();
         model.PropertyChanged += Model_PropertyChanged;
         AppWindow.Closing += AppWindow_Closing;
+        FramesPanel.Owner = AppWindow.Id;
+        UpdateTargetSummary();
         Refresh();
+    }
+
+    // Resize takes physical pixels, so at the display's scaling the window is 1280 x 1050, within the work area.
+    private void SizeToDisplay(object sender, RoutedEventArgs args)
+    {
+        Root.Loaded -= SizeToDisplay;
+        var scale = Root.XamlRoot.RasterizationScale;
+        var area = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest).WorkArea;
+        var width = Math.Min((int)(1280 * scale), area.Width);
+        var height = Math.Min((int)(1050 * scale), area.Height);
+        var position = AppWindow.Position;
+        AppWindow.MoveAndResize(new RectInt32(Math.Clamp(position.X, area.X, area.X + area.Width - width),
+            Math.Clamp(position.Y, area.Y, area.Y + area.Height - height), width, height));
     }
 
     private async void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
@@ -150,6 +168,13 @@ public sealed partial class MainWindow : Window
         try
         {
             var idle = model.CanConnect && !initialSnapshotPending && snapshotOperation is null;
+            if (settingsFoldedFor != model.CanConnect)
+            {
+                // The settings can't change while connecting or connected, so they fold away to give the tabs room.
+                TargetSettings.IsExpanded = model.CanConnect;
+                settingsFoldedFor = model.CanConnect;
+            }
+
             foreach (var control in new Control[]
             {
                 Mode,
@@ -232,6 +257,8 @@ JsonSerializer.Serialize(new
                         recording.LimitBytes / 1024 / 1024, recording.CompleteFromSeconds ?? 0),
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
             }
+
+            FramesPanel.ShowRecording(recording?.Path, model.State == "Connected");
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
@@ -266,6 +293,18 @@ JsonSerializer.Serialize(new
         {
             selectedTarget = null;
         }
+
+        UpdateTargetSummary();
+    }
+
+    private void Arguments_TextChanged(object sender, TextChangedEventArgs args) => UpdateTargetSummary();
+
+    // The settings' header names the target, so it is still shown when they are folded away.
+    private void UpdateTargetSummary()
+    {
+        var target = TargetText.Text.Trim();
+        TargetSummary.Text = target.Length == 0 ? Text("TargetSettingsHeader")
+            : Format("TargetSummaryFormat", Path.GetFileName(target), ArgumentsText.Text.Trim());
     }
 
     private async void Connect_Click(object sender, RoutedEventArgs args)

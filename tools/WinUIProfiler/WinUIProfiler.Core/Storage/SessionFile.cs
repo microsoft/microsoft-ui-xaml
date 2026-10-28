@@ -8,9 +8,12 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Storage;
 
+// ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording; negative
+// when it was created earlier (attach), null when unknown (a recorded trace).
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
-    long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Frames);
+    long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Frames,
+    double? ProcessStartMilliseconds);
 
 // A UI element and when its stored events were first and last, in milliseconds from the start of the recording.
 public sealed record SessionObject(long ObjectId, long Address, string? Type, string? Name, long Events,
@@ -83,48 +86,103 @@ public static class SessionFile
             cancellationToken);
     }
 
-    // The frames with stored events, by thread and frame number; all, or the one with an ID.
-    public static IReadOnlyList<SessionFrame> ReadFrames(string path, long? frameId = null)
+    // The frames with stored events, in the order they were first seen: all, or the one with an ID.
+    public static IReadOnlyList<SessionFrame> ReadFrames(string path, long? frameId = null) =>
+        ReadFrames(path, frameId, null).Frames;
+
+    // The frames that changed after a read that saw events up to a Seq (null for all frames), in the order they were
+    // first seen, and the Seq to pass next time. Trimming is not a change; it changes CompleteFromSeq instead.
+    public static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadChangedFrames(string path, long? afterSeq) =>
+        ReadFrames(path, null, afterSeq);
+
+    // A frame's ticks and events only change with an event attributed to it, and whether it drew changes when a later
+    // frame appears on its thread. So the frames that changed after a Seq are, on each thread with events after it, the
+    // frames from the one below the lowest of those on.
+    private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadFrames(string path, long? frameId, long? afterSeq)
     {
         using var connection = Open(path);
         using var transaction = connection.BeginTransaction(deferred: true);
         var (_, frequency, startQpc) = ReadSession(connection, transaction);
         var start = startQpc.GetValueOrDefault();
         using var command = Command(connection, transaction, """
+            WITH Changed AS (
+                    SELECT f.ThreadId, MIN(f.FrameNumber) AS FrameNumber
+                    FROM FrameEvents r JOIN Frames f ON f.FrameId = r.FrameId
+                    WHERE r.Seq > $after
+                    GROUP BY f.ThreadId),
+                Since AS (
+                    SELECT c.ThreadId, COALESCE((SELECT MAX(p.FrameNumber) FROM Frames p
+                        WHERE p.ThreadId = c.ThreadId AND p.FrameNumber < c.FrameNumber), c.FrameNumber) AS FrameNumber
+                    FROM Changed c),
+                Latest AS (SELECT ThreadId, MAX(FrameNumber) AS FrameNumber FROM Frames GROUP BY ThreadId)
             SELECT f.FrameId, f.ThreadId, f.FrameNumber, f.Ticks, f.StartQpc, f.LastTickStartQpc, f.EndQpc, f.TickTimeQpc,
-                f.FrameNumber < t.Latest, COUNT(*), SUM(r.Bucket = 'Xaml'), SUM(r.Bucket = 'Composition'), SUM(r.Bucket = 'Other')
+                f.FrameNumber < t.FrameNumber, COUNT(*), SUM(r.Bucket = 'Xaml'), SUM(r.Bucket = 'Composition'), SUM(r.Bucket = 'Other')
             FROM Frames f
                 JOIN FrameEvents r ON r.FrameId = f.FrameId
-                JOIN (SELECT ThreadId, MAX(FrameNumber) AS Latest FROM Frames GROUP BY ThreadId) t ON t.ThreadId = f.ThreadId
-            WHERE $id IS NULL OR f.FrameId = $id
+                JOIN Latest t ON t.ThreadId = f.ThreadId
+            WHERE ($id IS NULL OR f.FrameId = $id) AND ($after IS NULL OR f.FrameId IN (
+                SELECT p.FrameId FROM Frames p JOIN Since s ON s.ThreadId = p.ThreadId AND p.FrameNumber >= s.FrameNumber))
             GROUP BY f.FrameId
-            ORDER BY f.ThreadId, f.FrameNumber
-            """, ("$id", frameId));
-        using var reader = command.ExecuteReader();
-        double? Milliseconds(int ordinal) => reader.IsDBNull(ordinal) ? null : (reader.GetInt64(ordinal) - start) * 1000.0 / frequency;
+            ORDER BY f.FrameId
+            """, ("$id", frameId), ("$after", afterSeq));
         var frames = new List<SessionFrame>();
-        while (reader.Read())
+        using (var reader = command.ExecuteReader())
         {
-            frames.Add(new(reader.GetInt64(0), reader.GetInt32(1), reader.GetInt64(2), reader.GetInt32(3), reader.GetBoolean(8),
-                Milliseconds(4), Milliseconds(5), Milliseconds(6), reader.GetInt64(7) * 1000.0 / frequency, reader.GetInt64(9),
-                reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(12)));
+            double? Milliseconds(int ordinal) => reader.IsDBNull(ordinal) ? null : (reader.GetInt64(ordinal) - start) * 1000.0 / frequency;
+            while (reader.Read())
+            {
+                frames.Add(new(reader.GetInt64(0), reader.GetInt32(1), reader.GetInt64(2), reader.GetInt32(3), reader.GetBoolean(8),
+                    Milliseconds(4), Milliseconds(5), Milliseconds(6), reader.GetInt64(7) * 1000.0 / frequency, reader.GetInt64(9),
+                    reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(12)));
+            }
         }
 
-        return frames;
+        using var last = Command(connection, transaction, "SELECT MAX(Seq) FROM FrameEvents");
+        return (frames, last.ExecuteScalar() is long seq ? seq : null);
     }
 
-    // Delivers a frame's events in Seq order, with each event's bucket; optionally only one bucket's.
-    public static long ReadFrameEvents(string path, long frameId, string? bucket, Action<ProfilerEvent, string> sink,
-        CancellationToken cancellationToken = default)
+    // Delivers a frame's events in Seq order with each event's bucket: optionally one bucket's, those matching a filter
+    // (see FrameEventsQuery), and a page of them (count -1 for all).
+    public static long ReadFrameEvents(string path, long frameId, string? bucket, string? filter, int offset, int count,
+        Action<ProfilerEvent, string> sink, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        return ReadEvents(path, """
-            SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, r.Bucket
-            FROM FrameEvents r JOIN Events e ON e.Seq = r.Seq
-            WHERE r.FrameId = $id AND ($bucket IS NULL OR r.Bucket = $bucket)
-            ORDER BY r.Seq
-            """, [("$id", frameId), ("$bucket", bucket)], (profilerEvent, rowBucket) => sink(profilerEvent, (string)rowBucket!),
+        var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
+        return ReadEvents(path, $"SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, r.Bucket {where} ORDER BY r.Seq LIMIT $count OFFSET $offset",
+            [.. parameters, ("$count", count), ("$offset", offset)], (profilerEvent, rowBucket) => sink(profilerEvent, (string)rowBucket!),
             cancellationToken);
+    }
+
+    // How many of a frame's events ReadFrameEvents would deliver without a page.
+    public static long CountFrameEvents(string path, long frameId, string? bucket, string? filter)
+    {
+        using var connection = Open(path);
+        var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
+        using var command = Command(connection, null, $"SELECT COUNT(*) {where}", parameters);
+        return (long)command.ExecuteScalar()!;
+    }
+
+    // A filter keeps the events whose name contains its text, case-insensitively. Text also matches string field values
+    // that contain it; a number (decimal, or hex with 0x) matches numeric fields with exactly that value instead.
+    private static (string Where, (string Name, object? Value)[] Parameters) FrameEventsQuery(long frameId, string? bucket,
+        string? filter)
+    {
+        filter = string.IsNullOrWhiteSpace(filter) ? null : filter.Trim();
+        long? number = filter is null ? null
+            : filter.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? ulong.TryParse(filter.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex)
+                    ? unchecked((long)hex) : null
+                : long.TryParse(filter, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
+        return ("""
+            FROM FrameEvents r JOIN Events e ON e.Seq = r.Seq JOIN EventTypes t ON t.TypeId = e.TypeId
+            WHERE r.FrameId = $id AND ($bucket IS NULL OR r.Bucket = $bucket)
+                AND ($like IS NULL OR t.Name LIKE $like ESCAPE '\' OR EXISTS (
+                    SELECT 1 FROM json_each(e.Payload) v
+                    WHERE ($number IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
+                        OR (v.type IN ('integer', 'real') AND v.value = $number)))
+            """, [("$id", frameId), ("$bucket", bucket),
+                ("$like", filter is null ? null : $"%{filter.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_")}%"),
+                ("$number", number)]);
     }
 
     // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and one more value passed along with each event.
@@ -175,7 +233,7 @@ public static class SessionFile
         return delivered;
     }
 
-    private static SqliteCommand Command(SqliteConnection connection, SqliteTransaction transaction, string text,
+    private static SqliteCommand Command(SqliteConnection connection, SqliteTransaction? transaction, string text,
         params (string Name, object? Value)[] parameters)
     {
         var command = connection.CreateCommand();
@@ -227,10 +285,14 @@ public static class SessionFile
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = """
+        // Files written before StartedQpc was added are otherwise the same; without it the process start is unknown.
+        var startedQpc = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('SessionInfo') WHERE name = 'StartedQpc'",
+            transaction) > 0 ? "StartedQpc" : "NULL";
+        command.CommandText = $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
-                (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects), (SELECT COUNT(*) FROM Frames)
+                (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects), (SELECT COUNT(*) FROM Frames),
+                ProcessCreatedUtc, {startedQpc}
             FROM SessionInfo
             """;
         using var reader = command.ExecuteReader();
@@ -239,13 +301,19 @@ public static class SessionFile
             throw new InvalidDataException("The session file has no session record.");
         }
 
+        var frequency = reader.IsDBNull(12) ? Stopwatch.Frequency : reader.GetInt64(12);
+        long? startQpc = reader.IsDBNull(13) ? null : reader.GetInt64(13);
+        var startedUtc = ParseUtc(reader.GetString(5));
+        // StartedQpc was read with StartedUtc, so the process creation time maps onto the events' QPC clock.
+        double? processStart = startQpc is { } start && !reader.IsDBNull(17) && !reader.IsDBNull(18)
+            ? (reader.GetInt64(18) - start) * 1000.0 / frequency - (startedUtc - ParseUtc(reader.GetString(17))).TotalMilliseconds
+            : null;
         var info = new SessionFileInfo(reader.GetInt32(0), NullableString(reader, 1), reader.GetString(2), NullableString(reader, 3),
-            Enum.Parse<SessionCoverage>(reader.GetString(4)), ParseUtc(reader.GetString(5)),
+            Enum.Parse<SessionCoverage>(reader.GetString(4)), startedUtc,
             reader.IsDBNull(6) ? null : ParseUtc(reader.GetString(6)), NullableString(reader, 7),
             reader.GetInt64(14), reader.IsDBNull(8) ? null : reader.GetInt64(8), reader.IsDBNull(9) ? null : reader.GetInt32(9),
-            reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(16));
-        var frequency = reader.IsDBNull(12) ? Stopwatch.Frequency : reader.GetInt64(12);
-        return (info, frequency, reader.IsDBNull(13) ? null : reader.GetInt64(13));
+            reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(16), processStart);
+        return (info, frequency, startQpc);
     }
 
     private static string? NullableString(SqliteDataReader reader, int ordinal) => reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);

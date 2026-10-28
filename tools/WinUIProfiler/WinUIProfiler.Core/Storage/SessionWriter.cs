@@ -153,15 +153,19 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             {
                 Sql.Execute(connection, SessionSchema.Create, transaction);
                 Sql.Execute(connection, $"PRAGMA user_version = {SessionSchema.Version}", transaction);
+                // Read together, so a UTC time maps onto this machine's QPC clock. A trace's QPC clock is another recording's.
+                var startedQpc = Stopwatch.GetTimestamp();
+                var startedUtc = DateTime.UtcNow;
                 Sql.Execute(connection, """
                     INSERT INTO SessionInfo (SessionId, ProcessId, ProcessName, ProcessCreatedUtc, QpcFrequency, StartQpc,
-                        StartedUtc, Source, EtlPath, Coverage, LimitBytes)
-                    VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $source, $etl, $coverage, $limit)
+                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes)
+                    VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $startedQpc, $source, $etl, $coverage, $limit)
                     """, transaction,
                     ("$id", Guid.NewGuid().ToString()), ("$pid", start.ProcessId), ("$name", start.ProcessName),
                     ("$created", start.ProcessCreatedUtc?.ToString("O", CultureInfo.InvariantCulture)),
                     ("$frequency", start.QpcFrequency), ("$start", start.StartQpc),
-                    ("$started", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)),
+                    ("$started", startedUtc.ToString("O", CultureInfo.InvariantCulture)),
+                    ("$startedQpc", start.EtlPath is null ? startedQpc : null),
                     ("$source", start.EtlPath is null ? "Live" : "Trace"), ("$etl", start.EtlPath),
                     ("$coverage", start.Coverage.ToString()), ("$limit", limitBytes));
                 transaction.Commit();
