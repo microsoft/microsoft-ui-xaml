@@ -1635,8 +1635,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             if (useMouse)
             {
-                TestServices::InputHelper->LeftMouseClick(textBlock);
-                TestServices::InputHelper->LeftMouseClick(textBlock);
+                // Compute the point once so nothing runs on the UI thread between the two clicks.
+                wf::Point center{};
+                RunOnUIThread([&]()
+                {
+                    auto transform = textBlock->TransformToVisual(nullptr);
+                    center = transform->TransformPoint(wf::Point(
+                        static_cast<float>(textBlock->ActualWidth / 2),
+                        static_cast<float>(textBlock->ActualHeight / 2)));
+                });
+                TestServices::InputHelper->LeftMouseClick(center);
+                TestServices::InputHelper->LeftMouseClick(center);
             }
             else
             {
@@ -1668,6 +1677,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestCleanupWrapper cleanup;
             SelectWordInTextWithLeadingNull(false /*useMouse*/, true /*forceLineServices*/);
         }
+
         void TextBlockTests::TextBlockWordBreakerNavigation()
         {
             TestCleanupWrapper cleanup;

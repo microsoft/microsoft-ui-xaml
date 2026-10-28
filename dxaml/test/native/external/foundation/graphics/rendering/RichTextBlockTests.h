@@ -54,6 +54,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(HighlightWordAfterEmptyParagraph)
+                TEST_METHOD_PROPERTY(L"Description", L"A TextHighlighter in a RichTextBlock with an empty Paragraph renders without crashing.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(NWRenderWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Test the software render path - BitmapCache")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")

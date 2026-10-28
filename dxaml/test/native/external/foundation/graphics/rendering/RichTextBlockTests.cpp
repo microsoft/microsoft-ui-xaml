@@ -177,6 +177,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        void RichTextBlockTests::HighlightWordAfterEmptyParagraph()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([&]()
+            {
+                // Rendering a highlight maps its character range to a text position by walking every
+                // block from the start, so it passes through the empty Paragraph and the empty Span.
+                auto richTextBlock = safe_cast<RichTextBlock^>(xaml_markup::XamlReader::Load(
+                    L"<RichTextBlock xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+                    L"  <Paragraph/>"
+                    L"  <Paragraph><Span/>Hello</Paragraph>"
+                    L"</RichTextBlock>"));
+
+                auto textHighlighter = ref new xaml_docs::TextHighlighter();
+                textHighlighter->Ranges->Append({ 0, 5 });
+                richTextBlock->TextHighlighters->Append(textHighlighter);
+
+                TestServices::WindowHelper->WindowContent = richTextBlock;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
         void RichTextBlockTests::NWRenderWUCFull()
         {
             RunOnUIThread([&]()
