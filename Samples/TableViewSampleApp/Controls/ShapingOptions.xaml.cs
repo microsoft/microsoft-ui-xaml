@@ -23,7 +23,7 @@ namespace TableViewSampleApp.Controls;
 [ContentProperty(Name = nameof(GroupKeys))]
 public sealed partial class ShapingOptions : UserControl
 {
-    private const string NoRelationReason = "These rows have no parent relation.";
+    private const string NoRelationReason = "These rows do not have one.";
 
     // ShapingModeSelector item order.
     private static readonly string[] Modes = { "flat", "grouped", "hierarchy", "groupedHierarchy" };
@@ -602,11 +602,14 @@ public sealed partial class ShapingOptions : UserControl
         HierarchyItem.IsEnabled = reason is null;
         GroupedHierarchyItem.IsEnabled = reason is null && IsGroupingAvailable;
         var groupedReason = reason ?? (IsGroupingAvailable ? null : "Grouping is not available on this page.");
-        AutomationProperties.SetHelpText(HierarchyItem, reason ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableViewSource.ParentBy).", _relation!.Label));
-        AutomationProperties.SetHelpText(GroupedHierarchyItem, groupedReason ?? string.Format(CultureInfo.CurrentCulture, "Groups the root rows by the group key; each root keeps its {0} subtree.", _relation!.Label));
+        var unavailable = reason is null ? null : "Hierarchy and Grouped hierarchy need a parent relation. " + reason;
+        AutomationProperties.SetHelpText(HierarchyItem, unavailable ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableViewSource.ParentBy).", _relation!.Label));
+        AutomationProperties.SetHelpText(GroupedHierarchyItem, unavailable ?? groupedReason ?? string.Format(CultureInfo.CurrentCulture, "Groups the root rows by the group key; each root keeps its {0} subtree.", _relation!.Label));
+        ToolTipService.SetToolTip(HierarchyItem, unavailable);
+        ToolTipService.SetToolTip(GroupedHierarchyItem, unavailable ?? groupedReason);
         CaptionText.Text = reason is null
             ? string.Format(CultureInfo.CurrentCulture, "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. The Hierarchy modes nest the rows by {0} in the {1} column, shown first; nested rows start collapsed.", _relation!.Label, HierarchyColumnHeader)
-            : "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. Hierarchy: " + reason;
+            : unavailable + " Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat.";
     }
 
     private void RevertModeSelection()

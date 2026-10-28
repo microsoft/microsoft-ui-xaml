@@ -253,7 +253,7 @@
 
                 <controls:ShapingOptions
                     x:Name="Shaping"
-                    HierarchyUnavailableReason="Group-stage clubs are peers with no parent team; nesting each group under its seed would only repeat Grouped by Group."
+                    HierarchyUnavailableReason="Group-stage clubs are peers with no parent team; nesting each group under its seed would only repeat Grouped by Group. To sort nested rows, see the Hierarchy page."
                     AutomationIdPrefix="Sort"
                     Description="Group the standings, then sort: the rows reorder within each group, and the groups keep the source order of their first rows. Sort first and then group, and the sort orders the groups as well. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Group" Tag="Group"/>
