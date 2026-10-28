@@ -39,7 +39,33 @@ if ($PSVersionTable.PSVersion.Major -eq 5)
 
 try
 {
-    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+    $pluginDirectory = Join-Path $env:USERPROFILE ".nuget\plugins"
+    $providers = @(
+        @{ Runtime = "netfx"; EntryPoint = "CredentialProvider.Microsoft.exe" }
+        @{ Runtime = "netcore"; EntryPoint = "CredentialProvider.Microsoft.dll" }
+    )
+    $missingProviders = @($providers | Where-Object {
+        !(Test-Path -PathType Leaf (Join-Path $pluginDirectory "$($_.Runtime)\CredentialProvider.Microsoft\$($_.EntryPoint)"))
+    })
+
+    if ($missingProviders.Count -gt 0)
+    {
+        # Download the release asset directly to avoid GitHub API rate limits.
+        $providerArchive = . "$PSScriptRoot\Initialize-DownloadLatest.ps1" -OutDir $toolsDir -DownloadUrl "https://github.com/microsoft/artifacts-credprovider/releases/latest/download/Microsoft.NetFx48.NuGet.CredentialProvider.zip" -DownloadName "AzureArtifactsCredentialProvider" -Unzip $true
+
+        foreach ($provider in $missingProviders)
+        {
+            $source = Join-Path $providerArchive "plugins\$($provider.Runtime)\CredentialProvider.Microsoft"
+            if (!(Test-Path -PathType Leaf (Join-Path $source $provider.EntryPoint)))
+            {
+                throw "The Azure Artifacts Credential Provider archive is missing $($provider.Runtime)\$($provider.EntryPoint)."
+            }
+
+            $destination = Join-Path $pluginDirectory $provider.Runtime
+            New-Item -ItemType Directory -Force -Path $destination | Out-Null
+            Copy-Item -Path $source -Destination $destination -Recurse -Force
+        }
+    }
 }
 finally
 {
