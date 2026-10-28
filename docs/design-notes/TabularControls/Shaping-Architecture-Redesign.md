@@ -471,6 +471,8 @@ classDiagram
     class ShapingManager {
         <<native coordinator>>
         -ShapingEngine m_engine
+        -unordered_map~SourceRecord*, hstring~ m_liveDirty
+        -DrainLiveChanges()
     }
 
     class ShapingEngine {
@@ -494,8 +496,8 @@ classDiagram
         +Clear()
         +ReleaseRetired()
         -InShapedParent(record)$ bool
-        -StageGroupChain(staged)
-        -PlacementIndex(staged, sourceIndex) uint32
+        -StageGroupChain(edit, segments, keys)
+        -PlacementIndex(edit, sourceIndex) uint32
         -PruneEmptyGroups(group)
         -Rebuild(desired, delta, only)
     }
@@ -508,20 +510,20 @@ classDiagram
     class StagedRecord {
         <<private, compute phase>>
         +SourceRecord* Record
-        +bool PassesFilter
-        +vector~tracker_ref~IInspectable~~ SortKeys
-        +vector~hstring~ GroupSegments
-        +vector~IInspectable~ GroupKeys
+        +ShapeState Shape
+    }
+
+    class StagedEdit {
+        <<private, surgical compute, stack local>>
+        +StagedRecord Staged
+        +vector~StagedRecord~ Descendants
         +vector~GroupMap node_type~ NewGroupEntries
-        +GroupNode* NewGroupChain
-        +GroupNode* NewGroupParent
         +uint32 ShapedIndex
     }
 
     class StagedReapply {
         <<private, compute phase>>
         +vector~StagedRecord~ Records
-        +vector~pair~SourceRecord*, vector~SourceRecord*~~~ ShapedChildren
         +vector~ShapedNode*~ RootChildren
         +GroupMap GroupsByIdentity
     }
@@ -599,13 +601,18 @@ classDiagram
         +ShapeState Shape
     }
 
-    ShapingManager *-- ShapingEngine
+    ShapingManager *-- ShapingEngine : m_engine, manager calls engine (no callbacks)
+    ShapingManager ..> LiveChange : DrainLiveChanges builds batch from m_liveDirty
     ShapingEngine *-- ShapedTree : m_tree, Link / Unlink / BeginReset / EndReset
     ShapedTree *-- GroupNode : m_root (stable)
     ShapingEngine "1" *-- "0..*" GroupNode : m_groupsByIdentity owns every other group
-    ShapingEngine ..> LiveChange : ApplyItemsChanged
+    ShapingEngine ..> LiveChange : reads span (ApplyItemsChanged parameter)
     ShapingEngine ..> StagedReapply : Rebuild compute
+    ShapingEngine ..> StagedEdit : surgical compute (one per edit)
     StagedReapply "1" *-- "0..*" StagedRecord
+    StagedEdit *-- StagedRecord : Staged, Descendants
+    StagedRecord *-- ShapeState : Shape (staged), committed field by field
+    StagedEdit ..> GroupNode : NewGroupEntries (new groups, top-down)
     ShapedNode <|-- GroupNode : Kind = Group
     ShapedNode <|-- SourceRecord : Kind = Record
     ShapedNode *-- FenwickTree : ChildRows
@@ -1129,6 +1136,24 @@ Proposal:
    never inside the app's setter. This is v1's test-host fallback, moved to a safe point.
 5. (open) Keep off-thread item `PropertyChanged` marshalling as a convenience (v1 parity), or
    drop it and document the platform's UI-thread rule.
+
+Thread binding options for item 3 (open; the recovery flags stay until one is chosen):
+
+- **A. Rebind at `TrySetOwner`** (`SourceTable::BindOwnerThread()`, queue and thread id in a
+  shared, lock-guarded struct read by every item lambda). Fixes a source built on a pool thread.
+  Costs: a post already queued to the old queue runs on the old thread after the rebind, so the
+  posted lambda must re-check the binding and re-post or drop; one uncontended lock per item
+  notification; "owning UI thread" wording in the lifetime rules no longer holds before an owner.
+- **B. Bind once, only from the no-queue state.** A queue captured at `Create()` is kept;
+  `TrySetOwner` on another thread warns. With no queue, `TrySetOwner` binds once to the owner's
+  thread. Nothing can have been posted while there was no queue, so A's stale-post case cannot
+  occur; only the single first write needs safe publication.
+- **C. Keep the `Create()` capture; no queue means no marshalling.** With a null queue every item
+  change is delivered inline on the raising thread, so a pool-thread-built source used on the UI
+  thread keeps working, and the binding is immutable (no lock). An off-thread change with a null
+  queue races, which is app misuse under the platform's UI-thread rule (item 5). A source created
+  on UI thread A and used on thread B still posts B's changes to A (v1's exposure); an optional
+  thread check in `TrySetOwner` can warn.
 
 **Null and duplicate items:**
 
@@ -2771,12 +2796,14 @@ private:
     ShapedTree m_tree;                                         // owns the stable root only
     GroupMap m_groupsByIdentity;                               // Identity -> owning unique_ptr, every non-root group
     std::vector<std::unique_ptr<GroupNode>> m_retired;         // pruned, alive until the commit ends (P8)
-    struct StagedRecord;                                       // per-call compute results (E4)
+    struct StagedRecord;                                       // one record's new shape (E4)
+    struct StagedEdit;                                         // one surgical edit: StagedRecord + group chain, index
     struct StagedReapply;                                      // Reapply's whole new tree, aside
     static bool InShapedParent(SourceRecord const&) noexcept;  // PassesFilter || !ShapedChildren.empty() (E8)
-    void StageGroupChain(StagedRecord&);                       // compute: allocate missing groups (E9)
+    void StageGroupChain(StagedEdit&, std::vector<winrt::hstring> const& segments,
+        std::vector<IInspectable> const& keys);                // compute: allocate missing groups, set Group (E9)
     void PruneEmptyGroups(GroupNode*) noexcept;                // write: Unlink, ItemCount, retire empty groups (E9)
-    uint32_t PlacementIndex(StagedRecord const&, std::optional<uint32_t> sourceIndex);  // surgical placement (E5)
+    uint32_t PlacementIndex(StagedEdit const&, std::optional<uint32_t> sourceIndex);  // surgical placement (E5)
     void Rebuild(ShapeSpec const&, ShapeDelta,
                  std::span<LiveChange const> only = {});       // behind Apply, Reapply, ApplyItemsChanged (E6, E7)
 };
@@ -2845,13 +2872,47 @@ private:
     `Identity` → node lookup.
   - No index (binary search of `Children` with the group comparer): calls app code on every
     lookup and is wrong under an inconsistent or custom group order.
-- **Staging (decided: a transient side buffer per call).** Compute results never go into
-  `ShapeState`. Each entry point builds a local object: `StagedRecord` (record, passes filter, sort
-  keys, group key segments and objects) for each evaluated record; `Reapply` adds a
-  `StagedReapply` holding the records in pre-order, every parent's new `ShapedChildren`, the new
-  root `Children` and the new (owning) `m_groupsByIdentity`. The write phase only moves these
-  in (`noexcept`), calls the tree, and destroys the buffer (with the old groups swapped into it).
-  Surgical paths stage 1..k `StagedRecord`s the same way. Rejected:
+- **Staging (decided: a transient side buffer per call).** Compute results never go into a
+  record's own `ShapeState`. Each entry point builds a local object: a `StagedRecord` (the record
+  and a staged `ShapeState`: compute flags, sort keys, new `ShapedChildren`, bottom-level group)
+  for each evaluated record; `Reapply` adds a `StagedReapply` holding the records in pre-order,
+  the new root `Children` and the new (owning) `m_groupsByIdentity`. Each parent's new
+  `ShapedChildren` lives in its own `StagedRecord`, built bottom-up by a post-order pass over the
+  pre-order list, so there is one per-record collection and one commit loop. The write phase
+  only moves these in (`noexcept`), calls the tree, and destroys the buffer (with the old groups
+  swapped into it). Surgical paths stage one `StagedEdit` per edit, a stack local in the entry
+  point: the record's `StagedRecord`, its descendants' `StagedRecord`s for a subtree insert
+  (pre-order; they enter inside its subtree, so they need no group fields and no placement), the
+  new groups' owning map nodes (E9) and the placement index (E5). A remove stages nothing: no app
+  code runs.
+  - **The write phase never allocates.** The staged state is a `ShapeState`, so types match by
+    construction and each commit is vector moves, pointer stores and flag bits. The group is
+    resolved during compute; the key segments and key objects used to find or create it stay
+    local to compute and are not staged. Compute reserves every container the write phase
+    inserts into (`m_groupsByIdentity` for new map nodes, a group's `Children`, a parent's
+    `ShapedChildren`), so no insert rehashes or grows.
+  - **Commit field by field, never `Shape = std::move(staged.Shape)`.** Compute owns only some
+    of the state:
+    - `Flags`: compute bits (`PassesFilter`, `ChildrenShaped`, `SortKeysValid`) from the staged
+      state; `Expanded` and `PlacementMark` kept from the record; `OverlayCollapsed` kept unless
+      the delta runs the full Filter stage (then cleared, F5).
+    - `SortKeys`: moved only when the delta re-reads them; otherwise the record's are kept.
+    - `ShapedChildren` and `Group`: moved and stored.
+  - Cost: a rebuild stages about 72 bytes per record (`Record` plus a `ShapeState`) plus its sort
+    keys and child pointers (about 8 MB at 100k flat records, about 80 MB at 1M), freed when the
+    call returns. A leaf's empty `ShapedChildren` costs 24 bytes and no allocation; versus a
+    separate (parent, children) list that is +24 bytes per flat record and break-even at about
+    75% parents.
+
+  Rejected:
+  - Edit-only fields (`NewGroupEntries`, `ShapedIndex`) on `StagedRecord`: one type, but every
+    record a rebuild stages carries about 32 unused bytes (about +45%).
+  - `NewGroupChain` and `NewGroupParent` pointers on the staged edit: both derivable
+    (`NewGroupEntries.front()` and its `Parent`), 16 bytes that could disagree with the entries.
+  - A separate `vector<pair<SourceRecord*, vector<SourceRecord*>>>` of new `ShapedChildren`
+    beside the records, with `StagedRecord` holding loose `PassesFilter`, `SortKeys` and `Group`
+    fields: slightly smaller for flat data, but two per-record collections, two commit loops,
+    and staged types that can drift from `ShapeState`.
   - A second, pending `ShapeState` slot on every record: no per-rebuild allocation, but the slot
     costs memory on every record forever and mixes transient data into record state.
   - Write in place with an undo log: contradicts compute-then-commit, and the undo can itself fail.
@@ -2905,11 +2966,16 @@ private:
     against E6's surgical single edits).
 - **Group lifecycle in surgical edits (decided, E9).** Applies to `ApplySourceChange` and
   `ApplyItemChanged` while grouped; a rebuild builds groups from scratch.
-  - Create: compute walks the record's group segments down from the root through
-    `m_groupsByIdentity` and allocates the missing tail of the chain (keys tracked, map nodes and
-    vector capacity reserved) into the `StagedRecord`. The `noexcept` write phase links the record
+  - Create: compute walks the record's group segments (computed locally, not staged) down from
+    the root through `m_groupsByIdentity` and allocates the missing tail of the chain into
+    `StagedEdit::NewGroupEntries`, top-down (keys tracked, each new group's `Parent` set, map
+    nodes and vector capacity reserved, the map reserved for the new entries), and sets the
+    staged `Shape.Group` to the bottom-level group. `PlacementIndex` puts the topmost new group's
+    index among its `Parent`'s children in `ShapedIndex`. The `noexcept` write phase links the record
     into the detached chain, calls `Tree().Link` once for the topmost new group under its existing
-    parent, and inserts the map nodes. The expansion baseline applies (*Expansion*).
+    parent at `ShapedIndex`, and inserts the map nodes. No separate chain or parent pointer is
+    staged: the topmost new group is `NewGroupEntries.front()` and its parent is its `Parent`.
+    The expansion baseline applies (*Expansion*).
   - Prune: when a record leaves a bottom-level group, find the topmost node that leaves (the
     highest ancestor group with no other member, else the record itself) and call `Tree().Unlink`
     once for it (F1). Then take the detached chain apart, and extract every emptied group from the map into `m_retired` (O(1) each; it has no live subgroups, they emptied first); stops at the
@@ -3004,7 +3070,9 @@ private:
 - **Surgical placement and tie order (decided, E5: option B, no stored order).** Where a record
   lands among its shaped siblings on a surgical insert, move or key change; the result equals a
   rebuild's stable sort (equal keys end in source order). `ShapingEngine::PlacementIndex`, in the
-  compute phase, into `StagedRecord::ShapedIndex`; the list is taken without the record.
+  compute phase, into `StagedEdit::ShapedIndex`: the index of the topmost node that enters (the
+  topmost new group when the edit creates groups, by group key comparison, or appended for
+  `None`; otherwise the record). For the record, the list is taken without the record.
   - Sort active: binary-search the run of siblings whose keys tie (the only app code, through
     `Comparer` levels). Mark the run with the transient `ShapeFlags::PlacementMark`, walk the
     record's source siblings backwards from its source position to the first marked one and insert
@@ -3084,7 +3152,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [x] Group storage: the engine's `GroupMap` (`m_groupsByIdentity`) owns every group;
       `GroupNode::Subgroups` removed (E2, revised).
 - [x] Group lookup: `m_groupsByIdentity` (E3).
-- [x] Staging: `StagedRecord`, `StagedReapply` (E4).
+- [x] Staging: `StagedRecord`, `StagedEdit`, `StagedReapply` (E4).
 - [x] Apply paths: `Rebuild` driven by `ShapeDelta` (E6; the former `RebuildStage` / `StagesFor` merged into it).
 - [x] Ancestors of matches: derived from `ShapedChildren`, `InShapedParent`; `HasPassingDescendant`
       flag removed (E8).
@@ -3093,7 +3161,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [x] Live shaping: routing by re-evaluate and diff, `ApplyItemChanged`, `ApplyItemsChanged`,
       `LiveChange`, `Rebuild` scoped to dirty records (E7).
 - [x] Surgical placement and tie order: `PlacementIndex`, `ShapeFlags::PlacementMark`,
-      `StagedRecord::ShapedIndex` (E5).
+      `StagedEdit::ShapedIndex` (E5).
 - [ ] Shaped tree node types `ShapedNode` (`Engine/ShapeState.h`), `GroupNode` (`Engine/ShapedTree.h`): declared, no
       implementation.
 - [x] Decide where engine state lives: an engine-owned `ShapeState` slot on `SourceRecord`.

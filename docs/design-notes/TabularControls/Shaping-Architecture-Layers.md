@@ -38,7 +38,7 @@ flowchart TB
 
     subgraph L5["Engine/ : shaped tree"]
         ENG["ShapingEngine<br/>compute then noexcept write<br/>Apply / Reapply / ApplyItemsChanged"]
-        STG["StagedRecord / StagedReapply<br/>per-call compute buffer"]
+        STG["StagedEdit / StagedReapply<br/>per-call compute buffer"]
         TREE["ShapedTree<br/>rows by position, counts, cursor, expand<br/>Link / Unlink, BeginReset / EndReset"]
         GN["GroupNode<br/>Key, Children, ItemCount<br/>owned by the engine's GroupMap"]
         GE["GroupExpansion<br/>group Identity to expanded"]
@@ -96,7 +96,7 @@ flowchart TB
 - **Spec/** describes the desired shape (`ShapeSpec`) and evaluates keys (`ShapeDelegates`,
   `PathEvaluator`).
 - **Engine/** computes filter, sort and grouping. `ShapingEngine` computes into a local
-  `StagedRecord` / `StagedReapply` buffer, then writes in a `noexcept` phase. `ShapedTree` is the
+  `StagedEdit` / `StagedReapply` buffer, then writes in a `noexcept` phase. `ShapedTree` is the
   only owner of the rows: it holds the group root, the visible-row counts (`FenwickTree` per
   sibling list), the cursor, the expansion verbs and `GroupExpansion` (pruned at each
   `EndReset`), and it writes the tree-owned `ShapeState` fields.
