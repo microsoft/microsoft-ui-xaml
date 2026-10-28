@@ -436,22 +436,25 @@ public sealed partial class HierarchyPage : SamplePageBase
         }
 
         var photo = SampleShaping.SelectedTag(FirstColumnSelector, "Photo") == "Photo";
-        SetFirstColumn(photo ? PhotoColumn : NameColumn);
+        SetFirstColumn(photo);
         SetLastAction(photo ? "First column is now Photo" : "First column is now Name (text)");
     }
 
     // <snippet>
     // TableView.Columns is the live column collection: moving an entry moves the column. The first
     // visible column hosts the level indent and the expander chevron.
-    private void SetFirstColumn(TableViewColumn first)
+    private void SetFirstColumn(bool photoFirst)
     {
         var columns = PeopleTable.Columns;
-        var from = columns.IndexOf(first);
-        if (from > 0)
+        var from = columns.IndexOf(PhotoColumn);
+        if ((from == 0) == photoFirst)
         {
-            columns.RemoveAt(from);
-            columns.Insert(0, first);
+            return;
         }
+
+        // Move only Photo; the other columns keep their order.
+        columns.RemoveAt(from);
+        columns.Insert(photoFirst ? 0 : columns.IndexOf(NameColumn) + 1, PhotoColumn);
     }
     // </snippet>
 }
