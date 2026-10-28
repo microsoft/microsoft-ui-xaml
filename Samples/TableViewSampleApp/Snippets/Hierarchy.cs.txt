@@ -104,3 +104,18 @@ public static ParentRelation Mentor { get; } = new(
     "Mentor",
     row => (row as Person)?.EmployeeId,
     row => (row as Person)?.MentorId);
+
+// From Models\Person.cs
+// The Name column binds FullName, so it needs a setter to be editable: the first word becomes
+// FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+public string FullName
+{
+    get => $"{_firstName} {_lastName}".Trim();
+    set
+    {
+        var name = (value ?? string.Empty).Trim();
+        var split = name.IndexOfAny(new[] { ' ', '\t' });
+        FirstName = split < 0 ? name : name[..split];
+        LastName = split < 0 ? string.Empty : name[(split + 1)..].Trim();
+    }
+}

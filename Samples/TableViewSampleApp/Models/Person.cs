@@ -18,7 +18,8 @@ namespace TableViewSampleApp.Models;
 /// editors (two-way bound) and page actions that mutate a row are reflected by the table.
 /// Shared cell templates for this model live in Templates\PersonCellTemplates.xaml.
 /// INotifyDataErrorInfo is opt-in through <see cref="ValidatesNames"/>, which only the Cell
-/// editing page sets, so every other page edits names without validation.
+/// editing page sets, so every other page edits names without validation (a one-word Name
+/// leaves LastName empty there). With validation on, FullName reports the errors of both parts.
 /// </summary>
 public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
 {
@@ -50,7 +51,21 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
         set => Set(ref _lastName, value);
     }
 
-    public string FullName => $"{_firstName} {_lastName}";
+    // <snippet Groups Hierarchy>
+    // The Name column binds FullName, so it needs a setter to be editable: the first word becomes
+    // FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+    public string FullName
+    {
+        get => $"{_firstName} {_lastName}".Trim();
+        set
+        {
+            var name = (value ?? string.Empty).Trim();
+            var split = name.IndexOfAny(new[] { ' ', '\t' });
+            FirstName = split < 0 ? name : name[..split];
+            LastName = split < 0 ? string.Empty : name[(split + 1)..].Trim();
+        }
+    }
+    // </snippet>
 
     /// <summary>
     /// Single-character initial. Falls back to '?' when neither name is set. The shared
@@ -201,12 +216,14 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
     public IEnumerable GetErrors(string? propertyName)
     {
         var all = string.IsNullOrEmpty(propertyName);
-        if ((all || propertyName == nameof(FirstName)) && _firstNameError is not null)
+        // An edit through FullName writes both parts, so it reports the errors of both.
+        var full = propertyName == nameof(FullName);
+        if ((all || full || propertyName == nameof(FirstName)) && _firstNameError is not null)
         {
             yield return _firstNameError;
         }
 
-        if ((all || propertyName == nameof(LastName)) && _lastNameError is not null)
+        if ((all || full || propertyName == nameof(LastName)) && _lastNameError is not null)
         {
             yield return _lastNameError;
         }
@@ -262,6 +279,7 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
         if (errorsChanged)
         {
             RaiseErrorsChanged(propertyName!);
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(FullName)));
         }
         if (propertyName is nameof(FirstName) or nameof(LastName))
         {

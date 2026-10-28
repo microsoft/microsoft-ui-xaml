@@ -76,12 +76,14 @@ public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 public IEnumerable GetErrors(string? propertyName)
 {
     var all = string.IsNullOrEmpty(propertyName);
-    if ((all || propertyName == nameof(FirstName)) && _firstNameError is not null)
+    // An edit through FullName writes both parts, so it reports the errors of both.
+    var full = propertyName == nameof(FullName);
+    if ((all || full || propertyName == nameof(FirstName)) && _firstNameError is not null)
     {
         yield return _firstNameError;
     }
 
-    if ((all || propertyName == nameof(LastName)) && _lastNameError is not null)
+    if ((all || full || propertyName == nameof(LastName)) && _lastNameError is not null)
     {
         yield return _lastNameError;
     }

@@ -13,7 +13,7 @@
         Description="The rows are one flat list of people with no children collection, level or expanded flag. TableViewSource.ParentBy(key, parentKey) tells the source how they relate: here EmployeeId under ManagerId (the org chart) or under MentorId (a second tree over the same rows). Rows start collapsed; a null parent key makes a root and an unknown parent key an orphan root. Sort applies within each sibling set, Filter keeps every match and its ancestors, and Grouped hierarchy buckets the roots while each root keeps its subtree. ParentBy is a code-behind call: a hierarchy cannot be declared in XAML in this release."
         Snippet="Hierarchy"
         StretchExample="True"
-        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to its parent, and * expands its whole subtree. Switch Parent relation to Mentor: the same people form a different tree. Select a row and choose Reparent, Rename or Next department; with Live shaping on, the tree reshapes in place."
+        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to its parent, and * expands its whole subtree. Switch Parent relation to Mentor: the same people form a different tree. Select a row and choose Reparent, Rename or Next department; with Live shaping on, the tree reshapes in place. Sort by Name and press F2 on a Name: with Live shaping on the renamed row moves among its siblings; off, it stays put."
         WhatToLookFor="The same person sits at a different depth under each relation. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted and announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows and CollapseAllRows, the Expand all and Collapse all buttons): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open one row. With Live shaping off, an edit leaves the row where it is until the next reshape, so Reparent replaces the item instead. Known control issue: under a filter, a match whose descendants also match stays collapsed, so those descendants stay hidden until you expand it.">
 
         <controls:SamplePresenter.Example>
@@ -25,6 +25,7 @@
                 AutomationProperties.Name="People by parent relation"
                 ItemsSource="{x:Bind Source}"
                 SelectionMode="Single"
+                IsReadOnly="False"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <tv:TableView.Resources>
@@ -34,7 +35,8 @@
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
                 <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                <tv:TableViewTextColumn Header="#" Width="80" Binding="{Binding EmployeeId}"/>
+                <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
+                <tv:TableViewTextColumn Header="#" Width="80" IsReadOnly="True" Binding="{Binding EmployeeId}"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

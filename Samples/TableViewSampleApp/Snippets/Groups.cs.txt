@@ -70,3 +70,18 @@ public const string NoneKey = "(none)";
 // empty string, because TableViewSource fails fast on an empty identity.
 public static string GroupIdentity(object? groupKey) =>
     groupKey?.ToString() is { Length: > 0 } s ? s : NoneKey;
+
+// From Models\Person.cs
+// The Name column binds FullName, so it needs a setter to be editable: the first word becomes
+// FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+public string FullName
+{
+    get => $"{_firstName} {_lastName}".Trim();
+    set
+    {
+        var name = (value ?? string.Empty).Trim();
+        var split = name.IndexOfAny(new[] { ' ', '\t' });
+        FirstName = split < 0 ? name : name[..split];
+        LastName = split < 0 ? string.Empty : name[(split + 1)..].Trim();
+    }
+}

@@ -30,6 +30,7 @@
     AutomationProperties.Name="Grouped people"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
+    IsReadOnly="False"
     EmptyTemplate="{StaticResource GroupsEmptyTemplate}">
     <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
@@ -37,5 +38,5 @@
     <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
     <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
-    <tv:TableViewTextColumn Header="Salary" Width="100" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewTextColumn Header="Salary" Width="100" IsReadOnly="True" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
 </tv:TableView>
