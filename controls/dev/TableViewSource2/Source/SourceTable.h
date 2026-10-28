@@ -208,8 +208,8 @@ public:
     // ResetTreeToFlat(), Commit() the new one and raise one Reset. Must be called on the UI thread.
     // ParentBy: evaluates both selectors once per record (key rules in ParentKeyHierarchy).
     void SetParentKeyHierarchy(
-        winrt::TableViewKeySelector2 const& keySelector,
-        winrt::TableViewKeySelector2 const& parentKeySelector);
+        winrt::TableViewKeySelector const& keySelector,
+        winrt::TableViewKeySelector const& parentKeySelector);
 
     // ChildrenBy: enumerates every non-null child collection recursively before creating any child
     // record, and subscribes to every observable child collection at Commit().

@@ -75,10 +75,10 @@ public:
     // While a DeferRefresh is open (m_deferDepth > 0) they edit m_desired only; the outermost
     // EndDeferRefresh applies it.
 
-    void Filter(winrt::TableViewPredicate2 const& predicate);
-    void GroupBy(winrt::TableViewKeySelector2 const& key, winrt::SortDirection2 groupDirection);
-    void Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection2 direction);
-    void Sort(winrt::TableViewKeySelector2 const& key, winrt::SortDirection2 direction);
+    void Filter(winrt::TableViewPredicate const& predicate);
+    void GroupBy(winrt::TableViewKeySelector const& key, winrt::SortDirection groupDirection);
+    void Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    void Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     void Sort(winrt::TableViewComparer2 const& comparer);
     void ClearFilter();
     void ClearGroupBy();
@@ -88,7 +88,7 @@ public:
     // While a DeferRefresh is open the table is frozen, so SourceTable stores the selectors as
     // pending and builds them at the re-read in EndDeferRefresh.
 
-    void ParentBy(winrt::TableViewKeySelector2 const& key, winrt::TableViewKeySelector2 const& parentKey);
+    void ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey);
     void ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector);
     void ClearHierarchy();
 

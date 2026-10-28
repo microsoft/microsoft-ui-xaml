@@ -53,7 +53,7 @@ struct DelegateRef
     bool operator==(DelegateRef const&) const = default;
 };
 
-// One filter: a TableViewPredicate2.
+// One filter: a TableViewPredicate.
 struct FilterSpec
 {
     DelegateRef Predicate;
@@ -78,12 +78,12 @@ struct SortSpec
     // is covered by live shaping.
     winrt::hstring Path;
 
-    // Key: a TableViewKeySelector2. Comparer: a TableViewComparer2. Matched by delegate Id.
+    // Key: a TableViewKeySelector. Comparer: a TableViewComparer2. Matched by delegate Id.
     DelegateRef Delegate;
 
     // Path and Key: Ascending or Descending (None removes the level, so it is never stored).
     // Comparer: always None; the comparer defines the full order of its level.
-    winrt::SortDirection2 Direction{ winrt::SortDirection2::None };
+    winrt::SortDirection Direction{ winrt::SortDirection::None };
 
     // True when this level and `other` refer to the same path or the same delegate Id, regardless
     // of direction and Version. A Sort call matching an existing level replaces it in place.
@@ -94,12 +94,12 @@ struct SortSpec
 
 struct GroupSpec
 {
-    // A TableViewKeySelector2.
+    // A TableViewKeySelector.
     DelegateRef Key;
 
     // Orders the groups by key. None keeps the order in which groups first appear in the filtered
     // source. Row sort (ShapeSpec::Sorts) never moves groups.
-    winrt::SortDirection2 Direction{ winrt::SortDirection2::None };
+    winrt::SortDirection Direction{ winrt::SortDirection::None };
 
     bool operator==(GroupSpec const&) const = default;
 };

@@ -168,8 +168,8 @@ class ParentKeyHierarchy final : public SourceHierarchy
 public:
     ParentKeyHierarchy(
         ITrackerHandleManager const* owner,
-        winrt::TableViewKeySelector2 const& keySelector,
-        winrt::TableViewKeySelector2 const& parentKeySelector);
+        winrt::TableViewKeySelector const& keySelector,
+        winrt::TableViewKeySelector const& parentKeySelector);
 
     HierarchyKind Kind() const noexcept override { return HierarchyKind::ParentKey; }
     void Prepare(ISourceHierarchyHost& host) override;
@@ -194,8 +194,8 @@ private:
 
     // App delegates, tracked (see SourceTable Reference tracking). Optional so Release() can
     // destroy them while the tracker owner is alive.
-    std::optional<tracker_ref<winrt::TableViewKeySelector2>> m_keySelector;
-    std::optional<tracker_ref<winrt::TableViewKeySelector2>> m_parentKeySelector;
+    std::optional<tracker_ref<winrt::TableViewKeySelector>> m_keySelector;
+    std::optional<tracker_ref<winrt::TableViewKeySelector>> m_parentKeySelector;
 
     // Each record's cached keys. Object keys are held while the tree is current so their addresses
     // cannot be reused (v1 section 3.1).

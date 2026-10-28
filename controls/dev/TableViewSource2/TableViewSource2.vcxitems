@@ -4,7 +4,9 @@
     TableViewSource2: scaffold for the shaping redesign
     (docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md).
 
-    Declares its own delegate and sort direction types in TableViewSource2.idl.
+    Reuses TableViewPredicate and TableViewKeySelector (TableViewSource.idl) and SortDirection
+    (TabularShaping/SortDirection.idl); declares only TableViewComparer2 and
+    TableViewChildrenSelector2.
     Imported under the same feature condition as TableView.
   -->
   <PropertyGroup Label="Globals">

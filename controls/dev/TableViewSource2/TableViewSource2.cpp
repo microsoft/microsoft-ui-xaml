@@ -22,22 +22,22 @@ winrt::TableViewSource2 TableViewSource2::From(winrt::IInspectable const& items)
     return winrt::make<::TableViewSource2>(items);
 }
 
-winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate2 const& /*predicate*/)
+winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate const& /*predicate*/)
 {
     ThrowNotImplemented(L"Filter");
 }
 
-winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector2 const& /*key*/, winrt::SortDirection2 /*groupDirection*/)
+winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector const& /*key*/, winrt::SortDirection /*groupDirection*/)
 {
     ThrowNotImplemented(L"GroupBy");
 }
 
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& /*sortMemberPath*/, winrt::SortDirection2 /*direction*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& /*sortMemberPath*/, winrt::SortDirection /*direction*/)
 {
     ThrowNotImplemented(L"Sort");
 }
 
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector2 const& /*key*/, winrt::SortDirection2 /*direction*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector const& /*key*/, winrt::SortDirection /*direction*/)
 {
     ThrowNotImplemented(L"Sort");
 }
@@ -47,7 +47,7 @@ winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewComparer2 const& 
     ThrowNotImplemented(L"Sort");
 }
 
-winrt::TableViewSource2 TableViewSource2::ParentBy(winrt::TableViewKeySelector2 const& /*key*/, winrt::TableViewKeySelector2 const& /*parentKey*/)
+winrt::TableViewSource2 TableViewSource2::ParentBy(winrt::TableViewKeySelector const& /*key*/, winrt::TableViewKeySelector const& /*parentKey*/)
 {
     ThrowNotImplemented(L"ParentBy");
 }

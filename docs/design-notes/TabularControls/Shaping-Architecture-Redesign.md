@@ -243,8 +243,8 @@ classDiagram
     }
 
     class ParentKeyHierarchy {
-        -tracker_ref~TableViewKeySelector2~ m_keySelector
-        -tracker_ref~TableViewKeySelector2~ m_parentKeySelector
+        -tracker_ref~TableViewKeySelector~ m_keySelector
+        -tracker_ref~TableViewKeySelector~ m_parentKeySelector
         -map~NodeKey, SourceRecord*~ m_keyIndex
         -map~SourceRecord*, NodeKeys~ m_nodeKeys
     }
@@ -335,11 +335,11 @@ classDiagram
         Subscribed
     }
 
-    class TableViewPredicate2 {
+    class TableViewPredicate {
         <<delegate>>
         Boolean(Object item)
     }
-    class TableViewKeySelector2 {
+    class TableViewKeySelector {
         <<delegate>>
         Object(Object item)
     }
@@ -351,7 +351,7 @@ classDiagram
         <<delegate>>
         Object(Object item)
     }
-    class SortDirection2 {
+    class SortDirection {
         <<enum>>
         None
         Ascending
@@ -375,24 +375,26 @@ classDiagram
     SourceHierarchy ..> ISourceHierarchyHost : host passed per call
     SourceHierarchy <|-- ParentKeyHierarchy
     SourceHierarchy <|-- ChildCollectionsHierarchy
-    TableViewSource2 ..> TableViewPredicate2
-    TableViewSource2 ..> TableViewKeySelector2
+    TableViewSource2 ..> TableViewPredicate
+    TableViewSource2 ..> TableViewKeySelector
     TableViewSource2 ..> TableViewComparer2
     TableViewSource2 ..> TableViewChildrenSelector2
-    TableViewSource2 ..> SortDirection2
+    TableViewSource2 ..> SortDirection
 ```
 
 ## 1. Public verb API
 
-`TableViewSource2.idl` declares its own types, so v2 does not depend on v1's IDL:
+`TableViewSource2` reuses v1's `TableViewPredicate`, `TableViewKeySelector` (`TableViewSource.idl`) and `SortDirection`
+(`TabularShaping/SortDirection.idl`). It declares only `TableViewComparer2` and `TableViewChildrenSelector2`,
+which have no v1 equivalent:
 
 | Type | Shape | Use |
 |---|---|---|
-| `TableViewPredicate2` | `Boolean(Object item)` | `Filter` |
-| `TableViewKeySelector2` | `Object(Object item)` | `GroupBy`, `Sort`, `ParentBy` |
+| `TableViewPredicate` | `Boolean(Object item)` | `Filter` |
+| `TableViewKeySelector` | `Object(Object item)` | `GroupBy`, `Sort`, `ParentBy` |
 | `TableViewComparer2` | `Int32(Object x, Object y)`: negative when `x` sorts first, zero when equal, positive when after | `Sort` |
 | `TableViewChildrenSelector2` | `Object(Object item)` returning a child collection, or `null` for a leaf | `ChildrenBy` |
-| `SortDirection2` | `None`, `Ascending`, `Descending` | `Sort`, `GroupBy` |
+| `SortDirection` | `None`, `Ascending`, `Descending` | `Sort`, `GroupBy` |
 
 Verbs are fluent: each returns the same `TableViewSource2` so calls can be chained.
 
@@ -414,7 +416,7 @@ Verbs are fluent: each returns the same `TableViewSource2` so calls can be chain
 Each `Sort` call appends a lower-priority level after the existing ones (`Sort(a).Sort(b)` sorts
 by `a`, then `b`), unless it matches an existing level, in which case it replaces that level in
 place. A path matches by string; a key selector or comparer matches only when the same delegate
-object is passed again. `SortDirection2::None` removes the matching level. `ClearSort` removes
+object is passed again. `SortDirection::None` removes the matching level. `ClearSort` removes
 every level. Unlike v1, group order no longer depends on
 whether `Sort` was declared before or after `GroupBy`.
 
@@ -1344,8 +1346,8 @@ coordinator all read it. It is split in two (`Spec/`):
 
   struct FilterSpec { DelegateRef Predicate; };
   struct SortSpec   { Kind SortKind /* Path | Key | Comparer */; hstring Path; DelegateRef Delegate;
-                      SortDirection2 Direction /* None for Comparer */; bool Matches(SortSpec const&) const; };
-  struct GroupSpec  { DelegateRef Key; SortDirection2 Direction; };
+                      SortDirection Direction /* None for Comparer */; bool Matches(SortSpec const&) const; };
+  struct GroupSpec  { DelegateRef Key; SortDirection Direction; };
   struct ShapeSpec  { vector<FilterSpec> Filters; optional<GroupSpec> Group; vector<SortSpec> Sorts; };
 
   enum class ShapeDelta { None, Sort, GroupOrder, GroupKey, Filter };   // flags
@@ -1401,7 +1403,7 @@ Decisions and open questions:
   - `TableView` column headers will not depend on delegate identity: like v1's internal
     `SortReplacing` with `"column:<address>"` tokens, they will match by column.
 - **Path and key levels stay separate (decided):** a path level stores the property path as a
-  string, a key level stores the `TableViewKeySelector2`, and a comparer level stores the
+  string, a key level stores the `TableViewKeySelector`, and a comparer level stores the
   `TableViewComparer2`. Keeping the path as data lets column headers and saved settings read it.
   Inside the engine, path and key levels both produce a key per row and share one comparison.
 - **Sort comparer (decided):** `Sort(comparer)` adds a level that compares whole items with a

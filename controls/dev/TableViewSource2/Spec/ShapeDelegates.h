@@ -48,8 +48,8 @@ public:
 
     // Registration. Null delegates are rejected by the verb before reaching here. Returns the
     // existing Id when the same delegate object is already registered, and a new Version always.
-    DelegateRef Register(winrt::TableViewPredicate2 const& predicate);
-    DelegateRef Register(winrt::TableViewKeySelector2 const& keySelector);
+    DelegateRef Register(winrt::TableViewPredicate const& predicate);
+    DelegateRef Register(winrt::TableViewKeySelector const& keySelector);
     DelegateRef Register(winrt::TableViewComparer2 const& comparer);
 
     // Keeps only the delegates referenced by `specsInUse`; releases the rest.

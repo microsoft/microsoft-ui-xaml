@@ -150,27 +150,6 @@ Entry c_typeEntries[] =
         }
     },
     {
-        /* Arg1 TypeName */
-        L"Microsoft.UI.Xaml.Controls.Tabular.SortDirection2",
-        /* Arg2 CreateXamlTypeCallback */
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.SortDirection2",
-                /* Arg 2 - CreateFromString func */
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"None") return box_value(winrt::SortDirection2::None);
-                    if (fromString == L"Ascending") return box_value(winrt::SortDirection2::Ascending);
-                    if (fromString == L"Descending") return box_value(winrt::SortDirection2::Descending);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
         /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.TableView",
         /* Arg2 CreateXamlTypeCallback */ 
