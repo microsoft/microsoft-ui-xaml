@@ -3034,6 +3034,92 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_ARE_EQUAL(1u, closedCount);
     }
 
+    void SplitViewIntegrationTests::DoesKeepLightDismissRequestedFromBindingCallback()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml_controls::ListViewItem^ source = nullptr;
+        xaml_automation::Provider::IInvokeProvider^ invokeProvider = nullptr;
+        long long callbackToken = 0;
+        bool hasRun = false;
+        bool canInvoke = false;
+        unsigned int closingCount = 0;
+        unsigned int closedCount = 0;
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            source = ref new xaml_controls::ListViewItem();
+            auto binding = ref new xaml_data::Binding();
+            binding->Mode = xaml_data::BindingMode::TwoWay;
+            binding->Source = source;
+            binding->Path = ref new xaml::PropertyPath(L"IsSelected");
+            splitView->SetBinding(xaml_controls::SplitView::IsPaneOpenProperty, binding);
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The light-dismiss layer has an automation peer only while it is visible, so create
+        // it while the pane is open, then close the pane again.
+        xaml_automation_peers::AutomationPeer^ lightDismissPeer = nullptr;
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            auto lightDismissLayer = TreeHelper::GetVisualChildByName(splitView, L"LightDismissLayer");
+            VERIFY_IS_NOT_NULL(lightDismissLayer);
+            lightDismissPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(lightDismissLayer);
+            VERIFY_IS_NOT_NULL(lightDismissPeer);
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        closingRegistration.Attach(splitView,
+            ref new wf::TypedEventHandler<xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^>(
+                [&](xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^) { ++closingCount; }));
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(source->IsSelected);
+
+            // The binding updates its source from the base class, before SplitView handles IsPaneOpen.
+            // Requesting a light dismiss there must not be cleared by the opening that is still in progress.
+            // Nothing in this callback may throw: it is raised from inside the framework.
+            callbackToken = source->RegisterPropertyChangedCallback(
+                xaml_controls::ListViewItem::IsSelectedProperty,
+                ref new xaml::DependencyPropertyChangedCallback([&](xaml::DependencyObject^, xaml::DependencyProperty^)
+                {
+                    if (!hasRun)
+                    {
+                        hasRun = true;
+                        invokeProvider = dynamic_cast<xaml_automation::Provider::IInvokeProvider^>(
+                            lightDismissPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke));
+                        canInvoke = invokeProvider != nullptr;
+                        if (canInvoke)
+                        {
+                            invokeProvider->Invoke();
+                        }
+                    }
+                }));
+            splitView->IsPaneOpen = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            source->UnregisterPropertyChangedCallback(xaml_controls::ListViewItem::IsSelectedProperty, callbackToken);
+            VERIFY_IS_TRUE(hasRun);
+            VERIFY_IS_TRUE(canInvoke);
+            VERIFY_IS_FALSE(splitView->IsPaneOpen);
+        });
+        VERIFY_ARE_EQUAL(1u, closingCount);
+        VERIFY_ARE_EQUAL(1u, closedCount);
+    }
+
     void SplitViewIntegrationTests::DoesFireOpenedAndClosedEventsWhenRetemplated()
     {
         TestCleanupWrapper cleanup;
