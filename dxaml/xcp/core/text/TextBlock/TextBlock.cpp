@@ -314,7 +314,7 @@ _Check_return_ HRESULT CTextBlock::GetValue(
             }
             // else if m_pInlines is null then m_strText should already be set to whatever is in the TextBlock.Text property.
 
-            if (m_strText.GetCount() != 0)
+            if (!m_strText.IsNullOrEmpty())
             {
                 IFC_RETURN(SetPropertyIsLocal(pdp));
             }

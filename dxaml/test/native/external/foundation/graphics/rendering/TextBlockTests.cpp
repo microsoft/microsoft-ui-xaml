@@ -1635,7 +1635,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             if (useMouse)
             {
-                // Compute the point once so nothing runs on the UI thread between the two clicks.
+                // Compute the point once so the two clicks don't each re-query the element's bounds.
                 wf::Point center{};
                 RunOnUIThread([&]()
                 {
