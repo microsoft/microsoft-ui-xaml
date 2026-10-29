@@ -93,6 +93,8 @@ classDiagram
     class TableViewSource2 {
         <<WinRT runtimeclass, ReferenceTracker>>
         -unique_ptr~ShapingManager~ m_shapingManager
+        -IShapingOwner* m_owner
+        -vector~OwnerReleasedWaiter~ m_ownerReleasedWaiters
         +From(items)$ TableViewSource2
         +Filter(predicate) TableViewSource2
         +GroupBy(keySelector, groupDirection) TableViewSource2
@@ -108,6 +110,12 @@ classDiagram
         +Refresh()
         +DeferRefresh() IClosable
         +IsLiveShaping : bool
+        +TrySetOwner(owner) bool
+        +ReleaseOwner(owner)
+        +AddOwnerReleasedWaiter(waiter, handler)
+        +RemoveOwnerReleasedWaiter(waiter)
+        +BeginLiveShapingHold() noexcept
+        +EndLiveShapingHold()
     }
 
     class DeferRefreshHandle {
@@ -118,13 +126,12 @@ classDiagram
     }
 
     class CollectionAccessor2 {
-        -tracker_ref~IInspectable~ m_source
-        -tracker_ref~IVector~IInspectable~~ m_vector
-        -tracker_ref~IVectorView~IInspectable~~ m_vectorView
-        -tracker_ref~IBindableVector~ m_bindableVector
-        -tracker_ref~INotifyCollectionChanged~ m_notifyCollectionChanged
-        -tracker_ref~IObservableVector~IInspectable~~ m_observableVector
-        -tracker_ref~IBindableObservableVector~ m_bindableObservableVector
+        -tracker_ref~IInspectable~ m_read
+        -tracker_ref~IInspectable~ m_observe
+        -ReadKind m_readKind
+        -ObserveKind m_observeKind
+        +GetReadKind() ReadKind
+        +GetObserveKind() ObserveKind
         +IsIndexable() bool
         +IsObservable() bool
         +Count() uint32
@@ -172,7 +179,6 @@ classDiagram
         -shared_ptr~ShapedRowMetadata~ m_rowMetadata
         -ShapingEngine m_engine
         -IShapingOwner* m_owner
-        -vector~OwnerReleasedWaiter~ m_ownerReleasedWaiters
         -unordered_map~SourceRecord*, hstring~ m_liveDirty
         -bool m_liveAllDirty
         -bool m_liveDrainPosted
@@ -190,17 +196,14 @@ classDiagram
         +IsLiveShaping : bool
         +BeginLiveShapingHold() noexcept
         +EndLiveShapingHold()
-        +TrySetOwner(owner) bool
-        +ReleaseOwner(owner)
-        +AddOwnerReleasedWaiter(waiter, handler)
-        +RemoveOwnerReleasedWaiter(waiter)
+        +SetOwner(sink)
         +View() ItemsSourceView
         +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
         +RowCount() uint32
         +RowAt(index) ShapedNode*
         +IndexOfKey(key) optional~uint32~
         +IndexOfItem(value) optional~uint32~
-        +ContainsItem(item) bool
+        +IsItemInShapedTree(item) bool
         +RowInfo(index) TableViewRowInfo
         +TryResolveKey(key) ShapedNode*
         +IsHierarchical() bool
@@ -420,6 +423,7 @@ classDiagram
     }
 
     TableViewSource2 *-- ShapingManager : unique_ptr (forwards verbs)
+    TableViewSource2 ..> IShapingOwner : raw m_owner, arbitrates (single owner, waiters)
     TableViewSource2 ..> DeferRefreshHandle : DeferRefresh() returns
     ShapingManager ..> ExpansionAxis : SetAllExpanded
     IShapingOwner ..> ShapingAppliedArgs
@@ -429,7 +433,7 @@ classDiagram
     ShapedCollectionView ..> GroupHeaderRow : header row value
     ShapingManager o-- ShapedRowMetadata : m_rowMetadata (shared_ptr, TableView also holds it)
     ShapedRowMetadata ..> ShapingManager : raw back-pointer, nulled by Detach()
-    ShapingManager ..> IShapingOwner : raw m_owner (TableView), OnResetting, OnShapingApplied
+    ShapingManager ..> IShapingOwner : raw m_owner sink (set by SetOwner), OnResetting, OnShapingApplied
     SourceTable *-- CollectionAccessor2 : owns source accessor (optional, reset on Clear)
     SourceTable ..> SourceChange : raises (single handler)
     SourceTable "1" *-- "0..*" SourceRecord : sole strong shared_ptr per source position
@@ -908,13 +912,31 @@ whether `Sort` was declared before or after `GroupBy`.
 ## 3. Source collection resolution: `CollectionAccessor2`
 
 `CollectionAccessor2` (`Source/CollectionAccessor2.h`) is the v2 copy of `ShapingHelpers::CollectionAccessor`.
-It probes an `IInspectable` source once at construction for both read (`IVector<IInspectable>` >
-`IVectorView<IInspectable>` > `IBindableVector`) and change-notification (`INotifyCollectionChanged`,
-`IObservableVector<IInspectable>`, `IBindableObservableVector`) interfaces so all indexed reads,
-enumerations, and subscriptions agree by construction. Unlike v1's `CollectionAccessor`, every
-interface member is stored in a `tracker_ref` bound to the owning `TableViewSource2`
-(`ITrackerHandleManager const*`), matching `InspectingDataSource` so .NET GC can trace cycles through
-the collection.
+It probes an `IInspectable` source once at construction and records two answers, so all indexed
+reads, enumerations, and subscriptions agree by construction:
+
+- `ReadKind`, first match wins: `IVector<IInspectable>` > `IVectorView<IInspectable>` >
+  `IBindableVector` > `IIterable<IInspectable>` > `IBindableIterable`. The two iterable kinds are
+  enumerable only (`IsIndexable()` false). `Iterable` keeps v1's CLR retry through
+  `IBindableIterable` when the iterator fails with `E_NOINTERFACE`.
+- `ObserveKind`, first match wins: `INotifyCollectionChanged` > `IObservableVector<IInspectable>` >
+  `IBindableObservableVector`. The accessor owns this precedence; `SourceTable` and `ChildFeed`
+  switch on `GetObserveKind()` and subscribe to that one interface through the matching typed
+  `As*` getter (null for any other kind).
+
+**Storage (decided, B4).** Two `tracker_ref<IInspectable>` members, `m_read` and `m_observe`, each
+holding the resolved interface pointer, plus the two kinds. Readers cast the pointer back by kind
+(the reinterpret `InspectingDataSource::OnBindableVectorChanged` already relies on), so no read
+pays a QI. Unlike v1's `CollectionAccessor`, both are `tracker_ref`s bound to the owning
+`TableViewSource2` (`ITrackerHandleManager const*`), matching `InspectingDataSource` so .NET GC can
+trace cycles through the collection. There is one accessor per root source and one per
+`ChildFeed`, so per-accessor cost matters with `ChildrenBy`: 2 tracker handles and about 50 B.
+
+- Rejected: seven typed `tracker_ref`s (the source plus one per interface, `InspectingDataSource`'s
+  shape): 168 B and 3-5 tracker handles per accessor, though the read members are exclusive and
+  only one notification interface is ever subscribed.
+- Rejected: only the source `tracker_ref`, querying the interface on each use: 1 handle, but a QI
+  on every `Count`, `TryGetAt` and subscribe.
 
 ## 4. Source tracking: `SourceRecord` and `SourceTable`
 
@@ -2349,11 +2371,17 @@ Decisions and open questions:
 - **No `Source()` accessor (decided: narrow queries).** `TableView` reaches shaping state only
   through narrow queries on `ShapingManager`, forwarded by `TableViewSource2`; `SourceTable`
   stays fully behind the manager. v1 `TableView` never reads the raw source: what it reads is
-  `ContainsShapedItem` (now `ContainsItem`: `SourceTable::TryFindByItem`, then
+  `ContainsShapedItem` (now `IsItemInShapedTree`: `SourceTable::TryFindByItem`, then
   `ShapingEngine::InShapedTree`, true even when collapsed), `CanApplySort`, the live-item-changed
   re-rank hook and the TiP handlers. The last three are a Phase 6 parity item. Rejected: a
   read-only `Source()` accessor (`TableView` would depend on `SourceTable` internals and on the
   freeze and in-event read rules), and moving `SourceTable` ownership (option D).
+- **By-item query: renamed, not generalized (decided, for now).** `ContainsItem` became
+  `IsItemInShapedTree`: "contains" did not say which of "in the source", "in the shaped tree" or
+  "visible" it answers. Same lookup and same single caller (`TableView::TerminateEditForReset`,
+  false = the edited item left). Visible position stays `IndexOfItem`. Deferred: one state query
+  (`LocateItem` returning `Absent` / `Excluded` / `Hidden` / `Shown` plus the index) once reveal,
+  selection by item or `ScrollIntoView(item)` need more than this predicate.
 - **Name: `ShapingManager` (decided, for now).** Follows ItemsRepeater's internal native helpers
   (`ElementManager`, `ViewManager`, `ViewportManager`): plain C++, owned by the control, built with
   the owner's `ITrackerHandleManager`. Rejected: `ShapedItemsSource2` (reads as v1's collection,
@@ -2679,18 +2707,22 @@ struct IShapingOwner
     virtual void OnShapingApplied(ShapingAppliedArgs const& args) = 0; // after the last event; chrome re-read (P9)
 };
 
-// TableViewSource2 (internal), forwarding to ShapingManager:
+// TableViewSource2 (internal). Arbitration lives here (B2):
 bool TrySetOwner(IShapingOwner* owner);    // single owner; false if another is registered
 void ReleaseOwner(IShapingOwner* owner);   // no-op unless owner; then runs the waiters
 void AddOwnerReleasedWaiter(winrt::IInspectable const& waiter, std::function<void()> handler);
 void RemoveOwnerReleasedWaiter(winrt::IInspectable const& waiter);
-void BeginLiveShapingHold() noexcept;      // counted
+void BeginLiveShapingHold() noexcept;      // counted; forwards to ShapingManager
 void EndLiveShapingHold();                 // count 0: post a drain if changes are pending
+
+// ShapingManager: the outcome only.
+void SetOwner(IShapingOwner* sink);        // notification target; a new sink drops the holds
 ```
 
 - **O1 — Shape: one native interface.** `TableView` (or a sink it owns) implements
-  `IShapingOwner` and registers it with `TableViewSource2::TrySetOwner`. `ShapingManager` keeps a raw
-  `IShapingOwner*` (`m_owner`); with no owner, the calls are skipped. One object and one
+  `IShapingOwner` and registers it with `TableViewSource2::TrySetOwner`, which arbitrates and passes
+  the accepted owner to `ShapingManager::SetOwner`. `ShapingManager` keeps a raw
+  `IShapingOwner*` (`m_owner`) as its notification sink; with no owner, the calls are skipped. One object and one
   header carry the whole contract, and the source layer still never names `TableView`.
   Every call is on the UI thread from the manager's commit scope, inside the #19 apply scope: reading the view and
   the row metadata provider is allowed; a verb, `Refresh` or an expansion verb throws.
@@ -2741,15 +2773,19 @@ void EndLiveShapingHold();                 // count 0: post a drain if changes a
   flattener's `m_departed` set (P8: the engine passes `isMove`).
   Rejected: always `ChildrenInvalidated` (screen readers rebuild on every sort), and a separate `OnStructureChanged` callback (two calls per commit at one point).
 - **O6 — No `Replace` merging.** See *Event shape*.
-- **O7 — Single owner.** `TrySetOwner` returns false (no throw) when a different owner is
-  registered; the same owner again is an idempotent true. Both it and `ReleaseOwner` throw during
-  an apply. `ReleaseOwner(owner)` is a no-op unless `owner` is the registered one (a refused table
-  cannot detach the real owner); it releases the owner and its holds (`m_liveHoldCount = 0`, then
-  a posted drain if changes are pending). The owner must call it before it is destroyed.
-  `Clear()` nulls `m_owner` and drops the waiters first, so teardown raises no callbacks.
+- **O7 — Single owner (enforced by `TableViewSource2`, B2).** `TrySetOwner` returns false (no
+  throw) when a different owner is registered; the same owner again is an idempotent true. Both it
+  and `ReleaseOwner` throw during an apply: each calls `ShapingManager::SetOwner` first, which
+  throws before anything changes. `ReleaseOwner(owner)` is a no-op unless `owner` is the
+  registered one (a refused table cannot detach the real owner); it calls `SetOwner(nullptr)`,
+  which drops the owner's holds (`m_liveHoldCount = 0`, then a posted drain if changes are
+  pending). The owner must call it before it is destroyed. `~TableViewSource2()` nulls `m_owner`
+  and drops the waiters before `ShapingManager::Clear()` (which nulls its sink), so teardown raises
+  no callbacks.
   Rejected: last writer wins (the old owner silently stops hearing), and no rule at all.
-- **Owner handoff (decided: v1 model, waiters in `ShapingManager`).** A refused claim is a normal
-  transient state, not an error: a navigation loads the new page before it unloads the old one.
+- **Owner handoff (decided: v1 model; revised by B2, waiters in `TableViewSource2`).** A refused
+  claim is a normal transient state, not an error: a navigation loads the new page before it
+  unloads the old one.
   The refused `TableView` renders empty and calls `AddOwnerReleasedWaiter(*this, handler)`
   (one entry per waiter, held weakly; re-adding replaces it). `ReleaseOwner` runs the waiters
   last, FIFO, while no owner is registered; each is popped before it runs, because it re-enters
@@ -2757,10 +2793,16 @@ void EndLiveShapingHold();                 // count 0: post a drain if changes a
   that owner's waiter; `RemoveOwnerReleasedWaiter` also prunes collected waiters. The handler
   re-checks that it still wants the source (v1: `IsLoaded`, then reclaim). This ports v1
   `SetOwningTableView` / `ReleaseOwningTableView` / `Add`/`RemoveOwnerReleasedHandler` one to one,
-  so `TableView::AdoptItemsSource` keeps its flow. Rejected: the list in `TableViewSource2`
-  (release split across two layers), retry on `Loaded` only (the navigating page stays empty,
-  since it is already loaded when the old page unloads), and last writer wins with a revoke
-  callback (two controls fighting over one projection).
+  so `TableView::AdoptItemsSource` keeps its flow.
+  - Why `TableViewSource2` (B2): which control owns the source is a question about the WinRT
+    object, not about shaping. Keeping the registry, the waiter queue and their re-entrancy rules
+    out of `ShapingManager` shrinks the coordinator to what it needs: whom to notify and whose holds
+    to count. Release is not split in a way that can be half-done: `SetOwner(nullptr)` drops the
+    holds and clears the sink in one call, and only then does `TableViewSource2` run the waiters.
+  - Rejected: arbitration in `ShapingManager` (the earlier choice; it grew the god class, B1, with
+    state no shaping path reads), retry on `Loaded` only (the navigating page stays empty, since it
+    is already loaded when the old page unloads), and last writer wins with a revoke callback (two
+    controls fighting over one projection).
 
 ### Shaping engine: `ShapingEngine`
 
@@ -3102,7 +3144,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `m_addressLookup`, shaped-only `m_identityIndex`, verb-independent per-record `INotifyPropertyChanged`
       subscriptions via `SetLiveShaping`, and the `SourceChanged` + `ItemChanged` callbacks).
 - [ ] **1.4 Implement Phase 1 `.cpp` files**:
-  - `CollectionAccessor2.cpp`: port `Count`, `TryGetAt`, `Enumerate`, `GetAtUnchecked`.
+  - `CollectionAccessor2.cpp`: kind resolution (constructor), `Count`, `TryGetAt`, `Enumerate`
+    (with the `Iterable` CLR retry), `GetAtUnchecked`, the typed `As*` getters.
   - `SourceRecord.cpp`: canonical `IUnknown` QI, lazy hex `Identity()`, `~SourceRecord()` token revoke.
   - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
     upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_outOfSync` recovery), the `Refresh()` match
@@ -3214,6 +3257,12 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [x] Move `GroupExpansion` ownership from `ShapingManager` to `ShapedTree` (`m_groupExpansion`
       by value); `EndReset(groupLevelCount, liveGroups, newGroupSelector)` prunes it (F4) and
       `ShapedTree::Clear()` clears it. The manager and engine no longer hold or pass it.
+- [x] Move owner arbitration to `TableViewSource2` (B2): `m_owner`, `m_ownerReleasedWaiters`,
+      `TrySetOwner` / `ReleaseOwner` / `Add`/`RemoveOwnerReleasedWaiter` live there;
+      `ShapingManager` keeps the notification sink (`SetOwner`, which drops holds on change) and
+      the live-shaping hold count.
+- [x] Rename `ContainsItem` to `IsItemInShapedTree` on `ShapingManager` and `TableViewSource2`
+      (same lookup; a state query is deferred).
 - [ ] Implement `ShapedTree` (`Engine/ShapedTree.cpp`) and `ShapedNode` helpers
       (`ShapedParent`, `ShapedChildCount`, `ShapedChildAt`).
 

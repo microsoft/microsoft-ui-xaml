@@ -11,7 +11,8 @@
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Owner notifications".
 //
 // Decided (#18): one native interface (O1) instead of v1's separate std::function hooks. The owner
-// (TableView, or a sink it owns) implements it and registers through TableViewSource2::TrySetOwner.
+// (TableView, or a sink it owns) implements it and registers through TableViewSource2::TrySetOwner,
+// which arbitrates (B2) and hands the accepted owner to ShapingManager::SetOwner.
 // The source layer never names TableView (dependency rule); TableView may read SourceRecord.
 //
 // Every call is made on the UI thread from inside a ShapingManager commit, so inside the #19 apply

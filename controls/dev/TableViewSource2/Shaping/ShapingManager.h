@@ -4,12 +4,10 @@
 #pragma once
 
 #include <exception>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <span>
 #include <unordered_map>
-#include <vector>
 
 #include "pch.h"
 #include "common.h"
@@ -39,7 +37,8 @@
 //          IShapedRowsListener and forwards each to the view. Local changes are surgical Link /
 //          Unlink; reshapes go through Reapply() and raise a stable Reset ("Change pipeline").
 //   Hears: SourceTable::SourceChanged and ItemChanged; it is their only subscriber.
-//   Tells: the owner (IShapingOwner, #18) before a Reset and after each unit of work.
+//   Tells: the owner (IShapingOwner, #18) before a Reset and after each unit of work. Which
+//          owner is TableViewSource2's decision (B2); it passes the result through SetOwner.
 //
 // Unlike v1 ShapedItemsSource it is plain C++, not the WinRT collection the repeater binds to.
 // That collection is ShapedCollectionView, an ItemsSourceView subclass View() returns as is; it
@@ -120,30 +119,18 @@ public:
     bool IsLiveShaping() const;
     void IsLiveShaping(bool value);
 
-    // ---- Owner (#18) ------------------------------------------------------------------------
+    // ---- Owner sink (#18) -------------------------------------------------------------------
+    // Arbitration (single owner, refusal, waiters, handoff) lives in TableViewSource2 (decided,
+    // B2). This object only needs to know whom to notify and whose holds to count.
 
-    // Claims ownership (O1, O7, handoff decided: v1 model). Single owner: returns false, without
-    // throwing, when a different owner is registered; a refused owner is normal and transient (a
-    // navigation loads the new page before it unloads the old one), so the caller renders empty
-    // and waits with AddOwnerReleasedWaiter. The same owner again is an idempotent true. A
-    // successful claim also removes that owner's waiter. Throws while an apply runs (#19). Raw
-    // pointer: the owner calls ReleaseOwner before it is destroyed.
-    bool TrySetOwner(IShapingOwner* owner);
-
-    // Releases ownership. A no-op unless owner is the registered owner, so a refused table cannot
-    // detach the real one. Releases every live-shaping hold the owner took (m_liveHoldCount = 0,
-    // PostLiveDrain if changes are pending). Last, runs the waiters FIFO while no owner is
-    // registered: each is popped before it runs (it re-enters TrySetOwner, and one that does not
-    // claim is not retried), and collected waiters are skipped. A waiter may claim synchronously;
-    // the remaining ones stay queued. Throws while an apply runs (#19).
-    void ReleaseOwner(IShapingOwner* owner);
-
-    // A refused owner registers to hear when the owner lets go. One entry per waiter (re-adding
-    // replaces it); the waiter is held weakly. Remove also prunes collected waiters. The handler
-    // runs on the UI thread from ReleaseOwner and should re-check that it still wants the source
-    // (v1: IsLoaded, then reclaim).
-    void AddOwnerReleasedWaiter(winrt::IInspectable const& waiter, std::function<void()> handler);
-    void RemoveOwnerReleasedWaiter(winrt::IInspectable const& waiter);
+    // Sets the notification target: OnResetting / OnShapingApplied go to sink, or nowhere when it
+    // is nullptr. Called only by TableViewSource2, after it has accepted a claim (sink = the new
+    // owner) or a release (sink = nullptr). When sink differs from the current one, every
+    // live-shaping hold is dropped (holds belong to the owner that took them): m_liveHoldCount = 0,
+    // then PostLiveDrain if changes are pending. The same sink again is a no-op. Throws while an
+    // apply runs (#19), before anything changes, so TableViewSource2 can call it before updating
+    // its own state. Raw pointer: TableViewSource2 sets nullptr before the owner is destroyed.
+    void SetOwner(IShapingOwner* sink);
 
     // Counted live-shaping hold (O4): while m_liveHoldCount > 0, DrainLiveChanges defers (changes
     // stay in m_liveDirty). The owner takes one per reason (cell edit, pointer press), so nested
@@ -183,11 +170,16 @@ public:
 
     // ---- Owner queries (decided: narrow queries, no Source() accessor) ----------------------
 
-    // True when item (by object identity) is a record in the shaped tree: it passes the filter,
-    // whether or not it is shown (a collapsed group or parent still counts). SourceTable::TryFindByItem,
-    // then ShapingEngine::InShapedTree. Header rows never match. As v1 ContainsShapedItem (the
-    // owner checks that the edited item survived a reshape). False for nullptr or after Clear().
-    bool ContainsItem(winrt::IInspectable const& item) const;
+    // True when item (by object identity) is a record in the shaped tree, shown or not: it is in
+    // the source and ShapingEngine::InShapedTree holds (passes the filter, or is an ancestor of a
+    // match). A record under a collapsed group or parent counts. False when the item is not in the
+    // source, is excluded, is a group header value, is nullptr, or after Clear().
+    // SourceTable::TryFindByItem, then ShapingEngine::InShapedTree. Reads the tree as it is, so
+    // inside a Reset or OnShapingApplied it already answers for the new shape (P8). Replaces v1
+    // ContainsShapedItem; renamed because "contains" did not say which of "in the source",
+    // "in the shaped tree" or "visible" it answers. Caller: TableView::TerminateEditForReset
+    // (false = the edited item left). Visible position is IndexOfItem.
+    bool IsItemInShapedTree(winrt::IInspectable const& item) const;
 
     // The row metadata provider TableView reads (as v1 TableViewSource::GetRowMetadata()):
     // the ShapedRowMetadata adapter (R1), created on first call with *this as its back-reference
@@ -237,8 +229,8 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Teardown: m_owner = nullptr and m_ownerReleasedWaiters cleared without running them (no
-    // callbacks during teardown), then
+    // Teardown: m_owner = nullptr and m_liveHoldCount = 0 (no callbacks during teardown;
+    // TableViewSource2 has already dropped its waiters), then
     // ShapedCollectionView::Detach() (it holds a raw ShapingManager*), then
     // ShapedRowMetadata::Detach() (same reason), then ShapingEngine::Clear() (ShapedTree::Clear,
     // which drops the listener, the cursor and every group; then tracked keys), then SourceTable::Clear()
@@ -355,19 +347,12 @@ private:
     // keeps its own shared_ptr. Null until the first RowMetadata(); Clear() detaches and resets it.
     std::shared_ptr<ShapedRowMetadata> m_rowMetadata;
 
-    // The registered owner (#18 O1, O7), or nullptr. Not owned; the owner clears it before it dies.
+    // Notification sink set by SetOwner (#18 O1), or nullptr. Not owned. Mirrors
+    // TableViewSource2::m_owner; arbitration is there (B2).
     IShapingOwner* m_owner{ nullptr };
 
-    // Tables refused by TrySetOwner, waiting for ReleaseOwner (handoff, v1 OwnerReleasedWaiter).
-    // FIFO. Waiter is weak so a waiting table that goes away is skipped and pruned.
-    struct OwnerReleasedWaiter
-    {
-        winrt::weak_ref<winrt::IInspectable> Waiter;
-        std::function<void()> Handler;
-    };
-    std::vector<OwnerReleasedWaiter> m_ownerReleasedWaiters;
-
-    // Live-shaping holds taken by the owner (#18 O4). Reset to 0 by ReleaseOwner and Clear().
+    // Live-shaping holds taken by the owner (#18 O4). Reset to 0 when SetOwner changes the sink,
+    // and by Clear().
     uint32_t m_liveHoldCount{ 0 };
 
     // A source notification with more than this many items (a range event, or an insert adopting
