@@ -878,8 +878,12 @@ _Check_return_ HRESULT CXamlIslandRoot::OnContentAutomationProviderRequested(
 {
     if (!IsDisposed())
     {
-        IFC_RETURN(e->put_AutomationProvider(GetUIAWindowNoRef()));
-        IFC_RETURN(e->put_Handled(true));
+        // The island can be disposed while its UIA window is being initialized, in which case there's no provider.
+        if (CUIAWindow* uiaWindow = GetUIAWindowNoRef())
+        {
+            IFC_RETURN(e->put_AutomationProvider(uiaWindow));
+            IFC_RETURN(e->put_Handled(true));
+        }
     }
     return S_OK;
 }
@@ -893,15 +897,29 @@ HRESULT CXamlIslandRoot::UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents 
     return S_FALSE;
 }
 
+// Returns null once the island is disposed, including when it's disposed while the UIA window is initializing.
 CUIAWindow* CXamlIslandRoot::GetUIAWindowNoRef(bool onlyGet)
 {
-    if (!m_uiaWindow && !onlyGet)
+    if (!m_uiaWindow && !onlyGet && !IsDisposed())
     {
+        xref_ptr<CUIAHostWindow> uiaWindow;
         IFCFAILFAST(CUIAHostWindow::Create(
             UIAHostEnvironmentInfo(this),
             GetContext()->GetHostSite(),
             nullptr,    // We don't need to pass in the public root visual here because CUIAHostWindow will query the island for it.
-            m_uiaWindow.ReleaseAndGetAddressOf()));
+            uiaWindow.ReleaseAndGetAddressOf()));
+
+        // Initializing the UIA window can pump messages. If the island was disposed meanwhile, DisconnectUIA has
+        // already run, so don't attach a provider that would never be disconnected. If a reentrant request already
+        // created a UIA window, keep that one.
+        if (IsDisposed() || m_uiaWindow)
+        {
+            uiaWindow->Deinit();
+        }
+        else
+        {
+            m_uiaWindow = std::move(uiaWindow);
+        }
     }
 
     return m_uiaWindow.get();

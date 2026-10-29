@@ -3139,8 +3139,22 @@ HRESULT CUIAHostWindow::Create(
     _In_opt_ CDependencyObject *pPopup,
     _Outptr_ CUIAHostWindow** ppUIAWindow)
 {
-    *ppUIAWindow = new CUIAHostWindow(uiaHostEnvironmentInfo, pHost, pPopup);
-    IFC_RETURN((*ppUIAWindow)->Init());
+    *ppUIAWindow = nullptr;
+
+    // Don't hand the window to the caller until it's initialized. Init can pump messages (UIAutomationCore
+    // initialization makes COM calls), and an owner that already held the window could release it during a
+    // reentrant teardown while Init is still running.
+    xref_ptr<CUIAHostWindow> uiaWindow;
+    uiaWindow.attach(new CUIAHostWindow(uiaHostEnvironmentInfo, pHost, pPopup));
+
+    const HRESULT hr = uiaWindow->Init();
+    if (FAILED(hr))
+    {
+        uiaWindow->Deinit();
+        IFC_RETURN(hr);
+    }
+
+    *ppUIAWindow = uiaWindow.detach();
     return S_OK;
 }
 

@@ -2458,11 +2458,23 @@ void CPopup::EnsureUIAWindow()
         ASSERT(island);
         uiaInfo = UIAHostEnvironmentInfo(island);
 
+        xref_ptr<CUIAHostWindow> uiaWindow;
         IFCFAILFAST(CUIAHostWindow::Create(
             uiaInfo,
             core->GetHostSite(),
             this,
-            m_spUIAWindow.ReleaseAndGetAddressOf()));
+            uiaWindow.ReleaseAndGetAddressOf()));
+
+        // Initializing the UIA window can pump messages. Don't adopt it if the windowed popup's resources were
+        // released meanwhile, or if a reentrant request already created a UIA window.
+        if (m_spUIAWindow || (!m_desktopPopupSiteBridge && !m_popupWindowBridge))
+        {
+            uiaWindow->Deinit();
+        }
+        else
+        {
+            m_spUIAWindow = std::move(uiaWindow);
+        }
     }
 }
 
