@@ -1973,6 +1973,13 @@ void TableView::AdoptTableViewSource2(winrt::TableViewSource2 source)
         m_activeSource2Released = true;
         winrt::get_self<::TableViewSource2>(source)->ReleaseOwner(&m_sourceOwnerSink);
     }
+    else if (source)
+    {
+        // ReleaseOwner drops the observer, so every claim attaches it again.
+        AttachSourceTip2(source);
+        // The source may have been sorted before this table owned it.
+        QueueReconcileSortStateWithSource();
+    }
 
     if (previouslyOwned && previouslyOwned != m_activeSource.get())
     {
@@ -2144,19 +2151,106 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
     });
 }
 
+void TableView::SourceOwnerSink::OnResetting()
+{
+    m_owner->OnTableViewSource2Resetting();
+}
+
 void TableView::SourceOwnerSink::OnShapingApplied(ShapingAppliedArgs const& args)
 {
-    // A Reset re-realizes every row and OnRowsSourceResetForHierarchy already queues the restamp.
-    // A drained table has no realized rows to read.
-    if ((args.Changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset || m_owner->m_rowsSourceDrained)
+    m_owner->OnTableViewSource2ShapingApplied(args);
+}
+
+void TableView::OnTableViewSource2Resetting()
+{
+    // Rows must not be read through the view here: they still describe the previous projection.
+    // The view's Reset event that follows captures focus and closes the edit
+    // (OnRowsSourceResetForFocus), as for any rows source.
+    if (m_rowsSourceDrained)
     {
         return;
     }
 
-    // Deferred and coalesced: the repeater has not laid out the commit's row events yet, and a
-    // verb called back from here would throw (the apply scope is still open). Reading the row
-    // metadata one dispatcher turn later is allowed and sees the settled indexes.
-    m_owner->QueueRefreshRealizedRowHierarchyState();
+    SupersedeTipOperation();
+    SuppressBodyFocusTrackingForThisTurn();
+}
+
+void TableView::OnTableViewSource2ShapingApplied(ShapingAppliedArgs const& args)
+{
+    // A drained table has no realized rows and re-reads everything on reload.
+    if (m_rowsSourceDrained)
+    {
+        return;
+    }
+
+    bool const reset = (args.Changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset;
+    bool const membership = (args.Changes & ShapingChangeFlags::Membership) == ShapingChangeFlags::Membership;
+    bool const order = (args.Changes & ShapingChangeFlags::Order) == ShapingChangeFlags::Order;
+
+    if (!reset && !membership && !order)
+    {
+        // Only levels or expanders may have changed (P9). Deferred and coalesced: the repeater has
+        // not laid out the commit's row events yet, and a verb called back from here would throw
+        // (the apply scope is still open).
+        QueueRefreshRealizedRowHierarchyState();
+        return;
+    }
+
+    SupersedeTipOperation();
+
+    // Order only is a pure re-sort: same rows, so the group headers' expansion state stands.
+    bool const reorderOnly = order && !membership;
+    if (!reorderOnly)
+    {
+        QueueGroupExpansionRowRefresh();
+    }
+
+    // The new shape is in place by now; a no-op unless the Reset captured a focus position.
+    RestoreBodyFocusAfterReshape();
+
+    // A Reset re-realizes every row and OnRowsSourceResetForHierarchy already queues the restamp.
+    if (!reset)
+    {
+        QueueRefreshRealizedRowHierarchyState();
+    }
+
+    // The app may have declared or cleared a sort on the source; the chevron follows the applied
+    // spec. The control's own sort publishes its chevron itself.
+    if (!m_isApplyingControlInitiatedSort)
+    {
+        QueueReconcileSortStateWithSource();
+    }
+
+    // A Reset or a reorder rewrites the rows wholesale with no input event behind it. Surgical
+    // membership changes reach UIA through the repeater's own add/remove notifications.
+    if (!reset && !order)
+    {
+        return;
+    }
+
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
+    {
+        return;
+    }
+
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+    if (!peer)
+    {
+        return;
+    }
+
+    if (auto const tableViewPeer = peer.try_as<winrt::TableViewAutomationPeer>())
+    {
+        auto* const impl = winrt::get_self<TableViewAutomationPeer>(tableViewPeer);
+        if (reorderOnly)
+        {
+            impl->RaiseStructureChangedForSortChange();
+        }
+        else
+        {
+            impl->RaiseStructureChangedForVirtualizationReset();
+        }
+    }
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)

@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewSource.h"
+#include "TableViewSource2.h"
 
 #include <exception>
 #include <utility>
@@ -184,24 +185,7 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
         {
             if (auto self = weakThis.get())
             {
-                ++self->m_tipSourceMutationDepth;
-                if (self->m_activeSource.get() != weakSource.get())
-                {
-                    ++self->m_tipMutationDepth;
-                    return 0;
-                }
-                if (operation == TableViewTip::Operation::Sort &&
-                    (self->m_isApplyingControlInitiatedSort || self->m_controlSortTipGeneration))
-                {
-                    ++self->m_tipMutationDepth;
-                    return admitted && self->m_controlSortTipGeneration &&
-                        self->m_controlSortTipGeneration != (std::numeric_limits<uint64_t>::max)() &&
-                        self->m_controlSortTipGeneration == self->m_tip.operationGeneration &&
-                        self->m_tip.operation == operation &&
-                        TableViewTip::IsOperationStarted(self->m_tip) ?
-                        self->m_controlSortTipGeneration : 0;
-                }
-                return self->BeginTipOperation(operation, admitted);
+                return self->BeginSourceTip(operation, admitted, self->m_activeSource.get() == weakSource.get());
             }
             return 0;
         },
@@ -211,42 +195,112 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
         {
             if (auto self = weakThis.get())
             {
-                auto completeScope = gsl::finally([&self]() noexcept
-                {
-                    --self->m_tipSourceMutationDepth;
-                    self->EndTipOperation();
-                });
-                // The source rethrows an app fault, so it can escape through the control's operations.
-                if (kind != TableViewTip::AppFaultKind::None) { self->NoteTipAppFault(kind); }
-                if (!generation || self->m_activeSource.get() != weakSource.get() ||
-                    generation != self->m_tip.operationGeneration) { return; }
-                // A callout that already closed this operation has reported the fault.
-                if (TableViewTip::IsOperationHandled(self->m_tip, operation, generation)) { return; }
-                auto const stage = operation == TableViewTip::Operation::Filter ? TableViewTip::Stage::Filter :
-                    operation == TableViewTip::Operation::Sort ? TableViewTip::Stage::Sort : TableViewTip::Stage::Grouping;
-                if (failed)
-                {
-                    self->FailTipOperation(generation, stage, error);
-                }
-                else if (reason)
-                {
-                    if (*reason == TableViewTip::IgnoreReason::DeferredOrUnproven &&
-                        operation == TableViewTip::Operation::Sort && self->m_isApplyingControlInitiatedSort)
-                    {
-                        return;
-                    }
-                    TableViewTip::IgnoreOperation(self->m_tip, generation, *reason, error, kind);
-                    if (*reason == TableViewTip::IgnoreReason::ApplicationFault)
-                    {
-                        TableViewTelemetry::ReportError(self->m_telemetrySession, 0, operation, stage, false,
-                            TableViewTip::Attribution::Application, error, kind);
-                    }
-                }
-                else if (operation == TableViewTip::Operation::Sort && self->m_isApplyingControlInitiatedSort)
-                {
-                    self->m_controlSortPublishedGeneration = generation;
-                }
-                else { self->CompleteTipOperation(generation); }
+                self->CompleteSourceTip(operation, generation, failed, reason, error, kind,
+                    self->m_activeSource.get() == weakSource.get());
             }
         });
+}
+
+// TableViewSource2 verbs report through an internal observer (drift #63); the TiP decisions are
+// the ones v1 makes, shared through BeginSourceTip / CompleteSourceTip.
+void TableView::AttachSourceTip2(winrt::TableViewSource2 const& source)
+{
+    auto const weakThis = get_weak();
+    auto const weakSource = winrt::make_weak(source);
+    auto const toOperation = [](ShapingVerbKind kind) noexcept
+    {
+        return kind == ShapingVerbKind::Filter ? TableViewTip::Operation::Filter :
+            kind == ShapingVerbKind::Sort ? TableViewTip::Operation::Sort : TableViewTip::Operation::GroupConfiguration;
+    };
+
+    auto observer = std::make_shared<ShapingVerbObserver>();
+    observer->Begin = [weakThis, weakSource, toOperation](ShapingVerbKind kind, bool meaningful) noexcept -> uint64_t
+    {
+        if (auto self = weakThis.get())
+        {
+            return self->BeginSourceTip(toOperation(kind), meaningful, self->m_activeSource2.get() == weakSource.get());
+        }
+        return 0;
+    };
+    observer->End = [weakThis, weakSource, toOperation](ShapingVerbKind kind, uint64_t generation,
+        ShapingVerbOutcome const& outcome) noexcept
+    {
+        if (auto self = weakThis.get())
+        {
+            bool const failed = !outcome.OwnerChanged && !outcome.InvalidArgument &&
+                (outcome.Error.has_value() || !outcome.Completed);
+            std::optional<TableViewTip::IgnoreReason> reason;
+            if (outcome.OwnerChanged) { reason = TableViewTip::IgnoreReason::Stale; }
+            else if (outcome.InvalidArgument) { reason = TableViewTip::IgnoreReason::ApplicationFault; }
+            else if (!failed && !outcome.Committed) { reason = TableViewTip::IgnoreReason::DeferredOrUnproven; }
+            auto const faultKind = outcome.InvalidArgument ? TableViewTip::AppFaultKind::Data : TableViewTip::AppFaultKind::None;
+            self->CompleteSourceTip(toOperation(kind), generation, failed, reason, outcome.Error, faultKind,
+                self->m_activeSource2.get() == weakSource.get());
+        }
+    };
+
+    winrt::get_self<::TableViewSource2>(source)->SetShapingVerbObserver(&m_sourceOwnerSink, std::move(observer));
+}
+
+uint64_t TableView::BeginSourceTip(TableViewTip::Operation operation, bool admitted, bool isActiveSource) noexcept
+{
+    ++m_tipSourceMutationDepth;
+    if (!isActiveSource)
+    {
+        ++m_tipMutationDepth;
+        return 0;
+    }
+    if (operation == TableViewTip::Operation::Sort &&
+        (m_isApplyingControlInitiatedSort || m_controlSortTipGeneration))
+    {
+        ++m_tipMutationDepth;
+        return admitted && m_controlSortTipGeneration &&
+            m_controlSortTipGeneration != (std::numeric_limits<uint64_t>::max)() &&
+            m_controlSortTipGeneration == m_tip.operationGeneration &&
+            m_tip.operation == operation &&
+            TableViewTip::IsOperationStarted(m_tip) ?
+            m_controlSortTipGeneration : 0;
+    }
+    return BeginTipOperation(operation, admitted);
+}
+
+void TableView::CompleteSourceTip(TableViewTip::Operation operation, uint64_t generation, bool failed,
+    std::optional<TableViewTip::IgnoreReason> reason, std::optional<HRESULT> error,
+    TableViewTip::AppFaultKind kind, bool isActiveSource) noexcept
+{
+    auto completeScope = gsl::finally([this]() noexcept
+    {
+        --m_tipSourceMutationDepth;
+        EndTipOperation();
+    });
+    // The source rethrows an app fault, so it can escape through the control's operations.
+    if (kind != TableViewTip::AppFaultKind::None) { NoteTipAppFault(kind); }
+    if (!generation || !isActiveSource || generation != m_tip.operationGeneration) { return; }
+    // A callout that already closed this operation has reported the fault.
+    if (TableViewTip::IsOperationHandled(m_tip, operation, generation)) { return; }
+    auto const stage = operation == TableViewTip::Operation::Filter ? TableViewTip::Stage::Filter :
+        operation == TableViewTip::Operation::Sort ? TableViewTip::Stage::Sort : TableViewTip::Stage::Grouping;
+    if (failed)
+    {
+        FailTipOperation(generation, stage, error);
+    }
+    else if (reason)
+    {
+        if (*reason == TableViewTip::IgnoreReason::DeferredOrUnproven &&
+            operation == TableViewTip::Operation::Sort && m_isApplyingControlInitiatedSort)
+        {
+            return;
+        }
+        TableViewTip::IgnoreOperation(m_tip, generation, *reason, error, kind);
+        if (*reason == TableViewTip::IgnoreReason::ApplicationFault)
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, operation, stage, false,
+                TableViewTip::Attribution::Application, error, kind);
+        }
+    }
+    else if (operation == TableViewTip::Operation::Sort && m_isApplyingControlInitiatedSort)
+    {
+        m_controlSortPublishedGeneration = generation;
+    }
+    else { CompleteTipOperation(generation); }
 }

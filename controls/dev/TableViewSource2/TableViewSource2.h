@@ -14,6 +14,32 @@
 #include "TableViewSource2.g.h"
 #include "Shaping/ShapingManager.h"
 
+// TiP observation of the public shaping verbs (internal, not in IDL; drift #63). The owner maps
+// these to its TiP operations; the source layer never names TableViewTip.
+enum class ShapingVerbKind : uint8_t
+{
+    Filter,     // Filter, ClearFilter
+    Group,      // GroupBy, ClearGroupBy
+    Sort,       // Sort (all three overloads), ClearSort
+};
+
+struct ShapingVerbOutcome
+{
+    bool Completed{};       // The verb returned normally.
+    bool Committed{};       // It changed the applied spec (not deferred, not a re-declaration).
+    bool OwnerChanged{};    // The owner that registered the observer let go while it ran.
+    bool InvalidArgument{}; // It threw E_INVALIDARG (app data, as v1 AppFaultKind::Data).
+    std::optional<HRESULT> Error;
+};
+
+struct ShapingVerbObserver
+{
+    // Returns the owner's operation generation (0: not measured). `meaningful` is false for a
+    // Clear* verb with nothing to clear.
+    std::function<uint64_t(ShapingVerbKind, bool meaningful)> Begin;
+    std::function<void(ShapingVerbKind, uint64_t generation, ShapingVerbOutcome const&)> End;
+};
+
 // Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
 // From() constructs a working instance. Shaping state lives in ShapingManager (the coordinator);
 // this class validates arguments and forwards.
@@ -125,7 +151,16 @@ public:
     uint64_t BeginLiveShapingHold() noexcept;
     void EndLiveShapingHold(uint64_t generation);
 
+    // TiP (internal, drift #63; replaces v1 SetShapingTipHandlers). Brackets every public
+    // Filter / GroupBy / Sort / Clear* call that passes argument validation. Ignored unless owner
+    // is the registered owner; ReleaseOwner drops it (detach). Pass nullptr to clear.
+    void SetShapingVerbObserver(IShapingOwner* owner, std::shared_ptr<ShapingVerbObserver> observer);
+
 private:
+    // Runs apply between the observer's Begin and End (a no-op wrapper without an observer).
+    template <class Apply>
+    void ObserveVerb(ShapingVerbKind kind, bool meaningful, Apply&& apply);
+
     // Runs the waiters FIFO while no owner is registered: each is popped before it runs (it
     // re-enters TrySetOwner, and one that does not claim is not retried), and collected waiters
     // are skipped. A waiter may claim synchronously; the remaining ones stay queued. Called by
@@ -151,6 +186,10 @@ private:
     // The registered owner (#18 O1, O7), or nullptr. Not owned; the owner releases it before it
     // dies. ShapingManager holds the same pointer as its notification sink.
     IShapingOwner* m_owner{ nullptr };
+
+    // The owner's TiP observer (SetShapingVerbObserver), or null. Copied by ObserveVerb, so a
+    // release during the verb still pairs Begin with End.
+    std::shared_ptr<ShapingVerbObserver> m_verbObserver;
 
     // Tables refused by TrySetOwner, waiting for ReleaseOwner (handoff, v1 OwnerReleasedWaiter).
     // FIFO. Waiter is weak so a waiting table that goes away is skipped and pruned. Not

@@ -19,6 +19,7 @@
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewSource.h"
+#include "TableViewSource2.h"
 #include "TableViewSortingEventArgs.h"
 #include "TableViewSortedEventArgs.h"
 #include "TableViewAutomationHelpers.h"
@@ -193,7 +194,7 @@ bool TableView::IsSortClearStillValid() const
 // columns keep their state for the reconcile that follows.
 bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column) const
 {
-    return !m_awaitedSource.get() && CanSortColumn(column);
+    return !m_awaitedSource.get() && !m_awaitedSource2.get() && CanSortColumn(column);
 }
 
 bool TableView::CanApplySortTo(winrt::SortDirection direction) const
@@ -443,6 +444,7 @@ void TableView::ResetSortStateForNewItemsSource()
     // Silent, unlike ClearSort: there is no reshape to perform because the source is being rebuilt
     // from scratch, and the data set is already gone by the time a handler could react, so this is
     // not a cancellable Sorting nor a Sorted the app could act on.
+    m_source2OwnComparerId = 0;
     if (m_sortedColumns.empty() && m_tableViewSourceSort.AxisToken.empty())
     {
         return;
@@ -538,7 +540,7 @@ bool TableView::SyncTableViewSourceSort(
     auto tableViewSource = ShapingSourceInternal();
     if (!tableViewSource)
     {
-        return false;
+        return m_activeSource2.get() ? SyncTableViewSource2Sort(trigger, direction, tipGeneration) : false;
     }
 
     winrt::TableViewKeySelector keySelector{ nullptr };
@@ -671,6 +673,94 @@ bool TableView::SyncTableViewSourceSort(
     // The verb mutated the active source in place, so the source lifetime is unchanged - just push
     // its rewritten projection into the repeater.
     RefreshRowsPipeline();
+    UpdateEmptyState();
+    return true;
+}
+
+bool TableView::SyncTableViewSource2Sort(
+    const winrt::TableViewColumn& trigger,
+    winrt::SortDirection direction,
+    uint64_t tipGeneration)
+{
+    auto const source = m_activeSource2.get();
+    if (!source || m_activeSource2Released)
+    {
+        return false;
+    }
+    auto* const sourceImpl = winrt::get_self<::TableViewSource2>(source);
+
+    // A CustomSortComparer goes in as a TableViewComparer2 (v2 sorts by comparer natively, so no
+    // ranking); a comparer level has no direction, so Descending negates the result.
+    winrt::TableViewComparer2 comparer{ nullptr };
+    winrt::hstring sortMemberPath;
+    if (trigger && direction != winrt::SortDirection::None)
+    {
+        if (auto const customComparer = trigger.CustomSortComparer())
+        {
+            bool const descending = direction == winrt::SortDirection::Descending;
+            comparer = [customComparer, descending](winrt::IInspectable const& x, winrt::IInspectable const& y)
+            {
+                int32_t const result = customComparer.Compare(x, y);
+                // Sign only: negating INT32_MIN would overflow.
+                int32_t const sign = result < 0 ? -1 : result > 0 ? 1 : 0;
+                return descending ? -sign : sign;
+            };
+        }
+        else
+        {
+            // Projected dispatch - see the note in HasResolvedSortMemberPath.
+            AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
+            try { sortMemberPath = trigger.GetSortMemberPathCore(); }
+            catch (...) { callout.Fault(winrt::to_hresult()); throw; }
+            if (sortMemberPath.empty())
+            {
+                return false;
+            }
+        }
+    }
+
+    ShapeSpec const* applied = sourceImpl->AppliedSpec();
+    ShapeSpec const before = applied ? *applied : ShapeSpec{};
+
+    {
+        // The control is the last writer: its sort replaces every level, the app's included, in
+        // one commit. A None direction clears every level, as v1's control-initiated clear does.
+        auto const reconcileGuard = BeginControlInitiatedSortScope(tipGeneration);
+        auto const deferral = source.DeferRefresh();
+        try
+        {
+            sourceImpl->ClearSort();
+            if (comparer)
+            {
+                sourceImpl->Sort(comparer);
+            }
+            else if (!sortMemberPath.empty())
+            {
+                sourceImpl->Sort(sortMemberPath, direction);
+            }
+        }
+        catch (...)
+        {
+            // Commit whatever was declared; the verb's own fault is the one reported.
+            try { deferral.Close(); } catch (...) {}
+            throw;
+        }
+        deferral.Close();
+    }
+
+    applied = sourceImpl->AppliedSpec();
+    if (applied && !(*applied == before) && tipGeneration)
+    {
+        m_controlSortPublishedGeneration = tipGeneration;
+    }
+
+    m_source2OwnComparerId = 0;
+    if (comparer && applied && !applied->Sorts.empty() &&
+        applied->Sorts.front().SortKind == SortSpec::Kind::Comparer)
+    {
+        m_source2OwnComparerId = static_cast<uint32_t>(applied->Sorts.front().Delegate.Id);
+    }
+
     UpdateEmptyState();
     return true;
 }
@@ -888,6 +978,11 @@ void TableView::QueueReconcileSortStateWithSource()
 void TableView::ReconcileSortStateWithSource()
 {
     auto tableViewSource = ShapingSourceInternal();
+    if (!tableViewSource && m_activeSource2.get())
+    {
+        ReconcileSortStateWithSource2();
+        return;
+    }
     // Released on Unloaded: another table may own it now, and Loaded reconciles on reclaim.
     if (!tableViewSource || m_activeSourceReleased)
     {
@@ -1029,6 +1124,93 @@ void TableView::ReconcileSortStateWithSource()
         auto args = winrt::make_self<TableViewSortedEventArgs>(
             matchedColumn,
             matchedColumn ? foreignDirection : winrt::SortDirection::None);
+        m_sortedEventSource(*this, *args);
+    }
+}
+
+void TableView::ReconcileSortStateWithSource2()
+{
+    auto const source = m_activeSource2.get();
+    // Released on Unloaded: another table may own it now, and Loaded reconciles on reclaim.
+    if (!source || m_activeSource2Released)
+    {
+        return;
+    }
+    ShapeSpec const* const applied = winrt::get_self<::TableViewSource2>(source)->AppliedSpec();
+    if (!applied)
+    {
+        return;
+    }
+
+    // Only the primary level decides the order a single-column chevron can describe. Unlike v1
+    // the control's own level is not stripped when the app adds one (drift #64): v2 levels are
+    // untokenized, and an app level added after the control's ranks below it.
+    SortSpec const* const primary = applied->Sorts.empty() ? nullptr : &applied->Sorts.front();
+    if (primary && primary->SortKind == SortSpec::Kind::Comparer && m_source2OwnComparerId &&
+        static_cast<uint32_t>(primary->Delegate.Id) == m_source2OwnComparerId)
+    {
+        // Still the control's CustomSortComparer: the chevron already describes it.
+        return;
+    }
+    m_source2OwnComparerId = 0;
+
+    // A path level names the property it sorts on; a key selector or an app comparer names
+    // nothing, and guessing which column it meant would be worse than no chevron.
+    winrt::TableViewColumn matchedColumn{ nullptr };
+    winrt::SortDirection matchedDirection = winrt::SortDirection::None;
+    if (primary && primary->SortKind == SortSpec::Kind::Path && !primary->Path.empty())
+    {
+        if (auto const columns = Columns())
+        {
+            for (auto const& column : columns)
+            {
+                if (column && column.GetSortMemberPathCore() == primary->Path)
+                {
+                    matchedColumn = column;
+                    matchedDirection = primary->Direction;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!matchedColumn && m_sortedColumns.empty())
+    {
+        // Nothing lit and nothing to light. Reached on every commit (a filter or a group change
+        // too), so it must not raise a spurious Sorted.
+        return;
+    }
+
+    if (matchedColumn && m_sortedColumns.size() == 1)
+    {
+        if (auto const lit = m_sortedColumns[0].get();
+            lit == matchedColumn && lit.SortDirection() == matchedDirection)
+        {
+            return;
+        }
+    }
+
+    // Silent, as in v1: the source already holds the order. Sorted is still raised so an app
+    // tracking sort state sees the chevrons move.
+    for (auto const& weakColumn : m_sortedColumns)
+    {
+        if (auto column = weakColumn.get(); column && column != matchedColumn)
+        {
+            winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(winrt::SortDirection::None);
+        }
+    }
+    m_sortedColumns.clear();
+    m_tableViewSourceSort.Clear();
+
+    if (matchedColumn)
+    {
+        winrt::get_self<TableViewColumn>(matchedColumn)->SetSortStateInternal(matchedDirection);
+        m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, matchedColumn });
+    }
+
+    if (m_sortedEventSource)
+    {
+        auto args = winrt::make_self<TableViewSortedEventArgs>(matchedColumn, matchedDirection);
         m_sortedEventSource(*this, *args);
     }
 }

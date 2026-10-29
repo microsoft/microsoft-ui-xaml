@@ -868,6 +868,13 @@ private:
     };
 
     void AttachSourceTip(winrt::TableViewSource const& source);
+    // The TableViewSource2 equivalent (drift #63): the source's verb observer, mapped onto the
+    // same TiP decisions as the v1 handlers through BeginSourceTip / CompleteSourceTip.
+    void AttachSourceTip2(winrt::TableViewSource2 const& source);
+    uint64_t BeginSourceTip(TableViewTip::Operation operation, bool admitted, bool isActiveSource) noexcept;
+    void CompleteSourceTip(TableViewTip::Operation operation, uint64_t generation, bool failed,
+        std::optional<TableViewTip::IgnoreReason> reason, std::optional<HRESULT> error,
+        TableViewTip::AppFaultKind kind, bool isActiveSource) noexcept;
     uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
     void EndTipOperation() noexcept;
     void SupersedeTipOperation() noexcept;
@@ -975,6 +982,10 @@ private:
     // exactly one sort and no chevron claims an axis that is not primary (or no longer exists).
     void ReconcileSortStateWithSource();
     void QueueReconcileSortStateWithSource();
+    // TableViewSource2 (drift #64): the chevron follows the applied spec's primary sort. A Path
+    // primary lights the column whose sort member path matches it; a key selector or an app
+    // comparer lights none. The control's own CustomSortComparer is recognized by its delegate id.
+    void ReconcileSortStateWithSource2();
     // Suppresses ReconcileSortStateWithSource for the duration of a control-initiated verb, whose
     // own source mutations would otherwise read as the app taking over.
     [[nodiscard]] auto BeginControlInitiatedSortScope(uint64_t tipGeneration = 0)
@@ -1016,25 +1027,29 @@ private:
 
     // The TableViewSource2 (shaping redesign) this table owns, in parallel with m_activeSource; at
     // most one of the two is set. Reassigned only by AdoptItemsSource / AdoptTableViewSource2.
-    // Sort, grouping, editing and TiP still read m_activeSource only (Milestone 9).
+    // Sort, grouping, editing and TiP branch on it where they read m_activeSource (Milestone 9).
     tracker_ref<winrt::TableViewSource2> m_activeSource2{ this };
 
     // What this table registers with a TableViewSource2 as its owner (IShapingOwner). The source
     // holds it as a raw pointer, so every path that drops m_activeSource2 calls ReleaseOwner, and
-    // the destructor releases it too. OnShapingApplied re-reads the level and expander of the
-    // realized rows (P9) through the same deferred restamp the v1 source uses after a Reset;
-    // anchoring, selection purge and UIA notifications come in Milestone 9. TableView already
-    // restamps on the view's Reset through its repeater subscription, so a Reset is skipped here.
+    // the destructor releases it too. Both callbacks forward to the reactions v1 drives from
+    // OnTableViewSourceShapingChanged (drift #65): OnTableViewSource2Resetting supersedes the TiP
+    // operation and drops focus tracking before rows go; OnTableViewSource2ShapingApplied restores
+    // focus, refreshes group-expansion state, re-reads the realized rows' level and expander (P9;
+    // the view's Reset already restamps through the repeater), reconciles the sort chevron and
+    // raises the UIA structure change. Both run inside the apply scope, so neither calls a verb.
     struct SourceOwnerSink final : IShapingOwner
     {
         explicit SourceOwnerSink(TableView* owner) noexcept : m_owner(owner) {}
-        void OnResetting() override {}
+        void OnResetting() override;
         void OnShapingApplied(ShapingAppliedArgs const& args) override;
 
     private:
         TableView* m_owner; // The enclosing table; the sink is a member, so it never outlives it.
     };
     SourceOwnerSink m_sourceOwnerSink{ this };
+    void OnTableViewSource2Resetting();
+    void OnTableViewSource2ShapingApplied(ShapingAppliedArgs const& args);
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
@@ -1135,6 +1150,9 @@ private:
     // Applies the current sort state to the bound TableViewSource. Returns false when there is no
     // TableViewSource, or the trigger column resolves no sort key.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration);
+    // The TableViewSource2 branch: replaces the source's sort with the trigger's path (or its
+    // CustomSortComparer) in one DeferRefresh commit (drift #64).
+    bool SyncTableViewSource2Sort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration);
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip);
     bool ClearSortInternal(bool measureTip);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
@@ -1168,6 +1186,9 @@ private:
     // next step. Weak refs: a column removed from Columns must not be kept alive by sort state.
     std::vector<tracker_ref<winrt::TableViewColumn>> m_sortedColumns;
     TableViewSourceSortBinding m_tableViewSourceSort;
+    // DelegateId of the TableViewComparer2 the control declared on m_activeSource2 for a
+    // CustomSortComparer column, or 0. Lets ReconcileSortStateWithSource2 keep that chevron.
+    uint32_t m_source2OwnComparerId{};
 
     tracker_ref<winrt::ItemsRepeater> m_rowsRepeater{ this };
     tracker_ref<winrt::ContentControl> m_emptyStatePresenter{ this };
@@ -1340,6 +1361,14 @@ private:
     winrt::weak_ref<winrt::TableViewSource2> m_awaitedSource2{ nullptr };
     void StopAwaitingSource2();
     void AdoptTableViewSource2(winrt::TableViewSource2 source);
+    // Live-shaping hold on m_activeSource2 for the open edit (drift #47 / #66): taken when an edit
+    // begins, ended once it closes (DrainCoalescedEditReshape). The generation makes an end after
+    // the owner changed a no-op.
+    void AcquireSource2EditHold();
+    void ReleaseSource2EditHold();
+    winrt::weak_ref<winrt::TableViewSource2> m_source2EditHoldSource{ nullptr };
+    uint64_t m_source2EditHoldGeneration{};
+    bool m_source2EditHeld{ false };
 
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();

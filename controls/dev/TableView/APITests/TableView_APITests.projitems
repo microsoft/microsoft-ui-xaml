@@ -42,5 +42,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Live_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Expansion_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Defer_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Owner_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_ShapingPort_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_OwnershipPort_APITests.cs" />
   </ItemGroup>
 </Project>

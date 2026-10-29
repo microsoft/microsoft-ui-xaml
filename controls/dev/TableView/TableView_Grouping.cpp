@@ -6,6 +6,7 @@
 #include "GroupedEntry.h"
 #include "TableView.h"
 #include "TableViewSource.h"
+#include "TableViewSource2.h"
 #include "TableViewRow.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
@@ -101,6 +102,14 @@ bool TableView::IsTableViewSourceGrouped() const
     if (auto const source = m_activeSource.get())
     {
         return winrt::get_self<::TableViewSource>(source)->IsGrouped();
+    }
+
+    // The applied spec, not the desired one: row kinds must describe the rows shown, and a
+    // GroupBy inside an open DeferRefresh has not produced headers yet (drift #67).
+    if (auto const source2 = m_activeSource2.get())
+    {
+        ShapeSpec const* const applied = winrt::get_self<::TableViewSource2>(source2)->AppliedSpec();
+        return applied && !applied->Groups.empty();
     }
 
     return false;

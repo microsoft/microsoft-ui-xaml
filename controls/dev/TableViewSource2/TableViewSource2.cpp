@@ -30,6 +30,7 @@ TableViewSource2::~TableViewSource2()
 {
     // No callbacks during teardown: drop the owner and the waiters without running them.
     m_owner = nullptr;
+    m_verbObserver.reset();
     m_ownerReleasedWaiters.clear();
 
     // Drops the tracker handle without get().
@@ -43,6 +44,53 @@ TableViewSource2::~TableViewSource2()
         // the UI thread.
         m_shapingManager->Clear();
         m_shapingManager.reset();
+    }
+}
+
+template <class Apply>
+void TableViewSource2::ObserveVerb(ShapingVerbKind kind, bool meaningful, Apply&& apply)
+{
+    auto const observer = m_verbObserver;
+    if (!observer || !m_shapingManager)
+    {
+        std::forward<Apply>(apply)();
+        return;
+    }
+
+    // A verb inside an open DeferRefresh only edits the desired spec; an unchanged applied spec
+    // means nothing was published (deferred or re-declared), as v1 "published".
+    IShapingOwner* const owner = m_owner;
+    bool const deferred = m_shapingManager->IsRefreshDeferred();
+    ShapeSpec const before = m_shapingManager->AppliedSpec();
+    uint64_t const generation = observer->Begin ? observer->Begin(kind, meaningful) : 0;
+
+    ShapingVerbOutcome outcome;
+    auto end = wil::scope_exit([&]() noexcept
+    {
+        outcome.OwnerChanged = m_owner != owner;
+        outcome.Committed = outcome.Completed && !deferred && m_shapingManager &&
+            !(m_shapingManager->AppliedSpec() == before);
+        if (observer->End)
+        {
+            observer->End(kind, generation, outcome);
+        }
+    });
+
+    try
+    {
+        std::forward<Apply>(apply)();
+        outcome.Completed = true;
+    }
+    catch (winrt::hresult_invalid_argument const&)
+    {
+        outcome.InvalidArgument = true;
+        outcome.Error = winrt::to_hresult();
+        throw;
+    }
+    catch (...)
+    {
+        outcome.Error = winrt::to_hresult();
+        throw;
     }
 }
 
@@ -65,7 +113,7 @@ winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate const
 
     if (m_shapingManager)
     {
-        m_shapingManager->Filter(predicate);
+        ObserveVerb(ShapingVerbKind::Filter, true, [&]() { m_shapingManager->Filter(predicate); });
     }
     return *this;
 }
@@ -79,7 +127,7 @@ winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector co
 
     if (m_shapingManager)
     {
-        m_shapingManager->GroupBy(key, groupDirection);
+        ObserveVerb(ShapingVerbKind::Group, true, [&]() { m_shapingManager->GroupBy(key, groupDirection); });
     }
     return *this;
 }
@@ -93,7 +141,7 @@ winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& sortMemberP
 
     if (m_shapingManager)
     {
-        m_shapingManager->Sort(sortMemberPath, direction);
+        ObserveVerb(ShapingVerbKind::Sort, true, [&]() { m_shapingManager->Sort(sortMemberPath, direction); });
     }
     return *this;
 }
@@ -107,7 +155,7 @@ winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector const
 
     if (m_shapingManager)
     {
-        m_shapingManager->Sort(key, direction);
+        ObserveVerb(ShapingVerbKind::Sort, true, [&]() { m_shapingManager->Sort(key, direction); });
     }
     return *this;
 }
@@ -121,7 +169,7 @@ winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewComparer2 const& 
 
     if (m_shapingManager)
     {
-        m_shapingManager->Sort(comparer);
+        ObserveVerb(ShapingVerbKind::Sort, true, [&]() { m_shapingManager->Sort(comparer); });
     }
     return *this;
 }
@@ -148,7 +196,7 @@ winrt::TableViewSource2 TableViewSource2::ClearFilter()
 {
     if (m_shapingManager)
     {
-        m_shapingManager->ClearFilter();
+        ObserveVerb(ShapingVerbKind::Filter, !m_shapingManager->AppliedSpec().Filters.empty(), [&]() { m_shapingManager->ClearFilter(); });
     }
     return *this;
 }
@@ -157,7 +205,7 @@ winrt::TableViewSource2 TableViewSource2::ClearGroupBy()
 {
     if (m_shapingManager)
     {
-        m_shapingManager->ClearGroupBy();
+        ObserveVerb(ShapingVerbKind::Group, !m_shapingManager->AppliedSpec().Groups.empty(), [&]() { m_shapingManager->ClearGroupBy(); });
     }
     return *this;
 }
@@ -166,7 +214,7 @@ winrt::TableViewSource2 TableViewSource2::ClearSort()
 {
     if (m_shapingManager)
     {
-        m_shapingManager->ClearSort();
+        ObserveVerb(ShapingVerbKind::Sort, !m_shapingManager->AppliedSpec().Sorts.empty(), [&]() { m_shapingManager->ClearSort(); });
     }
     return *this;
 }
@@ -312,12 +360,23 @@ void TableViewSource2::ReleaseOwner(IShapingOwner* owner)
     // Never throws, even from inside a commit (an owner callback may let go).
     m_shapingManager->SetOwner(nullptr);
     m_owner = nullptr;
+    m_verbObserver.reset();
 
     // Inside a commit a waiter's claim would throw; the commit-ended handler runs them instead.
     if (!m_shapingManager->IsApplying())
     {
         RunOwnerReleasedWaiters();
     }
+}
+
+void TableViewSource2::SetShapingVerbObserver(IShapingOwner* owner, std::shared_ptr<ShapingVerbObserver> observer)
+{
+    if (!m_shapingManager || !owner || owner != m_owner)
+    {
+        return;
+    }
+
+    m_verbObserver = std::move(observer);
 }
 
 void TableViewSource2::RunOwnerReleasedWaiters()
