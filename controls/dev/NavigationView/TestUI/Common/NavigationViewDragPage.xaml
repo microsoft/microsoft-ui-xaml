@@ -48,7 +48,6 @@
             <TextBlock x:Name="LastHoverPointerId" Text="0"/>
             <TextBlock x:Name="LastHoverDevice" Text="None"/>
             <TextBlock x:Name="DragStartPointerOver" Text="Not read"/>
-            <TextBlock x:Name="DragStartAnchor" Text="Not read"/>
             <TextBlock x:Name="HoverMoveCount" Text="0"/>
             <TextBlock x:Name="ItemPointerOver" Text="Not read"/>
             <TextBlock x:Name="ItemWidth" Text="0"/>

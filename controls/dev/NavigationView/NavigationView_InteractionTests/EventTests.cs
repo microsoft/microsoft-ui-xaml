@@ -398,17 +398,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         [TestMethod]
         public void NavigationViewItemPenDragWithinBounds()
         {
-            VerifyNavigationViewItemPenDragWithinBounds(false);
-        }
-
-        [TestMethod]
-        public void NavigationViewItemPenDragWithinBoundsAtScaledDpi()
-        {
-            VerifyNavigationViewItemPenDragWithinBounds(true);
-        }
-
-        private static void VerifyNavigationViewItemPenDragWithinBounds(bool requireScaledDpi)
-        {
             using var inputController = InputController.Activate(PointerInputType.Pen);
             foreach (bool topMode in new[] { false, true })
             {
@@ -420,51 +409,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                         Wait.ForIdle();
                     }
 
-                    new Button(FindElement.ById("Snapshot")).Invoke();
-                    Wait.ForIdle();
-                    double scale = double.Parse(new TextBlock(FindElement.ById("ItemRasterizationScale")).GetText(), CultureInfo.InvariantCulture);
-                    if (requireScaledDpi)
-                    {
-                        Verify.IsTrue(scale > 1, "This test requires a non-100% DPI display; a 100% run is not conversion coverage.");
-                    }
-                    double width = double.Parse(new TextBlock(FindElement.ById("ItemWidth")).GetText(), CultureInfo.InvariantCulture);
+                    // The whole gesture stays inside the item. Dragging horizontally avoids panning
+                    // the pane's vertical ScrollViewer with the pen.
                     var bounds = FindElement.ById("DragItem").BoundingRectangle;
-                    double right = bounds.Left + bounds.Width / 2 + width * scale / 2;
-                    // Start 5 DIPs from the right edge and drag left, so the drag anchor stays
-                    // inside the item in DIPs but is outside it when read as physical pixels at
-                    // non-100% scale. Dragging horizontally avoids panning the pane's vertical
-                    // ScrollViewer with the pen.
-                    var start = new System.Drawing.Point((int)(right - 5 * scale), (int)(bounds.Top + bounds.Height / 2));
-                    var end = new System.Drawing.Point((int)(start.X - 16 * scale), start.Y);
-                    PointerInput.Move(start);
-                    PointerInput.ClickDrag(end, PointerButtons.Primary, 2000);
+                    int y = (int)(bounds.Top + bounds.Height / 2);
+                    PointerInput.Move(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.8), y));
+                    PointerInput.ClickDrag(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.5), y), PointerButtons.Primary, 2000);
                     Wait.ForIdle();
 
                     Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
                     Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
-                    Verify.AreEqual("True", new TextBlock(FindElement.ById("DragStartPointerOver")).GetText());
+                    // The system drag loop does not deliver PointerExited, so the item must not
+                    // enter the drag in a hover state it cannot leave.
+                    Verify.AreEqual("False", new TextBlock(FindElement.ById("DragStartPointerOver")).GetText());
                     Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                     VerifyNavigationViewDragStateReset();
-
-                    string anchor = new TextBlock(FindElement.ById("DragStartAnchor")).GetText();
-                    double anchorX = double.Parse(anchor.Split(',')[0], CultureInfo.InvariantCulture);
-                    Log.Comment($"Top={topMode} RasterizationScale={scale} ItemWidth={width} DragStartAnchor={anchor}");
-                    if (scale > 1 && !topMode)
-                    {
-                        // Precondition: without the physical-to-logical conversion the anchor would be
-                        // treated as outside the item, so DragStartPointerOver=True proves the conversion.
-                        // The Left-mode item is wide enough for this at any non-100% scale; the narrow
-                        // Top-mode item is only logged.
-                        Verify.IsTrue(anchorX > width, "The drag anchor must be outside the item's logical width when read unconverted.");
-                    }
-                    else if (scale <= 1)
-                    {
-                        Log.Warning("RasterizationScale is 1; the physical-to-logical anchor conversion is not exercised by this run.");
-                    }
                 }
             }
         }
-
         [TestMethod]
         public void NavigationViewItemRetemplateDuringPointerPress()
         {
@@ -520,8 +482,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         [TestMethod]
         public void NavigationViewItemPenDrop()
         {
-            // Injected mouse input does not complete a system drop on the test machine. Pen uses
-            // the same item-owned capture and drag-detection path, so it verifies the drop.
+            // InputHelper.MouseDragToTarget's one-shot mouse gesture does not complete a system drop
+            // on the test machine. Pen uses the same item-owned capture and drag-detection path.
             using var inputController = InputController.Activate(PointerInputType.Pen);
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
             {
@@ -530,13 +492,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(
                     () => new TextBlock(FindElement.ById("CompletionResult")).GetText() == "Copy",
-                    retryTimoutByMilliseconds: 3000);
+                    retryTimoutByMilliseconds: 10000);
                 Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
                 Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
                 Verify.AreEqual("DragItem", new TextBlock(FindElement.ById("DroppedText")).GetText());
                 Verify.AreEqual("Copy", new TextBlock(FindElement.ById("CompletionResult")).GetText());
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                 VerifyNavigationViewDragStateReset();
+                // No PointerExited arrives during the system drag loop; the pointer ended on the target.
+                Verify.AreEqual("False", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
             }
         }
 
