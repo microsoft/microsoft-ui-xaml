@@ -96,6 +96,7 @@ private:
 
     void ResetTrackedPointerId();
     void ReleaseCapturedPointer();
+    bool ItemHoldsCapturedPointer();
     bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateCompactPaneLength();
@@ -179,6 +180,7 @@ private:
 
     // Visual state tracking
     winrt::Pointer m_capturedPointer{ nullptr };
+    winrt::weak_ref<winrt::UIElement> m_captureOwner{ nullptr };
     bool m_captureOwnerIsItem{ false };
     uint32_t m_trackedPointerId{ 0 };
     bool m_isPressed{ false };
