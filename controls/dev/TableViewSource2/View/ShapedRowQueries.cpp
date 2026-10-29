@@ -82,7 +82,8 @@ TableViewRowInfo ShapedRowQueries::RowInfo(uint32_t index) const
     uint32_t const childCount = node->ShapedChildCount();
 
     info.Kind = TableViewRowKind::Data;
-    info.Level = tree.GroupLevelCount() + record->Depth;
+    // Hierarchical rows are 1-based, as TableViewSource (v1) reports them (drift #18).
+    info.Level = tree.GroupLevelCount() + record->Depth + (IsHierarchical() ? 1 : 0);
     info.IsExpandable = childCount > 0;
     info.IsExpanded = info.IsExpandable && tree.IsExpanded(node);
 

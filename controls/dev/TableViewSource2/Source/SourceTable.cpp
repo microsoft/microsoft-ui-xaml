@@ -1062,6 +1062,10 @@ void SourceTable::RemoveAt(uint32_t index)
     // still in the shaped tree); ChildrenBy appends its subtree to removed. An excluded record
     // is in no sibling list and raises nothing.
     bool linked = false;
+
+    // Compute: room for the record's zombie slot, so parking it in the catch below cannot throw
+    // (a bad_alloc there would free a record the engine still points to).
+    m_zombies.reserve(m_zombies.size() + 1);
     try
     {
         linked = m_hierarchy->OnRemoving(*this, raw, removed);
@@ -1080,10 +1084,15 @@ void SourceTable::RemoveAt(uint32_t index)
         }
         raw->Parent = nullptr;
 
-        for (auto& record : removed)
-        {
-            m_zombies.push_back(std::move(record));
-        }
+        // noexcept: a subtree that outgrew the reserved slot fails fast rather than freeing records
+        // the engine still holds.
+        [&]() noexcept {
+            m_zombies.reserve(m_zombies.size() + removed.size());
+            for (auto& record : removed)
+            {
+                m_zombies.push_back(std::move(record));
+            }
+        }();
         RequestReset();
         PostRereadIfOwed();
         throw;

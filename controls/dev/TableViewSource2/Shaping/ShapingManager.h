@@ -287,8 +287,9 @@ private:
     //   - m_commit.moveNet != 0 -> Membership (rows moved and the count changed: not a pure
     //     reorder).
     //   - m_commit.listenerFault set -> NotifyReset, so the view and the repeater agree again.
-    //   - m_owner->OnShapingApplied({m_commit.changes, retired}) if changes != None or retired is
-    //     non-empty (O2, O3, O5, P9). Skipped on unwind from an engine throw (nothing was written).
+    //   - m_owner->OnShapingApplied({m_commit.changes, retired}) if changes != None, retired is
+    //     non-empty or chromeDirty is set (O2, O3, O5, P9; drift #21). Skipped on unwind from an
+    //     engine throw (nothing was written).
     //     A throw from it is caught into m_commit.listenerFault (if still empty).
     //   - ShapingEngine::ReleaseRetired, SourceTable::EndFreeze, m_isApplying cleared.
     //   - EndFreeze reported a pending change: on unwind, ResyncSource(post: true) (AfterCommit
@@ -433,6 +434,9 @@ private:
         std::exception_ptr listenerFault;
         // EndFreeze reported a source change and the scope ended normally; AfterCommit resyncs.
         bool resyncDue{ false };
-    };
+        // A surgical source change was applied. It may change a staying row's chrome without a row
+        // event (a first child linked under a collapsed parent), so EndCommit calls the owner even
+        // when changes is None (P9; drift #21).
+        bool chromeDirty{ false };    };
     CommitState m_commit;
 };

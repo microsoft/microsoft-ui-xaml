@@ -1021,15 +1021,20 @@ private:
 
     // What this table registers with a TableViewSource2 as its owner (IShapingOwner). The source
     // holds it as a raw pointer, so every path that drops m_activeSource2 calls ReleaseOwner, and
-    // the destructor releases it too. The callbacks are empty until Milestone 9 adds anchoring,
-    // selection purge and UIA notifications; TableView already reacts to the view's Reset through
-    // its repeater subscription.
+    // the destructor releases it too. OnShapingApplied re-reads the level and expander of the
+    // realized rows (P9) through the same deferred restamp the v1 source uses after a Reset;
+    // anchoring, selection purge and UIA notifications come in Milestone 9. TableView already
+    // restamps on the view's Reset through its repeater subscription, so a Reset is skipped here.
     struct SourceOwnerSink final : IShapingOwner
     {
+        explicit SourceOwnerSink(TableView* owner) noexcept : m_owner(owner) {}
         void OnResetting() override {}
-        void OnShapingApplied(ShapingAppliedArgs const& /*args*/) override {}
+        void OnShapingApplied(ShapingAppliedArgs const& args) override;
+
+    private:
+        TableView* m_owner; // The enclosing table; the sink is a member, so it never outlives it.
     };
-    SourceOwnerSink m_sourceOwnerSink;
+    SourceOwnerSink m_sourceOwnerSink{ this };
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.

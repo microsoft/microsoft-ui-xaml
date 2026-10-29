@@ -81,8 +81,10 @@ struct IShapingOwner
     virtual void OnResetting() = 0;
 
     // The unit of work is done: every row event or the Reset has been raised, and
-    // ShapingEngine::ReleaseRetired has not run yet. Called when Changes is not None or Retired is
-    // non-empty (a removed hidden record changes nothing visible but still purges).
+    // ShapingEngine::ReleaseRetired has not run yet. Called when Changes is not None, Retired is
+    // non-empty (a removed hidden record changes nothing visible but still purges), or a surgical
+    // source change was applied with no row event (Changes is None, but a staying row's expander
+    // may have changed: a first child linked under a collapsed parent).
     //
     // Chrome (decided, P9: replaces the States list of O5). Row events cover only rows that enter,
     // leave or move; a row that stays can still change its chrome (expander shown or hidden as its

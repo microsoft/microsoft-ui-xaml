@@ -70,14 +70,19 @@ void ShapingEngine::Reapply(ShapeSpec const& desired)
         throw winrt::hresult_not_implemented(L"TableViewSource2: shaping a non-empty spec is not implemented yet.");
     }
 
-    // Compute: the empty spec places the top-level records under the root in source order. Flat
-    // sources have no children; Milestone 3 extends this to source children.
+    // Compute: the empty spec places the top-level records under the root in source order, and
+    // every record's source children (SourceRecord::Children, ParentBy / ChildrenBy) under it.
     auto const& topLevel = m_source.TopLevel();
     std::vector<ShapedNode*> rootChildren;
     rootChildren.reserve(topLevel.size());
+    std::vector<SourceRecord*> records(topLevel.begin(), topLevel.end());
     for (SourceRecord* const record : topLevel)
     {
         rootChildren.push_back(record);
+    }
+    for (size_t i = 0; i < records.size(); ++i)
+    {
+        records.insert(records.end(), records[i]->Children.begin(), records[i]->Children.end());
     }
     GroupMap noGroups;
 
@@ -85,18 +90,25 @@ void ShapingEngine::Reapply(ShapeSpec const& desired)
     m_tree.BeginReset();
 
     GroupNode& root = m_tree.Root();
-    for (uint32_t i = 0; i < topLevel.size(); ++i)
+    for (SourceRecord* const record : records)
     {
-        SourceRecord* const record = topLevel[i];
         // Keep the record's own expansion; everything else is recomputed for the empty spec.
+        // Without ChildrenShaped, ShapedChildAt reads the source Children.
         record->Shape.Flags = (record->Shape.Flags & (ShapeFlags::Expanded | ShapeFlags::OverlayCollapsed)) | ShapeFlags::PassesFilter;
         record->Shape.SortKeys.clear();
         record->Shape.ShapedChildren.clear();
-        record->Shape.Group = &root;
-        record->IndexInParent = i;
+        record->Shape.Group = record->Parent ? nullptr : &root;
         record->ChildRows.MarkStale();
+        for (uint32_t j = 0; j < record->Children.size(); ++j)
+        {
+            record->Children[j]->IndexInParent = j;
+        }
     }
 
+    for (uint32_t i = 0; i < topLevel.size(); ++i)
+    {
+        topLevel[i]->IndexInParent = i;
+    }
     root.Children = std::move(rootChildren);
     root.ChildRows.MarkStale();
 
@@ -111,12 +123,96 @@ void ShapingEngine::Reapply(ShapeSpec const& desired)
     m_tree.EndReset(0, m_groupsByIdentity, false /* newGroupSelector */);
 }
 
-void ShapingEngine::ApplySourceChange(SourceChange const&)
+void ShapingEngine::ApplySourceChange(SourceChange const& change)
 {
-    // Milestone 2: every source change rebuilds the tree with the applied spec (one stable Reset).
-    // Milestone 5 makes inserts, removes, replaces and moves surgical.
-    ShapeSpec const applied{ m_applied };
-    Reapply(applied);
+    // Spec §6: under the empty spec a single-item Add, Remove or Move (including a ParentBy
+    // reparent and an orphan moving to the top level) links or unlinks that one node (drift #20).
+    // Replace, and any non-empty spec (Milestone 4), rebuild with the applied spec (one Reset).
+    bool const surgical = m_applied == ShapeSpec{} &&
+        (change.Kind == SourceChangeKind::Add || change.Kind == SourceChangeKind::Remove || change.Kind == SourceChangeKind::Move);
+    if (!surgical)
+    {
+        ShapeSpec const applied{ m_applied };
+        Reapply(applied);
+        return;
+    }
+
+    GroupNode& root = m_tree.Root();
+    auto const shapedParent = [&root](SourceRecord* parent) -> ShapedNode* {
+        return parent ? static_cast<ShapedNode*>(parent) : static_cast<ShapedNode*>(&root);
+    };
+
+    switch (change.Kind)
+    {
+    case SourceChangeKind::Add:
+    {
+        // Compute: capacity for the engine-owned root list (E4).
+        if (!change.NewParent)
+        {
+            root.Children.reserve(root.Children.size() + 1);
+        }
+
+        // Write: nothing below throws. Added is the new subtree in pre-order (Added[0] its root);
+        // its records start as Reapply leaves a record under the empty spec.
+        for (SourceRecord* const record : change.Added)
+        {
+            record->Shape.Flags = (record->Shape.Flags & (ShapeFlags::Expanded | ShapeFlags::OverlayCollapsed)) | ShapeFlags::PassesFilter;
+            record->Shape.SortKeys.clear();
+            record->Shape.ShapedChildren.clear();
+            record->Shape.Group = record->Parent ? nullptr : &root;
+            record->ChildRows.MarkStale();
+            for (uint32_t j = 0; j < record->Children.size(); ++j)
+            {
+                record->Children[j]->IndexInParent = j;
+            }
+        }
+
+        m_tree.Link(change.Added.front(), shapedParent(change.NewParent), change.NewIndex, false /* isMove */);
+        return;
+    }
+
+    case SourceChangeKind::Remove:
+    {
+        // The departed subtree is alive until the handler returns; nothing below reads its
+        // children. Unlink takes the old place: SourceTable has already detached the record.
+        auto* const record = const_cast<SourceRecord*>(change.Removed.front());
+        m_tree.Unlink(record, shapedParent(change.OldParent), change.OldIndex, false /* isMove */);
+        record->Shape.Group = nullptr;
+        return;
+    }
+
+    default: // SourceChangeKind::Move
+    {
+        // A Move carries no record: it is the one now at NewIndex among NewParent's children.
+        std::vector<SourceRecord*> const& siblings = change.NewParent ? change.NewParent->Children : m_source.TopLevel();
+        SourceRecord* const record = siblings[change.NewIndex];
+
+        // Compute: capacity for the engine-owned root list (E4).
+        if (!change.NewParent && change.OldParent)
+        {
+            root.Children.reserve(root.Children.size() + 1);
+        }
+
+        // Write: nothing below throws. The node keeps its counts and expansion across the move.
+        m_tree.Unlink(record, shapedParent(change.OldParent), change.OldIndex, true /* isMove */);
+        record->Shape.Group = change.NewParent ? nullptr : &root;
+        m_tree.Link(record, shapedParent(change.NewParent), change.NewIndex, true /* isMove */);
+        return;
+    }
+    }
+}
+namespace
+{
+    void ClearShape(SourceRecord* record) noexcept
+    {
+        record->Shape.SortKeys.clear();
+        record->Shape.ShapedChildren.clear();
+        record->Shape.Group = nullptr;
+        for (SourceRecord* const child : record->Children)
+        {
+            ClearShape(child);
+        }
+    }
 }
 
 void ShapingEngine::Clear()
@@ -127,9 +223,7 @@ void ShapingEngine::Clear()
 
     for (SourceRecord* const record : m_source.TopLevel())
     {
-        record->Shape.SortKeys.clear();
-        record->Shape.ShapedChildren.clear();
-        record->Shape.Group = nullptr;
+        ClearShape(record);
     }
 
     m_applied = ShapeSpec{};

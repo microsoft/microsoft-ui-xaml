@@ -5,6 +5,22 @@
 #include "common.h"
 #include "Engine/ShapedTree.h"
 
+namespace
+{
+    // F4: a group that leaves the tree (not a move) drops its expansion and its subgroups'.
+    void EraseGroupExpansion(GroupExpansion& expansion, GroupNode* group) noexcept
+    {
+        expansion.Erase(group->Identity);
+        for (ShapedNode* const child : group->Children)
+        {
+            if (GroupNode* const subgroup = child->AsGroup())
+            {
+                EraseGroupExpansion(expansion, subgroup);
+            }
+        }
+    }
+}
+
 void ShapedTree::SetListener(IShapedRowsListener* listener) noexcept
 {
     m_listener = listener;
@@ -170,6 +186,51 @@ void ShapedTree::EndReset(
     }
 }
 
+void ShapedTree::SetAllRowsExpanded(bool expanded)
+{
+    // Compute: every record in the shaped tree (allocation is the only failure).
+    std::vector<SourceRecord*> records;
+    std::vector<ShapedNode*> pending{ &m_root };
+    while (!pending.empty())
+    {
+        ShapedNode* const node = pending.back();
+        pending.pop_back();
+        uint32_t const count = node->ShapedChildCount();
+        for (uint32_t j = 0; j < count; ++j)
+        {
+            ShapedNode* const child = node->ShapedChildAt(j);
+            if (SourceRecord* const record = child->AsRecord())
+            {
+                records.push_back(record);
+            }
+            pending.push_back(child);
+        }
+    }
+
+    // Write: nothing below throws.
+    BeginReset();
+    for (SourceRecord* const record : records)
+    {
+        auto& flags = record->Shape.Flags;
+        if ((flags & ShapeFlags::PassesFilter) != ShapeFlags::None)
+        {
+            flags = expanded ? (flags | ShapeFlags::Expanded) : (flags & ~ShapeFlags::Expanded);
+        }
+        else
+        {
+            // A context row (F5): expanded unless OverlayCollapsed.
+            flags = expanded ? (flags & ~ShapeFlags::OverlayCollapsed) : (flags | ShapeFlags::OverlayCollapsed);
+        }
+    }
+
+    ComputeSubtreeCounts(&m_root);
+    InvalidateCursor();
+    if (m_listener)
+    {
+        m_listener->OnRowsReset();
+    }
+}
+
 void ShapedTree::Clear() noexcept
 {
     m_root.Children.clear();
@@ -179,6 +240,154 @@ void ShapedTree::Clear() noexcept
     m_groupExpansion.Clear();
     m_listener = nullptr;
     InvalidateCursor();
+}
+
+void ShapedTree::Link(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept
+{
+    // An engine-owned list takes node here (capacity reserved by the engine, E4); a source-owned
+    // list (a record's Children while ChildrenShaped is clear) already holds it.
+    if (GroupNode* const group = parent->AsGroup())
+    {
+        MUX_ASSERT(index <= group->Children.size());
+        group->Children.insert(group->Children.begin() + index, node);
+    }
+    else if (SourceRecord* const record = parent->AsRecord();
+             (record->Shape.Flags & ShapeFlags::ChildrenShaped) != ShapeFlags::None)
+    {
+        auto& list = record->Shape.ShapedChildren;
+        list.insert(list.begin() + index, node->AsRecord());
+    }
+    MUX_ASSERT(parent->ShapedChildAt(index) == node);
+
+    Renumber(parent, index);
+    parent->ChildRows.MarkStale();
+    if (!isMove)
+    {
+        ComputeSubtreeCounts(node);
+    }
+
+    uint32_t const span = 1 + node->VisibleDescendantCount;
+    PropagateCount(parent, static_cast<int64_t>(span));
+    InvalidateCursor();
+
+    // IndexOf rebuilds the stale lists on the way up, so a shown parent's ChildRows is current
+    // again when the event is raised.
+    if (auto const shownAt = IndexOf(node))
+    {
+        RaiseInserted(*shownAt, span, isMove);
+    }
+}
+
+void ShapedTree::Unlink(ShapedNode* node, bool isMove) noexcept
+{
+    Unlink(node, node->ShapedParent(), node->IndexInParent, isMove);
+}
+
+void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept
+{
+    uint32_t const span = 1 + node->VisibleDescendantCount;
+
+    // Position first. Only the rows of the siblings before index matter. A current ChildRows is
+    // in the old order. A stale one is rebuilt from the list as it is now: SourceTable may have
+    // erased node (remove, reparent: the siblings before index are unchanged) or moved it within
+    // this source-owned list. In that last case the later siblings still carry their old
+    // IndexInParent (Renumber has not run), so the sibling now at index tells the direction: one
+    // that was at index - 1 means node moved before index, and its own row is counted in
+    // PrefixSum(index + 1).
+    std::optional<uint32_t> shownAt;
+    bool const parentIsRoot = parent == &m_root;
+    std::optional<uint32_t> const parentAt = parentIsRoot ? std::optional<uint32_t>{ 0 } : IndexOf(parent);
+    if (parentAt && (parentIsRoot || IsExpanded(parent)))
+    {
+        bool const wasStale = parent->ChildRows.IsStale();
+        FenwickTree& rows = CurrentChildRows(parent);
+        uint32_t before = rows.PrefixSum(index);
+        if (wasStale && index < parent->ShapedChildCount())
+        {
+            ShapedNode* const atIndex = parent->ShapedChildAt(index);
+            if (atIndex != node && node->ShapedParent() == parent && atIndex->IndexInParent + 1 == index)
+            {
+                before = rows.PrefixSum(index + 1) - span;
+            }
+        }
+        shownAt = *parentAt + (parentIsRoot ? 0 : 1) + before;
+    }
+
+    if (GroupNode* const group = parent->AsGroup())
+    {
+        MUX_ASSERT(index < group->Children.size() && group->Children[index] == node);
+        group->Children.erase(group->Children.begin() + index);
+    }
+    else if (SourceRecord* const record = parent->AsRecord();
+             (record->Shape.Flags & ShapeFlags::ChildrenShaped) != ShapeFlags::None)
+    {
+        auto& list = record->Shape.ShapedChildren;
+        list.erase(list.begin() + index);
+    }
+
+    Renumber(parent, index);
+    parent->ChildRows.MarkStale();
+    PropagateCount(parent, -static_cast<int64_t>(span));
+    if (!isMove)
+    {
+        if (GroupNode* const group = node->AsGroup())
+        {
+            EraseGroupExpansion(m_groupExpansion, group);
+        }
+    }
+    InvalidateCursor();
+
+    if (shownAt)
+    {
+        RaiseRemoved(*shownAt, span, isMove);
+    }
+}
+
+void ShapedTree::PropagateCount(ShapedNode* parent, int64_t delta) noexcept
+{
+    // The caller has updated (or marked stale) parent's own ChildRows for the changed child.
+    ShapedNode* node = parent;
+    while (node)
+    {
+        // A collapsed node keeps 0 and hides the change from everything above it.
+        if (node != &m_root && !IsExpanded(node))
+        {
+            return;
+        }
+
+        node->VisibleDescendantCount = static_cast<uint32_t>(static_cast<int64_t>(node->VisibleDescendantCount) + delta);
+        ShapedNode* const up = node->ShapedParent();
+        if (up && !up->ChildRows.IsStale())
+        {
+            up->ChildRows.Add(node->IndexInParent, static_cast<int32_t>(delta));
+        }
+        node = up;
+    }
+}
+
+void ShapedTree::Renumber(ShapedNode* parent, uint32_t index) noexcept
+{
+    uint32_t const count = parent->ShapedChildCount();
+    for (uint32_t j = index; j < count; ++j)
+    {
+        parent->ShapedChildAt(j)->IndexInParent = j;
+    }
+}
+
+void ShapedTree::RaiseRemoved(uint32_t index, uint32_t count, bool isMove) const noexcept
+{
+    if (m_listener)
+    {
+        m_listener->OnRowsRemoved(index, count, isMove);
+    }
+}
+
+void ShapedTree::RaiseInserted(uint32_t index, uint32_t count, bool isMove) const noexcept
+{
+    if (m_listener)
+    {
+        m_listener->OnRowsInserted(index, count, isMove);
+    }
 }
 
 void ShapedTree::RebuildChildRows(ShapedNode* node) const

@@ -246,6 +246,13 @@ public:
     // node's own counts are left as they are (a move keeps them).
     void Unlink(ShapedNode* node, bool isMove) noexcept;
 
+    // Unlink for a source edit SourceTable has already applied (ShapingEngine::ApplySourceChange):
+    // parent and index are where node was (SourceChange::OldParent / OldIndex, the shaped root
+    // for a top-level record), because node's SourceRecord::Parent and its place in a
+    // source-owned list may already be the new ones. The two-argument form calls this with
+    // node->ShapedParent() and node->IndexInParent.
+    void Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept;
+
     // Bracket a rebuild. BeginReset raises OnRowsResetting before anything is swapped. The engine
     // then swaps the new root Children and GroupMap in (writing IndexInParent as it
     // builds), and EndReset:

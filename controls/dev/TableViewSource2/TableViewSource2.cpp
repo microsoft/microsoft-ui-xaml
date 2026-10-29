@@ -73,14 +73,22 @@ winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewComparer2 const& 
     ThrowNotImplemented(L"Sort");
 }
 
-winrt::TableViewSource2 TableViewSource2::ParentBy(winrt::TableViewKeySelector const& /*key*/, winrt::TableViewKeySelector const& /*parentKey*/)
+winrt::TableViewSource2 TableViewSource2::ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey)
 {
-    ThrowNotImplemented(L"ParentBy");
+    if (m_shapingManager)
+    {
+        m_shapingManager->ParentBy(key, parentKey);
+    }
+    return *this;
 }
 
-winrt::TableViewSource2 TableViewSource2::ChildrenBy(winrt::TableViewChildrenSelector2 const& /*childrenSelector*/)
+winrt::TableViewSource2 TableViewSource2::ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector)
 {
-    ThrowNotImplemented(L"ChildrenBy");
+    if (m_shapingManager)
+    {
+        m_shapingManager->ChildrenBy(childrenSelector);
+    }
+    return *this;
 }
 
 winrt::TableViewSource2 TableViewSource2::ClearFilter()
@@ -100,7 +108,11 @@ winrt::TableViewSource2 TableViewSource2::ClearSort()
 
 winrt::TableViewSource2 TableViewSource2::ClearHierarchy()
 {
-    ThrowNotImplemented(L"ClearHierarchy");
+    if (m_shapingManager)
+    {
+        m_shapingManager->ClearHierarchy();
+    }
+    return *this;
 }
 
 void TableViewSource2::Refresh()

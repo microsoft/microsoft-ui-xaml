@@ -2144,8 +2144,22 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
     });
 }
 
-void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
+void TableView::SourceOwnerSink::OnShapingApplied(ShapingAppliedArgs const& args)
 {
+    // A Reset re-realizes every row and OnRowsSourceResetForHierarchy already queues the restamp.
+    // A drained table has no realized rows to read.
+    if ((args.Changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset || m_owner->m_rowsSourceDrained)
+    {
+        return;
+    }
+
+    // Deferred and coalesced: the repeater has not laid out the commit's row events yet, and a
+    // verb called back from here would throw (the apply scope is still open). Reading the row
+    // metadata one dispatcher turn later is allowed and sees the settled indexes.
+    m_owner->QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::OnTableViewSourceShapingChanged(bool reorderOnly){
     SupersedeTipOperation();
     if (!reorderOnly)
     {

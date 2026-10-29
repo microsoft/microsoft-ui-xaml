@@ -88,6 +88,52 @@ void ShapingManager::Refresh()
     m_sourceTable->Refresh();
 }
 
+void ShapingManager::ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey)
+{
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2.ParentBy cannot be called while the source is being shaped.");
+    }
+
+    if (m_sourceTable->IsDetached())
+    {
+        return;
+    }
+
+    // The verb's Reset comes back through OnSourceChanged, which opens the commit scope.
+    m_sourceTable->SetParentKeyHierarchy(key, parentKey);
+}
+
+void ShapingManager::ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector)
+{
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2.ChildrenBy cannot be called while the source is being shaped.");
+    }
+
+    if (m_sourceTable->IsDetached())
+    {
+        return;
+    }
+
+    m_sourceTable->SetChildCollectionHierarchy(childrenSelector);
+}
+
+void ShapingManager::ClearHierarchy()
+{
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2.ClearHierarchy cannot be called while the source is being shaped.");
+    }
+
+    if (m_sourceTable->IsDetached())
+    {
+        return;
+    }
+
+    m_sourceTable->ClearHierarchy();
+}
+
 bool ShapingManager::IsLiveShaping() const
 {
     return m_sourceTable->IsLiveShaping();
@@ -223,8 +269,9 @@ void ShapingManager::OnSourceChanged(SourceChange const& change)
             }
 
             m_engine.ApplySourceChange(change);
+            m_commit.chromeDirty = true;
 
-            // Until Milestone 5 this is a full rebuild: the owner hears Reset | Membership.
+            // A Replace, or a change the engine could not apply surgically, rebuilt the list: the owner hears Reset | Membership.
             if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
             {
                 m_commit.changes |= ShapingChangeFlags::Membership;
@@ -342,9 +389,30 @@ bool ShapingManager::SetExpanded(ShapedNode* /*node*/, std::optional<bool> /*des
     throw winrt::hresult_not_implemented(L"TableViewSource2: expansion is not implemented yet.");
 }
 
-void ShapingManager::SetAllExpanded(ExpansionAxis /*axis*/, bool /*expanded*/)
+void ShapingManager::SetAllExpanded(ExpansionAxis axis, bool expanded)
 {
-    throw winrt::hresult_not_implemented(L"TableViewSource2: expansion is not implemented yet.");
+    // Rows only (drift #19): TableView.ExpandAllRows / CollapseAllRows on a source tree. Groups
+    // and the per-row verbs are Milestone 7.
+    if (axis != ExpansionAxis::Rows)
+    {
+        throw winrt::hresult_not_implemented(L"TableViewSource2: expansion is not implemented yet.");
+    }
+
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2: rows cannot be expanded or collapsed while the source is being shaped.");
+    }
+
+    if (m_sourceTable->IsDetached())
+    {
+        return;
+    }
+
+    {
+        CommitScope scope{ *this, {} };
+        m_engine.Tree().SetAllRowsExpanded(expanded);
+    }
+    AfterCommit();
 }
 
 void ShapingManager::ExpandSubtree(ShapedNode* /*node*/)
@@ -385,7 +453,8 @@ void ShapingManager::EndCommit(std::span<SourceRecord const* const> retired, boo
         m_commit.changes |= ShapingChangeFlags::Reset;
     }
 
-    if (!unwinding && m_owner && (m_commit.changes != ShapingChangeFlags::None || !retired.empty()))
+    if (!unwinding && m_owner &&
+        (m_commit.changes != ShapingChangeFlags::None || !retired.empty() || m_commit.chromeDirty))
     {
         try
         {
