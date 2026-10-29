@@ -31,6 +31,10 @@ class ShapingManager;
 // NotifyRemoved or NotifyAdded right away, so Count and GetAt already match every event. A rebuild
 // or expand-all calls NotifyReset once. Nothing is recorded or replayed.
 //
+// Event item lists (D3): in parity with InspectingDataSource::OnVectorChanged, Remove and Add args
+// carry a bindable Vector of count nullptrs. Only the size is meaningful; the repeater reads only
+// NewItems().Size() / OldItems().Size(), and consumers read rows through GetAt.
+//
 // UI-thread affine.
 class ShapedCollectionView :
     public winrt::implements<ShapedCollectionView, ItemsSourceView>
@@ -69,10 +73,12 @@ public:
 
     // ---- Events (called only by ShapingManager's IShapedRowsListener) ----------------------
 
-    // A ranged Remove of count rows at index. The tree already reflects it (P8).
+    // A ranged Remove of count rows at index; OldItems holds count nullptrs (D3). The tree already
+    // reflects it (P8).
     void NotifyRemoved(uint32_t index, uint32_t count);
 
-    // A ranged Add of count rows at index. The tree already reflects it (P8).
+    // A ranged Add of count rows at index; NewItems holds count nullptrs (D3). The tree already
+    // reflects it (P8).
     void NotifyAdded(uint32_t index, uint32_t count);
 
     // One stable Reset: the repeater re-reads Count and reuses elements by key.
@@ -87,35 +93,4 @@ public:
 private:
     // Non-owning (D2). Null after Detach().
     ShapingManager* m_owner{ nullptr };
-};
-
-// The item lists of ShapedCollectionView's Remove and Add args (decided, D3). Holds a count only:
-// Size() is the count, GetAt returns nullptr, mutators throw. The repeater reads only
-// NewItems().Size() / OldItems().Size(), so a 10k-row splice costs one tiny object, not a 10k-entry
-// vector (InspectingDataSource appends one nullptr per item).
-class CountOnlyItemList :
-    public winrt::implements<CountOnlyItemList, winrt::IBindableVector, winrt::IBindableIterable>
-{
-public:
-    explicit CountOnlyItemList(uint32_t count) noexcept : m_count(count) {}
-
-    // IBindableVector (read side).
-    uint32_t Size() const noexcept { return m_count; }
-    winrt::IInspectable GetAt(uint32_t index) const;     // nullptr; E_BOUNDS when index >= Size()
-    winrt::IBindableVectorView GetView() const;
-    bool IndexOf(winrt::IInspectable const& value, uint32_t& index) const noexcept;  // false
-
-    // IBindableVector (mutators): throw E_ILLEGAL_METHOD_CALL.
-    void SetAt(uint32_t index, winrt::IInspectable const& value);
-    void InsertAt(uint32_t index, winrt::IInspectable const& value);
-    void RemoveAt(uint32_t index);
-    void Append(winrt::IInspectable const& value);
-    void RemoveAtEnd();
-    void Clear();
-
-    // IBindableIterable: Size() nullptrs.
-    winrt::IBindableIterator First() const;
-
-private:
-    uint32_t m_count{ 0 };
 };

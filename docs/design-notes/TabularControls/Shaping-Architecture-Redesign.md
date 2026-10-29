@@ -43,7 +43,7 @@ controls/dev/TableViewSource2/
     ShapingEngine.h                              ShapingEngine (applied spec, ShapedTree, entry points)
   View/                                          WinRT projections of the shaped tree
     GroupHeaderRow.h                             GroupHeaderRow, IGroupHeaderRowTag, TryGetGroupHeaderRow (header row value)
-    ShapedCollectionView.h                       ShapedCollectionView (the WinRT visible list), CountOnlyItemList
+    ShapedCollectionView.h                       ShapedCollectionView (the WinRT visible list)
     ShapedRowMetadata.h                          ShapedRowMetadata (ITableViewRowMetadataProvider adapter)
   Shaping/                                       owns and wires the layers above
     IShapingOwner.h                              IShapingOwner, ShapingAppliedArgs (owner channel to TableView)
@@ -92,7 +92,6 @@ classDiagram
 
     class TableViewSource2 {
         <<WinRT runtimeclass, ReferenceTracker>>
-        -tracker_ref~IInspectable~ m_items
         -unique_ptr~ShapingManager~ m_shapingManager
         +From(items)$ TableViewSource2
         +Filter(predicate) TableViewSource2
@@ -172,44 +171,44 @@ classDiagram
         -optional~tracker_ref~ItemsSourceView~~ m_view
         -shared_ptr~ShapedRowMetadata~ m_rowMetadata
         -ShapingEngine m_engine
+        -IShapingOwner* m_owner
+        -vector~OwnerReleasedWaiter~ m_ownerReleasedWaiters
         -unordered_map~SourceRecord*, hstring~ m_liveDirty
         -bool m_liveAllDirty
         -bool m_liveDrainPosted
+        -uint32 m_liveHoldCount
+        -uint32 m_deferDepth
+        -bool m_refreshRequested
         -bool m_isApplying
         -bool m_resyncPosted
         -uint32 c_bulkThreshold$
-        +View() ItemsSourceView
-        +RowCount() uint32
-        +RowAt(index) ShapedNode*
-        +IndexOfKey(key) optional~uint32~
-        +IndexOfItem(value) optional~uint32~
-        +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
-        +RowInfo(index) TableViewRowInfo
-        +TryResolveKey(key) ShapedNode*
-        +SetExpanded(node, desired) bool
-        +SetAllExpanded(axis, expanded)
-        +ExpandSubtree(node)
-        +Reveal(node) optional~uint32~
-        +IsHierarchical() bool
-        +TryGetGroupMembership(index, position, size) bool
-        -IShapingOwner* m_owner
-        -uint32 m_liveHoldCount
-        +TrySetOwner(owner) bool
-        +ReleaseOwner(owner)
-        +AddOwnerReleasedWaiter(waiter, handler)
-        +RemoveOwnerReleasedWaiter(waiter)
-        -vector~OwnerReleasedWaiter~ m_ownerReleasedWaiters
-        +ContainsItem(item) bool
-        +BeginLiveShapingHold() noexcept
-        +EndLiveShapingHold()
         +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
         +Refresh()
         +BeginDeferRefresh()
         +EndDeferRefresh()
         +IsRefreshDeferred() bool
-        -uint32 m_deferDepth
-        -bool m_refreshRequested
         +IsLiveShaping : bool
+        +BeginLiveShapingHold() noexcept
+        +EndLiveShapingHold()
+        +TrySetOwner(owner) bool
+        +ReleaseOwner(owner)
+        +AddOwnerReleasedWaiter(waiter, handler)
+        +RemoveOwnerReleasedWaiter(waiter)
+        +View() ItemsSourceView
+        +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
+        +RowCount() uint32
+        +RowAt(index) ShapedNode*
+        +IndexOfKey(key) optional~uint32~
+        +IndexOfItem(value) optional~uint32~
+        +ContainsItem(item) bool
+        +RowInfo(index) TableViewRowInfo
+        +TryResolveKey(key) ShapedNode*
+        +IsHierarchical() bool
+        +TryGetGroupMembership(index, position, size) bool
+        +SetExpanded(node, desired) bool
+        +SetAllExpanded(axis, expanded)
+        +ExpandSubtree(node)
+        +Reveal(node) optional~uint32~
         +Clear()
         -OnSourceChanged(change)
         -OnItemChanged(record, propertyName)
@@ -230,13 +229,6 @@ classDiagram
         +NotifyAdded(index, count)
         +NotifyReset()
         +Detach()
-    }
-
-    class CountOnlyItemList {
-        <<WinRT IBindableVector, count only>>
-        -uint32 m_count
-        +Size() uint32
-        +GetAt(index) IInspectable
     }
 
     class ShapedRowMetadata {
@@ -431,12 +423,11 @@ classDiagram
     TableViewSource2 ..> DeferRefreshHandle : DeferRefresh() returns
     ShapingManager ..> ExpansionAxis : SetAllExpanded
     IShapingOwner ..> ShapingAppliedArgs
-    ShapedCollectionView ..> CountOnlyItemList : Remove and Add args
-    ShapingManager *-- SourceTable : shared_ptr (shareable with consumers)
-    ShapingManager *-- ShapedCollectionView : m_view (tracked, TableView also holds it)
+    ShapingManager *-- SourceTable : shared_ptr (weak captures in handlers only)
+    ShapingManager o-- ShapedCollectionView : m_view (tracked, TableView also holds it)
     ShapedCollectionView ..> ShapingManager : raw back-pointer, nulled by Detach()
     ShapedCollectionView ..> GroupHeaderRow : header row value
-    ShapingManager *-- ShapedRowMetadata : m_rowMetadata (shared_ptr, TableView also holds it)
+    ShapingManager o-- ShapedRowMetadata : m_rowMetadata (shared_ptr, TableView also holds it)
     ShapedRowMetadata ..> ShapingManager : raw back-pointer, nulled by Detach()
     ShapingManager ..> IShapingOwner : raw m_owner (TableView), OnResetting, OnShapingApplied
     SourceTable *-- CollectionAccessor2 : owns source accessor (optional, reset on Clear)
@@ -897,10 +888,10 @@ whether `Sort` was declared before or after `GroupBy`.
 - **A `ReferenceTracker`, like v1.** `final_release` runs on the owning UI thread, and `tracker_ref`
   members let the garbage collector walk references to app objects.
 - **Members:**
-  - `m_items` is the app collection, held as a `tracker_ref`.
   - `m_shapingManager` is a `unique_ptr<ShapingManager>`, the coordinator (§6). It owns the
-    `shared_ptr<SourceTable>`; consumers (the row metadata provider and adapters) may share the
-    table past this object's lifetime. `~TableViewSource2()` calls `m_shapingManager->Clear()`, which
+    `shared_ptr<SourceTable>`, which holds the app collection; the `shared_ptr` exists so event
+    handlers (item `PropertyChanged`, child feeds through `WeakHost()`) can capture the table
+    weakly. Nothing outside the coordinator holds the table. `~TableViewSource2()` calls `m_shapingManager->Clear()`, which
     empties the visible list first (see *Teardown order*) and then detaches the table (see *Reference tracking and teardown*), so a lingering table is empty and
     holds no `tracker_ref` bound to the dead owner.
   - Verbs validate their arguments, forward to `m_shapingManager`, and return `*this`.
@@ -1779,11 +1770,16 @@ through `ShapedTree`'s walk (P1); it holds no copy.
   - Rejected: a `weak_ptr` to a shared coordinator (`ShapingManager` is a `unique_ptr` member and
     lives on the UI thread with the view), and pointing the view at the `ShapedTree` (the key and
     item lookups also need the engine and `SourceTable`).
-- **Event item lists (decided, D3: `CountOnlyItemList`).** `Remove` and `Add` args carry a
-  count-only `IBindableVector` / `IBindableIterable`: `Size` is the count, `GetAt` returns
-  `nullptr`, mutators throw. O(1) per event regardless of k.
-  - Rejected: a `Vector` of k `nullptr`s (`InspectingDataSource`'s shape: O(k) per event), and
-    real items (O(k) `GetAt`s nobody reads).
+- **Event item lists (decided, D3: parity with `InspectingDataSource`).** `Remove` and `Add` args
+  carry a bindable `Vector` of k `nullptr`s, the shape `InspectingDataSource::OnVectorChanged`
+  already raises on the public `ItemsSourceView.CollectionChanged`. Only the size is meaningful:
+  the repeater, `ElementManager` and `SelectionNode` read only `NewItems().Size()` /
+  `OldItems().Size()`, and consumers read rows through `GetAt`. O(k) pointer writes per event
+  (about 80 KB for a 10k-row collapse, freed after the event), small next to the k rows the tree
+  already touched.
+  - Rejected: a count-only fake `IBindableVector` (O(1), but a custom type whose mutators throw,
+    with no precedent), and real items (O(k) `GetAt`s nobody reads; removed rows are already gone
+    from the tree when `Remove` is raised).
 - **Key to record (decided, D4: parse the key, then `TryFindByAddress`).** A record key is its
   `Identity()`, `"0x"` + `Address` in hex. `IndexFromKey` parses it back with
   `SourceRecord::TryParseIdentity` and resolves it through `SourceTable::TryFindByAddress`, which is
@@ -2369,7 +2365,7 @@ Decisions and open questions:
 
   | Owner | Owns |
   |---|---|
-  | `TableViewSource2` | `m_items` and `std::unique_ptr<ShapingManager>`. Validates verb arguments and forwards; returns itself for chaining. |
+  | `TableViewSource2` | `std::unique_ptr<ShapingManager>` (the app collection lives in its `SourceTable`). Validates verb arguments and forwards; returns itself for chaining. |
   | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`, which owns the group expansion model), the row metadata provider and the WinRT visible list. |
 
 - **Pipeline.** Spec verbs edit `m_desired`, then `ApplyDesiredSpec()` runs

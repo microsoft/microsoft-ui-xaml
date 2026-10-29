@@ -5,9 +5,10 @@
 #include "common.h"
 #include "TableViewSource2.h"
 
-TableViewSource2::TableViewSource2(winrt::IInspectable const& items)
+TableViewSource2::TableViewSource2(winrt::IInspectable const& /*items*/)
 {
-    m_items.set(items);
+    // items goes to ShapingManager (m_shapingManager), whose SourceTable holds the source; not
+    // created until ShapingManager is implemented.
 }
 
 TableViewSource2::~TableViewSource2() = default;

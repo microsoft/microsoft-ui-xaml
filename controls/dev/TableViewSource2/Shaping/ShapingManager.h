@@ -287,8 +287,8 @@ private:
     // The single path from the tree to consumers, whatever made the change (an engine commit, an
     // expansion verb, or an expand-all verb). Each call runs while the engine or tree is mid-write,
     // so all are noexcept: a throw from a handler is caught into m_listenerFault, every later event
-    // of the commit is suppressed, EndCommit raises one Reset, and AfterCommit rethrows. Item lists are
-    // CountOnlyItemList placeholders (D3); Replace is never raised (O6).
+    //     of the commit is suppressed, EndCommit raises one Reset, and AfterCommit rethrows. Item lists hold
+        // count nullptrs, as InspectingDataSource's do (D3); Replace is never raised (O6).
 
     // ShapedCollectionView::NotifyRemoved / NotifyAdded. Accumulates m_changes: isMove sets Order
     // and adds +-count to m_moveNet; any other call sets Membership.
@@ -335,7 +335,8 @@ private:
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
-    // Shared because consumers may hold it past this object's lifetime; Clear() detaches it.
+    // Shared only so event handlers (item PropertyChanged, child feeds via WeakHost()) can capture
+    // it weakly; nothing outside this object holds it. Clear() detaches it.
     std::shared_ptr<SourceTable> m_sourceTable;
 
     // What the verbs have declared. The applied copy lives in the engine (Phase 4).
