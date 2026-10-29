@@ -78,6 +78,9 @@ public:
     winrt::TableView GetOwningTableView() const;
     void SetTerminalBottomGridLineSuppression(bool suppress);
 
+    // Internal: called after PrepareGroupHeaderElement updates the projection in place.
+    void UpdateDefaultContentTextInternal() { UpdateDefaultContentText(); }
+
     // Internal: single-subscription guard for the ToggleRequested handler.
     // PrepareGroupHeaderElement sets this once so repeated prepares are no-ops.
     bool IsToggleHooked() const { return m_toggleHooked; }
@@ -101,7 +104,8 @@ public:
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateDefaultCountOpacity();
-    void TrackDefaultCount(winrt::UIElement const& root);
+    void TrackDefaultContent(winrt::UIElement const& root);
+    bool UpdateDefaultContentText();
     winrt::Size MeasureBand(winrt::Size const& availableSize);
     void UpdateTerminalBottomGridLineSuppression();
 
@@ -114,7 +118,8 @@ private:
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
-    // The count in the default content template, cached per inspected ContentTemplateRoot.
+    // The key and count in the default content template, cached per inspected ContentTemplateRoot.
+    tracker_ref<winrt::TextBlock> m_defaultKey{ this };
     tracker_ref<winrt::TextBlock> m_defaultCount{ this };
     winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
