@@ -102,7 +102,8 @@ void ShapingManager::IsLiveShaping(bool value)
 
     if (!m_sourceTable->IsDetached())
     {
-        // Milestone 6 adds the per-item subscriptions behind this flag.
+        // Milestone 2 subscribes items behind this flag (bookkeeping); Milestone 6 consumes the
+        // changes.
         m_sourceTable->SetLiveShaping(value);
     }
 }
@@ -215,6 +216,12 @@ void ShapingManager::OnSourceChanged(SourceChange const& change)
         }
         else
         {
+            // Removed holds the departed subtree, so no stale key survives the change.
+            for (SourceRecord const* const record : change.Removed)
+            {
+                m_liveDirty.erase(const_cast<SourceRecord*>(record));
+            }
+
             m_engine.ApplySourceChange(change);
 
             // Until Milestone 5 this is a full rebuild: the owner hears Reset | Membership.

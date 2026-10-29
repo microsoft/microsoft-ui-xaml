@@ -118,7 +118,10 @@
 //   - All table state and both handlers belong to the bound thread, or before binding to the
 //     thread the app uses it on.
 //   - Source and child collection notifications must arrive on that thread (the contract every
-//     XAML collection consumer imposes); they are not marshalled.
+//     XAML collection consumer imposes); they are not marshalled. A bound table rejects a root
+//     collection notification raised on another thread with hresult_wrong_thread, thrown into the
+//     app's mutation before the table is locked or touched (the projection keeps its last state;
+//     the next notification or Refresh() on the bound thread re-reads).
 //   - Item PropertyChanged: bound and on the bound thread, or unbound -> delivered inline. Bound
 //     and on another thread -> posted to the bound queue with only weak pointers and the property
 //     name; the weak pointers are locked there. A failed TryEnqueue means the queue is shutting
@@ -399,6 +402,15 @@ private:
     void ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
     void Move(uint32_t fromIndex, uint32_t toIndex);
 
+    // The edits' RaiseSourceChanged (root, no parents). If it throws (a listener fault), posts a
+    // re-read owed by its dispatch (PostRereadIfOwed), then rethrows: DrainPendingChanges is skipped.
+    void RaiseEdit(
+        SourceChangeKind kind,
+        uint32_t oldIndex,
+        uint32_t newIndex,
+        std::vector<SourceRecord*> const& added,
+        std::vector<SourceRecordPtr>& removed);
+
     // CreateRecord and RaiseSourceChanged are host members (below). RaiseSourceChanged raises
     // SourceChanged inside a freeze (BeginFreeze / EndFreeze around the handler call; nothing is
     // queued: a re-entrant change is skipped), then destroys the records that left;
@@ -515,6 +527,10 @@ private:
         std::atomic<DWORD> threadId{ 0 };
     };
     std::shared_ptr<ThreadBinding> m_binding{ std::make_shared<ThreadBinding>() };
+
+    // Root collection event lambdas: throws hresult_wrong_thread when bound and called off the
+    // bound thread. Unbound: no check.
+    static void ThrowIfOffBoundThread(ThreadBinding const& binding);
 
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;

@@ -81,6 +81,17 @@ void SourceTable::AttachSource(winrt::Windows::Foundation::IInspectable const& s
     SubscribeToSourceChanges();
 }
 
+void SourceTable::ThrowIfOffBoundThread(ThreadBinding const& binding)
+{
+    // An off-thread source change is an app error: reject it in the app's mutation, before the
+    // table is locked or touched (see Threading).
+    DWORD const threadId = binding.threadId.load(std::memory_order_acquire);
+    if (threadId != 0 && threadId != ::GetCurrentThreadId())
+    {
+        throw winrt::hresult_wrong_thread();
+    }
+}
+
 void SourceTable::SubscribeToSourceChanges()
 {
     using ObserveKind = CollectionAccessor2::ObserveKind;
@@ -90,8 +101,9 @@ void SourceTable::SubscribeToSourceChanges()
     {
     case ObserveKind::NotifyCollectionChanged:
         m_sourceEventToken = m_sourceAccessor->AsNotifyCollectionChanged().CollectionChanged(
-            [weakThis](auto const&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+            [weakThis, binding = m_binding](auto const&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
             {
+                ThrowIfOffBoundThread(*binding);
                 if (auto const self = weakThis.lock())
                 {
                     self->OnSourceCollectionChanged(args);
@@ -101,8 +113,9 @@ void SourceTable::SubscribeToSourceChanges()
 
     case ObserveKind::ObservableVector:
         m_sourceEventToken = m_sourceAccessor->AsObservableVector().VectorChanged(
-            [weakThis](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+            [weakThis, binding = m_binding](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
             {
+                ThrowIfOffBoundThread(*binding);
                 if (auto const self = weakThis.lock())
                 {
                     self->OnSourceVectorChanged(args);
@@ -112,8 +125,9 @@ void SourceTable::SubscribeToSourceChanges()
 
     case ObserveKind::BindableObservableVector:
         m_sourceEventToken = m_sourceAccessor->AsBindableObservableVector().VectorChanged(
-            [weakThis](auto const&, winrt::Windows::Foundation::IInspectable const&)
+            [weakThis, binding = m_binding](auto const&, winrt::Windows::Foundation::IInspectable const&)
             {
+                ThrowIfOffBoundThread(*binding);
                 if (auto const self = weakThis.lock())
                 {
                     self->OnSourceBindableVectorChanged();
@@ -668,7 +682,7 @@ void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record) 
                     }
                     return;
                 }
-    
+
                 if (auto const self = weakThis.lock())
                 {
                     self->OnRecordPropertyChanged(weakRecord, name);
@@ -837,7 +851,7 @@ void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspecta
     AddToLookups(raw);
 
     std::vector<SourceRecordPtr> removed;
-    RaiseSourceChanged(SourceChangeKind::Add, nullptr, nullptr, 0, index, { raw }, removed);
+    RaiseEdit(SourceChangeKind::Add, 0, index, { raw }, removed);
 }
 
 void SourceTable::RemoveAt(uint32_t index)
@@ -852,7 +866,7 @@ void SourceTable::RemoveAt(uint32_t index)
     RemoveFromLookups(removed.front().get());
 
     // `removed` keeps the record alive (Item, Identity()) until the handler returns.
-    RaiseSourceChanged(SourceChangeKind::Remove, nullptr, nullptr, index, 0, {}, removed);
+    RaiseEdit(SourceChangeKind::Remove, index, 0, {}, removed);
 }
 
 void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
@@ -881,7 +895,7 @@ void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspect
     m_topLevel[index] = raw;
     AddToLookups(raw);
 
-    RaiseSourceChanged(SourceChangeKind::Replace, nullptr, nullptr, index, index, { raw }, removed);
+    RaiseEdit(SourceChangeKind::Replace, index, index, { raw }, removed);
 }
 
 void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
@@ -903,7 +917,27 @@ void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
     m_topLevel.insert(m_topLevel.begin() + toIndex, raw);
 
     std::vector<SourceRecordPtr> removed;
-    RaiseSourceChanged(SourceChangeKind::Move, nullptr, nullptr, fromIndex, toIndex, {}, removed);
+    RaiseEdit(SourceChangeKind::Move, fromIndex, toIndex, {}, removed);
+}
+
+void SourceTable::RaiseEdit(
+    SourceChangeKind kind,
+    uint32_t oldIndex,
+    uint32_t newIndex,
+    std::vector<SourceRecord*> const& added,
+    std::vector<SourceRecordPtr>& removed)
+{
+    // A listener fault skips DrainPendingChanges: post a re-read owed by this dispatch, as Refresh
+    // does.
+    try
+    {
+        RaiseSourceChanged(kind, nullptr, nullptr, oldIndex, newIndex, added, removed);
+    }
+    catch (...)
+    {
+        PostRereadIfOwed();
+        throw;
+    }
 }
 
 std::vector<SourceRecord*>& SourceTable::SiblingsOf(SourceRecord* parent) noexcept

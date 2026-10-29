@@ -13,9 +13,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Windows.Foundation.Collections;
 using WEX.Logging.Interop;
@@ -936,23 +938,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Review Focus 3.
         [TestMethod]
-        [TestProperty("Description", "Verifies a collected TableViewSource2 leaves its observable collection usable.")]
+        [TestProperty("Description", "Verifies a collected TableViewSource2 unsubscribes from its observable collection and leaves it usable.")]
         public void VerifyCollectionOutlivesTableViewSource2()
         {
-            ObservableCollection<ShapedPerson> people = null;
+            CountingObservableList people = null;
             WeakReference weakSource = null;
 
             RunOnUIThread.Execute(() =>
             {
-                people = MakeObservablePeople();
+                people = new CountingObservableList(MakeShapedPeople());
                 weakSource = BindObservableAndForget(people);
             });
 
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => Content = null);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, people.SubscriberCount, "The bound table holds one CollectionChanged handler.");
+                Content = null;
+            });
             IdleSynchronizer.Wait();
 
-            for (int attempt = 0; attempt < 5 && weakSource.IsAlive; attempt++)
+            for (int attempt = 0; attempt < 5 && (weakSource.IsAlive || people.SubscriberCount != 0); attempt++)
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -964,6 +970,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                Verify.AreEqual(0, people.SubscriberCount, "Teardown must revoke the CollectionChanged handler.");
+
                 // No handler may run against the torn-down table.
                 people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
                 people.Move(0, 1);
@@ -975,12 +983,140 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private WeakReference BindObservableAndForget(ObservableCollection<ShapedPerson> people)
+        private WeakReference BindObservableAndForget(object people)
         {
             var source = TableViewSource2.From(people);
             var tableView = CreateTable(source);
             LoadContent(tableView);
             return new WeakReference(source);
+        }
+
+        // INotifyCollectionChanged list that counts its current CollectionChanged subscribers.
+        private sealed partial class CountingObservableList : IList<object>, INotifyCollectionChanged
+        {
+            private readonly List<object> m_data;
+            private NotifyCollectionChangedEventHandler m_handlers;
+            private int m_subscriberCount;
+
+            public CountingObservableList(IEnumerable<object> items) { m_data = new List<object>(items); }
+
+            public int SubscriberCount => global::System.Threading.Volatile.Read(ref m_subscriberCount);
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged
+            {
+                add { if (value != null) { lock (m_data) { m_handlers += value; m_subscriberCount++; } } }
+                remove
+                {
+                    if (value == null) return;
+                    lock (m_data)
+                    {
+                        var before = m_handlers;
+                        m_handlers -= value;
+                        if (!ReferenceEquals(before, m_handlers)) m_subscriberCount--;
+                    }
+                }
+            }
+
+            public object this[int index]
+            {
+                get => m_data[index];
+                set
+                {
+                    var old = m_data[index];
+                    m_data[index] = value;
+                    Raise(new NotifyCollectionChangedEventArgs(
+                        NotifyCollectionChangedAction.Replace, value, old, index));
+                }
+            }
+
+            public int Count => m_data.Count;
+            public bool IsReadOnly => false;
+            public void Add(object item) => Insert(m_data.Count, item);
+            public void Insert(int index, object item)
+            {
+                m_data.Insert(index, item);
+                Raise(new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Add, item, index));
+            }
+            public void RemoveAt(int index)
+            {
+                var item = m_data[index];
+                m_data.RemoveAt(index);
+                Raise(new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Remove, item, index));
+            }
+            public bool Remove(object item) { int index = m_data.IndexOf(item); if (index < 0) return false; RemoveAt(index); return true; }
+            public void Move(int oldIndex, int newIndex)
+            {
+                var item = m_data[oldIndex];
+                m_data.RemoveAt(oldIndex);
+                m_data.Insert(newIndex, item);
+                Raise(new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Move, item, newIndex, oldIndex));
+            }
+            public void Clear()
+            {
+                m_data.Clear();
+                Raise(new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Reset));
+            }
+            public bool Contains(object item) => m_data.Contains(item);
+            public int IndexOf(object item) => m_data.IndexOf(item);
+            public void CopyTo(object[] array, int arrayIndex) => m_data.CopyTo(array, arrayIndex);
+            public IEnumerator<object> GetEnumerator() => m_data.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => m_data.GetEnumerator();
+
+            private void Raise(NotifyCollectionChangedEventArgs args) => m_handlers?.Invoke(this, args);
+        }
+
+        // Threading: a bound table rejects a root collection change raised off its thread.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a source change raised off the bound thread throws into the mutation and leaves the rows unchanged.")]
+        public void VerifyOffThreadChangeThrows()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> people = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                tableView = BindObservable(people);
+            });
+
+            SettleLayout(tableView);
+
+            Exception caught = null;
+            Task.Run(() =>
+            {
+                try
+                {
+                    people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
+                }
+                catch (Exception e)
+                {
+                    caught = e;
+                }
+            }).Wait();
+
+            Verify.IsNotNull(caught, "An off-thread Add must throw into the app's mutation.");
+            Log.Comment($"Off-thread Add threw {caught.GetType().FullName}, HResult 0x{caught.HResult:X8}: {caught.Message}");
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(s_people.Length, ProjectedCount(tableView), "The rejected off-thread Add must not change the rows.");
+
+                // The source now holds Zoe; this out-of-range Add re-reads on the bound thread.
+                people.Add(new ShapedPerson("Kai", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, s_people.Concat(new[] { "Zoe", "Kai" }).ToArray(), "Recovered on the bound thread");
+            });
         }
 
         [TestMethod]
