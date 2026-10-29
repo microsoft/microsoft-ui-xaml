@@ -187,9 +187,9 @@ classDiagram
         -bool m_liveDrainPosted
         -uint32 m_liveHoldCount
         -uint32 m_deferDepth
-        -bool m_refreshRequested
         -bool m_isApplying
         -bool m_resyncPosted
+        -CommitState m_commit
         -uint32 c_bulkThreshold$
         +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
         +Refresh()
@@ -288,7 +288,7 @@ classDiagram
         +ValidateIncoming(items, replacing)
         +SiblingsOf(parent) vector~SourceRecord*~
         +Reparent(record, newParent, index)
-        +AdmitChange() bool
+        +AdmitChange(isReset) bool
         +RaiseSourceChanged(kind, oldParent, newParent, oldIndex, newIndex, added, removed)
         +RequestReset()
     }
@@ -347,11 +347,10 @@ classDiagram
         -shared_ptr~atomic~bool~~ m_itemChangeDropped
         -SourceChangedHandler m_sourceChanged
         -ItemChangedHandler m_itemChanged
-        -bool m_isDispatching
         -uint32 m_freezeDepth
-        -bool m_pendingReset
         -uint32 m_resetHoldDepth
-        -bool m_outOfSync
+        -bool m_diverged
+        -bool m_rereadDue
         +Create(owner, source)$ shared_ptr~SourceTable~
         +Refresh()
         +Clear()
@@ -370,6 +369,8 @@ classDiagram
         +IsFrozen() bool
         +BeginHoldResets()
         +EndHoldResets() bool
+        +ScheduleRefresh()
+        +IsRereadDue() bool
         +SetLiveShaping(enabled)
         +IsLiveShaping() bool
         +TryFindByRawPointer(item) SourceRecord*
@@ -651,10 +652,7 @@ classDiagram
     class ShapingManager {
         <<native coordinator>>
         -ShapingEngine m_engine
-        -ShapingChangeFlags m_changes
-        -int64 m_moveNet
-        -exception_ptr m_listenerFault
-        -bool m_resyncDue
+        -CommitState m_commit
         -BeginCommit()
         -EndCommit(retired, unwinding)
         -AfterCommit()
@@ -739,10 +737,19 @@ classDiagram
         +OnShapingApplied(ShapingAppliedArgs)
     }
 
+    class CommitState {
+        <<struct>>
+        +ShapingChangeFlags changes
+        +int64 moveNet
+        +exception_ptr listenerFault
+        +bool resyncDue
+    }
+
     ShapingManager ..|> IShapedRowsListener
+    ShapingManager *-- CommitState : m_commit, one per commit scope
     ShapedTree *-- GroupExpansion : m_groupExpansion, by Identity
     ShapedTree --> IShapedRowsListener : m_listener, one call per change
-    ShapingManager --> ShapingChangeFlags : m_changes
+    CommitState --> ShapingChangeFlags : changes
     ShapingManager ..> ShapedCollectionView : forwards each event as Remove, Add or Reset
     ShapingManager ..> IShapingOwner : OnResetting, then OnShapingApplied(Changes, Retired)
 ```
@@ -1013,8 +1020,9 @@ identity index     Identity      -> SourceRecord*   shaped only; selection, focu
 | `IsDetached()` | Public | True after `Clear()`. Every public entry point and event lambda returns early when detached. |
 | `SetSourceChangedHandler` | Public | Single handler (the coordinator) for normalized, record-level `SourceChange` notifications. See *Source change notification* below. |
 | `SetItemChangedHandler` | Public | Single handler (the coordinator) for per-record `PropertyChanged` notifications (`(SourceRecord*, hstring const& propertyName)`). See *Item property change notification* below. |
-| `BeginFreeze` / `EndFreeze` / `IsFrozen` | Public | While frozen, source notifications are not applied; they only set `m_pendingReset`. `EndFreeze` reports whether the outermost freeze must be followed by `Refresh()`. See *Re-entrancy* below (#19). |
-| `BeginHoldResets` / `EndHoldResets` | Public | `DeferRefresh` (WPF model): incremental changes are applied and raised as usual; a `Reset` only sets `m_pendingReset` (the table then stops applying changes until the re-read), and hierarchy verbs are parked. `EndHoldResets` reports whether the outermost hold must be followed by `Refresh()`. See *`DeferRefresh` (decided)*. |
+| `BeginFreeze` / `EndFreeze` / `IsFrozen` | Public | While frozen, source notifications are skipped (not applied; they set `m_diverged` and `m_rereadDue`). The `SourceChanged` dispatch holds a freeze too (no separate dispatching flag). `EndFreeze` reports whether the outermost freeze must be followed by `Refresh()` (re-read due and no reset hold open). See *Re-entrancy* below (#19). |
+| `BeginHoldResets` / `EndHoldResets` / `ScheduleRefresh` | Public | `DeferRefresh` (WPF model): incremental changes are applied and raised as usual; a `Reset` is skipped (the table then stops applying changes until the re-read), and hierarchy verbs are parked. `ScheduleRefresh` owes a re-read without marking the table diverged. `EndHoldResets` reports whether the outermost hold must be followed by `Refresh()` (re-read due, or a hierarchy parked). See *`DeferRefresh` (decided)*. |
+| `IsRereadDue` | Public | Divergence (decided): `m_diverged` means the table no longer matches the source; set by a skipped notification, a rejected change, a `Refresh()` that fails validation, or `RequestReset` (a strategy's rejected child change, through `ISourceHierarchyHost`). `m_rereadDue` means a re-read is owed; set by a skipped notification or `ScheduleRefresh`. Report points read it without clearing; `Refresh()` clears both on success, clears only `m_rereadDue` on a validation failure, and keeps both on any other throw. Read by the posted resync. See *Divergence* below. |
 | `SetLiveShaping` / `IsLiveShaping` | Public | Enables or disables per-record `INotifyPropertyChanged` subscriptions across the table, irrespective of whether any shaping verbs are currently active. |
 | `MatchRecords` / `CommitRecords` | Private | `Refresh()` steps for the root collection: match the validated materialization against `m_records` (position, then raw pointer, then address; unmatched records move out of `m_records` and the lookups into `removed`), then rebuild `m_records` in source order, creating the unmatched (no strategy hooks). |
 | `InsertAt` / `RemoveAt` / `ReplaceAt` / `Move` | Private | Driven internally by `OnSourceCollectionChanged` / `OnSourceVectorChanged` / `OnSourceBindableVectorChanged`. Each ends in `RaiseSourceChanged`. |
@@ -1062,7 +1070,54 @@ table adds no enum of its own. `NotifyCollectionChangedEventArgs` itself is not 
 | Single, synchronous handler | Raised on the UI thread. Only the coordinator subscribes, and it fans out to engine, projection, and owner (selection, focus, sort-rank cleanup) in a fixed order. A C++ callback, not a WinRT event. |
 | `Reset` | Carries what left and what arrived, not moves. Consumers reshape from `Records()` without re-reading the source. `Refresh()` raises `Reset`. |
 | Multi-item notifications | Split into single-item changes, or reported as one `Reset`. Downstream only handles the simple cases. |
-| Re-entrancy (decided, #19) | App code run inside the handler or any apply (filter predicate, comparer, key selector, or a binding in a row-event handler) may change the source again. The table is frozen while dispatching or while the coordinator holds `BeginFreeze`: the notification is **not applied** (records, links and lookups stay as they were, so no pointer held by the engine or the shaped tree dangles and no vector reallocates under a loop) and only sets `m_pendingReset`. When the outermost dispatch or freeze ends, the source is re-read with `Refresh()` and one `Reset`. This replaces the earlier rule (apply the edit immediately, defer only the notification), which let `TopLevel()` and `Children` change under the engine's loops. |
+| Re-entrancy (decided, #19) | App code run inside the handler or any apply (filter predicate, comparer, key selector, or a binding in a row-event handler) may change the source again. The table is frozen while the coordinator or the `SourceChanged` dispatch holds `BeginFreeze`: the notification is **not applied** (records, links and lookups stay as they were, so no pointer held by the engine or the shaped tree dangles and no vector reallocates under a loop) and only sets `m_diverged` and `m_rereadDue`. When the outermost freeze ends, the source is re-read with `Refresh()` and one `Reset`. This replaces the earlier rule (apply the edit immediately, defer only the notification), which let `TopLevel()` and `Children` change under the engine's loops. |
+
+**Divergence (decided):**
+
+One flag, `m_diverged`, replaces three that meant the same thing (`m_pendingReset` for a change
+while frozen or a `Reset` while held, `m_outOfSync` for a rejected change, and the dispatching flag
+folded into the freeze). It means the table no longer matches the source. A second bit,
+`m_rereadDue`, says a re-read is owed at the next report point. A notification is handled by the
+table's state ("skip" = not applied; sets both bits):
+
+| Table state | Incremental change | `Reset` (or multi-item) |
+|---|---|---|
+| Frozen (dispatch or commit scope) | skip | skip |
+| Held (`DeferRefresh`), not diverged | apply | skip |
+| Held, diverged | skip | skip |
+| Free, not diverged | apply | re-read |
+| Free, diverged | re-read | re-read |
+
+- `m_diverged` is set by a skip, a rejected change (validation), a `Refresh()` that fails
+  validation, and `RequestReset()` (the `ISourceHierarchyHost` member a strategy calls for a
+  rejected child change). Cleared only by a successful `Refresh()`.
+- `m_rereadDue` is set by a skip and by `ScheduleRefresh()` (`ShapingManager::Refresh` while a
+  `DeferRefresh` is open: owes a re-read without marking the table diverged, so incremental
+  changes keep showing until `Close`, as in WPF). Not set by a rejected change.
+- Report points read it: `EndFreeze` returns true at the outermost freeze when it is set and no
+  hold is open; `EndHoldResets` returns true at the outermost hold when it is set or a hierarchy
+  is parked. Neither clears it; only `Refresh()` does:
+  - success: both bits cleared;
+  - validation failure: `m_diverged` set, `m_rereadDue` cleared (now the same state as a
+    rejection: the next notification recovers it, not every commit);
+  - any other throw (app enumerator or selector): both bits kept, so the next report point
+    (the next commit's `EndFreeze`) retries, as `m_pendingReset` did.
+- Why two bits: with only `m_diverged`, a table diverged by a rejected change (the app caught the
+  duplicate throw and kept going) would make every later commit's `EndFreeze` report true, and
+  each verb or expand would run a re-read that fails validation again. A rejection is recovered
+  by the next notification instead, as before. And `Refresh()` while deferred must not mark the
+  table diverged, or later incremental changes would stop showing.
+- Fixes a gap in the earlier design: after a freeze ended with a posted resync, a notification
+  arriving before the resync ran saw only `m_pendingReset` and could be applied positionally onto
+  a diverged table. Now it is a re-read; the posted resync then finds no re-read owed
+  (`IsRereadDue()` false) and does nothing.
+- Fixes a second gap: an open hold no longer lets a dispatch's or an expand's `EndFreeze` re-read
+  in the middle of a `DeferRefresh` (two Resets); the owed re-read waits for `EndHoldResets`.
+- Child feeds use the same table: `AdmitChange(isReset)`, where `isReset` covers a child `Reset`,
+  a multi-item change and every `IBindableObservableVector` change. It returns true only for an
+  incremental change on a table that is not frozen or diverged. Otherwise the host handles it:
+  skip when frozen or held, re-read now when free (a validation throw reaches the app's `Add`).
+  It is no longer `noexcept`. `RequestReset` is for rejections only.
 
 **Item property change notification (live shaping):**
 
@@ -1202,7 +1257,7 @@ and enabling the first verb needs no validation pass.
 | Error | `hresult_invalid_argument`, reusing v1 messages: "The same item object appears in the source more than once. Rows are identified by object identity, so two rows backed by one object cannot be told apart. Use a distinct object per row." / "A row could not be given a stable identity: null item". |
 | `Create()` / `Refresh()` | Validated upfront; the throw reaches the caller of `From(items)` or `Refresh()`. |
 | Incremental change (`InsertAt` / `ReplaceAt`) | The throw propagates out of the `CollectionChanged` / `VectorChanged` handler, i.e. into the app's `Add()` / `Insert()` / indexer. `ReplaceAt` with the same object at the same index is allowed. |
-| Out-of-sync recovery | After a rejected incremental change (root, or a child collection through `RequestReset`) the source has already diverged from the table. `m_outOfSync` is set and every later notification, root or child, is handled as a whole-tree re-read (`Refresh()`: re-enumerate + validate) instead of a positional delta. The first one that validates raises a single `Reset` and clears the flag; `Refresh()` does the same. Positional deltas are never applied on top of a diverged table. |
+| Divergence recovery | After a rejected incremental change (root, or a child collection through `RequestReset`) the source has already diverged from the table. `m_diverged` is set and every later notification, root or child, is handled as a whole-tree re-read (`Refresh()`: re-enumerate + validate) instead of a positional delta. The first one that validates raises a single `Reset` and clears the flag; `Refresh()` does the same. Positional deltas are never applied on top of a diverged table. Same flag as a skipped change, but no re-read is owed (`m_rereadDue` stays clear), so verbs and expansion do not retry a re-read that would fail again (see *Divergence*). |
 | `Move` / `RemoveAt` | Cannot introduce null or duplicates; not validated. |
 
 **Lookups:**
@@ -1287,8 +1342,8 @@ a `SourceHierarchy` strategy owned as `std::unique_ptr` (null = flat).
 |---|---|
 | `SourceHierarchy` | Two-phase build `Prepare(host, rootItems)` (every app call and check over the given root items, staged by root position, writes only the strategy's scratch state, may throw) then `Commit(host, added)` (links every record, reusing kept child records and creating the rest; no app calls); `MatchForRefresh(host, rootMatches, removed)` (`Refresh()` only, between the two: per-feed match, unmatched records leave the lookups); `CollectIncoming(item, items)` (what an incoming root item brings, for validation); `OnInserted` / `OnRemoving` / `OnMoved` (root edits; a replace is remove then insert); `Reevaluate(host, record, property)` (live key or children-property edits); `TakeChildRecords(host, removed)` (before a strategy is replaced or cleared: unsubscribe feeds, move child records into the `Reset`'s `Removed`); `Release(host)` (teardown-safe: unsubscribe feeds, release child records, drop selectors and keys). |
 | `ParentKeyHierarchy` | The two selectors, `NodeKeys` (with `KeyObject`), `m_keyIndex` / `m_nodeKeys`, and staged copies filled by `Prepare`, keyed by root position and resolved through `RootRecords()` at `Commit`. `MakeNodeKey`, `ValidateNoCycles`. `CollectIncoming` adds nothing. |
-| `ChildCollectionsHierarchy` | The children selector, `ChildFeed` (weak `Owner`, `optional<CollectionAccessor2>`, `event_token`, the sole strong `SourceRecordPtr`s in collection order), `m_childFeeds`, and `m_staged` (pre-order `StagedNode`s: item, child collection, child count, and the `Match` kept by `MatchForRefresh`) so `Commit` creates and subscribes without calling app code again. Child-collection handlers are entry points the event lambdas call after locking the host and checking `AdmitChange()` and `CurrentHierarchy() == this`. |
-| `ISourceHierarchyHost` | Implemented privately by `SourceTable`: `TrackerOwner`, `WeakHost`, `CurrentHierarchy`, `RootRecords`, `CreateRecord` / `ReleaseRecord`, `ValidateIncoming`, `SiblingsOf` / `Reparent`, `AdmitChange` (the #19 gate), `RaiseSourceChanged`, `RequestReset` (a rejected child change: sets `m_outOfSync`). |
+| `ChildCollectionsHierarchy` | The children selector, `ChildFeed` (weak `Owner`, `optional<CollectionAccessor2>`, `event_token`, the sole strong `SourceRecordPtr`s in collection order), `m_childFeeds`, and `m_staged` (pre-order `StagedNode`s: item, child collection, child count, and the `Match` kept by `MatchForRefresh`) so `Commit` creates and subscribes without calling app code again. Child-collection handlers are entry points the event lambdas call after locking the host and checking `AdmitChange(isReset)` and `CurrentHierarchy() == this`. |
+| `ISourceHierarchyHost` | Implemented privately by `SourceTable`: `TrackerOwner`, `WeakHost`, `CurrentHierarchy`, `RootRecords`, `CreateRecord` / `ReleaseRecord`, `ValidateIncoming`, `SiblingsOf` / `Reparent`, `AdmitChange(isReset)` (the #19 gate; a child `Reset` or multi-item change passes `true`), `RaiseSourceChanged`, `RequestReset` (a rejected child change only: sets `m_diverged`). |
 | Verb flow | Construct, `Prepare` over the current root items (a throw leaves the old tree and strategy), `TakeChildRecords` and `Release` the old, `ResetTreeToFlat`, `Commit`, one `Reset`. Child records of the old strategy are not reused (a verb change). Under `DeferRefresh` the verb only parks the unprepared strategy in `m_pendingHierarchy`; the re-read at `Close` prepares and commits it. |
 | Refresh flow | Read (`Prepare` over the re-enumerated root), match (`MatchRecords`, `MatchForRefresh`), link (`CommitRecords`, `ResetTreeToFlat`, `Commit`), one `Reset`. See *Refresh: record reuse (decided)*. |
 
@@ -1335,7 +1390,7 @@ Rejected:
   loses expansion and re-subscribes every child on each re-read.
 - **Subtree-scoped `Reset` for a rejected child change.** It needs a new `SourceChange` kind that
   the engine, the shaped tree and the owner must all handle. With reuse, a whole-tree re-read costs
-  only the enumeration. A rejected child change calls `RequestReset`, which sets `m_outOfSync`
+  only the enumeration. A rejected child change calls `RequestReset`, which sets `m_diverged`
   like a rejected root change.
 
 `Records()` / `Size()` / `At()` stay the root collection (owning, source order). `ChildrenBy` records
@@ -1350,7 +1405,7 @@ validation and live shaping. Shaping walks `TopLevel()` and `Children`, never `R
 | Verb change rewrites links | Setting or clearing the hierarchy rewrites `Parent` / `Children` / `Depth` on every record (O(n)) and raises one `Reset`. `Filter`, `Sort` and `GroupBy` never write to records. |
 | Ownership per collection | Under `ParentBy` source order differs from tree order, so `m_records` keeps owning in source order and `Parent` / `Children` are non-owning links. Under `ChildrenBy` the child feed (in `ChildCollectionsHierarchy::m_childFeeds`) owns. |
 | Reparent | A `ParentBy` key change moves the record and updates `Depth` for the whole moved subtree. |
-| Child collections are source | Their changes are tracked whether or not live shaping is on, through the same normalization, validation, re-entrancy gate and queue as the root collection. A rejected change calls `RequestReset` (sets `m_outOfSync`): the next notification, root or child, is a whole-tree re-read with reuse. |
+| Child collections are source | Their changes are tracked whether or not live shaping is on, through the same normalization, validation, re-entrancy gate and queue as the root collection. A rejected change calls `RequestReset` (sets `m_diverged`): the next notification, root or child, is a whole-tree re-read with reuse. |
 | Key and children-property edits | A change to an existing item's key, parent key or children property is seen only through live shaping. `OnRecordPropertyChanged` calls `ReevaluateHierarchy`, which forwards to `m_hierarchy->Reevaluate` (`ParentKeyHierarchy`: reparent; `ChildCollectionsHierarchy`: swap the feed) and raises the resulting `SourceChange` through the host before `ItemChanged` is forwarded. |
 
 **`ParentBy` key rules** follow v1 (`Hierarchical-Data-Rows-Parent-Key-Design.md` §3):
@@ -1387,7 +1442,7 @@ struct SourceChange
 
 - Child-collection notifications must arrive on the UI thread, like the root collection's.
 - Feed lambdas capture `host.WeakHost()` (the table's `weak_from_this()`) plus the owner record's
-  `weak_ptr`, lock them only on the UI thread, and route only if `AdmitChange()` and
+  `weak_ptr`, lock them only on the UI thread, and route only if `AdmitChange(isReset)` and
   `CurrentHierarchy()` is still the strategy that subscribed (a replaced strategy's late event is
   dropped).
 - Feed accessors, the selectors and object keys hold `tracker_ref`s bound to the host's
@@ -1775,7 +1830,7 @@ through `ShapedTree`'s walk (P1); it holds no copy.
     nothing new: `SourceTable` destroys them only after its `SourceChanged` handler returns, and
     the commit runs inside it.
   - **Handler exceptions.** The write phase is `noexcept`, and its events now run app handlers
-    (the repeater's, a binding's). The listener catches into `m_listenerFault`, suppresses the
+    (the repeater's, a binding's). The listener catches into `m_commit.listenerFault`, suppresses the
     rest of the commit's events, lets the engine finish, raises one `Reset` so the view and the
     repeater agree again, and rethrows from `AfterCommit`, once the scope has closed (never from
     its destructor; see *Source change during an apply*).
@@ -2370,7 +2425,7 @@ Decisions and open questions:
     | `ParentBy` parent-key selector throws | Top level, like an orphan. |
     | `ParentBy` edit making a cycle or a self-parent | The edited record moves to the top level with its subtree; it moves to its proper parent once the key becomes valid. |
     | `ChildrenBy` children selector throws | Treated as a leaf (no child feed). |
-    | `ChildrenBy` item already elsewhere in the tree (including an ancestor, or twice in one collection) | The *Null and duplicate items* rule applies: the change is rejected (nothing written) and `RequestReset` sets `m_outOfSync`. Every later notification, root or child, is handled as a whole-tree re-read and re-validated, so the table stops updating until the app removes the duplicate (the same rule as a rejected root change). The re-read reuses every unchanged record. Rejected alternative: skip only the duplicate edge, which keeps the rest of the collection live but needs a source-to-feed position map per feed and rules for promoting a skipped item when the original leaves, and gives flat and hierarchical sources two rules for one violation. |
+    | `ChildrenBy` item already elsewhere in the tree (including an ancestor, or twice in one collection) | The *Null and duplicate items* rule applies: the change is rejected (nothing written) and `RequestReset` sets `m_diverged`. Every later notification, root or child, is handled as a whole-tree re-read and re-validated, so the table stops updating until the app removes the duplicate (the same rule as a rejected root change). The re-read reuses every unchanged record. Rejected alternative: skip only the duplicate edge, which keeps the rest of the collection live but needs a source-to-feed position map per feed and rules for promoting a skipped item when the original leaves, and gives flat and hierarchical sources two rules for one violation. |
 
     Excluded records behave as filtered out and are re-evaluated on `ItemChanged`, `Refresh` or
     the next hierarchy verb. Under `ParentBy` a record has one parent key, so it is linked under
@@ -2490,15 +2545,18 @@ Decisions and open questions:
   - Nothing throws out of the scope's destructor. `Refresh()` runs app code (enumeration) and
     validation, and a listener fault must reach the app, but a throw from a destructor terminates
     the process, during unwinding and outside it. So the destructor's `EndCommit` is `noexcept`:
-    it closes the scope (`OnShapingApplied`, whose throw it catches into `m_listenerFault`;
-    `ReleaseRetired`; `EndFreeze`) and records whether a resync is due (`m_resyncDue`). On unwind
+    it closes the scope (`OnShapingApplied`, whose throw it catches into `m_commit.listenerFault`;
+    `ReleaseRetired`; `EndFreeze`) and records whether a resync is due (`m_commit.resyncDue`). On unwind
     it posts the resync instead. The verb or handler that opened the scope then calls
     `AfterCommit()` after the scope object is gone: it runs the synchronous `ResyncSource` (posted
-    instead when a handler faulted), then rethrows `m_listenerFault`. If that `Refresh()` throws, the
-    exception is caught: the table stays as it was with `m_pendingReset` / `m_outOfSync` set, one
+    instead when a handler faulted), then rethrows the listener fault. If that `Refresh()` throws, the
+    exception is caught: the table stays as it was and diverged, one
     retry is posted (`m_resyncPosted`), and nothing reaches the app, whose verb already succeeded.
-    If the posted retry throws too, it is swallowed. The next source notification (handled as a
-    re-read while out of sync), `Refresh` or verb retries.
+    The posted retry does nothing if no re-read is owed by then (`IsRereadDue()` false). If it
+    throws too, it is swallowed. After a validation failure the table is diverged with no re-read
+    owed: the next source notification (handled as a re-read while diverged) or `Refresh` retries.
+    After any other failure the re-read stays owed, so the next commit's `EndFreeze` reports it
+    again.
   - A failed apply is still consistent: nothing was written, cached keys and the replayed source
     are shaped with `Applied()`, and `Diff(applied, desired)` catches up on the next verb.
   - `ItemChanged` needs no freeze: E7 only adds to the dirty set and posts a drain.
@@ -2510,10 +2568,28 @@ Decisions and open questions:
       `Reset`, but it still needs this path for a queued `Reset`, a throw during replay and more
       than `c_bulkThreshold` items, so it only saves a `Reset` in a rare case.
     - Throw from the `VectorChanged` handler: the collection has already changed, so the app's
-      `Add` fails with the table out of sync.
+      `Add` fails with the table diverged.
     - Let the table change and detect it with a generation stamp (snapshot `TopLevel`, hold
       strong pointers, discard and retry): copies on every apply, a retry can loop, and the row
       events still need a freeze.
+- **Coordinator state (decided: gates and one table).** Each rule lives in one private predicate
+  on `ShapingManager`: `CanRunVerb()` (`!m_isApplying`; else throw, #19), `CanReshape()`
+  (`m_deferDepth == 0`; else edit `m_desired` only) and `CanDrain()` (not applying, no
+  `DeferRefresh`, no live hold; else stay pending). The current commit's fields are one
+  `CommitState m_commit` (`changes`, `moveNet`, `listenerFault`, `resyncDue`), reset by
+  `BeginCommit` with one assignment and taken by `AfterCommit`. `m_isApplying` stays: it guards
+  verbs, while `SourceTable`'s freeze guards source notifications. The live-shaping members and
+  `m_resyncPosted` are unchanged (rejected: grouping them into a struct and merging the two posted
+  callbacks into one pump; separate posts stay simpler to reason about).
+
+  | State | Verb | `Refresh` | Live drain | Source change |
+  |---|---|---|---|---|
+  | Applying (`m_isApplying`) | throws | throws | deferred (posted again after) | table frozen: skipped (diverged + re-read due) |
+  | Deferred (`m_deferDepth > 0`) | edits `m_desired` | `ScheduleRefresh` | deferred | incremental applied with the applied spec; `Reset` skipped |
+  | Held by owner (`m_liveHoldCount > 0`) | runs (flushes live changes first) | runs | deferred | applied |
+  | Table diverged (`m_diverged`) | runs | re-reads | runs | re-read |
+
+  States combine; the most restrictive cell wins (applying over deferred over held).
 - **Testability.** Plain C++, so it can be tested without WinRT activation.
 
 ### Change pipeline: engine → shaped tree → visible list (decided: hybrid)
@@ -2810,7 +2886,7 @@ void SetOwner(IShapingOwner* sink);        // notification target; a new sink dr
     reshape came from a sort-only `Diff` (sort or group direction changed, nothing else), else
     `Membership`.
   - Surgical: any event with `isMove` sets `Order`; any other event sets `Membership`. The manager
-    also sums the move events' row counts (`m_moveNet`, + inserted, − removed); `EndCommit` adds
+    also sums the move events' row counts (`m_commit.moveNet`, + inserted, − removed); `EndCommit` adds
     `Membership` when it is not zero (a moved node that ends up hidden, or one that becomes shown).
     `Expand` / `Collapse` events are non-move, so they set `Membership`.
   - No `RowState` flag: chrome is re-read on every `OnShapingApplied` (P9).
@@ -3195,9 +3271,9 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
     (with the `Iterable` CLR retry), `GetAtUnchecked`, the typed `As*` getters.
   - `SourceRecord.cpp`: canonical `IUnknown` QI, lazy hex `Identity()`, `~SourceRecord()` token revoke.
   - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
-    upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_outOfSync` recovery), the `Refresh()` match
+    upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_diverged` recovery), the `Refresh()` match
     (`MatchRecords` / `CommitRecords`: position → raw pointer → address; per-feed `MatchForRefresh`), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
-    `RaiseSourceChanged` ordering, the freeze (`BeginFreeze` / `EndFreeze`, `m_pendingReset` → `Refresh`, #19), source change subscriptions, and
+    `RaiseSourceChanged` ordering, the freeze (`BeginFreeze` / `EndFreeze`, dispatch included, `m_diverged` → `Refresh`, #19), source change subscriptions, and
     `SetLiveShaping` / per-record `INotifyPropertyChanged` subscription + `ItemChanged` forwarding,
     off-thread marshalling to `m_ownerQueue` and dropped-change recovery, and `Clear()` detach
     (optional accessor reset, `m_trackerOwner` nulled, `IsDetached()` guards) with `safe_get`-only
@@ -3316,6 +3392,15 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       the four expansion actions move behind `IShapedExpansion` (`Shaping/`, with
       `ExpansionAxis`), implemented privately by `ShapingManager`. `ShapedCollectionView` holds a
       `ShapedRowQueries*`; `ShapedRowMetadata` holds that and an `IShapedExpansion*`.
+- [x] Collapse the source and coordinator state: `SourceTable::m_diverged` replaces
+      `m_isDispatching` (the dispatch takes a freeze), `m_pendingReset` and `m_outOfSync`, and
+      `m_rereadDue` records an owed re-read (a skipped notification or `ScheduleRefresh`; not a
+      rejection); `ScheduleRefresh` and `IsRereadDue` added; `AdmitChange(isReset)` drops
+      `noexcept` and takes child Resets (so `RequestReset` is for rejections only).
+      `ShapingManager` drops `m_refreshRequested` (`Refresh` while deferred calls
+      `ScheduleRefresh`), groups the commit fields into `CommitState m_commit`, and declares the
+      gates `CanRunVerb` / `CanReshape` / `CanDrain`. The spec gains the divergence and
+      coordinator state tables.
 - [ ] Implement `ShapedTree` (`Engine/ShapedTree.cpp`) and `ShapedNode` helpers
       (`ShapedParent`, `ShapedChildCount`, `ShapedChildAt`).
 
@@ -3373,9 +3458,9 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   `SourceTable::BeginHoldResets`: an incremental change is applied to the table, raised, and
   shaped surgically by the engine with the **applied** spec (the desired spec is not yet in
   force), raising its row event; the view shows it immediately. A source `Reset` (including a multi-item
-  change reported as one, and every change while out of sync) is not re-read: it sets the pending
-  reset, and from then on the table has diverged, so later notifications are handled as under the
-  #19 freeze until the re-read at `Close`. The #19 freeze still wraps every surgical apply.
+  change reported as one) is skipped (sets `m_diverged` and `m_rereadDue`), and from then on later
+  notifications are handled as under the #19 freeze until the re-read at `Close` (see
+  *Divergence*). The #19 freeze still wraps every surgical apply.
   - Unlike WPF, reads (`Count`, `GetAt`, `IndexOf`) do not throw while a handle is open: the
     shaped view stays consistent with the applied spec and the changes applied so far.
   - Accepted costs: shaping work the `Close` reshape redoes when the spec also changed, and k
@@ -3390,21 +3475,27 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   the new spec. Rejected: leaving hierarchy verbs undeferred (two reshapes, an intermediate state
   visible) and moving the hierarchy selectors into the spec (contradicts `SourceTable` owning the
   tree).
-- **`Refresh()` while open (decided: deferred).** Sets `m_refreshRequested`; the outermost end
-  re-reads once. Rejected: running immediately (two Resets, and a re-read inside the freeze), and
+- **`Refresh()` while open (decided: deferred).** Calls `SourceTable::ScheduleRefresh()`: a re-read
+  is owed at the outermost end, but the table is not marked diverged, so incremental changes keep
+  showing until then (WPF sets a flag the same way). No separate "refresh requested" flag on
+  `ShapingManager`. Rejected: running immediately (two Resets, and a re-read inside the freeze),
+  marking the table diverged (later incremental changes would stop showing), and
   throwing (surprising when every other verb is allowed).
-- **Outermost end.** `EndHoldResets`; then, if it reported a pending change or `m_refreshRequested` is
-  set, `SourceTable::Refresh()`, whose Reset runs `Reapply()` with the desired spec; otherwise
+- **Outermost end.** `EndHoldResets`; then, if it reported a pending change (a held `Reset`, a
+  `Refresh()` while open, or a parked hierarchy), `SourceTable::Refresh()`, whose Reset runs
+  `Reapply()` with the desired spec; otherwise
   `ApplyDesiredSpec()` (nothing when the spec did not change). Then `PostLiveDrain` if live
   changes are pending: the drain is skipped while a handle is open (as under a hold), and a
   `Reapply` empties the dirty set anyway.
 - **Errors.** An apply exception from app code surfaces from the outermost `Close`, with the same
-  rules as a verb (see *Misbehaving records*: desired not reverted, applied stays old). The depth
-  is 0 and `m_refreshRequested` cleared either way.
+  rules as a verb (see *Misbehaving records*: desired not reverted, applied stays old). A failed
+  re-read leaves the table diverged, so the next notification or `Refresh` retries. The depth is
+  0 either way.
 - **Checklist.**
   - [x] Declare `DeferRefresh()` in the IDL and `TableViewSource2`, and `DeferRefreshHandle`.
   - [x] Declare `BeginDeferRefresh` / `EndDeferRefresh` / `IsRefreshDeferred`, `m_deferDepth`,
-        `m_refreshRequested` on `ShapingManager`.
+        `m_refreshRequested` on `ShapingManager` (`m_refreshRequested` later replaced by
+        `SourceTable::ScheduleRefresh`).
   - [x] Declare `SourceTable::m_pendingHierarchy`, `BeginHoldResets` / `EndHoldResets` and the
         held behaviour of the hierarchy verbs.
   - [ ] Implement (Phase 5) and test nesting, a throw from `Close`, hierarchy plus spec verbs

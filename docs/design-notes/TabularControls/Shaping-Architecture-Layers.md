@@ -21,7 +21,7 @@ flowchart TB
     end
 
     subgraph L2["Shaping/ : coordinator"]
-        SM["ShapingManager<br/>desired ShapeSpec, defer, live drain, owner hold<br/>BeginCommit / EndCommit, m_changes, m_moveNet"]
+        SM["ShapingManager<br/>desired ShapeSpec, defer, live drain, owner hold<br/>BeginCommit / EndCommit, m_commit"]
     end
 
     subgraph L3["View/ : read-only adapters"]

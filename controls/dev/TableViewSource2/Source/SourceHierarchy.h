@@ -66,11 +66,16 @@ struct ISourceHierarchyHost
     virtual std::vector<SourceRecord*>& SiblingsOf(SourceRecord* parent) noexcept = 0;
     virtual void Reparent(SourceRecord* record, SourceRecord* newParent, uint32_t index) = 0;
 
-    // Re-entrancy gate for child-collection notifications (#19). False while frozen or dispatching:
-    // the host has set m_pendingReset and the strategy must not touch anything.
-    virtual bool AdmitChange() noexcept = 0;
+    // Re-entrancy gate for child-collection notifications (#19); the same table as the root
+    // collection (see SourceTable). isReset: a child Reset or a multi-item change reported as one.
+    // True: apply positionally (an incremental change, table not frozen and not diverged). False:
+    // the host has handled the notification and the strategy must not touch anything:
+    //   - frozen, or held and (diverged or isReset): skipped (m_diverged and m_rereadDue set);
+    //   - free and (diverged or isReset): the host re-reads now (Refresh()); a validation throw
+    //     propagates into the app's Add / Insert / setter and the table stays diverged.
+    virtual bool AdmitChange(bool isReset) = 0;
 
-    // SourceTable::RaiseSourceChanged: raise (or queue) the change, then destroy removed.
+    // SourceTable::RaiseSourceChanged: raise the change inside a freeze, then destroy removed.
     virtual void RaiseSourceChanged(
         SourceChangeKind kind,
         SourceRecord* oldParent,
@@ -81,10 +86,11 @@ struct ISourceHierarchyHost
         std::vector<SourceRecordPtr>& removed) = 0;
 
     // A child change was rejected (null/duplicate) after the child collection had already changed.
-    // Decided (no subtree-scoped Reset): sets SourceTable::m_outOfSync, exactly as a rejected root
-    // change does, so the next notification (root or any child collection) is handled as a
-    // whole-tree re-read (Refresh(): one Reset, unchanged records reused per feed) until one
-    // validates. Raises nothing itself.
+    // Decided (no subtree-scoped Reset): sets SourceTable::m_diverged (not m_rereadDue), exactly
+    // as a rejected root change does, so the next notification (root or any child collection) is
+    // handled as a whole-tree re-read (Refresh(): one Reset, unchanged records reused per feed)
+    // until one validates. Raises nothing itself. Only for rejections: a child Reset or
+    // multi-item change goes through AdmitChange(true).
     virtual void RequestReset() noexcept = 0;
 
 protected:
@@ -292,8 +298,10 @@ public:
     void Release(ISourceHierarchyHost& host) noexcept override;
 
     // Entry points for the child-collection lambdas, after they locked the host, checked
-    // host.AdmitChange() and that host.CurrentHierarchy() == this. A rejected change calls
-    // host.RequestReset() and rethrows (into the app's Add / Insert / setter).
+    // host.AdmitChange(isReset) and that host.CurrentHierarchy() == this. isReset is true for a
+    // Reset, a multi-item change, and every IBindableObservableVector change (it carries no
+    // detail). A rejected change calls host.RequestReset() and rethrows (into the app's Add /
+    // Insert / setter).
     void OnChildCollectionChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const& owner, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void OnChildVectorChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const& owner, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     void OnChildBindableVectorChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const& owner);

@@ -94,7 +94,8 @@ public:
 
     // The only path that re-enumerates the source on request. Calls SourceTable::Refresh(), whose
     // Reset comes back through OnSourceChanged and runs Reapply() once. While a DeferRefresh is
-    // open: sets m_refreshRequested only.
+    // open: SourceTable::ScheduleRefresh() only (a re-read is owed at the outermost
+    // EndHoldResets; the table is not marked diverged, so incremental changes keep showing).
     void Refresh();
 
     // ---- DeferRefresh (decided) -------------------------------------------------------------
@@ -104,12 +105,14 @@ public:
     // is shaped surgically with the applied spec and published at once; a source Reset is held.
     // The live-shaping drain is skipped while open (changes stay in m_liveDirty, as under a hold).
     // End: asserts depth > 0. Inner ends only decrement. The outermost end calls
-    // SourceTable::EndHoldResets; if it reports a pending change, or m_refreshRequested is set, it
-    // runs SourceTable::Refresh() (one re-read that also builds a pending hierarchy), whose Reset
-    // goes to Reapply() with m_desired: one reshape, one Reset. Otherwise ApplyDesiredSpec()
-    // (nothing when the spec did not change). Then PostLiveDrain if changes are pending. An
-    // exception from app code propagates (applied spec stays old, m_desired is kept, as for a
-    // verb); m_refreshRequested is cleared and the depth is 0 either way.
+    // SourceTable::EndHoldResets; if it reports a pending change (a held Reset, a Refresh() while
+    // open, or a parked hierarchy), it runs SourceTable::Refresh() (one re-read that also builds a
+    // pending hierarchy), whose Reset goes to Reapply() with m_desired: one reshape, one Reset.
+    // Otherwise ApplyDesiredSpec() (nothing when the spec did not change). Then PostLiveDrain if
+    // changes are pending. An exception from app code propagates (applied spec stays old,
+    // m_desired is kept, as for a verb; a re-read that fails validation leaves the table diverged
+    // for the next notification or Refresh; any other failure leaves the re-read owed, so the next
+    // commit retries it); the depth is 0 either way.
     void BeginDeferRefresh();
     void EndDeferRefresh();
     bool IsRefreshDeferred() const noexcept;
@@ -200,9 +203,9 @@ private:
     //                               one structural rebuild and a stable Reset).
     // Moves m_liveDirty into a local batch and clears m_liveAllDirty and m_liveDrainPosted before
     // any shaping, so a re-entrant OnItemChanged (app code run by the drain) lands in the fresh
-    // map and posts the next drain. Skipped while m_liveHoldCount > 0 (#18 O4:
-    // an in-progress cell edit or pointer press, v1 m_liveShapingHold) or a DeferRefresh is open;
-    // EndLiveShapingHold and the outermost EndDeferRefresh post it again.
+    // map and posts the next drain. Runs only when CanDrain(): skipped while m_liveHoldCount > 0
+    // (#18 O4: an in-progress cell edit or pointer press, v1 m_liveShapingHold), a DeferRefresh is
+    // open, or an apply runs; EndLiveShapingHold and the outermost EndDeferRefresh post it again.
     void DrainLiveChanges();
 
     // Applies Diff(applied, desired); then Retain()s the delegates and paths both specs use. A
@@ -218,12 +221,12 @@ private:
     // ---- IShapedRowsListener (decided, P8) --------------------------------------------------
     // The single path from the tree to consumers, whatever made the change (an engine commit, an
     // expansion verb, or an expand-all verb). Each call runs while the engine or tree is mid-write,
-    // so all are noexcept: a throw from a handler is caught into m_listenerFault, every later event
-    //     of the commit is suppressed, EndCommit raises one Reset, and AfterCommit rethrows. Item lists hold
-        // count nullptrs, as InspectingDataSource's do (D3); Replace is never raised (O6).
+    // so all are noexcept: a throw from a handler is caught into m_commit.listenerFault, every later
+    // event of the commit is suppressed, EndCommit raises one Reset, and AfterCommit rethrows. Item
+    // lists hold count nullptrs, as InspectingDataSource's do (D3); Replace is never raised (O6).
 
-    // ShapedCollectionView::NotifyRemoved / NotifyAdded. Accumulates m_changes: isMove sets Order
-    // and adds +-count to m_moveNet; any other call sets Membership.
+    // ShapedCollectionView::NotifyRemoved / NotifyAdded. Accumulates m_commit.changes: isMove sets
+    // Order and adds +-count to m_commit.moveNet; any other call sets Membership.
     void OnRowsRemoved(uint32_t index, uint32_t count, bool isMove) noexcept override;
     void OnRowsInserted(uint32_t index, uint32_t count, bool isMove) noexcept override;
 
@@ -246,21 +249,22 @@ private:
     // Every engine entry point and expansion verb runs between these, through one RAII scope:
     //   { CommitScope scope{ *this, retired }; m_engine.Apply(...); }  // ~CommitScope: EndCommit
     //   AfterCommit();                                                 // only on normal exit
-    // BeginCommit: m_isApplying, SourceTable::BeginFreeze, m_changes / m_moveNet / m_listenerFault
-    // / m_resyncDue cleared.
+    // BeginCommit: asserts CanRunVerb(), sets m_isApplying, SourceTable::BeginFreeze,
+    // m_commit = {}.
     //
     // EndCommit runs from the scope's destructor (also on unwind), so it never throws: a throw
     // from a destructor terminates the process. It only closes the scope:
-    //   - m_moveNet != 0 -> Membership (rows moved and the count changed: not a pure reorder).
-    //   - m_listenerFault set -> NotifyReset, so the view and the repeater agree again.
-    //   - m_owner->OnShapingApplied({m_changes, retired}) if m_changes != None or retired is
+    //   - m_commit.moveNet != 0 -> Membership (rows moved and the count changed: not a pure
+    //     reorder).
+    //   - m_commit.listenerFault set -> NotifyReset, so the view and the repeater agree again.
+    //   - m_owner->OnShapingApplied({m_commit.changes, retired}) if changes != None or retired is
     //     non-empty (O2, O3, O5, P9). Skipped on unwind from an engine throw (nothing was written).
-    //     A throw from it is caught into m_listenerFault (if still empty).
+    //     A throw from it is caught into m_commit.listenerFault (if still empty).
     //   - ShapingEngine::ReleaseRetired, SourceTable::EndFreeze, m_isApplying cleared.
     //   - EndFreeze reported a pending change: on unwind, ResyncSource(post: true) (AfterCommit
     //     will not run, and nothing runs while the exception unwinds into the app); otherwise
-    //     m_resyncDue is set.
-    // On unwind a recorded m_listenerFault is dropped: the engine's exception propagates.
+    //     m_commit.resyncDue is set.
+    // On unwind a recorded listenerFault is dropped: the engine's exception propagates.
     // retired: the SourceChange's Removed records when called from OnSourceChanged (alive until
     // that handler returns); empty for verbs, expansion and live shaping. No owner: the owner
     // calls are skipped; no view yet: the tree has no listener and nothing is raised.
@@ -268,11 +272,23 @@ private:
     void EndCommit(std::span<SourceRecord const* const> retired, bool unwinding) noexcept;
 
     // Called by the verb or handler that opened the scope, after the scope object is gone, when no
-    // exception escaped it. Takes and clears m_resyncDue and m_listenerFault, then:
-    //   - m_resyncDue: ResyncSource(post: m_listenerFault set), so an app exception is never
+    // exception escaped it. Takes m_commit (leaving it empty), then:
+    //   - resyncDue: ResyncSource(post: listenerFault set), so an app exception is never
     //     followed by a synchronous re-read before it reaches the app.
-    //   - Rethrows m_listenerFault (the first handler exception).
+    //   - Rethrows listenerFault (the first handler exception).
     void AfterCommit();
+
+    // ---- Gates (decided) --------------------------------------------------------------------
+    // One predicate per kind of work, so each rule lives in one place (the spec's coordinator
+    // state table lists the full matrix, including SourceTable's freeze, hold and divergence).
+    //   CanRunVerb: a verb, Refresh, DeferRefresh begin, SetOwner or an expansion verb may start;
+    //     otherwise it throws (#19).
+    //   CanReshape: a verb may apply now; otherwise (DeferRefresh open) it edits m_desired only.
+    //   CanDrain: the live drain may run; otherwise it stays pending and is posted again by
+    //     whatever closed the gate.
+    bool CanRunVerb() const noexcept;     // !m_isApplying
+    bool CanReshape() const noexcept;     // m_deferDepth == 0
+    bool CanDrain() const noexcept;       // !m_isApplying && m_deferDepth == 0 && m_liveHoldCount == 0
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
@@ -309,14 +325,15 @@ private:
     // surgical Link / Unlink. Descendants carried by an item do not count. 1 matches v1 ShapedItemsSource.
     static constexpr uint32_t c_bulkThreshold = 1;
 
-    // Re-entrancy guard: a verb or Refresh while an apply runs throws.
+    // Re-entrancy guard for verbs (CanRunVerb): a verb or Refresh while an apply runs throws.
+    // Source notifications are guarded separately by SourceTable's freeze.
     bool m_isApplying{ false };
 
-    // Open DeferRefresh handles (WPF nesting). While > 0, verbs edit m_desired only, Refresh sets
-    // m_refreshRequested, SourceTable holds resets and the live drain is skipped. Clear() resets both,
-    // so a handle closed after teardown does nothing.
+    // Open DeferRefresh handles (WPF nesting). While > 0, verbs edit m_desired only, Refresh calls
+    // SourceTable::ScheduleRefresh, SourceTable holds resets and the live drain is skipped. No
+    // "refresh requested" flag here: SourceTable's m_rereadDue carries it. Clear() resets it, so
+    // a handle closed after teardown does nothing.
     uint32_t m_deferDepth{ 0 };
-    bool m_refreshRequested{ false };
 
     // Source change during an apply (decided, #19: freeze, then one deferred Reset). Every engine
     // entry point and expansion verb runs inside one commit scope (BeginCommit / EndCommit). A
@@ -329,9 +346,12 @@ private:
     // resync's own apply was disturbed again (one resync per turn, so an app that mutates on every
     // callback cannot loop).
     // Never throws: Refresh() runs app code and validation, so a throw is caught, the table stays
-    // as it was (SourceTable keeps m_pendingReset / m_outOfSync), and one retry is posted
-    // (m_resyncPosted); the verb that opened the scope has already succeeded. A posted retry that
-    // throws is swallowed; the next source notification, Refresh or verb retries.
+    // as it was (SourceTable stays diverged), and one retry is posted
+    // (m_resyncPosted); the verb that opened the scope has already succeeded. The posted retry
+    // does nothing if SourceTable::IsRereadDue() is false by then (a notification already
+    // re-read). A posted retry that throws is swallowed. After a validation failure the table is
+    // diverged with no re-read owed: the next source notification or Refresh retries. After any
+    // other failure the re-read stays owed: the next commit's EndFreeze reports it again.
     void ResyncSource(bool post) noexcept;
     bool m_resyncPosted{ false };
 
@@ -355,14 +375,18 @@ private:
     // nulled by their Detach() in Clear().
     ShapedRowQueries m_rows;
 
-    // The current commit (P8): what its events did, the net row count of its move events, and the
-    // first exception a handler threw. Cleared by BeginCommit, read by EndCommit; m_listenerFault is
-    // rethrown by AfterCommit.
-    ShapingChangeFlags m_changes{ ShapingChangeFlags::None };
-    int64_t m_moveNet{ 0 };
-    std::exception_ptr m_listenerFault;
-
-    // EndFreeze reported a source change during a commit that ended normally; AfterCommit resyncs.
-    bool m_resyncDue{ false };
-
+    // The current commit (P8). Reset by BeginCommit, filled by the listener and EndCommit, taken
+    // by AfterCommit. Grouped so one assignment clears it and no field is forgotten.
+    struct CommitState
+    {
+        // What the commit's events did.
+        ShapingChangeFlags changes{ ShapingChangeFlags::None };
+        // Net row count of its move events (+ inserted, - removed).
+        int64_t moveNet{ 0 };
+        // The first exception a handler threw; rethrown by AfterCommit.
+        std::exception_ptr listenerFault;
+        // EndFreeze reported a source change and the scope ended normally; AfterCommit resyncs.
+        bool resyncDue{ false };
+    };
+    CommitState m_commit;
 };

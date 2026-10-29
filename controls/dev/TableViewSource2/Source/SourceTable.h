@@ -64,10 +64,10 @@
 //     From(items) or Refresh().
 //   - Incremental notifications (InsertAt / ReplaceAt): the throw propagates out of the
 //     CollectionChanged / VectorChanged handler, i.e. into the app's Add() / Insert() / setter.
-//     The source has already changed, so the table is out of sync: m_outOfSync is set and every
-//     later notification is handled as a Reset (re-enumerate + full validation) until one succeeds,
-//     which raises a single Reset and clears the flag. Positional deltas are never applied on
-//     top of a diverged table.
+//     The source has already changed, so the table has diverged: m_diverged is set and every
+//     later notification is handled as a re-read (re-enumerate + full validation) until one
+//     succeeds, which raises a single Reset and clears the flag. Positional deltas are never
+//     applied on top of a diverged table.
 //
 // Also owns per-record INotifyPropertyChanged subscriptions when live shaping is enabled
 // (SetLiveShaping(true)), irrespective of whether any shaping verbs are currently active. Adding or
@@ -83,11 +83,21 @@
 //       3. Removed records are destroyed (revoking any live PropertyChangedToken).
 //     Root-collection and child-collection notifications go through the same path, re-entrancy
 //     gate and queue. Multi-item notifications are split into single-item changes or reported as
-//     one Reset. A change raised re-entrantly while frozen (decided, #19: inside a SourceChanged
-//     dispatch or a Freeze scope) is not applied: the table is left as it was, m_pendingReset is
-//     set, and the source is re-read with one Reset when the outermost dispatch or freeze ends.
-//     While resets are held (an open DeferRefresh), incremental changes are applied as usual but a
-//     Reset is not: it sets m_pendingReset and the table stops applying changes until the re-read.
+//     one Reset. A change raised re-entrantly while frozen (decided, #19: a SourceChanged dispatch
+//     holds a freeze, as does the coordinator's commit scope) is not applied: the table is left as
+//     it was, m_diverged and m_rereadDue are set, and the source is re-read with one Reset when
+//     the outermost freeze ends. While resets are held (an open DeferRefresh), incremental changes
+//     are applied as usual but a Reset is not: it is skipped and the table stops applying changes
+//     until the re-read. One rule (see Divergence below); "skip" = not applied, sets m_diverged and
+//     m_rereadDue:
+//
+//       table state          | incremental change | Reset (or multi-item)
+//       ---------------------|--------------------|----------------------
+//       frozen               | skip               | skip
+//       held, not diverged   | apply              | skip
+//       held, diverged       | skip               | skip
+//       free, not diverged   | apply              | re-read
+//       free, diverged       | re-read            | re-read
 //     OPEN: under ParentBy one source change can produce several tree changes (an insert adopts
 //     existing orphans, each a Move from top level to the new item). Deliver them as an ordered
 //     batch in one dispatch, or collapse to Reset above a threshold.
@@ -176,7 +186,11 @@ public:
     //      the current one between 2 and 3 (TakeChildRecords(), Release()).
     //   4. One Reset: Added = records created, Removed = records that left.
     // A reused record keeps its pointer, Identity(), PropertyChanged subscription and expansion
-    // flag. Clears m_outOfSync and m_pendingReset.
+    // flag. On success clears m_diverged and m_rereadDue. On a validation failure (null or
+    // duplicate item) sets m_diverged and clears m_rereadDue: the source is in the state a rejected
+    // change leaves, so the next notification recovers it, not every commit. On any other throw
+    // (app enumerator, selector) both flags are left as they were, so an owed re-read is retried
+    // at the next report point.
     void Refresh();
 
     // Teardown (see Detach contract); must run on the UI thread while m_trackerOwner is alive.
@@ -197,10 +211,16 @@ public:
     // ---- Freeze (decided, #19) --------------------------------------------------------------
     // While frozen (depth > 0), root- and child-collection notifications are not applied: records,
     // links and lookups stay exactly as they were, so the coordinator can iterate TopLevel() and
-    // Children and hold raw SourceRecord pointers across app code. A notification only sets
-    // m_pendingReset (the source has diverged). Nests. ShapingManager freezes around every engine
-    // call and its events (the commit scope). EndFreeze returns true when the outermost freeze ends with m_pendingReset
-    // set; the caller then calls Refresh() (re-read, one Reset), now or posted. Item
+    // Children and hold raw SourceRecord pointers across app code. A notification is skipped: it
+    // only sets m_diverged and m_rereadDue. Nests. Two holders: the SourceChanged dispatch
+    // (RaiseSourceChanged freezes around the handler call, so there is no separate dispatching
+    // flag) and ShapingManager's commit scope (every engine call and its events). EndFreeze returns
+    // true when the outermost freeze ends with m_rereadDue set and no reset hold open (an open hold
+    // leaves it for EndHoldResets); the caller then calls Refresh() (re-read, one Reset), now or
+    // posted. Reporting does not clear m_rereadDue: only Refresh() does, so a re-read that throws
+    // for a reason other than validation is reported again at the next outermost EndFreeze. A
+    // table diverged only by a rejected change does not report true: re-reading it would fail
+    // validation again on every commit; the next notification re-reads instead. Item
     // PropertyChanged is not affected (it never mutates the table).
     void BeginFreeze() noexcept;
     [[nodiscard]] bool EndFreeze() noexcept;
@@ -210,14 +230,28 @@ public:
     // WPF model: an open DeferRefresh defers re-reads, not incremental changes. While held
     // (depth > 0) and not frozen, an incremental root- or child-collection change is applied and
     // raised as usual (the coordinator shapes it with the applied spec). A Reset (including a
-    // multi-item change reported as one, and every change while out of sync) is not re-read: it
-    // sets m_pendingReset, and from then on the table has diverged, so later notifications are
-    // handled as under a freeze until the re-read. Hierarchy verbs are parked (m_pendingHierarchy);
+    // multi-item change reported as one) is skipped, and from then on later notifications are
+    // skipped as under a freeze until the re-read. Hierarchy verbs are parked (m_pendingHierarchy);
     // the current tree keeps receiving changes. Nests. EndHoldResets returns true when the
-    // outermost hold ends with m_pendingReset set or a hierarchy parked; the caller then calls
-    // Refresh(), which re-reads once and commits the parked hierarchy.
+    // outermost hold ends with m_rereadDue set or a hierarchy parked; the caller then calls
+    // Refresh(), which re-reads once and commits the parked hierarchy. Like EndFreeze, it does not
+    // clear m_rereadDue.
     void BeginHoldResets() noexcept;
     [[nodiscard]] bool EndHoldResets() noexcept;
+
+    // Asks for one re-read at the outermost EndHoldResets without marking the table diverged, so
+    // incremental changes keep being applied until then. ShapingManager::Refresh() while a
+    // DeferRefresh is open. Sets m_rereadDue; asserts a hold is open. Raises nothing.
+    void ScheduleRefresh() noexcept;
+
+    // ---- Divergence (decided) ---------------------------------------------------------------
+    // m_diverged: the table no longer matches the source (see the table in the header comment).
+    // Set by a skipped notification, a rejected incremental change or a Refresh() that fails
+    // validation, and RequestReset (the ISourceHierarchyHost member a strategy calls for a
+    // rejected child change). m_rereadDue: a re-read is owed (see the members). Both are cleared
+    // only by a successful Refresh(). IsRereadDue is read by the posted resync, which does nothing
+    // once the re-read has happened (a notification already re-read) or is no longer owed.
+    bool IsRereadDue() const noexcept;
 
     // ---- Source tree (hierarchy) ------------------------------------------------------------
 
@@ -319,7 +353,7 @@ private:
 
     // Internal source edits applied from root-collection notifications. InsertAt and ReplaceAt call
     // ValidateIncoming() (over the item plus m_hierarchy->CollectIncoming) before mutating; on
-    // failure they set m_outOfSync and rethrow. Each then calls the strategy's OnInserted /
+    // failure they set m_diverged and rethrow. Each then calls the strategy's OnInserted /
     // OnRemoving / OnMoved (a replace is OnRemoving then OnInserted) before raising.
     void InsertAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
     void RemoveAt(uint32_t index);
@@ -327,11 +361,12 @@ private:
     void Move(uint32_t fromIndex, uint32_t toIndex);
 
     // CreateRecord and RaiseSourceChanged are host members (below). RaiseSourceChanged raises
-    // SourceChanged (or queues it while a dispatch is in progress), then destroys the records that
-    // left; records in `removed` must already be out of their owner, the tree and the lookups.
+    // SourceChanged inside a freeze (BeginFreeze / EndFreeze around the handler call; nothing is
+    // queued: a re-entrant change is skipped), then destroys the records that left;
+    // records in `removed` must already be out of their owner, the tree and the lookups.
 
-    // After the outermost dispatch returns (and no freeze is held): if a notification arrived
-    // while frozen, Refresh() (one Reset).
+    // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
+    // true (re-read due, outermost, no hold), Refresh() (one Reset).
     void DrainPendingChanges();
 
     void AddToLookups(SourceRecord* record);
@@ -376,7 +411,7 @@ private:
         SourceRecord const* replacing) const override;
     std::vector<SourceRecord*>& SiblingsOf(SourceRecord* parent) noexcept override;
     void Reparent(SourceRecord* record, SourceRecord* newParent, uint32_t index) override;
-    bool AdmitChange() noexcept override;
+    bool AdmitChange(bool isReset) override;
     void RaiseSourceChanged(
         SourceChangeKind kind,
         SourceRecord* oldParent,
@@ -432,18 +467,26 @@ private:
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;
 
-    // Re-entrancy (decided, #19). The table is frozen while m_isDispatching or m_freezeDepth > 0:
-    // a source notification is not applied and only sets m_pendingReset, which a Refresh() (one
-    // Reset) clears. Nothing is removed while frozen, so no removed records are held.
-    bool m_isDispatching{ false };
+    // Re-entrancy (decided, #19). Frozen while > 0: the SourceChanged dispatch and the
+    // coordinator's commit scope each hold one. A notification while frozen is not applied and
+    // only sets m_diverged and m_rereadDue. Nothing is removed while frozen, so no removed records
+    // are held.
     uint32_t m_freezeDepth{ 0 };
-    bool m_pendingReset{ false };
 
-    // Open reset holds (DeferRefresh). While > 0, a Reset sets m_pendingReset instead of re-reading.
+    // Open reset holds (DeferRefresh). While > 0, a Reset is skipped instead of re-read.
     uint32_t m_resetHoldDepth{ 0 };
 
-    // Set when an incremental notification was rejected (null/duplicate), from the root collection
-    // or, through RequestReset(), a child collection. The source has diverged, so every later
-    // notification (root or child) is handled as a whole-tree re-read until validation succeeds.
-    bool m_outOfSync{ false };
+    // The table does not match the source (see Divergence). While set, every notification, root
+    // or child, is handled as a whole-tree re-read, skipped while frozen or held; positional
+    // deltas are never applied. Cleared only by a successful Refresh(). One flag for what were
+    // three causes: a change while frozen, a Reset while held, a rejected change.
+    bool m_diverged{ false };
+
+    // A re-read is owed: reported at each report point (outermost EndFreeze with no hold, or
+    // outermost EndHoldResets) until a Refresh() clears it. Set by a skipped notification and by
+    // ScheduleRefresh; not by a rejected change, so a table diverged only by rejection is re-read
+    // by the next notification rather than by every commit. Cleared by a successful Refresh() and
+    // by one that fails validation (which turns it into a rejection); kept when Refresh() throws
+    // for any other reason, so the next report point retries.
+    bool m_rereadDue{ false };
 };
