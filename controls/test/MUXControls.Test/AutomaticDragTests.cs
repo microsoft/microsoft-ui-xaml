@@ -364,6 +364,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.AreEqual("0", ReadText("DragCount"));
                 mouse.Press(PointerButtons.Secondary);
+                // Records whether the chord raised PointerPressed (RightButtonPressed) or was
+                // reported as a move, in which case this test only guards the primary origin.
+                Wait.ForIdle();
+                Log.Comment($"Update kind of the last PointerPressed after the chord: {ReadText("PressUpdateKind")}");
                 mouse.Release(PointerButtons.Secondary);
                 mouse.Move(end);
                 Wait.ForIdle();
@@ -510,8 +514,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             if (inputType != PointerInputType.Pen)
             {
-                // Injected mouse input does not complete a system drop on the test machine, so
-                // completed drops are verified with pen, which uses the same drag-detection path.
+                // InputHelper.MouseDragToTarget's one-shot mouse gesture does not complete a system
+                // drop on the test machine. MouseDropCompletes covers mouse drops with staged moves.
                 return;
             }
 

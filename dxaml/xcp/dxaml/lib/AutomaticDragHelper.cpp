@@ -241,6 +241,8 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         IFC_RETURN(OwnerHasPointerCapture(m_mouseDragPointerId, &hasCapture));
         if (hasCapture)
         {
+            // The armed mouse/pen candidate keeps the drag; any other press, including touch, is
+            // ignored. No touch candidate can be pending here, so there is no touch state to reset.
             return S_OK;
         }
         m_isLeftButtonPressed = false;
@@ -248,7 +250,7 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         IFC_RETURN(UnregisterEvents());
     }
 
-    // Preserve touch cleanup for non-primary presses as well.
+    // Reset touch state on every other press, including a secondary-button press.
     m_spPointerPoint = nullptr;
     m_spPointer = nullptr;
     m_isHoldingCompleted = false;
@@ -269,10 +271,11 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         IFC_RETURN(spPointerProperties->get_IsLeftButtonPressed(&isLeftButtonPressed));
         IFC_RETURN(spPointerProperties->get_PointerUpdateKind(&updateKind));
 
-        // A secondary-button chord must not replace the primary press origin.
-        if (isLeftButtonPressed && updateKind == ixp::PointerUpdateKind_LeftButtonPressed)
+        // Arm on a primary press as before. Re-arming an already armed candidate (recovery from a
+        // release with no notification) needs a genuine primary down, so that a secondary-button
+        // chord cannot move the drag origin.
+        if (isLeftButtonPressed && (!m_isLeftButtonPressed || updateKind == ixp::PointerUpdateKind_LeftButtonPressed))
         {
-            // A fresh primary down also recovers from a release with no capture-loss notification.
             m_mouseDragPointerId = pointerId;
             m_isLeftButtonPressed = true;
             // Start listening for a mouse drag gesture
@@ -389,6 +392,16 @@ _In_ xaml_input::IPointerRoutedEventArgs* pArgs)
     {
         return S_OK;
     }
+    if (!m_isLeftButtonPressed && m_spPointer)
+    {
+        // A pending touch candidate ends only with its own pointer.
+        UINT touchPointerId = 0;
+        IFC_RETURN(m_spPointer->get_PointerId(&touchPointerId));
+        if (pointerId != touchPointerId)
+        {
+            return S_OK;
+        }
+    }
     IFC_RETURN(spPointer->get_PointerDeviceType(&pointerDeviceType));
 
     // Check if this is a mouse button up
@@ -437,6 +450,16 @@ AutomaticDragHelper::HandlePointerCaptureLostEventArgs(
     if (m_isLeftButtonPressed && pointerId != m_mouseDragPointerId)
     {
         return S_OK;
+    }
+    if (!m_isLeftButtonPressed && m_spPointer)
+    {
+        // A pending touch candidate ends only with its own pointer.
+        UINT touchPointerId = 0;
+        IFC_RETURN(m_spPointer->get_PointerId(&touchPointerId));
+        if (pointerId != touchPointerId)
+        {
+            return S_OK;
+        }
     }
 
     IFC_RETURN(spPointer->get_PointerDeviceType(&pointerDeviceType));
@@ -514,15 +537,21 @@ AutomaticDragHelper::HandleDirectManipulationDraggingStarted()
     // Pen cross-slide uses the mouse/pen path, which does not store a touch pointer.
     ASSERT(!m_isHoldingCompleted || (m_spPointerPoint && m_spPointer));
 
-    // Release cross-slide viewport now
-    IFC_RETURN(m_pOwnerNoRef->DirectManipulationCrossSlideContainerCompleted());
-    if (m_isHoldingCompleted)
-    {
-        IFC_RETURN(m_pOwnerNoRef->OnTouchDragStarted(m_spPointerPoint.Get(), m_spPointer.Get()));
-    }
-
+    // OnTouchDragStarted raises DragStarting synchronously. An app handler that clears CanDrag
+    // deletes this helper, so take what the callout needs and touch no member after it.
+    ctl::ComPtr<ixp::IPointerPoint> pointerPoint = m_spPointerPoint;
+    ctl::ComPtr<xaml_input::IPointer> pointer = m_spPointer;
     m_spPointerPoint = nullptr;
     m_spPointer = nullptr;
+    const bool startTouchDrag = m_isHoldingCompleted;
+    ctl::ComPtr<UIElement> owner(m_pOwnerNoRef);
+
+    // Release cross-slide viewport now
+    IFC_RETURN(owner->DirectManipulationCrossSlideContainerCompleted());
+    if (startTouchDrag)
+    {
+        IFC_RETURN(owner->OnTouchDragStarted(pointerPoint.Get(), pointer.Get()));
+    }
 
     return S_OK;
 }
