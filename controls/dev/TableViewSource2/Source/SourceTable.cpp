@@ -348,10 +348,6 @@ void SourceTable::Refresh()
         try
         {
             ValidateItems(items);
-            if (strategy)
-            {
-                strategy->Prepare(*this, items);
-            }
         }
         catch (...)
         {
@@ -359,6 +355,39 @@ void SourceTable::Refresh()
             m_diverged = true;
             m_rereadDue = false;
             throw;
+        }
+
+        if (strategy)
+        {
+            if (swapping)
+            {
+                try
+                {
+                    strategy->Prepare(*this, items);
+                }
+                catch (...)
+                {
+                    // The parked strategy cannot be applied: drop it, finish the re-read with the
+                    // current one so edits made during the deferral show, then surface the error.
+                    auto const error = std::current_exception();
+                    m_pendingHierarchy.reset();
+                    Refresh();
+                    std::rethrow_exception(error);
+                }
+            }
+            else
+            {
+                try
+                {
+                    strategy->Prepare(*this, items);
+                }
+                catch (...)
+                {
+                    m_diverged = true;
+                    m_rereadDue = false;
+                    throw;
+                }
+            }
         }
     }
     catch (...)

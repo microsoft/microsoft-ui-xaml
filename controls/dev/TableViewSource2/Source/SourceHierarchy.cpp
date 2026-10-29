@@ -722,6 +722,30 @@ bool ParentKeyHierarchy::OnInserted(ISourceHierarchyHost& host, SourceRecord* re
     auto orphans = WaitingFor(host, key, record);
     SourceRecord* const parent = PlaceParent(record, orphans, error);
     host.Reparent(record, parent, SourceOrderPosition(host, record, parent, &m_excluded));
+
+    if (orphans.size() > 1)
+    {
+        // Spec Bulk threshold: adopting more than one orphan is one stable Reset, with no Add
+        // first. Returning false tells the caller there is nothing left to raise.
+        try
+        {
+            for (SourceRecord* const orphan : orphans)
+            {
+                host.Reparent(orphan, record, SourceOrderPosition(host, orphan, record, &m_excluded));
+            }
+
+            std::vector<SourceRecordPtr> removed;
+            host.RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, { record }, removed);
+        }
+        catch (...)
+        {
+            host.RequestReset();
+            throw;
+        }
+        RestoreForcedTop(host);
+        return false;
+    }
+
     m_pendingAdoptions = std::move(orphans);
     return true;
 }

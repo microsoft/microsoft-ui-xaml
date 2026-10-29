@@ -189,11 +189,11 @@ public:
     //     under its parent (or the top level) in source order, and remembers the top-level
     //     orphans waiting for its key; ChildrenBy links it at the top level and builds its feed
     //     and subtree. Returns false when the record stays unlinked (ParentBy: excluded, spec
-    //     Misbehaving records): the caller raises no Add. A selector or key failure is captured
+    //     Misbehaving records), or when it adopted more than one orphan and raised the one bulk
+    //     Reset itself: the caller raises no Add. A selector or key failure is captured
     //     in error (the first one only); the caller raises the change and then rethrows it.
-    //   AfterInserted: after the caller raised the Add. ParentBy adopts the remembered orphans:
-    //     one is a Move from the top level to record; more than one are relinked and raised as
-    //     one Reset. ChildrenBy: nothing.
+    //   AfterInserted: after the caller raised the Add. ParentBy adopts the single remembered
+    //     orphan as a Move from the top level to record. ChildrenBy: nothing.
     //   OnRemoving: record has left RootRecords() and the lookups but is still linked. ParentBy
     //     unkeys it and moves each of its children to the top level (one Move each, raised while
     //     record is still in the shaped tree); ChildrenBy moves its subtree out of the lookups
