@@ -111,6 +111,14 @@ void ShapingEngine::Reapply(ShapeSpec const& desired)
     m_tree.EndReset(0, m_groupsByIdentity, false /* newGroupSelector */);
 }
 
+void ShapingEngine::ApplySourceChange(SourceChange const&)
+{
+    // Milestone 2: every source change rebuilds the tree with the applied spec (one stable Reset).
+    // Milestone 5 makes inserts, removes, replaces and moves surgical.
+    ShapeSpec const applied{ m_applied };
+    Reapply(applied);
+}
+
 void ShapingEngine::Clear()
 {
     m_tree.Clear();

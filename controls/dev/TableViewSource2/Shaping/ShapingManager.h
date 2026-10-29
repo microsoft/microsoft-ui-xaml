@@ -394,13 +394,12 @@ private:
     // cannot loop).
     // Never throws: Refresh() runs app code and validation, so a throw is caught, the table stays
     // as it was (SourceTable stays diverged), and one retry is posted
-    // (m_resyncPosted); the verb that opened the scope has already succeeded. The posted retry
+    // (SourceTable::PostReread, guarded by its m_rereadPosted); the verb that opened the scope has already succeeded. The posted retry
     // does nothing if SourceTable::IsRereadDue() is false by then (a notification already
     // re-read). A posted retry that throws is swallowed. After a validation failure the table is
     // diverged with no re-read owed: the next source notification or Refresh retries. After any
     // other failure the re-read stays owed: the next commit's EndFreeze reports it again.
     void ResyncSource(bool post) noexcept;
-    bool m_resyncPosted{ false };
 
     // Live-shaping changes pending for the next DrainLiveChanges (E7). Keys are raw record
     // pointers: OnSourceChanged erases removed records and their descendants before the engine

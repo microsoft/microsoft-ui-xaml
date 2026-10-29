@@ -207,17 +207,22 @@ void ShapingManager::Clear()
 
 void ShapingManager::OnSourceChanged(SourceChange const& change)
 {
-    // Milestone 1 raises only the Reset of SourceTable::Refresh; Milestone 2 adds the incremental
-    // kinds (surgical from Milestone 5).
-    if (change.Kind != SourceChangeKind::Reset)
-    {
-        MUX_ASSERT(false);
-        return;
-    }
-
     {
         CommitScope scope{ *this, change.Removed };
-        Reapply();
+        if (change.Kind == SourceChangeKind::Reset)
+        {
+            Reapply();
+        }
+        else
+        {
+            m_engine.ApplySourceChange(change);
+
+            // Until Milestone 5 this is a full rebuild: the owner hears Reset | Membership.
+            if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
+            {
+                m_commit.changes |= ShapingChangeFlags::Membership;
+            }
+        }
     }
     AfterCommit();
 }
@@ -392,15 +397,18 @@ void ShapingManager::EndCommit(std::span<SourceRecord const* const> retired, boo
     bool const changePending = m_sourceTable->EndFreeze();
     m_isApplying = false;
 
-    // Milestone 2 resyncs here (posted on unwind, from AfterCommit otherwise). Nothing reports a
-    // pending change before the source is subscribed.
-    MUX_ASSERT(!changePending);
+    // From AfterCommit normally; posted when the scope ends by an exception (never from a
+    // destructor path).
     m_commit.resyncDue = changePending && !unwinding;
 
     if (unwinding)
     {
         // The engine's exception propagates; a handler fault recorded on the way is dropped.
         m_commit.listenerFault = nullptr;
+        if (changePending)
+        {
+            ResyncSource(true /* post */);
+        }
     }
 }
 
@@ -408,8 +416,11 @@ void ShapingManager::AfterCommit()
 {
     CommitState commit = std::exchange(m_commit, CommitState{});
 
-    // Milestone 2: ResyncSource(commit.listenerFault != nullptr).
-    MUX_ASSERT(!commit.resyncDue);
+    // A handler fault means the owner is in an unknown state: post rather than re-enter it now.
+    if (commit.resyncDue)
+    {
+        ResyncSource(commit.listenerFault != nullptr /* post */);
+    }
 
     std::exception_ptr endedFault;
     if (m_commitEnded)
@@ -433,6 +444,25 @@ void ShapingManager::AfterCommit()
     {
         std::rethrow_exception(endedFault);
     }
+}
+
+void ShapingManager::ResyncSource(bool post) noexcept
+{
+    if (!post)
+    {
+        try
+        {
+            // Its Reset comes back through OnSourceChanged; a change during it is posted by Refresh.
+            m_sourceTable->Refresh();
+            return;
+        }
+        catch (...)
+        {
+            // The verb that opened the scope already succeeded; retry once, posted.
+        }
+    }
+
+    m_sourceTable->PostReread();
 }
 
 void ShapingManager::SetCommitEndedHandler(std::function<void()> handler) noexcept
