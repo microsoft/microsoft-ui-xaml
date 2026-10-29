@@ -91,7 +91,12 @@ void NavigationViewItemBase::SetNavigationViewParentForItems(const winrt::ItemsS
     {
         if (auto const item = items.GetAt(i).try_as<winrt::NavigationViewItemBase>())
         {
-            winrt::get_self<NavigationViewItemBase>(item)->SetNavigationViewParent(navigationView);
+            // An item that already has this owner has propagated it to its children, so only new items are walked.
+            auto const itemImpl = winrt::get_self<NavigationViewItemBase>(item);
+            if (itemImpl->GetNavigationView() != navigationView)
+            {
+                itemImpl->SetNavigationViewParent(navigationView);
+            }
         }
     }
 }
