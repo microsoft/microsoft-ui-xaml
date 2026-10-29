@@ -430,14 +430,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Records every CollectionChanged the bound view raises from now on, as "Add@i", "Remove@i",
         // "Move@old>new", "Replace@i" or "Reset".
         private static List<string> RecordViewEvents(TableView tableView, Action<NotifyCollectionChangedEventArgs> onEvent = null)
+            => RecordViewEvents(tableView, false, onEvent);
+
+        // As RecordViewEvents, but an Add or Remove also records its row count: "Add@i+n", "Remove@i+n".
+        private static List<string> RecordViewEventsWithCounts(TableView tableView, Action<NotifyCollectionChangedEventArgs> onEvent = null)
+            => RecordViewEvents(tableView, true, onEvent);
+
+        private static List<string> RecordViewEvents(TableView tableView, bool withCounts, Action<NotifyCollectionChangedEventArgs> onEvent)
         {
             var events = new List<string>();
             RunOnUIThread.Execute(() => GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) =>
             {
+                string added = withCounts ? $"+{e.NewItems?.Count ?? 0}" : "";
+                string removed = withCounts ? $"+{e.OldItems?.Count ?? 0}" : "";
                 switch (e.Action)
                 {
-                    case NotifyCollectionChangedAction.Add: events.Add($"Add@{e.NewStartingIndex}"); break;
-                    case NotifyCollectionChangedAction.Remove: events.Add($"Remove@{e.OldStartingIndex}"); break;
+                    case NotifyCollectionChangedAction.Add: events.Add($"Add@{e.NewStartingIndex}{added}"); break;
+                    case NotifyCollectionChangedAction.Remove: events.Add($"Remove@{e.OldStartingIndex}{removed}"); break;
                     case NotifyCollectionChangedAction.Move: events.Add($"Move@{e.OldStartingIndex}>{e.NewStartingIndex}"); break;
                     case NotifyCollectionChangedAction.Replace: events.Add($"Replace@{e.NewStartingIndex}"); break;
                     default: events.Add("Reset"); break;

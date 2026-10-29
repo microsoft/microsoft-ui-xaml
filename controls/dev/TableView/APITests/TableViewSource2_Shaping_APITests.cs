@@ -100,8 +100,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         });
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a source Remove under a throwing filter drops the removed row without calling the filter (a surgical Remove runs no app code) and keeps the rest of the view.")]
-        public void VerifyFilterThrowsDuringRemoveDropsDepartedRow()
+        [TestProperty("Description", "Verifies a source Remove under a filter that would throw does not call the filter (a surgical Remove runs no app code, drift #36) and drops exactly the removed row.")]
+        public void VerifyRemoveUnderThrowingFilterDoesNotCallPredicate()
         {
             var tableView = PlaceFlat(out var source, out var rows);
             bool armed = false;
@@ -113,15 +113,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 armed = true;
                 var d = rows[3];
                 Verify.AreEqual("no exception", ThrownTypeName(() => rows.Remove(d)), "A Remove does not call the predicate.");
-                Verify.AreEqual(2, GetRowsRepeater(tableView).ItemsSourceView.Count, "The removed row left the view.");
-                VerifyShaped(tableView, "B C", "Departed row removed, the rest kept");
+                VerifyShaped(tableView, "B C", "Exactly D left, the rest kept");
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C", "Still consistent after idle"));
 
             RunOnUIThread.Execute(() => armed = false);
             OnUI(tableView, () => source.ClearFilter());
-            RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C", "ClearFilter after the failure re-reads everything"));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C", "ClearFilter re-reads everything"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a source Replace whose arrival the filter throws on propagates the exception, still drops the departed row, hides the arrival and keeps the rest of the view (drift #33).")]
+        public void VerifyFilterThrowsDuringReplaceDropsDepartedRow()
+        {
+            var tableView = PlaceFlat(out var source, out var rows);
+            bool armed = false;
+            OnUI(tableView, () => source.Filter(ThrowingForB(() => armed)));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C D", "Score >= 15"));
+
+            // The arrival is named B, so the armed predicate throws on it; C departs.
+            var arrival = new LiveRow { Id = 5, Name = "B", Score = 35, Team = "X", Addr = new LiveAddress("Bonn") };
+            RunOnUIThread.Execute(() =>
+            {
+                armed = true;
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => rows[2] = arrival), "The predicate's exception must surface from the Replace.");
+                VerifyShaped(tableView, "B D", "Departed C removed, the arrival hidden, B and D kept");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B D", "Still consistent after idle"));
+
+            RunOnUIThread.Execute(() => armed = false);
+            OnUI(tableView, () => source.ClearFilter());
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B B D", "ClearFilter shows the arrival in C's place"));
         }
 
         [TestMethod]

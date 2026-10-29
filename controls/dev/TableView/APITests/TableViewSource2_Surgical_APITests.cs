@@ -52,19 +52,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = PlaceFlat(out var source, out var rows);
             OnUI(tableView, () => source.GroupBy(LiveByTeam, SortDirection.Ascending));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] B D", "GroupBy Team ascending"));
-            var events = RecordViewEvents(tableView);
+            var events = RecordViewEventsWithCounts(tableView);
 
             OnUI(tableView, () => rows.Add(NewLive(5, "E", 50, "Z")));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] B D [H] E", "Group Z created last"));
-            VerifyEvents(events, "Add@6", "a new group and its member arrive as one insert");
+            VerifyEvents(events, "Add@6+2", "a new group and its member arrive as one insert");
 
             OnUI(tableView, () => rows.Add(NewLive(6, "F", 60, "W")));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] F [H] A C [H] B D [H] E", "Group W created first"));
-            VerifyEvents(events, "Add@0", "a new group sorted before the others");
+            VerifyEvents(events, "Add@0+2", "a new group sorted before the others");
 
             OnUI(tableView, () => rows.Add(NewLive(7, "G", 70, "X")));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] F [H] A C G [H] B D [H] E", "G joins group X"));
-            VerifyEvents(events, "Add@5", "joining an existing group");
+            VerifyEvents(events, "Add@5+1", "joining an existing group");
         }
 
         [TestMethod]
@@ -74,19 +74,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = PlaceFlat(out var source, out var rows);
             OnUI(tableView, () => source.GroupBy(LiveByTeam, SortDirection.Ascending));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] B D", "GroupBy Team ascending"));
-            var events = RecordViewEvents(tableView);
+            var events = RecordViewEventsWithCounts(tableView);
 
             OnUI(tableView, () => rows.RemoveAt(1));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] D", "B left group Y"));
-            VerifyEvents(events, "Remove@4", "a member leaves");
+            VerifyEvents(events, "Remove@4+1", "a member leaves");
 
             OnUI(tableView, () => rows.RemoveAt(2));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C", "D was Y's last member: the header went with it"));
-            VerifyEvents(events, "Remove@3", "the header and its last member leave as one remove");
+            VerifyEvents(events, "Remove@3+2", "the header and its last member leave as one remove");
 
             OnUI(tableView, () => rows.Add(NewLive(5, "E", 50, "Y")));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] E", "Group Y created again"));
-            VerifyEvents(events, "Add@3", "the group comes back");
+            VerifyEvents(events, "Add@3+2", "the group comes back");
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             OnUI(tableView, () => source.GroupBy(LiveByTeam, SortDirection.Ascending));
 
             var thrown = 0;
-            var events = RecordViewEvents(tableView, e =>
+            var events = RecordViewEventsWithCounts(tableView, e =>
             {
                 if (thrown++ == 0)
                 {
@@ -161,12 +161,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             OnUI(tableView, () => rows.Add(NewLive(5, "E", 50, "Z")));
             RunOnUIThread.Execute(() => Verify.IsTrue(thrown >= 1, "The throwing handler must have run."));
-            VerifyEvents(events, "Add@6", "add with a throwing handler");
+            VerifyEvents(events, "Add@6+2", "add with a throwing handler");
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] B D [H] E", "Consistent after the throw"));
 
             OnUI(tableView, () => rows.Add(NewLive(6, "F", 60, "X")));
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C F [H] B D [H] E", "A later Add joins group X"));
-            VerifyEvents(events, "Add@3", "a later surgical add");
+            VerifyEvents(events, "Add@3+1", "a later surgical add");
 
             OnUI(tableView, () => source.Refresh());
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C F [H] B D [H] E", "Refresh re-reads the same view"));
