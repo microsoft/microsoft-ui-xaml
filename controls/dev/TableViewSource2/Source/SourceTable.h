@@ -255,9 +255,10 @@ public:
     // multi-item change reported as one) is skipped, and from then on later notifications are
     // skipped as under a freeze until the re-read. Hierarchy verbs are parked (m_pendingHierarchy);
     // the current tree keeps receiving changes. Nests. EndHoldResets returns true when the
-    // outermost hold ends with m_rereadDue set or a hierarchy parked; the caller then calls
-    // Refresh(), which re-reads once and commits the parked hierarchy. Like EndFreeze, it does not
-    // clear m_rereadDue.
+    // outermost hold ends with no freeze open and m_rereadDue set or a hierarchy parked (inside an
+    // open freeze, EndFreeze reports when the freeze closes); the caller then calls Refresh(),
+    // which re-reads once and commits the parked hierarchy. Like EndFreeze, it does not clear
+    // m_rereadDue.
     void BeginHoldResets() noexcept;
     [[nodiscard]] bool EndHoldResets() noexcept;
 
@@ -277,13 +278,13 @@ public:
 
     // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
     // does; it only runs on the UI thread, so it does not depend on m_binding) unless one is
-    // already posted (m_rereadPosted). The
-    // callback holds weak_from_this() and returns if the table is gone or detached; it clears
-    // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
-    // nor held (otherwise the owed re-read is left for that freeze's or hold's report point). A
-    // throw from it is swallowed: the flags follow Refresh()'s failure rules. No queue (headless
-    // or test): nothing is posted and the re-read stays owed until the next report point or
-    // Refresh(). Also the posted retry of `ShapingManager::ResyncSource`.
+    // already posted (m_rereadPosted). The callback holds weak_from_this() and returns if the
+    // table is gone or detached; it clears m_rereadPosted, then calls Refresh() only if
+    // IsRereadDue() and the table is neither frozen nor held (otherwise the owed re-read is left
+    // for that freeze's or hold's report point). A throw from it is swallowed: the flags follow
+    // Refresh()'s failure rules. No queue (headless or test): nothing is posted and the re-read
+    // stays owed until the next report point or Refresh(). Also the posted retry of
+    // `ShapingManager::ResyncSource`.
     void PostReread() noexcept;
 
     // ---- Source tree (hierarchy) ------------------------------------------------------------
@@ -408,7 +409,8 @@ private:
     // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
     void DrainPendingChanges();
 
-    // Refresh() epilogue: posts a re-read owed by its own dispatch, unless a freeze or hold will report it.
+    // Refresh() epilogue: posts a re-read owed by its own dispatch, unless a freeze or hold will
+    // report it.
     void PostRereadIfOwed() noexcept;
 
     void AddToLookups(SourceRecord* record);

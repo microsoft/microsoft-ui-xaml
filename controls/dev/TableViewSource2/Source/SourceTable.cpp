@@ -351,7 +351,8 @@ bool SourceTable::EndHoldResets() noexcept
     --m_resetHoldDepth;
 
     // Like EndFreeze, reporting does not clear m_rereadDue: only Refresh() does.
-    return m_resetHoldDepth == 0 && (m_rereadDue || m_pendingHierarchy.has_value());
+    return m_resetHoldDepth == 0 && m_freezeDepth == 0 &&
+        (m_rereadDue || m_pendingHierarchy.has_value());
 }
 
 void SourceTable::ScheduleRefresh() noexcept
