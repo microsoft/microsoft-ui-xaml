@@ -1,4 +1,4 @@
-# TableViewSource2 header and IDL changes during implementation
+# TableViewSource2 header and IDL changes and design drift during implementation
 
 This log tracks every non-comment change made to a header (`.h`) or IDL (`.idl`) file after the
 reviewed TableViewSource2 design was committed (baseline `5f6617e792`, "TableViewSource2: review
@@ -7,6 +7,28 @@ fixes for headers and spec"). Comment-only edits are not listed.
 Add an entry whenever an implementation commit changes a declaration, signature, member, base
 class, include or inline definition in a header or IDL. Each entry gives the change, the reason,
 and the commit that made it.
+
+It also tracks implementation decisions that drift from what the headers or the spec
+(`Shaping-Architecture-Redesign.md`) define, or that settle behaviour the spec leaves open. See
+[Decisions that drift from the spec or headers](#decisions-that-drift-from-the-spec-or-headers).
+
+## Decisions that drift from the spec or headers
+
+From 2026-10-29 (after `96297adaf5`) the spec is frozen: implementation does not edit
+`Shaping-Architecture-Redesign.md`. Every decision that departs from it, or from a declaration in
+the reviewed headers, is recorded here instead, with what the spec or header says, what was done,
+why, and the commit. Earlier entries (M1, M2) are listed for completeness; the two M1 entries
+marked "spec revised" were also written back into the spec before the freeze.
+
+| # | Spec / header says | Implementation does | Why | Commit |
+|---|---|---|---|---|
+| 1 | D1: `ShapedCollectionView` derives from `ItemsSourceView` and `View()` returns it as is. | Native read-only `IBindableVector` + `INotifyCollectionChanged` + `IKeyIndexMapping`; `TableViewSource2::GetItemsSourceView()` wraps it once in `winrt::ItemsSourceView`. (Spec revised.) | `ItemsSourceView`'s implementation is in the Controls DLL and exposes no overridable interface, so it cannot be subclassed from the Tabular DLL. | `8ebf18bcbe` (M1) |
+| 2 | D3: change args carry a bindable `Vector` of k `nullptr`s. | Count-only read-only `PlaceholderItems` (`IBindableVector`, `GetAt` returns `nullptr`, mutators throw), O(1) per event; unused side is an empty list, never null. (Spec revised.) | `Collections/Vector.h` is not on the Tabular DLL include path. | `8ebf18bcbe` (M1) |
+| 3 | `ShapingManager::SetOwner` rejects owner changes while a commit is applying. | `SetOwner(nullptr)` is allowed during a commit; owner-released waiters are deferred to commit end via `SetCommitEndedHandler`. | An owner must be able to release from inside its own callbacks. | `6cc4e48ed4` (M1) |
+| 4 | Spec is silent on a hold ending inside a freeze. | `EndHoldResets` performs its deferred reset only when no freeze is open (`m_freezeDepth == 0`); otherwise `EndFreeze` reports it. | Symmetric with `EndFreeze`; avoids a reset raised mid-freeze. | `b979366dcb` (M2) |
+| 5 | Global constraint: app exceptions propagate. | `SubscribeRecordPropertyChanged` is `noexcept`: a subscribe failure marks the item not observable, with no retry. | A throw inside a commit would unwind with freed records left in the lookups. Cost: that item's property edits are not live-shaped. | `5f3bba7ebc` (M2) |
+| 6 | Spec covers off-thread item `PropertyChanged` (marshalled) but not an off-thread root collection notification. | A bound table throws `hresult_wrong_thread` (and asserts in debug) for a root `CollectionChanged` / `VectorChanged` raised on another thread, before taking any lock. | Matches XAML `ItemsControl` behaviour; marshalling an index-based change would apply it against a moved collection. | `f9f7b0326c` (M2) |
+| 7 | Spec is silent on a failed posted re-read. | The posted re-read callback swallows a `Refresh` throw and does not re-post; the table stays owed until the next notification. | A posted callback has no caller to propagate to. Deferred: revisit with M6 error handling. | `b3ae0903cc` (M2) |
 
 ## IDL
 
