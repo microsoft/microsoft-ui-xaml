@@ -103,10 +103,9 @@ public:
 
     // Releases ownership. A no-op unless owner is m_owner, so a refused table cannot detach the
     // real one. Calls m_shapingManager->SetOwner(nullptr) (drops the owner's live-shaping holds;
-    // throws while an apply runs), then clears m_owner. Last, runs the waiters FIFO while no owner
-    // is registered: each is popped before it runs (it re-enters TrySetOwner, and one that does
-    // not claim is not retried), and collected waiters are skipped. A waiter may claim
-    // synchronously; the remaining ones stay queued.
+    // never throws, even from inside a commit), then clears m_owner. Last, runs the waiters (see
+    // RunOwnerReleasedWaiters); a release from inside a commit defers them to the commit's end,
+    // where their claims can succeed.
     void ReleaseOwner(IShapingOwner* owner);
 
     // A refused owner registers to hear when the owner lets go. One entry per waiter (re-adding
@@ -123,6 +122,12 @@ public:
 
 private:
     [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);
+
+    // Runs the waiters FIFO while no owner is registered: each is popped before it runs (it
+    // re-enters TrySetOwner, and one that does not claim is not retried), and collected waiters
+    // are skipped. A waiter may claim synchronously; the remaining ones stay queued. Called by
+    // ReleaseOwner outside a commit, and by ShapingManager's commit-ended handler.
+    void RunOwnerReleasedWaiters();
 
     // The coordinator: owns SourceTable (which holds the app's source collection), the desired
     // spec, the delegate registry, and later the engine (with its ShapedTree) and View. Its

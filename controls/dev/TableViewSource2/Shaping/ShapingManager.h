@@ -143,10 +143,22 @@ public:
     // live-shaping hold is dropped (holds belong to the owner that took them): m_liveHoldCount = 0,
     // then PostLiveDrain if changes are pending. A non-null sink then calls
     // SourceTable::BindOwnerThread(), so a source built off the UI thread is bound to the owner's
-    // thread once (see SourceTable, Threading). The same sink again is a no-op. Throws while an
-    // apply runs (#19), before anything changes, so TableViewSource2 can call it before updating
-    // its own state. Raw pointer: TableViewSource2 sets nullptr before the owner is destroyed.
-    void SetOwner(IShapingOwner* sink);
+    //     thread once (see SourceTable, Threading). The same sink again is a no-op. A non-null sink
+        // throws while an apply runs (#19), before anything changes, so TableViewSource2 can call it
+        // before updating its own state. nullptr (a release) never throws, even mid-commit: the owner
+        // must be able to let go from inside its own callbacks. Raw pointer: TableViewSource2 sets
+        // nullptr before the owner is destroyed.
+        void SetOwner(IShapingOwner* sink);
+
+        // Runs at the end of every commit that completes (after m_isApplying is cleared, so verbs and
+        // claims may run). TableViewSource2 uses it to run owner-released waiters deferred by a
+        // release during a commit. Its exception propagates after any owner-callback fault. A commit
+        // unwound by an engine exception does not run it. Cleared by Clear(). Captures only the
+        // native TableViewSource2, never an app object.
+        void SetCommitEndedHandler(std::function<void()> handler) noexcept;
+
+        // True while a commit is applying (between BeginCommit and EndCommit).
+        bool IsApplying() const noexcept;
 
     // Counted live-shaping hold (O4): while m_liveHoldCount > 0, DrainLiveChanges defers (changes
     // stay in m_liveDirty). The owner takes one per reason (cell edit, pointer press), so nested
@@ -359,6 +371,9 @@ private:
     // Re-entrancy guard for verbs (CanRunVerb): a verb or Refresh while an apply runs throws.
     // Source notifications are guarded separately by SourceTable's freeze.
     bool m_isApplying{ false };
+
+    // SetCommitEndedHandler.
+    std::function<void()> m_commitEnded;
 
     // Open DeferRefresh handles (WPF nesting). While > 0, verbs edit m_desired only, Refresh calls
     // SourceTable::ScheduleRefresh, SourceTable holds resets and the live drain is skipped. No

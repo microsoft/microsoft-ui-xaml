@@ -114,7 +114,9 @@ ShapeSpec const& ShapingManager::AppliedSpec() const noexcept
 
 void ShapingManager::SetOwner(IShapingOwner* sink)
 {
-    if (!CanRunVerb())
+    // A release always succeeds: the listener re-reads m_owner at each callback, so a release from
+    // inside a commit only silences the rest of that commit.
+    if (sink && !CanRunVerb())
     {
         throw winrt::hresult_illegal_method_call(L"TableViewSource2 cannot change its owner while the source is being shaped.");
     }
@@ -176,6 +178,7 @@ void ShapingManager::Clear()
 {
     // No callbacks during teardown; nothing below calls get() on a tracker_ref.
     m_owner = nullptr;
+    m_commitEnded = nullptr;
     m_liveHoldCount = 0;
     m_engine.Tree().SetListener(nullptr);
 
@@ -408,10 +411,38 @@ void ShapingManager::AfterCommit()
     // Milestone 2: ResyncSource(commit.listenerFault != nullptr).
     MUX_ASSERT(!commit.resyncDue);
 
+    std::exception_ptr endedFault;
+    if (m_commitEnded)
+    {
+        try
+        {
+            m_commitEnded();
+        }
+        catch (...)
+        {
+            endedFault = std::current_exception();
+        }
+    }
+
     if (commit.listenerFault)
     {
         std::rethrow_exception(commit.listenerFault);
     }
+
+    if (endedFault)
+    {
+        std::rethrow_exception(endedFault);
+    }
+}
+
+void ShapingManager::SetCommitEndedHandler(std::function<void()> handler) noexcept
+{
+    m_commitEnded = std::move(handler);
+}
+
+bool ShapingManager::IsApplying() const noexcept
+{
+    return m_isApplying;
 }
 
 bool ShapingManager::CanRunVerb() const noexcept

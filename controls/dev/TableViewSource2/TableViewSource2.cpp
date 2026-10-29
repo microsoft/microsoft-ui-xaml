@@ -10,6 +10,12 @@ TableViewSource2::TableViewSource2(winrt::IInspectable const& items)
     // Builds the SourceTable over items (initial load and validation). A throw here (null or
     // duplicate item, unsupported collection) propagates out of From.
     m_shapingManager = std::make_unique<ShapingManager>(this, items);
+
+    // Runs waiters a release from inside a commit deferred (their claims would throw there).
+    m_shapingManager->SetCommitEndedHandler([this]()
+    {
+        RunOwnerReleasedWaiters();
+    });
 }
 
 TableViewSource2::~TableViewSource2()
@@ -194,9 +200,19 @@ void TableViewSource2::ReleaseOwner(IShapingOwner* owner)
         return;
     }
 
+    // Never throws, even from inside a commit (an owner callback may let go).
     m_shapingManager->SetOwner(nullptr);
     m_owner = nullptr;
 
+    // Inside a commit a waiter's claim would throw; the commit-ended handler runs them instead.
+    if (!m_shapingManager->IsApplying())
+    {
+        RunOwnerReleasedWaiters();
+    }
+}
+
+void TableViewSource2::RunOwnerReleasedWaiters()
+{
     // FIFO while nobody owns the source. Pop before running: the handler re-enters TrySetOwner,
     // and one that does not claim is not retried.
     while (!m_owner && !m_ownerReleasedWaiters.empty())
