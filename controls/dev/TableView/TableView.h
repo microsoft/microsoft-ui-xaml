@@ -16,6 +16,7 @@
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTip.h"
+#include "Shaping/IShapingOwner.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -1013,6 +1014,23 @@ private:
     // AdoptItemsSource, so every other path reads it as a stable answer rather than re-deriving it.
     tracker_ref<winrt::TableViewSource> m_activeSource{ this };
 
+    // The TableViewSource2 (shaping redesign) this table owns, in parallel with m_activeSource; at
+    // most one of the two is set. Reassigned only by AdoptItemsSource / AdoptTableViewSource2.
+    // Sort, grouping, editing and TiP still read m_activeSource only (Milestone 9).
+    tracker_ref<winrt::TableViewSource2> m_activeSource2{ this };
+
+    // What this table registers with a TableViewSource2 as its owner (IShapingOwner). The source
+    // holds it as a raw pointer, so every path that drops m_activeSource2 calls ReleaseOwner, and
+    // the destructor releases it too. The callbacks are empty until Milestone 9 adds anchoring,
+    // selection purge and UIA notifications; TableView already reacts to the view's Reset through
+    // its repeater subscription.
+    struct SourceOwnerSink final : IShapingOwner
+    {
+        void OnResetting() override {}
+        void OnShapingApplied(ShapingAppliedArgs const& /*args*/) override {}
+    };
+    SourceOwnerSink m_sourceOwnerSink;
+
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
     TableViewRowMetadataProvider m_tableViewSourceRowMetadata{};
@@ -1311,6 +1329,12 @@ private:
     // The source whose owner refused this table, which waits to be offered it on release.
     winrt::weak_ref<winrt::TableViewSource> m_awaitedSource{ nullptr };
     void StopAwaitingSource();
+
+    // The same three for a TableViewSource2.
+    bool m_activeSource2Released{ false };
+    winrt::weak_ref<winrt::TableViewSource2> m_awaitedSource2{ nullptr };
+    void StopAwaitingSource2();
+    void AdoptTableViewSource2(winrt::TableViewSource2 source);
 
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();
