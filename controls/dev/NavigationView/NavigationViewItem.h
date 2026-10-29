@@ -109,6 +109,8 @@ private:
     static bool IsTemplateDrivenAnimatedIconState(winrt::hstring const& stateString);
     static winrt::hstring GetPropagatedAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
     winrt::hstring MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, winrt::hstring const& current, bool isSelected);
+    static bool CanAnimatedIconEnterState(winrt::AnimatedIcon const& animatedIcon, wstring_view const& state);
+    static bool IsSelectionAwareAnimatedIcon(winrt::AnimatedIcon const& animatedIcon);
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 

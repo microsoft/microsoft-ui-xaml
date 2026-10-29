@@ -683,11 +683,12 @@ void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& anim
 
     auto const currentState = winrt::AnimatedIcon::GetState(animatedIcon);
     auto state = currentState;
-    if (syncWithHost && IsTemplateDrivenAnimatedIconState(currentState))
+    if (syncWithHost && IsTemplateDrivenAnimatedIconState(currentState) && IsSelectionAwareAnimatedIcon(animatedIcon))
     {
         // AnimatedIcon only copies its host's state on load when it has none, so an icon moved from another item still
         // carries that item's pointer state. Take the state this template propagates instead (from the same ancestor
-        // AnimatedIcon listens to). App-defined states are kept.
+        // AnimatedIcon listens to). App-defined states are kept, and so is any state on an icon without selected
+        // markers, which this item never maps: like AnimatedIcon::OnLoaded, keep its existing value.
         auto const hostState = GetPropagatedAnimatedIconState(animatedIcon);
         if (!hostState.empty())
         {
@@ -792,41 +793,50 @@ winrt::hstring NavigationViewItem::MapAnimatedIconState(winrt::AnimatedIcon cons
         return current;
     }
 
-    // Whether AnimatedIcon::TransitionStates can reach `state` from ANY other state without cutting to frame 0:
-    // through a marker named after the state, or through any "<From>To<state>_End" marker. Outgoing
-    // "<state>To<X>" markers don't count, the resolver never uses them to enter <state>.
-    // Deliberately conservative: TransitionStates can also enter <state> through a bare "<From>To<state>" or a
-    // "<From>To<state>_Start" without "_End", but only from that exact <From>, which this mapping can't know in
-    // advance. Such icons get the legacy (unselected) state, which is today's behavior, never a cut to frame 0.
-    auto const canEnterState = [source = animatedIcon.Source()](wstring_view const& state)
-    {
-        if (!source)
-        {
-            return false;
-        }
-
-        auto const markers = source.Markers();
-        if (!markers)
-        {
-            return false;
-        }
-
-        const std::wstring incomingEnd = L"To" + std::wstring(state) + L"_End";
-        for (auto const& marker : markers)
-        {
-            const std::wstring key{ marker.Key().c_str() };
-            if (key == state || key.find(incomingEnd) != std::wstring::npos)
-            {
-                return true;
-            }
-        }
-        return false;
-    };
-
     // Stateless on purpose: a selected state is only kept while the item is selected and the icon can play it,
     // so an icon that was detached, swapped or re-sourced never keeps a stale selected state.
-    const wstring_view newState = (isSelected && canEnterState(selectedState)) ? selectedState : unselectedState;
+    const wstring_view newState = (isSelected && CanAnimatedIconEnterState(animatedIcon, selectedState)) ? selectedState : unselectedState;
     return winrt::hstring{ newState };
+}
+
+// Whether AnimatedIcon::TransitionStates can reach `state` from ANY other state without cutting to frame 0:
+// through a marker named after the state, or through any "<From>To<state>_End" marker. Outgoing
+// "<state>To<X>" markers don't count, the resolver never uses them to enter <state>.
+// Deliberately conservative: TransitionStates can also enter <state> through a bare "<From>To<state>" or a
+// "<From>To<state>_Start" without "_End", but only from that exact <From>, which the mapping can't know in
+// advance. Such icons get the legacy (unselected) state, which is today's behavior, never a cut to frame 0.
+bool NavigationViewItem::CanAnimatedIconEnterState(winrt::AnimatedIcon const& animatedIcon, wstring_view const& state)
+{
+    auto const source = animatedIcon.Source();
+    if (!source)
+    {
+        return false;
+    }
+
+    auto const markers = source.Markers();
+    if (!markers)
+    {
+        return false;
+    }
+
+    const std::wstring incomingEnd = L"To" + std::wstring(state) + L"_End";
+    for (auto const& marker : markers)
+    {
+        const std::wstring key{ marker.Key().c_str() };
+        if (key == state || key.find(incomingEnd) != std::wstring::npos)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Icons without any selected state are only ever given the legacy states, so this item leaves their State as is.
+bool NavigationViewItem::IsSelectionAwareAnimatedIcon(winrt::AnimatedIcon const& animatedIcon)
+{
+    return CanAnimatedIconEnterState(animatedIcon, c_selected) ||
+        CanAnimatedIconEnterState(animatedIcon, c_pointerOverSelected) ||
+        CanAnimatedIconEnterState(animatedIcon, c_pressedSelected);
 }
 
 void NavigationViewItem::UpdateVisualState(bool useTransitions)
