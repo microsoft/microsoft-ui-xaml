@@ -1036,40 +1036,28 @@ void SourceTable::Reparent(SourceRecord* record, SourceRecord* newParent, uint32
     UpdateDepths(record);
 }
 
-void SourceTable::UpdateDepths(SourceRecord* record) noexcept
+void SourceTable::UpdateDepths(SourceRecord* record)
 {
-    // Pre-order without allocation: descend to the first child, else climb to the next sibling.
-    SourceRecord* const top = record;
-    SourceRecord* current = record;
-    current->Depth = current->Parent ? static_cast<uint16_t>(current->Parent->Depth + 1) : uint16_t{ 0 };
-    for (;;)
+    uint16_t const depth = record->Parent ? static_cast<uint16_t>(record->Parent->Depth + 1) : uint16_t{ 0 };
+    if (record->Depth == depth)
     {
-        if (!current->Children.empty())
+        // The subtree was consistent under the old position at this depth already.
+        return;
+    }
+
+    record->Depth = depth;
+
+    // Pre-order, linear: each stack entry is a record whose children still need their depth.
+    std::vector<SourceRecord*> pending{ record };
+    while (!pending.empty())
+    {
+        SourceRecord* const parent = pending.back();
+        pending.pop_back();
+        for (SourceRecord* const child : parent->Children)
         {
-            current = current->Children.front();
+            child->Depth = static_cast<uint16_t>(parent->Depth + 1);
+            pending.push_back(child);
         }
-        else
-        {
-            for (;;)
-            {
-                if (current == top)
-                {
-                    return;
-                }
-
-                auto const& siblings = current->Parent->Children;
-                auto const next = std::find(siblings.begin(), siblings.end(), current) + 1;
-                if (next != siblings.end())
-                {
-                    current = *next;
-                    break;
-                }
-
-                current = current->Parent;
-            }
-        }
-
-        current->Depth = static_cast<uint16_t>(current->Parent->Depth + 1);
     }
 }
 

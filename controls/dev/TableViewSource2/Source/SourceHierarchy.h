@@ -241,8 +241,9 @@ uint32_t IndexInSourceSiblings(std::vector<SourceRecord*> const& siblings, Sourc
 // ParentBy(keySelector, parentKeySelector). Every item is in the root collection; the tree is an
 // index over Records(). Key rules follow v1 (Hierarchical-Data-Rows-Parent-Key-Design.md section 3):
 // value keys compare by value, object keys by reference; a null/empty parent key or an orphan makes
-// a top-level record; a null/empty key, a duplicate key, a self-parent or a cycle (found by counting
-// records reachable from the top level) throws before any write.
+// a top-level record. At the verb a null/empty key, a duplicate key, a self-parent or a cycle (found
+// by counting records reachable from the top level) throws before any write; a Refresh() re-read
+// and live edits are tolerant (drift #9, #11).
 class ParentKeyHierarchy final : public SourceHierarchy
 {
 public:

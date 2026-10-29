@@ -548,6 +548,7 @@ void ParentKeyHierarchy::Exclude(ISourceHierarchyHost& host, SourceRecord* recor
     SourceRecord* const oldParent = record->Parent;
     auto& siblings = host.SiblingsOf(oldParent);
     uint32_t const oldIndex = IndexInSourceSiblings(siblings, record);
+    MUX_ASSERT(oldIndex < siblings.size());
     siblings.erase(siblings.begin() + oldIndex);
     record->Parent = nullptr;
     record->Depth = 0;
@@ -613,13 +614,21 @@ void ParentKeyHierarchy::Adopt(ISourceHierarchyHost& host, SourceRecord* record,
         return;
     }
 
-    for (SourceRecord* const orphan : orphans)
+    try
     {
-        host.Reparent(orphan, record, SourceOrderPosition(host, orphan, record, &m_excluded));
-    }
+        for (SourceRecord* const orphan : orphans)
+        {
+            host.Reparent(orphan, record, SourceOrderPosition(host, orphan, record, &m_excluded));
+        }
 
-    std::vector<SourceRecordPtr> removed;
-    host.RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, {}, removed);
+        std::vector<SourceRecordPtr> removed;
+        host.RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, {}, removed);
+    }
+    catch (...)
+    {
+        host.RequestReset();
+        throw;
+    }
 }
 
 void ParentKeyHierarchy::OrphanChildren(ISourceHierarchyHost& host, SourceRecord* record)
@@ -627,31 +636,54 @@ void ParentKeyHierarchy::OrphanChildren(ISourceHierarchyHost& host, SourceRecord
     // Its children followed its key; without it they are orphans (spec: top level), one Move
     // each (drift #10).
     std::vector<SourceRecord*> const children = record->Children;
-    for (SourceRecord* const child : children)
+    try
     {
-        MoveTo(host, child, nullptr);
+        for (SourceRecord* const child : children)
+        {
+            MoveTo(host, child, nullptr);
+        }
+    }
+    catch (...)
+    {
+        host.RequestReset();  // the remaining children were not raised: re-read the whole tree
+        throw;
     }
 }
 
 void ParentKeyHierarchy::RestoreForcedTop(ISourceHierarchyHost& host)
 {
-    // Spec: back to its proper parent once the key is valid. Each move can free another.
-    for (bool moved = true; moved;)
+    // Spec: back to its proper parent once the key is valid. Each move can free another. Source
+    // order (the top-level siblings) keeps the Move order deterministic.
+    try
     {
-        moved = false;
-        for (SourceRecord* const record : m_forcedTop)
+        for (bool moved = true; moved && !m_forcedTop.empty();)
         {
-            SourceRecord* const parent = FindParent(m_keyIndex, m_nodeKeys, record);
-            if (parent && IsSelfOrAncestor(record, parent))
+            moved = false;
+            std::vector<SourceRecord*> const tops = host.SiblingsOf(nullptr);
+            for (SourceRecord* const record : tops)
             {
-                continue;
-            }
+                if (!m_forcedTop.count(record))
+                {
+                    continue;
+                }
 
-            m_forcedTop.erase(record);
-            MoveTo(host, record, parent);
-            moved = true;
-            break;
+                SourceRecord* const parent = FindParent(m_keyIndex, m_nodeKeys, record);
+                if (parent && IsSelfOrAncestor(record, parent))
+                {
+                    continue;
+                }
+
+                m_forcedTop.erase(record);
+                MoveTo(host, record, parent);
+                moved = true;
+                break;
+            }
         }
+    }
+    catch (...)
+    {
+        host.RequestReset();
+        throw;
     }
 }
 
@@ -741,7 +773,7 @@ bool ParentKeyHierarchy::Reevaluate(ISourceHierarchyHost& host, SourceRecord* re
         return false;  // nothing changed (decided: no rethrow for a record that stays as it was)
     }
 
-    bool const keyChanged = wasExcluded || !keyed || current->second.Key != keys.Key;
+    bool const keyChanged = wasExcluded || !keyed || current == m_nodeKeys.end() || current->second.Key != keys.Key;
     if (!wasExcluded)
     {
         if (keyChanged)

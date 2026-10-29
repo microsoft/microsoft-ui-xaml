@@ -396,7 +396,7 @@ private:
     // Internal source edits applied from root-collection notifications. InsertAt and ReplaceAt call
     // ValidateIncoming() (over the item plus m_hierarchy->CollectIncoming) before mutating; on
     // failure they set m_diverged and rethrow. Each then calls the strategy's OnInserted /
-    // OnRemoving / OnMoved (a replace is OnRemoving then OnInserted) before raising.
+    // OnRemoving / OnMoved (a replace is RemoveAt then InsertAt, drift #16) before raising.
     void InsertAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
     void RemoveAt(uint32_t index);
     void ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
@@ -421,7 +421,9 @@ private:
     // CreateRecord and RaiseSourceChanged are host members (below). RaiseSourceChanged raises
     // SourceChanged inside a freeze (BeginFreeze / EndFreeze around the handler call; nothing is
     // queued: a re-entrant change is skipped), then destroys the records that left;
-    // records in `removed` must already be out of their owner, the tree and the lookups. It fills
+    // records in `removed` must already be out of their owner, the tree and the lookups. The one
+    // exception is ParentBy's Exclude: it raises a Remove for a record that stays in m_records and
+    // the lookups (drift #11), so the handler sees it alive and nothing is destroyed. It fills
     // m_removedView from `removed` for SourceChange::Removed (see SourceRecord.h).
 
     // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
@@ -429,8 +431,8 @@ private:
     // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
     void DrainPendingChanges() override;
 
-    // Refresh() epilogue: posts a re-read owed by its own dispatch, unless a freeze or hold will
-    // report it.
+    // Posts a re-read owed by the dispatch that just ended (Refresh() epilogue, and the catch of
+    // RaiseSourceChanged / RaiseEdit when a listener throws), unless a freeze or hold will report it.
     void PostRereadIfOwed() noexcept;
 
     void AddToLookups(SourceRecord* record);
@@ -451,7 +453,7 @@ private:
     // with this parent lives in (parent->Children, or m_topLevel for nullptr); used only by tree
     // maintenance, readers walk Parent / Children directly. Reparent: unlinks the record and links
     // it under newParent at index, then UpdateDepths for the moved subtree.
-    void UpdateDepths(SourceRecord* record) noexcept;
+    void UpdateDepths(SourceRecord* record);
 
     // Makes every root record top-level with no children and Depth 0. Raises nothing; callers
     // release the old strategy first (it destroys the child feeds) and raise the Reset.
