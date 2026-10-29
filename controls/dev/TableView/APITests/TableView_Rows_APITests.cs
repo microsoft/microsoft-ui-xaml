@@ -303,6 +303,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Tab from the header band returns to the last focused body row or cell (GH #12447).")]
+        [TestProperty("data:Level", "{Row, Cell}")]
+        public void VerifyTabFromHeaderBandReturnsToLastFocusedRow()
+        {
+            bool cellLevel = ((string)TestContext.DataRow["Level"]).Trim() == "Cell";
+            TableView tableView = null;
+            TableViewRow remembered = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(MakeManyItems(200), height: 400, columns: new[]
+                {
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)),
+                });
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(new Button { Content = "After" });
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                remembered = GetRowsRepeater(tableView).TryGetElement(5) as TableViewRow;
+                Verify.IsNotNull(remembered, "Precondition: row 5 is realized.");
+                if (cellLevel)
+                {
+                    GetCellPeer(remembered, 1).SetFocus();
+                }
+                else
+                {
+                    Verify.IsTrue(remembered.Focus(FocusState.Keyboard), "Precondition: row 5 takes focus.");
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetHeaderCell(tableView, 1).Focus(FocusState.Keyboard), "Precondition: header cell 1 takes focus.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the header band must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                var focusedRow = focused;
+                while (focusedRow != null && !(focusedRow is TableViewRow))
+                {
+                    focusedRow = VisualTreeHelper.GetParent(focusedRow);
+                }
+                Log.Comment($"Focused {focused?.GetType().Name} in row {(focusedRow == null ? -1 : GetRowsRepeater(tableView).GetElementIndex((UIElement)focusedRow))}.");
+                object expected = cellLevel ? GetRowCell(remembered, 1) : remembered;
+                Verify.IsTrue(ReferenceEquals(expected, focused),
+                    "Tab from the header band must return to the last focused " + (cellLevel ? "cell." : "row."));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Tab from the header band at cell level that lands on a viewport group header leaves cell level.")]
         public void VerifyTabFromHeaderBandOntoGroupHeaderLeavesCellLevel()
         {
