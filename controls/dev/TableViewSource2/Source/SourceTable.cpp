@@ -24,7 +24,10 @@ namespace
     // Decided (drift #12): a null selector is rejected at the verb.
     constexpr wchar_t c_nullKeySelectorMessage[] =
         L"TableViewSource2.ParentBy: keySelector and parentKeySelector are required.";
-}
+
+            constexpr wchar_t c_nullChildrenSelectorMessage[] =
+                L"TableViewSource2.ChildrenBy: childrenSelector is required.";
+        }
 
 std::shared_ptr<SourceTable> SourceTable::Create(
     ITrackerHandleManager const* owner,
@@ -692,7 +695,7 @@ void SourceTable::SetLiveShaping(bool enabled)
     }
 
     m_liveShapingEnabled = enabled;
-    for (auto const& record : m_records)
+    auto const apply = [this, enabled](SourceRecordPtr const& record)
     {
         if (enabled)
         {
@@ -702,6 +705,16 @@ void SourceTable::SetLiveShaping(bool enabled)
         {
             UnsubscribeRecordPropertyChanged(record.get());
         }
+    };
+
+    for (auto const& record : m_records)
+    {
+        apply(record);
+    }
+
+    if (m_hierarchy)
+    {
+        m_hierarchy->ForEachChildRecord(apply);
     }
 }
 
@@ -1213,6 +1226,21 @@ void SourceTable::SetParentKeyHierarchy(
     }
 
     ReplaceHierarchy(std::make_unique<ParentKeyHierarchy>(m_trackerOwner, keySelector, parentKeySelector));
+}
+
+void SourceTable::SetChildCollectionHierarchy(winrt::TableViewChildrenSelector2 const& childrenSelector)
+{
+    if (!childrenSelector)
+    {
+        throw winrt::hresult_invalid_argument(c_nullChildrenSelectorMessage);
+    }
+
+    if (IsDetached())
+    {
+        return;
+    }
+
+    ReplaceHierarchy(std::make_unique<ChildCollectionsHierarchy>(m_trackerOwner, childrenSelector));
 }
 
 void SourceTable::ClearHierarchy()

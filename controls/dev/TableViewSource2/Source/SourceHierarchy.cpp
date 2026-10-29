@@ -842,3 +842,805 @@ void ParentKeyHierarchy::Release(ISourceHierarchyHost&) noexcept
     m_keySelector.reset();
     m_parentKeySelector.reset();
 }
+
+// ---- ChildCollectionsHierarchy ---------------------------------------------------------------
+
+namespace
+{
+    constexpr wchar_t c_nullChildMessage[] =
+        L"TableViewSource2.ChildrenBy: a child collection contains a null item.";
+    constexpr wchar_t c_duplicateChildMessage[] =
+        L"TableViewSource2.ChildrenBy: the same item object appears in the tree more than once. "
+        L"Each item can appear only once.";
+}
+
+ChildCollectionsHierarchy::ChildCollectionsHierarchy(
+    ITrackerHandleManager const* owner,
+    winrt::TableViewChildrenSelector2 const& childrenSelector)
+    : m_trackerOwner(owner)
+{
+    m_childrenSelector.emplace(owner, childrenSelector);
+}
+
+void ChildCollectionsHierarchy::Prepare(
+    ISourceHierarchyHost& host,
+    std::vector<winrt::Windows::Foundation::IInspectable> const& rootItems)
+{
+    // m_staged holds every node, roots included, pre-order; ChildCount is a node's direct
+    // children (each followed by its own subtree).
+    m_staged.clear();
+    try
+    {
+        auto const& selector = m_childrenSelector->get();
+        std::unordered_set<ObjectAddress> seen;
+        seen.reserve(rootItems.size());
+        for (auto const& item : rootItems)
+        {
+            seen.insert(SourceRecord::AddressOf(item));
+        }
+
+        auto const stage = [&](auto const& self, winrt::Windows::Foundation::IInspectable const& item) -> void
+        {
+            size_t const index = m_staged.size();
+            m_staged.emplace_back().Item = item;
+
+            auto const collection = selector(item);
+            if (!collection)
+            {
+                return;
+            }
+
+            auto const children = CollectionAccessor2{ host.TrackerOwner(), collection }.Enumerate(true /* throwIfUnsupported */);
+            m_staged[index].ChildCollection = collection;
+            m_staged[index].ChildCount = static_cast<uint32_t>(children.size());
+            for (auto const& child : children)
+            {
+                if (!child)
+                {
+                    throw winrt::hresult_invalid_argument(c_nullChildMessage);
+                }
+
+                if (!seen.insert(SourceRecord::AddressOf(child)).second)
+                {
+                    throw winrt::hresult_invalid_argument(c_duplicateChildMessage);
+                }
+
+                self(self, child);
+            }
+        };
+
+        for (auto const& item : rootItems)
+        {
+            stage(stage, item);
+        }
+    }
+    catch (...)
+    {
+        m_staged.clear();
+        throw;
+    }
+}
+
+void ChildCollectionsHierarchy::MatchForRefresh(
+    ISourceHierarchyHost& host,
+    std::vector<SourceRecord*> const& rootMatches,
+    std::vector<SourceRecordPtr>& removed)
+{
+    // A staged child reuses a record of the same owner's feed: same position and same raw
+    // pointer first, else the same object address. No app calls.
+    std::unordered_set<SourceRecord const*> kept;
+    for (SourceRecord* const match : rootMatches)
+    {
+        if (match)
+        {
+            kept.insert(match);
+        }
+    }
+
+    size_t cursor = 0;
+    auto const visit = [&](auto const& self, SourceRecord* record) -> void
+    {
+        uint32_t const childCount = m_staged[cursor].ChildCount;
+        m_staged[cursor++].Match = record;
+
+        ChildFeed* feed = nullptr;
+        if (record)
+        {
+            auto const found = m_childFeeds.find(record);
+            feed = found == m_childFeeds.end() ? nullptr : found->second.get();
+        }
+
+        size_t const feedSize = feed ? feed->Records.size() : 0;
+        std::vector<bool> used(feedSize, false);
+        std::unordered_map<ObjectAddress, size_t> byAddress;
+        for (size_t j = 0; j < feedSize; ++j)
+        {
+            byAddress.emplace(feed->Records[j]->Address, j);
+        }
+
+        for (uint32_t i = 0; i < childCount; ++i)
+        {
+            auto const& item = m_staged[cursor].Item;
+            SourceRecord* found = nullptr;
+            if (i < feedSize && !used[i] && winrt::get_abi(feed->Records[i]->Item.get()) == winrt::get_abi(item))
+            {
+                found = feed->Records[i].get();
+                used[i] = true;
+            }
+            else if (feedSize > 0)
+            {
+                auto const at = byAddress.find(SourceRecord::AddressOf(item));
+                if (at != byAddress.end() && !used[at->second])
+                {
+                    found = feed->Records[at->second].get();
+                    used[at->second] = true;
+                }
+            }
+
+            if (found)
+            {
+                kept.insert(found);
+            }
+            self(self, found);
+        }
+    };
+
+    for (SourceRecord* const match : rootMatches)
+    {
+        visit(visit, match);
+    }
+    MUX_ASSERT(cursor == m_staged.size());
+
+    // Child records that match nothing leave the lookups now and die after the Reset.
+    for (auto& entry : m_childFeeds)
+    {
+        for (auto& record : entry.second->Records)
+        {
+            if (record && !kept.count(record.get()))
+            {
+                host.ReleaseRecord(record.get());
+                removed.push_back(std::move(record));
+            }
+        }
+    }
+
+    // Feeds whose owner left (all their records were released above).
+    for (auto it = m_childFeeds.begin(); it != m_childFeeds.end();)
+    {
+        if (kept.count(it->first))
+        {
+            ++it;
+            continue;
+        }
+
+        UnsubscribeFromChildChanges(*it->second);
+        it->second->Accessor.reset();
+        it = m_childFeeds.erase(it);
+    }
+}
+
+void ChildCollectionsHierarchy::Commit(ISourceHierarchyHost& host, std::vector<SourceRecord*>& added)
+{
+    // Every feed is rebound to the collection Prepare read (drift #15), even when unchanged.
+    size_t cursor = 0;
+    auto const link = [&](auto const& self, SourceRecordPtr const& owner) -> void
+    {
+        StagedNode const& node = m_staged[cursor++];
+        owner->Children.clear();
+        if (!node.ChildCollection)
+        {
+            DestroyChildFeed(host, owner.get());
+            return;
+        }
+
+        auto& slot = m_childFeeds[owner.get()];
+        if (!slot)
+        {
+            slot = std::make_unique<ChildFeed>();
+        }
+
+        ChildFeed& feed = *slot;
+        UnsubscribeFromChildChanges(feed);
+        feed.Owner = owner;
+        feed.Accessor.reset();
+        feed.Accessor.emplace(host.TrackerOwner(), node.ChildCollection);
+
+        std::unordered_map<SourceRecord*, SourceRecordPtr> owned;
+        for (auto& record : feed.Records)
+        {
+            if (record)
+            {
+                SourceRecord* const raw = record.get();
+                owned.emplace(raw, std::move(record));
+            }
+        }
+        feed.Records.clear();
+
+        uint32_t const childCount = node.ChildCount;
+        for (uint32_t i = 0; i < childCount; ++i)
+        {
+            StagedNode const& childNode = m_staged[cursor];
+            SourceRecordPtr child;
+            if (childNode.Match)
+            {
+                child = std::move(owned.at(childNode.Match));
+            }
+            else
+            {
+                child = host.CreateRecord(childNode.Item);
+                added.push_back(child.get());
+            }
+
+            child->Parent = owner.get();
+            child->Depth = static_cast<uint16_t>(owner->Depth + 1);
+            owner->Children.push_back(child.get());
+            feed.Records.push_back(child);
+            self(self, child);
+        }
+
+        SubscribeToChildChanges(host, feed);
+    };
+
+    for (auto const& root : host.RootRecords())
+    {
+        link(link, root);
+    }
+    MUX_ASSERT(cursor == m_staged.size());
+    m_staged.clear();
+}
+
+void ChildCollectionsHierarchy::CollectIncoming(
+    winrt::Windows::Foundation::IInspectable const& item,
+    std::vector<winrt::Windows::Foundation::IInspectable>& items) const
+{
+    CollectSubtreeItems(item, items);
+}
+
+void ChildCollectionsHierarchy::CollectSubtreeItems(
+    winrt::Windows::Foundation::IInspectable const& item,
+    std::vector<winrt::Windows::Foundation::IInspectable>& items) const
+{
+    // Every descendant is pushed (a null or a repeat included, for ValidateIncoming to reject);
+    // an object is expanded once, so a collection that contains an ancestor terminates. A
+    // selector or enumeration that throws makes that item a leaf here (spec Misbehaving
+    // records); BuildChildFeed calls the selector again and reports the error.
+    auto const& selector = m_childrenSelector->get();
+    std::unordered_set<ObjectAddress> expanded;
+    auto const collect = [&](auto const& self, winrt::Windows::Foundation::IInspectable const& parent) -> void
+    {
+        if (!parent || !expanded.insert(SourceRecord::AddressOf(parent)).second)
+        {
+            return;
+        }
+
+        std::vector<winrt::Windows::Foundation::IInspectable> children;
+        try
+        {
+            auto const collection = selector(parent);
+            if (!collection)
+            {
+                return;
+            }
+
+            children = CollectionAccessor2{ m_trackerOwner, collection }.Enumerate(true /* throwIfUnsupported */);
+        }
+        catch (...)
+        {
+            return;
+        }
+
+        for (auto const& child : children)
+        {
+            items.push_back(child);
+            self(self, child);
+        }
+    };
+
+    collect(collect, item);
+}
+
+void ChildCollectionsHierarchy::BuildChildFeed(
+    ISourceHierarchyHost& host,
+    SourceRecordPtr const& record,
+    std::exception_ptr& error)
+{
+    auto const capture = [&error]()
+    {
+        if (!error)
+        {
+            error = std::current_exception();
+        }
+    };
+
+    winrt::Windows::Foundation::IInspectable collection{ nullptr };
+    std::vector<winrt::Windows::Foundation::IInspectable> children;
+    try
+    {
+        collection = m_childrenSelector->get()(record->Item.get());
+        if (!collection)
+        {
+            return;
+        }
+
+        children = CollectionAccessor2{ host.TrackerOwner(), collection }.Enumerate(true /* throwIfUnsupported */);
+    }
+    catch (...)
+    {
+        // Spec Misbehaving records: a throwing selector makes a leaf (no feed). The error still
+        // propagates from the app's Add / Insert or setter; the tree is consistent, so no re-read.
+        capture();
+        return;
+    }
+
+    auto& slot = m_childFeeds[record.get()];
+    slot = std::make_unique<ChildFeed>();
+    ChildFeed& feed = *slot;
+    feed.Owner = record;
+    feed.Accessor.emplace(host.TrackerOwner(), collection);
+
+    for (auto const& child : children)
+    {
+        try
+        {
+            host.ValidateIncoming({ child }, nullptr);
+        }
+        catch (...)
+        {
+            // The feed now differs from its collection: the next notification re-reads.
+            capture();
+            host.RequestReset();
+            continue;
+        }
+
+        auto childRecord = host.CreateRecord(child);
+        childRecord->Parent = record.get();
+        childRecord->Depth = static_cast<uint16_t>(record->Depth + 1);
+        record->Children.push_back(childRecord.get());
+        feed.Records.push_back(childRecord);
+        BuildChildFeed(host, childRecord, error);
+    }
+
+    SubscribeToChildChanges(host, feed);
+}
+
+void ChildCollectionsHierarchy::SubscribeToChildChanges(ISourceHierarchyHost& host, ChildFeed& feed)
+{
+    using ObserveKind = CollectionAccessor2::ObserveKind;
+
+    // Raw event token; the lambda holds only weak references and a thread check. It routes to
+    // this strategy only while it is still the host's current one.
+    auto const weakHost = host.WeakHost();
+    auto const threadCheck = host.MakeThreadCheck();
+    SourceHierarchy const* const self = this;
+    SourceRecordWeakPtr const owner = feed.Owner;
+
+    try
+    {
+        switch (feed.Accessor->GetObserveKind())
+        {
+        case ObserveKind::NotifyCollectionChanged:
+            feed.EventToken = feed.Accessor->AsNotifyCollectionChanged().CollectionChanged(
+                [weakHost, threadCheck, self, owner](auto const&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+                {
+                    threadCheck();
+                    if (auto const locked = weakHost.lock())
+                    {
+                        SourceHierarchy* const current = locked->CurrentHierarchy();
+                        if (current && current == self)
+                        {
+                            static_cast<ChildCollectionsHierarchy*>(current)->OnChildCollectionChanged(*locked, owner, args);
+                        }
+                    }
+                });
+            break;
+
+        case ObserveKind::ObservableVector:
+            feed.EventToken = feed.Accessor->AsObservableVector().VectorChanged(
+                [weakHost, threadCheck, self, owner](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+                {
+                    threadCheck();
+                    if (auto const locked = weakHost.lock())
+                    {
+                        SourceHierarchy* const current = locked->CurrentHierarchy();
+                        if (current && current == self)
+                        {
+                            static_cast<ChildCollectionsHierarchy*>(current)->OnChildVectorChanged(*locked, owner, args);
+                        }
+                    }
+                });
+            break;
+
+        case ObserveKind::BindableObservableVector:
+            feed.EventToken = feed.Accessor->AsBindableObservableVector().VectorChanged(
+                [weakHost, threadCheck, self, owner](auto const&, winrt::Windows::Foundation::IInspectable const&)
+                {
+                    threadCheck();
+                    if (auto const locked = weakHost.lock())
+                    {
+                        SourceHierarchy* const current = locked->CurrentHierarchy();
+                        if (current && current == self)
+                        {
+                            static_cast<ChildCollectionsHierarchy*>(current)->OnChildBindableVectorChanged(*locked, owner);
+                        }
+                    }
+                });
+            break;
+
+        default:
+            break;
+        }
+    }
+    catch (...)
+    {
+        // Drift #15: a collection that refuses the handler stays unobserved.
+        feed.EventToken = {};
+    }
+}
+
+void ChildCollectionsHierarchy::UnsubscribeFromChildChanges(ChildFeed& feed) noexcept
+{
+    if (!feed.Accessor || !feed.EventToken.value)
+    {
+        return;
+    }
+
+    using ObserveKind = CollectionAccessor2::ObserveKind;
+    auto const token = std::exchange(feed.EventToken, {});
+    try
+    {
+        // safe_get: a collected collection is skipped. Never get() on this path.
+        switch (feed.Accessor->GetObserveKind())
+        {
+        case ObserveKind::NotifyCollectionChanged:
+            if (auto const source = feed.Accessor->AsNotifyCollectionChanged(true))
+            {
+                source.CollectionChanged(token);
+            }
+            break;
+
+        case ObserveKind::ObservableVector:
+            if (auto const source = feed.Accessor->AsObservableVector(true))
+            {
+                source.VectorChanged(token);
+            }
+            break;
+
+        case ObserveKind::BindableObservableVector:
+            if (auto const source = feed.Accessor->AsBindableObservableVector(true))
+            {
+                source.VectorChanged(token);
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
+void ChildCollectionsHierarchy::OnChildCollectionChanged(
+    ISourceHierarchyHost& host,
+    SourceRecordWeakPtr const& weakOwner,
+    winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    using Action = winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    auto const owner = weakOwner.lock();
+    if (!owner)
+    {
+        return;
+    }
+
+    auto const found = m_childFeeds.find(owner.get());
+    if (found == m_childFeeds.end())
+    {
+        return;
+    }
+
+    ChildFeed& feed = *found->second;
+    auto const action = args.Action();
+    auto const newItems = args.NewItems();
+    auto const oldItems = args.OldItems();
+    int32_t const newIndex = args.NewStartingIndex();
+    int32_t const oldIndex = args.OldStartingIndex();
+    auto const size = static_cast<int32_t>(feed.Records.size());
+    auto const oneOf = [](auto const& items) { return items && items.Size() == 1; };
+
+    // Drift #15: only a single Add or a single matching Remove applies positionally.
+    bool isReset = true;
+    switch (action)
+    {
+    case Action::Add:
+        isReset = !oneOf(newItems) || newIndex < 0 || newIndex > size;
+        break;
+    case Action::Remove:
+        if (oneOf(oldItems) && oldIndex >= 0 && oldIndex < size)
+        {
+            auto const oldItem = oldItems.GetAt(0);
+            isReset = !oldItem || SourceRecord::AddressOf(oldItem) != feed.Records[oldIndex]->Address;
+        }
+        break;
+    default:
+        break;
+    }
+
+    // False: the host re-read or skipped the change; nothing here may be touched (drift #14).
+    if (!host.AdmitChange(isReset))
+    {
+        return;
+    }
+
+    if (action == Action::Add)
+    {
+        InsertChild(host, owner, feed, static_cast<uint32_t>(newIndex), newItems.GetAt(0));
+    }
+    else
+    {
+        RemoveChild(host, owner.get(), feed, static_cast<uint32_t>(oldIndex));
+    }
+
+    host.DrainPendingChanges();
+}
+
+void ChildCollectionsHierarchy::OnChildVectorChanged(
+    ISourceHierarchyHost& host,
+    SourceRecordWeakPtr const& weakOwner,
+    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    using Change = winrt::Windows::Foundation::Collections::CollectionChange;
+
+    auto const owner = weakOwner.lock();
+    if (!owner)
+    {
+        return;
+    }
+
+    auto const found = m_childFeeds.find(owner.get());
+    if (found == m_childFeeds.end())
+    {
+        return;
+    }
+
+    ChildFeed& feed = *found->second;
+    auto const change = args.CollectionChange();
+    auto const size = static_cast<uint32_t>(feed.Records.size());
+
+    // Index is not read for a Reset: some implementations throw from it.
+    uint32_t index = 0;
+    winrt::Windows::Foundation::IInspectable item{ nullptr };
+    bool isReset = true;
+    switch (change)
+    {
+    case Change::ItemInserted:
+        index = args.Index();
+        isReset = index > size || !feed.Accessor->TryGetAt(index, item);
+        break;
+    case Change::ItemRemoved:
+        index = args.Index();
+        isReset = index >= size;
+        break;
+    default:
+        // ItemChanged (a replace) re-reads (drift #15).
+        break;
+    }
+
+    if (!host.AdmitChange(isReset))
+    {
+        return;
+    }
+
+    if (change == Change::ItemInserted)
+    {
+        InsertChild(host, owner, feed, index, item);
+    }
+    else
+    {
+        RemoveChild(host, owner.get(), feed, index);
+    }
+
+    host.DrainPendingChanges();
+}
+
+void ChildCollectionsHierarchy::OnChildBindableVectorChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const&)
+{
+    // No detail: a whole-tree re-read, or a skip while held or frozen.
+    (void)host.AdmitChange(true);
+}
+
+void ChildCollectionsHierarchy::InsertChild(
+    ISourceHierarchyHost& host,
+    SourceRecordPtr const& owner,
+    ChildFeed& feed,
+    uint32_t index,
+    winrt::Windows::Foundation::IInspectable const& item)
+{
+    // Compute before commit: the item and its whole subtree are read and checked first.
+    std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
+    try
+    {
+        CollectSubtreeItems(item, incoming);
+        host.ValidateIncoming(incoming, nullptr);
+    }
+    catch (...)
+    {
+        host.RequestReset();
+        throw;
+    }
+
+    auto record = host.CreateRecord(item);
+    SourceRecord* const raw = record.get();
+    feed.Records.insert(feed.Records.begin() + index, record);
+    host.Reparent(raw, owner.get(), index);
+
+    std::exception_ptr error;
+    BuildChildFeed(host, record, error);
+
+    std::vector<SourceRecord*> added;
+    AppendSourceSubtree(raw, added);
+    std::vector<SourceRecordPtr> removed;
+    host.RaiseSourceChanged(SourceChangeKind::Add, nullptr, owner.get(), 0, index, added, removed);
+
+    if (error)
+    {
+        std::rethrow_exception(error);
+    }
+}
+
+void ChildCollectionsHierarchy::RemoveChild(ISourceHierarchyHost& host, SourceRecord* owner, ChildFeed& feed, uint32_t index)
+{
+    SourceRecordPtr record = std::move(feed.Records[index]);
+    feed.Records.erase(feed.Records.begin() + index);
+
+    SourceRecord* const raw = record.get();
+    auto& siblings = owner->Children;
+    siblings.erase(std::remove(siblings.begin(), siblings.end(), raw), siblings.end());
+    raw->Parent = nullptr;
+
+    std::vector<SourceRecordPtr> removed;
+    host.ReleaseRecord(raw);
+    removed.push_back(std::move(record));
+    TakeFeed(host, raw, removed);
+
+    // `removed` keeps the subtree alive until the handler returns.
+    host.RaiseSourceChanged(SourceChangeKind::Remove, owner, nullptr, index, 0, {}, removed);
+}
+
+void ChildCollectionsHierarchy::TakeFeed(
+    ISourceHierarchyHost& host,
+    SourceRecord const* owner,
+    std::vector<SourceRecordPtr>& removed)
+{
+    auto const found = m_childFeeds.find(owner);
+    if (found == m_childFeeds.end())
+    {
+        return;
+    }
+
+    std::unique_ptr<ChildFeed> feed = std::move(found->second);
+    m_childFeeds.erase(found);
+    UnsubscribeFromChildChanges(*feed);
+    feed->Accessor.reset();
+
+    for (auto& record : feed->Records)
+    {
+        if (!record)
+        {
+            continue;
+        }
+
+        SourceRecord* const raw = record.get();
+        host.ReleaseRecord(raw);
+        removed.push_back(std::move(record));
+        TakeFeed(host, raw, removed);
+    }
+}
+
+bool ChildCollectionsHierarchy::OnInserted(ISourceHierarchyHost& host, SourceRecord* record, std::exception_ptr& error)
+{
+    // Top level in source order; the caller validated the subtree (CollectIncoming).
+    host.Reparent(record, nullptr, SourceOrderPosition(host, record, nullptr, nullptr));
+    for (auto const& root : host.RootRecords())
+    {
+        if (root.get() == record)
+        {
+            BuildChildFeed(host, root, error);
+            break;
+        }
+    }
+
+    return true;
+}
+
+void ChildCollectionsHierarchy::AfterInserted(ISourceHierarchyHost&, SourceRecord*)
+{
+    // Nothing waits for a ChildrenBy record.
+}
+
+bool ChildCollectionsHierarchy::OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed)
+{
+    // record stays in the top level (the caller reads its index and unlinks it); its subtree
+    // leaves the lookups and goes into removed after it.
+    TakeFeed(host, record, removed);
+    return true;
+}
+
+void ChildCollectionsHierarchy::OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t, uint32_t)
+{
+    ReparentInSourceOrder(host, record, nullptr);
+}
+
+bool ChildCollectionsHierarchy::Reevaluate(ISourceHierarchyHost&, SourceRecord*, winrt::hstring const&)
+{
+    // Drift #17: a child-collection property swap is Milestone 6 (live shaping).
+    return false;
+}
+
+void ChildCollectionsHierarchy::TakeChildRecords(ISourceHierarchyHost& host, std::vector<SourceRecordPtr>& removed)
+{
+    std::vector<SourceRecord const*> owners;
+    for (auto const& root : host.RootRecords())
+    {
+        if (m_childFeeds.count(root.get()))
+        {
+            owners.push_back(root.get());
+        }
+    }
+
+    for (SourceRecord const* const owner : owners)
+    {
+        TakeFeed(host, owner, removed);
+    }
+}
+
+void ChildCollectionsHierarchy::DestroyChildFeed(ISourceHierarchyHost& host, SourceRecord const* owner) noexcept
+{
+    // Teardown-safe: unsubscribes through safe_get and reads no Item. Records are not released
+    // through the host (drift #13): every caller has already taken them out of the lookups, or
+    // SourceTable::Clear() clears the lookups wholesale.
+    auto const found = m_childFeeds.find(owner);
+    if (found == m_childFeeds.end())
+    {
+        return;
+    }
+
+    std::unique_ptr<ChildFeed> feed = std::move(found->second);
+    m_childFeeds.erase(found);
+    UnsubscribeFromChildChanges(*feed);
+    feed->Accessor.reset();
+
+    for (auto const& record : feed->Records)
+    {
+        if (record)
+        {
+            DestroyChildFeed(host, record.get());
+        }
+    }
+}
+
+void ChildCollectionsHierarchy::ForEachChildRecord(std::function<void(SourceRecordPtr const&)> const& visit) const
+{
+    for (auto const& entry : m_childFeeds)
+    {
+        for (auto const& record : entry.second->Records)
+        {
+            if (record)
+            {
+                visit(record);
+            }
+        }
+    }
+}
+
+void ChildCollectionsHierarchy::Release(ISourceHierarchyHost& host) noexcept
+{
+    while (!m_childFeeds.empty())
+    {
+        DestroyChildFeed(host, m_childFeeds.begin()->first);
+    }
+
+    m_staged.clear();
+    m_childrenSelector.reset();
+}
