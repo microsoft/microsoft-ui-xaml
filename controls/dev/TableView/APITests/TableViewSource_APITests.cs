@@ -2039,6 +2039,134 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies adding rows one at a time to a filtered, sorted source runs the filter only for each added row and never resets the rows (#12473).")]
+        public void VerifyFilteredSortedAddsEvaluateOnlyTheAddedRows()
+        {
+            const int initialCount = 60;
+            const int addCount = 60;
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var predicateCalls = 0;
+            var actions = new List<string>();
+
+            // 37 and 120 are coprime, so every name is distinct and the adds interleave the existing rows.
+            ShapedPerson MakePerson(int k) => new ShapedPerson($"N{(k * 37) % 120:D3}", k % 3 == 0 ? "Designer" : "Engineer", "Platform");
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(Enumerable.Range(0, initialCount).Select(MakePerson));
+                var source = TableViewSource
+                    .From(items)
+                    .Filter(o => { predicateCalls++; return Person(o).Role == "Engineer"; })
+                    .Sort("Name", SortDirection.Descending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                predicateCalls = 0;
+                for (var k = initialCount; k < initialCount + addCount; k++)
+                {
+                    items.Add(MakePerson(k));
+                }
+
+                Log.Comment($"{addCount} adds over {initialCount} rows ran the filter {predicateCalls} times.");
+                Verify.IsLessThanOrEqual(predicateCalls, 2 * addCount,
+                    "Each add must run the filter for the added row only, not re-filter every row (O(n) per add).");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var expected = items.Where(p => p.Role == "Engineer").Select(p => p.Name).OrderByDescending(n => n, StringComparer.Ordinal).ToList();
+                VerifySequence(expected, GetProjectedItems(tableView).Select(o => Person(o).Name).ToList(),
+                    "every matching add must land at its sorted position");
+                Verify.AreEqual(0, actions.Count(a => a == "Reset"), "A single-row add must not reset the rows.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies inserts and removals while filtered keep source order and run the filter only for the inserted rows.")]
+        public void VerifyFilteredInsertsAndRemovesEvaluateOnlyTheChangedRows()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var predicateCalls = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Filter(o => { predicateCalls++; return Person(o).Role == "Engineer"; }));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "baseline");
+                predicateCalls = 0;
+
+                // Asha, Diego, Mei, Rafa, Ines, Owen: a match between Mei and Rafa, a non-match ahead of Diego.
+                items.Insert(3, new ShapedPerson("Nadia", "Engineer", "Platform"));
+                items.Insert(1, new ShapedPerson("Tomas", "Designer", "Studio"));
+                items.Insert(0, new ShapedPerson("Bea", "Engineer", "Platform"));
+                items.Remove(items.First(p => p.Name == "Rafa"));
+                items.Remove(items.First(p => p.Name == "Mei"));
+
+                Verify.AreEqual(3, predicateCalls, "Only the three inserted rows may be filtered.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Bea", "Diego", "Nadia", "Owen" },
+                    "filtered rows must keep their source order across inserts and removals");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies filter membership of rows that raise no change notification is still re-evaluated by the next collection change.")]
+        public void VerifyFilterMembershipOfPlainItemsIsReevaluatedByTheNextAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<PlainShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<PlainShapedPerson>(
+                    MakeShapedPeople().Select(p => new PlainShapedPerson { Name = p.Name, Role = p.Role }));
+                tableView = CreateShapedTable(TableViewSource.From(items).Filter(o => ((PlainShapedPerson)o).Role == "Engineer"));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Diego,Rafa,Owen", PlainNames(tableView), "baseline");
+
+                // No notification: only a re-evaluation can see it.
+                items.First(p => p.Name == "Asha").Role = "Engineer";
+                items.Add(new PlainShapedPerson { Name = "Nadia", Role = "Engineer" });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Rafa,Owen,Nadia", PlainNames(tableView),
+                    "the next collection change must re-evaluate membership of rows that cannot report edits");
+            });
+        }
+
         private static string PlainNames(TableView tableView)
             => string.Join(",", GetProjectedItems(tableView).Select(o => ((PlainShapedPerson)o).Name));
 
