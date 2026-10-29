@@ -428,6 +428,8 @@ private:
     PropertyChanged_revoker m_backButtonMarginChangedRevoker{};
     PropertyChanged_revoker m_backButtonHeightChangedRevoker{};
     PropertyChanged_revoker m_backButtonMinWidthChangedRevoker{};
+    PropertyChanged_revoker m_backButtonMinHeightChangedRevoker{};
+    PropertyChanged_revoker m_backButtonContainerMarginChangedRevoker{};
     winrt::FrameworkElement::ActualThemeChanged_revoker m_backButtonActualThemeChangedRevoker{};
     tracker_ref<winrt::FrameworkElement> m_backButtonBackplate{ this };
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
