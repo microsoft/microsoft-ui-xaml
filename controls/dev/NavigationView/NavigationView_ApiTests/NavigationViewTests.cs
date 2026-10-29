@@ -2475,8 +2475,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyElementOffset(navView, visual, 4.0, 6.0, "Back button visual");
                 Verify.AreEqual(64.0, visual.ActualWidth, "Back button visual width");
                 Verify.AreEqual(36.0, visual.ActualHeight, "Back button visual height");
-                // Footprint: 4 (style margin) + 64.
-                VerifyElementOffset(navView, paneToggleButton, 68.0, 4.0, "Pane toggle button");
+                // As on main, NavigationView offsets the toggle by a fixed 40 (c_backButtonWidth), whatever the back button's MinWidth.
+                VerifyElementOffset(navView, paneToggleButton, 40.0, 4.0, "Pane toggle button");
             });
         }
 
