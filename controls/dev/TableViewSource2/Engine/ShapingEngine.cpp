@@ -827,14 +827,38 @@ void ShapingEngine::UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept
     m_stale = true;
 }
 
+namespace
+{
+    // Bits a surgical commit keeps from the record (the user's expansion, the context-row overlay;
+    // PlacementMark is always clear outside PlacementIndex).
+    constexpr ShapeFlags c_keptFlags = ShapeFlags::Expanded | ShapeFlags::PlacementMark | ShapeFlags::OverlayCollapsed;
+
+    // The index of `node` in `parent`'s list when it is there (a node about to leave it).
+    std::optional<uint32_t> IndexInList(ShapedNode* parent, ShapedNode const* node) noexcept
+    {
+        if (!node || node->ShapedParent() != parent)
+        {
+            return std::nullopt;
+        }
+        uint32_t const at = node->IndexInParent;
+        if (at >= parent->ShapedChildCount() || parent->ShapedChildAt(at) != node)
+        {
+            return std::nullopt;
+        }
+        return at;
+    }
+}
+
 void ShapingEngine::ApplySourceChange(SourceChange const& change)
 {
-    // Spec §6: under the empty spec a single-item Add, Remove or Move (including a ParentBy
-    // reparent and an orphan moving to the top level) links or unlinks that one node (drift #20).
-    // Replace, any non-empty spec, and a stale engine (drift #33: root may hide arrivals) rebuild
+    // Spec §6: a single-item Add, Remove, Replace or Move links or unlinks the nodes that enter
+    // or leave (drift #20, #35). A reparenting Move under a non-empty spec, a nested Replace (not
+    // raised by SourceTable) and a stale engine (drift #33: the root may hide arrivals) rebuild
     // with the applied spec (one Reset).
-    bool const surgical = m_applied == ShapeSpec{} && !m_stale &&
-        (change.Kind == SourceChangeKind::Add || change.Kind == SourceChangeKind::Remove || change.Kind == SourceChangeKind::Move);
+    bool const emptySpec = m_applied == ShapeSpec{};
+    bool const reparent = change.Kind == SourceChangeKind::Move && change.OldParent != change.NewParent;
+    bool const nestedReplace = change.Kind == SourceChangeKind::Replace && (change.OldParent || change.NewParent);
+    bool const surgical = !m_stale && change.Kind != SourceChangeKind::Reset && !nestedReplace && (emptySpec || !reparent);
     if (!surgical)
     {
         ShapeSpec const applied{ m_applied };
@@ -842,6 +866,99 @@ void ShapingEngine::ApplySourceChange(SourceChange const& change)
         return;
     }
 
+    if (emptySpec && change.Kind != SourceChangeKind::Replace)
+    {
+        ApplyUnshapedSourceChange(change);
+        return;
+    }
+
+    // Compute first: every app call (filter, sort and group keys, comparers) and every allocation
+    // runs before any write; the write phases (CommitInsert, CommitLeave, Link, Unlink) cannot
+    // throw. A failed compute still has to drop the departed records (drift #33).
+    try
+    {
+        switch (change.Kind)
+        {
+        case SourceChangeKind::Add:
+        {
+            StagedEdit edit;
+            StageInsert(edit, change.Added, change.NewParent);
+            if (edit.Parent)
+            {
+                StagePlacement(edit, change.NewIndex, nullptr);
+            }
+            CommitInsert(edit);
+            return;
+        }
+
+        case SourceChangeKind::Remove:
+        {
+            // Runs no app code. The departed subtree is alive until the handler returns.
+            auto* const record = const_cast<SourceRecord*>(change.Removed.front());
+            StagedLeave leave = StageLeave(record, change.OldParent, change.OldIndex, nullptr);
+            CommitLeave(leave);
+            return;
+        }
+
+        case SourceChangeKind::Replace:
+        {
+            // A top-level leaf (SourceTable's only Replace): the new record's chain is computed
+            // first, so the groups it reuses are not pruned when the old record leaves them.
+            StagedEdit edit;
+            GroupNode* const keep = StageInsert(edit, change.Added, nullptr);
+            auto* const old = const_cast<SourceRecord*>(change.Removed.front());
+            StagedLeave leave = StageLeave(old, nullptr, change.OldIndex, keep);
+            if (edit.Parent)
+            {
+                StagePlacement(edit, change.NewIndex, leave.Top);
+            }
+            CommitLeave(leave);
+            CommitInsert(edit);
+            return;
+        }
+
+        default: // SourceChangeKind::Move within one parent
+        {
+            std::vector<SourceRecord*> const& siblings = change.NewParent ? change.NewParent->Children : m_source.TopLevel();
+            SourceRecord* const record = siblings[change.NewIndex];
+            if (!InShapedParent(*record))
+            {
+                return;
+            }
+
+            // A source-owned list (no filter or sort) follows the source.
+            if (change.NewParent && (change.NewParent->Shape.Flags & ShapeFlags::ChildrenShaped) == ShapeFlags::None)
+            {
+                m_tree.Unlink(record, change.NewParent, change.OldIndex, true /* isMove */);
+                m_tree.Link(record, change.NewParent, change.NewIndex, true /* isMove */);
+                return;
+            }
+
+            // Otherwise the record moves only when its place among equal keys (or in source
+            // order) changes; a move a sort hides raises nothing. Groups never move (sticky, E9).
+            ShapedNode* const parent = record->ShapedParent();
+            uint32_t const index = PlacementIndex(record, record->Shape, parent, record, change.NewIndex);
+            if (index == record->IndexInParent)
+            {
+                return;
+            }
+            m_tree.Unlink(record, true /* isMove */);
+            m_tree.Link(record, parent, index, true /* isMove */);
+            return;
+        }
+        }
+    }
+    catch (...)
+    {
+        UnlinkOnly(change.Added);
+        throw;
+    }
+}
+
+void ShapingEngine::ApplyUnshapedSourceChange(SourceChange const& change)
+{
+    // Under the empty spec every record is in the shaped tree in source order, so the source
+    // position is the shaped position. Runs no app code.
     GroupNode& root = m_tree.Root();
     auto const shapedParent = [&root](SourceRecord* parent) -> ShapedNode* {
         return parent ? static_cast<ShapedNode*>(parent) : static_cast<ShapedNode*>(&root);
@@ -896,6 +1013,617 @@ void ShapingEngine::ApplySourceChange(SourceChange const& change)
         m_tree.Link(record, shapedParent(change.NewParent), change.NewIndex, true /* isMove */);
         return;
     }
+    }
+}
+
+int32_t ShapingEngine::CompareRows(
+    winrt::IInspectable const& a,
+    ShapeState const& aShape,
+    winrt::IInspectable const& b,
+    ShapeState const& bShape) const
+{
+    auto const key = [](ShapeState const& shape, size_t level) -> winrt::IInspectable {
+        if (level < shape.SortKeys.size() && shape.SortKeys[level])
+        {
+            return shape.SortKeys[level]->get();
+        }
+        return nullptr;
+    };
+
+    for (size_t l = 0; l < m_applied.Sorts.size(); ++l)
+    {
+        SortSpec const& level = m_applied.Sorts[l];
+        int const c = level.SortKind == SortSpec::Kind::Comparer ?
+            m_delegates.Compare(level.Delegate.Id, a, b) :
+            CompareKeys(key(aShape, l), key(bShape, l), level.Direction);
+        if (c != 0)
+        {
+            return c;
+        }
+    }
+    return 0;
+}
+
+GroupNode* ShapingEngine::StageInsert(StagedEdit& edit, std::span<SourceRecord* const> added, SourceRecord* parent)
+{
+    ShapeSpec const& spec = m_applied;
+    bool const filterActive = !spec.Filters.empty();
+    bool const sortActive = !spec.Sorts.empty();
+    bool const childrenShaped = filterActive || sortActive;
+    uint32_t const n = static_cast<uint32_t>(added.size());
+
+    auto const readSortKeys = [&](winrt::IInspectable const& item, ShapeState& shape)
+    {
+        shape.SortKeys.resize(spec.Sorts.size());
+        for (size_t l = 0; l < spec.Sorts.size(); ++l)
+        {
+            SortSpec const& level = spec.Sorts[l];
+            if (level.SortKind == SortSpec::Kind::Comparer)
+            {
+                continue;
+            }
+            winrt::IInspectable const key = level.SortKind == SortSpec::Kind::Path ?
+                m_paths.Value(level.Path, item) :
+                m_delegates.Key(level.Delegate.Id, item);
+            shape.SortKeys[l].emplace(m_trackerOwner, key);
+        }
+    };
+
+    std::vector<StagedRecord> staged(n);
+    std::vector<winrt::IInspectable> items(n, nullptr);
+    std::unordered_map<SourceRecord const*, uint32_t> indexOf;
+    indexOf.reserve(n);
+    for (uint32_t i = 0; i < n; ++i)
+    {
+        staged[i].Record = added[i];
+        items[i] = added[i]->Item.get();
+        indexOf.emplace(added[i], i);
+    }
+
+    // Filter. A predicate's exception propagates with nothing written.
+    std::vector<uint8_t> passes(n, 1);
+    if (filterActive)
+    {
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            for (FilterSpec const& filter : spec.Filters)
+            {
+                if (!m_delegates.Passes(filter.Predicate.Id, items[i]))
+                {
+                    passes[i] = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Ancestors of matches (E8): pre-order puts every child after its parent.
+    std::vector<uint8_t> inShaped(passes);
+    for (uint32_t i = n; i-- > 1;)
+    {
+        if (inShaped[i])
+        {
+            auto const up = indexOf.find(added[i]->Parent);
+            MUX_ASSERT(up != indexOf.end());
+            inShaped[up->second] = 1;
+        }
+    }
+
+    for (uint32_t i = 0; i < n; ++i)
+    {
+        ShapeFlags flags = passes[i] ? ShapeFlags::PassesFilter : ShapeFlags::None;
+        if (childrenShaped)
+        {
+            flags |= ShapeFlags::ChildrenShaped;
+        }
+        if (sortActive && inShaped[i])
+        {
+            flags |= ShapeFlags::SortKeysValid;
+            readSortKeys(items[i], staged[i].Shape);
+        }
+        staged[i].Shape.Flags = flags;
+    }
+
+    // Shaped children of every staged record, filtered and sorted.
+    if (childrenShaped)
+    {
+        std::vector<uint32_t> run;
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            run.clear();
+            for (SourceRecord* const child : added[i]->Children)
+            {
+                auto const at = indexOf.find(child);
+                MUX_ASSERT(at != indexOf.end());
+                if (inShaped[at->second])
+                {
+                    run.push_back(at->second);
+                }
+            }
+            if (sortActive)
+            {
+                StableSortIndices(run, [&](uint32_t a, uint32_t b)
+                {
+                    return CompareRows(items[a], staged[a].Shape, items[b], staged[b].Shape) < 0;
+                });
+            }
+
+            auto& shapedChildren = staged[i].Shape.ShapedChildren;
+            shapedChildren.reserve(run.size());
+            for (uint32_t const j : run)
+            {
+                shapedChildren.push_back(added[j]);
+            }
+        }
+    }
+
+    edit.Staged = std::move(staged[0]);
+    edit.Descendants.reserve(n - 1);
+    for (uint32_t i = 1; i < n; ++i)
+    {
+        edit.Descendants.push_back(std::move(staged[i]));
+    }
+
+    if (!inShaped[0])
+    {
+        return nullptr;
+    }
+
+    // E8: failing ancestors with no shaped child enter with the record, bottom-up.
+    SourceRecord* lower = added[0];
+    SourceRecord* current = parent;
+    while (current && !InShapedParent(*current))
+    {
+        StagedRecord link;
+        link.Record = current;
+        link.Shape.Flags = (current->Shape.Flags & ShapeFlags::PassesFilter) | ShapeFlags::ChildrenShaped;
+        if (sortActive)
+        {
+            link.Shape.Flags |= ShapeFlags::SortKeysValid;
+            readSortKeys(current->Item.get(), link.Shape);
+        }
+        link.Shape.ShapedChildren.push_back(lower);
+        edit.Chain.push_back(std::move(link));
+        lower = current;
+        current = current->Parent;
+    }
+
+    if (current)
+    {
+        edit.Parent = current;
+        return nullptr;
+    }
+
+    // The topmost record is top-level: under the root, or in its group chain.
+    GroupNode& root = m_tree.Root();
+    StagedRecord& top = edit.Chain.empty() ? edit.Staged : edit.Chain.back();
+    if (spec.Groups.empty())
+    {
+        top.Shape.Group = &root;
+        edit.Parent = &root;
+        return &root;
+    }
+
+    // A throwing group key selector puts the record in the null-key group (spec, "Misbehaving
+    // records"), as in a rebuild.
+    winrt::IInspectable const item = top.Record->Item.get();
+    std::vector<winrt::IInspectable> keys(spec.Groups.size(), nullptr);
+    for (size_t l = 0; l < spec.Groups.size(); ++l)
+    {
+        try
+        {
+            keys[l] = m_delegates.Key(spec.Groups[l].Key.Id, item);
+        }
+        catch (...)
+        {
+            keys[l] = nullptr;
+        }
+    }
+    return StageGroupChain(edit, keys);
+}
+
+GroupNode* ShapingEngine::StageGroupChain(StagedEdit& edit, std::vector<winrt::IInspectable> const& keys)
+{
+    StagedRecord& top = edit.Chain.empty() ? edit.Staged : edit.Chain.back();
+    uint16_t const levels = static_cast<uint16_t>(keys.size());
+
+    GroupNode* existing = &m_tree.Root();
+    uint16_t level = 0;
+    for (; level < levels; ++level)
+    {
+        auto const it = m_groupsByIdentity.find(ChildGroupIdentity(existing->Identity, keys[level]));
+        if (it == m_groupsByIdentity.end())
+        {
+            break;
+        }
+        existing = it->second.get();
+    }
+
+    GroupNode* bottom = existing;
+    if (level < levels)
+    {
+        GroupMap fresh;
+        edit.NewGroupEntries.reserve(levels - level);
+        for (; level < levels; ++level)
+        {
+            winrt::hstring const identity = ChildGroupIdentity(bottom->Identity, keys[level]);
+            auto group = std::make_unique<GroupNode>();
+            group->Key.emplace(m_trackerOwner, keys[level]);
+            group->Identity = identity;
+            group->Parent = bottom;
+            group->GroupLevel = level;
+            group->Children.reserve(1);
+            GroupNode* const raw = group.get();
+            fresh.emplace(identity, std::move(group));
+            edit.NewGroupEntries.push_back(fresh.extract(identity));
+            bottom = raw;
+        }
+        m_groupsByIdentity.reserve(m_groupsByIdentity.size() + edit.NewGroupEntries.size());
+    }
+
+    top.Shape.Group = bottom;
+    edit.Parent = existing;
+    return existing;
+}
+
+void ShapingEngine::StagePlacement(StagedEdit& edit, std::optional<uint32_t> sourceIndex, ShapedNode const* skip)
+{
+    ShapedNode* const parent = edit.Parent;
+    if (!edit.NewGroupEntries.empty())
+    {
+        edit.ShapedIndex = GroupPlacementIndex(edit.NewGroupEntries.front().mapped().get(), parent, skip);
+    }
+    else
+    {
+        StagedRecord const& top = edit.Chain.empty() ? edit.Staged : edit.Chain.back();
+        edit.ShapedIndex = PlacementIndex(top.Record, top.Shape, parent, skip, edit.Chain.empty() ? sourceIndex : std::nullopt);
+    }
+
+    // Capacity for the write phase's insert (E4).
+    if (GroupNode* const group = parent->AsGroup())
+    {
+        group->Children.reserve(group->Children.size() + 1);
+    }
+    else if (SourceRecord* const record = parent->AsRecord();
+             (record->Shape.Flags & ShapeFlags::ChildrenShaped) != ShapeFlags::None)
+    {
+        record->Shape.ShapedChildren.reserve(record->Shape.ShapedChildren.size() + 1);
+    }
+}
+
+uint32_t ShapingEngine::PlacementIndex(
+    SourceRecord* record,
+    ShapeState const& shape,
+    ShapedNode* parent,
+    ShapedNode const* skip,
+    std::optional<uint32_t> sourceIndex)
+{
+    std::vector<SourceRecord*> const& siblings = record->Parent ? record->Parent->Children : m_source.TopLevel();
+    uint32_t const at = sourceIndex ? *sourceIndex :
+        static_cast<uint32_t>(std::find(siblings.begin(), siblings.end(), record) - siblings.begin());
+
+    SourceRecord* const parentRecord = parent->AsRecord();
+    if (parentRecord && (parentRecord->Shape.Flags & ShapeFlags::ChildrenShaped) == ShapeFlags::None)
+    {
+        return at;
+    }
+
+    // Virtual indices: the list without `skip`.
+    uint32_t const count = parent->ShapedChildCount();
+    std::optional<uint32_t> const skipped = IndexInList(parent, skip);
+    uint32_t const skipAt = skipped ? *skipped : count;
+    uint32_t const size = skipped ? count - 1 : count;
+    auto const actual = [skipAt](uint32_t v) { return v >= skipAt ? v + 1 : v; };
+    auto const virtualOf = [skipAt](uint32_t a) { return a > skipAt ? a - 1 : a; };
+
+    if (m_applied.Sorts.empty())
+    {
+        // Shaped order is source order: after the nearest earlier source sibling in this list.
+        for (uint32_t s = at; s-- > 0;)
+        {
+            SourceRecord* const prior = siblings[s];
+            if (prior != skip && InShapedParent(*prior) && prior->ShapedParent() == parent)
+            {
+                return virtualOf(prior->IndexInParent) + 1;
+            }
+        }
+        return 0;
+    }
+
+    winrt::IInspectable const item = record->Item.get();
+    auto const sibling = [&](uint32_t v) { return parent->ShapedChildAt(actual(v))->AsRecord(); };
+
+    // The run of siblings whose keys tie with the record's: [first, last).
+    uint32_t first = 0;
+    uint32_t hi = size;
+    while (first < hi)
+    {
+        uint32_t const mid = first + (hi - first) / 2;
+        SourceRecord* const s = sibling(mid);
+        if (CompareRows(s->Item.get(), s->Shape, item, shape) < 0)
+        {
+            first = mid + 1;
+        }
+        else
+        {
+            hi = mid;
+        }
+    }
+    uint32_t last = first;
+    hi = size;
+    while (last < hi)
+    {
+        uint32_t const mid = last + (hi - last) / 2;
+        SourceRecord* const s = sibling(mid);
+        if (CompareRows(item, shape, s->Item.get(), s->Shape) < 0)
+        {
+            hi = mid;
+        }
+        else
+        {
+            last = mid + 1;
+        }
+    }
+    if (first == last)
+    {
+        return first;
+    }
+
+    // Equal keys keep source order: after the nearest earlier source sibling in the run.
+    for (uint32_t v = first; v < last; ++v)
+    {
+        sibling(v)->Shape.Flags |= ShapeFlags::PlacementMark;
+    }
+    uint32_t result = first;
+    for (uint32_t s = at; s-- > 0;)
+    {
+        SourceRecord* const prior = siblings[s];
+        if ((prior->Shape.Flags & ShapeFlags::PlacementMark) != ShapeFlags::None)
+        {
+            result = virtualOf(prior->IndexInParent) + 1;
+            break;
+        }
+    }
+    for (uint32_t v = first; v < last; ++v)
+    {
+        sibling(v)->Shape.Flags &= ~ShapeFlags::PlacementMark;
+    }
+    return result;
+}
+
+uint32_t ShapingEngine::GroupPlacementIndex(GroupNode const* group, ShapedNode* parent, ShapedNode const* skip) const
+{
+    uint32_t const count = parent->ShapedChildCount();
+    std::optional<uint32_t> const skipped = IndexInList(parent, skip);
+    uint32_t const skipAt = skipped ? *skipped : count;
+    uint32_t const size = skipped ? count - 1 : count;
+
+    winrt::SortDirection const direction = m_applied.Groups[group->GroupLevel].Direction;
+    if (direction == winrt::SortDirection::None)
+    {
+        return size;
+    }
+
+    winrt::IInspectable const key = group->Key ? group->Key->get() : nullptr;
+    uint32_t lo = 0;
+    uint32_t hi = size;
+    while (lo < hi)
+    {
+        uint32_t const mid = lo + (hi - lo) / 2;
+        GroupNode const* const other = parent->ShapedChildAt(mid >= skipAt ? mid + 1 : mid)->AsGroup();
+        winrt::IInspectable const otherKey = other->Key ? other->Key->get() : nullptr;
+        if (CompareKeys(key, otherKey, direction) < 0)
+        {
+            hi = mid;
+        }
+        else
+        {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
+void ShapingEngine::CommitInsert(StagedEdit& edit) noexcept
+{
+    auto const commit = [](StagedRecord& staged) noexcept
+    {
+        SourceRecord* const record = staged.Record;
+        ShapeState& next = staged.Shape;
+        record->Shape.Flags = (record->Shape.Flags & c_keptFlags) | next.Flags;
+        if ((next.Flags & ShapeFlags::SortKeysValid) != ShapeFlags::None)
+        {
+            record->Shape.SortKeys = std::move(next.SortKeys);
+        }
+        else
+        {
+            record->Shape.SortKeys.clear();
+        }
+        record->Shape.ShapedChildren = std::move(next.ShapedChildren);
+        record->Shape.Group = record->Parent ? nullptr : next.Group;
+        record->ChildRows.MarkStale();
+
+        if ((next.Flags & ShapeFlags::ChildrenShaped) != ShapeFlags::None)
+        {
+            auto const& shapedChildren = record->Shape.ShapedChildren;
+            for (uint32_t j = 0; j < shapedChildren.size(); ++j)
+            {
+                shapedChildren[j]->IndexInParent = j;
+            }
+        }
+        else
+        {
+            for (uint32_t j = 0; j < record->Children.size(); ++j)
+            {
+                record->Children[j]->IndexInParent = j;
+            }
+        }
+    };
+
+    commit(edit.Staged);
+    for (StagedRecord& descendant : edit.Descendants)
+    {
+        commit(descendant);
+    }
+    for (StagedRecord& link : edit.Chain)
+    {
+        commit(link);
+    }
+
+    if (!edit.Parent)
+    {
+        return;
+    }
+
+    if (GroupNode* group = edit.Parent->AsGroup())
+    {
+        for (; !group->IsRoot(); group = group->Parent)
+        {
+            ++group->ItemCount;
+        }
+    }
+
+    // The detached new group chain, bottom-up, then its map entries (capacity reserved).
+    ShapedNode* top = edit.Chain.empty() ? edit.Staged.Record : edit.Chain.back().Record;
+    for (size_t k = edit.NewGroupEntries.size(); k-- > 0;)
+    {
+        GroupNode* const group = edit.NewGroupEntries[k].mapped().get();
+        group->Children.push_back(top);
+        top->IndexInParent = 0;
+        group->ItemCount = 1;
+        group->ChildRows.MarkStale();
+        top = group;
+    }
+    for (GroupMap::node_type& entry : edit.NewGroupEntries)
+    {
+        m_groupsByIdentity.insert(std::move(entry));
+    }
+    edit.NewGroupEntries.clear();
+
+    m_tree.Link(top, edit.Parent, edit.ShapedIndex, false /* isMove */);
+}
+
+ShapingEngine::StagedLeave ShapingEngine::StageLeave(
+    SourceRecord* record,
+    SourceRecord* oldParent,
+    uint32_t oldIndex,
+    GroupNode const* keep)
+{
+    StagedLeave leave;
+    leave.Record = record;
+    if (!InShapedParent(*record))
+    {
+        return leave;
+    }
+
+    // E8: a failing ancestor whose only shaped child leaves goes with it.
+    SourceRecord* top = record;
+    SourceRecord* current = oldParent;
+    while (current &&
+           (current->Shape.Flags & (ShapeFlags::PassesFilter | ShapeFlags::ChildrenShaped)) == ShapeFlags::ChildrenShaped &&
+           current->Shape.ShapedChildren.size() == 1)
+    {
+        leave.Chain.push_back(current);
+        top = current;
+        current = current->Parent;
+    }
+
+    leave.Top = top;
+    if (top == record)
+    {
+        // A removed record is already out of its source list: a source-owned list (no filter or
+        // sort) takes the old source index.
+        leave.Parent = oldParent ? static_cast<ShapedNode*>(oldParent) : static_cast<ShapedNode*>(record->Shape.Group);
+        bool const engineOwned = !oldParent || (oldParent->Shape.Flags & ShapeFlags::ChildrenShaped) != ShapeFlags::None;
+        leave.Index = engineOwned ? record->IndexInParent : oldIndex;
+    }
+    else
+    {
+        leave.Parent = top->ShapedParent();
+        leave.Index = top->IndexInParent;
+    }
+
+    // E9: a top-level record leaving takes every group it was the last member of, short of the
+    // chain a replacing record keeps.
+    if (!current && !m_applied.Groups.empty())
+    {
+        leave.Group = top->Shape.Group;
+        auto const kept = [keep](GroupNode const* group)
+        {
+            for (GroupNode const* k = keep; k; k = k->Parent)
+            {
+                if (k == group)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        size_t pruned = 0;
+        for (GroupNode* group = leave.Group; group && !group->IsRoot() && group->ItemCount == 1 && !kept(group); group = group->Parent)
+        {
+            leave.TopGroup = group;
+            ++pruned;
+        }
+        if (leave.TopGroup)
+        {
+            leave.Top = leave.TopGroup;
+            leave.Parent = leave.TopGroup->Parent;
+            leave.Index = leave.TopGroup->IndexInParent;
+            m_retired.reserve(m_retired.size() + pruned);
+        }
+    }
+    return leave;
+}
+
+void ShapingEngine::CommitLeave(StagedLeave& leave) noexcept
+{
+    if (leave.Top)
+    {
+        for (GroupNode* group = leave.Group; group && !group->IsRoot(); group = group->Parent)
+        {
+            --group->ItemCount;
+        }
+
+        m_tree.Unlink(leave.Top, leave.Parent, leave.Index, false /* isMove */);
+
+        for (SourceRecord* const link : leave.Chain)
+        {
+            link->Shape.Flags &= ~ShapeFlags::SortKeysValid;
+            link->Shape.SortKeys.clear();
+            link->Shape.ShapedChildren.clear();
+            link->Shape.Group = nullptr;
+            link->ChildRows.MarkStale();
+        }
+
+        PruneEmptyGroups(leave.Group, leave.TopGroup);
+    }
+    leave.Record->Shape.Group = nullptr;
+}
+
+void ShapingEngine::PruneEmptyGroups(GroupNode* bottom, GroupNode* top) noexcept
+{
+    if (!top)
+    {
+        return;
+    }
+
+    for (GroupNode* group = bottom;; )
+    {
+        GroupNode* const up = group->Parent;
+        auto entry = m_groupsByIdentity.extract(group->Identity);
+        MUX_ASSERT(!entry.empty() && entry.mapped().get() == group);
+        group->Children.clear();
+        if (!entry.empty())
+        {
+            m_retired.push_back(std::move(entry.mapped()));
+        }
+        if (group == top)
+        {
+            break;
+        }
+        group = up;
     }
 }
 

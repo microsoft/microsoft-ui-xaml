@@ -111,6 +111,18 @@ std::optional<uint32_t> ShapedTree::IndexOf(ShapedNode* node) const
     return index;
 }
 
+uint32_t ShapedTree::FlatIndexOf(ShapedNode* node) const
+{
+    MUX_ASSERT(IsShown(node));
+
+    uint32_t index = 0;
+    for (ShapedNode* current = node; ShapedNode* const parent = current->ShapedParent(); current = parent)
+    {
+        index += CurrentChildRows(parent).PrefixSum(current->IndexInParent) + (parent == &m_root ? 0 : 1);
+    }
+    return index;
+}
+
 bool ShapedTree::IsShown(ShapedNode* node) const
 {
     for (ShapedNode* parent = node->ShapedParent(); parent && parent != &m_root; parent = parent->ShapedParent())
