@@ -17,8 +17,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // TableViewSource2, Milestone 7: group and row expansion through ShapedRowMetadata. Collapsing removes
     // the shown descendants as one range, expanding inserts them as one range, and the bulk group verbs
     // Reset. MakeLiveFlat: A10 X, B20 Y, C30 X, D40 Y. MakeTree: Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus.
-    // ExpandSubtree (the Multiply key) and Reveal have no input-free public entry, so they are not
-    // covered here (drift #57).
+    // ExpandSubtree (the Multiply key) and Reveal have no input-free public entry; only the interaction
+    // test MultiplyExpandsTreeRowSubtree covers ExpandSubtree, on v1 (drift #57).
     public partial class TableViewSource2Tests
     {
         private TableView PlaceGrouped(out TableViewSource2 source, out ObservableCollection<LiveRow> rows)
@@ -151,6 +151,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SetGroupExpanded(tableView, 0, true);
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] C E [H] B D", "expanded after the hidden changes"));
             VerifyEvents(events, "Add@1+2", "expand inserts the current members");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a live change that makes a context row pass the filter, and back, keeps its shown expansion: no event, and later collapse and expand move exactly its children (drift #58).")]
+        public void VerifyLiveFilterFlipKeepsContextRowExpansion()
+        {
+            var rows = MakeLiveTree();
+            var dee = Named(rows, "Dee");
+            Named(rows, "Eli").Score = 30;
+            var source = FromOnUI(rows);
+            var tableView = PlaceTreeSource(source, s =>
+            {
+                s.IsLiveShaping = true;
+                s.ParentBy(LiveById, LiveByParent);
+                s.Filter(MinScore(25));
+            });
+            VerifyTreeOnUI(tableView, "Ann1+ Dee1- Eli2", "Dee is an expanded context row for Eli");
+            var events = RecordViewEventsWithCounts(tableView);
+
+            OnUI(tableView, () => dee.Score = 40);
+            VerifyTreeOnUI(tableView, "Ann1+ Dee1- Eli2", "Dee passes and stays expanded");
+            VerifyEvents(events, "", "a context row that starts passing raises nothing");
+
+            OnUI(tableView, () => ToggleTreeRow(tableView, "Dee", false));
+            VerifyTreeOnUI(tableView, "Ann1+ Dee1+", "Dee collapsed");
+            VerifyEvents(events, "Remove@2+1", "collapse removes Eli");
+
+            OnUI(tableView, () => dee.Score = 20);
+            VerifyTreeOnUI(tableView, "Ann1+ Dee1+", "Dee is a context row again and stays collapsed");
+            VerifyEvents(events, "", "a passing row that becomes a context row raises nothing");
+
+            OnUI(tableView, () => ToggleTreeRow(tableView, "Dee", true));
+            VerifyTreeOnUI(tableView, "Ann1+ Dee1- Eli2", "Dee expanded");
+            VerifyEvents(events, "Add@2+1", "expand inserts Eli");
+            RunOnUIThread.Execute(() => Verify.AreEqual(3, GetRowsRepeater(tableView).ItemsSourceView.Count, "Three rows are shown."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the live drain under a collapsed group is silent for the hidden rows, and a later expand inserts the members in their new order.")]
+        public void VerifyLiveDrainUnderCollapsedGroupIsSilent()
+        {
+            var tableView = PlaceLiveFlat(out var source, out var rows);
+            OnUI(tableView, () => source.GroupBy(LiveByTeam, SortDirection.Ascending).Sort(LiveByScore, SortDirection.Ascending));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] B D", "GroupBy Team, Score ascending"));
+            SetGroupExpanded(tableView, 0, false);
+            var events = RecordViewEventsWithCounts(tableView);
+
+            OnUI(tableView, () => rows[0].Score = 35);
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] [H] B D", "A re-sorted inside collapsed X"));
+            VerifyEvents(events, "", "a move inside a collapsed group raises nothing");
+
+            OnUI(tableView, () => rows[1].Team = "X");
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] [H] D", "B left Y for collapsed X"));
+            VerifyEvents(events, "Remove@2+1", "only B's departure from shown Y is raised");
+
+            SetGroupExpanded(tableView, 0, true);
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] B C A [H] D", "X expands in its new order"));
+            VerifyEvents(events, "Add@1+3", "expand inserts X's three members");
         }
 
         [TestMethod]

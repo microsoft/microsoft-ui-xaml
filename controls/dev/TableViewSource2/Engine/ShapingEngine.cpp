@@ -69,6 +69,27 @@ bool ShapingEngine::InShapedTree(ShapedNode* node) noexcept
 
 namespace
 {
+    // The expansion bits for a shown record whose PassesFilter becomes `passes`, chosen so
+    // ShapedTree::IsExpanded reads the same before and after (a context row reads
+    // !OverlayCollapsed, a passing row Expanded; drift #58). Every other bit is unchanged.
+    ShapeFlags KeepExpansionAcrossFilterFlip(ShapeFlags flags, bool passes) noexcept
+    {
+        bool const wasPassing = (flags & ShapeFlags::PassesFilter) != ShapeFlags::None;
+        if (wasPassing == passes)
+        {
+            return flags;
+        }
+
+        bool const expanded = wasPassing
+            ? (flags & ShapeFlags::Expanded) != ShapeFlags::None
+            : (flags & ShapeFlags::OverlayCollapsed) == ShapeFlags::None;
+        if (passes)
+        {
+            return expanded ? (flags | ShapeFlags::Expanded) : (flags & ~ShapeFlags::Expanded);
+        }
+        return expanded ? (flags & ~ShapeFlags::OverlayCollapsed) : (flags | ShapeFlags::OverlayCollapsed);
+    }
+
     // A record as the empty spec leaves it: it keeps its own expansion; everything else is
     // recomputed. Without ChildrenShaped, ShapedChildAt reads the source Children.
     void ResetRecordShape(SourceRecord* record, GroupNode& root) noexcept
@@ -561,6 +582,24 @@ void ShapingEngine::CommitStaged(
 
     // ---- Write: nothing below throws. ----
     m_tree.BeginReset();
+
+    // A record shown before and after whose PassesFilter flips keeps what IsExpanded reports
+    // (drift #58). Runs before any PassesFilter is written: InShapedTree reads the old state. A
+    // full Filter stage clears the overlay instead (F5).
+    if ((kept & ShapeFlags::OverlayCollapsed) != ShapeFlags::None)
+    {
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            SourceRecord* const record = records[i];
+            ShapeState const& next = staged.Records[i].Shape;
+            bool const passes = (next.Flags & ShapeFlags::PassesFilter) != ShapeFlags::None;
+            bool const wasPassing = (record->Shape.Flags & ShapeFlags::PassesFilter) != ShapeFlags::None;
+            if (passes != wasPassing && (passes || !next.ShapedChildren.empty()) && InShapedTree(record))
+            {
+                record->Shape.Flags = KeepExpansionAcrossFilterFlip(record->Shape.Flags, passes);
+            }
+        }
+    }
 
     for (uint32_t i = 0; i < n; ++i)
     {
@@ -1187,10 +1226,12 @@ void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const&
 
     if (!sortChanged && !groupChanged)
     {
-        // Only a failing ancestor of a match may flip PassesFilter here; its row stays.
+        // Only a failing ancestor of a match may flip PassesFilter here; its row stays, and so
+        // does what IsExpanded reports (drift #58), so no count changes.
         if (passes != wasPassing)
         {
-            record->Shape.Flags ^= ShapeFlags::PassesFilter;
+            ShapeFlags const flags = KeepExpansionAcrossFilterFlip(record->Shape.Flags, passes);
+            record->Shape.Flags = (flags & ~ShapeFlags::PassesFilter) | (passes ? ShapeFlags::PassesFilter : ShapeFlags::None);
         }
         return;
     }
@@ -1209,6 +1250,8 @@ void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const&
         StagePlacement(edit, std::nullopt, leave.Top);
 
         CommitLeave(leave);
+        // Unlinked here, so its expansion bits move no count; CommitInsert keeps them.
+        record->Shape.Flags = KeepExpansionAcrossFilterFlip(record->Shape.Flags, passes);
         CommitInsert(edit);
         return;
     }
@@ -1223,7 +1266,7 @@ void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const&
     {
         m_tree.Unlink(record, true /* isMove */);
     }
-    record->Shape.Flags = (record->Shape.Flags & ~(ShapeFlags::PassesFilter | ShapeFlags::SortKeysValid)) |
+    record->Shape.Flags = (KeepExpansionAcrossFilterFlip(record->Shape.Flags, passes) & ~(ShapeFlags::PassesFilter | ShapeFlags::SortKeysValid)) |
         (next.Flags & (ShapeFlags::PassesFilter | ShapeFlags::SortKeysValid));
     record->Shape.SortKeys = std::move(next.SortKeys);
     if (moves)
