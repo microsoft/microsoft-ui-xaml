@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Package selection is shared with core XAML in eng\folderpaths.props. -->
+  <!-- Scoped to Tabular: selects the production TiP library when it is restored, else the public stub. eng\folderpaths.props
+       tests an unversioned package folder, which packages.config restores do not create. -->
   <PropertyGroup>
-    <TableViewTIPPackagesConfig>$(TIPPackagesConfig)</TableViewTIPPackagesConfig>
-    <TableViewTIPProductionVersion>$(TestInProductionProductionVersion)</TableViewTIPProductionVersion>
-    <TableViewTIPProductionTargetsFile>$(TestInProductionProductionTargetsFile)</TableViewTIPProductionTargetsFile>
+    <TableViewTIPPackagesConfig>$(ProjectRoot)build\packages.TestInProduction.config</TableViewTIPPackagesConfig>
+    <TableViewTIPPackagesConfigContents Condition="Exists('$(TableViewTIPPackagesConfig)')">$([System.IO.File]::ReadAllText('$(TableViewTIPPackagesConfig)'))</TableViewTIPPackagesConfigContents>
+    <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match('$(TableViewTIPPackagesConfigContents)', 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
+    <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
+    <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets</TestInProductionTargetsFile>
+    <!-- Kept for the internal pipeline build error, which fires after the stub has replaced the selection below. -->
+    <TableViewTIPProductionVersion>$(TestInProductionPackageVersion)</TableViewTIPProductionVersion>
+    <TableViewTIPProductionTargetsFile>$(TestInProductionTargetsFile)</TableViewTIPProductionTargetsFile>
+    <TestInProductionIsReal>false</TestInProductionIsReal>
+    <TestInProductionIsReal Condition="'$(UseTestInProductionStub)' != 'true' and '$(TestInProductionPackageVersion)' != '' and Exists('$(TestInProductionTargetsFile)')">true</TestInProductionIsReal>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TestInProductionIsReal)' != 'true'">
+    <TableViewPublicPackagesConfig>$(ProjectRoot)packages.config</TableViewPublicPackagesConfig>
+    <TableViewPublicPackagesConfigContents Condition="Exists('$(TableViewPublicPackagesConfig)')">$([System.IO.File]::ReadAllText('$(TableViewPublicPackagesConfig)'))</TableViewPublicPackagesConfigContents>
+    <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match('$(TableViewPublicPackagesConfigContents)', 'Microsoft.Internal.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
+    <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Internal.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
+    <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Internal.Windows.TestInProduction.targets</TestInProductionTargetsFile>
   </PropertyGroup>
 </Project>

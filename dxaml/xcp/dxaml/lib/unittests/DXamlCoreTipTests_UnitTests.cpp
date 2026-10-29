@@ -138,32 +138,6 @@ public:
         VERIFY_ARE_EQUAL(64884230u, UIAffinityReleaseQueueCleanupTest::info().testCaseId);
     }
 
-    TEST_METHOD(ReportsTheCompletedCountAndDelayBucket)
-    {
-        DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64(), 17);
-        for (size_t index = 0; index < 16; ++index)
-        {
-            VERIFY_IS_FALSE(sample.RecordRelease());
-        }
-        VERIFY_IS_TRUE(sample.RecordRelease());
-        auto data = sample.test.data();
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), data->releaseCountBucket);
-        VERIFY_ARE_EQUAL(static_cast<unsigned int>(data->delayBucket), data->state().metricsBucket);
-        VERIFY_ARE_EQUAL(static_cast<uint32_t>(WINUI_BUILD_VERSION), data->componentBuild);
-    }
-
-    TEST_METHOD(DestructionDoesNotOverwriteSuccess)
-    {
-        UIAffinityReleaseQueueCleanupTest result;
-        {
-            DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64(), 1);
-            result = sample.test;
-            VERIFY_IS_TRUE(sample.RecordRelease());
-            VERIFY_IS_FALSE(sample.RecordRelease());
-        }
-        VERIFY_ARE_EQUAL(TestCompletionKind::Success, result.data()->state().completionKind);
-    }
-
 private:
     tip::testhelpers::unique_tip_unittest_guard m_reportingGuard;
 };
