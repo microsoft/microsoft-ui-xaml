@@ -193,10 +193,25 @@ bool TableViewSource2::IsLiveShaping() const
 
 void TableViewSource2::IsLiveShaping(bool value)
 {
-    // Milestone 6 adds the behavior; Milestone 1 stores the flag.
     if (m_shapingManager)
     {
         m_shapingManager->IsLiveShaping(value);
+    }
+}
+
+void TableViewSource2::BeginLiveShapingHold() noexcept
+{
+    if (m_shapingManager)
+    {
+        m_shapingManager->BeginLiveShapingHold();
+    }
+}
+
+void TableViewSource2::EndLiveShapingHold()
+{
+    if (m_shapingManager)
+    {
+        m_shapingManager->EndLiveShapingHold();
     }
 }
 

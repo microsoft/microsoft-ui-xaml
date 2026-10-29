@@ -849,7 +849,7 @@ void SourceTable::OnRecordPropertyChanged(SourceRecordWeakPtr const& weakRecord,
     // ParentBy: a key may have changed. Its error propagates into the app's setter.
     (void)ReevaluateHierarchy(record.get(), propertyName);
 
-    // m_itemChanged is null until Milestone 6 (ShapingManager::OnItemChanged).
+    // ShapingManager::OnItemChanged: queues the record for the next live drain.
     if (!m_itemChanged || IsDetached())
     {
         return;

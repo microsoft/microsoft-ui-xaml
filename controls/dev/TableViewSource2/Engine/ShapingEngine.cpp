@@ -179,13 +179,11 @@ bool ShapingEngine::IsStale() const noexcept
 
 void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::span<LiveChange const> only)
 {
-    // Live re-reads (`only`) arrive with live shaping (Milestone 6).
-    MUX_ASSERT(only.empty());
-    (void)only;
-
     if (m_stale)
     {
+        // Cached state cannot be trusted: every record is re-read.
         delta = ShapeDelta::All;
+        only = {};
     }
 
     bool const filterActive = !desired.Filters.empty();
@@ -217,13 +215,30 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
         items[i] = records[i]->Item.get();
     }
 
+    // Live shaping (E7): the re-reads `delta` names cover only the dirty records; every other
+    // record reuses its cached state. A dirty record re-reads every part (drift #43).
+    std::vector<uint8_t> reread(n, 1);
+    if (!only.empty())
+    {
+        std::unordered_set<SourceRecord const*> dirty;
+        dirty.reserve(only.size());
+        for (LiveChange const& change : only)
+        {
+            dirty.insert(change.Record);
+        }
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            reread[i] = dirty.contains(records[i]) ? 1 : 0;
+        }
+    }
+
     // 1. Filter. A predicate's exception propagates with nothing written.
     std::vector<uint8_t> passes(n, 1);
     if (filterActive)
     {
         for (uint32_t i = 0; i < n; ++i)
         {
-            if (refilter)
+            if (refilter && reread[i])
             {
                 for (FilterSpec const& filter : desired.Filters)
                 {
@@ -270,7 +285,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
 
             SourceRecord* const record = records[i];
             keys[i].resize(desired.Sorts.size(), nullptr);
-            bool const cached = !rereadSorts &&
+            bool const cached = !(rereadSorts && reread[i]) &&
                 (record->Shape.Flags & ShapeFlags::SortKeysValid) != ShapeFlags::None &&
                 record->Shape.SortKeys.size() == desired.Sorts.size();
             if (cached)
@@ -383,7 +398,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
         {
             SourceRecord* const record = records[i];
             GroupNode* const cachedGroup = record->Shape.Group;
-            bool const cached = !rereadGroups && cachedGroup && !cachedGroup->IsRoot() &&
+            bool const cached = !(rereadGroups && reread[i]) && cachedGroup && !cachedGroup->IsRoot() &&
                 cachedGroup->GroupLevel + 1 == levels;
             if (cached)
             {
@@ -1014,6 +1029,218 @@ void ShapingEngine::ApplyUnshapedSourceChange(SourceChange const& change)
         return;
     }
     }
+}
+
+namespace
+{
+    // The first member of a property path ("Addr.City" -> "Addr", "Items[0]" -> "Items"): the
+    // property a row item's PropertyChanged names when the path's value may have changed.
+    std::wstring_view FirstPathSegment(winrt::hstring const& path) noexcept
+    {
+        std::wstring_view const view{ path };
+        size_t const end = view.find_first_of(L".[");
+        return end == std::wstring_view::npos ? view : view.substr(0, end);
+    }
+
+    // Pre-order: record, then each child's subtree (StageInsert's `added` order).
+    void CollectSubtree(SourceRecord* record, std::vector<SourceRecord*>& out)
+    {
+        out.push_back(record);
+        for (SourceRecord* const child : record->Children)
+        {
+            CollectSubtree(child, out);
+        }
+    }
+}
+
+void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const& propertyName)
+{
+    ShapeSpec const& spec = m_applied;
+    if (spec == ShapeSpec{})
+    {
+        return;
+    }
+
+    if (m_stale)
+    {
+        // Drift #33: cached state may be wrong, so one item cannot be placed against it.
+        ShapeSpec const applied{ m_applied };
+        Rebuild(applied, ShapeDelta::All);
+        return;
+    }
+
+    bool const filterActive = !spec.Filters.empty();
+    bool const sortActive = !spec.Sorts.empty();
+    bool const childrenShaped = filterActive || sortActive;
+    uint16_t const levels = static_cast<uint16_t>(spec.Groups.size());
+    bool const topLevel = record->Parent == nullptr;
+    if (!childrenShaped && !topLevel)
+    {
+        // GroupBy only: a nested record's list follows the source.
+        return;
+    }
+
+    // ---- Compute: every app call (predicates, keys, comparers) runs before any write. ----
+    winrt::IInspectable const item = record->Item.get();
+    bool passes = true;
+    for (FilterSpec const& filter : spec.Filters)
+    {
+        if (!m_delegates.Passes(filter.Predicate.Id, item))
+        {
+            passes = false;
+            break;
+        }
+    }
+
+    bool const wasPassing = (record->Shape.Flags & ShapeFlags::PassesFilter) != ShapeFlags::None;
+    bool const wasIn = InShapedParent(*record);
+    bool const isIn = passes || !record->Shape.ShapedChildren.empty();
+
+    if (!wasIn && !isIn)
+    {
+        return;
+    }
+
+    if (!wasIn)
+    {
+        // Enters (E8: with any failing ancestors that had no shaped child). StageInsert re-reads
+        // the subtree, which has no shaped member yet.
+        std::vector<SourceRecord*> subtree;
+        CollectSubtree(record, subtree);
+        StagedEdit edit;
+        StageInsert(edit, subtree, record->Parent);
+        if (edit.Parent)
+        {
+            StagePlacement(edit, std::nullopt, nullptr);
+        }
+        CommitInsert(edit);
+        return;
+    }
+
+    if (!isIn)
+    {
+        // Leaves (E8: with the failing ancestors it was the only shaped child of; E9: with the
+        // groups it was the last member of). Runs no app code.
+        StagedLeave leave = StageLeave(record, record->Parent, record->IndexInParent, nullptr);
+        CommitLeave(leave);
+        record->Shape.Flags &= ~(ShapeFlags::PassesFilter | ShapeFlags::SortKeysValid);
+        record->Shape.SortKeys.clear();
+        record->ChildRows.MarkStale();
+        return;
+    }
+
+    // Stays: re-read what the property may affect, and diff against the cached keys.
+    bool const keysValid = (record->Shape.Flags & ShapeFlags::SortKeysValid) != ShapeFlags::None &&
+        record->Shape.SortKeys.size() == spec.Sorts.size();
+    ShapeState next;
+    next.Flags = (passes ? ShapeFlags::PassesFilter : ShapeFlags::None) |
+        (childrenShaped ? ShapeFlags::ChildrenShaped : ShapeFlags::None) |
+        (sortActive ? ShapeFlags::SortKeysValid : ShapeFlags::None);
+    bool sortChanged = false;
+    if (sortActive)
+    {
+        next.SortKeys.resize(spec.Sorts.size());
+        for (size_t l = 0; l < spec.Sorts.size(); ++l)
+        {
+            SortSpec const& level = spec.Sorts[l];
+            if (level.SortKind == SortSpec::Kind::Comparer)
+            {
+                // Opaque: the record is re-placed (a place that does not change raises nothing).
+                sortChanged = true;
+                continue;
+            }
+
+            winrt::IInspectable const old = keysValid && record->Shape.SortKeys[l] ? record->Shape.SortKeys[l]->get() : nullptr;
+            bool const read = !keysValid || level.SortKind == SortSpec::Kind::Key ||
+                propertyName.empty() || FirstPathSegment(level.Path) == std::wstring_view{ propertyName };
+            winrt::IInspectable const key = !read ? old : level.SortKind == SortSpec::Kind::Path ?
+                m_paths.Value(level.Path, item) :
+                m_delegates.Key(level.Delegate.Id, item);
+            next.SortKeys[l].emplace(m_trackerOwner, key);
+            sortChanged = sortChanged || !keysValid || CompareKeys(old, key, winrt::SortDirection::Ascending) != 0;
+        }
+    }
+
+    // A top-level record's group chain (group keys are delegates: always re-read). A throwing
+    // selector puts the record in the null-key group, as in a rebuild.
+    std::vector<winrt::IInspectable> groupKeys;
+    bool groupChanged = false;
+    if (topLevel && levels > 0)
+    {
+        groupKeys.resize(levels, nullptr);
+        winrt::hstring identity;
+        for (uint16_t l = 0; l < levels; ++l)
+        {
+            try
+            {
+                groupKeys[l] = m_delegates.Key(spec.Groups[l].Key.Id, item);
+            }
+            catch (...)
+            {
+                groupKeys[l] = nullptr;
+            }
+            identity = ChildGroupIdentity(identity, groupKeys[l]);
+        }
+        GroupNode const* const group = record->Shape.Group;
+        groupChanged = !group || group->Identity != identity;
+    }
+
+    if (!sortChanged && !groupChanged)
+    {
+        // Only a failing ancestor of a match may flip PassesFilter here; its row stays.
+        if (passes != wasPassing)
+        {
+            record->Shape.Flags ^= ShapeFlags::PassesFilter;
+        }
+        return;
+    }
+
+    if (groupChanged)
+    {
+        // To another group: a surgical remove then insert (E9: groups created and pruned). The
+        // record keeps its subtree, shaped children and expansion.
+        StagedEdit edit;
+        edit.Staged.Record = record;
+        edit.Staged.Shape.Flags = next.Flags;
+        edit.Staged.Shape.SortKeys = std::move(next.SortKeys);
+        edit.Staged.Shape.ShapedChildren = record->Shape.ShapedChildren;
+        GroupNode const* const keep = StageGroupChain(edit, groupKeys);
+        StagedLeave leave = StageLeave(record, nullptr, record->IndexInParent, keep);
+        StagePlacement(edit, std::nullopt, leave.Top);
+
+        CommitLeave(leave);
+        CommitInsert(edit);
+        return;
+    }
+
+    // A new place among its siblings: one move (a place that does not change raises nothing).
+    ShapedNode* const parent = record->ShapedParent();
+    uint32_t const index = PlacementIndex(record, next, parent, record, std::nullopt);
+
+    // Write: nothing below throws.
+    bool const moves = index != record->IndexInParent;
+    if (moves)
+    {
+        m_tree.Unlink(record, true /* isMove */);
+    }
+    record->Shape.Flags = (record->Shape.Flags & ~(ShapeFlags::PassesFilter | ShapeFlags::SortKeysValid)) |
+        (next.Flags & (ShapeFlags::PassesFilter | ShapeFlags::SortKeysValid));
+    record->Shape.SortKeys = std::move(next.SortKeys);
+    if (moves)
+    {
+        m_tree.Link(record, parent, index, true /* isMove */);
+    }
+}
+
+void ShapingEngine::ApplyItemsChanged(std::span<LiveChange const> changes)
+{
+    if (m_applied == ShapeSpec{})
+    {
+        return;
+    }
+
+    ShapeSpec const applied{ m_applied };
+    Rebuild(applied, ShapeDelta::Filter | ShapeDelta::GroupKey | ShapeDelta::Sort, changes);
 }
 
 int32_t ShapingEngine::CompareRows(

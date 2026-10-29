@@ -162,9 +162,10 @@ public:
 
     // Counted live-shaping hold (O4): while m_liveHoldCount > 0, DrainLiveChanges defers (changes
     // stay in m_liveDirty). The owner takes one per reason (cell edit, pointer press), so nested
-    // reasons compose. End at count 0 asserts. Dropping to 0 calls PostLiveDrain if changes are
+    // reasons compose. End at count 0 is a no-op (SetOwner or Clear dropped the holds). Dropping
+    // to 0 calls PostLiveDrain if changes are
     // pending: never drains inline, since the owner is usually inside an input handler. Verbs and
-    // Refresh are not held: they flush m_liveDirty synchronously as before.
+    // Refresh are not held: a reshape folds m_liveDirty into its rebuild (drift #41).
     void BeginLiveShapingHold() noexcept;
     void EndLiveShapingHold();
 
@@ -217,18 +218,22 @@ private:
     // Live shaping (decided, E7: coalesce per dispatcher turn). Never shapes inside the app's
     // setter: adds (record, propertyName) to m_liveDirty (a second, different name for the same
     // record becomes the empty name, "re-read everything") and posts one DrainLiveChanges.
-    // Ignored when no verb is active.
+    // Ignored when no verb is applied, or IsLiveShaping is off (a ParentBy key watch raised it).
     void OnItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
 
     // Posts DrainLiveChanges to the current DispatcherQueue unless one is already posted
-    // (m_liveDrainPosted). The callback holds a weak reference to the owning TableViewSource2 and
-    // returns if it is gone. No queue on this thread (headless or test): nothing is posted, and the
-    // next verb or Refresh flushes m_liveDirty synchronously (never inside the app's setter).
+    // (m_liveDrainPosted), nothing is pending, or !CanDrain() (EndCommit, EndLiveShapingHold and
+    // SetOwner post again). The callback holds m_liveDrainToken weakly (drift #42) and returns if
+    // it expired; it swallows the drain's exception (drift #40). Never throws. No queue on this
+    // thread (headless): nothing is posted, and the changes wait for the next post or a reshape.
     void PostLiveDrain();
 
-    // The posted callback, and the synchronous flush before a verb. One commit:
+    // The posted callback. One commit:
     //   up to c_liveBulkThreshold entries
-    //                            -> m_engine.ApplyItemChanged per entry (surgical);
+    //                            -> m_engine.ApplyItemChanged per entry (surgical), in arrival
+    //                               order; an entry that throws leaves the tree as it was, the
+    //                               rest still apply, and the first error propagates after the
+    //                               commit (drift #40);
     //   more than c_liveBulkThreshold
     //                            -> m_engine.ApplyItemsChanged (re-read dirty records only, then
     //                               one structural rebuild and a stable Reset).
@@ -236,7 +241,7 @@ private:
     // any shaping, so a re-entrant OnItemChanged (app code run by the drain) lands in the fresh
     // map and posts the next drain. Runs only when CanDrain(): skipped while m_liveHoldCount > 0
     // (#18 O4: an in-progress cell edit or pointer press, v1 m_liveShapingHold), a DeferRefresh is
-    // open, or an apply runs; EndLiveShapingHold and the outermost EndDeferRefresh post it again.
+    // open, or an apply runs; EndLiveShapingHold, SetOwner and EndCommit post it again.
     void DrainLiveChanges();
 
     // Applies Diff(applied, desired); then Retain()s the delegates and paths both specs use. A
@@ -410,10 +415,22 @@ private:
     // Live-shaping changes pending for the next DrainLiveChanges (E7). Keys are raw record
     // pointers: OnSourceChanged erases removed records and their descendants before the engine
     // applies the change, a SourceTable Reset or any Reapply empties the map (it re-reads every
-    // record), and a verb drains it synchronously before applying, so a verb never runs over stale
-    // keys. Clear() empties it, so a drain posted before teardown is a no-op.
-    std::unordered_map<SourceRecord*, winrt::hstring> m_liveDirty;
+    // record), and a verb that reshapes folds the map into its rebuild (drift #41), so no drain
+    // runs over keys a rebuild replaced. Clear() empties it, so a drain posted before teardown is
+    // a no-op. Sequence is the arrival order: a batch is applied in it (drift #44).
+    struct LiveDirty
+    {
+        winrt::hstring PropertyName;
+        uint64_t Sequence{ 0 };
+    };
+    std::unordered_map<SourceRecord*, LiveDirty> m_liveDirty;
+    uint64_t m_liveSequence{ 0 };
     bool m_liveDrainPosted{ false };
+
+    // What a posted drain holds instead of a reference to TableViewSource2 (drift #42): points at
+    // this object, created by the constructor and reset by Clear(), so a drain that runs after
+    // teardown finds it expired and does nothing.
+    std::shared_ptr<ShapingManager*> m_liveDrainToken;
 
     // Source tree + applied spec -> shaped tree (ShapedTree, P10). Every entry point is bracketed
     // here by the commit scope. Built in the constructor's member-init list after m_sourceTable is

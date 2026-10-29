@@ -5,7 +5,9 @@
 #include "common.h"
 #include "Shaping/ShapingManager.h"
 
+#include <algorithm>
 #include <exception>
+#include <iterator>
 #include <utility>
 
 // RAII bracket for one commit. EndCommit runs from the destructor on both normal exit and
@@ -48,6 +50,10 @@ ShapingManager::ShapingManager(ITrackerHandleManager const* trackerOwner, winrt:
         {
             OnSourceChanged(change);
         });
+        m_sourceTable->SetItemChangedHandler([this](SourceRecord* record, winrt::hstring const& propertyName)
+        {
+            OnItemChanged(record, propertyName);
+        });
 
         // The initial load's Reset was raised inside Create, before this handler existed. Place
         // the records now; there is no listener or owner yet, so nothing is raised.
@@ -57,6 +63,7 @@ ShapingManager::ShapingManager(ITrackerHandleManager const* trackerOwner, winrt:
         // From here on every commit reaches the listener, which forwards to the owner and the
         // view as each appears (both may be null). An owner may claim before View() is called.
         m_engine.Tree().SetListener(static_cast<IShapedRowsListener*>(this));
+        m_liveDrainToken = std::make_shared<ShapingManager*>(this);
     }
     catch (...)
     {
@@ -271,22 +278,30 @@ void ShapingManager::ClearSort()
 void ShapingManager::ApplyDesiredSpec()
 {
     ShapeDelta delta = Diff(m_engine.Applied(), m_desired);
+    ShapeDelta const verbDelta = delta;
     if (delta == ShapeDelta::None && m_engine.IsStale())
     {
         // A failed source change left cached state the next apply must re-read.
         delta = ShapeDelta::All;
     }
+    if (delta != ShapeDelta::None && !m_liveDirty.empty())
+    {
+        // Pending live changes fold into this rebuild (drift #41): it re-reads every record, so
+        // the verb raises one Reset and no drain runs over keys the rebuild replaced.
+        delta |= ShapeDelta::Filter | ShapeDelta::GroupKey | ShapeDelta::Sort;
+    }
     if (delta != ShapeDelta::None)
     {
         {
             CommitScope scope{ *this, {} };
-            m_liveDirty.clear();
             m_engine.Apply(m_desired, delta);
+            m_liveDirty.clear();
 
             // #18 O5: only the order changed (sort or group direction) -> Order; else Membership.
             if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
             {
-                bool const orderOnly = (delta & ~(ShapeDelta::Sort | ShapeDelta::GroupOrder)) == ShapeDelta::None;
+                bool const orderOnly = verbDelta != ShapeDelta::None &&
+                    (verbDelta & ~(ShapeDelta::Sort | ShapeDelta::GroupOrder)) == ShapeDelta::None;
                 m_commit.changes |= orderOnly ? ShapingChangeFlags::Order : ShapingChangeFlags::Membership;
             }
         }
@@ -313,8 +328,7 @@ void ShapingManager::IsLiveShaping(bool value)
 
     if (!m_sourceTable->IsDetached())
     {
-        // Milestone 2 subscribes items behind this flag (bookkeeping); Milestone 6 consumes the
-        // changes.
+        // Turning it off keeps changes already queued: the posted drain still applies them.
         m_sourceTable->SetLiveShaping(value);
     }
 }
@@ -338,14 +352,34 @@ void ShapingManager::SetOwner(IShapingOwner* sink)
         return;
     }
 
-    // Holds belong to the owner that took them. Milestone 6 posts the live drain here when
-    // changes are pending; nothing is pending before live shaping exists.
+    // Holds belong to the owner that took them; changes they deferred drain on the next turn.
     m_liveHoldCount = 0;
     m_owner = sink;
 
     if (sink)
     {
         m_sourceTable->BindOwnerThread();
+    }
+
+    PostLiveDrain();
+}
+
+void ShapingManager::BeginLiveShapingHold() noexcept
+{
+    ++m_liveHoldCount;
+}
+
+void ShapingManager::EndLiveShapingHold()
+{
+    if (m_liveHoldCount == 0)
+    {
+        // Only after SetOwner or Clear dropped the holds.
+        return;
+    }
+
+    if (--m_liveHoldCount == 0)
+    {
+        PostLiveDrain();
     }
 }
 
@@ -414,7 +448,150 @@ void ShapingManager::Clear()
     m_rowMetadata.reset();
 
     m_liveDirty.clear();
+    m_liveDrainToken.reset();
+    m_liveDrainPosted = false;
     m_deferDepth = 0;
+}
+
+void ShapingManager::OnItemChanged(SourceRecord* record, winrt::hstring const& propertyName)
+{
+    if (m_sourceTable->IsDetached() || !m_sourceTable->IsLiveShaping() || m_engine.Applied() == ShapeSpec{})
+    {
+        // Nothing is shaped (or a ParentBy watch, not live shaping, raised it): no row can move.
+        return;
+    }
+
+    auto const [it, added] = m_liveDirty.try_emplace(record, LiveDirty{ propertyName, m_liveSequence });
+    if (added)
+    {
+        ++m_liveSequence;
+    }
+    else if (it->second.PropertyName != propertyName)
+    {
+        it->second.PropertyName = {};
+    }
+
+    PostLiveDrain();
+}
+
+void ShapingManager::PostLiveDrain()
+{
+    if (m_liveDrainPosted || m_liveDirty.empty() || !m_liveDrainToken || m_sourceTable->IsDetached() || !CanDrain())
+    {
+        return;
+    }
+
+    try
+    {
+        auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        if (!queue)
+        {
+            return;
+        }
+
+        std::weak_ptr<ShapingManager*> const token = m_liveDrainToken;
+        m_liveDrainPosted = queue.TryEnqueue([token]()
+        {
+            auto const alive = token.lock();
+            if (!alive)
+            {
+                return;
+            }
+
+            // Drift #40: nothing on the stack can receive the error of a posted drain, so it is
+            // dropped; the tree is consistent (compute before commit) and the failing records
+            // keep their old rows until their next change.
+            try
+            {
+                (*alive)->DrainLiveChanges();
+            }
+            catch (...)
+            {
+            }
+        });
+    }
+    catch (...)
+    {
+        m_liveDrainPosted = false;
+    }
+}
+
+void ShapingManager::DrainLiveChanges()
+{
+    m_liveDrainPosted = false;
+    if (!CanDrain() || m_liveDirty.empty() || m_sourceTable->IsDetached())
+    {
+        return;
+    }
+
+    // Arrival order (drift #44), so the events a batch raises do not depend on hashing.
+    std::vector<std::pair<SourceRecord*, LiveDirty>> batch(
+        std::make_move_iterator(m_liveDirty.begin()), std::make_move_iterator(m_liveDirty.end()));
+    m_liveDirty.clear();
+    std::sort(batch.begin(), batch.end(), [](auto const& a, auto const& b)
+    {
+        return a.second.Sequence < b.second.Sequence;
+    });
+
+    std::exception_ptr fault;
+    {
+        CommitScope scope{ *this, {} };
+        if (batch.size() > c_liveBulkThreshold)
+        {
+            std::vector<LiveChange> changes;
+            changes.reserve(batch.size());
+            for (auto const& [record, dirty] : batch)
+            {
+                changes.push_back({ record, dirty.PropertyName });
+            }
+
+            try
+            {
+                m_engine.ApplyItemsChanged(changes);
+            }
+            catch (...)
+            {
+                fault = std::current_exception();
+            }
+        }
+        else
+        {
+            // Each change is computed before it is committed, so one that throws leaves the tree
+            // as it was and the rest still apply (drift #40).
+            for (auto const& [record, dirty] : batch)
+            {
+                try
+                {
+                    m_engine.ApplyItemChanged(record, dirty.PropertyName);
+                }
+                catch (...)
+                {
+                    if (!fault)
+                    {
+                        fault = std::current_exception();
+                    }
+                }
+            }
+        }
+
+        if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
+        {
+            m_commit.changes |= ShapingChangeFlags::Membership;
+        }
+    }
+
+    if (fault)
+    {
+        try
+        {
+            AfterCommit();
+        }
+        catch (...)
+        {
+        }
+        std::rethrow_exception(fault);
+    }
+    AfterCommit();
 }
 
 void ShapingManager::OnSourceChanged(SourceChange const& change)
@@ -655,6 +832,9 @@ void ShapingManager::EndCommit(std::span<SourceRecord const* const> retired, boo
     m_engine.ReleaseRetired();
     bool const changePending = m_sourceTable->EndFreeze();
     m_isApplying = false;
+
+    // A live change queued during the apply, or a drain skipped because one ran, goes next turn.
+    PostLiveDrain();
 
     // From AfterCommit normally; posted when the scope ends by an exception (never from a
     // destructor path).

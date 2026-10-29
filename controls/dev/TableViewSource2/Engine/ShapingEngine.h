@@ -135,8 +135,8 @@ public:
     void ApplyItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
 
     // Live shaping for more than ShapingManager::c_liveBulkThreshold coalesced records (decided,
-    // E7 Y2): Rebuild(Applied(), Filter | GroupKey | Sort, changes). The re-reads (routed per entry
-    // as in ApplyItemChanged) run app code only for `changes`; every other record reuses its cached
+    // E7 Y2): Rebuild(Applied(), Filter | GroupKey | Sort, changes). The re-reads run app code only
+    // for `changes` (each entry re-reads every part, unrouted: drift #43); every other record reuses its cached
     // ShapeState. The re-sorts then run over cached keys. One reset (a stable Reset the owner
     // re-anchors). App code runs O(k) times, not O(n). Every entry's record is live (the manager
     // erases removed records).
