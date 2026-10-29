@@ -6,15 +6,18 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Interop;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+using Windows.Foundation.Collections;
 using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -24,12 +27,12 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHe
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // TableViewSource2 (the shaping redesign), Milestone 1: a flat source bound end to end.
+    // TableViewSource2 (the shaping redesign), Milestones 1 and 2: a flat source bound end to end, then followed incrementally.
     // As for TableViewSource, the projection is observed only through a bound TableView:
     // GetRowsRepeater(table).ItemsSourceView is the projection itself, and VerifyProjection reads
     // the realized rows' ShapedPerson names in order.
     [TestClass]
-    public class TableViewSource2Tests : TableViewApiTestBase
+    public partial class TableViewSource2Tests : TableViewApiTestBase
     {
         private static readonly string[] s_people = { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" };
 
@@ -531,6 +534,493 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(s_people.Length, ProjectedCount(first), "Swapped back to v2, the table takes the source over.");
                 VerifyProjection(first, s_people, "v2 -> v1 -> v2");
                 GC.KeepAlive(second);
+            });
+        }
+
+        private static ObservableCollection<ShapedPerson> MakeObservablePeople()
+            => new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+
+        private static string[] Names(IEnumerable<object> items)
+            => items.Select(item => ((ShapedPerson)item).Name).ToArray();
+
+        // IObservableVector<object> whose args throw from Index on Reset, as some implementations do
+        // (Review Focus 5). Modeled on Repeater's WinRTCollection.
+        private sealed partial class ObservableVector : IObservableVector<object>
+        {
+            private List<object> m_data;
+
+            public ObservableVector(IEnumerable<object> items) { m_data = new List<object>(items); }
+
+            public event VectorChangedEventHandler<object> VectorChanged;
+
+            public object this[int index]
+            {
+                get => m_data[index];
+                set { m_data[index] = value; Raise(CollectionChange.ItemChanged, (uint)index); }
+            }
+
+            public int Count => m_data.Count;
+            public bool IsReadOnly => false;
+            public void Add(object item) { m_data.Add(item); Raise(CollectionChange.ItemInserted, (uint)m_data.Count - 1); }
+            public void Insert(int index, object item) { m_data.Insert(index, item); Raise(CollectionChange.ItemInserted, (uint)index); }
+            public void RemoveAt(int index) { m_data.RemoveAt(index); Raise(CollectionChange.ItemRemoved, (uint)index); }
+            public bool Remove(object item) { int index = m_data.IndexOf(item); if (index < 0) return false; RemoveAt(index); return true; }
+            public void Clear() { m_data.Clear(); Raise(CollectionChange.Reset, 0); }
+            public void ResetWith(IEnumerable<object> items) { m_data = new List<object>(items); Raise(CollectionChange.Reset, 0); }
+            public bool Contains(object item) => m_data.Contains(item);
+            public int IndexOf(object item) => m_data.IndexOf(item);
+            public void CopyTo(object[] array, int arrayIndex) => m_data.CopyTo(array, arrayIndex);
+            public IEnumerator<object> GetEnumerator() => m_data.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => m_data.GetEnumerator();
+
+            private void Raise(CollectionChange change, uint index) => VectorChanged?.Invoke(this, new Args(change, index));
+
+            private sealed partial class Args : IVectorChangedEventArgs
+            {
+                private readonly uint m_index;
+
+                public Args(CollectionChange change, uint index) { CollectionChange = change; m_index = index; }
+
+                public CollectionChange CollectionChange { get; }
+
+                public uint Index => CollectionChange == CollectionChange.Reset
+                    ? throw new InvalidOperationException("Index is undefined for Reset.")
+                    : m_index;
+            }
+        }
+
+        // IBindableObservableVector (projected as IList plus VectorChanged), with no
+        // INotifyCollectionChanged, so the accessor picks the bindable observe kind.
+        private sealed partial class BindableObservableList : IBindableObservableVector
+        {
+            private readonly List<object> m_data;
+
+            public BindableObservableList(IEnumerable<object> items) { m_data = new List<object>(items); }
+
+            public event BindableVectorChangedEventHandler VectorChanged;
+
+            public object this[int index] { get => m_data[index]; set { m_data[index] = value; Raise(); } }
+            public bool IsFixedSize => false;
+            public bool IsReadOnly => false;
+            public int Count => m_data.Count;
+            public bool IsSynchronized => false;
+            public object SyncRoot => this;
+            public int Add(object value) { m_data.Add(value); Raise(); return m_data.Count - 1; }
+            public void Clear() { m_data.Clear(); Raise(); }
+            public bool Contains(object value) => m_data.Contains(value);
+            public int IndexOf(object value) => m_data.IndexOf(value);
+            public void Insert(int index, object value) { m_data.Insert(index, value); Raise(); }
+            public void Remove(object value) { if (m_data.Remove(value)) Raise(); }
+            public void RemoveAt(int index) { m_data.RemoveAt(index); Raise(); }
+            public void CopyTo(Array array, int index) => ((ICollection)m_data).CopyTo(array, index);
+            public IEnumerator GetEnumerator() => m_data.GetEnumerator();
+
+            private void Raise() => VectorChanged?.Invoke(this, null);
+        }
+
+        private TableView BindObservable(object itemsSource)
+        {
+            var tableView = CreateTable(TableViewSource2.From(itemsSource));
+            LoadContent(tableView);
+            return tableView;
+        }
+
+        private void VerifyObservableEdit(
+            Action<ObservableCollection<ShapedPerson>> mutate, string[] expected, string context)
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> people = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                tableView = BindObservable(people);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => mutate(people));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyProjection(tableView, expected, context));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an Add on an observable source inserts one row at its position.")]
+        public void VerifyObservableAddInsertsRow()
+        {
+            VerifyObservableEdit(
+                people => people.Insert(2, new ShapedPerson("Zoe", "Manager", "Studio")),
+                new[] { "Asha", "Diego", "Zoe", "Mei", "Rafa", "Ines", "Owen" }, "After Insert");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Remove on an observable source removes one row.")]
+        public void VerifyObservableRemoveRemovesRow()
+        {
+            VerifyObservableEdit(
+                people => people.RemoveAt(1),
+                new[] { "Asha", "Mei", "Rafa", "Ines", "Owen" }, "After RemoveAt");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Replace on an observable source updates one row.")]
+        public void VerifyObservableReplaceUpdatesRow()
+        {
+            VerifyObservableEdit(
+                people => people[3] = new ShapedPerson("Zoe", "Manager", "Studio"),
+                new[] { "Asha", "Diego", "Mei", "Zoe", "Ines", "Owen" }, "After Replace");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Move on an observable source reorders one row.")]
+        public void VerifyObservableMoveReordersRow()
+        {
+            VerifyObservableEdit(
+                people => people.Move(0, 5),
+                new[] { "Diego", "Mei", "Rafa", "Ines", "Owen", "Asha" }, "After Move");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Reset on an observable source re-reads the rows.")]
+        public void VerifyObservableResetRereads()
+        {
+            VerifyObservableEdit(
+                people =>
+                {
+                    people.Clear();
+                    people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
+                },
+                new[] { "Zoe" }, "After Clear and Add");
+        }
+
+        // Review Focus 2.
+        [TestMethod]
+        [TestProperty("Description", "Verifies adding an existing item throws, keeps the rows, and the next change recovers.")]
+        public void VerifyDuplicateAddedLaterDivergesAndRecovers()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> people = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                tableView = BindObservable(people);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyArgumentException(() => people.Add(people[0]),
+                    "The same item object appears in the source more than once", "Add duplicate");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, s_people, "A rejected Add must not change the rows");
+
+                // The source is back to valid; this notification re-reads the diverged table.
+                people.RemoveAt(people.Count - 1);
+                people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, s_people.Append("Zoe").ToArray(), "Recovered after the next change");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies adding null throws and keeps the rows.")]
+        public void VerifyNullAddedLaterThrowsAndKeepsProjection()
+        {
+            TableView tableView = null;
+            ObservableCollection<object> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<object>(MakeShapedPeople());
+                tableView = BindObservable(items);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyArgumentException(() => items.Add(null),
+                    "A row could not be given a stable identity: null item", "Add null");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, s_people, "A rejected null Add must not change the rows");
+            });
+        }
+
+        // Review Focus 1.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a source change made inside a view notification is deferred and re-read once.")]
+        public void VerifyChangeDuringFreezeIsDeferredToReread()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> people = null;
+            int viewNotifications = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                tableView = BindObservable(people);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var view = GetRowsRepeater(tableView).ItemsSourceView;
+                bool added = false;
+                view.CollectionChanged += (s, e) =>
+                {
+                    viewNotifications++;
+                    if (!added)
+                    {
+                        // Inside the commit scope: skipped now, re-read when the dispatch ends.
+                        added = true;
+                        people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
+                    }
+                };
+
+                people.RemoveAt(0);
+
+                // The re-read ran synchronously at the end of RemoveAt's notification.
+                Verify.AreEqual(s_people.Length, view.Count, "Removed one, re-read added one.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new[] { "Diego", "Mei", "Rafa", "Ines", "Owen", "Zoe" }, "After the deferred re-read");
+                // Each commit raises one view notification (a Reset until Milestone 5).
+                Verify.AreEqual(2, viewNotifications, "One notification for RemoveAt, one for the re-read.");
+            });
+        }
+
+        // Review Focus 4.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app that changes the source on every view notification does not loop.")]
+        public void VerifyMutateOnEveryNotificationDoesNotLoop()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> people = null;
+            int handlerCalls = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                tableView = BindObservable(people);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var view = GetRowsRepeater(tableView).ItemsSourceView;
+                view.CollectionChanged += (s, e) =>
+                {
+                    handlerCalls++;
+                    if (people.Count < 20)
+                    {
+                        people.Add(new ShapedPerson($"P{people.Count}", "Engineer", "Platform"));
+                    }
+                };
+
+                people.RemoveAt(0);
+
+                Verify.AreEqual(2, handlerCalls, "One notification for RemoveAt, one for the single synchronous re-read.");
+            });
+
+            // The remaining re-reads are posted, one per dispatcher turn.
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(20, people.Count, "The app stopped adding at 20.");
+                Verify.AreEqual(20, ProjectedCount(tableView), "The projection caught up with the source.");
+            });
+        }
+
+        // Review Focus 5.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an IObservableVector source follows insert, remove, replace and reset.")]
+        public void VerifyIObservableVectorSourceTracksChanges()
+        {
+            TableView tableView = null;
+            ObservableVector items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableVector(MakeShapedPeople());
+                tableView = BindObservable(items);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Insert(1, new ShapedPerson("Zoe", "Manager", "Studio"));
+                items.RemoveAt(0);
+                items[2] = new ShapedPerson("Kai", "Engineer", "Platform");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new[] { "Zoe", "Diego", "Kai", "Rafa", "Ines", "Owen" }, "Vector edits");
+
+                // Its args throw from Index on Reset: the table must re-read without reading it.
+                items.ResetWith(new object[] { new ShapedPerson("Lea", "Designer", "Studio") });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyProjection(tableView, new[] { "Lea" }, "Vector reset"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an IBindableObservableVector source re-reads on every change.")]
+        public void VerifyBindableObservableVectorSourceTracksChanges()
+        {
+            TableView tableView = null;
+            BindableObservableList items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new BindableObservableList(MakeShapedPeople());
+                tableView = BindObservable(items);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => items.Insert(1, new ShapedPerson("Zoe", "Manager", "Studio")));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new[] { "Asha", "Zoe", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "Bindable insert"));
+
+            RunOnUIThread.Execute(() => items.RemoveAt(0));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new[] { "Zoe", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "Bindable remove"));
+
+            RunOnUIThread.Execute(() => items[2] = new ShapedPerson("Kai", "Engineer", "Platform"));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new[] { "Zoe", "Diego", "Kai", "Rafa", "Ines", "Owen" }, "Bindable set"));
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Clear();
+                items.Add(new ShapedPerson("Lea", "Designer", "Studio"));
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyProjection(tableView, new[] { "Lea" }, "Bindable clear and add"));
+        }
+
+        // Review Focus 3.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a collected TableViewSource2 leaves its observable collection usable.")]
+        public void VerifyCollectionOutlivesTableViewSource2()
+        {
+            ObservableCollection<ShapedPerson> people = null;
+            WeakReference weakSource = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                weakSource = BindObservableAndForget(people);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Content = null);
+            IdleSynchronizer.Wait();
+
+            for (int attempt = 0; attempt < 5 && weakSource.IsAlive; attempt++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+            }
+
+            Verify.IsFalse(weakSource.IsAlive, "The TableViewSource2 must be collected.");
+
+            RunOnUIThread.Execute(() =>
+            {
+                // No handler may run against the torn-down table.
+                people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
+                people.Move(0, 1);
+                people.RemoveAt(0);
+                people.Clear();
+            });
+
+            IdleSynchronizer.Wait();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private WeakReference BindObservableAndForget(ObservableCollection<ShapedPerson> people)
+        {
+            var source = TableViewSource2.From(people);
+            var tableView = CreateTable(source);
+            LoadContent(tableView);
+            return new WeakReference(source);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling IsLiveShaping subscribes and unsubscribes items without changing rows.")]
+        public void VerifyLiveShapingToggleKeepsRows()
+        {
+            TableView tableView = null;
+            TableViewSource2 source = null;
+            ObservableCollection<ShapedPerson> people = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeObservablePeople();
+                source = TableViewSource2.From(people);
+                tableView = CreateTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                source.IsLiveShaping = true;
+                people[0].Role = "Lead";
+
+                // Subscribed at creation.
+                people.Add(new ShapedPerson("Zoe", "Manager", "Studio"));
+
+                // Revoked by ~SourceRecord.
+                people.RemoveAt(1);
+
+                source.IsLiveShaping = false;
+                people[0].Role = "Designer";
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new[] { "Asha", "Mei", "Rafa", "Ines", "Owen", "Zoe" }, "After the live shaping toggle");
             });
         }
     }
