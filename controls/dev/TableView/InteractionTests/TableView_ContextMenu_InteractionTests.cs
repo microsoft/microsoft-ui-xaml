@@ -305,6 +305,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape returns focus to the cell a row menu was opened on when another cell of that row had focus (GH #12442).")]
+        public void EscapeReturnsFocusToOtherCellOfFocusedRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                RightClickRow(table, 4, ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                VerifyMenuOpened(RowMenu, ContextMenuName(4), CellFocus(4, ContextMenuAgeColumn));
+
+                CloseMenu();
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Escape must return focus to row 4's Age cell.");
+            }
+        }
+
         #endregion
 
         #region Editing
