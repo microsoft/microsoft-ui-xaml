@@ -2115,7 +2115,8 @@ void TableView::OnRowsSourceResetForHierarchy(
 {
     // Reset only: splices restamp via ElementIndexChanged or the toggling verb. A Reset may
     // republish metadata for the same rows (e.g. a collapsed node losing its last child).
-    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    // Unloaded (drained): the reload re-reads everything.
+    if (m_rowsSourceDrained || !args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
     }
@@ -2219,6 +2220,13 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
 
 void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
+    // An unloaded table keeps its subscriptions to the source's shared view (so the reload keeps
+    // the handler order), but must not react to it: the reload re-reads everything.
+    if (m_rowsSourceDrained)
+    {
+        return;
+    }
+
     SupersedeTipOperation();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
@@ -2248,7 +2256,8 @@ void TableView::OnRowsSourceResetForFocus(
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Only a Reset recycles every realized row; on Add/Remove focus rides along with its element.
-    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    // Unloaded (drained): the reload re-reads everything.
+    if (m_rowsSourceDrained || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
     }

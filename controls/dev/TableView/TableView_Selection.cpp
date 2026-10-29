@@ -614,7 +614,8 @@ void TableView::OnSelectionSourceReset(
     // SelectionModel reconciles it in place, so selection survives without help). This must run
     // FIRST, before the model reconciles the same Reset - else the app sees a spurious
     // SelectionChanged clearing the selection, immediately followed by another restoring it.
-    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    // Unloaded (drained): the selection was stashed and the reload restores it.
+    if (m_rowsSourceDrained || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
     }
@@ -644,6 +645,12 @@ void TableView::OnSelectionItemsSourceCollectionChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& /*args*/)
 {
+    // Unloaded (drained): the selection was stashed and the reload restores it.
+    if (m_rowsSourceDrained)
+    {
+        return;
+    }
+
     if (m_resetSelectionRestorePending)
     {
         // The model has now reconciled the Reset (this handler is subscribed after it), so the view
