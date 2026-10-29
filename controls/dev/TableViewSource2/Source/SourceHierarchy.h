@@ -4,9 +4,12 @@
 #pragma once
 
 #include <cstdint>
+#include <exception>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <winrt/Microsoft.UI.Xaml.Interop.h>
@@ -93,6 +96,15 @@ struct ISourceHierarchyHost
     // multi-item change goes through AdmitChange(true).
     virtual void RequestReset() noexcept = 0;
 
+    // A callable that throws hresult_wrong_thread when invoked off the table's bound thread (the
+    // root collection's rule, SourceTable::ThrowIfOffBoundThread). Child-collection lambdas
+    // capture it by value and call it before locking the host.
+    virtual std::function<void()> MakeThreadCheck() const = 0;
+
+    // SourceTable::DrainPendingChanges: the end of a child notification handler that applied a
+    // change (never after AdmitChange returned false).
+    virtual void DrainPendingChanges() = 0;
+
 protected:
     ~ISourceHierarchyHost() = default;
 };
@@ -169,19 +181,36 @@ public:
         winrt::Windows::Foundation::IInspectable const& item,
         std::vector<winrt::Windows::Foundation::IInspectable>& items) const = 0;
 
-    // Root-collection edits, after m_records changed and before the SourceChange is raised. Each
-    // fills the change's tree fields (parents, sibling indexes) and may add Moves to raise after it
-    // (ParentBy orphan adoption; see SourceChanged in SourceTable).
-    //   OnInserted: ParentBy keys the record, links it under its parent (or top level) and adopts
-    //     orphans whose parent key matches; ChildrenBy builds its feed and subtree.
-    //   OnRemoving: ParentBy unkeys it and moves its children to the top level; ChildrenBy destroys
-    //     its feed and subtree (records released through the host).
-    //   OnMoved: a root move. ParentBy: no tree change unless the record is top-level (its sibling
-    //     index follows source order). ChildrenBy: a top-level move.
-    // A replace is OnRemoving then OnInserted.
-    virtual void OnInserted(ISourceHierarchyHost& host, SourceRecord* record) = 0;
-    virtual void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record) noexcept = 0;
+    // Root-collection edits, after m_records changed. Decided (drift #8): every tree change other
+    // than the edit itself is raised by the strategy as its own SourceChange (a Move, or the bulk
+    // Reset when an insert adopts more than one orphan: spec Orphan adoption, Bulk threshold).
+    // A raise can throw (listener fault); the caller posts the owed re-read and rethrows.
+    //   OnInserted: record is in RootRecords() but not yet linked. ParentBy keys it and links it
+    //     under its parent (or the top level) in source order, and remembers the top-level
+    //     orphans waiting for its key; ChildrenBy links it at the top level and builds its feed
+    //     and subtree. Returns false when the record stays unlinked (ParentBy: excluded, spec
+    //     Misbehaving records): the caller raises no Add. A selector or key failure is captured
+    //     in error (the first one only); the caller raises the change and then rethrows it.
+    //   AfterInserted: after the caller raised the Add. ParentBy adopts the remembered orphans:
+    //     one is a Move from the top level to record; more than one are relinked and raised as
+    //     one Reset. ChildrenBy: nothing.
+    //   OnRemoving: record has left RootRecords() and the lookups but is still linked. ParentBy
+    //     unkeys it and moves each of its children to the top level (one Move each, raised while
+    //     record is still in the shaped tree); ChildrenBy moves its subtree out of the lookups
+    //     into removed (pre-order, after record). Returns false when record was not linked
+    //     (ParentBy: excluded): the caller raises no Remove. Otherwise the caller then reads
+    //     record's position, unlinks it and raises the Remove.
+    //   OnMoved: a root move, after m_records changed. The record keeps its parent; its sibling
+    //     index follows source order. An unlinked (excluded) record is left alone.
+    // A Replace under a hierarchy is RemoveAt then InsertAt (drift #16), so no hook covers it.
+    virtual bool OnInserted(ISourceHierarchyHost& host, SourceRecord* record, std::exception_ptr& error) = 0;
+    virtual void AfterInserted(ISourceHierarchyHost& host, SourceRecord* record) = 0;
+    virtual bool OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed) = 0;
     virtual void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) = 0;
+
+    // Visits every record the strategy owns outside RootRecords() (ChildrenBy child records), for
+    // SourceTable::SetLiveShaping. ParentBy: none. No app calls.
+    virtual void ForEachChildRecord(std::function<void(SourceRecordPtr const&)> const& visit) const = 0;
 
     // Live shaping saw PropertyChanged on record: re-evaluate its key and parent key (reparent) or
     // its children property (swap the feed) and raise the resulting SourceChange through the host.
@@ -202,6 +231,12 @@ public:
 protected:
     SourceHierarchy() = default;
 };
+
+// Appends record and its source subtree, pre-order (SourceChange::Added for an insert).
+void AppendSourceSubtree(SourceRecord* record, std::vector<SourceRecord*>& out);
+
+// record's index in siblings, or siblings.size() when it is not there.
+uint32_t IndexInSourceSiblings(std::vector<SourceRecord*> const& siblings, SourceRecord const* record) noexcept;
 
 // ParentBy(keySelector, parentKeySelector). Every item is in the root collection; the tree is an
 // index over Records(). Key rules follow v1 (Hierarchical-Data-Rows-Parent-Key-Design.md section 3):
@@ -227,12 +262,14 @@ public:
     void CollectIncoming(
         winrt::Windows::Foundation::IInspectable const& item,
         std::vector<winrt::Windows::Foundation::IInspectable>& items) const override;
-    void OnInserted(ISourceHierarchyHost& host, SourceRecord* record) override;
-    void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record) noexcept override;
+    bool OnInserted(ISourceHierarchyHost& host, SourceRecord* record, std::exception_ptr& error) override;
+    void AfterInserted(ISourceHierarchyHost& host, SourceRecord* record) override;
+    bool OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed) override;
     void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) override;
     bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) override;
     void TakeChildRecords(ISourceHierarchyHost& host, std::vector<SourceRecordPtr>& removed) override;
     void Release(ISourceHierarchyHost& host) noexcept override;
+    void ForEachChildRecord(std::function<void(SourceRecordPtr const&)> const& visit) const override;
 
 private:
     // Lookup form of a selector result (v1 MakeNodeKey): value types by value, objects by
@@ -242,11 +279,6 @@ private:
     // Counts records reachable from the top level of the prepared links; any unreached record is
     // on or below a cycle. Throws.
     void ValidateNoCycles(ISourceHierarchyHost const& host) const;
-
-    // App delegates, tracked (see SourceTable Reference tracking). Optional so Release() can
-    // destroy them while the tracker owner is alive.
-    std::optional<tracker_ref<winrt::TableViewKeySelector>> m_keySelector;
-    std::optional<tracker_ref<winrt::TableViewKeySelector>> m_parentKeySelector;
 
     // Each record's cached keys. Object keys are held while the tree is current so their addresses
     // cannot be reused (v1 section 3.1).
@@ -258,6 +290,43 @@ private:
         std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>> KeyObject;
     };
 
+    // Placement after the verb (spec Misbehaving records; rulings 5 and 6). Each raises its own
+    // SourceChange through the host.
+    //   Keys: computes record's keys tolerantly. Returns false (record to be excluded) when the
+    //     key selector throws, the key is null or empty, or another record holds it; a parent-key
+    //     selector throw leaves ParentKey empty (top level), a self-parent stays keyed (FindParent
+    //     puts it at the top level). The first error goes to error.
+    //   PlaceParent: the parent record goes under (the holder of its parent key, or nullptr). When
+    //     that would close a cycle (the parent is record or below it, or below one of the orphans
+    //     record is about to adopt), record is forced to the top level (m_forcedTop) and the
+    //     cycle error goes to error (spec: the edited record moves to the top level).
+    //   MoveTo: relinks record (with its subtree) under newParent in source order and raises one
+    //     Move; nothing when its place does not change.
+    //   Exclude / Include: unlinks record (its children already moved to the top level) and
+    //     raises its Remove; links it where PlaceParent says, raises its Add, and adopts the
+    //     orphans waiting for its key.
+    //   WaitingFor / Adopt: top-level records whose parent key is key; one is moved (Move), more
+    //     than one are relinked and raised as one Reset (Bulk threshold).
+    //   OrphanChildren: each child of record moves to the top level (one Move each, drift #10).
+    //   RestoreForcedTop: a record forced to the top level moves to its proper parent once that
+    //     no longer makes a cycle.
+    //   Unkey: drops record's keys (and its key-index entry when it holds it).
+    bool Keys(ISourceHierarchyHost& host, SourceRecord const* record, NodeKeys& keys, std::exception_ptr& error) const;
+    SourceRecord* PlaceParent(SourceRecord* record, std::vector<SourceRecord*> const& orphans, std::exception_ptr& error);
+    void MoveTo(ISourceHierarchyHost& host, SourceRecord* record, SourceRecord* newParent);
+    void Exclude(ISourceHierarchyHost& host, SourceRecord* record);
+    void Include(ISourceHierarchyHost& host, SourceRecord* record, std::exception_ptr& error);
+    std::vector<SourceRecord*> WaitingFor(ISourceHierarchyHost& host, winrt::hstring const& key, SourceRecord const* record) const;
+    void Adopt(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecord*> const& orphans);
+    void OrphanChildren(ISourceHierarchyHost& host, SourceRecord* record);
+    void RestoreForcedTop(ISourceHierarchyHost& host);
+    void Unkey(SourceRecord const* record);
+
+    // App delegates, tracked (see SourceTable Reference tracking). Optional so Release() can
+    // destroy them while the tracker owner is alive.
+    std::optional<tracker_ref<winrt::TableViewKeySelector>> m_keySelector;
+    std::optional<tracker_ref<winrt::TableViewKeySelector>> m_parentKeySelector;
+
     // Node key -> record, and record -> keys. Prepare() stages by root position (under Refresh()
     // the records are not matched yet); Commit() resolves each position through
     // host.RootRecords() and rebuilds these.
@@ -265,6 +334,22 @@ private:
     std::unordered_map<SourceRecord const*, NodeKeys> m_nodeKeys;
     std::unordered_map<winrt::hstring, uint32_t> m_stagedKeyIndex;  // node key -> root position
     std::vector<NodeKeys> m_stagedNodeKeys;                         // by root position
+
+    // Records in RootRecords() that are in no sibling list: no usable key (null or empty key, a
+    // key another record holds, or a key selector that threw). They behave as filtered out (spec
+    // Misbehaving records) and have no children (children attach to the key's holder). Re-checked
+    // on PropertyChanged, Refresh() and the next verb.
+    std::unordered_set<SourceRecord const*> m_excluded;
+
+    // Records placed at the top level to break a cycle (a key edit, or a re-read that found one).
+    std::unordered_set<SourceRecord*> m_forcedTop;
+
+    // The orphans OnInserted found waiting for the new record's key; AfterInserted adopts them.
+    std::vector<SourceRecord*> m_pendingAdoptions;
+
+    // False until the first Commit: Prepare is strict at the verb (and for a parked verb), and
+    // tolerant when Refresh() re-reads the committed strategy (drift #9).
+    bool m_committed{ false };
 };
 
 // ChildrenBy(childrenSelector). Records() are the top level. Every other record is owned by its
@@ -290,12 +375,14 @@ public:
     void CollectIncoming(
         winrt::Windows::Foundation::IInspectable const& item,
         std::vector<winrt::Windows::Foundation::IInspectable>& items) const override;
-    void OnInserted(ISourceHierarchyHost& host, SourceRecord* record) override;
-    void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record) noexcept override;
+    bool OnInserted(ISourceHierarchyHost& host, SourceRecord* record, std::exception_ptr& error) override;
+    void AfterInserted(ISourceHierarchyHost& host, SourceRecord* record) override;
+    bool OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed) override;
     void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) override;
     bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) override;
     void TakeChildRecords(ISourceHierarchyHost& host, std::vector<SourceRecordPtr>& removed) override;
     void Release(ISourceHierarchyHost& host) noexcept override;
+    void ForEachChildRecord(std::function<void(SourceRecordPtr const&)> const& visit) const override;
 
     // Entry points for the child-collection lambdas, after they locked the host, checked
     // host.AdmitChange(isReset) and that host.CurrentHierarchy() == this. isReset is true for a
@@ -328,8 +415,26 @@ private:
         std::vector<winrt::Windows::Foundation::IInspectable>& items) const;
 
     // Creates record's feed (if its collection is non-null), its child records and, recursively,
-    // their subtrees, and links them through the host. Callers validate the whole subtree first.
-    void BuildChildFeed(ISourceHierarchyHost& host, SourceRecord* record);
+    // their subtrees, and links them through the host. Callers validate the whole subtree first
+    // (CollectIncoming + ValidateIncoming). The selector runs again here (drift #15). A selector
+    // that throws makes record a leaf (spec Misbehaving records); an item that now fails
+    // validation is skipped and host.RequestReset() is called. The first error is kept in error
+    // for the caller to rethrow.
+    void BuildChildFeed(ISourceHierarchyHost& host, SourceRecordPtr const& record, std::exception_ptr& error);
+
+    // Moves owner's feed out: unsubscribes it and moves its records and their subtrees out of
+    // the lookups (host.ReleaseRecord) into removed, pre-order. No app calls.
+    void TakeFeed(ISourceHierarchyHost& host, SourceRecord const* owner, std::vector<SourceRecordPtr>& removed);
+
+    // One validated child Add / Remove in feed (owned by owner), raised as Add / Remove with
+    // NewParent / OldParent = owner.
+    void InsertChild(
+        ISourceHierarchyHost& host,
+        SourceRecordPtr const& owner,
+        ChildFeed& feed,
+        uint32_t index,
+        winrt::Windows::Foundation::IInspectable const& item);
+    void RemoveChild(ISourceHierarchyHost& host, SourceRecord* owner, ChildFeed& feed, uint32_t index);
 
     // Unsubscribes (safe_get), resets the accessor, releases the feed's records and their
     // subtrees through the host and destroys them. Teardown-safe.
@@ -341,6 +446,9 @@ private:
 
     // App delegate, tracked. Optional so Release() can destroy it while the tracker owner is alive.
     std::optional<tracker_ref<winrt::TableViewChildrenSelector2>> m_childrenSelector;
+
+    // The tracker owner, for the accessor CollectIncoming() (const, no host) enumerates through.
+    ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
     // One feed per record with a non-null child collection.
     std::unordered_map<SourceRecord const*, std::unique_ptr<ChildFeed>> m_childFeeds;

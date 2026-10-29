@@ -402,14 +402,21 @@ private:
     void ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
     void Move(uint32_t fromIndex, uint32_t toIndex);
 
-    // The edits' RaiseSourceChanged (root, no parents). If it throws (a listener fault), posts a
-    // re-read owed by its dispatch (PostRereadIfOwed), then rethrows: DrainPendingChanges is skipped.
+    // The edits' and verbs' RaiseSourceChanged. If it throws (a listener fault), posts a re-read
+    // owed by its dispatch (PostRereadIfOwed), then rethrows: DrainPendingChanges is skipped.
     void RaiseEdit(
         SourceChangeKind kind,
+        SourceRecord* oldParent,
+        SourceRecord* newParent,
         uint32_t oldIndex,
         uint32_t newIndex,
         std::vector<SourceRecord*> const& added,
         std::vector<SourceRecordPtr>& removed);
+
+    // The three hierarchy verbs: next is the new strategy (nullptr: flat). Held: parks it in
+    // m_pendingHierarchy. Otherwise Prepare(next) over the current root items, TakeChildRecords()
+    // and Release() the current strategy, ResetTreeToFlat(), Commit(next), one Reset.
+    void ReplaceHierarchy(std::unique_ptr<SourceHierarchy> next);
 
     // CreateRecord and RaiseSourceChanged are host members (below). RaiseSourceChanged raises
     // SourceChanged inside a freeze (BeginFreeze / EndFreeze around the handler call; nothing is
@@ -420,7 +427,7 @@ private:
     // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
     // true (re-read due, outermost, no hold), Refresh() (one Reset). This is the turn's one
     // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
-    void DrainPendingChanges();
+    void DrainPendingChanges() override;
 
     // Refresh() epilogue: posts a re-read owed by its own dispatch, unless a freeze or hold will
     // report it.
@@ -477,6 +484,7 @@ private:
         std::vector<SourceRecord*> const& added,
         std::vector<SourceRecordPtr>& removed) override;
     void RequestReset() noexcept override;
+    std::function<void()> MakeThreadCheck() const override;
 
     // Null once detached (Clear()).
     ITrackerHandleManager const* m_trackerOwner{ nullptr };

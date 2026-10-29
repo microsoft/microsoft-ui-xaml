@@ -5,6 +5,8 @@
 #include "common.h"
 #include "Source/SourceTable.h"
 
+#include <algorithm>
+#include <exception>
 #include <unordered_set>
 
 #include <winrt/Microsoft.UI.Xaml.Data.h>
@@ -18,6 +20,10 @@ namespace
     constexpr wchar_t c_duplicateItemMessage[] =
         L"TableViewSource2: The same item object appears in the source more than once. Rows are identified by object identity, "
         L"so two rows backed by one object cannot be told apart. Use a distinct object per row.";
+
+    // Decided (drift #12): a null selector is rejected at the verb.
+    constexpr wchar_t c_nullKeySelectorMessage[] =
+        L"TableViewSource2.ParentBy: keySelector and parentKeySelector are required.";
 }
 
 std::shared_ptr<SourceTable> SourceTable::Create(
@@ -326,33 +332,72 @@ void SourceTable::Refresh()
         return;
     }
 
-    auto const items = m_sourceAccessor->Enumerate(true /* throwIfUnsupported */);
+    // A parked verb (DeferRefresh) replaces the current strategy at this re-read.
+    bool const swapping = m_pendingHierarchy.has_value();
+    SourceHierarchy* const strategy = swapping ? m_pendingHierarchy->get() : m_hierarchy.get();
 
-    // Compute before commit: nothing below this point runs app code or throws for app data.
+    // 1. Read: every app call and check. A throw leaves the table untouched.
+    std::vector<winrt::Windows::Foundation::IInspectable> items;
     try
     {
-        ValidateItems(items);
+        items = m_sourceAccessor->Enumerate(true /* throwIfUnsupported */);
+
+        try
+        {
+            ValidateItems(items);
+            if (strategy)
+            {
+                strategy->Prepare(*this, items);
+            }
+        }
+        catch (...)
+        {
+            // A failed validation turns a pending re-read into a rejection (see m_rereadDue).
+            m_diverged = true;
+            m_rereadDue = false;
+            throw;
+        }
     }
     catch (...)
     {
-        // A failed validation turns a pending re-read into a rejection (see m_rereadDue).
-        m_diverged = true;
-        m_rereadDue = false;
+        // A parked strategy that cannot be read is discarded; the current one stays.
+        m_pendingHierarchy.reset();
         throw;
     }
 
+    // 2. Match: nothing below runs app code or throws for app data.
     std::vector<SourceRecordPtr> removed;
     auto const matches = MatchRecords(items, removed);
 
+    if (swapping)
+    {
+        if (m_hierarchy)
+        {
+            m_hierarchy->TakeChildRecords(*this, removed);
+            m_hierarchy->Release(*this);
+        }
+        m_hierarchy = std::move(*m_pendingHierarchy);
+        m_pendingHierarchy.reset();
+    }
+    else if (m_hierarchy)
+    {
+        m_hierarchy->MatchForRefresh(*this, matches, removed);
+    }
+
+    // 3. Link.
     std::vector<SourceRecord*> added;
     CommitRecords(items, matches, added);
     ResetTreeToFlat();
+    if (m_hierarchy)
+    {
+        m_hierarchy->Commit(*this, added);
+    }
 
     m_diverged = false;
     m_rereadDue = false;
 
-    // Anti-loop (one synchronous re-read per turn): a change skipped during this Reset's dispatch
-    // is posted, never re-read here.
+    // 4. One Reset. Anti-loop (one synchronous re-read per turn): a change skipped during this
+    // Reset's dispatch is posted, never re-read here.
     try
     {
         RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, added, removed);
@@ -406,9 +451,21 @@ std::vector<SourceRecord*> SourceTable::MatchRecords(
     std::unordered_set<SourceRecord*> kept;
     kept.reserve(items.size());
 
+    // The lookups also hold child records (ChildrenBy); a root item matches root records only.
+    std::unordered_set<SourceRecord*> roots;
+    roots.reserve(m_records.size());
+    for (auto const& record : m_records)
+    {
+        roots.insert(record.get());
+    }
+
     for (auto const& item : items)
     {
-        SourceRecord* const match = TryFindByItem(item);
+        SourceRecord* match = TryFindByItem(item);
+        if (match && !roots.count(match))
+        {
+            match = nullptr;
+        }
         matches.push_back(match);
         if (match)
         {
@@ -459,7 +516,6 @@ void SourceTable::CommitRecords(
         else
         {
             auto record = CreateRecord(items[i]);
-            AddToLookups(record.get());
             added.push_back(record.get());
             ordered.push_back(std::move(record));
         }
@@ -493,11 +549,20 @@ void SourceTable::AddToLookups(SourceRecord* record)
 
 void SourceTable::RemoveFromLookups(SourceRecord* record) noexcept
 {
-    m_rawLookup.erase(winrt::get_abi(record->Item.get()));
-    m_addressLookup.erase(record->Address);
+    auto const eraseIfOwned = [record](auto& map, auto const& key)
+    {
+        auto const it = map.find(key);
+        if (it != map.end() && it->second == record)
+        {
+            map.erase(it);
+        }
+    };
+
+    eraseIfOwned(m_rawLookup, winrt::get_abi(record->Item.get()));
+    eraseIfOwned(m_addressLookup, record->Address);
     if (m_identityIndexEnabled)
     {
-        m_identityIndex.erase(record->Identity());
+        eraseIfOwned(m_identityIndex, record->Identity());
     }
 }
 
@@ -800,6 +865,16 @@ std::vector<SourceRecordPtr> const& SourceTable::RootRecords() const noexcept
 SourceRecordPtr SourceTable::CreateRecord(winrt::Windows::Foundation::IInspectable const& item)
 {
     auto record = std::make_shared<SourceRecord>(m_trackerOwner, item);
+    try
+    {
+        AddToLookups(record.get());
+    }
+    catch (...)
+    {
+        RemoveFromLookups(record.get());
+        throw;
+    }
+
     if (m_liveShapingEnabled)
     {
         SubscribeRecordPropertyChanged(record);
@@ -848,10 +923,9 @@ void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspecta
     SourceRecord* const raw = record.get();
     m_records.insert(m_records.begin() + index, std::move(record));
     m_topLevel.insert(m_topLevel.begin() + index, raw);
-    AddToLookups(raw);
 
     std::vector<SourceRecordPtr> removed;
-    RaiseEdit(SourceChangeKind::Add, 0, index, { raw }, removed);
+    RaiseEdit(SourceChangeKind::Add, nullptr, nullptr, 0, index, { raw }, removed);
 }
 
 void SourceTable::RemoveAt(uint32_t index)
@@ -866,7 +940,7 @@ void SourceTable::RemoveAt(uint32_t index)
     RemoveFromLookups(removed.front().get());
 
     // `removed` keeps the record alive (Item, Identity()) until the handler returns.
-    RaiseEdit(SourceChangeKind::Remove, index, 0, {}, removed);
+    RaiseEdit(SourceChangeKind::Remove, nullptr, nullptr, index, 0, {}, removed);
 }
 
 void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
@@ -893,9 +967,8 @@ void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspect
     std::vector<SourceRecordPtr> removed;
     removed.push_back(std::exchange(m_records[index], std::move(record)));
     m_topLevel[index] = raw;
-    AddToLookups(raw);
 
-    RaiseEdit(SourceChangeKind::Replace, index, index, { raw }, removed);
+    RaiseEdit(SourceChangeKind::Replace, nullptr, nullptr, index, index, { raw }, removed);
 }
 
 void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
@@ -917,11 +990,13 @@ void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
     m_topLevel.insert(m_topLevel.begin() + toIndex, raw);
 
     std::vector<SourceRecordPtr> removed;
-    RaiseEdit(SourceChangeKind::Move, fromIndex, toIndex, {}, removed);
+    RaiseEdit(SourceChangeKind::Move, nullptr, nullptr, fromIndex, toIndex, {}, removed);
 }
 
 void SourceTable::RaiseEdit(
     SourceChangeKind kind,
+    SourceRecord* oldParent,
+    SourceRecord* newParent,
     uint32_t oldIndex,
     uint32_t newIndex,
     std::vector<SourceRecord*> const& added,
@@ -931,7 +1006,7 @@ void SourceTable::RaiseEdit(
     // does.
     try
     {
-        RaiseSourceChanged(kind, nullptr, nullptr, oldIndex, newIndex, added, removed);
+        RaiseSourceChanged(kind, oldParent, newParent, oldIndex, newIndex, added, removed);
     }
     catch (...)
     {
@@ -945,10 +1020,57 @@ std::vector<SourceRecord*>& SourceTable::SiblingsOf(SourceRecord* parent) noexce
     return parent ? parent->Children : m_topLevel;
 }
 
-void SourceTable::Reparent(SourceRecord*, SourceRecord*, uint32_t)
+void SourceTable::Reparent(SourceRecord* record, SourceRecord* newParent, uint32_t index)
 {
-    // Called only by a hierarchy strategy (Milestone 3).
-    throw winrt::hresult_not_implemented();
+    // A record that is not linked yet (a new root record) is simply linked.
+    auto& oldSiblings = SiblingsOf(record->Parent);
+    auto const it = std::find(oldSiblings.begin(), oldSiblings.end(), record);
+    if (it != oldSiblings.end())
+    {
+        oldSiblings.erase(it);
+    }
+
+    auto& newSiblings = SiblingsOf(newParent);
+    newSiblings.insert(newSiblings.begin() + std::min<size_t>(index, newSiblings.size()), record);
+    record->Parent = newParent;
+    UpdateDepths(record);
+}
+
+void SourceTable::UpdateDepths(SourceRecord* record) noexcept
+{
+    // Pre-order without allocation: descend to the first child, else climb to the next sibling.
+    SourceRecord* const top = record;
+    SourceRecord* current = record;
+    current->Depth = current->Parent ? static_cast<uint16_t>(current->Parent->Depth + 1) : uint16_t{ 0 };
+    for (;;)
+    {
+        if (!current->Children.empty())
+        {
+            current = current->Children.front();
+        }
+        else
+        {
+            for (;;)
+            {
+                if (current == top)
+                {
+                    return;
+                }
+
+                auto const& siblings = current->Parent->Children;
+                auto const next = std::find(siblings.begin(), siblings.end(), current) + 1;
+                if (next != siblings.end())
+                {
+                    current = *next;
+                    break;
+                }
+
+                current = current->Parent;
+            }
+        }
+
+        current->Depth = static_cast<uint16_t>(current->Parent->Depth + 1);
+    }
 }
 
 bool SourceTable::AdmitChange(bool isReset)
@@ -1064,6 +1186,10 @@ void SourceTable::RaiseSourceChanged(
     {
         (void)EndFreeze();
         m_removedView.clear();
+
+        // The handler's throw skips DrainPendingChanges: post a re-read owed by this dispatch for
+        // every raiser, including the hierarchy strategies' own raises (idempotent with RaiseEdit).
+        PostRereadIfOwed();
         throw;
     }
 
@@ -1073,6 +1199,91 @@ void SourceTable::RaiseSourceChanged(
 
 void SourceTable::RequestReset() noexcept
 {
+    // Header contract: m_diverged only; the next notification re-reads.
     m_diverged = true;
-    m_rereadDue = true;
+}
+
+std::function<void()> SourceTable::MakeThreadCheck() const
+{
+    return [binding = m_binding]() { ThrowIfOffBoundThread(*binding); };
+}
+
+// ---- Hierarchy verbs --------------------------------------------------------------------------
+
+void SourceTable::SetParentKeyHierarchy(
+    winrt::TableViewKeySelector const& keySelector,
+    winrt::TableViewKeySelector const& parentKeySelector)
+{
+    if (!keySelector || !parentKeySelector)
+    {
+        throw winrt::hresult_invalid_argument(c_nullKeySelectorMessage);
+    }
+
+    if (IsDetached())
+    {
+        return;
+    }
+
+    ReplaceHierarchy(std::make_unique<ParentKeyHierarchy>(m_trackerOwner, keySelector, parentKeySelector));
+}
+
+void SourceTable::ClearHierarchy()
+{
+    ReplaceHierarchy(nullptr);
+}
+
+void SourceTable::ReplaceHierarchy(std::unique_ptr<SourceHierarchy> next)
+{
+    if (IsDetached())
+    {
+        return;
+    }
+
+    if (m_resetHoldDepth > 0)
+    {
+        // DeferRefresh: park the unprepared strategy; the re-read at the outermost Close prepares
+        // and commits it. The current tree keeps receiving changes meanwhile.
+        if (!next && !m_hierarchy && !m_pendingHierarchy.has_value())
+        {
+            return;
+        }
+
+        m_pendingHierarchy = std::move(next);
+        return;
+    }
+
+    if (!next && !m_hierarchy)
+    {
+        return;
+    }
+
+    // Compute before commit: every app call and check writes only next's scratch state.
+    if (next)
+    {
+        std::vector<winrt::Windows::Foundation::IInspectable> items;
+        items.reserve(m_records.size());
+        for (auto const& record : m_records)
+        {
+            items.push_back(record->Item.get());
+        }
+
+        next->Prepare(*this, items);
+    }
+
+    std::vector<SourceRecordPtr> removed;
+    if (m_hierarchy)
+    {
+        m_hierarchy->TakeChildRecords(*this, removed);
+        m_hierarchy->Release(*this);
+    }
+    m_hierarchy = std::move(next);
+
+    std::vector<SourceRecord*> added;
+    ResetTreeToFlat();
+    if (m_hierarchy)
+    {
+        m_hierarchy->Commit(*this, added);
+    }
+
+    RaiseEdit(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, added, removed);
 }
