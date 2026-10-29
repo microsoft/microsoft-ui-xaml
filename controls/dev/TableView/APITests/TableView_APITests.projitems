@@ -41,5 +41,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Surgical_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Live_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Expansion_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Defer_APITests.cs" />
   </ItemGroup>
 </Project>
