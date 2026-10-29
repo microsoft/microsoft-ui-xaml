@@ -100,7 +100,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         });
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a filter that throws during a source Remove propagates to the mutation, still drops the removed row, and keeps the rest of the view.")]
+        [TestProperty("Description", "Verifies a source Remove under a throwing filter drops the removed row without calling the filter (a surgical Remove runs no app code) and keeps the rest of the view.")]
         public void VerifyFilterThrowsDuringRemoveDropsDepartedRow()
         {
             var tableView = PlaceFlat(out var source, out var rows);
@@ -112,7 +112,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 armed = true;
                 var d = rows[3];
-                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => rows.Remove(d)), "The predicate's exception must surface from the Remove.");
+                Verify.AreEqual("no exception", ThrownTypeName(() => rows.Remove(d)), "A Remove does not call the predicate.");
                 Verify.AreEqual(2, GetRowsRepeater(tableView).ItemsSourceView.Count, "The removed row left the view.");
                 VerifyShaped(tableView, "B C", "Departed row removed, the rest kept");
             });
