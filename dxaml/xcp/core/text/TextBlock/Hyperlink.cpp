@@ -287,6 +287,9 @@ _Check_return_ HRESULT CHyperlink::FocusChangedEventListener(
             if (pContentStartVisualParent->GetTypeIndex() == KnownTypeIndex::TextBlock)
             {
                 CTextBlock* textObject = do_pointer_cast<CTextBlock>(pContentStartVisualParent);
+                // TextBlock creates its selection manager lazily, and GetSelectionStart/End don't create it.
+                // Make sure it exists so a selectable TextBlock always reports a selection here.
+                textObject->GetSelectionManager();
                 IFC_RETURN(textObject->GetSelectionStart(selectionStart.ReleaseAndGetAddressOf()));
                 IFC_RETURN(textObject->GetSelectionEnd(selectionEnd.ReleaseAndGetAddressOf()));
                 if (!selectionStart || !selectionEnd)
