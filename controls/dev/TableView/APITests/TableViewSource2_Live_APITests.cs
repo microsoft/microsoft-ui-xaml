@@ -165,26 +165,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a live change raised by app code while a verb applies is drained after it, not lost.")]
+        [TestProperty("Description", "Verifies a live change raised by app code while a verb applies, to a key the rebuild already read, is drained after it, not lost.")]
         public void VerifyLiveChangeDuringApplyIsDrainedAfter()
         {
             var tableView = PlaceLiveFlat(out var source, out var rows);
             OnUI(tableView, () => source.Sort(LiveByScore, SortDirection.Ascending));
+            var events = RecordViewEvents(tableView);
+
+            // The rebuild reads sort keys in source order, so A's key (10) is already consumed when
+            // D's is read; changing A there leaves the rebuilt order stale until the drain.
             bool changed = false;
             var a = rows[0];
-            var touching = new TableViewPredicate(o =>
+            var d = rows[3];
+            var touching = LiveKey(r =>
             {
-                if (!changed)
+                if (!changed && ReferenceEquals(r, d))
                 {
                     changed = true;
                     a.Score = 35;
                 }
-                return true;
+                return r.Score;
             });
 
-            OnUI(tableView, () => source.Filter(touching));
-            Verify.IsTrue(changed, "The predicate ran.");
+            OnUI(tableView, () => source.Sort(touching, SortDirection.Ascending));
+            Verify.IsTrue(changed, "The key selector ran for D.");
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C A D", "A's change made during the apply was drained"));
+            VerifyEvents(events, "Reset,Remove@0,Add@2", "the verb's Reset, then the drain moves A");
         }
 
         [TestMethod]

@@ -140,7 +140,7 @@ No IDL changes so far.
 |---|---|---|
 | Added `#include <optional>`, internal `winrt::ItemsSourceView GetItemsSourceView()`, and cache members `std::optional<tracker_ref<winrt::ItemsSourceView>> m_itemsSourceView` and `void* m_itemsSourceViewCollection`. | Wraps `ShapingManager::View()` once in a `winrt::ItemsSourceView` for TableView's rows repeater, as v1 `TableViewSource::GetItemsSourceView()`. | `987774dc29` (M1) |
 | Added private `void RunOwnerReleasedWaiters()`. `TrySetOwner` no longer removes the claiming owner's waiter (the caller does). | A release during a commit defers waiters to the commit's end. | `6cc4e48ed4` (M1) |
-| Added internal `uint64_t BeginLiveShapingHold() noexcept` and `void EndLiveShapingHold(uint64_t generation)`, forwarding to `ShapingManager`. | O4 holds for TableView (M9), tied to an owner generation (drift #48). | 44c9886a7e, c61cb10e67 |
+| `BeginLiveShapingHold()` now returns `uint64_t` (the owner generation, was `void`), and `EndLiveShapingHold()` now takes `(uint64_t generation)`. | A stale End from an earlier owner cannot release the next owner's hold (drift #48). | c61cb10e67 |
 
 ### `controls/dev/TableViewSource2/Source/SourceRecord.h`
 
