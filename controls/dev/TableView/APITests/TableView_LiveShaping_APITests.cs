@@ -427,7 +427,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var list = MakeLiveObjectTree();
             var tableView = Place(MakeSource(list,
-                s => s.GroupBy(LiveKey(r => r.ParentRow ?? r), new TableViewIdentitySelector(o => ((LiveRow)o).Name)),
+                s => s.GroupBy(LiveKey(r => r.ParentRow ?? r), new TableViewGroupIdentitySelector(o => ((LiveRow)o).Name)),
                 live: true));
 
             // Object keys print as the type name; shorten it so the expectation reads.

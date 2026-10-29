@@ -454,17 +454,18 @@ unsealed runtimeclass TableViewAutomationPeer
 
 [MUX_PREVIEW]
 [webhosthidden]
-runtimeclass TableViewCellAutomationPeer
+unsealed runtimeclass TableViewCellAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
       Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
       Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
       Microsoft.UI.Xaml.Automation.Provider.IValueProvider
 {
+    TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement owner);
 }
 
 [MUX_PREVIEW]
 [webhosthidden]
-runtimeclass TableViewColumnHeaderAutomationPeer
+unsealed runtimeclass TableViewColumnHeaderAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
       Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
 {

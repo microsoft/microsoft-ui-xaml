@@ -31,8 +31,6 @@ public partial class SamplePageBase : Page
 
     protected string AppliedGroupKey => _shaping?.AppliedKey ?? string.Empty;
 
-    protected bool SortOrdersGroups => _shaping?.SortOrdersGroups ?? false;
-
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
 
     // Under Grouped hierarchy GroupBy buckets only the roots: a nested row is shown in its root's group.
@@ -109,8 +107,6 @@ public partial class SamplePageBase : Page
     }
 
     protected void ReapplyIfGroupedOn(string? propertyName) => _shaping?.ReapplyIfGroupedOn(propertyName);
-
-    protected void OnSortRedeclared() => _shaping?.OnSortRedeclared();
 
     protected void TrackItems<T>(ObservableCollection<T> items, PropertyChangedEventHandler onItemChanged)
         where T : class, INotifyPropertyChanged

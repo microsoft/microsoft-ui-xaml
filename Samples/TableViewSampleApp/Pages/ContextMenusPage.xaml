@@ -92,9 +92,9 @@
                     </MenuFlyout>
                 </tv:TableView.ContextFlyout>
                 <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
-                                             CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                             CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
                                          Binding="{Binding FullName}"
                                          CellContextFlyout="{StaticResource NameCellMenu}"/>
                 <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"

@@ -57,7 +57,11 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // Internal: raise ToggleRequested for the band gesture. Note the ExpandCollapse peer does
+    // Internal: the only writer of the read-only IsExpandable/IsExpanded DPs. Requests nothing.
+    void SetExpansionStateInternal(bool isExpandable, bool isExpanded, bool syncContent = true);
+    void SyncExpansionToContentInternal() { SyncExpansionToContent(); }
+
+    // Internal: the band gesture, forwarded to the owning TableView. The ExpandCollapse peer does
     // NOT come through here -- it calls TableView::SetGroupExpansion directly, because the
     // pattern is directional and this is not.
     void RequestToggle();
@@ -77,11 +81,6 @@ public:
     void SetOwningTableViewInternal(winrt::TableView const& owner);
     winrt::TableView GetOwningTableView() const;
     void SetTerminalBottomGridLineSuppression(bool suppress);
-
-    // Internal: single-subscription guard for the ToggleRequested handler.
-    // PrepareGroupHeaderElement sets this once so repeated prepares are no-ops.
-    bool IsToggleHooked() const { return m_toggleHooked; }
-    void SetToggleHooked() { m_toggleHooked = true; }
 
     void ResetPointerStateInternal();
 
@@ -128,8 +127,7 @@ private:
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
 
-    // Set to true by PrepareGroupHeaderElement the first time ToggleRequested is subscribed.
-    // Guards against double-hooking when the same container is prepared many times after pool
-    // recycling: one subscription per container lifetime, not per prepare.
-    bool m_toggleHooked{ false };
+    bool m_isSettingExpansionInternal{ false };
+    bool m_internalIsExpandable{ false };
+    bool m_internalIsExpanded{ false };
 };

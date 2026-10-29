@@ -23,6 +23,7 @@ GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr }
 GlobalDependencyProperty TableViewProperties::s_GridLinesVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GroupHeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_IsEditingProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr };
@@ -32,7 +33,10 @@ GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr }
 
 TableViewProperties::TableViewProperties()
     : m_beginningEditEventSource{static_cast<TableView*>(this)}
+    , m_cellEditEndedEventSource{static_cast<TableView*>(this)}
     , m_cellEditEndingEventSource{static_cast<TableView*>(this)}
+    , m_groupCollapsedEventSource{static_cast<TableView*>(this)}
+    , m_groupExpandingEventSource{static_cast<TableView*>(this)}
     , m_selectionChangedEventSource{static_cast<TableView*>(this)}
     , m_sortedEventSource{static_cast<TableView*>(this)}
     , m_sortingEventSource{static_cast<TableView*>(this)}
@@ -152,6 +156,17 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::TableViewHeadersVisibility>::BoxValueIfNecessary(winrt::TableViewHeadersVisibility::Column),
                 winrt::PropertyChangedCallback(&OnHeadersVisibilityPropertyChanged));
     }
+    if (!s_IsEditingProperty)
+    {
+        s_IsEditingProperty =
+            InitializeDependencyProperty(
+                L"IsEditing",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
+    }
     if (!s_IsReadOnlyProperty)
     {
         s_IsReadOnlyProperty =
@@ -232,6 +247,7 @@ void TableViewProperties::ClearProperties()
     s_GridLinesVisibilityProperty = nullptr;
     s_GroupHeaderTemplateProperty = nullptr;
     s_HeadersVisibilityProperty = nullptr;
+    s_IsEditingProperty = nullptr;
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_RowBackgroundProperty = nullptr;
@@ -482,6 +498,19 @@ winrt::TableViewHeadersVisibility TableViewProperties::HeadersVisibility()
     return ValueHelper<winrt::TableViewHeadersVisibility>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_HeadersVisibilityProperty));
 }
 
+void TableViewProperties::IsEditing(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_IsEditingProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewProperties::IsEditing()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_IsEditingProperty));
+}
+
 void TableViewProperties::IsReadOnly(bool value)
 {
     [[gsl::suppress(con)]]
@@ -570,6 +599,16 @@ void TableViewProperties::BeginningEdit(winrt::event_token const& token)
     m_beginningEditEventSource.remove(token);
 }
 
+winrt::event_token TableViewProperties::CellEditEnded(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndedEventArgs> const& value)
+{
+    return m_cellEditEndedEventSource.add(value);
+}
+
+void TableViewProperties::CellEditEnded(winrt::event_token const& token)
+{
+    m_cellEditEndedEventSource.remove(token);
+}
+
 winrt::event_token TableViewProperties::CellEditEnding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs> const& value)
 {
     return m_cellEditEndingEventSource.add(value);
@@ -578,6 +617,26 @@ winrt::event_token TableViewProperties::CellEditEnding(winrt::TypedEventHandler<
 void TableViewProperties::CellEditEnding(winrt::event_token const& token)
 {
     m_cellEditEndingEventSource.remove(token);
+}
+
+winrt::event_token TableViewProperties::GroupCollapsed(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupCollapsedEventArgs> const& value)
+{
+    return m_groupCollapsedEventSource.add(value);
+}
+
+void TableViewProperties::GroupCollapsed(winrt::event_token const& token)
+{
+    m_groupCollapsedEventSource.remove(token);
+}
+
+winrt::event_token TableViewProperties::GroupExpanding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupExpandingEventArgs> const& value)
+{
+    return m_groupExpandingEventSource.add(value);
+}
+
+void TableViewProperties::GroupExpanding(winrt::event_token const& token)
+{
+    m_groupExpandingEventSource.remove(token);
 }
 
 winrt::event_token TableViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value)

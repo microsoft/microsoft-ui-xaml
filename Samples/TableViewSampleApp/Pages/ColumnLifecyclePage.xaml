@@ -27,9 +27,9 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="56"
-                                             CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120"
+                <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                             CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+                <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="{StaticResource ColWidthShortName}"
                                          Binding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="130"
                                              CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>

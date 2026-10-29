@@ -17,9 +17,11 @@
     AutomationProperties.Name="People with wrapped bios"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
-    IsReadOnly="True">
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
-    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    IsReadOnly="True"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
 </tv:TableView>

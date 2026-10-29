@@ -294,7 +294,6 @@ public sealed partial class ShowcasePage : SamplePageBase
         try
         {
             Source.Sort(column.SortMemberPath, column.SortDirection);
-            OnSortRedeclared();   // keeps a sort that ordered the groups doing so
         }
         finally
         {

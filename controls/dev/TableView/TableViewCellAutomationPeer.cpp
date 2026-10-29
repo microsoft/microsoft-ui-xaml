@@ -9,6 +9,7 @@
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
+#include "TableViewCell.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewToolTipHelpers.h"
 #include "ResourceAccessor.h"
@@ -24,37 +25,37 @@
 
 namespace
 {
-    winrt::FrameworkElement CellForPublicConstructor(
-        winrt::FrameworkElement const& cell,
-        winrt::TableViewRow const& row,
-        winrt::TableViewColumn const& column,
-        int32_t columnIndex)
+    struct CellOwner
     {
-        if (!cell || !row || !column || columnIndex < 0)
+        winrt::TableViewRow Row{ nullptr };
+        winrt::TableViewColumn Column{ nullptr };
+        int32_t ColumnIndex{ -1 };
+    };
+
+    CellOwner CellOwnerForPublicConstructor(winrt::FrameworkElement const& owner)
+    {
+        auto const access = owner ? owner.try_as<ITableViewCellAutomationPeerAccess>() : nullptr;
+        if (!access)
         {
             throw winrt::hresult_invalid_argument();
         }
 
-        // A row not yet owned by a TableView has no column set to check against.
-        if (auto const table = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
-        {
-            if (winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
-                static_cast<uint32_t>(columnIndex) >= table.Columns().Size())
-            {
-                throw winrt::hresult_invalid_argument();
-            }
-        }
-
-        return cell;
+        winrt::IInspectable row{ nullptr };
+        winrt::IInspectable column{ nullptr };
+        CellOwner result;
+        winrt::check_hresult(access->GetCellOwner(
+            reinterpret_cast<::IInspectable**>(winrt::put_abi(row)),
+            reinterpret_cast<::IInspectable**>(winrt::put_abi(column)),
+            &result.ColumnIndex));
+        result.Row = row.try_as<winrt::TableViewRow>();
+        result.Column = column.try_as<winrt::TableViewColumn>();
+        return result;
     }
 }
 
-TableViewCellAutomationPeer::TableViewCellAutomationPeer(
-    winrt::FrameworkElement const& cell,
-    winrt::TableViewRow const& row,
-    winrt::TableViewColumn const& column,
-    int32_t columnIndex)
-    : TableViewCellAutomationPeer(TrustedOwnerTag{}, CellForPublicConstructor(cell, row, column, columnIndex), row, column, columnIndex)
+TableViewCellAutomationPeer::TableViewCellAutomationPeer(winrt::FrameworkElement const& owner)
+    : TableViewCellAutomationPeer(TrustedOwnerTag{}, owner, CellOwnerForPublicConstructor(owner).Row,
+        CellOwnerForPublicConstructor(owner).Column, CellOwnerForPublicConstructor(owner).ColumnIndex)
 {
 }
 

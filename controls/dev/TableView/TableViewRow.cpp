@@ -212,6 +212,18 @@ void TableViewRow::OnIsEnabledChanged(
     UpdateVisualState(true /* useTransitions */);
 }
 
+winrt::Size TableViewRow::MeasureOverride(winrt::Size const& availableSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::MeasureOverride(availableSize);
+}
+
+winrt::Size TableViewRow::ArrangeOverride(winrt::Size const& finalSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::ArrangeOverride(finalSize);
+}
+
 void TableViewRow::OnApplyTemplate()
 {
     m_cellsHostContextRequestedRevoker.revoke();
@@ -873,7 +885,192 @@ void TableViewRow::EnableRowFocusInternal()
     IsTabStop(true);
 }
 
-void TableViewRow::OnRowGotFocus(winrt::DependencyObject const& focusedElement)
+void TableViewRow::OnRowGettingFocus(
+    const winrt::UIElement& /*sender*/,
+    const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
+{
+    winrt::DependencyObject const selfObject = *this;
+    auto const newFocus = args.NewFocusedElement();
+    if (!newFocus)
+    {
+        return;
+    }
+
+    // Tab / Shift+Tab only. Arrow navigation, an edit-close restore and a pointer press all name
+    // the row they mean; redirecting those would move the user somewhere they did not ask for.
+    auto const direction = args.Direction();
+    const bool isTabEntry =
+        direction == winrt::FocusNavigationDirection::Next ||
+        direction == winrt::FocusNavigationDirection::Previous;
+    if (!isTabEntry)
+    {
+        return;
+    }
+
+    auto const owner = GetOwningTableView();
+    if (!owner)
+    {
+        return;
+    }
+
+    auto const ownerImpl = winrt::get_self<TableView>(owner);
+
+    // An open editor owns focus; redirecting the row focus the editor teardown performs would
+    // fight the row's own "move focus off the editor before it leaves the tree" step.
+    if (ownerImpl->IsEditInProgress() && m_editingElement.get())
+    {
+        return;
+    }
+
+    // Focus LEAVING this row must never be pulled back, or Tab can never exit the table. Only
+    // focus arriving from outside the row is an entry that wants resolving.
+    auto const oldFocus = args.OldFocusedElement();
+    if (oldFocus == selfObject ||
+        SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */))
+    {
+        return;
+    }
+
+    // When returning from another band inside the table, stale cell-level state can make XAML aim
+    // the body's single tab stop at a cell. Body band entry is still row-level.
+    winrt::DependencyObject const ownerObject = owner;
+    const bool focusCameFromWithinTable =
+        oldFocus == ownerObject ||
+        SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
+
+    if (focusCameFromWithinTable && ownerImpl->TryRedirectBandEntryToViewport(*this, args))
+    {
+        return;
+    }
+
+    // The bands share one column cursor: a cell-level cursor re-enters on the cell in that column.
+    if (focusCameFromWithinTable && ownerImpl->IsCellCursorActiveInternal())
+    {
+        auto targetRow = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
+        if (!targetRow)
+        {
+            targetRow = *this;
+        }
+        auto const targetImpl = winrt::get_self<TableViewRow>(targetRow);
+
+        if (const int32_t cellCount = targetImpl->GetVisibleCellCountInternal(); cellCount > 0)
+        {
+            const int32_t column =
+                std::clamp(ownerImpl->CurrentColumnCursorInternal(), 0, cellCount - 1);
+
+            // Row-level cells are not focusable.
+            targetImpl->SetCellLevelInternal(true);
+
+            if (auto const cell = targetImpl->GetVisibleCellInternal(column))
+            {
+                if (cell.try_as<winrt::DependencyObject>() != newFocus &&
+                    !args.TrySetNewFocusedElement(cell))
+                {
+                    // Unless XAML already targets a cell of this row, undo the drill-in so the row
+                    // isn't left with no tab stop.
+                    if (!targetImpl->FindOwnCellInternal(newFocus, false /* requireExact */))
+                    {
+                        targetImpl->SetCellLevelInternal(false);
+                    }
+                }
+                return;
+            }
+
+            targetImpl->SetCellLevelInternal(false);
+        }
+    }
+
+    if (focusCameFromWithinTable)
+    {
+        if (newFocus == selfObject || !FindOwnCellInternal(newFocus, false /* requireExact */))
+        {
+            return;
+        }
+
+        // Commit the cursor change only once the focus manager accepts the redirect.
+        const bool wasCellLevel = IsCellLevelInternal();
+        SetCellLevelInternal(false);
+        if (args.TrySetNewFocusedElement(selfObject))
+        {
+            ownerImpl->SetCellCursorActiveInternal(false);
+        }
+        else
+        {
+            SetCellLevelInternal(wasCellLevel);
+        }
+        return;
+    }
+
+    const auto correlationId = args.CorrelationId();
+    if (ownerImpl->HasRedirectedFocusEntry(correlationId))
+    {
+        return;
+    }
+
+    auto entry = ownerImpl->ResolveFocusEntryTarget(*this, oldFocus, direction);
+    if (!entry.Element || !entry.Row)
+    {
+        return;
+    }
+
+    // Redirecting to an ancestor cell of the proposed element starts a loop. A row target still
+    // takes focus from content hosted inside it.
+    winrt::DependencyObject targetObject = entry.Element;
+    if (newFocus == targetObject ||
+        (entry.CellLevel && SharedHelpers::IsAncestor(newFocus, targetObject, false /* checkVisibility */)))
+    {
+        return;
+    }
+
+    // Arm the target's level first (only one level is a tab stop); undo on failure.
+    auto targetRowImpl = winrt::get_self<TableViewRow>(entry.Row);
+    bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
+    targetRowImpl->SetCellLevelInternal(entry.CellLevel);
+
+    if (!TableView::IsEntryRedirectTargetFocusable(entry.Element, ownerObject))
+    {
+        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+
+        // The remembered target can't take focus; the viewport edge row still avoids a cache row.
+        auto const edgeRow = ownerImpl->FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous);
+        winrt::DependencyObject const edgeObject = edgeRow;
+        if (!edgeRow || edgeObject == newFocus || edgeObject == targetObject)
+        {
+            return;
+        }
+
+        entry.Row = edgeRow;
+        entry.Element = edgeRow;
+        entry.CellLevel = false;
+        targetObject = edgeObject;
+        targetRowImpl = winrt::get_self<TableViewRow>(edgeRow);
+        targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
+        targetRowImpl->SetCellLevelInternal(false);
+        if (!TableView::IsEntryRedirectTargetFocusable(edgeRow, ownerObject))
+        {
+            targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+            return;
+        }
+    }
+
+    if (!args.TrySetNewFocusedElement(targetObject))
+    {
+        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+        return;
+    }
+
+    ownerImpl->NoteFocusEntryRedirect(correlationId);
+    if (entry.CellLevel)
+    {
+        ownerImpl->ArmCellLevelRowInternal(entry.Row);
+    }
+    else
+    {
+        ownerImpl->SetCellCursorActiveInternal(false);
+    }
+}
+
+void TableViewRow::OnRowGotFocus()
 {
     if (auto const owner = GetOwningTableView())
     {
@@ -2125,7 +2322,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         // No local DataContext anywhere on the cell path: cells inherit the row item so recycled
         // rows update reactively. Custom columns must also bind to inherited DataContext, not bake
         // in the initial dataItem.
-        if (auto cellElement = column.GenerateElement(dataItem))
+        if (auto cellElement = winrt::get_self<TableViewColumn>(column)->GenerateDisplayElement(dataItem))
         {
             AttachCellContent(cellWrapper, cellElement);
         }
@@ -2246,7 +2443,7 @@ void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
 
 // Installs a generated display element as a cell's content, including the ContentPresenter wiring a
 // template column needs. Shared by the cell rebuild and by the post-commit refresh, because
-// GenerateElement alone is NOT a complete cell - forgetting the second half leaves a template
+// GenerateDisplayElement alone is NOT a complete cell - forgetting the second half leaves a template
 // column's Content unbound and the cell blank.
 void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement)
 {
@@ -2753,7 +2950,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             winrt::FrameworkElement refreshed{ nullptr };
             try
             {
-                refreshed = column.GenerateElement(DataContext());
+                refreshed = winrt::get_self<TableViewColumn>(column)->GenerateDisplayElement(DataContext());
                 factoryReturned = true;
                 if (refreshed)
                 {
@@ -3185,7 +3382,7 @@ void TableViewRow::OnPointerPressedForEditing(
     // A press inside the cell already being edited belongs to the editor: it is the user placing
     // the caret, and must not be read as a navigation move or a fresh edit.
     const bool pressInsideOpenEdit =
-        ownerImpl->IsEditing() &&
+        ownerImpl->IsEditInProgress() &&
         m_editingColumn.get() == column &&
         m_editingElement.get() != nullptr;
 
