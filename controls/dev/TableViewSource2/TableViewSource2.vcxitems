@@ -49,6 +49,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceRecord.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceTable.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Engine\FenwickTree.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Engine\GroupExpansion.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Engine\ShapeState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Engine\ShapedTree.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Engine\ShapingEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TableViewSource2.idl" />

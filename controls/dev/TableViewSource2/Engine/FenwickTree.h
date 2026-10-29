@@ -73,3 +73,21 @@ private:
 
     bool m_stale{ true };
 };
+
+template <typename CountOf>
+void FenwickTree::Build(uint32_t size, CountOf&& countOf)
+{
+    // Linear build: each entry adds itself into the next entry that covers it.
+    m_tree.assign(size == 0 ? 0 : size + 1, 0);
+    for (uint32_t i = 1; i <= size; ++i)
+    {
+        m_tree[i] += static_cast<uint32_t>(countOf(i - 1));
+        uint32_t const parent = i + (i & (0u - i));
+        if (parent <= size)
+        {
+            m_tree[parent] += m_tree[i];
+        }
+    }
+
+    m_stale = false;
+}
