@@ -90,12 +90,7 @@ void ShapingManager::Refresh()
 
 void ShapingManager::ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey)
 {
-    if (!CanRunVerb())
-    {
-        throw winrt::hresult_illegal_method_call(L"TableViewSource2.ParentBy cannot be called while the source is being shaped.");
-    }
-
-    if (m_sourceTable->IsDetached())
+    if (!BeginVerb(L"ParentBy"))
     {
         return;
     }
@@ -106,12 +101,7 @@ void ShapingManager::ParentBy(winrt::TableViewKeySelector const& key, winrt::Tab
 
 void ShapingManager::ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector)
 {
-    if (!CanRunVerb())
-    {
-        throw winrt::hresult_illegal_method_call(L"TableViewSource2.ChildrenBy cannot be called while the source is being shaped.");
-    }
-
-    if (m_sourceTable->IsDetached())
+    if (!BeginVerb(L"ChildrenBy"))
     {
         return;
     }
@@ -121,12 +111,7 @@ void ShapingManager::ChildrenBy(winrt::TableViewChildrenSelector2 const& childre
 
 void ShapingManager::ClearHierarchy()
 {
-    if (!CanRunVerb())
-    {
-        throw winrt::hresult_illegal_method_call(L"TableViewSource2.ClearHierarchy cannot be called while the source is being shaped.");
-    }
-
-    if (m_sourceTable->IsDetached())
+    if (!BeginVerb(L"ClearHierarchy"))
     {
         return;
     }
@@ -271,7 +256,8 @@ void ShapingManager::OnSourceChanged(SourceChange const& change)
             m_engine.ApplySourceChange(change);
             m_commit.chromeDirty = true;
 
-            // A Replace, or a change the engine could not apply surgically, rebuilt the list: the owner hears Reset | Membership.
+            // A Replace, or a change the engine could not apply surgically, rebuilt the list: the
+            // owner hears Reset | Membership.
             if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
             {
                 m_commit.changes |= ShapingChangeFlags::Membership;
@@ -549,6 +535,17 @@ void ShapingManager::SetCommitEndedHandler(std::function<void()> handler) noexce
 bool ShapingManager::IsApplying() const noexcept
 {
     return m_isApplying;
+}
+
+bool ShapingManager::BeginVerb(wchar_t const* verb) const
+{
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(
+            winrt::hstring{ L"TableViewSource2." } + verb + L" cannot be called while the source is being shaped.");
+    }
+
+    return !m_sourceTable->IsDetached();
 }
 
 bool ShapingManager::CanRunVerb() const noexcept

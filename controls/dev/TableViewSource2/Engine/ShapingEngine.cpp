@@ -62,8 +62,25 @@ bool ShapingEngine::InShapedTree(ShapedNode* node) noexcept
     return true;
 }
 
-void ShapingEngine::Reapply(ShapeSpec const& desired)
+namespace
 {
+    // A record as the empty spec leaves it: it keeps its own expansion; everything else is
+    // recomputed. Without ChildrenShaped, ShapedChildAt reads the source Children.
+    void ResetRecordShape(SourceRecord* record, GroupNode& root) noexcept
+    {
+        record->Shape.Flags = (record->Shape.Flags & (ShapeFlags::Expanded | ShapeFlags::OverlayCollapsed)) | ShapeFlags::PassesFilter;
+        record->Shape.SortKeys.clear();
+        record->Shape.ShapedChildren.clear();
+        record->Shape.Group = record->Parent ? nullptr : &root;
+        record->ChildRows.MarkStale();
+        for (uint32_t j = 0; j < record->Children.size(); ++j)
+        {
+            record->Children[j]->IndexInParent = j;
+        }
+    }
+}
+
+void ShapingEngine::Reapply(ShapeSpec const& desired){
     if (!(desired == ShapeSpec{}))
     {
         // Filter, Sort and GroupBy land in Milestone 4; every verb throws before reaching here.
@@ -92,17 +109,7 @@ void ShapingEngine::Reapply(ShapeSpec const& desired)
     GroupNode& root = m_tree.Root();
     for (SourceRecord* const record : records)
     {
-        // Keep the record's own expansion; everything else is recomputed for the empty spec.
-        // Without ChildrenShaped, ShapedChildAt reads the source Children.
-        record->Shape.Flags = (record->Shape.Flags & (ShapeFlags::Expanded | ShapeFlags::OverlayCollapsed)) | ShapeFlags::PassesFilter;
-        record->Shape.SortKeys.clear();
-        record->Shape.ShapedChildren.clear();
-        record->Shape.Group = record->Parent ? nullptr : &root;
-        record->ChildRows.MarkStale();
-        for (uint32_t j = 0; j < record->Children.size(); ++j)
-        {
-            record->Children[j]->IndexInParent = j;
-        }
+        ResetRecordShape(record, root);
     }
 
     for (uint32_t i = 0; i < topLevel.size(); ++i)
@@ -156,15 +163,7 @@ void ShapingEngine::ApplySourceChange(SourceChange const& change)
         // its records start as Reapply leaves a record under the empty spec.
         for (SourceRecord* const record : change.Added)
         {
-            record->Shape.Flags = (record->Shape.Flags & (ShapeFlags::Expanded | ShapeFlags::OverlayCollapsed)) | ShapeFlags::PassesFilter;
-            record->Shape.SortKeys.clear();
-            record->Shape.ShapedChildren.clear();
-            record->Shape.Group = record->Parent ? nullptr : &root;
-            record->ChildRows.MarkStale();
-            for (uint32_t j = 0; j < record->Children.size(); ++j)
-            {
-                record->Children[j]->IndexInParent = j;
-            }
+            ResetRecordShape(record, root);
         }
 
         m_tree.Link(change.Added.front(), shapedParent(change.NewParent), change.NewIndex, false /* isMove */);
@@ -201,6 +200,7 @@ void ShapingEngine::ApplySourceChange(SourceChange const& change)
     }
     }
 }
+
 namespace
 {
     void ClearShape(SourceRecord* record) noexcept

@@ -1044,6 +1044,11 @@ void SourceTable::RemoveAt(uint32_t index)
 {
     MUX_ASSERT(index < m_records.size());
 
+    // Compute: room for the record's zombie slot, while nothing is detached yet, so parking it
+    // after an OnRemoving fault cannot throw (a bad_alloc there would free a record the engine
+    // still points to).
+    m_zombies.reserve(m_zombies.size() + 1);
+
     std::vector<SourceRecordPtr> removed;
     removed.push_back(std::move(m_records[index]));
     m_records.erase(m_records.begin() + index);
@@ -1062,10 +1067,6 @@ void SourceTable::RemoveAt(uint32_t index)
     // still in the shaped tree); ChildrenBy appends its subtree to removed. An excluded record
     // is in no sibling list and raises nothing.
     bool linked = false;
-
-    // Compute: room for the record's zombie slot, so parking it in the catch below cannot throw
-    // (a bad_alloc there would free a record the engine still points to).
-    m_zombies.reserve(m_zombies.size() + 1);
     try
     {
         linked = m_hierarchy->OnRemoving(*this, raw, removed);

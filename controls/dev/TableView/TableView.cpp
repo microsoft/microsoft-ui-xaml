@@ -2159,7 +2159,8 @@ void TableView::SourceOwnerSink::OnShapingApplied(ShapingAppliedArgs const& args
     m_owner->QueueRefreshRealizedRowHierarchyState();
 }
 
-void TableView::OnTableViewSourceShapingChanged(bool reorderOnly){
+void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
+{
     SupersedeTipOperation();
     if (!reorderOnly)
     {

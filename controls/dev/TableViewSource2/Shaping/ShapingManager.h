@@ -321,7 +321,9 @@ private:
     //   CanDrain: the live drain may run; otherwise it stays pending and is posted again by
     //     whatever closed the gate.
     bool CanRunVerb() const noexcept;     // !m_isApplying
-    bool CanReshape() const noexcept;     // m_deferDepth == 0
+    // Preamble of a hierarchy verb: throws illegal_method_call while an apply runs; false when the
+    // source is detached (nothing to do).
+    bool BeginVerb(wchar_t const* verb) const;    bool CanReshape() const noexcept;     // m_deferDepth == 0
     bool CanDrain() const noexcept;       // !m_isApplying && m_deferDepth == 0 && m_liveHoldCount == 0
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
@@ -437,6 +439,7 @@ private:
         // A surgical source change was applied. It may change a staying row's chrome without a row
         // event (a first child linked under a collapsed parent), so EndCommit calls the owner even
         // when changes is None (P9; drift #21).
-        bool chromeDirty{ false };    };
+        bool chromeDirty{ false };
+    };
     CommitState m_commit;
 };

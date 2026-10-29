@@ -296,8 +296,42 @@ void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bo
     // PrefixSum(index + 1).
     std::optional<uint32_t> shownAt;
     bool const parentIsRoot = parent == &m_root;
-    std::optional<uint32_t> const parentAt = parentIsRoot ? std::optional<uint32_t>{ 0 } : IndexOf(parent);
-    if (parentAt && (parentIsRoot || IsExpanded(parent)))
+
+    // The same correction applies higher up: a reparent into an ancestor of parent has already put
+    // node into that ancestor's source-owned list, so when its sums are stale they are rebuilt with
+    // node's span in the new place and the ancestor's child on the way to parent has shifted by
+    // one (its IndexInParent is still the old one).
+    auto const parentIndex = [&]() -> std::optional<uint32_t> {
+        uint32_t flat = 0;
+        ShapedNode* const newParent = node->ShapedParent();
+        ShapedNode* current = parent;
+        while (ShapedNode* const up = current->ShapedParent())
+        {
+            bool const upIsRoot = up == &m_root;
+            if (!upIsRoot && !IsExpanded(up))
+            {
+                return std::nullopt;
+            }
+
+            bool const wasStale = up->ChildRows.IsStale();
+            FenwickTree& rows = CurrentChildRows(up);
+            uint32_t const at = current->IndexInParent;
+            uint32_t before = rows.PrefixSum(at);
+            if (wasStale && up == newParent && at + 1 < up->ShapedChildCount() && up->ShapedChildAt(at + 1) == current)
+            {
+                before = rows.PrefixSum(at + 1) - span;
+            }
+            flat += before + (upIsRoot ? 0 : 1);
+            current = up;
+        }
+
+        if (current != &m_root)
+        {
+            return std::nullopt;
+        }
+        return flat;
+    };
+    std::optional<uint32_t> const parentAt = parentIsRoot ? std::optional<uint32_t>{ 0 } : parentIndex();    if (parentAt && (parentIsRoot || IsExpanded(parent)))
     {
         bool const wasStale = parent->ChildRows.IsStale();
         FenwickTree& rows = CurrentChildRows(parent);
