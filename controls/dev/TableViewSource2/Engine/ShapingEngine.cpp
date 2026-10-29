@@ -80,7 +80,8 @@ namespace
     }
 }
 
-void ShapingEngine::Reapply(ShapeSpec const& desired){
+void ShapingEngine::Reapply(ShapeSpec const& desired)
+{
     if (!(desired == ShapeSpec{}))
     {
         // Filter, Sort and GroupBy land in Milestone 4; every verb throws before reaching here.

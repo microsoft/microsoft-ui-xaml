@@ -323,7 +323,8 @@ private:
     bool CanRunVerb() const noexcept;     // !m_isApplying
     // Preamble of a hierarchy verb: throws illegal_method_call while an apply runs; false when the
     // source is detached (nothing to do).
-    bool BeginVerb(wchar_t const* verb) const;    bool CanReshape() const noexcept;     // m_deferDepth == 0
+    bool BeginVerb(wchar_t const* verb) const;
+    bool CanReshape() const noexcept;     // m_deferDepth == 0
     bool CanDrain() const noexcept;       // !m_isApplying && m_deferDepth == 0 && m_liveHoldCount == 0
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };

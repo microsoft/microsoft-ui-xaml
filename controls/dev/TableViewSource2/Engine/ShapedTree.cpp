@@ -331,7 +331,8 @@ void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bo
         }
         return flat;
     };
-    std::optional<uint32_t> const parentAt = parentIsRoot ? std::optional<uint32_t>{ 0 } : parentIndex();    if (parentAt && (parentIsRoot || IsExpanded(parent)))
+    std::optional<uint32_t> const parentAt = parentIsRoot ? std::optional<uint32_t>{ 0 } : parentIndex();
+    if (parentAt && (parentIsRoot || IsExpanded(parent)))
     {
         bool const wasStale = parent->ChildRows.IsStale();
         FenwickTree& rows = CurrentChildRows(parent);
