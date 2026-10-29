@@ -77,6 +77,12 @@ public sealed partial class SelectionPage : SamplePageBase
             return;
         }
 
+        if (People.Count == 0)
+        {
+            SetLastAction("There is no row to select.");
+            return;
+        }
+
         var index = SelectFirstSelectable(People.Count + (IsGrouped ? GroupCount() : 0) - 1, fromEnd);
         if (index >= 0)
         {
