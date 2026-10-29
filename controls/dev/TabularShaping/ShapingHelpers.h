@@ -75,6 +75,22 @@ namespace ShapingHelpers
         static winrt::hstring ToObjectLookupKey(winrt::IInspectable const& value, bool rejectEmptyString = false);
     };
 
+    // A boxed WinRT enum (IPropertyValue of OtherType), normalized to its runtime type and underlying integer value, so
+    // two boxes of one enum value compare and key equal. Values above INT64_MAX are held in Unsigned.
+    struct EnumValue
+    {
+        winrt::hstring TypeName;
+        bool IsUnsigned{ false };
+        int64_t Signed{ 0 };
+        uint64_t Unsigned{ 0 };
+
+        // False for any box that is not an enum (no integer getter succeeds). Never throws. The type name is read only
+        // when asked for (identity keys need it; ordering does not).
+        static bool TryGet(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumValue& value, bool includeTypeName = true) noexcept;
+        // Orders by underlying value alone, whatever the enum types: equal values of two types compare equal.
+        static int Compare(EnumValue const& a, EnumValue const& b) noexcept;
+    };
+
     struct ValueComparer
     {
         static int Compare(winrt::IInspectable const& a, winrt::IInspectable const& b);
@@ -266,6 +282,10 @@ namespace ShapingHelpers
         std::function<bool(winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)> const& keysConsideredEqual,
         std::vector<KeyedBucket>& outBuckets,
         wchar_t const*& rejectReason);
+
+    // Stable-sorts buckets by their Key with ValueComparer, keeping first-seen order among equal keys. None leaves the
+    // order unchanged.
+    void StableSortBucketsByKey(std::vector<KeyedBucket>& buckets, winrt::SortDirection direction);
 
     // Upper-bound insertion index shared by the incremental fast-paths. Given an already-sorted
     // range of `count` items, returns the position where a newly-arrived item should be inserted

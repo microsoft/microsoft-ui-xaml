@@ -12,7 +12,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
-using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
@@ -31,10 +30,6 @@ public sealed partial class ShapingOptions : UserControl
     private TableView? _table;
     private TableViewSource? _source;
 
-    private int _declarations;
-    private int _groupDeclaredAt = -1;
-    private int _sortDeclaredAt = -1;
-    private TableViewColumn? _sortColumn;
     private Func<object?, string, object> _groupKeyOf = (row, key) => SampleShaping.KeyOf(row as Person, key);
     private ParentRelation? _relation;
     private bool _parentDeclared;
@@ -145,10 +140,6 @@ public sealed partial class ShapingOptions : UserControl
 
     public ParentRelation? Relation => _relation;
 
-    // TableViewSource applies its verbs in declaration order: a sort declared before GroupBy orders the
-    // groups; one declared after it only sorts within each group.
-    public bool SortOrdersGroups => _sortDeclaredAt >= 0 && _sortDeclaredAt < _groupDeclaredAt;
-
     public string AppliedText => ShapingText(AppliedMode, SelectedKeyLabel, _relation?.Label);
 
     public string SelectedMode => SampleShaping.SelectedTag(ShapingModeSelector, "flat");
@@ -187,9 +178,6 @@ public sealed partial class ShapingOptions : UserControl
 
         if (!ReferenceEquals(source, _source))
         {
-            _groupDeclaredAt = -1;
-            _sortDeclaredAt = -1;
-            _sortColumn = null;
             _parentDeclared = false;
         }
 
@@ -263,7 +251,6 @@ public sealed partial class ShapingOptions : UserControl
         AppliedKey = key;
         _parentDeclared = IsHierarchicalMode(mode);
         ArrangeHierarchyColumn(_parentDeclared);
-        _groupDeclaredAt = IsGrouped ? ++_declarations : -1;
 
         UpdateGating();
         var message = "Shaping -> " + AppliedText;
@@ -427,21 +414,6 @@ public sealed partial class ShapingOptions : UserControl
         return false;
     }
 
-    // Re-declaring the sort makes it a new declaration after GroupBy, so it would only sort within
-    // groups; GroupBy is applied again after it so the groups keep their order.
-    public bool OnSortRedeclared()
-    {
-        var sortOrderedGroups = SortOrdersGroups;
-        _sortDeclaredAt = ++_declarations;
-        if (sortOrderedGroups && IsGrouped)
-        {
-            Apply(announce: false);
-            return true;
-        }
-
-        return false;
-    }
-
     // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
     // the tree rows, so Grouped hierarchy calls both.
     public void ExpandAll()
@@ -516,18 +488,6 @@ public sealed partial class ShapingOptions : UserControl
 
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
-        if (args.Column is null || args.Direction == SortDirection.None)
-        {
-            _sortDeclaredAt = -1;
-            _sortColumn = null;
-        }
-        else if (_sortDeclaredAt < 0 || !ReferenceEquals(args.Column, _sortColumn))
-        {
-            // The control replaces the previous column's axis, so this is a new declaration.
-            _sortDeclaredAt = ++_declarations;
-            _sortColumn = args.Column;
-        }
-
         SortStateChanged?.Invoke(this, EventArgs.Empty);
     }
 

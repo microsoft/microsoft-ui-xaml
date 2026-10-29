@@ -153,6 +153,20 @@ void TableView::TrackColumnsFromVector(winrt::IObservableVector<winrt::TableView
         auto col = columns.GetAt(i);
         const bool ownsColumn = TrySetColumnOwnerForTracking(*this, col);
         m_trackedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, ownsColumn ? col : nullptr });
+        if (ownsColumn)
+        {
+            AdoptColumnSortDirection(col);
+        }
+    }
+}
+
+// A column that arrives already showing a direction is lit as if the app had just set it; the
+// last one to arrive wins, as with consecutive writes.
+void TableView::AdoptColumnSortDirection(winrt::TableViewColumn const& column)
+{
+    if (auto const direction = column.SortDirection(); direction != winrt::SortDirection::None)
+    {
+        OnColumnSortDirectionSetByApp(column, direction);
     }
 }
 
@@ -253,6 +267,10 @@ void TableView::OnColumnsVectorChanged(
             m_trackedColumns.insert(
                 m_trackedColumns.begin() + std::min<size_t>(index, m_trackedColumns.size()),
                 tracker_ref<winrt::TableViewColumn>{ this, ownsColumn ? col : nullptr });
+            if (ownsColumn)
+            {
+                AdoptColumnSortDirection(col);
+            }
         }
         break;
     }
@@ -312,6 +330,10 @@ void TableView::OnColumnsVectorChanged(
                     }
                 }
                 m_trackedColumns[index] = tracker_ref<winrt::TableViewColumn>{ this, ownsColumn ? newCol : nullptr };
+                if (ownsColumn)
+                {
+                    AdoptColumnSortDirection(newCol);
+                }
             }
         }
         break;
@@ -478,6 +500,38 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
     if (!column)
     {
         return;
+    }
+
+    // Regenerating cells inside measure or arrange would mutate the tree being laid out. At most one
+    // post per column; the reset requests are OR'ed into it.
+    if (IsInLayoutCallback())
+    {
+        auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
+        if (columnImpl->QueueCellContentChangeInternal(resetAutoWidth))
+        {
+            return;
+        }
+        if (auto const queue = DispatcherQueue())
+        {
+            if (queue.TryEnqueue([weakThis = get_weak(), weakColumn = winrt::make_weak(column)]()
+                {
+                    auto const strongThis = weakThis.get();
+                    auto const liveColumn = weakColumn.get();
+                    if (!liveColumn)
+                    {
+                        return;
+                    }
+                    const bool reset = winrt::get_self<TableViewColumn>(liveColumn)->TakeQueuedCellContentChangeInternal();
+                    if (strongThis && winrt::get_self<TableViewColumn>(liveColumn)->GetOwningTableView() == *strongThis)
+                    {
+                        strongThis->OnColumnCellTemplateChanged(liveColumn, reset);
+                    }
+                }))
+            {
+                return;
+            }
+        }
+        columnImpl->TakeQueuedCellContentChangeInternal();
     }
 
     // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.

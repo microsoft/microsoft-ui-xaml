@@ -18,12 +18,9 @@ public:
     // Lets TableViewCell skip the public constructor's argument validation.
     struct TrustedOwnerTag {};
 
-    // Throws E_INVALIDARG for arguments that cannot describe a cell.
-    TableViewCellAutomationPeer(
-        winrt::FrameworkElement const& cell,
-        winrt::TableViewRow const& row,
-        winrt::TableViewColumn const& column,
-        int32_t columnIndex);
+    // Throws E_INVALIDARG unless owner is a TableView cell.
+    explicit TableViewCellAutomationPeer(winrt::FrameworkElement const& owner);
+
     TableViewCellAutomationPeer(
         TrustedOwnerTag,
         winrt::FrameworkElement const& cell,

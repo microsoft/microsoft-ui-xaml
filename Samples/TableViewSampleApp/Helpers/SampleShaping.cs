@@ -194,13 +194,12 @@ public static class SampleShaping
             : (column as TableViewTextColumn)?.Binding?.Path?.Path;
 
     // Approximates the table's row order for the readouts only: TableView v1 does not expose its
-    // projection. A sort declared before GroupBy orders the groups; one declared after sorts within them.
+    // projection. The active sort orders the rows, and each group sits where its first sorted row falls.
     public static IEnumerable<T> InViewOrder<T>(
         TableView? table,
         IEnumerable<T> rows,
         Func<T, string, IComparable?> sortKey,
-        Func<T, object>? groupKey,
-        bool sortOrdersGroups)
+        Func<T, object>? groupKey)
     {
         var column = ActiveSortColumn(table);
         Func<IEnumerable<T>, IEnumerable<T>> sort = r => r;
@@ -216,9 +215,7 @@ public static class SampleShaping
             return sort(rows);
         }
 
-        return sortOrdersGroups
-            ? sort(rows).GroupBy(groupKey).SelectMany(g => g)
-            : rows.GroupBy(groupKey).SelectMany(g => sort(g));
+        return sort(rows).GroupBy(groupKey).SelectMany(g => g);
     }
 
     private sealed class SortKeyComparer : IComparer<IComparable?>

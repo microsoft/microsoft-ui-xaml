@@ -65,12 +65,11 @@ private bool ResortIfSortedOn(params string[] propertyNames)
     }
 
     // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
-    // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
+    // source re-reads every key.
     _isResorting = true;
     try
     {
         Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
-        OnSortRedeclared();
     }
     finally
     {

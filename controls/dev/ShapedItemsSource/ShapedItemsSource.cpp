@@ -132,6 +132,8 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
         return;
     }
 
+    // Toggling rebuilds the live snapshots, which a running snapshot capture may be iterating.
+    ThrowIfReentrant();
     m_liveShapingEnabled = enabled;
 
     if (enabled)
@@ -164,76 +166,185 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
     }
 }
 
+template<class Result>
+std::function<Result(winrt::IInspectable const&)> ShapedItemsSource::GuardAppCallback(std::function<Result(winrt::IInspectable const&)> const& callback)
+{
+    if (!callback)
+    {
+        return nullptr;
+    }
+
+    // The engine owns every copy of the wrapper, so `this` outlives it.
+    return [this, callback](winrt::IInspectable const& value) -> Result
+    {
+        ++m_appCallbackDepth;
+        auto restore = wil::scope_exit([this]() noexcept { --m_appCallbackDepth; });
+        return callback(value);
+    };
+}
+
+void ShapedItemsSource::ThrowIfReentrant() const
+{
+    if (m_appCallbackDepth != 0)
+    {
+        throw winrt::hresult_illegal_method_call(Diagnostic(
+            L"Shaping cannot be changed or refreshed from inside a filter predicate, key selector or identity selector."));
+    }
+}
+
+void ShapedItemsSource::ThrowIfEndDeferRefreshReentrant() const
+{
+    if (m_deferDepth == 1 && (m_deferredRefresh || m_deferredShapingChange))
+    {
+        ThrowIfReentrant();
+    }
+}
+
+ShapedItemsSource::DeclarationSnapshot ShapedItemsSource::SaveDeclaration() const
+{
+    return DeclarationSnapshot{
+        m_pipeline,
+        m_groupSelector,
+        m_groupIdentitySelector,
+        m_keySelector,
+        m_parentKeySelector,
+        m_parentRelationRedeclared,
+        m_hierarchyAxisDirty };
+}
+
+void ShapedItemsSource::RestoreDeclaration(DeclarationSnapshot const& snapshot)
+{
+    m_pipeline.RestoreDeclaration(snapshot.Pipeline);
+    m_groupSelector = snapshot.GroupSelector;
+    m_groupIdentitySelector = snapshot.GroupIdentitySelector;
+
+    // A ClearParentBy is not rolled back: it may already have torn the tree down (see ClearParentBy).
+    const bool parentCleared = snapshot.ParentKeySelector && !m_parentKeySelector;
+    if (!parentCleared)
+    {
+        m_keySelector = snapshot.NodeKeySelector;
+        m_parentKeySelector = snapshot.ParentKeySelector;
+        m_parentRelationRedeclared = snapshot.ParentRelationRedeclared;
+        // A structure built for the failed relation must not be reused for the restored one.
+        ++m_parentDeclarationGeneration;
+    }
+    m_hierarchyAxisDirty = snapshot.HierarchyAxisDirty;
+
+    // The failed pass may have published part of its shape; the next change rebuilds rather than diffs.
+    m_forceFullReshape = true;
+    UpdateSortKeyPropertyFilter();
+}
+
+template<class Declare>
+void ShapedItemsSource::ApplyVerb(Declare&& declare)
+{
+    ThrowIfReentrant();
+    auto const snapshot = SaveDeclaration();
+    bool reshaped = false;
+    try
+    {
+        std::forward<Declare>(declare)();
+        ApplyShapingChange(false, &reshaped);
+    }
+    catch (...)
+    {
+        if (!reshaped)
+        {
+            RestoreDeclaration(snapshot);
+        }
+        throw;
+    }
+}
+
 void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
 {
-    m_pipeline.SetFilter(predicate);
-    ResetHierarchyFilterOverlay();
-    ApplyShapingChange();
+    SetFilter(winrt::hstring{}, predicate);
 }
 
 void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate)
 {
-    m_pipeline.SetFilter(axisToken, predicate);
-    ResetHierarchyFilterOverlay();
-    ApplyShapingChange();
+    ApplyVerb([&]()
+    {
+        m_pipeline.SetFilter(axisToken, GuardAppCallback(predicate));
+        ResetHierarchyFilterOverlay();
+    });
 }
 
 void ShapedItemsSource::ClearFilter()
 {
-    m_pipeline.ClearFilter();
-    ResetHierarchyFilterOverlay();
-    ApplyShapingChange();
+    ApplyVerb([&]()
+    {
+        m_pipeline.ClearFilter();
+        ResetHierarchyFilterOverlay();
+    });
 }
 
 void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
 {
-    m_pipeline.ClearFilter(axisToken);
-    ResetHierarchyFilterOverlay();
-    ApplyShapingChange();
+    ApplyVerb([&]()
+    {
+        m_pipeline.ClearFilter(axisToken);
+        ResetHierarchyFilterOverlay();
+    });
 }
 
 void ShapedItemsSource::SetGroup(
     ShapingHelpers::KeySelector const& key,
     RowIdentity::IdentitySelector const& groupIdentitySelector)
 {
-    m_groupSelector = key;
-    m_groupIdentitySelector = groupIdentitySelector;
-    m_pipeline.MarkGroupVerb(key);
-    ApplyShapingChange();
+    ApplyVerb([&]()
+    {
+        m_groupSelector = GuardAppCallback(key);
+        m_groupIdentitySelector = GuardAppCallback(groupIdentitySelector);
+        m_pipeline.MarkGroupVerb(m_groupSelector);
+    });
 }
 
 void ShapedItemsSource::ClearGroup()
 {
-    m_groupSelector = nullptr;
-    m_groupIdentitySelector = nullptr;
-    m_pipeline.ClearGroupVerb();
-    ApplyShapingChange();
+    ApplyVerb([&]()
+    {
+        m_groupSelector = nullptr;
+        m_groupIdentitySelector = nullptr;
+        m_pipeline.ClearGroupVerb();
+    });
+}
+
+void ShapedItemsSource::SetGroupSortDirection(winrt::SortDirection direction)
+{
+    ApplyVerb([&]() { m_pipeline.SetGroupSortDirection(direction); });
 }
 
 void ShapedItemsSource::SetParent(ShapingHelpers::KeySelector key, ShapingHelpers::KeySelector parentKey)
 {
-    m_keySelector = std::move(key);
-    m_parentKeySelector = std::move(parentKey);
-    // An in-flight index build (we ran from a selector) discards its result.
-    ++m_parentDeclarationGeneration;
+    ApplyVerb([&]()
+    {
+        m_keySelector = GuardAppCallback(key);
+        m_parentKeySelector = GuardAppCallback(parentKey);
+        // An in-flight index build (a publication handler re-declared the relation) discards its result.
+        ++m_parentDeclarationGeneration;
 
-    // A different relation is a different tree: clear intent at next publish.
-    m_parentRelationRedeclared = true;
+        // A different relation is a different tree: clear intent at next publish.
+        m_parentRelationRedeclared = true;
 
-    // The hierarchy axis is invisible to the spec diff; without this a parent verb is a no-op.
-    m_hierarchyAxisDirty = true;
+        // The hierarchy axis is invisible to the spec diff; without this a parent verb is a no-op.
+        m_hierarchyAxisDirty = true;
 
-    // Grouping is NOT retracted: GroupBy buckets the roots (see RebuildGroupedHierarchical).
-    ApplyShapingChange();
+        // Grouping is NOT retracted: GroupBy buckets the roots (see RebuildGroupedHierarchical).
+    });
 }
 
+// Not rolled back when its rebuild throws: the tree may already be torn down, and the teardown
+// completes even then (CompleteDeferredHierarchyTeardown).
 void ShapedItemsSource::ClearParentBy()
 {
+    ThrowIfReentrant();
+
     // Nothing declared: no-op, avoid a needless Reset.
     if (!m_parentKeySelector)
     {
-        // A deferred teardown may still be owed; finish it now.
-        if (m_pendingHierarchyTeardown)
+        // A deferred teardown may still be owed; finish it now (or when a deferral ends).
+        if (m_pendingHierarchyTeardown && !IsRefreshDeferred())
         {
             CompleteDeferredHierarchyTeardown();
         }
@@ -245,11 +356,12 @@ void ShapedItemsSource::ClearParentBy()
     ++m_parentDeclarationGeneration;
     m_parentRelationRedeclared = false;
 
-    // Release now only if no publication (rebuild or re-slice) is on the stack; otherwise the outer
-    // frame is still handing this adapter to consumers. The teardown stays owed until
-    // non-hierarchical metadata publishes (the deferred rebuild may fail). Set before release.
+    // Release now only if no publication (rebuild or re-slice) is on the stack and no deferral holds
+    // the rebuild back; otherwise the current projection is still the one being shown. The teardown
+    // stays owed until non-hierarchical metadata publishes (the deferred rebuild may fail). Set
+    // before release.
     m_pendingHierarchyTeardown = true;
-    if (!m_isRefreshing && !m_reslicingGroups)
+    if (!m_isRefreshing && !m_reslicingGroups && !IsRefreshDeferred())
     {
         ReleaseHierarchyProjection();
     }
@@ -265,40 +377,128 @@ void ShapedItemsSource::SetSort(
     winrt::hstring const& sortMemberPath,
     winrt::SortDirection direction)
 {
-    m_pipeline.SetSort(previousAxisToken, axisToken, key, keyIdentity, sortMemberPath, direction);
-    ApplyShapingChange();
+    ApplyVerb([&]()
+    {
+        m_pipeline.SetSort(previousAxisToken, axisToken, GuardAppCallback(key), keyIdentity, sortMemberPath, direction);
+    });
+}
+
+void ShapedItemsSource::ReplaceSorts(
+    winrt::hstring const& axisToken,
+    ShapingHelpers::KeySelector const& key,
+    winrt::hstring const& sortMemberPath,
+    winrt::SortDirection direction)
+{
+    ApplyVerb([&]()
+    {
+        m_pipeline.ReplaceSorts(axisToken, GuardAppCallback(key), sortMemberPath, direction);
+    });
+}
+
+void ShapedItemsSource::ThenSort(
+    winrt::hstring const& axisToken,
+    ShapingHelpers::KeySelector const& key,
+    winrt::hstring const& sortMemberPath,
+    winrt::SortDirection direction)
+{
+    ApplyVerb([&]()
+    {
+        m_pipeline.ThenSort(axisToken, GuardAppCallback(key), sortMemberPath, direction);
+    });
 }
 
 void ShapedItemsSource::ClearSorts()
 {
-    m_pipeline.ClearSorts();
-    ApplyShapingChange();
+    ApplyVerb([&]() { m_pipeline.ClearSorts(); });
 }
 
 void ShapedItemsSource::ClearSort(winrt::hstring const& axisToken)
 {
-    m_pipeline.ClearSort(axisToken);
-    ApplyShapingChange();
+    ApplyVerb([&]() { m_pipeline.ClearSort(axisToken); });
 }
 
 void ShapedItemsSource::ClearSortsExcept(winrt::hstring const& axisToken)
 {
-    m_pipeline.ClearSortsExcept(axisToken);
-    ApplyShapingChange();
+    ApplyVerb([&]() { m_pipeline.ClearSortsExcept(axisToken); });
+}
+
+void ShapedItemsSource::RefreshShaping()
+{
+    ThrowIfReentrant();
+    ApplyShapingChange(true /* forceRefresh */);
+}
+
+void ShapedItemsSource::BeginDeferRefresh()
+{
+    ThrowIfReentrant();
+    if (m_deferDepth == 0)
+    {
+        m_deferredDeclaration = SaveDeclaration();
+    }
+    ++m_deferDepth;
+}
+
+void ShapedItemsSource::EndDeferRefresh()
+{
+    if (m_deferDepth == 0)
+    {
+        return;
+    }
+
+    // Refused before anything changes, so the caller can end the deferral later.
+    ThrowIfEndDeferRefreshReentrant();
+    if (--m_deferDepth != 0)
+    {
+        return;
+    }
+
+    auto const snapshot = std::exchange(m_deferredDeclaration, std::nullopt);
+    const bool refresh = std::exchange(m_deferredRefresh, false);
+    const bool shapingChanged = std::exchange(m_deferredShapingChange, false);
+    if (!refresh && !shapingChanged)
+    {
+        return;
+    }
+
+    bool reshaped = false;
+    try
+    {
+        // A ClearParentBy made while deferred left its teardown owed; the rebuild below completes it.
+        ApplyShapingChange(refresh, &reshaped);
+    }
+    catch (...)
+    {
+        if (snapshot && !reshaped)
+        {
+            RestoreDeclaration(*snapshot);
+        }
+        throw;
+    }
 }
 
 std::vector<ShapedItemsSource::ActiveSortAxisInfo> ShapedItemsSource::ActiveSortAxisInfos() const
 {
     std::vector<ActiveSortAxisInfo> infos;
-    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+    for (auto const& axis : m_pipeline.ActiveSortAxes())
     {
         infos.push_back({ axis.AxisToken, axis.SortMemberPath, axis.Direction });
     }
     return infos;
 }
 
-void ShapedItemsSource::ApplyShapingChange()
+void ShapedItemsSource::ApplyShapingChange(bool forceRefresh, bool* reshaped)
 {
+    // Set once the projection is rebuilt, so a caller can tell a failed reshape from a throwing ShapingChanged handler.
+    auto const markReshaped = [reshaped]() noexcept { if (reshaped) { *reshaped = true; } };
+
+    if (IsRefreshDeferred())
+    {
+        // Left uncommitted: the closing reshape diffs against the spec from before the deferral.
+        (forceRefresh ? m_deferredRefresh : m_deferredShapingChange) = true;
+        markReshaped();
+        return;
+    }
+
     // Commit unconditionally, even when the in-place path is not taken: the committed spec is
     // the baseline the NEXT verb diffs against, so skipping it would make that diff report a
     // change that has already been applied.
@@ -308,36 +508,39 @@ void ShapedItemsSource::ApplyShapingChange()
     // Consumed regardless of delta: the diff cannot see the hierarchy axis.
     const bool hierarchyChanged = m_hierarchyAxisDirty;
     m_hierarchyAxisDirty = false;
+    const bool rebuild = hierarchyChanged || forceRefresh || std::exchange(m_forceFullReshape, false);
 
-    if (delta.IsNoOp() && !hierarchyChanged)
+    if (delta.IsNoOp() && !rebuild)
     {
         // Re-declaring the identical shape. The projection already satisfies it, and a rebuild
         // would fire a Reset that drops every realized row for nothing. Reachable only from a
         // Clear* verb against a shape that has nothing to clear — every declaration re-mints its
         // description id, so a re-declaration always reads as a change.
+        markReshaped();
         return;
     }
 
     // In-place paths cannot switch flat <-> hierarchical; a hierarchy change always rebuilds.
-    if (!hierarchyChanged && TryApplyShapingDeltaInPlace(delta))
+    if (!rebuild && TryApplyShapingDeltaInPlace(delta))
     {
         // Skips Refresh(), so re-capture live-shaping keys against the new spec (no COM churn).
         if (IsLiveShapingEnabled())
         {
             ResubscribeLiveShapingFromSource();
         }
+        markReshaped();
         RaiseShapingChanged(true /* reorderOnly */);
         return;
     }
 
     Refresh();
+    markReshaped();
     RaiseShapingChanged(false /* reorderOnly */);
 }
 
-// Scope: UNGROUPED sort-only changes. Grouped sort still rebuilds through the group adapter,
-// because a sort declared before the group verb reorders the GROUPS, which layer 1's
-// within-bucket sort cannot express. Doing that incrementally would mean teaching the adapter to
-// consume a ReBucket / ReSortWithinBuckets delta, which this does not attempt.
+// Scope: UNGROUPED sort-only changes. A grouped projection is materialized through the group
+// adapter, which has no in-place re-sort; doing that incrementally would mean teaching the adapter
+// to consume a ReBucket / ReSortWithinBuckets delta, which this does not attempt.
 //
 // What it saves is model-side work: re-materializing the source, re-running the filter predicate
 // over every row, and constructing a new ItemsSourceView and RowMetadataProvider. It does NOT
@@ -356,9 +559,8 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
         return false;
     }
 
-    // A grouped projection is rebuilt through the group adapter, and sorts declared before the
-    // group verb reorder the GROUPS — which layer 1's within-bucket sort cannot express. A
-    // hierarchy re-sorts every sibling set through a rebuilt parent-key index.
+    // A grouped projection is rebuilt through the group adapter. A hierarchy re-sorts every
+    // sibling set through a rebuilt parent-key index.
     if (m_groupSelector || m_projectedAsGrouped || m_parentKeySelector)
     {
         return false;
@@ -518,6 +720,13 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     // SetAt below mutate the UI-affine projection directly, so they must run on the owning thread.
     ++m_sourceChangeStamp;
 
+    // Applied in full when the deferral ends.
+    if (IsRefreshDeferred())
+    {
+        m_deferredRefresh = true;
+        return;
+    }
+
     // Re-entrant during a full rebuild: the in-flight Refresh() re-materializes the live source
     // when it completes, but changes after its initial materialization still need one coalesced
     // follow-up rebuild after the outer rebuild unwinds.
@@ -575,6 +784,12 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 {
     // See the UI-thread contract on OnSourceCollectionChanged().
     ++m_sourceChangeStamp;
+
+    if (IsRefreshDeferred())
+    {
+        m_deferredRefresh = true;
+        return;
+    }
 
     if (m_isRefreshing)
     {
@@ -1046,7 +1261,7 @@ void ShapedItemsSource::UpdateSortKeyPropertyFilter()
 {
     std::unordered_set<winrt::hstring> names;
     bool anyProperty = false;
-    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+    for (auto const& axis : m_pipeline.ActiveSortAxes())
     {
         // No usable path (delegate key/comparer): any property change may move a row.
         auto const name = LeadingPropertyName(axis.SortMemberPath);
@@ -1606,6 +1821,33 @@ bool ShapedItemsSource::TryGetGroupIdentity(
     return RowIdentity::TryGetGroupIdentity(key, m_groupIdentitySelector, identity, reason);
 }
 
+bool ShapedItemsSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key, winrt::hstring& identity) const
+{
+    wchar_t const* reason = nullptr;
+    return m_groupSelector && TryGetGroupIdentity(key, identity, reason);
+}
+
+std::vector<ShapedItemsSource::GroupSnapshot> ShapedItemsSource::CurrentGroups() const
+{
+    std::vector<GroupSnapshot> groups;
+    if (!m_projectedAsGrouped || !m_groupSource)
+    {
+        return groups;
+    }
+
+    groups.reserve(m_groupSource.Size());
+    for (auto const& group : m_groupSource)
+    {
+        auto const identity = group.try_as<ShapingHelpers::IGroupIdentity>();
+        auto const viewGroup = group.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>();
+        if (identity && viewGroup)
+        {
+            groups.push_back({ identity->StableGroupIdentity(), viewGroup.Group(), group });
+        }
+    }
+    return groups;
+}
+
 std::vector<ShapingHelpers::KeyedBucket> ShapedItemsSource::BucketizeGroupsOrThrow(std::vector<winrt::IInspectable> const& items)
 {
     std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
@@ -1766,6 +2008,12 @@ void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> con
 
 void ShapedItemsSource::Refresh()
 {
+    // Held until the outermost deferral ends, which rebuilds once (EndDeferRefresh).
+    if (IsRefreshDeferred())
+    {
+        m_deferredRefresh = true;
+        return;
+    }
 
     // Re-entrancy guard: a source notification that arrives while a rebuild is in flight
     // (e.g. an app mutating the source from a filter/sort/group callback) must not re-enter
@@ -1881,6 +2129,8 @@ void ShapedItemsSource::Refresh()
             m_validatedSourceStamp = m_refreshSourceStamp;
         }
         MUX_ASSERT(m_source == authoritativeSource);
+        // The projection now matches the committed spec, whatever a rolled-back verb left behind.
+        m_forceFullReshape = false;
     }
     catch (...)
     {
@@ -2033,11 +2283,13 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     InvalidateShapingState();
     // A grouped projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
-    // Sorts requested before GroupBy establish the group order. Sorts requested after GroupBy
-    // are applied per bucket below, preserving the group order while sorting within each group.
-    ApplySort(rows, -1, m_pipeline.GroupOrder());
 
+    // Item sorts run first, whenever they were declared, and bucketing keeps that order within each
+    // group. Without a group sort direction a group therefore sits where its first item lands in the
+    // sorted sequence (WPF ListCollectionView); with one, groups are ordered by key instead.
+    ApplySort(rows);
     auto keyedBuckets = BucketizeGroupsOrThrow(rows);
+    ShapingHelpers::StableSortBucketsByKey(keyedBuckets, m_pipeline.GroupSortDirection());
 
     // Release any leftover hierarchy adapter, but only after bucketize: if that throws, the
     // previous projection must stay whole.
@@ -2052,17 +2304,15 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     groups.reserve(keyedBuckets.size());
     std::unordered_set<winrt::hstring> liveKeys;
 
-    // The flat shaped rows kept under grouping: every kept row, in group order, with the
-    // per-bucket sort applied and no header entries. Accumulated while the per-bucket sort walks
-    // the buckets in their final order. This keeps
+    // The flat shaped rows kept under grouping: every kept row, in group order, sorted within each
+    // group, and no header entries. This keeps
     // Rows() coherent as the flat shaped projection even while the presented row axis is the
     // grouped adapter.
     std::vector<winrt::IInspectable> flatRows;
     flatRows.reserve(rows.size());
 
-    for (auto& bucket : keyedBuckets)
+    for (auto const& bucket : keyedBuckets)
     {
-        ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         flatRows.insert(flatRows.end(), bucket.Items.begin(), bucket.Items.end());
     }
 
@@ -2153,7 +2403,7 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
 // The group key applies to ROOTS only; a descendant keeps its depth under its parent.
 void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure)
 {
-    // Roots stay in source order for bucketing; sibling sets below are fully sorted.
+    // Roots are sorted here, before bucketing; sibling sets below are sorted by the index build.
     const uint64_t declarationGeneration = m_parentDeclarationGeneration;
     auto index = BuildHierarchyIndex(rows, std::move(structure), false /* sortRoots */, declarationGeneration);
     if (!index)
@@ -2161,12 +2411,14 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
         return;
     }
 
-    // Bucket like RebuildGrouped: pre-GroupBy sorts set header order; later sorts apply per bucket.
+    // Bucket like RebuildGrouped: a group's position is that of its first root in the sorted roots,
+    // unless the group sort direction orders groups by key.
     std::vector<winrt::IInspectable> roots = index->Roots;
-    ApplySort(roots, -1, m_pipeline.GroupOrder());
+    ApplySort(roots);
 
     // Same fail-fast contract as RebuildGrouped.
     auto keyedBuckets = BucketizeGroupsOrThrow(roots);
+    ShapingHelpers::StableSortBucketsByKey(keyedBuckets, m_pipeline.GroupSortDirection());
 
     // Roots bucket by bucket. Each bucket's roots must be contiguous: the adapter walks one
     // segment per bucket and the re-slice cuts entries at depth-0 rows.
@@ -2179,7 +2431,6 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     for (size_t bucketIndex = 0; bucketIndex < keyedBuckets.size(); ++bucketIndex)
     {
         auto& bucket = keyedBuckets[bucketIndex];
-        ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         for (auto const& root : bucket.Items)
         {
             // Keyed by raw COM pointer: the re-slice looks up the same objects.
@@ -2721,7 +2972,7 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
     };
 
     // Called only with live shaping on, so every shape input is captured.
-    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+    for (auto const& axis : m_pipeline.ActiveSortAxes())
     {
         snapshot.SortKeys.push_back(keyOf(axis.Key));
     }
@@ -3086,6 +3337,13 @@ void ShapedItemsSource::RestoreLiveShaping()
     {
         // Moving rows would end the edit; stay dirty until the owner resumes.
         m_liveShapingHeld = true;
+        return;
+    }
+
+    if (IsRefreshDeferred())
+    {
+        // Stays dirty; the rebuild when the deferral ends recaptures every snapshot.
+        m_deferredRefresh = true;
         return;
     }
 

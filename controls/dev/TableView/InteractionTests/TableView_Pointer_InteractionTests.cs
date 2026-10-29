@@ -575,22 +575,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a pointer activation of a group header band raises ToggleRequested exactly once, carrying that group's own key, and that the key survives a handler that mutates the header re-entrantly.")]
-        public void GroupHeaderPointerToggleRaisesToggleRequestedWithGroupKey()
+        [TestProperty("Description", "Verifies a pointer activation of a group header band raises GroupCollapsed exactly once, carrying that group's own key.")]
+        public void GroupHeaderPointerToggleRaisesGroupCollapsedWithGroupKey()
         {
-            // Pointer leg.
-            // Spec: TableView.idl:350-355 - "Carried on the args so a handler that re-enters and mutates the
-            //   header still sees the key that was actually activated." The page handler therefore reads the
-            //   key, flips sender.IsExpanded, and reads the key again; the report records "<key>|<key>;" per
-            //   raise, so the entry count is the number of raises.
-            // Route: RequestToggle is raised only from OnKeyDown and OnPointerReleased, never from the
-            //   automation peer's Expand/Collapse - which is why this moved out of the API plan
-            //   (TableView_Grouping_APITests.cs:575).
+            // Pointer leg. The page records "C:<key>;" per GroupCollapsed and "E:<key>;" per GroupExpanding.
             // Fixture: the page builds the grouped source from Cities = { Redmond, Seattle, Bellevue } in
             //   source order, so the first two groups are Redmond and Seattle. Driving TWO headers is the
             //   point: a constant key would satisfy a single-header test.
-            // Failure means: a handler cannot tell which group the user activated, so per-group behaviour
-            //   built on the event is impossible.
             using (var setup = new TestSetupHelper(PageName))
             {
                 Button hookButton = FindElement.ById<Button>(HookGroupHeadersButton);
@@ -617,16 +608,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 hookButton.InvokeAndWait();
-                Verify.AreEqual("hooked;", toggleReport.Value, "Precondition: the page must have hooked ToggleRequested on the realized group headers.");
+                Verify.AreEqual("hooked;", toggleReport.Value, "Precondition: the page must have hooked the grouped table's group events.");
 
                 Log.Comment("Activate the FIRST group's header band.");
                 ClickPoint(CentreOf(firstHeader));
-                Verify.AreEqual("hooked;Redmond|Redmond;", toggleReport.Value,
-                    "One band click must raise ToggleRequested exactly once, carrying the first group's key both before and after the handler mutates the header.");
+                Verify.AreEqual("hooked;C:Redmond;", toggleReport.Value,
+                    "One band click must raise GroupCollapsed exactly once, carrying the first group's key.");
 
                 Log.Comment("Activate the SECOND group's header band.");
                 ClickPoint(CentreOf(secondHeader));
-                Verify.AreEqual("hooked;Redmond|Redmond;Seattle|Seattle;", toggleReport.Value,
+                Verify.AreEqual("hooked;C:Redmond;C:Seattle;", toggleReport.Value,
                     "The second header must raise the event once more and carry ITS OWN key, not the first group's.");
             }
         }

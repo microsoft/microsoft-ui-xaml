@@ -60,7 +60,7 @@ TableViewColumn::TableViewColumn()
     // Defaults let initial ActualWidth equal Width without clamping.
 }
 
-winrt::FrameworkElement TableViewColumn::GenerateElement(const winrt::IInspectable& dataItem)
+winrt::FrameworkElement TableViewColumn::GenerateDisplayElement(const winrt::IInspectable& dataItem)
 {
     // Forward to the overridable display-cell factory.
     return overridable().GenerateElementCore(dataItem);
@@ -177,7 +177,22 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
 
 bool TableViewColumn::CommitCellEdit(const winrt::FrameworkElement& editingElement)
 {
-    return CommitCellEditCore(editingElement);
+    // Projected dispatch so an app override runs, as for GenerateElementCore.
+    try
+    {
+        return overridable().CommitCellEditCore(editingElement);
+    }
+    catch (...)
+    {
+        if (!TableViewDetails::IsAppDerivedColumn(*this))
+        {
+            throw;
+        }
+        // An app override that throws is a failed commit: the edit stays open.
+        TVDiag::LogRetailF(L"[TableView] CommitCellEditCore threw (HRESULT 0x%08X); the edit stays open.",
+            static_cast<unsigned int>(winrt::to_hresult()));
+        return false;
+    }
 }
 
 // The editing bindings use UpdateSourceTrigger::Explicit, so this is what actually moves the typed
@@ -345,7 +360,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     {
         // Realized editors were generated from the previous template. An editor does not change
         // what the cell displays, so the Auto width keeps its history.
-        NotifyCellContentChanged(false /* resetAutoWidth */);
+        NotifyCellContentChangedInternal(false /* resetAutoWidth */);
     }
     else if (property == s_HeaderTemplateProperty ||
              property == s_HeaderTemplateSelectorProperty ||
@@ -379,7 +394,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnFrozenEdgeChanged(*this);
         }
     }
-    else if (property == s_CanResizeProperty)
+    else if (property == s_CanUserResizeProperty)
     {
         // Adds or removes this column's gripper, so the header band has to be rebuilt.
         if (auto owner = GetOwningTableView())
@@ -394,13 +409,27 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
-    else if (property == s_CanSortProperty)
+    else if (property == s_CanUserSortProperty)
     {
         // The sort affordance is stamped at header-build time, so opting a column in or out at
         // runtime has to rebuild the headers for the chevron to appear or disappear.
         if (auto owner = GetOwningTableView())
         {
-            winrt::get_self<TableView>(owner)->OnColumnCanSortChanged(*this);
+            winrt::get_self<TableView>(owner)->OnColumnCanUserSortChanged(*this);
+        }
+    }
+    else if (property == s_SortDirectionProperty)
+    {
+        if (auto owner = GetOwningTableView())
+        {
+            auto const ownerImpl = winrt::get_self<TableView>(owner);
+            if (!m_isSettingSortStateInternal)
+            {
+                ownerImpl->OnColumnSortDirectionSetByApp(*this, SortDirection());
+            }
+            ownerImpl->RefreshSortIndicators();
+            ownerImpl->RaiseColumnSortStateAutomationChanged(
+                *this, winrt::unbox_value_or<winrt::SortDirection>(args.OldValue(), winrt::SortDirection::None));
         }
     }
 }
@@ -416,7 +445,9 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
     // the active direction rather than leaving the rows in the old comparer's order.
-    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None)
+    // A direction the app only displayed has no rows ordered by it, so there is nothing to re-sort.
+    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None &&
+        !winrt::get_self<TableView>(owner)->IsSortDisplaySetByAppInternal())
     {
         auto const direction = SortDirection();
         auto ownerImpl = winrt::get_self<TableView>(owner);
@@ -437,13 +468,10 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
         return;
     }
 
-    // Read-only DP: same SetValue-via-key convention as ActualWidth.
+    // The control's own write must not read as the app setting the displayed direction.
+    m_isSettingSortStateInternal = true;
+    auto const resetGuard = gsl::finally([this]() { m_isSettingSortStateInternal = false; });
     SetValue(s_SortDirectionProperty, winrt::box_value(direction));
-
-    if (auto owner = GetOwningTableView())
-    {
-        winrt::get_self<TableView>(owner)->RefreshSortIndicators();
-    }
 }
 
 // Lets a derived column refresh its realized cells when one of ITS OWN properties changes.
@@ -452,7 +480,12 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
 // column would then have no way to invalidate its cells without editing this file. This mirrors
 // WPF, where DataGridColumn owns the notification and each derived column routes its own property
 // callbacks into it.
-void TableViewColumn::NotifyCellContentChanged(bool resetAutoWidth)
+void TableViewColumn::NotifyCellContentChanged()
+{
+    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
+}
+
+void TableViewColumn::NotifyCellContentChangedInternal(bool resetAutoWidth)
 {
     if (auto owner = GetOwningTableView())
     {
@@ -471,7 +504,7 @@ void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data:
 
     // Realized cells carry the previous binding. A tooltip does not change what the cell displays,
     // so the Auto width keeps its history.
-    NotifyCellContentChanged(false /* resetAutoWidth */);
+    NotifyCellContentChangedInternal(false /* resetAutoWidth */);
 }
 
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)

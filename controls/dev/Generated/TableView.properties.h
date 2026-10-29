@@ -39,6 +39,9 @@ public:
     void HeadersVisibility(winrt::TableViewHeadersVisibility const& value);
     winrt::TableViewHeadersVisibility HeadersVisibility();
 
+    void IsEditing(bool value);
+    bool IsEditing();
+
     void IsReadOnly(bool value);
     bool IsReadOnly();
 
@@ -67,6 +70,7 @@ public:
     static winrt::DependencyProperty GridLinesVisibilityProperty() { return s_GridLinesVisibilityProperty; }
     static winrt::DependencyProperty GroupHeaderTemplateProperty() { return s_GroupHeaderTemplateProperty; }
     static winrt::DependencyProperty HeadersVisibilityProperty() { return s_HeadersVisibilityProperty; }
+    static winrt::DependencyProperty IsEditingProperty() { return s_IsEditingProperty; }
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty RowBackgroundProperty() { return s_RowBackgroundProperty; }
@@ -84,6 +88,7 @@ public:
     static GlobalDependencyProperty s_GridLinesVisibilityProperty;
     static GlobalDependencyProperty s_GroupHeaderTemplateProperty;
     static GlobalDependencyProperty s_HeadersVisibilityProperty;
+    static GlobalDependencyProperty s_IsEditingProperty;
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_RowBackgroundProperty;
@@ -93,8 +98,14 @@ public:
 
     winrt::event_token BeginningEdit(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs> const& value);
     void BeginningEdit(winrt::event_token const& token);
+    winrt::event_token CellEditEnded(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndedEventArgs> const& value);
+    void CellEditEnded(winrt::event_token const& token);
     winrt::event_token CellEditEnding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs> const& value);
     void CellEditEnding(winrt::event_token const& token);
+    winrt::event_token GroupCollapsed(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupCollapsedEventArgs> const& value);
+    void GroupCollapsed(winrt::event_token const& token);
+    winrt::event_token GroupExpanding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupExpandingEventArgs> const& value);
+    void GroupExpanding(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value);
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value);
@@ -103,7 +114,10 @@ public:
     void Sorting(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs>> m_beginningEditEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndedEventArgs>> m_cellEditEndedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs>> m_cellEditEndingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupCollapsedEventArgs>> m_groupCollapsedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupExpandingEventArgs>> m_groupExpandingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs>> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs>> m_sortedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs>> m_sortingEventSource;

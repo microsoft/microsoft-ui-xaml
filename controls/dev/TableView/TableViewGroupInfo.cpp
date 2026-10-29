@@ -213,11 +213,7 @@ void TableViewGroupInfo::UpdateInternal(
         RaisePropertyChanged(L"ItemCountText");
     }
 
-    if (m_level != level)
-    {
-        m_level = level;
-        RaisePropertyChanged(L"Level");
-    }
+    m_level = level;
 }
 
 void TableViewGroupInfo::SetExpansionInternal(bool isExpandable, bool isExpanded)

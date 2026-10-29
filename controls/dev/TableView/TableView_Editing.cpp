@@ -10,6 +10,7 @@
 #include "TableViewSource.h"
 #include "TableViewBeginningEditEventArgs.h"
 #include "TableViewCellEditEndingEventArgs.h"
+#include "TableViewCellEditEndedEventArgs.h"
 #include "TVDiag.h"
 #include "SortMemberPathResolver.h"
 
@@ -329,14 +330,31 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
     // way for an unclosed deferral to wedge the control at IsEditing == true.
     if (m_cellEditEndingEventSource)
     {
-        auto cellArgs = winrt::make_self<TableViewCellEditEndingEventArgs>(item, column, action);
+        // A posted raise outlives the editor's place in the row, so its DataContext is pinned to
+        // the edited item until the handler returns; otherwise a recycled row would rebind it.
+        auto const editingElement = CurrentEditingElement();
+        const bool deferred = m_insideLayoutPass;
+        if (deferred && editingElement)
+        {
+            try { editingElement.DataContext(item); }
+            catch (...) {}
+        }
+        auto cellArgs = winrt::make_self<TableViewCellEditEndingEventArgs>(item, column, action, editingElement);
         auto const self = get_strong();
         const auto lifetime = m_tipLifetimeGeneration;
-        PostEditNotification([self, cellArgs, lifetime,
+        PostEditNotification([self, cellArgs, lifetime, deferred, editingElement,
             operation = action == winrt::TableViewEditAction::Commit ?
                 TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
             tip = m_insideLayoutPass ? nullptr : tip]()
         {
+            auto const unpin = wil::scope_exit([deferred, editingElement]() noexcept
+            {
+                if (deferred && editingElement)
+                {
+                    try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
+                    catch (...) {}
+                }
+            });
             try
             {
                 self->m_cellEditEndingEventSource(*self, *cellArgs);
@@ -681,6 +699,84 @@ void TableView::PostEditNotification(std::function<void()> notify)
     notify();
 }
 
+void TableView::SyncIsEditingProperty()
+{
+    const bool open = m_editState == EditState::Editing || m_editState == EditState::Ending;
+    if (IsEditing() != open)
+    {
+        m_isSettingIsEditing = true;
+        auto const reset = wil::scope_exit([this]() noexcept { m_isSettingIsEditing = false; });
+        IsEditing(open);
+    }
+}
+
+void TableView::OnIsEditingPropertyChanged()
+{
+    // Read-only to the app: only the control's own write stands.
+    if (!m_isSettingIsEditing)
+    {
+        SyncIsEditingProperty();
+    }
+}
+
+void TableView::RaiseCellEditEnded(
+    winrt::IInspectable const& item, winrt::TableViewColumn const& column, winrt::TableViewEditAction action)
+{
+    SyncIsEditingProperty();
+    m_pendingCellEditEnded.push_back({ item, column, action });
+
+    // Inside layout, or a teardown forced from a property-changed callback, app code must not run now.
+    if (IsInLayoutCallback() || m_suppressEditVisualRestore)
+    {
+        if (m_cellEditEndedFlushPosted)
+        {
+            return;
+        }
+        if (auto const queue = DispatcherQueue())
+        {
+            if (queue.TryEnqueue([weakThis = get_weak()]()
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->m_cellEditEndedFlushPosted = false;
+                        strongThis->FlushPendingCellEditEnded();
+                    }
+                }))
+            {
+                m_cellEditEndedFlushPosted = true;
+                return;
+            }
+        }
+    }
+
+    FlushPendingCellEditEnded();
+}
+
+void TableView::FlushPendingCellEditEnded()
+{
+    while (!m_pendingCellEditEnded.empty())
+    {
+        auto const ended = std::move(m_pendingCellEditEnded.front());
+        m_pendingCellEditEnded.pop_front();
+        if (!m_cellEditEndedEventSource)
+        {
+            continue;
+        }
+        auto const args = winrt::make<TableViewCellEditEndedEventArgs>(ended.Item, ended.Column, ended.Action);
+        try
+        {
+            m_cellEditEndedEventSource(*this, args);
+        }
+        catch (...)
+        {
+            NoteRecoveredAppFault(
+                ended.Action == winrt::TableViewEditAction::Commit ? TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
+                TableViewTip::Stage::Editing, TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
+            LogConsumerHandlerThrow(L"CellEditEnded");
+        }
+    }
+}
+
 bool TableView::HasBlockingValidationErrors(
     winrt::IInspectable const& item,
     winrt::TableViewColumn const& column,
@@ -993,6 +1089,8 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
     }
 
     auto const generation = m_editGeneration;
+    auto const endedItem = m_currentEditItem.get();
+    auto const endedColumn = m_currentEditColumn.get();
 
     const bool closed = FinishEditTeardown(unit, action, honorCancel, tip);
 
@@ -1010,6 +1108,8 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
 
     if (closed)
     {
+        // A forced close is reported as Cancel whatever it managed to write.
+        RaiseCellEditEnded(endedItem, endedColumn, honorCancel ? action : winrt::TableViewEditAction::Cancel);
         DrainCoalescedEditReshape();
     }
     else
@@ -1145,6 +1245,7 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
 
 bool TableView::TryTerminateEditForControlInitiatedReshape()
 {
+    m_terminateReopenedEdit = false;
     if (m_editState == EditState::None)
     {
         return true;
@@ -1164,10 +1265,21 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
         return false;
     }
 
-    // Reentrant reshape requests raised by edit-ending handlers are queued and drained by the
-    // outer operation after it applies. This preserves the original outer intent (A) and then
-    // replays reentrant intents (B, C...) in arrival order.
-    return terminated;
+    // A CellEditEnded handler may have opened another edit; the reshape then waits for that one.
+    m_terminateReopenedEdit = m_editState != EditState::None;
+    return !m_terminateReopenedEdit;
+}
+
+void TableView::QueueReshapeBehindEdit(std::function<void()> operation, bool skipWhileReplaying)
+{
+    if (m_editState == EditState::Ending && !(skipWhileReplaying && m_isApplyingCoalescedEditReshape))
+    {
+        QueueCoalescedEditReshape(std::move(operation));
+    }
+    else if (m_terminateReopenedEdit)
+    {
+        QueueReshapeAfterEditCloses(std::move(operation));
+    }
 }
 
 void TableView::QueueCoalescedEditReshape(std::function<void()> operation)
@@ -1195,7 +1307,7 @@ void TableView::DrainCoalescedEditReshape()
 {
     // Every edit close lands here. Release a held live reshape unconditionally: it is posted, so
     // safe even inside a layout pass.
-    if (!IsEditing())
+    if (!IsEditInProgress())
     {
         if (auto const source = m_activeSource.get())
         {
@@ -1212,7 +1324,13 @@ void TableView::DrainCoalescedEditReshape()
         return;
     }
 
-    if (!IsEditing() && !m_reshapesAfterEditCloses.empty())
+    // The closed session's CellEditEnded comes before anything its close queued.
+    if (!IsInLayoutCallback())
+    {
+        FlushPendingCellEditEnded();
+    }
+
+    if (!IsEditInProgress() && !m_reshapesAfterEditCloses.empty())
     {
         m_pendingEditReshapes.insert(m_pendingEditReshapes.begin(),
             std::make_move_iterator(m_reshapesAfterEditCloses.begin()), std::make_move_iterator(m_reshapesAfterEditCloses.end()));
@@ -1274,6 +1392,9 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         return false;
     }
 
+    // The previous session's CellEditEnded comes before this one's BeginningEdit.
+    FlushPendingCellEditEnded();
+
     if (m_editState == EditState::Editing)
     {
         // Moving commits the open edit. WPF parity: leaving the *row* is what ends the row-level
@@ -1290,6 +1411,12 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             : EditingUnit::Cell;
 
         if (!CommitEditInternal(unit))
+        {
+            return false;
+        }
+
+        // A CellEditEnded handler may have opened another edit; never orphan it.
+        if (m_editState != EditState::None || m_currentEditItem.get() || m_currentEditColumn.get())
         {
             return false;
         }
@@ -1393,6 +1520,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
 
         SetCurrentCell(item, column);
         m_editState = EditState::Editing;
+        SyncIsEditingProperty();
         DrainCoalescedEditReshape();
         if (m_editGeneration == generation && m_editState == EditState::Editing &&
             m_currentEditColumn.get() == column && SameInspectableIdentity(m_currentEditItem.get(), item))

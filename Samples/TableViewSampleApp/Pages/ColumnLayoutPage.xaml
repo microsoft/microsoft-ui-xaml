@@ -11,10 +11,10 @@
 
     <controls:SamplePresenter
         Header="Column layout &amp; sizing"
-        Description="A TableViewColumn's Width states an intent: a fixed Pixel width, Auto (size to the realized content), or a Star share of the space left over. MinWidth and MaxWidth clamp that intent, and the read-only ActualWidth reports the width the column really got. Pick a width intent, then drag a header edge or move the sliders and watch ActualWidth follow, or refuse to. TableView.CanUserResizeColumns turns off every resize gripper at once, and TableViewColumn.CanResize turns off one."
+        Description="A TableViewColumn's Width states an intent: a fixed Pixel width, Auto (size to the realized content), or a Star share of the space left over. MinWidth and MaxWidth clamp that intent, and the read-only ActualWidth reports the width the column really got. Pick a width intent, then drag a header edge or move the sliders and watch ActualWidth follow, or refuse to. TableView.CanUserResizeColumns turns off every resize gripper at once, and TableViewColumn.CanUserResize turns off one."
         Snippet="ColumnLayout"
         StretchExample="True"
-        TryIt="Drag the right edge of the Name header and watch Width / ActualWidth update; the Role (locked) column has CanResize off, so its edge does not move. Pick Join date in Column and drag the Width slider past 310 to see the date picker stop clipping. Then switch Width intent to Auto and scroll down: Auto columns size to the rows on screen."
+        TryIt="Drag the right edge of the Name header and watch Width / ActualWidth update; the Role (locked) column has CanUserResize off, so its edge does not move. Pick Join date in Column and drag the Width slider past 310 to see the date picker stop clipping. Then switch Width intent to Auto and scroll down: Auto columns size to the rows on screen."
         WhatToLookFor="ActualWidth is the width after the MinWidth and MaxWidth clamp, so it can differ from Width; the readout updates after layout and while you drag. A full date picker needs about 310 px, so the 200 px Join date column clips it. Auto measures only the realized rows, so scrolling can change an Auto width and Auto mode can leave an empty band on the right. A Star column with no resizable Star column after it has no width to trade, so its edge shows no gripper, and when MinWidth equals MaxWidth the gripper is hidden too. Width is the lesson here, so this page scrolls horizontally in Playground and Pixel modes on purpose.">
 
         <controls:SamplePresenter.Example>
@@ -58,7 +58,7 @@
 
                 <controls:RailSection
                     Header="Resize gates"
-                    Description="TableView.CanUserResizeColumns turns the header gripper on or off for the whole table. The Role (locked) column also sets TableViewColumn.CanResize to false for itself. Setting Width from code works either way.">
+                    Description="TableView.CanUserResizeColumns turns the header gripper on or off for the whole table. The Role (locked) column also sets TableViewColumn.CanUserResize to false for itself. Setting Width from code works either way.">
                     <!-- snippet -->
                     <ToggleSwitch
                         x:Name="CanUserResizeColumnsToggle"

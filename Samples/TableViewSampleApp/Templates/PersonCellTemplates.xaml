@@ -212,7 +212,7 @@
             AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Role for {0}'}"/>
     </DataTemplate>
 
-    <!-- Details Button + Flyout (ColWidthAction). Not sortable: use CanSort="False" and no
+    <!-- Details Button + Flyout (ColWidthAction). Not sortable: use CanUserSort="False" and no
          SortMemberPath. OnDetailsButtonClick opens the flyout and raises DetailsOpened. -->
     <DataTemplate x:Key="DetailsButtonTemplate" x:DataType="models:Person">
         <Button

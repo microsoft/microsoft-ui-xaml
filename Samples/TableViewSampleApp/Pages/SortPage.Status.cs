@@ -34,7 +34,7 @@ public sealed partial class SortPage
     }
 
     private IEnumerable<LeagueTeam> InViewOrder() =>
-        SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null, SortOrdersGroups);
+        SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null);
 
     private static IComparable? SortKey(LeagueTeam team, string path) => path switch
     {

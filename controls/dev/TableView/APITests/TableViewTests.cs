@@ -154,13 +154,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(GridUnitType.Pixel, column.Width.GridUnitType, "Width defaults to a pixel GridLength, not Auto or Star.");
                 Verify.AreEqual(20.0, column.MinWidth);
                 Verify.IsTrue(double.IsPositiveInfinity(column.MaxWidth), "MaxWidth defaults to unbounded.");
-                Verify.IsTrue(column.CanResize);
+                Verify.IsTrue(column.CanUserResize);
                 Verify.AreEqual(120.0, column.ActualWidth, "ActualWidth resolves from the default Width before any layout pass.");
                 Verify.AreEqual(TableViewFrozenEdge.None, column.FrozenEdge);
                 Verify.AreEqual(Visibility.Visible, column.Visibility);
                 Verify.IsFalse(column.IsReadOnly, "A column is writable by default; TableView.IsReadOnly is what gates editing.");
                 Verify.IsNull(column.CellEditingTemplate);
-                Verify.IsTrue(column.CanSort);
+                Verify.IsTrue(column.CanUserSort);
                 Verify.AreEqual(TableViewSortCycle.AscendingDescending, column.SortCycle);
                 Verify.AreEqual(string.Empty, column.SortMemberPath);
                 Verify.IsNull(column.CustomSortComparer);
@@ -186,7 +186,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(120.0, textColumn.Width.Value);
                 Verify.AreEqual(20.0, textColumn.MinWidth);
                 Verify.AreEqual(120.0, textColumn.ActualWidth);
-                Verify.IsTrue(textColumn.CanSort);
+                Verify.IsTrue(textColumn.CanUserSort);
                 Verify.AreEqual(SortDirection.None, textColumn.SortDirection);
             });
         }
@@ -245,6 +245,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(TableView.GroupHeaderTemplateProperty);
                 Verify.IsNotNull(TableView.DensityProperty);
                 Verify.IsNotNull(TableView.IsReadOnlyProperty);
+                Verify.IsNotNull(TableView.IsEditingProperty);
                 Verify.IsNotNull(TableView.SelectionModeProperty);
                 Verify.IsNotNull(TableView.SelectedItemProperty);
                 Verify.IsNotNull(TableView.SelectedIndexProperty);
@@ -266,13 +267,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(TableViewColumn.WidthProperty);
                 Verify.IsNotNull(TableViewColumn.MinWidthProperty);
                 Verify.IsNotNull(TableViewColumn.MaxWidthProperty);
-                Verify.IsNotNull(TableViewColumn.CanResizeProperty);
+                Verify.IsNotNull(TableViewColumn.CanUserResizeProperty);
                 Verify.IsNotNull(TableViewColumn.ActualWidthProperty);
                 Verify.IsNotNull(TableViewColumn.FrozenEdgeProperty);
                 Verify.IsNotNull(TableViewColumn.VisibilityProperty);
                 Verify.IsNotNull(TableViewColumn.IsReadOnlyProperty);
                 Verify.IsNotNull(TableViewColumn.CellEditingTemplateProperty);
-                Verify.IsNotNull(TableViewColumn.CanSortProperty);
+                Verify.IsNotNull(TableViewColumn.CanUserSortProperty);
                 Verify.IsNotNull(TableViewColumn.SortCycleProperty);
                 Verify.IsNotNull(TableViewColumn.SortMemberPathProperty);
                 Verify.IsNotNull(TableViewColumn.SortDirectionProperty);
@@ -337,6 +338,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     null, () => freshTableView.SelectedItem);
                 VerifyReadOnlyDependencyProperty(freshTableView, TableView.SelectedIndexProperty, "TableView.SelectedIndex",
                     -1, () => freshTableView.SelectedIndex);
+                VerifyReadOnlyDependencyProperty(freshTableView, TableView.IsEditingProperty, "TableView.IsEditing",
+                    false, () => freshTableView.IsEditing);
 
                 Log.Comment("Verifying TableView.Columns is the collection exposed by its dependency property.");
                 freshTableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
@@ -377,9 +380,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySettableDependencyProperty(column, TableViewColumn.MaxWidthProperty, "TableViewColumn.MaxWidth",
                     400.0, 500.0,
                     () => column.MaxWidth, value => column.MaxWidth = (double)value);
-                VerifySettableDependencyProperty(column, TableViewColumn.CanResizeProperty, "TableViewColumn.CanResize",
+                VerifySettableDependencyProperty(column, TableViewColumn.CanUserResizeProperty, "TableViewColumn.CanUserResize",
                     false, true,
-                    () => column.CanResize, value => column.CanResize = (bool)value);
+                    () => column.CanUserResize, value => column.CanUserResize = (bool)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.FrozenEdgeProperty, "TableViewColumn.FrozenEdge",
                     TableViewFrozenEdge.Leading, TableViewFrozenEdge.None,
                     () => column.FrozenEdge, value => column.FrozenEdge = (TableViewFrozenEdge)value);
@@ -392,15 +395,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySettableDependencyProperty(column, TableViewColumn.CellEditingTemplateProperty, "TableViewColumn.CellEditingTemplate",
                     CreateTextTemplate("Editor A"), CreateTextTemplate("Editor B"),
                     () => column.CellEditingTemplate, value => column.CellEditingTemplate = (DataTemplate)value);
-                VerifySettableDependencyProperty(column, TableViewColumn.CanSortProperty, "TableViewColumn.CanSort",
+                VerifySettableDependencyProperty(column, TableViewColumn.CanUserSortProperty, "TableViewColumn.CanUserSort",
                     false, true,
-                    () => column.CanSort, value => column.CanSort = (bool)value);
+                    () => column.CanUserSort, value => column.CanUserSort = (bool)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.SortCycleProperty, "TableViewColumn.SortCycle",
                     TableViewSortCycle.DescendingAscending, TableViewSortCycle.AscendingDescendingNone,
                     () => column.SortCycle, value => column.SortCycle = (TableViewSortCycle)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.SortMemberPathProperty, "TableViewColumn.SortMemberPath",
                     "Name", "Role",
                     () => column.SortMemberPath, value => column.SortMemberPath = (string)value);
+                VerifySettableDependencyProperty(column, TableViewColumn.SortDirectionProperty, "TableViewColumn.SortDirection",
+                    SortDirection.Descending, SortDirection.Ascending,
+                    () => column.SortDirection, value => column.SortDirection = (SortDirection)value);
 
                 Log.Comment("Verifying read-only TableViewColumn dependency properties read through their dependency property.");
                 var freshColumn = new TableViewTextColumn();
@@ -416,12 +422,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     () => templateColumn.CellTemplate, value => templateColumn.CellTemplate = (DataTemplate)value);
 
                 var groupHeader = new TableViewGroupHeader();
-                VerifySettableDependencyProperty(groupHeader, TableViewGroupHeader.IsExpandedProperty, "TableViewGroupHeader.IsExpanded",
-                    false, true,
-                    () => groupHeader.IsExpanded, value => groupHeader.IsExpanded = (bool)value);
-                VerifySettableDependencyProperty(groupHeader, TableViewGroupHeader.IsExpandableProperty, "TableViewGroupHeader.IsExpandable",
-                    false, true,
-                    () => groupHeader.IsExpandable, value => groupHeader.IsExpandable = (bool)value);
+                VerifyReadOnlyDependencyProperty(groupHeader, TableViewGroupHeader.IsExpandedProperty, "TableViewGroupHeader.IsExpanded",
+                    false, () => groupHeader.IsExpanded);
+                VerifyReadOnlyDependencyProperty(groupHeader, TableViewGroupHeader.IsExpandableProperty, "TableViewGroupHeader.IsExpandable",
+                    false, () => groupHeader.IsExpandable);
 
                 var row = new TableViewRow();
                 VerifyReadOnlyDependencyProperty(row, TableViewRow.IsSelectedProperty, "TableViewRow.IsSelected",

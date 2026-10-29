@@ -181,7 +181,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
                 Width = new GridLength(2, GridUnitType.Star),
                 MinWidth = 240,
                 CellTemplate = (DataTemplate)Resources[Scenario == "Explicit" ? "ExplicitRecordTemplate" : "IntrinsicRecordTemplate"],
-                CanSort = false,
+                CanUserSort = false,
             });
             AssessmentTable.Columns.Add(new TableViewTemplateColumn
             {
@@ -189,7 +189,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
                 Width = new GridLength(1, GridUnitType.Star),
                 MinWidth = 160,
                 CellTemplate = (DataTemplate)Resources["DepartmentTemplate"],
-                CanSort = false,
+                CanUserSort = false,
             });
         }
         else

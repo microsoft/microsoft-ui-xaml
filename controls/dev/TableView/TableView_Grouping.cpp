@@ -13,12 +13,65 @@
 #include "TableViewGroupHeader.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupingHelpers.h"
+#include "TableViewGroupExpandingEventArgs.h"
+#include "TableViewGroupCollapsedEventArgs.h"
+#include "ShapingHelpers.h"
 #include "ResourceAccessor.h"
+#include "TVDiag.h"
 
 #include <algorithm>
 
 namespace
 {
+    // Holds a refresh deferral on the active source across GroupExpanding and the state change.
+    class GroupExpansionDeferral
+    {
+    public:
+        explicit GroupExpansionDeferral(winrt::TableViewSource const& source) noexcept
+        {
+            if (source)
+            {
+                try
+                {
+                    winrt::get_self<::TableViewSource>(source)->BeginDeferRefresh();
+                    m_source = source;
+                }
+                catch (...)
+                {
+                }
+            }
+        }
+        ~GroupExpansionDeferral() { End(); }
+        GroupExpansionDeferral(GroupExpansionDeferral const&) = delete;
+        GroupExpansionDeferral& operator=(GroupExpansionDeferral const&) = delete;
+
+        // Ends the deferral; the coalesced reshape runs here and a failure in it is contained.
+        void End() noexcept
+        {
+            if (auto const source = std::exchange(m_source, nullptr))
+            {
+                try
+                {
+                    winrt::get_self<::TableViewSource>(source)->EndDeferRefresh();
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] The reshape deferred across a group expansion threw (HRESULT 0x%08X).",
+                        static_cast<unsigned int>(winrt::to_hresult()));
+                }
+            }
+        }
+
+    private:
+        winrt::TableViewSource m_source{ nullptr };
+    };
+
+    void LogGroupHandlerThrow(wchar_t const* eventName)
+    {
+        TVDiag::LogRetailF(L"[TableView] Consumer %ls handler threw (HRESULT 0x%08X); the expansion continues.",
+            eventName, static_cast<unsigned int>(winrt::to_hresult()));
+    }
+
     winrt::IInspectable GetGroupHeaderKey(GroupedEntry const& entry)
     {
         auto const groupObject = entry.Group();
@@ -492,22 +545,51 @@ void TableView::ApplyGroupExpansionByIdentity(
     // termination rather than reshaping underneath it.
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        if (m_editState == EditState::Ending)
+        QueueReshapeBehindEdit([this, identity, desired, generation, axis, bulkGeneration, subtree]()
         {
-            QueueCoalescedEditReshape([this, identity, desired, generation, axis, bulkGeneration, subtree]()
-            {
-                ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
-            });
-        }
+            ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
+        }, false);
         return;
     }
 
     bool changed = false;
+    // Drain and focus restore still run if anything below throws.
+    bool finished = false;
+    auto finishOnThrow = wil::scope_exit([this, &finished, &identity]() noexcept
+    {
+        if (finished) { return; }
+        try { DrainCoalescedEditReshape(); } catch (...) {}
+        try { RestoreContainerFocusIfPending(identity); } catch (...) {}
+    });
+
+    // Captured before the change: GroupExpanding precedes it and GroupCollapsed reports it.
+    std::optional<TableViewGroupExpansionInfo> changingGroup;
     // Local strong ref: a handler may re-declare the shape and replace the provider mid-call. Edit-ending handlers
     // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
     // queued edit reshapes.
-    auto const provider = m_tableViewSourceRowMetadata;
-    if (provider && generation == m_rowMetadataGeneration)
+    auto provider = m_tableViewSourceRowMetadata;
+    bool targetResolves = provider && generation == m_rowMetadataGeneration;
+
+    // A GroupExpanding handler that changes the source (a lazy load, a Filter) is coalesced into one
+    // reshape after the state change, so the expansion is not lost to it.
+    GroupExpansionDeferral deferral{ axis == BulkExpansionAxis::Groups && !subtree ? m_activeSource.get() : nullptr };
+    if (targetResolves && axis == BulkExpansionAxis::Groups && !subtree)
+    {
+        TableViewGroupExpansionInfo info{};
+        if (provider->TryGetGroupExpansionInfo(identity, info) && desired.value_or(!info.IsExpanded) != info.IsExpanded)
+        {
+            changingGroup = info;
+            if (!info.IsExpanded)
+            {
+                RaiseGroupExpanding(info.Key);
+                // The handler may have replaced the source; find the group again by identity.
+                provider = m_tableViewSourceRowMetadata;
+                TableViewGroupExpansionInfo current{};
+                targetResolves = provider && provider->TryGetGroupExpansionInfo(identity, current);
+            }
+        }
+    }
+    if (targetResolves)
     {
         // While actions are tracked, every request is, so a failure writes TableView_Error. A request that changes one
         // group or tree node also runs a TiP test. A subtree is a bulk request, like ExpandAllGroups, and a request
@@ -553,6 +635,7 @@ void TableView::ApplyGroupExpansionByIdentity(
         }
     }
 
+    deferral.End();
     DrainCoalescedEditReshape();
 
     // Announce only once the tree has actually moved. Raising while the mutation was still queued
@@ -576,6 +659,12 @@ void TableView::ApplyGroupExpansionByIdentity(
     // focus stranded is the very bug this guards. Matches on identity, so an unrelated queued
     // toggle does not consume this restore.
     RestoreContainerFocusIfPending(identity);
+    finished = true;
+
+    if (changed && changingGroup && changingGroup->IsExpanded)
+    {
+        RaiseGroupCollapsed(changingGroup->Key);
+    }
 }
 
 void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
@@ -798,6 +887,24 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // The group events must not run app code inside measure or arrange.
+    if (IsInLayoutCallback())
+    {
+        if (auto const queue = DispatcherQueue())
+        {
+            if (queue.TryEnqueue([weakThis = get_weak(), expand, axis]()
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->SetBulkExpansion(expand, axis);
+                    }
+                }))
+            {
+                return;
+            }
+        }
+    }
+
     // Stamped at the request, so a per-item request made after this one - even while this one is
     // deferred behind an ending edit - is not mistaken for an older intent.
     ++BulkExpansionGeneration(axis);
@@ -815,18 +922,56 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        if (m_editState == EditState::Ending)
+        QueueReshapeBehindEdit([this, expand, axis]()
         {
-            QueueCoalescedEditReshape([this, expand, axis]()
-            {
-                ApplyBulkExpansion(expand, axis);
-            });
-        }
+            ApplyBulkExpansion(expand, axis);
+        }, false);
         return;
     }
 
     // Both axes: row expansion under groups also recycles focused header containers.
     auto const focusedGroupIdentity = CaptureFocusedContainerForRestore();
+
+    bool finished = false;
+    auto finishOnThrow = wil::scope_exit([this, &finished, &focusedGroupIdentity]() noexcept
+    {
+        if (finished) { return; }
+        try { DrainCoalescedEditReshape(); } catch (...) {}
+        try { RestoreContainerFocusIfPending(focusedGroupIdentity); } catch (...) {}
+    });
+
+    // GroupExpanding handlers that change the source are coalesced into one reshape after the change.
+    GroupExpansionDeferral deferral{ axis == BulkExpansionAxis::Groups ? m_activeSource.get() : nullptr };
+
+    // The groups this command changes, for GroupExpanding before it and GroupCollapsed after.
+    std::vector<TableViewGroupExpansionInfo> changingGroups;
+    if (axis == BulkExpansionAxis::Groups && (m_groupExpandingEventSource || m_groupCollapsedEventSource))
+    {
+        if (auto const provider = m_tableViewSourceRowMetadata)
+        {
+            try
+            {
+                for (auto&& info : provider->GetGroupExpansionInfos())
+                {
+                    if (info.IsExpanded != expand)
+                    {
+                        changingGroups.push_back(std::move(info));
+                    }
+                }
+            }
+            catch (...)
+            {
+                changingGroups.clear();
+            }
+        }
+        if (expand)
+        {
+            for (auto const& info : changingGroups)
+            {
+                RaiseGroupExpanding(info.Key);
+            }
+        }
+    }
 
     bool changed = false;
     try
@@ -859,6 +1004,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         // Best-effort: the grouping source or its state can change during cleanup.
     }
 
+    deferral.End();
     DrainCoalescedEditReshape();
 
     if (changed)
@@ -873,6 +1019,119 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     }
 
     RestoreContainerFocusIfPending(focusedGroupIdentity);
+    finished = true;
+
+    if (changed && !expand)
+    {
+        for (auto const& info : changingGroups)
+        {
+            RaiseGroupCollapsed(info.Key);
+        }
+    }
+}
+
+// The group identity the engine computes for the key (the source's group identity selector, or
+// its value identity), then the live group with that identity: O(groups).
+void TableView::SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool expand)
+{
+    auto const provider = m_tableViewSourceRowMetadata;
+    auto const source = m_activeSource.get();
+    if (!provider || !source || !IsTableViewSourceGrouped())
+    {
+        return;
+    }
+
+    if (IsInLayoutCallback())
+    {
+        if (auto const queue = DispatcherQueue())
+        {
+            if (queue.TryEnqueue([weakThis = get_weak(), groupKey, expand]()
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->SetGroupExpansionByKey(groupKey, expand);
+                    }
+                }))
+            {
+                return;
+            }
+        }
+    }
+
+    auto* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    auto const groupIdentity = sourceImpl->TryGetGroupIdentityForKey(groupKey);
+    if (!groupIdentity)
+    {
+        return;
+    }
+
+    winrt::hstring expansionIdentity;
+    for (auto const& group : sourceImpl->CurrentGroups())
+    {
+        if (group.Identity == *groupIdentity)
+        {
+            expansionIdentity = provider->GetGroupExpansionIdentity(group.Group);
+            break;
+        }
+    }
+
+    TableViewGroupExpansionInfo info{};
+    if (expansionIdentity.empty() || !provider->TryGetGroupExpansionInfo(expansionIdentity, info) || info.IsExpanded == expand)
+    {
+        return;
+    }
+
+    ApplyGroupExpansionByIdentity(expansionIdentity, expand, m_rowMetadataGeneration, BulkExpansionAxis::Groups,
+        BulkExpansionGeneration(BulkExpansionAxis::Groups));
+}
+
+void TableView::ExpandGroup(winrt::IInspectable const& groupKey)
+{
+    SetGroupExpansionByKey(groupKey, true);
+}
+
+void TableView::CollapseGroup(winrt::IInspectable const& groupKey)
+{
+    SetGroupExpansionByKey(groupKey, false);
+}
+
+// A throwing handler is contained and logged, as for CellEditEnded; the expansion goes ahead.
+void TableView::RaiseGroupExpanding(winrt::IInspectable const& groupKey)
+{
+    if (!m_groupExpandingEventSource)
+    {
+        return;
+    }
+    auto const args = winrt::make<TableViewGroupExpandingEventArgs>(groupKey);
+    try
+    {
+        m_groupExpandingEventSource(*this, args);
+    }
+    catch (...)
+    {
+        NoteRecoveredAppFault(TableViewTip::Operation::GroupExpansion, TableViewTip::Stage::Expansion,
+            TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
+        LogGroupHandlerThrow(L"GroupExpanding");
+    }
+}
+
+void TableView::RaiseGroupCollapsed(winrt::IInspectable const& groupKey)
+{
+    if (!m_groupCollapsedEventSource)
+    {
+        return;
+    }
+    auto const args = winrt::make<TableViewGroupCollapsedEventArgs>(groupKey);
+    try
+    {
+        m_groupCollapsedEventSource(*this, args);
+    }
+    catch (...)
+    {
+        NoteRecoveredAppFault(TableViewTip::Operation::GroupExpansion, TableViewTip::Stage::Expansion,
+            TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
+        LogGroupHandlerThrow(L"GroupCollapsed");
+    }
 }
 
 // Restamps every realized row; rows that kept their index after a reshape are stale.
@@ -1036,23 +1295,6 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
     headerImpl->SetOwningTableViewInternal(*this);
 
-    // Subscribe ONCE per container: it is pooled and re-prepared many times, and subscribing per
-    // prepare would fan one band gesture into N toggles. The guard lives here because containers
-    // come from a DataTemplate and have no single construction site to hook.
-    if (!headerImpl->IsToggleHooked())
-    {
-        winrt::weak_ref<winrt::TableView> weakThis{ *this };
-        header.ToggleRequested(
-            [weakThis](winrt::TableViewGroupHeader const& sender, winrt::TableViewGroupHeaderToggleRequestedEventArgs const&)
-            {
-                if (auto const tableView = weakThis.get())
-                {
-                    winrt::get_self<TableView>(tableView)->ToggleGroupExpansion(sender);
-                }
-            });
-        headerImpl->SetToggleHooked();
-    }
-
     winrt::IInspectable groupKey{ nullptr };
     int32_t itemCount{ 0 };
     int32_t level{ 0 };
@@ -1153,6 +1395,10 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         : isExpanded ? winrt::ExpandCollapseState::Expanded
         : winrt::ExpandCollapseState::Collapsed;
 
+    // Internal writes to the read-only DPs; they request nothing and raise no group events. Both
+    // are written before the projection changes, which is then synced once.
+    headerImpl->SetExpansionStateInternal(isExpandable, isExpanded, false /* syncContent */);
+
     if (existing)
     {
         winrt::get_self<TableViewGroupInfo>(existing)->UpdateInternal(groupKey, itemCount, level, keyText);
@@ -1162,9 +1408,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         header.Content(winrt::make<::TableViewGroupInfo>(
             groupKey, itemCount, level, isExpandable, isExpanded, keyText));
     }
-
-    header.IsExpandable(isExpandable);
-    header.IsExpanded(isExpanded);
+    headerImpl->SyncExpansionToContentInternal();
 
     // Expose the projection as the header's DataContext, as a data row exposes its item, so
     // bindings in a group header Style and in its ContextFlyout (the flyout takes its target's

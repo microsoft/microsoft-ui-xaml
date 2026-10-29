@@ -267,7 +267,7 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanResize())
+    if (!column || !column.CanUserResize())
     {
         return false;
     }
@@ -601,7 +601,7 @@ winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRou
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanSort())
+    if (!column || !column.CanUserSort())
     {
         return nullptr;
     }
@@ -656,7 +656,7 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
         return true;
     }
 
-    if (!ToggleSortDirection(column))
+    if (!ToggleSortDirectionFromUserInput(column))
     {
         return false;
     }
@@ -690,7 +690,7 @@ bool TableView::TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args)
         return false;
     }
 
-    if (!ToggleSortDirection(armed))
+    if (!ToggleSortDirectionFromUserInput(armed))
     {
         return false;
     }
@@ -807,7 +807,7 @@ void TableView::OnPreviewKeyDownForNavigation(
 // Shared by the Preview and bubbling navigation handlers so both agree on who owns a paging key.
 bool TableView::IsFocusInsideEditingElement() const
 {
-    if (!IsEditing())
+    if (!IsEditInProgress())
     {
         return false;
     }
@@ -2703,7 +2703,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
 
     ArmCellLevelRowInternal(row);
 
-    if (!IsEditing())
+    if (!IsEditInProgress())
     {
         if (auto const column = rowImpl->GetCellOwningColumn(focusedCell))
         {
@@ -3010,7 +3010,7 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
 {
     if (args.Handled() ||
         args.Key() != winrt::Windows::System::VirtualKey::Enter ||
-        IsEditing() ||
+        IsEditInProgress() ||
         IsKeyDown(winrt::VirtualKey::Menu) ||
         IsKeyDown(winrt::VirtualKey::Control) ||
         IsKeyDown(winrt::VirtualKey::Shift))
@@ -3058,7 +3058,7 @@ bool TableView::TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEven
 {
     if (args.Handled() ||
         !m_cellInteractionActive ||
-        IsEditing() ||
+        IsEditInProgress() ||
         IsKeyDown(winrt::VirtualKey::Menu) ||
         IsKeyDown(winrt::VirtualKey::Control))
     {
@@ -3128,7 +3128,7 @@ bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArg
     if (args.Handled() ||
         args.Key() != winrt::Windows::System::VirtualKey::Escape ||
         !m_cellInteractionActive ||
-        IsEditing())
+        IsEditInProgress())
     {
         return false;
     }

@@ -15,9 +15,9 @@ class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT, winrt::ITransformProvider>
 {
 public:
+    explicit TableViewColumnHeaderAutomationPeer(winrt::TableViewColumnHeader const& owner);
+    // Internal: the TableView-owned peer for a column whose header is not realized.
     TableViewColumnHeaderAutomationPeer(winrt::TableView const& owner, winrt::TableViewColumn const& column);
-    TableViewColumnHeaderAutomationPeer(winrt::FrameworkElement const& header,
-        winrt::TableView const& table, winrt::TableViewColumn const& column);
 
     // IAutomationPeerOverrides
     hstring GetClassNameCore();
@@ -28,6 +28,8 @@ public:
     // Reports the column's current sort state, so a screen-reader user can tell a sorted header
     // from an unsorted one without relying on the chevron.
     hstring GetHelpTextCore();
+    // Internal: the help text for a given direction, so a change can report its real old value.
+    hstring HelpTextForSortDirection(winrt::SortDirection direction);
     // Invoke rather than Toggle: the sort cycle is not a two-state toggle, and the number of
     // states depends on the column's SortCycle. Only offered for a column the control will
     // actually sort - see GetPatternCore.

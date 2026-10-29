@@ -148,25 +148,25 @@
                     <controls:TableViewTextColumn Header="Name"
                                                   Width="160"
                                                   MinWidth="60"
-                                                  CanSort="True"
+                                                  CanUserSort="True"
                                                   SortMemberPath="Name"
                                                   Binding="{Binding Name}"
                                                   CellToolTipBinding="{Binding Name}"
                                                   HeaderToolTip="The person's name" />
                     <controls:TableViewTextColumn Header="Age"
                                                   Width="100"
-                                                  CanSort="True"
+                                                  CanUserSort="True"
                                                   SortMemberPath="Age"
                                                   Binding="{Binding Age}" />
                     <controls:TableViewTextColumn Header="ReadOnlyCity"
                                                   Width="160"
                                                   IsReadOnly="True"
-                                                  CanSort="False"
+                                                  CanUserSort="False"
                                                   Binding="{Binding City}" />
                     <controls:TableViewTextColumn x:Name="ScoreColumn"
                                                   Header="Score"
                                                   Width="100"
-                                                  CanSort="True"
+                                                  CanUserSort="True"
                                                   SortMemberPath="Score"
                                                   Binding="{Binding Score}" />
                     <controls:TableViewTemplateColumn Header="Template" Width="200">
@@ -511,10 +511,9 @@
                      IsReadOnly="True"
                      IsTabStop="False"
                      Text="" />
-            <!-- One entry per TableViewGroupHeader.ToggleRequested, formatted "<key>|<key>;": the key is read
-                 once on entry and once AFTER the handler mutates the header, which is the re-entrancy case
-                 TableView.idl:350-355 states the args exist for. Entry count = number of times the event was
-                 raised, which is what makes "exactly once per activation" assertable. -->
+            <!-- One entry per TableView.GroupExpanding ("E:<key>;") or GroupCollapsed ("C:<key>;") on the
+                 grouped table. Entry count = number of times the events were raised, which is what makes
+                 "exactly once per activation" assertable. -->
             <TextBox x:Name="GroupToggleReportTextBlock"
                      AutomationProperties.Name="GroupToggleReportTextBlock"
                      AutomationProperties.AutomationId="GroupToggleReportTextBlock"

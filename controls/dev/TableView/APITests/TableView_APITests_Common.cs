@@ -368,6 +368,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return host;
         }
 
+        internal static TableViewColumnHeader GetColumnHeader(TableView tableView, TableViewColumn column)
+        {
+            var header = GetHeaderHost(tableView).Children.OfType<TableViewColumnHeader>().FirstOrDefault(h => h.Column == column);
+            Verify.IsNotNull(header, "The test needs a realized TableViewColumnHeader for the column.");
+            return header;
+        }
+
+        internal static TableViewColumnHeaderAutomationPeer CreateColumnHeaderPeer(TableView tableView, TableViewColumn column)
+            => new TableViewColumnHeaderAutomationPeer(GetColumnHeader(tableView, column));
+
         internal static ItemsRepeater GetRowsRepeater(TableView tableView)
         {
             var repeater = tableView.FindVisualChildByName("PART_RowsRepeater") as ItemsRepeater;

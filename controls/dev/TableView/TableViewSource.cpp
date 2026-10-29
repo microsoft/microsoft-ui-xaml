@@ -16,6 +16,77 @@
 namespace
 {
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
+
+    void ThrowIfInvalidDirection(winrt::SortDirection direction, bool allowNone)
+    {
+        // A projected enum is just an int32 across the ABI, so an out-of-range value would otherwise
+        // reach the comparator and be treated as Descending (anything that is not Ascending).
+        if (direction == winrt::SortDirection::None)
+        {
+            if (!allowNone)
+            {
+                throw winrt::hresult_invalid_argument(L"direction cannot be None here; use Sort or ClearSort to remove sort levels.");
+            }
+            return;
+        }
+        if (direction != winrt::SortDirection::Ascending && direction != winrt::SortDirection::Descending)
+        {
+            throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
+        }
+    }
+
+    // DeferRefresh's IClosable. Close is idempotent and ends exactly one deferral.
+    struct TableViewSourceDeferral : winrt::implements<TableViewSourceDeferral, winrt::Windows::Foundation::IClosable>
+    {
+        // queue is the source's thread's queue, never null.
+        TableViewSourceDeferral(winrt::TableViewSource const& source, winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue) :
+            m_source(source),
+            m_queue(queue)
+        {
+        }
+
+        ~TableViewSourceDeferral()
+        {
+            if (!m_source)
+            {
+                return;
+            }
+
+            // Never closed: end it on a later turn of the source's thread, never inside Release, which
+            // may run on a finalizer thread or inside app code.
+            try
+            {
+                m_queue.TryEnqueue([source = m_source]()
+                {
+                    try { winrt::get_self<::TableViewSource>(source)->EndDeferRefresh(); } catch (...) {}
+                });
+            }
+            catch (...) {}
+        }
+
+        void Close()
+        {
+            if (!m_source)
+            {
+                return;
+            }
+            if (!m_queue.HasThreadAccess())
+            {
+                throw winrt::hresult_wrong_thread();
+            }
+
+            auto const self = winrt::get_self<::TableViewSource>(m_source);
+            // Refused before the deferral is consumed, so a later Close still ends it.
+            self->ThrowIfEndDeferRefreshReentrant();
+            // Held across the reshape: the source must outlive the call that ends its deferral.
+            auto const source = std::exchange(m_source, nullptr);
+            self->EndDeferRefresh();
+        }
+
+    private:
+        winrt::TableViewSource m_source{ nullptr };
+        winrt::Microsoft::UI::Dispatching::DispatcherQueue m_queue{ nullptr };
+    };
 }
 
 struct TableViewSource::ShapingTip
@@ -123,12 +194,18 @@ winrt::TableViewSource TableViewSource::From(winrt::IInspectable const& items)
     return winrt::make<::TableViewSource>(items);
 }
 
+winrt::IInspectable TableViewSource::Source() const
+{
+    return m_engine->Source();
+}
+
 winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& predicate)
 {
     if (!predicate)
     {
         throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
     }
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Filter };
     tip.Apply([&]()
     {
@@ -142,13 +219,14 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     return GroupBy(key, nullptr);
 }
 
-winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector)
+winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewGroupIdentitySelector const& groupIdentitySelector)
 {
     if (!key)
     {
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
 
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration };
     RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
@@ -163,10 +241,21 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     return *this;
 }
 
-// A clear is measured only when the engine holds something to clear. The engine keeps a declaration
-// even when re-projecting it throws, so it, not a flag set around the call, is the answer.
+winrt::TableViewSource TableViewSource::SortGroups(winrt::SortDirection direction)
+{
+    ThrowIfInvalidDirection(direction, true /* allowNone */);
+    m_engine->ThrowIfReentrant();
+    // Measured only when it reorders groups that exist.
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration,
+        m_engine->HasGroup() && m_engine->GroupSortDirection() != direction };
+    tip.Apply([&]() { m_engine->SetGroupSortDirection(direction); });
+    return *this;
+}
+
+// A clear is measured only when the engine holds something to clear.
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_engine->HasFilter() };
     tip.Apply([&]() { m_engine->ClearFilter(); });
     return *this;
@@ -174,6 +263,7 @@ winrt::TableViewSource TableViewSource::ClearFilter()
 
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
     tip.Apply([&]() { m_engine->ClearGroup(); });
     return *this;
@@ -186,6 +276,7 @@ winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector con
         throw winrt::hresult_invalid_argument(L"ParentBy: keySelector and parentKeySelector are required.");
     }
 
+    m_engine->ThrowIfReentrant();
     m_engine->SetParent(
         [keySelector](winrt::IInspectable const& item) { return keySelector(item); },
         [parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
@@ -200,6 +291,7 @@ winrt::TableViewSource TableViewSource::ClearParentBy()
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
     tip.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
@@ -207,6 +299,7 @@ winrt::TableViewSource TableViewSource::ClearSort()
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
     return *this;
@@ -214,9 +307,102 @@ winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxis
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
+    m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortOtherThan(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
+}
+
+void TableViewSource::ThrowIfWrongThread() const
+{
+    if (!m_engine->HasOwnerThreadAccess())
+    {
+        throw winrt::hresult_wrong_thread();
+    }
+}
+
+void TableViewSource::Refresh()
+{
+    ThrowIfWrongThread();
+    m_engine->RefreshShaping();
+}
+
+winrt::Windows::Foundation::IClosable TableViewSource::DeferRefresh()
+{
+    ThrowIfWrongThread();
+
+    // An unclosed deferral is ended by a post to this queue.
+    auto queue = m_engine->OwnerQueue();
+    if (!queue)
+    {
+        if (!m_deferralQueue)
+        {
+            m_deferralQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        }
+        queue = m_deferralQueue;
+    }
+    if (!queue)
+    {
+        throw winrt::hresult_illegal_method_call(L"DeferRefresh requires a thread with a DispatcherQueue.");
+    }
+
+    winrt::TableViewSource const self = *this;
+    m_engine->BeginDeferRefresh();
+    try
+    {
+        return winrt::make<TableViewSourceDeferral>(self, queue);
+    }
+    catch (...)
+    {
+        // Nothing was declared under this deferral yet, so ending it cannot reshape.
+        m_engine->EndDeferRefresh();
+        throw;
+    }
+}
+
+void TableViewSource::BeginDeferRefresh()
+{
+    m_engine->BeginDeferRefresh();
+}
+
+void TableViewSource::EndDeferRefresh()
+{
+    m_engine->EndDeferRefresh();
+}
+
+std::optional<winrt::hstring> TableViewSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key) const
+{
+    winrt::hstring identity;
+    if (m_engine->TryGetGroupIdentityForKey(key, identity))
+    {
+        return identity;
+    }
+    return std::nullopt;
+}
+
+std::vector<TableViewSource::GroupInfo> TableViewSource::CurrentGroups() const
+{
+    std::vector<GroupInfo> groups;
+    for (auto const& group : m_engine->CurrentGroups())
+    {
+        groups.push_back({ group.Identity, group.Key, group.Group });
+    }
+    return groups;
+}
+
+void TableViewSource::ThrowIfEndDeferRefreshReentrant() const
+{
+    m_engine->ThrowIfEndDeferRefreshReentrant();
+}
+
+winrt::SortDirection TableViewSource::SortGroupsDirection() const
+{
+    return m_engine->GroupSortDirection();
+}
+
+bool TableViewSource::HasItemSort() const
+{
+    return m_engine->HasSortAxis({});
 }
 
 bool TableViewSource::IsLiveShaping() const
@@ -243,18 +429,11 @@ winrt::hstring TableViewSource::SortAxisTokenForPath(winrt::hstring const& sortM
 {
     // Distinct from the control's "column:<address>" tokens, so a path-declared axis and a
     // column-declared axis are never mistaken for one another even when they sort the same
-    // property. Tokenizing at all is what makes re-sorting the same path REPLACE its axis: an
-    // untokenized axis is matched by delegate identity, and every call would synthesize a fresh
-    // delegate, so Sort("Name", Asc) followed by Sort("Name", Desc) would stack two axes.
+    // property.
     return L"path:" + sortMemberPath;
 }
 
-winrt::TableViewSource TableViewSource::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
-{
-    return SortCore({}, {}, key, {}, direction);
-}
-
-winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+winrt::TableViewKeySelector TableViewSource::MakePathKeySelector(winrt::hstring const& sortMemberPath)
 {
     if (sortMemberPath.empty())
     {
@@ -265,14 +444,95 @@ winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPat
     // binding is built once per path, so steady-state cost is a DataContext write plus a property
     // read rather than a fresh binding per item.
     auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
-    winrt::TableViewKeySelector key{
+    return winrt::TableViewKeySelector{
         [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
         {
             return resolver->Resolve(item);
         }
     };
+}
 
-    return SortCore({}, SortAxisTokenForPath(sortMemberPath), key, sortMemberPath, direction);
+winrt::TableViewSource TableViewSource::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
+{
+    if (!key)
+    {
+        throw winrt::hresult_invalid_argument(L"key cannot be null.");
+    }
+    return ReplaceSortsCore({}, key, {}, direction);
+}
+
+winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    if (sortMemberPath.empty())
+    {
+        throw winrt::hresult_invalid_argument(L"sortMemberPath cannot be empty.");
+    }
+    if (direction == winrt::SortDirection::None)
+    {
+        return ClearSort();
+    }
+    return ReplaceSortsCore(SortAxisTokenForPath(sortMemberPath), MakePathKeySelector(sortMemberPath), sortMemberPath, direction);
+}
+
+winrt::TableViewSource TableViewSource::ThenSort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
+{
+    if (!key)
+    {
+        throw winrt::hresult_invalid_argument(L"key cannot be null.");
+    }
+    return ThenSortCore({}, key, {}, direction);
+}
+
+winrt::TableViewSource TableViewSource::ThenSort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    ThrowIfInvalidDirection(direction, false /* allowNone */);
+    return ThenSortCore(SortAxisTokenForPath(sortMemberPath), MakePathKeySelector(sortMemberPath), sortMemberPath, direction);
+}
+
+winrt::TableViewSource TableViewSource::SortExclusive(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    if (direction == winrt::SortDirection::None)
+    {
+        return ClearSort();
+    }
+    if (!key)
+    {
+        throw winrt::hresult_invalid_argument(L"key cannot be null.");
+    }
+    return ReplaceSortsCore(sortAxisToken, key, sortMemberPath, direction);
+}
+
+winrt::TableViewSource TableViewSource::ReplaceSortsCore(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    ThrowIfInvalidDirection(direction, true /* allowNone */);
+    m_engine->ThrowIfReentrant();
+    // Clearing nothing is a no-op, measured no more than a clear with nothing to clear.
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, direction != winrt::SortDirection::None || m_engine->HasSortAxis({}) };
+    tip.Apply([&]()
+    {
+        m_engine->ReplaceSorts(
+            sortAxisToken,
+            [key](winrt::IInspectable const& item) { return key(item); },
+            sortMemberPath,
+            direction);
+    });
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ThenSortCore(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    ThrowIfInvalidDirection(direction, false /* allowNone */);
+    m_engine->ThrowIfReentrant();
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    tip.Apply([&]()
+    {
+        m_engine->ThenSort(
+            sortAxisToken,
+            [key](winrt::IInspectable const& item) { return key(item); },
+            sortMemberPath,
+            direction);
+    });
+    return *this;
 }
 
 winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
@@ -287,15 +547,9 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
 
-    // A projected enum is just an int32 across the ABI, so an out-of-range value would otherwise
-    // reach the comparator and be treated as Descending (anything that is not Ascending). None is
-    // a defined value and removes this key's sort axis, per the IDL contract.
-    if (direction != winrt::SortDirection::None &&
-        direction != winrt::SortDirection::Ascending &&
-        direction != winrt::SortDirection::Descending)
-    {
-        throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
-    }
+    // None is a defined value and removes this axis.
+    ThrowIfInvalidDirection(direction, true /* allowNone */);
+    m_engine->ThrowIfReentrant();
 
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same

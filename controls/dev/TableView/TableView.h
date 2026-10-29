@@ -439,7 +439,7 @@ public:
         winrt::ContextRequestedEventArgs const& args);
 
     // The one context menu policy check: no TableView menu opens while a cell is editing.
-    bool AreContextMenusSuppressed() const noexcept { return IsEditing(); }
+    bool AreContextMenusSuppressed() const noexcept { return IsEditInProgress(); }
 
     // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
     // element that raised it or on any ancestor opens. Hooked below every element that can carry a
@@ -463,7 +463,27 @@ public:
     void SetCurrentCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
 
 
-    bool IsEditing() const noexcept { return m_editState != EditState::None; }
+    // Any edit state but None, including Beginning and Ending. The public IsEditing DP is narrower.
+    bool IsEditInProgress() const noexcept { return m_editState != EditState::None; }
+
+    // Measure, arrange and the repeater's element callbacks. App-visible work is posted from here.
+    [[nodiscard]] auto BeginLayoutCallbackScope()
+    {
+        ++m_layoutCallbackDepth;
+        return gsl::finally([this]() { --m_layoutCallbackDepth; });
+    }
+    bool IsInLayoutCallback() const noexcept { return m_layoutCallbackDepth > 0 || m_insideLayoutPass || s_elementLayoutDepth > 0; }
+
+    // Measure/arrange of the control's own elements (cells panels, group headers). Per thread, not
+    // per table: any of them can run app code that reaches a table.
+    static inline thread_local uint32_t s_elementLayoutDepth{ 0 };
+    struct ElementLayoutScope
+    {
+        ElementLayoutScope() noexcept { ++s_elementLayoutDepth; }
+        ~ElementLayoutScope() { --s_elementLayoutDepth; }
+        ElementLayoutScope(ElementLayoutScope const&) = delete;
+        ElementLayoutScope& operator=(ElementLayoutScope const&) = delete;
+    };
 
     // The editor currently in the tree, or null. Internal: the cell automation peer needs it to
     // route IValueProvider.SetValue through the public edit lifecycle.
@@ -603,6 +623,12 @@ public:
     void CollapseAllGroups();
     void ExpandAllRows();
     void CollapseAllRows();
+    void ExpandGroup(winrt::IInspectable const& groupKey);
+    void CollapseGroup(winrt::IInspectable const& groupKey);
+
+    // Displayed-row index space, the one Select/SelectedIndex use: group headers take slots.
+    int32_t IndexOf(winrt::IInspectable const& item);
+    void StartBringItemIntoView(int32_t index, winrt::BringIntoViewOptions const& options);
 
     // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
@@ -616,13 +642,19 @@ public:
     bool SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     bool ToggleSortDirection(const winrt::TableViewColumn& column);
     bool ClearSort();
+    // Pointer, keyboard and UIA Invoke: the only callers CanUserSort/CanUserSortColumns gate.
+    bool ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& column);
+    // The app wrote TableViewColumn.SortDirection (not the control). Display only.
+    void OnColumnSortDirectionSetByApp(const winrt::TableViewColumn& column, winrt::SortDirection direction);
+    bool IsSortDisplaySetByAppInternal() const noexcept { return m_sortDisplaySetByApp; }
+    void RaiseColumnSortStateAutomationChanged(const winrt::TableViewColumn& column, winrt::SortDirection oldDirection);
 
     // Republishes every realized header chevron from its column's SortDirection DP. A push rather
     // than a binding: SortIndicatorDirection and SortDirection are distinct WinRT enums, so a
     // {Binding} between them silently does nothing. Called by TableViewColumn.
     void RefreshSortIndicators();
-    // CanSort gates whether the chevron is built at all, so a runtime flip needs a header rebuild.
-    void OnColumnCanSortChanged(const winrt::TableViewColumn& column);
+    // CanUserSort gates whether the chevron and click handler are built, so a runtime flip needs a header rebuild.
+    void OnColumnCanUserSortChanged(const winrt::TableViewColumn& column);
     void OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     // Drops a column that has left Columns from the active sort state. Returns true when the sort
     // state changed.
@@ -672,6 +704,17 @@ private:
 
     // The realized container for a data index, or null.
     winrt::TableViewRow FindRealizedRowForIndex(int32_t index);
+
+    // StartBringItemIntoView: one pending request, retried after layout until the rows can realize it.
+    int32_t DisplayedRowCount() const;
+    winrt::ItemsSourceView DisplayedRowsView() const;
+    void ArmPendingBringIntoView();
+    void CancelPendingBringItemIntoView();
+    void RevokePendingBringIntoViewLayout();
+    bool TryBringPendingItemIntoView();
+    int32_t m_pendingBringIntoViewIndex{ -1 };
+    winrt::BringIntoViewOptions m_pendingBringIntoViewOptions{ nullptr };
+    winrt::event_token m_pendingBringIntoViewLayoutToken{};
 
     void PushSelectionProperties();
     void RaiseSelectionChanged(winrt::IInspectable const& addedItem);
@@ -821,6 +864,28 @@ private:
     // m_suppressEditVisualRestore, which is also set by DP-change callbacks where the hazard is
     // focus re-entrancy rather than layout re-entrancy.
     bool m_insideLayoutPass{ false };
+    uint32_t m_layoutCallbackDepth{ 0 };
+
+    // IsEditing is true from the editor opening until the edit closes (Editing and Ending).
+    void SyncIsEditingProperty();
+    void OnIsEditingPropertyChanged();
+    bool m_isSettingIsEditing{ false };
+    // Once per closed edit session, after the write and before the queued reshapes. Queued so a
+    // posted raise is flushed before the next session's BeginningEdit and before queued reshapes.
+    void RaiseCellEditEnded(winrt::IInspectable const& item, winrt::TableViewColumn const& column, winrt::TableViewEditAction action);
+    void FlushPendingCellEditEnded();
+    struct PendingCellEditEnded
+    {
+        winrt::IInspectable Item{ nullptr };
+        winrt::TableViewColumn Column{ nullptr };
+        winrt::TableViewEditAction Action{ winrt::TableViewEditAction::Cancel };
+    };
+    std::deque<PendingCellEditEnded> m_pendingCellEditEnded;
+    bool m_cellEditEndedFlushPosted{ false };
+
+    // Set when terminating for a reshape closed the edit but a handler opened another.
+    bool m_terminateReopenedEdit{ false };
+    void QueueReshapeBehindEdit(std::function<void()> operation, bool skipWhileReplaying);
 
     void SetCurrentItem(winrt::IInspectable const& item);
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
@@ -1139,6 +1204,10 @@ private:
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
     void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);
+    void SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool expand);
+    // Never raised inside measure or arrange: every caller runs on a later turn or is posted out of layout.
+    void RaiseGroupExpanding(winrt::IInspectable const& groupKey);
+    void RaiseGroupCollapsed(winrt::IInspectable const& groupKey);
 
     void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
 
@@ -1182,9 +1251,11 @@ private:
     // Re-validated after every point where app code could have run (a Sorting handler, or an
     // edit-ending handler): the columns collection may have changed underneath the request that is
     // still in flight.
-    // requireCanSort=false is only for clearing a column that has just opted out of sorting.
+    // requireCanSort=false skips the sort-key check; only for clearing a column's own sort.
     bool IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
-    bool IsSortClearStillValid() const;
+    // explicitClear also counts item sorts declared on the source.
+    bool IsSortClearStillValid(bool explicitClear = false) const;
+    bool HasClearableSourceSort() const;
     bool CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     // False when the active source cannot order its rows (a null item or one object twice).
     bool CanApplySortTo(winrt::SortDirection direction) const;
@@ -1202,7 +1273,8 @@ private:
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
     // The lit column describes the app's source sort, not one this table installed.
     bool IsSortLitOnlyByApp() const;
-    winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
+    static winrt::TableViewKeySelector CreateTableViewSourceSortKeySelector(
+        const winrt::hstring& sortMemberPath, std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> const& customSortState);
     // Re-places a live-tracked item among CustomSortComparer ranks. True if any sort key moved.
     bool RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending);
     // Drops CustomSortComparer ranks for rows that left the source: `item` when non-null,
@@ -1214,7 +1286,9 @@ private:
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.
     // A non-null trigger is always an explicit request; a null one is explicit only when asked.
-    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true, bool explicitClear = false);
+    // applyDirection: write this direction to the trigger's arrow once the reshape succeeded.
+    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true, bool explicitClear = false,
+        std::optional<winrt::SortDirection> applyDirection = std::nullopt);
 
     // Silently drops the active sort when the data set is replaced. See the definition for why this
     // is not ClearSort.
@@ -1231,6 +1305,20 @@ private:
     // clear/purge walks are written against the collection and multi-column sort is the expected
     // next step. Weak refs: a column removed from Columns must not be kept alive by sort state.
     std::vector<tracker_ref<winrt::TableViewColumn>> m_sortedColumns;
+    // The lit column's direction was written by the app through SortDirection and has not ordered the rows.
+    bool m_sortDisplaySetByApp{ false };
+    // The control's own SortDirection writes run inside this scope; app writes made meanwhile are
+    // applied when the outermost scope ends.
+    [[nodiscard]] auto BeginSortStateUpdate()
+    {
+        ++m_sortStateUpdateDepth;
+        return gsl::finally([this]() { EndSortStateUpdate(); });
+    }
+    void EndSortStateUpdate() noexcept;
+    std::vector<winrt::TableViewColumn> SnapshotSortedColumns() const;
+    uint32_t m_sortStateUpdateDepth{ 0 };
+    std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_deferredAppSortWrites;
+    void AdoptColumnSortDirection(winrt::TableViewColumn const& column);
     TableViewSourceSortBinding m_tableViewSourceSort;
 
     tracker_ref<winrt::ItemsRepeater> m_rowsRepeater{ this };

@@ -12,16 +12,19 @@ public:
     TableViewCellEditEndingEventArgs(
         winrt::IInspectable const& item,
         winrt::TableViewColumn const& column,
-        winrt::TableViewEditAction editAction)
+        winrt::TableViewEditAction editAction,
+        winrt::FrameworkElement const& editingElement)
         : m_item(item)
         , m_column(column)
         , m_editAction(editAction)
+        , m_editingElement(editingElement)
     {
     }
 
     winrt::IInspectable Item() { return m_item; }
     winrt::TableViewColumn Column() { return m_column; }
     winrt::TableViewEditAction EditAction() { return m_editAction; }
+    winrt::FrameworkElement EditingElement() { return m_editingElement; }
 
     // Set to true to keep the edit open. Read synchronously once the event returns: there is no
     // deferral in this release, so a handler must decide before it returns.
@@ -32,5 +35,6 @@ private:
     winrt::IInspectable m_item{ nullptr };
     winrt::TableViewColumn m_column{ nullptr };
     winrt::TableViewEditAction m_editAction{ winrt::TableViewEditAction::Commit };
+    winrt::FrameworkElement m_editingElement{ nullptr };
     bool m_cancel{ false };
 };

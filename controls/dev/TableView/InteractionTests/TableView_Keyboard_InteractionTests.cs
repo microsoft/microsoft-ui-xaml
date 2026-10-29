@@ -1448,12 +1448,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanSort).")]
+        [TestProperty("Description", "A header click on a CanUserSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanUserSort).")]
         public void HeaderClickDoesNotSortColumnWithCanSortFalse()
         {
-            // The only check of the click half of CanSort; API tests cover SortByColumn/ToggleSortDirection.
+            // The only check of the click half of CanUserSort; API tests cover SortByColumn/ToggleSortDirection.
             //
-            // The ReadOnlyCity column of BasicTableView is authored CanSort="False"; Age is CanSort="True".
+            // The ReadOnlyCity column of BasicTableView is authored CanUserSort="False"; Age is CanUserSort="True".
             // Clicking Age afterwards is a NEGATIVE CONTROL and is the point of the test: without it, a click
             // that lands nowhere, or a table that stopped sorting entirely, would satisfy "nothing moved".
             //
@@ -1476,7 +1476,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject afterBlocked = FindSelectedRow(GetRowsHost(BasicTable));
                 if (afterBlocked == null) { Verify.Fail("The selected row was lost after clicking the non-sortable header."); return; }
                 Verify.IsTrue(Math.Abs(afterBlocked.BoundingRectangle.Top - oldTop) <= 2,
-                    string.Format("A CanSort=False header must not reorder rows (selected row {0} -> {1}).",
+                    string.Format("A CanUserSort=False header must not reorder rows (selected row {0} -> {1}).",
                         oldTop, afterBlocked.BoundingRectangle.Top));
 
                 // Negative control: the same gesture on a sortable column must work, proving the clicks land.
@@ -1723,18 +1723,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies Enter and Space on a group header each raise ToggleRequested exactly once, carrying that group's key, and that the key survives a handler that mutates the header re-entrantly.")]
-        public void GroupHeaderKeyboardToggleRaisesToggleRequestedWithGroupKey()
+        [TestProperty("Description", "Verifies Enter and Space on a group header each raise exactly one GroupCollapsed/GroupExpanding carrying that group's key.")]
+        public void GroupHeaderKeyboardToggleRaisesGroupEventsWithGroupKey()
         {
-            // Keyboard leg.
-            // Spec: TableView.idl:350-355 - the key rides on the args "so a handler that re-enters and mutates
-            //   the header still sees the key that was actually activated". The page handler reads the key,
-            //   flips sender.IsExpanded, and reads it again, recording "<key>|<key>;" per raise.
-            // Route: OnKeyDown raises RequestToggle, a different entry point from OnPointerReleased, so the
-            //   pointer leg does not substitute for this one. Neither is reachable from the automation peer,
-            //   which is why the item is not in the API plan (TableView_Grouping_APITests.cs:575).
-            // Failure means: keys reach the header's expansion state but not its public event, so a handler
-            //   built on ToggleRequested silently misses keyboard users.
+            // Keyboard leg: OnKeyDown is a different entry point from OnPointerReleased, so the pointer leg
+            // does not substitute for this one. The page records "C:<key>;" per GroupCollapsed and
+            // "E:<key>;" per GroupExpanding.
             using (var setup = new TestSetupHelper(PageName))
             {
                 // Resolved before the grouped table realizes - a FindElement afterwards forces a full tree
@@ -1762,7 +1756,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 hookButton.InvokeAndWait();
-                Verify.AreEqual("hooked;", toggleReport.Value, "Precondition: the page must have hooked ToggleRequested on the realized group headers.");
+                Verify.AreEqual("hooked;", toggleReport.Value, "Precondition: the page must have hooked the grouped table's group events.");
 
                 if (!TabToFirstGroupHeader(tableView, rowsHost, groupHeader))
                 {
@@ -1775,14 +1769,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Activate the focused header with Enter.");
                 KeyboardHelper.PressKey(Key.Enter);
                 Wait.ForIdle();
-                Verify.AreEqual("hooked;Redmond|Redmond;", toggleReport.Value,
-                    "Enter must raise ToggleRequested exactly once, carrying the group's key both before and after the handler mutates the header.");
+                Verify.AreEqual("hooked;C:Redmond;", toggleReport.Value,
+                    "Enter on an expanded group must raise GroupCollapsed exactly once, carrying the group's key.");
 
                 Log.Comment("Activate the same header with Space.");
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
-                Verify.AreEqual("hooked;Redmond|Redmond;Redmond|Redmond;", toggleReport.Value,
-                    "Space must raise the event exactly once more, for the same group.");
+                Verify.AreEqual("hooked;C:Redmond;E:Redmond;", toggleReport.Value,
+                    "Space on the collapsed group must raise GroupExpanding exactly once, for the same group.");
             }
         }
 
@@ -2263,11 +2257,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A CanSort=False header is still keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
+        [TestProperty("Description", "A CanUserSort=False header is still keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
         public void NonSortableHeaderIsFocusableAndEnterDoesNotSort()
         {
-            // TableView.idl:156-158 (CanSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the
-            // gate covers the key route. Failure means non-sortable headers are unreachable, or Enter ignores CanSort.
+            // TableView.idl:156-158 (CanUserSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the
+            // gate covers the key route. Failure means non-sortable headers are unreachable, or Enter ignores CanUserSort.
             using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject rowsHost = GetRowsHost(BasicTable);
@@ -2282,11 +2276,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (city == null) { Verify.Fail("The ReadOnlyCity header was not found."); return; }
                 city.SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(city.HasKeyboardFocus, "A CanSort=False header must still take keyboard focus.");
+                Verify.IsTrue(city.HasKeyboardFocus, "A CanUserSort=False header must still take keyboard focus.");
 
                 KeyboardHelper.PressKey(Key.Enter, numPresses: 2);
                 Wait.ForIdle();
-                Verify.AreEqual(bottomIndex, IndexOfSelectedRow(BasicTable), "Enter on a CanSort=False header must not reorder rows.");
+                Verify.AreEqual(bottomIndex, IndexOfSelectedRow(BasicTable), "Enter on a CanUserSort=False header must not reorder rows.");
 
                 UIObject age = GetHeader(BasicTable, "Age");
                 if (age == null) { Verify.Fail("The Age header was not found."); return; }

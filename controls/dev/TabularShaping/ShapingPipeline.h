@@ -17,10 +17,10 @@
 // and applies them to a materialized row vector.
 //
 // Layer 1 (ShapingDescriptions) says what a shape is and how to diff two of them. This layer
-// owns the mutable, ordered accumulation of verbs a fluent caller builds up over time -- which
-// sort axes are active, in what order they were declared relative to each other and to the group
-// verb, and which filter predicates are in force -- and turns that into the two operations
-// every projection needs: filter a vector, and sort a vector (or a slice of the axes).
+// owns the mutable accumulation of verbs a fluent caller builds up over time -- which sort axes
+// are active and in what precedence, how groups are ordered, and which filter predicates are in
+// force -- and turns that into the two operations every projection needs: filter a vector, and
+// sort a vector.
 //
 // It holds no collection, no dispatcher, no notification state and no tabular vocabulary. The
 // owner keeps the projection; this keeps the recipe. That split is what lets the projection layer
@@ -47,8 +47,7 @@ namespace ShapingHelpers
         // consumer read an axis back and say which column it is about.
         winrt::hstring SortMemberPath;
         winrt::SortDirection Direction{ winrt::SortDirection::None };
-        // Position in the single verb sequence shared with the group verb. Sorts declared before
-        // GroupBy order the groups; sorts declared after it order rows within a group.
+        // Declaration order, which is precedence: the earliest-declared axis is primary -- see ActiveSortAxes.
         int32_t Order{};
         // Stable diff identity of this axis, minted whenever the axis is declared or re-declared.
         // A layer-1 SortDescription is compared by PropertyName, and the fluent surface offers no
@@ -111,6 +110,20 @@ namespace ShapingHelpers
             winrt::hstring const& sortMemberPath,
             winrt::SortDirection direction);
         void ClearSorts() noexcept { m_sorts.clear(); }
+        // Makes this the only sort axis (every other axis is dropped); a direction of None leaves no axis at all.
+        void ReplaceSorts(
+            winrt::hstring const& axisToken,
+            KeySelector const& key,
+            winrt::hstring const& sortMemberPath,
+            winrt::SortDirection direction);
+        // Appends a lower-precedence axis. An existing axis with the same non-empty token, or the same non-empty
+        // sortMemberPath, instead takes the new direction in place and keeps its precedence. direction must not be
+        // None.
+        void ThenSort(
+            winrt::hstring const& axisToken,
+            KeySelector const& key,
+            winrt::hstring const& sortMemberPath,
+            winrt::SortDirection direction);
         void ClearSort(winrt::hstring const& axisToken);
         // Drops every axis EXCEPT the one carrying axisToken. An untokenized axis (empty
         // AxisToken) can only be cleared this way: ClearSort("") means clear-all, so a caller
@@ -125,11 +138,10 @@ namespace ShapingHelpers
         // match SetSort uses, by token, or by key identity for an untokenized axis.
         bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept;
 
-        // Axes with a live key and direction whose Order falls strictly between the bounds. A
-        // negative bound is unbounded, so ActiveSortAxes(-1, -1) is every active axis. Returned in
-        // PRECEDENCE order -- earliest declared first -- so index 0 is the primary sort.
-        std::vector<SortAxis> ActiveSortAxes(int32_t afterOrder, int32_t beforeOrder) const;
-        void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const;
+        // Axes with a live key and direction, in PRECEDENCE order -- earliest declared first -- so
+        // index 0 is the primary sort.
+        std::vector<SortAxis> ActiveSortAxes() const;
+        void ApplySort(std::vector<winrt::IInspectable>& rows) const;
 
         // Where a newly-arrived row belongs, plus whether the sort alone actually decides that.
         struct SortedInsertPlacement
@@ -156,14 +168,22 @@ namespace ShapingHelpers
         // here, and so does the engine for what it contains outside the pipeline (a group key, an in-place re-sort).
         SwallowedFaults& SwallowedFaultsTally() noexcept { return m_swallowedFaults; }
 
-        // -- verb ordering --------------------------------------------------------------------
-        int32_t NextVerbOrder() noexcept { return m_nextVerbOrder++; }
-        // Places the group verb at the end of the current verb sequence and returns its order.
-        // The key is optional and is carried only so the spec can describe the grouping axis;
-        // this class never evaluates it.
-        int32_t MarkGroupVerb(KeySelector const& key = nullptr);
+        // -- group ----------------------------------------------------------------------------
+        // Records the group verb. The key is carried only so the spec can describe the grouping
+        // axis; this class never evaluates it. Grouping does not split the sort axes: every sort
+        // axis orders rows within a group, and group order comes only from GroupSortDirection.
+        void MarkGroupVerb(KeySelector const& key = nullptr);
         void ClearGroupVerb() noexcept;
-        int32_t GroupOrder() const noexcept { return m_groupOrder; }
+        bool HasGroupVerb() const noexcept { return m_hasGroup; }
+        // Orders groups by group key; None orders them by their first item in the sorted rows. Retained, and inert, while no
+        // group verb is declared, so it survives the group verb being cleared or replaced.
+        void SetGroupSortDirection(winrt::SortDirection direction) noexcept { m_groupSortDirection = direction; }
+        winrt::SortDirection GroupSortDirection() const noexcept { return m_groupSortDirection; }
+
+        // Puts back a declaration copied from this pipeline before a verb changed it (filters,
+        // sorts, group, group order and committed spec), for a verb whose reshape threw. The
+        // fault tally and the id and order counters keep moving forward, so ids stay unique.
+        void RestoreDeclaration(ShapingPipeline const& snapshot);
 
         // -- spec -----------------------------------------------------------------------------
         // The layer-1 description of the verbs currently held: what shape is wanted, expressed as
@@ -188,6 +208,7 @@ namespace ShapingHelpers
         // Mints a process-unique-per-pipeline description id, e.g. "s3" for the fourth axis
         // declared. Only ever compared for equality, never parsed.
         winrt::hstring MintDescriptionId(wchar_t prefix);
+        int32_t NextVerbOrder() noexcept { return m_nextVerbOrder++; }
 
 
         // Compares an item's precomputed axis keys against a row whose keys are evaluated on the
@@ -201,7 +222,8 @@ namespace ShapingHelpers
         std::vector<FilterAxis> m_filters;
         std::vector<SortAxis> m_sorts;
         int32_t m_nextVerbOrder{ 0 };
-        int32_t m_groupOrder{ -1 };
+        bool m_hasGroup{ false };
+        winrt::SortDirection m_groupSortDirection{ winrt::SortDirection::None };
         // Diff identity and evaluator of the group verb, held only so BuildSpec can describe it.
         winrt::hstring m_groupDescriptionId;
         KeySelector m_groupKey{ nullptr };

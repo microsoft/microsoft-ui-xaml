@@ -62,7 +62,7 @@ public sealed partial class FilterPage : SamplePageBase
         {
             Header = "Photo",
             CellTemplate = (DataTemplate)resources["AvatarTemplate"],
-            CanSort = false,
+            CanUserSort = false,
             Width = Token("ColWidthAvatar"),
             HeaderToolTip = "PersonPicture: the photo when the person has one, otherwise their initials.",
         });
