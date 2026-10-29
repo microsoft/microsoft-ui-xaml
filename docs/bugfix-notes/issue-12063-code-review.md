@@ -35,3 +35,26 @@ Adversarial angles tried with no defect:
 - VM, mock DComp: `*BorderTests::*` 19/19 passed.
 - VM, real DComp (temporary guard change): `*BorderTests::BackdropXcbb*` 5/5 passed.
 - VM, fix disabled: `BackdropXcbbTextBlockForeground` failed (host crash, 0xC000027B).
+
+## Round 2 (reviewing 2c444addd)
+
+| Reviewer | Model | Kind | Result |
+|---|---|---|---|
+| r2-normal-a | gpt-6-sol | Normal | No significant issues |
+| r2-normal-b | claude-opus-5.5 | Normal | No significant issues. No overlapping open PR. |
+| r2-adv-a | grok-4.7 | Adversarial | No significant issues |
+| r2-adv-b | gpt-6-astra | Adversarial (other XCBB `Source` sites, visual fidelity, false-passing tests) | No significant issues |
+
+No findings, so no code changes.
+
+Adversarial angles tried with no defect:
+- Wrapper shared across elements. Sprite visuals come from each element's own render data, and the reuse check only reads this visual's own mask or nine-grid `Source`.
+- A wrapper later read as an app brush. No other render path reads the mask or nine-grid `Source`.
+- Device loss. The factory is cleared with the compositor, and the brush manager rebinds to the new compositor.
+- Islands. One factory per brush manager, which is one per compositor host.
+- `existingBrush` of the wrong type (not a mask, not a nine grid). The QI fails, a new brush is created, and a new wrapper is made.
+- `ICompositionObject2` missing, or a null or empty comment. Reuse is skipped, which is still correct.
+- Switching from a backdrop to Acrylic, solid, gradient, or image. The wrapper is replaced and released.
+- Pass-through sampling and source order (source 0 is `Destination`).
+
+After round 2, the notes gained "Why this fixes the issue" and "Why it's safe" sections (3b1f98ac4).
