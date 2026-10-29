@@ -1275,8 +1275,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(2, tableView.SelectedIndex, "Select() on a row peer must make that row the control's selection.");
 
                 // UIA forbids Select() from meaning "toggle": a client calling it twice would clear the
-                // selection. The single-select AddToSelection == Select mapping follows in-box
-                // precedent (ListViewItemAutomationPeer behaves the same rather than failing).
+                // selection. AddToSelection on the row that is already the selection is a no-op.
                 provider.AddToSelection();
                 tableView.UpdateLayout();
                 Verify.AreEqual(2, tableView.SelectedIndex, "AddToSelection() on the already selected row must leave it selected, not toggle it off.");

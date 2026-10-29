@@ -708,9 +708,13 @@ winrt::IRawElementProviderSimple TableViewRowAutomationPeer::SelectionContainer(
 
 void TableViewRowAutomationPeer::AddToSelection()
 {
-    // The container is single-select, so "add" can only mean "make this the selection". XAML's own
-    // single-select peers (ListViewItemAutomationPeer) behave the same way rather than failing.
-    // Multiple must add to the selection instead of replacing it.
+    // UIA SelectionItem contract: a single-select container fails rather than replacing another
+    // row's selection. Adding the row that is already selected, or into an empty selection, is fine.
+    if (auto const tableView = GetOwningTableView();
+        tableView && tableView.SelectedIndex() >= 0 && !IsSelected())
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
     Select();
 }
 
