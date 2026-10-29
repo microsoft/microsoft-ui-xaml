@@ -1202,7 +1202,7 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
             if (auto const source = m_selectionModelSource.GetAt(block))
             {
                 auto const rootPath = IndexPath::CreateFromIndices(std::vector<int>{ block });
-                if (auto const itemPath = SearchEntireTreeForIndexPath(winrt::ItemsSourceView(source), nvib, rootPath))
+                if (auto const itemPath = SearchEntireTreeForIndexPath(source, nvib, rootPath))
                 {
                     return itemPath;
                 }
@@ -5398,11 +5398,12 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
     return nullptr;
 }
 
-winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::ItemsSourceView& items, const winrt::IInspectable& data, const winrt::IndexPath& ip)
+winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::IInspectable& items, const winrt::IInspectable& data, const winrt::IndexPath& ip)
 {
-    for (int i = 0; i < items.Count(); i++)
+    auto const menuItems = NavigationViewItemBase::GetMenuItems(items);
+    for (int i = 0; i < static_cast<int>(menuItems.size()); i++)
     {
-        auto const item = items.GetAt(i);
+        auto const& item = menuItems[i];
         if (item == data)
         {
             return winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i);
@@ -5411,12 +5412,7 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Items
         {
             if (auto const children = GetChildren(nvi))
             {
-                auto childItems = children.try_as<winrt::ItemsSourceView>();
-                if (!childItems)
-                {
-                    childItems = winrt::ItemsSourceView(children);
-                }
-                if (auto const childPath = SearchEntireTreeForIndexPath(childItems, data, winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i)))
+                if (auto const childPath = SearchEntireTreeForIndexPath(children, data, winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i)))
                 {
                     return childPath;
                 }

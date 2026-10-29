@@ -310,16 +310,15 @@ void NavigationViewItem::UpdateNavigationViewForChildren()
         {
             SelectPreselectedChildren();
         }
-        SetNavigationViewParentForItems(GetChildrenItemsSourceView(), navigationView);
+        SetNavigationViewParentForItems(GetChildrenSource(), navigationView);
     }
 }
 
 void NavigationViewItem::SelectPreselectedChildren()
 {
-    auto const children = GetChildrenItemsSourceView();
-    for (int i = 0; i < children.Count(); i++)
+    for (auto const& item : GetMenuItems(GetChildrenSource()))
     {
-        if (auto const child = children.GetAt(i).try_as<winrt::NavigationViewItem>())
+        if (auto const child = item.try_as<winrt::NavigationViewItem>())
         {
             // Resolving this item's index path can walk the whole menu, so only do it when a child is preselected.
             if (child.IsSelected())
@@ -327,7 +326,7 @@ void NavigationViewItem::SelectPreselectedChildren()
                 if (IsInNavigationViewMenu())
                 {
                     auto const navigationView = GetNavigationView();
-                    winrt::get_self<NavigationView>(navigationView)->UpdateSelectedItemFromMenuItems(children, navigationView.SelectedItem() != nullptr);
+                    winrt::get_self<NavigationView>(navigationView)->UpdateSelectedItemFromMenuItems(GetChildrenItemsSourceView(), navigationView.SelectedItem() != nullptr);
                 }
                 return;
             }

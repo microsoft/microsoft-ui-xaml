@@ -85,11 +85,11 @@ void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const
     OnNavigationViewItemBaseParentChanged();
 }
 
-void NavigationViewItemBase::SetNavigationViewParentForItems(const winrt::ItemsSourceView& items, const winrt::NavigationView& navigationView)
+void NavigationViewItemBase::SetNavigationViewParentForItems(const winrt::IInspectable& items, const winrt::NavigationView& navigationView)
 {
-    for (int i = 0; i < items.Count(); i++)
+    for (auto const& menuItem : GetMenuItems(items))
     {
-        if (auto const item = items.GetAt(i).try_as<winrt::NavigationViewItemBase>())
+        if (auto const item = menuItem.try_as<winrt::NavigationViewItemBase>())
         {
             // An item that already has this owner has propagated it to its children, so only new items are walked.
             auto const itemImpl = winrt::get_self<NavigationViewItemBase>(item);
@@ -99,6 +99,35 @@ void NavigationViewItemBase::SetNavigationViewParentForItems(const winrt::ItemsS
             }
         }
     }
+}
+
+// Vectors are read directly because each new ItemsSourceView subscribes to, and later unsubscribes from, its source.
+std::vector<winrt::IInspectable> NavigationViewItemBase::GetMenuItems(const winrt::IInspectable& items)
+{
+    std::vector<winrt::IInspectable> menuItems;
+    if (auto const vector = items.try_as<winrt::IVector<winrt::IInspectable>>())
+    {
+        auto const size = vector.Size();
+        menuItems.reserve(size);
+        for (uint32_t i = 0; i < size; i++)
+        {
+            menuItems.push_back(vector.GetAt(i));
+        }
+    }
+    else if (items)
+    {
+        auto itemsSourceView = items.try_as<winrt::ItemsSourceView>();
+        if (!itemsSourceView)
+        {
+            itemsSourceView = winrt::ItemsSourceView(items);
+        }
+        menuItems.reserve(itemsSourceView.Count());
+        for (int i = 0; i < itemsSourceView.Count(); i++)
+        {
+            menuItems.push_back(itemsSourceView.GetAt(i));
+        }
+    }
+    return menuItems;
 }
 
 void NavigationViewItemBase::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
