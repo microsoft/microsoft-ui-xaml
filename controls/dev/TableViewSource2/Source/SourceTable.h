@@ -388,6 +388,14 @@ private:
     // No table state is touched.
     static void ValidateItems(std::vector<winrt::Windows::Foundation::IInspectable> const& items);
 
+    // `item` plus, under ChildrenBy, its whole subtree (m_hierarchy->CollectIncoming).
+    std::vector<winrt::Windows::Foundation::IInspectable> CollectIncomingItems(
+        winrt::Windows::Foundation::IInspectable const& item) const;
+
+    // True when `existing` is a ChildrenBy descendant of `replacing` (null: never), so it leaves
+    // with it and an incoming replacement may share it.
+    bool IsLeavingWith(SourceRecord const* existing, SourceRecord const* replacing) const noexcept;
+
     // ValidateIncoming (host member, below): throws hresult_invalid_argument if any of `items` (an
     // incoming item plus what m_hierarchy->CollectIncoming adds) is null, appears twice in `items`,
     // or is already in the table outside `replacing` and its subtree (nullptr for an insert). Uses
@@ -507,6 +515,11 @@ private:
     // freeze around the handler skips a re-entrant change, so raises never nest. Keeps its
     // capacity across changes.
     std::vector<SourceRecord const*> m_removedView;
+
+    // Records a failed RemoveAt had already taken out of m_records but whose engine nodes still
+    // exist: kept alive here, then handed to the next Refresh's Reset as removed (Clear() drops
+    // them). Empty unless a listener threw during a hierarchy remove.
+    std::vector<SourceRecordPtr> m_zombies;
 
     // The current hierarchy strategy; null = flat. Its selectors and keys are tracked, so Clear()
     // releases it first, while m_trackerOwner is alive. Kept off SourceRecord so flat tables pay

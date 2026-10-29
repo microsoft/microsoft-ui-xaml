@@ -387,6 +387,13 @@ void SourceTable::Refresh()
         m_hierarchy->MatchForRefresh(*this, matches, removed);
     }
 
+    // Records a failed remove left in the engine's tree leave with this Reset.
+    for (auto& zombie : m_zombies)
+    {
+        removed.push_back(std::move(zombie));
+    }
+    m_zombies.clear();
+
     // 3. Link.
     std::vector<SourceRecord*> added;
     CommitRecords(items, matches, added);
@@ -593,6 +600,7 @@ void SourceTable::Clear()
 
     m_topLevel.clear();
     m_removedView.clear();
+    m_zombies.clear();
 
     // ~SourceRecord() revokes through Item.safe_get().
     m_records.clear();
@@ -917,11 +925,45 @@ void SourceTable::ValidateIncoming(
     for (auto const& item : items)
     {
         SourceRecord const* const existing = TryFindByItem(item);
-        if (existing && existing != replacing)
+        if (existing && existing != replacing && !IsLeavingWith(existing, replacing))
         {
             throw winrt::hresult_invalid_argument(c_duplicateItemMessage);
         }
     }
+}
+
+bool SourceTable::IsLeavingWith(SourceRecord const* existing, SourceRecord const* replacing) const noexcept
+{
+    // A ChildrenBy descendant of the leaving root leaves with it. A ParentBy child is another
+    // root record, which stays.
+    if (!replacing)
+    {
+        return false;
+    }
+
+    for (SourceRecord const* above = existing->Parent; above; above = above->Parent)
+    {
+        if (above == replacing)
+        {
+            return std::none_of(m_records.begin(), m_records.end(), [existing](SourceRecordPtr const& root)
+            {
+                return root.get() == existing;
+            });
+        }
+    }
+
+    return false;
+}
+
+std::vector<winrt::Windows::Foundation::IInspectable> SourceTable::CollectIncomingItems(
+    winrt::Windows::Foundation::IInspectable const& item) const
+{
+    std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
+    if (m_hierarchy && item)
+    {
+        m_hierarchy->CollectIncoming(item, incoming);
+    }
+    return incoming;
 }
 
 void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
@@ -931,12 +973,7 @@ void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspecta
     try
     {
         // ChildrenBy: the item brings its whole subtree; every item in it is checked first.
-        std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
-        if (m_hierarchy && item)
-        {
-            m_hierarchy->CollectIncoming(item, incoming);
-        }
-        ValidateIncoming(incoming, nullptr);
+        ValidateIncoming(CollectIncomingItems(item), nullptr);
     }
     catch (...)
     {
@@ -990,6 +1027,8 @@ void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspecta
         }
         catch (...)
         {
+            // The strategy's own bookkeeping (a forced-top record to restore) may be stale.
+            RequestReset();
             PostRereadIfOwed();
             throw;
         }
@@ -1029,6 +1068,23 @@ void SourceTable::RemoveAt(uint32_t index)
     }
     catch (...)
     {
+        // The orphan Moves raised before the fault already happened; the record is still linked
+        // in its sibling list and the engine's tree. Finish detaching it from the table and keep
+        // it alive until the re-read drops its engine nodes, so no pointer outlives its owner.
+        SourceRecord* const parent = raw->Parent;
+        auto& siblings = SiblingsOf(parent);
+        auto const it = std::find(siblings.begin(), siblings.end(), raw);
+        if (it != siblings.end())
+        {
+            siblings.erase(it);
+        }
+        raw->Parent = nullptr;
+
+        for (auto& record : removed)
+        {
+            m_zombies.push_back(std::move(record));
+        }
+        RequestReset();
         PostRereadIfOwed();
         throw;
     }
@@ -1053,16 +1109,12 @@ void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspect
     if (m_hierarchy)
     {
         // Drift #16: validate the incoming item (and, under ChildrenBy, its subtree) against the
-        // leaving record first, so a rejection writes nothing; then a Remove and an Add, each
-        // placed by the strategy (InsertAt validates again; the children selector may run twice).
+        // leaving record and its leaving subtree first, so a rejection writes nothing; then a
+        // Remove and an Add, each placed by the strategy (InsertAt validates again; the children
+        // selector may run twice).
         try
         {
-            std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
-            if (item)
-            {
-                m_hierarchy->CollectIncoming(item, incoming);
-            }
-            ValidateIncoming(incoming, m_records[index].get());
+            ValidateIncoming(CollectIncomingItems(item), m_records[index].get());
         }
         catch (...)
         {
@@ -1070,7 +1122,17 @@ void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspect
             throw;
         }
 
-        RemoveAt(index);
+        try
+        {
+            RemoveAt(index);
+        }
+        catch (...)
+        {
+            // The Add never runs: the source holds the new item, so re-read.
+            RequestReset();
+            throw;
+        }
+
         InsertAt(index, item);
         return;
     }
