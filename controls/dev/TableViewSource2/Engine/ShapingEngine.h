@@ -121,12 +121,12 @@ public:
     // under an ancestor failing the filter (E8); a group change may prune and create groups (E9).
     void ApplyItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
 
-    // Live shaping for k > 1 coalesced records (decided, E7 Y2): Rebuild(Applied(), Filter |
-    // GroupKey | Sort, changes). The re-reads (routed per entry as in ApplyItemChanged) run app
-    // code only for `changes`; every other record reuses its cached ShapeState. The re-sorts then
-    // run over cached keys. One
-    // reset (a stable Reset the owner re-anchors), matching c_bulkThreshold. App code runs
-    // O(k) times, not O(n). Every entry's record is live (the manager erases removed records).
+    // Live shaping for more than ShapingManager::c_liveBulkThreshold coalesced records (decided,
+    // E7 Y2): Rebuild(Applied(), Filter | GroupKey | Sort, changes). The re-reads (routed per entry
+    // as in ApplyItemChanged) run app code only for `changes`; every other record reuses its cached
+    // ShapeState. The re-sorts then run over cached keys. One reset (a stable Reset the owner
+    // re-anchors). App code runs O(k) times, not O(n). Every entry's record is live (the manager
+    // erases removed records).
     void ApplyItemsChanged(std::span<LiveChange const> changes);
 
     // ---- Lifetime ---------------------------------------------------------------------------

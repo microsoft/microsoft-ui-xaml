@@ -198,8 +198,10 @@ private:
 
     // The posted callback, and the synchronous flush before a verb. One commit:
     //   m_liveAllDirty           -> Reapply();
-    //   one entry                -> m_engine.ApplyItemChanged (surgical);
-    //   more than c_bulkThreshold -> m_engine.ApplyItemsChanged (re-read dirty records only, then
+    //   one entry, or up to c_liveBulkThreshold entries
+    //                            -> m_engine.ApplyItemChanged per entry (surgical);
+    //   more than c_liveBulkThreshold
+    //                            -> m_engine.ApplyItemsChanged (re-read dirty records only, then
     //                               one structural rebuild and a stable Reset).
     // Moves m_liveDirty into a local batch and clears m_liveAllDirty and m_liveDrainPosted before
     // any shaping, so a re-entrant OnItemChanged (app code run by the drain) lands in the fresh
@@ -324,6 +326,13 @@ private:
     // several orphans under ParentBy) goes through Reapply() and one stable Reset instead of
     // surgical Link / Unlink. Descendants carried by an item do not count. 1 matches v1 ShapedItemsSource.
     static constexpr uint32_t c_bulkThreshold = 1;
+
+    // Live-shaping drain (DrainLiveChanges): more than this many dirty records in one turn go
+    // through ApplyItemsChanged (one rebuild, one stable Reset); this many or fewer are applied
+    // surgically, one ApplyItemChanged each, in the same commit. Higher than c_bulkThreshold: the
+    // dirty set is what an editing app touched in one turn (usually a few records), and a handful
+    // of surgical remove / insert pairs is cheaper than a rebuild plus a scroll re-anchor.
+    static constexpr uint32_t c_liveBulkThreshold = 16;
 
     // Re-entrancy guard for verbs (CanRunVerb): a verb or Refresh while an apply runs throws.
     // Source notifications are guarded separately by SourceTable's freeze.

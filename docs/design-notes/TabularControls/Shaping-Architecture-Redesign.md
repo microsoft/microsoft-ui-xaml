@@ -42,8 +42,7 @@ controls/dev/TableViewSource2/
     GroupExpansion.h                             GroupExpansion (group expansion model, keyed by GroupNode::Identity)
     ShapingEngine.h                              ShapingEngine (applied spec, ShapedTree, entry points)
   View/                                          WinRT projections of the shaped tree
-    GroupHeaderRow.h                             GroupHeaderRow, IGroupHeaderRowTag, TryGetGroupHeaderRow (header row value)
-    ShapedCollectionView.h                       ShapedCollectionView (the WinRT visible list)
+    ShapedCollectionView.h                       ShapedCollectionView (the WinRT visible list; header row value is the shared GroupedEntry)
     ShapedRowMetadata.h                          ShapedRowMetadata (ITableViewRowMetadataProvider adapter)
     ShapedRowQueries.h                           ShapedRowQueries (read-only row queries the adapters use)
   Shaping/                                       owns and wires the layers above
@@ -77,7 +76,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
-| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token `GroupHeaderRow`; row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/GroupHeaderRow.h`, `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
+| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
 | 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener` and the adapters' `IShapedExpansion`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapedExpansion.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the expansion actions, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
 ## Class diagram
@@ -191,6 +190,7 @@ classDiagram
         -bool m_resyncPosted
         -CommitState m_commit
         -uint32 c_bulkThreshold$
+        -uint32 c_liveBulkThreshold$
         +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
         +Refresh()
         +BeginDeferRefresh()
@@ -268,13 +268,17 @@ classDiagram
         +Detach()
     }
 
-    class GroupHeaderRow {
-        <<WinRT, IGroupHeaderRowTag>>
-        -IInspectable m_key
+    class GroupedEntry {
+        <<WinRT, IGroupedEntryTag, shared with v1>>
+        -IInspectable m_group
         -hstring m_identity
-        +Key() IInspectable
+        -int32 m_groupItemCount
+        -bool m_isExpanded
+        +Group() IInspectable
         +Identity() hstring
-        +TryGetGroupHeaderRow(value)$ com_ptr~GroupHeaderRow~
+        +GroupItemCount() int32
+        +IsExpanded() bool
+        +TryGetGroupedEntry(value)$ com_ptr~GroupedEntry~
     }
 
     class ISourceHierarchyHost {
@@ -452,7 +456,7 @@ classDiagram
     ShapingManager ..|> IShapedExpansion : private
     ShapingManager o-- ShapedCollectionView : m_view (tracked, TableView also holds it)
     ShapedCollectionView ..> ShapedRowQueries : raw pointer, nulled by Detach()
-    ShapedCollectionView ..> GroupHeaderRow : header row value
+    ShapedCollectionView ..> GroupedEntry : header row value
     ShapingManager o-- ShapedRowMetadata : m_rowMetadata (shared_ptr, TableView also holds it)
     ShapedRowMetadata ..> ShapedRowQueries : raw pointer, nulled by Detach()
     ShapedRowMetadata ..> IShapedExpansion : raw pointer, nulled by Detach()
@@ -1530,7 +1534,7 @@ struct GroupNode : ShapedNode          // Kind = Group; headers exist only while
     std::vector<ShapedNode*> Children; // subgroups, or top-level records after filter and sort; non-owning, display order
     uint32_t ItemCount;                // bucketed top-level records (descendants not counted)
     uint16_t GroupLevel;               // top-level groups = 0; the header's ShapedDepth(); shares ItemCount's 8-byte slot
-    mutable IInspectable HeaderRow;    // GroupHeaderRow token, created on first GetAtCore (V2); null on the root
+    mutable IInspectable HeaderRow;    // shared GroupedEntry token, created on first GetAtCore (V2); null on the root
     bool IsRoot() const noexcept;      // Parent == nullptr
 };
 
@@ -1856,7 +1860,7 @@ through `ShapedTree`'s walk (P1); it holds no copy.
     `SourceTable` reuses records and rewrites their `Children` before the engine runs, so
     source-owned lists may already be new while the counts are old. It takes its anchor candidates
     from its realized row elements (the repeater has not seen the `Reset`, so they are the old
-    ones): each element's `DataContext` gives the key (a `GroupHeaderRow`'s `Identity`, or an item
+    ones): each element's `DataContext` gives the key (a `GroupedEntry`'s `Identity`, or an item
     resolved through `SourceTable`, D4, skipped if it has left the source), and the offset comes
     from the element's position.
   - Rejected: snapshotting the old rows (O(visible) per `Reset`).
@@ -1885,7 +1889,7 @@ through `ShapedTree`'s walk (P1); it holds no copy.
   `Identity()`, `"0x"` + `Address` in hex. `IndexFromKey` parses it back with
   `SourceRecord::TryParseIdentity` and resolves it through `SourceTable::TryFindByAddress`, which is
   always on, so key lookups work without enabling the identity index. A `g|` key goes to
-  `ShapingEngine::GroupsByIdentity()`. `IndexOfCore(value)` resolves a `GroupHeaderRow` through its
+  `ShapingEngine::GroupsByIdentity()`. `IndexOfCore(value)` resolves a `GroupedEntry` through its
   `Identity` and an app item through `SourceTable::TryFindByItem`.
   - Rejected: requiring the identity index (`TryFindByIdentity`) for every bound view (a map that is
     otherwise needed only while shaping verbs are active).
@@ -1895,23 +1899,31 @@ through `ShapedTree`'s walk (P1); it holds no copy.
   list of AddRef'd objects that must stay in step, raises one `VectorChanged` per item (k events
   and k index shifts per k-row splice; v1 falls back to `Reset` instead), re-copies everything on a
   rebuild, is mutable, and would still need a wrapper class for `IKeyIndexMapping`.
-- **Row value (decided, V2).** A data row's value is the app item (`SourceRecord::Item`). A header's
-  value is an internal header token (`GroupHeaderRow`, a WinRT object with a tag IID, the v2
-  counterpart of v1 `GroupedEntry`), created on the first `GetAt` and cached on the `GroupNode`
-  (`GroupNode::HeaderRow`). The row value must identify its own kind because
-  `ElementFactoryGetArgs` carries only `Data`, no index.
-  - The token holds only immutable data: the group `Key` and `Identity`. Live state (`ItemCount`,
-    expanded, expandable, level) is read through row metadata by index, never copied, so it
-    cannot go stale. v1 duplicated `GroupItemCount` / `IsExpanded` on the entry because its
-    mirrored vector could lag its metadata; v2's list and metadata both read the shaped tree.
+- **Row value (decided, V2: reuse v1 `GroupedEntry`).** A data row's value is the app item
+  (`SourceRecord::Item`). A header's value is the v1 header token `GroupedEntry`
+  (`GroupedSourceAdapter/GroupedEntry.h`, a WinRT object with tag IID `IGroupedEntryTag`), with one
+  addition: an `Identity` string (the `GroupNode::Identity`, `"g|"` ...; empty under v1). It is
+  created on the first `GetAt` and cached on the `GroupNode` (`GroupNode::HeaderRow`). The row
+  value must identify its own kind because `ElementFactoryGetArgs` carries only `Data`, no index.
+  - Why reuse: `TableView` already probes `TryGetGroupedEntry` to tell a header from a data row, so
+    v2 headers are recognized with no `TableView` change and one header type serves both sources.
+    `GetGroupHeaderKey` unwraps an `ICollectionViewGroup` (v1's `ShapedGroup`) and otherwise uses
+    `Group()` as the key, so v2 passes the GroupBy key as `Group()`.
+  - `GroupItemCount` / `IsExpanded` are snapshots filled once at creation and never updated.
+    `TableView` reads live state (`ItemCount`, expanded, expandable, level) through row metadata by
+    index and uses these only as a fallback while a realized header briefly resolves to an index
+    whose metadata says Data; a stale snapshot costs at most a momentary chevron state there.
   - The same object on every `GetAt`: a stable `DataContext`, one allocation per group lifetime.
-  - A token outliving its group (held by a recycled element) is detached but still answers `Key`
-    and `Identity`. It holds `Key` strongly, as v1 `GroupedEntry` does.
+  - A token outliving its group (held by a recycled element) is detached but still answers
+    `Group()` and `Identity`. It holds the key strongly, as v1 does.
   - `TableView` keeps building the header's `TableViewGroupInfo` per element, as today.
-  - Rejected: a fresh token per `GetAt` (v1; an allocation per realize, a new `DataContext` each
-    time, copied state that goes stale), and returning the public `TableViewGroupInfo` (couples
-    the source to `TableView`'s projection type and its culture formatting, and changes the header
-    path where the element owns its info).
+  - Rejected: a separate v2 token (`GroupHeaderRow` with `Key` and `Identity` only; a second header
+    test in `TableView`); mutable snapshots that `ShapedTree` updates on every count or expansion
+    change (more writes on the hot path for a fallback value, and no row-state event to show them);
+    re-minting the entry per change as v1 does on expand (a `Replace` event and a new
+    `DataContext` each time); and returning the public `TableViewGroupInfo` (couples the source to
+    `TableView`'s projection type and its culture formatting, and changes the header path where
+    the element owns its info).
 - **Row key (decided, V3: marker on group identities).** `KeyFromIndex(i)` returns the cached
   identity as-is: `SourceRecord::Identity()` for a data row, `GroupNode::Identity` for a header.
   The namespaces are disjoint because every group `Identity` starts with the reserved `g|`
@@ -2749,8 +2761,13 @@ public:
     otherwise; WPF `ListCollectionView` rejects range actions.
   - The *Stable `Reset` keeps scroll* spike found reuse without anchoring (outcome 2); the threshold
     stands, and the owner re-anchors after a `Reset`.
-  - Rejected: a larger fixed threshold (arbitrary, k events to the repeater, another path to
-    test), a threshold relative to n (behavior varies with list size) and always surgical (10k
+  - Live shaping uses its own threshold, `ShapingManager::c_liveBulkThreshold = 16`: a drain with
+    up to 16 dirty records applies them surgically (one `ApplyItemChanged` each, one commit); more
+    go through `ApplyItemsChanged` and one stable `Reset`. The dirty set is what the app edited in
+    one dispatcher turn, usually a few records, and a few remove / insert pairs are cheaper than a
+    rebuild plus a scroll re-anchor; a range source event has no such bound.
+  - Rejected for source notifications: a larger fixed threshold (arbitrary, k events to the
+    repeater, another path to test), a threshold relative to n (behavior varies with list size) and always surgical (10k
     events and O(k·n) shifting for a 10k range).
 
 **Order of a surgical change.**
@@ -2948,7 +2965,7 @@ public:
     void Reapply(ShapeSpec const& desired);                    // Rebuild(desired, All)
     void ApplySourceChange(SourceChange const&);               // one notification, k <= c_bulkThreshold items (any subtree size)
     void ApplyItemChanged(SourceRecord*, winrt::hstring const& propertyName);  // live shaping, one record
-    void ApplyItemsChanged(std::span<LiveChange const>);       // live shaping, k > 1 coalesced records (E7 Y2)
+    void ApplyItemsChanged(std::span<LiveChange const>);       // live shaping, k > c_liveBulkThreshold coalesced records (E7 Y2)
     void Clear();                                              // groups, keys; applied = empty
     void ReleaseRetired() noexcept;                            // after OnShapingApplied: destroy pruned groups (P8)
 
@@ -3171,11 +3188,13 @@ private:
     empty name re-reads everything. No change in `PassesFilter`, `SortKeys` or group `Identity`
     emits nothing (the row's bindings update on their own). A change is a surgical remove then
     insert, with the E8 ancestor walk and E9 group create / prune.
-  - Coalescing (decided: per-turn dirty set, surgical for one, dirty-only rebuild for more).
+  - Coalescing (decided: per-turn dirty set, surgical up to `c_liveBulkThreshold`, dirty-only
+    rebuild above).
     `ShapingManager::OnItemChanged` never shapes inside the app's setter. It records
     `(record, propertyName)` in `m_liveDirty` (a second, different name for the same record
     becomes the empty name) and posts one `DrainLiveChanges` per dispatcher turn. The drain runs
-    one commit: one entry goes to `ApplyItemChanged` (surgical); more than `c_bulkThreshold` go to
+    one commit: up to `c_liveBulkThreshold` (16) entries go to `ApplyItemChanged` one at a time
+    (surgical); more than `c_liveBulkThreshold` go to
     `ApplyItemsChanged`, which is `Rebuild(Applied(), Filter | GroupKey | Sort, changes)`: the
     re-reads limited to the dirty records, the re-sorts over all cached keys, so
     app code runs O(k) times and the result is one stable `Reset` the owner re-anchors.
@@ -3217,7 +3236,7 @@ private:
     posts one `Refresh` (a full `Reapply` and `Reset`) per turn even for one record; WPF posts
     `RestoreLiveShaping` and moves each dirty item.
   - Rejected: applying inside `PropertyChanged` (one edit per property set, app code inside the
-    app's setter, reshapes mid-layout or mid-edit); a full `Reapply` for k > 1 (O(n) app calls to
+    app's setter, reshapes mid-layout or mid-edit); a full `Reapply` for k > 16 (O(n) app calls to
     move two rows); v1's full `Reapply` every turn (a `Reset` per cell edit, against E8 / E9);
     property-name matching alone (delegates are opaque, so it degenerates to re-evaluate);
     WPF-style declared `LiveSortingProperties` lists (new API, and a missing name silently leaves
@@ -3352,7 +3371,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       for shown nodes, `ItemCount` derivation, group-expansion pruning
       (`ShapingEngine::GroupsByIdentity`, `RetainOnly` after every rebuild), and filter auto-expand
       (`ShapeFlags::OverlayCollapsed`).
-- [x] Declare the WinRT visible list: `ShapedCollectionView` (D1–D4), `GroupHeaderRow`, and the
+- [x] Declare the WinRT visible list: `ShapedCollectionView` (D1–D4), the shared `GroupedEntry`
+      header token (plus `Identity`), and the
       coordinator's visible-list read helpers.
 - [x] Declare the row metadata provider: `ShapedRowMetadata` (R1–R4), the coordinator's
       row-metadata helpers and `TableViewSource2::GetRowMetadata()`.

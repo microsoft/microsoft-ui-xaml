@@ -54,7 +54,8 @@ public:
     // hidden.
     std::optional<uint32_t> IndexOfKey(winrt::hstring const& key) const;
 
-    // Row value -> flat index: a GroupHeaderRow by its Identity, else SourceTable::TryFindByItem.
+    // Row value -> flat index: a GroupedEntry (TryGetGroupedEntry) by its Identity, else
+    // SourceTable::TryFindByItem.
     // Then ShapedTree::IndexOf. nullopt when unknown or hidden.
     std::optional<uint32_t> IndexOfItem(winrt::IInspectable const& value) const;
 

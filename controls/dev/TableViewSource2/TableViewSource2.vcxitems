@@ -39,7 +39,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Spec\ShapeSpec.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\GroupExpansion.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)View\GroupHeaderRow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedCollectionView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedRowMetadata.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedRowQueries.h" />

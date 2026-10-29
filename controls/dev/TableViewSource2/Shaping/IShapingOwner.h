@@ -72,7 +72,7 @@ struct IShapingOwner
     // must not read rows through the view: for a source Reset, SourceTable has already rewritten
     // source-owned child lists while the counts are still old. It captures its scroll-anchor
     // candidates from its realized row elements instead: key from the DataContext (a
-    // GroupHeaderRow's Identity, or the record found by item through SourceTable, D4; an item no
+    // GroupedEntry's Identity, or the record found by item through SourceTable, D4; an item no
     // longer present is skipped) and offset from the element's position. The repeater has not seen
     // the Reset yet, so the realized elements are still the old ones. The matching restore happens
     // in OnShapingApplied (Changes has Reset). Not called for surgical commits. Should not throw:

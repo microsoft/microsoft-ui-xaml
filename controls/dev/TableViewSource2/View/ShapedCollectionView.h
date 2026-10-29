@@ -19,7 +19,8 @@ class ShapedRowQueries;
 // coordinator's lifetime: reshapes raise CollectionChanged on it, never replace it.
 //
 // Row value (V2): a data row is the app item (SourceRecord::Item); a group header is its
-// GroupHeaderRow token, created on first read and cached on GroupNode::HeaderRow.
+// GroupedEntry (shared with v1, so TableView's TryGetGroupedEntry recognizes it), created on first
+// read and cached on GroupNode::HeaderRow.
 // Row key (V3): a record's Identity() ("0x" + address); a group's GroupNode::Identity ("g|" ...).
 //
 // Back-reference (D2): a non-owning ShapedRowQueries* (ShapingManager::m_rows), nulled by Detach()
@@ -49,8 +50,10 @@ public:
     // ShapedRowQueries::RowCount(); 0 once detached.
     int32_t GetSizeCore() override;
 
-    // ShapedTree::GetAt(index) (tree walk with cursor, P1/P3) mapped to its row value: the app item, or the group's GroupHeaderRow (created
-    // and cached on GroupNode::HeaderRow on first read). Throws E_BOUNDS out of range or detached.
+    // ShapedTree::GetAt(index) (tree walk with cursor, P1/P3) mapped to its row value: the app
+    // item, or the group's GroupedEntry (created on first read with Key, Identity and count /
+    // expanded snapshots, then cached on GroupNode::HeaderRow). Throws E_BOUNDS out of range or
+    // detached.
     winrt::IInspectable GetAtCore(int index) override;
 
     // Always true: the repeater pools elements by key, so a stable Reset reuses them.
@@ -65,8 +68,8 @@ public:
     int IndexFromKeyCore(winrt::hstring const& key) override;
 
     // ShapedRowQueries::IndexOfItem: the item's record through SourceTable::TryFindByItem, then its
-    // flat index, O(depth); a GroupHeaderRow resolves through its Identity. -1 when unknown, hidden
-    // or detached. Not a linear scan.
+    // flat index, O(depth); a GroupedEntry (TryGetGroupedEntry) resolves through its Identity. -1
+    // when unknown, hidden or detached. Not a linear scan.
     int IndexOfCore(winrt::IInspectable const& value) override;
 
 #pragma endregion

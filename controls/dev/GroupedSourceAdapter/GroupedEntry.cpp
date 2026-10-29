@@ -8,8 +8,10 @@
 GroupedEntry::GroupedEntry(
     winrt::IInspectable const& group,
     int32_t groupItemCount,
-    bool isExpanded)
+    bool isExpanded,
+    winrt::hstring const& identity)
     : m_group(group)
+    , m_identity(identity)
     , m_groupItemCount(groupItemCount)
     , m_isExpanded(isExpanded)
 {

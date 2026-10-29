@@ -91,10 +91,12 @@ struct GroupNode : ShapedNode
     // the shaped root. Follows ItemCount so the two share one 8-byte slot.
     uint16_t GroupLevel{ 0 };
 
-    // The header's row value in the visible list (decided, V2): an internal GroupHeaderRow token
-    // holding Key and Identity only, created on the first ShapedCollectionView::GetAtCore and reused after, so
-    // the header's DataContext is stable. Null until then and on the shaped root. Mutable: the
-    // visible list fills it from a const read.
+    // The header's row value in the visible list (decided, V2): a shared GroupedEntry
+    // (GroupedSourceAdapter/GroupedEntry.h) with Group() = Key, Identity() = Identity, and
+    // GroupItemCount / IsExpanded snapshots taken at creation (fallback only, never updated).
+    // Created on the first ShapedCollectionView::GetAtCore and reused after, so the header's
+    // DataContext is stable. Null until then and on the shaped root. Mutable: the visible list
+    // fills it from a const read.
     mutable winrt::Windows::Foundation::IInspectable HeaderRow{ nullptr };
 
     bool IsRoot() const noexcept { return Parent == nullptr; }

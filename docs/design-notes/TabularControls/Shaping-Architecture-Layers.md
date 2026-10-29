@@ -27,7 +27,7 @@ flowchart TB
     subgraph L3["View/ : read-only adapters"]
         SCV["ShapedCollectionView<br/>ItemsSourceView: GetAt / IndexOf / Count"]
         SRM["ShapedRowMetadata<br/>level, kind, expanded, reveal"]
-        GHR["GroupHeaderRow<br/>row item for a group"]
+        GHR["GroupedEntry (shared with v1)<br/>row item for a group"]
     end
 
     subgraph L4["Spec/ : what to shape"]

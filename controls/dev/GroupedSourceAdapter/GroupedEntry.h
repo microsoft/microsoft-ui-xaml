@@ -17,6 +17,15 @@
 // duplication is deliberate: during a reshape a realized header can briefly resolve to an index
 // whose metadata says Data, and PrepareGroupHeaderElement falls back to these so the header does
 // not render a dead chevron in that window.
+//
+// Shared by v1 (GroupedSourceAdapter) and v2 (TableViewSource2 ShapedCollectionView), so TableView
+// has one header test (TryGetGroupedEntry) for both.
+//   - v1: Group() is the ShapedGroup; a fresh entry per change (re-minted on expand); Identity() empty.
+//   - v2: Group() is the GroupBy key; one entry per group, created on the first read and cached on
+//     GroupNode::HeaderRow (a stable DataContext); Identity() is GroupNode::Identity ("g|" ...).
+//     GroupItemCount / IsExpanded are snapshots taken at creation and never updated: TableView
+//     prefers row metadata and reads them only in the fallback window above, so a stale value
+//     costs at most a momentary chevron state; no row-state event is raised (P9).
 
 // Real IID for GroupedEntry. Without it try_as<GroupedEntry>() is not a type test: the default
 // interface of a winrt::implements<..., IInspectable> type is IInspectable, which QIs successfully
@@ -30,14 +39,19 @@ public:
     GroupedEntry(
         winrt::IInspectable const& group,
         int32_t groupItemCount,
-        bool isExpanded);
+        bool isExpanded,
+        winrt::hstring const& identity = {});
 
     winrt::IInspectable Group() const;
     int32_t GroupItemCount() const;
     bool IsExpanded() const;
 
+    // The group's string identity, also its IKeyIndexMapping key. v2 only; empty under v1.
+    winrt::hstring const& Identity() const noexcept { return m_identity; }
+
 private:
     winrt::IInspectable m_group{ nullptr };
+    winrt::hstring m_identity;
     int32_t m_groupItemCount{ 0 };
     bool m_isExpanded{ true };
 };
