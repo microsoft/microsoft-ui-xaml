@@ -318,9 +318,12 @@ public static class SessionFile
         // type is among the types read.
         using var transaction = connection.BeginTransaction(deferred: true);
         var (info, frequency, startQpc) = ReadSession(connection, transaction);
+        // Files written before TraceLogging was added hold only TraceLogging events, apart from DxgKrnl's manifest events.
+        var traceLogging = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('EventTypes') WHERE name = 'TraceLogging'",
+            transaction) > 0 ? "TraceLogging" : $"Provider <> '{XamlProvider.DxgKrnl}'";
         var types = new Dictionary<long, (XamlProvider Provider, bool TraceLogging, string Name, int Opcode, string[] Names, FieldType[] Types)>();
         using (var command = Command(connection, transaction,
-            "SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging FROM EventTypes"))
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, {traceLogging} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
