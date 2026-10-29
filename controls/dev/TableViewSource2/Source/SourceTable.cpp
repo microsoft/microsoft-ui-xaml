@@ -331,6 +331,12 @@ bool SourceTable::HasHierarchy() const noexcept
     return m_hierarchy != nullptr;
 }
 
+void SourceTable::SetLiveShaping(bool enabled)
+{
+    // Milestone 6 subscribes and unsubscribes the records here; until then the flag is only stored.
+    m_liveShapingEnabled = enabled;
+}
+
 bool SourceTable::IsLiveShaping() const noexcept
 {
     return m_liveShapingEnabled;

@@ -286,6 +286,9 @@ private:
     // retired: the SourceChange's Removed records when called from OnSourceChanged (alive until
     // that handler returns); empty for verbs, expansion and live shaping. No owner: the owner
     // calls are skipped; no view yet: the tree has no listener and nothing is raised.
+    // The RAII scope that calls BeginCommit / EndCommit (defined in ShapingManager.cpp).
+    class CommitScope;
+
     void BeginCommit();
     void EndCommit(std::span<SourceRecord const* const> retired, bool unwinding) noexcept;
 
@@ -325,6 +328,9 @@ private:
     // raised. std::optional because ~tracker_ref
     // dereferences the owner; Clear() detaches and resets it while the owner is alive.
     std::optional<tracker_ref<winrt::Microsoft::UI::Xaml::Interop::IBindableVector>> m_view;
+
+    // The implementation behind m_view, for the noexcept listener. Set with m_view, nulled by Clear().
+    ShapedCollectionView* m_viewImpl{ nullptr };
 
     // Cached result of RowMetadata() (R4). Plain shared_ptr: it holds no app object, and TableView
     // keeps its own shared_ptr. Null until the first RowMetadata(); Clear() detaches and resets it.

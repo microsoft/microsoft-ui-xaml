@@ -59,6 +59,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedRowQueries.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedCollectionView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedRowMetadata.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Shaping\ShapingManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TableViewSource2.idl" />

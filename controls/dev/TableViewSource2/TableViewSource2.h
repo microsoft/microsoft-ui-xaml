@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "pch.h"
@@ -65,6 +66,12 @@ public:
     // ActiveSortAxisInfos). Forwards to ShapingManager::AppliedSpec(). nullptr after teardown.
     ShapeSpec const* AppliedSpec() const noexcept;
 
+    // Internal (not in IDL): the ItemsSourceView TableView binds its rows repeater to, as v1
+    // TableViewSource::GetItemsSourceView(). Wraps ShapingManager::View() in a winrt::ItemsSourceView
+    // created once and cached in m_itemsSourceView (rebuilt if the view collection is ever
+    // recreated). nullptr after teardown.
+    winrt::ItemsSourceView GetItemsSourceView();
+
     // Internal (not in IDL): the row metadata provider for TableView, as v1
     // TableViewSource::GetRowMetadata(). Forwards to ShapingManager::RowMetadata(). nullptr after
     // teardown.
@@ -89,8 +96,9 @@ public:
     // loads the new page before it unloads the old one), so the caller renders empty and waits
     // with AddOwnerReleasedWaiter. The same owner again is an idempotent true. A successful claim
     // calls m_shapingManager->SetOwner(owner) first (it throws while an apply runs, #19, before
-    // anything here changes), then sets m_owner and removes that owner's waiter. Raw pointer: the
-    // owner calls ReleaseOwner before it is destroyed.
+    // anything here changes), then sets m_owner. It does not remove waiters: the caller must call
+    // RemoveOwnerReleasedWaiter (TableView: StopAwaitingSource2) before TrySetOwner. Raw pointer:
+    // the owner calls ReleaseOwner before it is destroyed.
     bool TrySetOwner(IShapingOwner* owner);
 
     // Releases ownership. A no-op unless owner is m_owner, so a refused table cannot detach the
@@ -122,6 +130,15 @@ private:
     // this object is still alive. Before that, the destructor nulls m_owner and clears
     // m_ownerReleasedWaiters without running them (no callbacks during teardown).
     std::unique_ptr<ShapingManager> m_shapingManager;
+
+    // Cache for GetItemsSourceView(). A tracker_ref bound to this, like the other framework/app
+    // objects this source holds: the ItemsSourceView holds our view collection, which holds app
+    // items, so the GC must be able to walk it. std::optional because ~tracker_ref dereferences
+    // the owner. m_itemsSourceViewCollection is the collection it wraps (identity only, never
+    // dereferenced; the wrapper keeps it alive), so a recreated view invalidates the cache.
+    // Reset in ~TableViewSource2 without get().
+    std::optional<tracker_ref<winrt::ItemsSourceView>> m_itemsSourceView;
+    void* m_itemsSourceViewCollection{ nullptr };
 
     // The registered owner (#18 O1, O7), or nullptr. Not owned; the owner releases it before it
     // dies. ShapingManager holds the same pointer as its notification sink.
