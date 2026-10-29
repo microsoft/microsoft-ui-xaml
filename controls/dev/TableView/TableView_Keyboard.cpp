@@ -1083,9 +1083,9 @@ void TableView::OnKeyDownForNavigation(
     }
 }
 
-// Rows forward Left/Right before PART_BodyScroller scrolls on them; the handledEventsToo KeyDown
-// then skips the key, since hierarchy Left/Right is not idempotent.
-void TableView::HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
+// Rows forward Left/Right (and row-level Up) before PART_BodyScroller acts on them; the
+// handledEventsToo KeyDown then skips the key, since hierarchy Left/Right is not idempotent.
+void TableView::HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = true;
     OnKeyDownForNavigation(nullptr, args);

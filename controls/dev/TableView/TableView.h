@@ -350,7 +350,7 @@ public:
     // default, or that row's current cell once the user has drilled in with Right.
     bool FocusRow(int32_t index);
 
-    void HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
+    void HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
 
 
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
