@@ -50,6 +50,15 @@ public:
     // m_engine.Tree().GetAt(index); the caller maps it to the row value and key. Throws E_BOUNDS.
     ShapedNode* RowAt(uint32_t index) const;
 
+    // The row key (V3) of RowAt(index): KeyOf(*RowAt(index)). The one identity helper both
+    // adapters use (ShapedCollectionView::KeyFromIndex, ShapedRowMetadata::GetIdentity), so the two
+    // key spaces cannot drift. Throws E_BOUNDS.
+    winrt::hstring KeyAt(uint32_t index) const;
+
+    // The row key (V3) of node: SourceRecord::Identity() ("0x" + address) for a record,
+    // GroupNode::Identity ("g|" ...) for a group.
+    static winrt::hstring KeyOf(ShapedNode const& node);
+
     // Row key -> flat index (V3): TryResolveKey, then ShapedTree::IndexOf. nullopt when unknown or
     // hidden.
     std::optional<uint32_t> IndexOfKey(winrt::hstring const& key) const;

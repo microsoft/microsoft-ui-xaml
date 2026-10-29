@@ -44,7 +44,8 @@
 //          owner is TableViewSource2's decision (B2); it passes the result through SetOwner.
 //
 // Unlike v1 ShapedItemsSource it is plain C++, not the WinRT collection the repeater binds to.
-// That collection is ShapedCollectionView, an ItemsSourceView subclass View() returns as is.
+// That collection is ShapedCollectionView, a native read-only IBindableVector View() returns;
+// TableViewSource2::GetItemsSourceView() wraps it once in a winrt::ItemsSourceView and caches it.
 //
 // Adapters see only what they use (decided): ShapedCollectionView holds the ShapedRowQueries
 // (reads); ShapedRowMetadata holds the ShapedRowQueries and this object as IShapedExpansion (the
@@ -157,11 +158,14 @@ public:
 
     // ---- Output -----------------------------------------------------------------------------
 
-    // The ItemsSourceView TableView binds to (as v1 TableViewSource::GetItemsSourceView()): the
-    // ShapedCollectionView itself (D1), created on first call with &m_rows as its back-reference
-    // (D2) and cached. Stays the same object for this coordinator's lifetime: reshapes raise
-    // CollectionChanged on it, never replace it. Returns nullptr after Clear().
-    winrt::ItemsSourceView View();
+    // The visible list (D1): the ShapedCollectionView, as its IBindableVector, created on first
+    // call with &m_rows as its back-reference (D2) and cached. Not an ItemsSourceView (that type's
+    // implementation lives in the Controls DLL and cannot be derived from here):
+    // TableViewSource2::GetItemsSourceView() wraps this once with winrt::ItemsSourceView{ View() }
+    // and caches the wrapper, as v1 TableViewSource::GetItemsSourceView() is consumed. Stays the
+    // same object for this coordinator's lifetime: reshapes raise CollectionChanged on it, never
+    // replace it. Returns nullptr after Clear().
+    winrt::Microsoft::UI::Xaml::Interop::IBindableVector View();
 
     // ---- Owner queries (decided: narrow queries, no Source() accessor) ----------------------
 
@@ -320,7 +324,7 @@ private:
     // the first View(), which also calls m_engine.Tree().SetListener(this): until then nothing is
     // raised. std::optional because ~tracker_ref
     // dereferences the owner; Clear() detaches and resets it while the owner is alive.
-    std::optional<tracker_ref<winrt::ItemsSourceView>> m_view;
+    std::optional<tracker_ref<winrt::Microsoft::UI::Xaml::Interop::IBindableVector>> m_view;
 
     // Cached result of RowMetadata() (R4). Plain shared_ptr: it holds no app object, and TableView
     // keeps its own shared_ptr. Null until the first RowMetadata(); Clear() detaches and resets it.

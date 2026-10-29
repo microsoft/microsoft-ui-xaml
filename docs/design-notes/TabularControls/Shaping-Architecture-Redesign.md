@@ -76,7 +76,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
-| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
+| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (a native read-only `IBindableVector` that `ShapingManager::View()` returns and `TableViewSource2` wraps in an `ItemsSourceView`) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
 | 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener` and the adapters' `IShapedExpansion`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapedExpansion.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the expansion actions, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
 ## Class diagram
@@ -177,7 +177,7 @@ classDiagram
         -ShapeSpec m_desired
         -ShapeDelegates m_delegates
         -PathEvaluator m_paths
-        -optional~tracker_ref~ItemsSourceView~~ m_view
+        -optional~tracker_ref~IBindableVector~~ m_view
         -shared_ptr~ShapedRowMetadata~ m_rowMetadata
         -ShapingEngine m_engine
         -ShapedRowQueries m_rows
@@ -201,7 +201,7 @@ classDiagram
         +BeginLiveShapingHold() noexcept
         +EndLiveShapingHold()
         +SetOwner(sink)
-        +View() ItemsSourceView
+        +View() IBindableVector
         +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
         +IsItemInShapedTree(item) bool
         +Clear()
@@ -239,14 +239,15 @@ classDiagram
     }
 
     class ShapedCollectionView {
-        <<WinRT, derives ItemsSourceView>>
+        <<WinRT IBindableVector, INotifyCollectionChanged, IKeyIndexMapping>>
         -ShapedRowQueries const* m_rows
-        #GetSizeCore() int
-        #GetAtCore(index) IInspectable
-        #HasKeyIndexMappingCore() bool
-        #KeyFromIndexCore(index) hstring
-        #IndexFromKeyCore(key) int
-        #IndexOfCore(value) int
+        +Size() uint32
+        +GetAt(index) IInspectable
+        +IndexOf(value, index) bool
+        +First() IBindableIterator
+        +KeyFromIndex(index) hstring
+        +IndexFromKey(key) int
+        +CollectionChanged
         +NotifyRemoved(index, count)
         +NotifyAdded(index, count)
         +NotifyReset()
@@ -732,7 +733,7 @@ classDiagram
     }
 
     class ShapedCollectionView {
-        <<WinRT, derives ItemsSourceView>>
+        <<WinRT IBindableVector, INotifyCollectionChanged>>
         +NotifyRemoved(index, count)
         +NotifyAdded(index, count)
         +NotifyReset()
@@ -1802,21 +1803,29 @@ private:
 **WinRT visible list (decided, V1: a virtual read-only collection over the shaped tree).** The
 collection the repeater binds to, `ShapedCollectionView`, is a small WinRT class that reads
 through `ShapedTree`'s walk (P1); it holds no copy.
-- **Base (decided, D1: derives from `ItemsSourceView`).** `ShapedCollectionView` subclasses
-  `ItemsSourceView` inside the controls DLL, as `InspectingDataSource` does
-  (`winrt::implements<ShapedCollectionView, ItemsSourceView>`), and `View()` returns it as is;
-  `ItemsRepeater` uses an `ItemsSourceView` it is given without wrapping it. Overrides:
-  `GetSizeCore()` is `ShapedTree::Size()`; `GetAtCore(i)` maps `ShapedTree::GetAt(i)` to its row
-  value (V2);
-  `HasKeyIndexMappingCore()` is true; `KeyFromIndexCore` / `IndexFromKeyCore` use the row key (V3)
-  and `ShapedTree::IndexOf`; `IndexOfCore(item)` resolves the item through `SourceTable` (D4), then
-    `IndexOf` (O(depth × log k), not a scan). Events are raised through the base
-  `OnItemsSourceChanged(args)`, which also refreshes the cached `Count`.
-  - Rejected: the earlier V1 shape, a standalone class implementing `IVectorView<IInspectable>`,
-    `IIterable`, `INotifyCollectionChanged` and `IKeyIndexMapping`, wrapped by
-    `winrt::ItemsSourceView{ list }`: two objects and two event hops per source, the mapping found
-    by `try_as`, and `IndexOf` a linear scan. Its only gain, binding the list to an arbitrary
-    `ItemsControl`, is not needed: `TableView` consumes an `ItemsSourceView`, as in v1.
+- **Base (decided, D1, revised: a native read-only collection wrapped by `ItemsSourceView`).**
+  `ShapedCollectionView` is a plain C++/WinRT object,
+  `winrt::implements<ShapedCollectionView, IBindableVector, IBindableVectorView, IBindableIterable,
+  INotifyCollectionChanged, IKeyIndexMapping>`. `View()` returns it (as `IBindableVector`), and
+  `TableViewSource2::GetItemsSourceView()` wraps it once with the public
+  `winrt::ItemsSourceView{ collection }` constructor and caches the wrapper, exactly how v1
+  `GroupedSourceAdapter` wraps its entries vector. Members: `Size()` is `ShapedTree::Size()`;
+  `GetAt(i)` maps `ShapedTree::GetAt(i)` to its row value (V2), range-checked (`E_BOUNDS`; the tree
+  only asserts); `IndexOf(item)` resolves the item through `SourceTable` (D4), then `ShapedTree::IndexOf`
+  (O(depth × log k), not a scan); `KeyFromIndex` / `IndexFromKey` use the row key (V3, the one
+  helper `ShapedRowQueries::KeyAt`, shared with `ShapedRowMetadata::GetIdentity`); `First()` is an
+  index iterator; `GetView()` returns the object itself; every mutator throws
+  `E_ILLEGAL_METHOD_CALL`. Events are raised on its own `CollectionChanged`. The wrapper's
+  `InspectingDataSource` takes its `IBindableVector` path (the object is not an
+  `IVector<IInspectable>`), subscribes to `INotifyCollectionChanged` (preferred over
+  `VectorChanged`), forwards each event through `OnItemsSourceChanged` (refreshing its cached size),
+  and finds `IKeyIndexMapping` by `try_as` once at construction.
+  - Why not derive from `ItemsSourceView` (the earlier D1, rejected): `TableViewSource2` compiles
+    into the Tabular DLL, while `ItemsSourceView`'s implementation type (`Repeater/ItemsSourceView.h`,
+    and `InspectingDataSource`) lives in the Controls DLL. Its runtime class is `unsealed` but
+    declares no overridable interface, so the `*Core` virtuals are unreachable across the DLL
+    boundary; including the header there does not compile. Cost of the wrapper: two objects and one
+    extra event hop per source, which v1 already pays.
 - `ShapingManager`, as the tree's `IShapedRowsListener`, raises one `CollectionChanged` per tree
   event (a ranged `Remove` or `Add`), or one `Reset` (P8). The repeater subscribes to the view's
   `CollectionChanged`, and `ViewManager` reads only `NewItems().Size()` / `OldItems().Size()`, so
@@ -1888,27 +1897,32 @@ through `ShapedTree`'s walk (P1); it holds no copy.
     resolved through `SourceTable`, D4, skipped if it has left the source), and the offset comes
     from the element's position.
   - Rejected: snapshotting the old rows (O(visible) per `Reset`).
-- Read-only: `ItemsSourceView` has no mutators, so neither the app nor a binding can edit the rows.
+- Read-only: every `IBindableVector` mutator on `ShapedCollectionView` throws
+  `E_ILLEGAL_METHOD_CALL`, and `ItemsSourceView` has no mutators, so neither the app nor a binding
+  can edit the rows.
 - **Back-reference (decided, D2: a raw `ShapedRowQueries*`, nulled by `Detach()`).** The view reads
   through the coordinator's read-only row queries (`ShapingManager::m_rows`: `RowCount`, `RowAt`,
   `IndexOfKey`, `IndexOfItem`), never the tree, engine or `SourceTable` directly, and cannot reach
   the coordinator's verbs. `ShapingManager` owns the view (`m_view`), but `TableView` may keep it
-  longer, so `ShapingManager::Clear()` calls `Detach()` first. A detached view reports `Count` 0,
-  `GetAt` throws `E_BOUNDS`, and the lookups return -1. `Detach()` raises nothing (teardown).
+  longer, so `ShapingManager::Clear()` calls `Detach()` first. A detached view reports `Size` 0,
+  `GetAt` throws `E_BOUNDS`, and the lookups return -1 (or false). `Detach()` raises nothing (teardown).
   - Rejected: a `weak_ptr` to a shared coordinator (`ShapingManager` is a `unique_ptr` member and
     lives on the UI thread with the view), pointing the view at the `ShapedTree` (the key and
     item lookups also need the engine and `SourceTable`), and a `ShapingManager*` (the view would
     see every verb; see *Row queries*).
-- **Event item lists (decided, D3: parity with `InspectingDataSource`).** `Remove` and `Add` args
-  carry a bindable `Vector` of k `nullptr`s, the shape `InspectingDataSource::OnVectorChanged`
-  already raises on the public `ItemsSourceView.CollectionChanged`. Only the size is meaningful:
-  the repeater, `ElementManager` and `SelectionNode` read only `NewItems().Size()` /
-  `OldItems().Size()`, and consumers read rows through `GetAt`. O(k) pointer writes per event
-  (about 80 KB for a 10k-row collapse, freed after the event), small next to the k rows the tree
-  already touched.
-  - Rejected: a count-only fake `IBindableVector` (O(1), but a custom type whose mutators throw,
-    with no precedent), and real items (O(k) `GetAt`s nobody reads; removed rows are already gone
-    from the tree when `Remove` is raised).
+- **Event item lists (decided, D3, revised: parity with `InspectingDataSource`).** `Remove` and
+  `Add` args carry an `IBindableVector` of k `nullptr`s, and the unused side (both on `Reset`) an
+  empty one, never null: the shape `InspectingDataSource::OnVectorChanged` already raises on the
+  public `ItemsSourceView.CollectionChanged`. Only the size is meaningful: the repeater,
+  `ElementManager` and `SelectionNode` read only `NewItems().Size()` / `OldItems().Size()`, and
+  consumers read rows through `GetAt`. The list is a count-only read-only `IBindableVector`
+  (`PlaceholderItems`, private to `ShapedCollectionView.cpp`: `GetAt(i < k)` is `nullptr`, mutators
+  throw), O(1) per event.
+  - Why count-only: the bindable `Vector` that `InspectingDataSource` uses (`Collections/Vector.h`)
+    is not on the Tabular DLL's include path, and `ShapedCollectionView` is itself a read-only
+    `IBindableVector` (revised D1), so the pattern now has a precedent next to it.
+  - Rejected: real items (O(k) `GetAt`s nobody reads; removed rows are already gone from the tree
+    when `Remove` is raised).
 - **Key to record (decided, D4: parse the key, then `TryFindByAddress`).** A record key is its
   `Identity()`, `"0x"` + `Address` in hex. `IndexFromKey` parses it back with
   `SourceRecord::TryParseIdentity` and resolves it through `SourceTable::TryFindByAddress`, which is
@@ -2533,7 +2547,7 @@ Decisions and open questions:
   | Owner | Owns |
   |---|---|
   | `TableViewSource2` | `std::unique_ptr<ShapingManager>` (the app collection lives in its `SourceTable`). Validates verb arguments and forwards; returns itself for chaining. |
-  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`, which owns the group expansion model), the read-only row queries (`m_rows`), the row metadata provider and the WinRT visible list. |
+  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached visible list (`m_view`, the `ShapedCollectionView` as `IBindableVector`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`, which owns the group expansion model), the read-only row queries (`m_rows`), the row metadata provider and the WinRT visible list. |
 
 - **Pipeline.** Spec verbs edit `m_desired`, then `ApplyDesiredSpec()` runs
   `Diff(applied, desired)` → engine apply, whose `ShapedTree` calls raise row events on the visible
@@ -2558,11 +2572,13 @@ Decisions and open questions:
   repeater binds to. That collection is `ShapedCollectionView`, which reads through the
   coordinator's read-only row queries (`m_rows`, a `ShapedRowQueries`: `RowCount`, `RowAt`,
   `IndexOfKey`, `IndexOfItem`).
-- **`View()` returns the `ShapedCollectionView`** (an `ItemsSourceView` subclass, D1), as v1
-  `TableViewSource::GetItemsSourceView()` returns its view. It is created on first call and cached in
-  `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, detached and reset by `Clear()`), and stays the same
-  object for the coordinator's lifetime: reshapes raise `CollectionChanged` on it rather than
-  replacing it. Returns `nullptr` after `Clear()`.
+- **`View()` returns the `ShapedCollectionView`** as its `IBindableVector` (D1). It is created on
+  first call and cached in `m_view` (`std::optional<tracker_ref<IBindableVector>>`, detached and
+  reset by `Clear()`), and stays the same object for the coordinator's lifetime: reshapes raise
+  `CollectionChanged` on it rather than replacing it. Returns `nullptr` after `Clear()`.
+  `TableViewSource2::GetItemsSourceView()` wraps it once with `winrt::ItemsSourceView{ View() }` and
+  caches the wrapper, so `TableView` consumes an `ItemsSourceView` exactly as from v1
+  `TableViewSource::GetItemsSourceView()`.
 - **Row metadata and selection.** `TableView` talks only to `TableViewSource2`, and through it to
   the coordinator, never to `SourceTable`. Identity lookups go through `SourceTable` and index
   lookups through the shaped tree, both owned here.
@@ -2750,7 +2766,7 @@ public:
   `ShapedRowQueries*` / `IShapedExpansion*` pointers into the manager, D2/R4), then `ShapingEngine::Clear()`, which calls `ShapedTree::Clear()`
   (drops the groups, the cursor and the listener; raises nothing) and drops the tracked keys. Only
   then does `SourceTable::Clear()` destroy the records. A consumer that still holds the
-  `ItemsSourceView` afterwards sees `Size` 0, `GetAt` throws out of bounds, and lookups return -1.
+  view (or its `ItemsSourceView` wrapper) afterwards sees `Size` 0, `GetAt` throws out of bounds, and lookups return -1.
 
 **Event shape.**
 
@@ -3386,7 +3402,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `TableViewSource2`).
 - [x] Declare `ShapingManager` (verbs, `Refresh`, `IsLiveShaping`, `Clear`, handlers, owned
       parts) and replace `TableViewSource2::m_sourceTable` with `m_shapingManager`.
-- [x] Declare `View()` (returns the cached `ItemsSourceView`, `m_view`).
+- [x] Declare `View()` (returns the cached `ShapedCollectionView` as `IBindableVector`, `m_view`).
 - [x] Decide how the engine and the flattener exchange changes (§6 *Change pipeline*: hybrid,
       `ShapedEdit` → `FlatSplice` + `RowStateEdit` → `FlatDelta`, `IShapedEditSink`).
 - [x] Declare `ShapedEdit`, `IShapedEditSink` (`Engine/ShapedEdit.h`), `FlatSplice`,

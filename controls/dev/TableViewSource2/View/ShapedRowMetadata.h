@@ -23,7 +23,8 @@ struct IShapedExpansion;
 // event tokens, an identity -> index map and a header-index list, all rebuilt on change). Every
 // answer is read live from the shaped tree, which matches the last raised event (P8).
 //
-// Key space: the row key (V3), the same string as ShapedCollectionView::KeyFromIndex. Records:
+// Key space: the row key (V3), ShapedRowQueries::KeyAt, the same string as
+// ShapedCollectionView::KeyFromIndex. Records:
 // SourceRecord::Identity() ("0x" + address); groups: GroupNode::Identity ("g|" ...). v1's "group:"
 // and "node:" prefixes are not used.
 //
@@ -45,7 +46,8 @@ public:
     // table in the spec). Out of range or detached: a default TableViewRowInfo.
     TableViewRowInfo GetRowInfo(int32_t index) override;
 
-    // The row key of ShapedRowQueries::RowAt(index) (V3). Empty when out of range or detached.
+    // ShapedRowQueries::KeyAt(index), the row key (V3) shared with ShapedCollectionView. Empty
+    // when out of range or detached.
     winrt::hstring GetIdentity(int32_t index) override;
 
     // ShapedRowQueries::IndexOfKey (V3/D4). False when unknown, hidden or detached.
