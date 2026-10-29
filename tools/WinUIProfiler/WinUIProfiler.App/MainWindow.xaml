@@ -6,6 +6,14 @@
     xmlns:views="using:WinUIProfiler.App.Views">
     <Grid x:Name="Root" Padding="24" RowSpacing="12"
           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <DataTemplate x:Key="SnapshotChoiceTemplate" x:DataType="vm:SnapshotHistoryEntry">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind CaptureId}" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+            </DataTemplate>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -16,32 +24,50 @@
             <TextBlock x:Uid="PageTitle" Style="{ThemeResource TitleTextBlockStyle}" />
             <TextBlock x:Uid="PageIntroduction" TextWrapping="Wrap" />
         </StackPanel>
-        <Grid Grid.Row="1" RowSpacing="8" ColumnSpacing="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Grid Grid.Row="1" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="230" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ComboBox x:Name="Mode" x:Uid="Mode" SelectedIndex="0" HorizontalAlignment="Stretch"
-                      SelectionChanged="Mode_SelectionChanged">
-                <ComboBoxItem x:Uid="UnpackagedMode" />
-                <ComboBoxItem x:Uid="PackagedMode" />
-                <ComboBoxItem x:Uid="AttachMode" />
-            </ComboBox>
-            <TextBox x:Name="TargetText" x:Uid="Target" Grid.Column="1" TextChanged="Target_TextChanged" />
-            <Button x:Name="Browse" x:Uid="Browse" Grid.Column="2" VerticalAlignment="Bottom" Click="Browse_Click" />
-            <TextBox x:Name="ArgumentsText" x:Uid="Arguments" Grid.Row="1" Grid.ColumnSpan="2" />
-            <NumberBox x:Name="Endpoint" x:Uid="Endpoint" Grid.Row="1" Grid.Column="2" Value="1"
-                       Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact" />
-            <TextBox x:Name="WorkingDirectoryText" x:Uid="WorkingDirectory" Grid.Row="2" Grid.ColumnSpan="3" />
-            <CheckBox x:Name="Trust" x:Uid="Trust" Grid.Row="3" Grid.ColumnSpan="2" />
-            <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+            <Expander x:Name="TargetSettings" x:Uid="TargetSettings" HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch" IsExpanded="True">
+                <Expander.Header>
+                    <TextBlock x:Name="TargetSummary" TextTrimming="CharacterEllipsis" />
+                </Expander.Header>
+                <Grid RowSpacing="8" ColumnSpacing="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox x:Name="Mode" x:Uid="Mode" SelectedIndex="0" HorizontalAlignment="Stretch"
+                              SelectionChanged="Mode_SelectionChanged">
+                        <ComboBoxItem x:Uid="UnpackagedMode" />
+                        <ComboBoxItem x:Uid="PackagedMode" />
+                        <ComboBoxItem x:Uid="AttachMode" />
+                    </ComboBox>
+                    <TextBox x:Name="TargetText" x:Uid="Target" Grid.Column="1" TextChanged="Target_TextChanged" />
+                    <Button x:Name="Browse" x:Uid="Browse" Grid.Column="2" VerticalAlignment="Bottom" Click="Browse_Click" />
+                    <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="ArgumentsText" x:Uid="Arguments" TextChanged="Arguments_TextChanged" />
+                        <TextBox x:Name="WorkingDirectoryText" x:Uid="WorkingDirectory" Grid.Column="1" />
+                        <NumberBox x:Name="Endpoint" x:Uid="Endpoint" Grid.Column="2" Value="1"
+                                   Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact" />
+                    </Grid>
+                    <CheckBox x:Name="Trust" x:Uid="Trust" Grid.Row="2" Grid.ColumnSpan="3" />
+                </Grid>
+            </Expander>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" Margin="0,8,0,0">
                 <Button x:Name="ConnectButton" x:Uid="Connect" Click="Connect_Click" Style="{ThemeResource AccentButtonStyle}" />
                 <Button x:Name="DisconnectButton" x:Uid="Disconnect" Click="Disconnect_Click" IsEnabled="False" />
                 <Button x:Name="SnapshotButton" x:Uid="Snapshot" Click="Snapshot_Click" IsEnabled="False" />
@@ -77,14 +103,50 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                <Button x:Name="CompareSnapshotsButton" x:Uid="SnapshotDiffChoose" IsEnabled="False">
+                    <Button.Flyout>
+                        <Flyout x:Name="SnapshotDiffPicker" Opening="SnapshotDiffPicker_Opening">
+                            <Flyout.FlyoutPresenterStyle>
+                                <Style TargetType="FlyoutPresenter">
+                                    <Setter Property="MaxWidth" Value="640" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                                </Style>
+                            </Flyout.FlyoutPresenterStyle>
+                            <StackPanel Spacing="12">
+                                <TextBlock x:Uid="SnapshotDiffPickerNotice" TextWrapping="Wrap" />
+                                <ComboBox x:Name="SnapshotDiffBefore" x:Uid="SnapshotDiffBefore"
+                                          ItemsSource="{x:Bind Snapshots}" HorizontalAlignment="Stretch"
+                                          ItemTemplate="{StaticResource SnapshotChoiceTemplate}"
+                                          SelectionChanged="SnapshotDiffSelection_Changed" />
+                                <ComboBox x:Name="SnapshotDiffAfter" x:Uid="SnapshotDiffAfter"
+                                          ItemsSource="{x:Bind Snapshots}" HorizontalAlignment="Stretch"
+                                          ItemTemplate="{StaticResource SnapshotChoiceTemplate}"
+                                          SelectionChanged="SnapshotDiffSelection_Changed" />
+                                <Button x:Name="CompareSelectedSnapshots" x:Uid="SnapshotDiffCompare"
+                                        IsEnabled="False" Click="CompareSnapshots_Click" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
             </StackPanel>
         </Grid>
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="12" Padding="0,0,8,0">
-                <views:MetricChart x:Name="UtilizationChart" />
-                <views:MetricChart x:Name="MemoryChart" />
-                <TextBlock x:Uid="MetricLimitations" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
-            </StackPanel>
-        </ScrollViewer>
+        <TabView x:Name="Tabs" Grid.Row="3" VerticalAlignment="Stretch" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent">
+            <TabViewItem x:Uid="LiveMetricsTab" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="12" Padding="0,8,8,0">
+                        <views:MetricChart x:Name="UtilizationChart" />
+                        <views:MetricChart x:Name="MemoryChart" />
+                        <TextBlock x:Uid="MetricLimitations" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabViewItem>
+            <TabViewItem x:Uid="FramesTab" IsClosable="False">
+                <views:FramesView x:Name="FramesPanel" />
+            </TabViewItem>
+            <TabViewItem x:Name="ElementsTab" x:Uid="ElementsTab" IsClosable="False">
+                <views:ElementsView x:Name="ElementsPanel" />
+            </TabViewItem>
+        </TabView>
     </Grid>
 </Window>

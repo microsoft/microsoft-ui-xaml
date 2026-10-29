@@ -15,7 +15,7 @@
         Snippet="Performance"
         StretchExample="True"
         TryIt="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Run Add 10,000 rows one at a time and compare it with Load 10,000 rows. Then switch Shaping to Grouped, which times GroupBy, and run the Add again: it stops after 2 seconds and shows what grouping once afterwards costs instead."
-        WhatToLookFor="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA.">
+        WhatToLookFor="A bulk load of 100,000 rows finishes in well under a second, because only the rows in or near the viewport are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -28,11 +28,11 @@
                 IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
-                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
-                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="140" Binding="{Binding Department}"/>
+                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140" Binding="{Binding Office}"/>
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -82,8 +82,8 @@
                             AutomationProperties.AutomationId="PerformanceLoad100kButton"
                             Content="Load 100,000 rows"
                             Click="OnLoad100kClick"
-                            ToolTipService.ToolTip="The same bulk assignment with 100,000 rows. Only the visible rows are realized."
-                            AutomationProperties.HelpText="The same bulk assignment with 100,000 rows. Only the visible rows are realized."
+                            ToolTipService.ToolTip="The same bulk assignment with 100,000 rows. Only the rows in or near the viewport are realized."
+                            AutomationProperties.HelpText="The same bulk assignment with 100,000 rows. Only the rows in or near the viewport are realized."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button

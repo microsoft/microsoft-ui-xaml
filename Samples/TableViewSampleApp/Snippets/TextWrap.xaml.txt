@@ -1,6 +1,5 @@
-<!-- The Bio cell. Wrapping, trimming and the line limit come from the page's static
-     WrapState, so every realized cell, including recycled ones, follows the rail. The
-     TextBlock carries the bio as its accessible name, so the cell has a value in UIA. -->
+<!-- Wrapping, trimming and the line limit bind the page's static WrapState, so every realized cell,
+     recycled ones included, follows the rail. -->
 <DataTemplate x:Key="BioTemplate" x:DataType="models:Person">
     <TextBlock
         Text="{x:Bind Bio, Mode=OneWay}"
@@ -13,56 +12,14 @@
         AutomationProperties.Name="{x:Bind Bio, Mode=OneWay}"/>
 </DataTemplate>
 
-<!-- … -->
-
 <tv:TableView
     x:Name="PeopleTable"
-    AutomationProperties.AutomationId="TextWrapTable"
     AutomationProperties.Name="People with wrapped bios"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
-    IsReadOnly="True"
-    VerticalAlignment="Stretch"
-    MinHeight="320">
-    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
-    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    IsReadOnly="True">
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
 </tv:TableView>
-
-<!-- … -->
-
-<ToggleSwitch
-    x:Name="WrapToggle"
-    AutomationProperties.AutomationId="TextWrapToggle"
-    Header="TextWrapping"
-    IsOn="True"
-    OnContent="Wrap"
-    OffContent="NoWrap"
-    Toggled="OnWrapToggled"/>
-<!-- Disabled by ApplyTextState while TextWrapping is NoWrap, where MaxLines is a no-op. -->
-<ComboBox
-    x:Name="MaxLinesSelector"
-    AutomationProperties.AutomationId="TextWrapMaxLinesSelector"
-    Header="Max lines"
-    SelectedIndex="0"
-    SelectionChanged="OnMaxLinesChanged"
-    AutomationProperties.HelpText="Applies only while TextWrapping is Wrap."
-    HorizontalAlignment="Stretch">
-    <ComboBoxItem Content="Unlimited" Tag="0"/>
-    <ComboBoxItem Content="2 lines + ellipsis" Tag="2"/>
-    <ComboBoxItem Content="3 lines + ellipsis" Tag="3"/>
-</ComboBox>
-
-<!-- … -->
-
-<Slider
-    x:Name="BioWidthSlider"
-    AutomationProperties.AutomationId="TextWrapBioWidthSlider"
-    AutomationProperties.Name="Bio column width"
-    AutomationProperties.HelpText="Width in pixels, from 220 to 520."
-    Minimum="220"
-    Maximum="520"
-    StepFrequency="20"
-    Value="360"
-    ValueChanged="OnBioWidthChanged"/>

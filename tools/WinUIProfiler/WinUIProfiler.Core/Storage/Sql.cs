@@ -22,6 +22,19 @@ internal static class Sql
         return command.ExecuteScalar() is long value ? value : 0;
     }
 
+    // A command run many times: set its parameters' values, and its transaction, before each run.
+    internal static SqliteCommand Prepare(SqliteConnection connection, string text, params (string Name, SqliteType Type)[] parameters)
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = text;
+        foreach (var (name, type) in parameters)
+        {
+            command.Parameters.Add(name, type);
+        }
+
+        return command;
+    }
+
     private static SqliteCommand Create(SqliteConnection connection, string text, SqliteTransaction? transaction,
         (string Name, object? Value)[] parameters)
     {
