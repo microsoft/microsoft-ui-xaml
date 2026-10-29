@@ -326,6 +326,25 @@ class WorkflowRuntimeTests(unittest.TestCase):
             self.assertNotIn("facade", mapping[area]["note"])
             self.assertIn("initial investigation", mapping[area]["note"])
 
+    def test_type_priority_policy_and_project_secret_stay_in_trusted_publisher(self):
+        policy = self.source.split("## Repository issue Type and WinUI project priority\n", 1)[1]
+        policy = policy.split("## UWP-specific", 1)[0]
+        for guidance in (
+            "Existing Type", "LATEST_RELEASE_REGRESSION", "BROKEN_FUNCTIONALITY",
+            "no mentioned workaround", "means P0 even if a workaround exists",
+            "means P2", "means P1", "number 1868", "Existing project",
+            "not performed during preview", "main-branch", "latest_releases",
+        ):
+            self.assertIn(guidance, policy)
+        agent = re.search(r"(?ms)^  agent:\n.*?(?=^  \w|\Z)", self.lock).group()
+        detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
+        publisher = re.search(r"(?ms)^  publish_triage_summary:\n.*?(?=^  \w|\Z)", self.lock).group()
+        self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", agent)
+        self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", detection)
+        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}", publisher)
+        for name in ("impact", "workaround", "priority_reason", "regression_release"):
+            self.assertIn(f'"{name}"', self.lock)
+
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)
         self.assertRegex(self.source, r"user-rate-limit:\n  max-runs-per-window: 5\n  window: 60")
