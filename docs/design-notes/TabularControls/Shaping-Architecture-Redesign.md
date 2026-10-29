@@ -355,6 +355,7 @@ classDiagram
         -uint32 m_resetHoldDepth
         -bool m_diverged
         -bool m_rereadDue
+        -bool m_rereadPosted
         +Create(owner, source)$ shared_ptr~SourceTable~
         +Refresh()
         +Clear()
@@ -396,6 +397,7 @@ classDiagram
         -ResetTreeToFlat()
         -RaiseSourceChanged(kind, oldParent, newParent, oldIndex, newIndex, added, removed)
         -DrainPendingChanges()
+        -PostReread()
         -SubscribeRecordPropertyChanged(record)
         -UnsubscribeRecordPropertyChanged(record)
         -OnRecordPropertyChanged(weakRecord, propertyName)
@@ -1031,7 +1033,7 @@ identity index     Identity      -> SourceRecord*   shaped only; selection, focu
 | `MatchRecords` / `CommitRecords` | Private | `Refresh()` steps for the root collection: match the validated materialization against `m_records` (position, then raw pointer, then address; unmatched records move out of `m_records` and the lookups into `removed`), then rebuild `m_records` in source order, creating the unmatched (no strategy hooks). |
 | `InsertAt` / `RemoveAt` / `ReplaceAt` / `Move` | Private | Driven internally by `OnSourceCollectionChanged` / `OnSourceVectorChanged` / `OnSourceBindableVectorChanged`. Each ends in `RaiseSourceChanged`. |
 | `ValidateItems` / `ValidateIncoming` | Private | Reject null and duplicate items before any mutation. See *Null and duplicate items* below. |
-| `RaiseSourceChanged` / `DrainPendingChanges` | Private | Raise the change, then destroy the removed records; after the outermost dispatch returns, `Refresh()` if a notification arrived while frozen. |
+| `RaiseSourceChanged` / `DrainPendingChanges` / `PostReread` | Private | Raise the change, then destroy the removed records; after the outermost dispatch returns, `Refresh()` if a notification arrived while frozen. A change during `Refresh()`'s own `Reset` is posted (`PostReread`), never re-read synchronously (one synchronous re-read per turn). |
 | `SubscribeRecordPropertyChanged` / `UnsubscribeRecordPropertyChanged` / `OnRecordPropertyChanged` | Private | Manage each record's `PropertyChangedToken` and `WatchState`, and forward `PropertyChanged` to `m_itemChanged`. |
 
 **Source change notification:**
@@ -1101,11 +1103,33 @@ table's state ("skip" = not applied; sets both bits):
 - Report points read it: `EndFreeze` returns true at the outermost freeze when it is set and no
   hold is open; `EndHoldResets` returns true at the outermost hold when it is set or a hierarchy
   is parked. Neither clears it; only `Refresh()` does:
-  - success: both bits cleared;
+  - success: both bits cleared once the table is rebuilt, before its `Reset` is raised, so a
+    change a `Reset` handler makes is skipped and owed again rather than lost;
   - validation failure: `m_diverged` set, `m_rereadDue` cleared (now the same state as a
     rejection: the next notification recovers it, not every commit);
   - any other throw (app enumerator or selector): both bits kept, so the next report point
     (the next commit's `EndFreeze`) retries, as `m_pendingReset` did.
+- **Anti-loop (decided: one synchronous re-read per turn).** Without a bound, a notification's
+  `DrainPendingChanges` re-reads, the `Reset`'s handlers (or shaping callbacks) change the source,
+  the change is skipped, the outermost `EndFreeze` reports again and the next synchronous re-read
+  starts: an app that mutates on every `Reset` hangs the UI thread. So `Refresh()` never chains a
+  second synchronous re-read: when its own `Reset` dispatch ends with a re-read owed, it calls
+  `PostReread()` instead of reporting it. Every caller (`DrainPendingChanges`,
+  `ShapingManager::ResyncSource`, a verb's `Refresh`, `EndDeferRefresh`) therefore runs at most one
+  re-read per turn.
+  - `PostReread()` posts one callback (`m_rereadPosted`) to the current thread's `DispatcherQueue`
+    (as `PostLiveDrain` does, so it does not depend on `m_ownerQueue`). It runs `Refresh()`
+    only if `IsRereadDue()` and the table is neither frozen nor held (otherwise that freeze's or
+    hold's report point takes it) and swallows a throw (the flags follow the failure rules above).
+  - No queue (headless or test): nothing is posted; the re-read stays owed until the next report
+    point or `Refresh()`.
+  - An app that mutates on every `Reset` still gets one re-read per turn, but the dispatcher keeps
+    running input and layout between them, and the app sees its own loop.
+  - Replaces the commit path's own "resync disturbed again → post" rule: both paths now share this
+    one.
+  - Rejected: a depth or count limit on synchronous re-reads (an arbitrary number, and it still
+    blocks the turn for that many re-reads), and dropping the owed re-read (the table would stay
+    diverged with nothing scheduled).
 - Why two bits: with only `m_diverged`, a table diverged by a rejected change (the app caught the
   duplicate throw and kept going) would make every later commit's `EndFreeze` report true, and
   each verb or expand would run a re-read that fails validation again. A rejection is recovered
@@ -2551,9 +2575,9 @@ Decisions and open questions:
   code in that scope is not applied to the table. If `EndFreeze` reports one, `ResyncSource` calls `SourceTable::Refresh()`, whose `Reset`
   goes to `Reapply()` and one stable `Reset` the owner re-anchors.
   - Timing: synchronously once after the outermost scope; posted when the scope ended by an
-    exception (never run while it unwinds into the app), or when the resync's own apply was
-    disturbed again (at most one resync per turn, so an app that mutates on every callback cannot
-    loop).
+    exception (never run while it unwinds into the app). A change made during the resync's own
+    `Reset` is posted by `SourceTable::Refresh` (`PostReread`, see *Divergence*: one synchronous
+    re-read per turn, so an app that mutates on every callback cannot loop).
   - Nothing throws out of the scope's destructor. `Refresh()` runs app code (enumeration) and
     validation, and a listener fault must reach the app, but a throw from a destructor terminates
     the process, during unwinding and outside it. So the destructor's `EndCommit` is `noexcept`:

@@ -351,9 +351,10 @@ private:
     // records and links never change under the engine or the tree. When EndFreeze reports a pending
     // change, ResyncSource runs SourceTable::Refresh(), whose Reset goes to Reapply().
     // It runs synchronously once, from AfterCommit (never from the scope's destructor); it is
-    // posted instead when the scope ended by an exception, when a handler faulted, or when the
-    // resync's own apply was disturbed again (one resync per turn, so an app that mutates on every
-    // callback cannot loop).
+    // posted instead when the scope ended by an exception or when a handler faulted. A change made
+    // during the resync's own Reset is not re-read here: SourceTable::Refresh posts it
+    // (PostReread; one synchronous re-read per turn, so an app that mutates on every callback
+    // cannot loop).
     // Never throws: Refresh() runs app code and validation, so a throw is caught, the table stays
     // as it was (SourceTable stays diverged), and one retry is posted
     // (m_resyncPosted); the verb that opened the scope has already succeeded. The posted retry

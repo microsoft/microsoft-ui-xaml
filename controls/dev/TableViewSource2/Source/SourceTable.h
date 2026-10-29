@@ -186,11 +186,18 @@ public:
     //      the current one between 2 and 3 (TakeChildRecords(), Release()).
     //   4. One Reset: Added = records created, Removed = records that left.
     // A reused record keeps its pointer, Identity(), PropertyChanged subscription and expansion
-    // flag. On success clears m_diverged and m_rereadDue. On a validation failure (null or
+    // flag. On success clears m_diverged and m_rereadDue after step 3, before the Reset is raised:
+    // the table matches the source then, and a change made by a Reset handler is skipped (frozen)
+    // and owed again rather than lost. On a validation failure (null or
     // duplicate item) sets m_diverged and clears m_rereadDue: the source is in the state a rejected
     // change leaves, so the next notification recovers it, not every commit. On any other throw
     // (app enumerator, selector) both flags are left as they were, so an owed re-read is retried
     // at the next report point.
+    // Anti-loop (decided: one synchronous re-read per turn): Refresh never re-reads again
+    // synchronously. When its own Reset dispatch ends with a re-read owed (an app that changes the
+    // source in a Reset handler, directly or through shaping callbacks), it calls PostReread()
+    // instead of reporting it, so every caller (DrainPendingChanges, ShapingManager::ResyncSource,
+    // a verb's Refresh, EndDeferRefresh) runs at most one re-read in its turn.
     void Refresh();
 
     // Teardown (see Detach contract); must run on the UI thread while m_trackerOwner is alive.
@@ -366,8 +373,20 @@ private:
     // records in `removed` must already be out of their owner, the tree and the lookups.
 
     // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
-    // true (re-read due, outermost, no hold), Refresh() (one Reset).
+    // true (re-read due, outermost, no hold), Refresh() (one Reset). This is the turn's one
+    // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
     void DrainPendingChanges();
+
+    // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
+    // does; it only runs on the UI thread, so it does not depend on m_ownerQueue) unless one is
+    // already posted (m_rereadPosted). The
+    // callback holds weak_from_this() and returns if the table is gone or detached; it clears
+    // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
+    // nor held (otherwise the owed re-read is left for that freeze's or hold's report point). A
+    // throw from it is swallowed: the flags follow Refresh()'s failure rules. No queue (headless
+    // or test): nothing is posted and the re-read stays owed until the next report point or
+    // Refresh().
+    void PostReread() noexcept;
 
     void AddToLookups(SourceRecord* record);
 
@@ -489,4 +508,7 @@ private:
     // by one that fails validation (which turns it into a rejection); kept when Refresh() throws
     // for any other reason, so the next report point retries.
     bool m_rereadDue{ false };
+
+    // A PostReread() callback is queued and has not run yet.
+    bool m_rereadPosted{ false };
 };
