@@ -37,5 +37,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_SourceOwnership_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Hierarchy_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource2_Shaping_APITests.cs" />
   </ItemGroup>
 </Project>

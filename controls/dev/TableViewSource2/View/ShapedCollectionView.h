@@ -29,7 +29,7 @@ class ShapedRowQueries;
 //
 // Row value (V2): a data row is the app item (SourceRecord::Item); a group header is its
 // GroupedEntry (shared with v1, so TableView's TryGetGroupedEntry recognizes it), created on first
-// read and cached on GroupNode::HeaderRow (Milestone 4).
+// read and cached on GroupNode::HeaderRow.
 // Row key (V3): ShapedRowQueries::KeyAt, the one identity helper (ShapedRowMetadata uses it too):
 // a record's Identity() ("0x" + address); a group's GroupNode::Identity ("g|" ...).
 //
@@ -70,12 +70,12 @@ public:
     uint32_t Size();
 
     // ShapedTree::GetAt(index) (tree walk with cursor, P1/P3) mapped to its row value: the app
-    // item, or the group's GroupedEntry (Milestone 4: throws E_NOTIMPL on a group until then).
+    // item, or the group's GroupedEntry (GroupNode::HeaderRow).
     // Throws E_BOUNDS out of range or detached.
     winrt::Windows::Foundation::IInspectable GetAt(uint32_t index);
 
     // ShapedRowQueries::IndexOfItem: the item's record through SourceTable::TryFindByItem, then its
-    // flat index, O(depth); a GroupedEntry resolves through its Identity (Milestone 4). False when
+    // flat index, O(depth); a GroupedEntry resolves through its Identity. False when
     // unknown, hidden or detached. Not a linear scan.
     bool IndexOf(winrt::Windows::Foundation::IInspectable const& value, uint32_t& index);
 

@@ -135,8 +135,16 @@ bool ShapedRowMetadata::TryGetGroupMembership(
     int32_t& positionInGroup,
     int32_t& groupSize)
 {
-    // The "rows is this source's view" identity check is completed in Milestone 4 (grouping).
+    // Only answer for a view of this source's rows: rows must be an ItemsSourceView whose Count is
+    // the shaped row count, so an index cannot resolve against another list. (ShapedRowMetadata
+    // does not hold the owner's cached ItemsSourceView, so this is a shape check, not identity.)
     if (!m_rows || !rows || index < 0)
+    {
+        return false;
+    }
+
+    auto const view = rows.try_as<winrt::ItemsSourceView>();
+    if (!view || view.Count() != static_cast<int32_t>(m_rows->RowCount()))
     {
         return false;
     }

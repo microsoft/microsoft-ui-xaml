@@ -57,6 +57,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Engine\ShapingEngine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Spec\ShapeDelegates.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Spec\PathEvaluator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Spec\ShapeSpec.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedRowQueries.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedCollectionView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedRowMetadata.cpp" />

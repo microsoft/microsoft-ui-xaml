@@ -119,6 +119,181 @@ void ShapingManager::ClearHierarchy()
     m_sourceTable->ClearHierarchy();
 }
 
+namespace
+{
+    // Sort(level, None) removes the matching level; otherwise it replaces it in place (keeping its
+    // priority) or appends a new lowest-priority level.
+    void UpsertSortLevel(std::vector<SortSpec>& sorts, SortSpec level)
+    {
+        auto const match = std::find_if(sorts.begin(), sorts.end(),
+            [&](SortSpec const& existing) { return existing.Matches(level); });
+        if (level.SortKind != SortSpec::Kind::Comparer && level.Direction == winrt::SortDirection::None)
+        {
+            if (match != sorts.end())
+            {
+                sorts.erase(match);
+            }
+        }
+        else if (match != sorts.end())
+        {
+            *match = std::move(level);
+        }
+        else
+        {
+            sorts.push_back(std::move(level));
+        }
+    }
+}
+
+void ShapingManager::Filter(winrt::TableViewPredicate const& predicate)
+{
+    if (!BeginVerb(L"Filter"))
+    {
+        return;
+    }
+
+    m_desired.Filters = { FilterSpec{ m_delegates.Register(predicate) } };
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::GroupBy(winrt::TableViewKeySelector const& key, winrt::SortDirection groupDirection)
+{
+    if (!BeginVerb(L"GroupBy"))
+    {
+        return;
+    }
+
+    m_desired.Groups = { GroupSpec{ m_delegates.Register(key), groupDirection } };
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    if (!BeginVerb(L"Sort"))
+    {
+        return;
+    }
+
+    SortSpec level;
+    level.SortKind = SortSpec::Kind::Path;
+    level.Path = sortMemberPath;
+    level.Direction = direction;
+    UpsertSortLevel(m_desired.Sorts, std::move(level));
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
+{
+    if (!BeginVerb(L"Sort"))
+    {
+        return;
+    }
+
+    SortSpec level;
+    level.SortKind = SortSpec::Kind::Key;
+    level.Delegate = m_delegates.Register(key);
+    level.Direction = direction;
+    UpsertSortLevel(m_desired.Sorts, std::move(level));
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::Sort(winrt::TableViewComparer2 const& comparer)
+{
+    if (!BeginVerb(L"Sort"))
+    {
+        return;
+    }
+
+    SortSpec level;
+    level.SortKind = SortSpec::Kind::Comparer;
+    level.Delegate = m_delegates.Register(comparer);
+    UpsertSortLevel(m_desired.Sorts, std::move(level));
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::ClearFilter()
+{
+    if (!BeginVerb(L"ClearFilter"))
+    {
+        return;
+    }
+
+    m_desired.Filters.clear();
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::ClearGroupBy()
+{
+    if (!BeginVerb(L"ClearGroupBy"))
+    {
+        return;
+    }
+
+    m_desired.Groups.clear();
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::ClearSort()
+{
+    if (!BeginVerb(L"ClearSort"))
+    {
+        return;
+    }
+
+    m_desired.Sorts.clear();
+    if (CanReshape())
+    {
+        ApplyDesiredSpec();
+    }
+}
+
+void ShapingManager::ApplyDesiredSpec()
+{
+    ShapeDelta const delta = Diff(m_engine.Applied(), m_desired);
+    if (delta != ShapeDelta::None)
+    {
+        {
+            CommitScope scope{ *this, {} };
+            m_liveDirty.clear();
+            m_engine.Apply(m_desired, delta);
+
+            // #18 O5: only the order changed (sort or group direction) -> Order; else Membership.
+            if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
+            {
+                bool const orderOnly = (delta & ~(ShapeDelta::Sort | ShapeDelta::GroupOrder)) == ShapeDelta::None;
+                m_commit.changes |= orderOnly ? ShapingChangeFlags::Order : ShapingChangeFlags::Membership;
+            }
+        }
+        AfterCommit();
+    }
+
+    // The desired spec may hold delegates a DeferRefresh will apply; keep both specs' references.
+    ShapeSpec const* const specs[] = { &m_engine.Applied(), &m_desired };
+    m_delegates.Retain(specs);
+    m_paths.Retain(specs);
+}
+
 bool ShapingManager::IsLiveShaping() const
 {
     return m_sourceTable->IsLiveShaping();

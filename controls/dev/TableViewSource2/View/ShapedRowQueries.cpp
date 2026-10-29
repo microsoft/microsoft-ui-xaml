@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "View/ShapedRowQueries.h"
+#include "GroupedEntry.h"
 
 #include <string_view>
 
@@ -57,7 +58,12 @@ std::optional<uint32_t> ShapedRowQueries::IndexOfKey(winrt::hstring const& key) 
 
 std::optional<uint32_t> ShapedRowQueries::IndexOfItem(winrt::IInspectable const& value) const
 {
-    // Group header values (GroupedEntry) resolve through their Identity from Milestone 4.
+    // A group header's value is its GroupNode::HeaderRow; it resolves through its Identity.
+    if (auto const entry = TryGetGroupedEntry(value))
+    {
+        return entry->Identity().empty() ? std::nullopt : IndexOfKey(entry->Identity());
+    }
+
     SourceRecord* const record = m_source.TryFindByItem(value);
     return record ? m_engine.Tree().IndexOf(record) : std::nullopt;
 }

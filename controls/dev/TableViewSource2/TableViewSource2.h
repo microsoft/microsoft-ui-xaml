@@ -15,8 +15,8 @@
 #include "Shaping/ShapingManager.h"
 
 // Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
-// From() constructs a working instance, and every shaping verb throws hresult_not_implemented
-// until the new engine is wired in. Shaping state lives in ShapingManager (the coordinator);
+// From() constructs a working instance; DeferRefresh throws hresult_not_implemented until its
+// milestone. Shaping state lives in ShapingManager (the coordinator);
 // this class validates arguments and forwards.
 //
 // Reference-tracked for the same reasons as TableViewSource: tracker_ref members let the GC walk

@@ -48,29 +48,74 @@ winrt::TableViewSource2 TableViewSource2::From(winrt::IInspectable const& items)
     return winrt::make<::TableViewSource2>(items);
 }
 
-winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate const& /*predicate*/)
+winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate const& predicate)
 {
-    ThrowNotImplemented(L"Filter");
+    if (!predicate)
+    {
+        throw winrt::hresult_invalid_argument(L"TableViewSource2.Filter: predicate is required.");
+    }
+
+    if (m_shapingManager)
+    {
+        m_shapingManager->Filter(predicate);
+    }
+    return *this;
 }
 
-winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector const& /*key*/, winrt::SortDirection /*groupDirection*/)
+winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector const& key, winrt::SortDirection groupDirection)
 {
-    ThrowNotImplemented(L"GroupBy");
+    if (!key)
+    {
+        throw winrt::hresult_invalid_argument(L"TableViewSource2.GroupBy: key is required.");
+    }
+
+    if (m_shapingManager)
+    {
+        m_shapingManager->GroupBy(key, groupDirection);
+    }
+    return *this;
 }
 
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& /*sortMemberPath*/, winrt::SortDirection /*direction*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
-    ThrowNotImplemented(L"Sort");
+    if (sortMemberPath.empty())
+    {
+        throw winrt::hresult_invalid_argument(L"TableViewSource2.Sort: sortMemberPath is required.");
+    }
+
+    if (m_shapingManager)
+    {
+        m_shapingManager->Sort(sortMemberPath, direction);
+    }
+    return *this;
 }
 
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector const& /*key*/, winrt::SortDirection /*direction*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
 {
-    ThrowNotImplemented(L"Sort");
+    if (!key)
+    {
+        throw winrt::hresult_invalid_argument(L"TableViewSource2.Sort: key is required.");
+    }
+
+    if (m_shapingManager)
+    {
+        m_shapingManager->Sort(key, direction);
+    }
+    return *this;
 }
 
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewComparer2 const& /*comparer*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewComparer2 const& comparer)
 {
-    ThrowNotImplemented(L"Sort");
+    if (!comparer)
+    {
+        throw winrt::hresult_invalid_argument(L"TableViewSource2.Sort: comparer is required.");
+    }
+
+    if (m_shapingManager)
+    {
+        m_shapingManager->Sort(comparer);
+    }
+    return *this;
 }
 
 winrt::TableViewSource2 TableViewSource2::ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey)
@@ -93,17 +138,29 @@ winrt::TableViewSource2 TableViewSource2::ChildrenBy(winrt::TableViewChildrenSel
 
 winrt::TableViewSource2 TableViewSource2::ClearFilter()
 {
-    ThrowNotImplemented(L"ClearFilter");
+    if (m_shapingManager)
+    {
+        m_shapingManager->ClearFilter();
+    }
+    return *this;
 }
 
 winrt::TableViewSource2 TableViewSource2::ClearGroupBy()
 {
-    ThrowNotImplemented(L"ClearGroupBy");
+    if (m_shapingManager)
+    {
+        m_shapingManager->ClearGroupBy();
+    }
+    return *this;
 }
 
 winrt::TableViewSource2 TableViewSource2::ClearSort()
 {
-    ThrowNotImplemented(L"ClearSort");
+    if (m_shapingManager)
+    {
+        m_shapingManager->ClearSort();
+    }
+    return *this;
 }
 
 winrt::TableViewSource2 TableViewSource2::ClearHierarchy()

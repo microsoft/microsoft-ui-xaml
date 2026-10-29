@@ -5,6 +5,7 @@
 #include "common.h"
 #include "View/ShapedCollectionView.h"
 #include "View/ShapedRowQueries.h"
+#include "GroupedEntry.h"
 
 namespace
 {
@@ -91,10 +92,19 @@ winrt::IInspectable ShapedCollectionView::GetAt(uint32_t index)
 
     // RowAt range-checks (ShapedTree::GetAt only asserts).
     ShapedNode* const node = m_rows->RowAt(index);
-    if (node->IsGroup())
+    if (GroupNode const* const group = node->AsGroup())
     {
-        // GroupedEntry header values land with GroupBy in Milestone 4.
-        throw winrt::hresult_not_implemented();
+        // V2: one shared GroupedEntry per group, made on first read, so the header's DataContext
+        // is stable. Its count and expansion are creation-time snapshots (fallback only).
+        if (!group->HeaderRow)
+        {
+            group->HeaderRow = winrt::make<GroupedEntry>(
+                group->Key ? group->Key->get() : nullptr,
+                static_cast<int32_t>(group->ItemCount),
+                m_rows->RowInfo(index).IsExpanded,
+                group->Identity);
+        }
+        return group->HeaderRow;
     }
 
     return node->AsRecord()->Item.get();
