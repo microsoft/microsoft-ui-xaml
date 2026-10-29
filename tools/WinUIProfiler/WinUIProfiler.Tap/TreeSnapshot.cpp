@@ -55,6 +55,7 @@ namespace WinUIProfiler::Tap
             const auto converted = std::to_chars(buffer + 2, buffer + sizeof(buffer), value, 16);
             return { buffer, converted.ptr };
         }
+        // TODO: Use a JSON library instead of manual escaping and string concatenation, preserving 64-bit integer precision.
         std::string Quote(const std::string& value)
         {
             if (value.size() > MaxBytes / 6) Fail(HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW));
