@@ -2664,10 +2664,12 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
     const int32_t rowIndex = repeater.GetElementIndex(row);
 
+    winrt::DependencyObject focused{ nullptr };
     winrt::UIElement focusedCell{ nullptr };
     if (auto const root = XamlRoot())
     {
-        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>())
+        focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+        if (focused)
         {
             focusedCell = rowImpl->FindOwnCellInternal(focused, false /* requireExact */);
         }
@@ -2675,6 +2677,13 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
 
     if (!focusedCell)
     {
+        // GotFocus is asynchronous: focus may already have left the row (into a context menu, say).
+        // Resetting to row level then would leave the cell the menu restores focus to unfocusable.
+        if (focused != row.as<winrt::DependencyObject>())
+        {
+            return;
+        }
+
         // Focus is on the ROW container itself - the body's entry level. Record the row so a later
         // re-entry comes back here, and make sure the two-level cursor agrees that no cell is
         // current, including releasing whichever row was previously drilled in.
