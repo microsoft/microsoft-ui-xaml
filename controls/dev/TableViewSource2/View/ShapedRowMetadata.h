@@ -7,15 +7,17 @@
 
 #include "TableViewRowInfo.h"
 
-class ShapingManager;
+class ShapedRowQueries;
+struct IShapedExpansion;
 
 // TableViewSource2's row metadata provider (declarations only). See
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Row metadata".
 //
 // An adapter (decided, R1): implements the existing ITableViewRowMetadataProvider, so TableView
 // consumes v2 exactly as it consumes v1 TableViewSource::GetRowMetadata(). TableViewSource2 returns
-// it as a shared_ptr. It holds no shaping logic: every call forwards to ShapingManager's row-metadata
-// helpers, which own the engine (and its ShapedTree, which owns group expansion) and the SourceTable.
+// it as a shared_ptr. It holds no shaping logic: reads forward to ShapedRowQueries, and the four
+// expansion actions to IShapedExpansion (implemented by ShapingManager, which runs them inside its
+// commit scope). It cannot reach the verbs, Refresh or Clear.
 //
 // Stateless: no CollectionChanged subscriptions and no caches (v1 RowMetadataProvider keeps three
 // event tokens, an identity -> index map and a header-index list, all rebuilt on change). Every
@@ -35,51 +37,53 @@ class ShapingManager;
 class ShapedRowMetadata final : public ITableViewRowMetadataProvider
 {
 public:
-    explicit ShapedRowMetadata(ShapingManager& owner) noexcept;
+    ShapedRowMetadata(ShapedRowQueries const& rows, IShapedExpansion& expansion) noexcept;
 
     // ---- Per row ----------------------------------------------------------------------------
 
-    // ShapingManager::RowInfo(index): built on demand from RowAt(index), never stored (field table
-    // in the spec). Out of range or detached: a default TableViewRowInfo.
+    // ShapedRowQueries::RowInfo(index): built on demand from RowAt(index), never stored (field
+    // table in the spec). Out of range or detached: a default TableViewRowInfo.
     TableViewRowInfo GetRowInfo(int32_t index) override;
 
-    // The row key of RowAt(index) (V3). Empty when out of range or detached.
+    // The row key of ShapedRowQueries::RowAt(index) (V3). Empty when out of range or detached.
     winrt::hstring GetIdentity(int32_t index) override;
 
-    // ShapingManager::IndexOfKey (V3/D4). False when unknown, hidden or detached.
+    // ShapedRowQueries::IndexOfKey (V3/D4). False when unknown, hidden or detached.
     bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) override;
 
     // ---- Expansion (R2) ---------------------------------------------------------------------
-    // Each resolves the key with ShapingManager::TryResolveKey and calls SetExpanded with
-    // true / false / nullopt (toggle). Returns whether the state changed; false for an unknown key
-    // or a node that is not expandable. Throws while an apply runs (#19), like a verb.
+    // Each resolves the key with ShapedRowQueries::TryResolveKey and calls
+    // IShapedExpansion::SetExpanded with true / false / nullopt (toggle). Returns whether the state
+    // changed; false for an unknown key, a node that is not expandable, or detached. Throws while
+    // an apply runs (#19), like a verb.
 
     bool Expand(winrt::hstring const& key) override;
     bool Collapse(winrt::hstring const& key) override;
     bool Toggle(winrt::hstring const& key) override;
 
-    // ShapingManager::SetAllExpanded(ExpansionAxis::Groups | Rows, expanded).
+    // IShapedExpansion::SetAllExpanded(ExpansionAxis::Groups | Rows, expanded).
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
     void ExpandAllRows() override;
     void CollapseAllRows() override;
 
-    // ShapingManager::ExpandSubtree. No-op for a group key, an unknown key, or a source without a
+    // IShapedExpansion::ExpandSubtree. No-op for a group key, an unknown key, or a source without a
     // hierarchy (the interface's contract).
     void ExpandSubtree(winrt::hstring const& key) override;
 
-    // TryResolveKey, then ShapingManager::Reveal (#20). The node's visible index, or -1 for an
+    // TryResolveKey, then IShapedExpansion::Reveal (#20). The node's visible index, or -1 for an
     // unknown key, a node not in the shaped tree, or detached. Throws while an apply runs (#19).
     int32_t Reveal(winrt::hstring const& key) override;
 
     // ---- Shape ------------------------------------------------------------------------------
 
-    // ShapingManager::IsHierarchical(): the source tree has a hierarchy (ParentBy / ChildrenBy).
+    // ShapedRowQueries::IsHierarchical(): the source tree has a hierarchy (ParentBy / ChildrenBy).
     // TableView uses it to reserve chevron width on leaf roots.
     bool IsHierarchicalSource() const override;
 
     // v1 meaning kept (decided, R3): 1-based position among the data rows between two adjacent
-    // header bands, and that band's size. Computed, not scanned: ShapingManager::TryGetGroupMembership.
+    // header bands, and that band's size. Computed, not scanned:
+    // ShapedRowQueries::TryGetGroupMembership.
     // False when rows is not this source's ShapedCollectionView (compared by identity), the source
     // is not grouped, index is a header or out of range, or detached.
     bool TryGetGroupMembership(
@@ -90,11 +94,12 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Nulls m_owner. Called by ShapingManager::Clear() right after ShapedCollectionView::Detach().
-    // Idempotent.
+    // Nulls m_rows and m_expansion. Called by ShapingManager::Clear() right after
+    // ShapedCollectionView::Detach(). Idempotent.
     void Detach() noexcept;
 
 private:
-    // Non-owning (R4). Null after Detach().
-    ShapingManager* m_owner{ nullptr };
+    // Non-owning (R4). Both null after Detach(); both point into the same ShapingManager.
+    ShapedRowQueries const* m_rows{ nullptr };
+    IShapedExpansion* m_expansion{ nullptr };
 };

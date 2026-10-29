@@ -45,7 +45,9 @@ controls/dev/TableViewSource2/
     GroupHeaderRow.h                             GroupHeaderRow, IGroupHeaderRowTag, TryGetGroupHeaderRow (header row value)
     ShapedCollectionView.h                       ShapedCollectionView (the WinRT visible list)
     ShapedRowMetadata.h                          ShapedRowMetadata (ITableViewRowMetadataProvider adapter)
+    ShapedRowQueries.h                           ShapedRowQueries (read-only row queries the adapters use)
   Shaping/                                       owns and wires the layers above
+    IShapedExpansion.h                           IShapedExpansion, ExpansionAxis (expansion actions for ShapedRowMetadata)
     IShapingOwner.h                              IShapingOwner, ShapingAppliedArgs (owner channel to TableView)
     ShapingManager.h                             ShapingManager (the coordinator)
 ```
@@ -75,8 +77,8 @@ table serves as both the shared identity store and the cached full set that shap
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
-| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token `GroupHeaderRow`; row metadata `ShapedRowMetadata` | `View/GroupHeaderRow.h`, `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h` | Declared, not implemented |
-| 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the visible-list and row-metadata helpers, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
+| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token `GroupHeaderRow`; row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/GroupHeaderRow.h`, `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
+| 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener` and the adapters' `IShapedExpansion`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapedExpansion.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the expansion actions, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
 ## Class diagram
 
@@ -178,6 +180,7 @@ classDiagram
         -optional~tracker_ref~ItemsSourceView~~ m_view
         -shared_ptr~ShapedRowMetadata~ m_rowMetadata
         -ShapingEngine m_engine
+        -ShapedRowQueries m_rows
         -IShapingOwner* m_owner
         -unordered_map~SourceRecord*, hstring~ m_liveDirty
         -bool m_liveAllDirty
@@ -199,29 +202,44 @@ classDiagram
         +SetOwner(sink)
         +View() ItemsSourceView
         +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
-        +RowCount() uint32
-        +RowAt(index) ShapedNode*
-        +IndexOfKey(key) optional~uint32~
-        +IndexOfItem(value) optional~uint32~
         +IsItemInShapedTree(item) bool
-        +RowInfo(index) TableViewRowInfo
-        +TryResolveKey(key) ShapedNode*
-        +IsHierarchical() bool
-        +TryGetGroupMembership(index, position, size) bool
-        +SetExpanded(node, desired) bool
-        +SetAllExpanded(axis, expanded)
-        +ExpandSubtree(node)
-        +Reveal(node) optional~uint32~
         +Clear()
+        -SetExpanded(node, desired) bool
+        -SetAllExpanded(axis, expanded)
+        -ExpandSubtree(node)
+        -Reveal(node) optional~uint32~
         -OnSourceChanged(change)
         -OnItemChanged(record, propertyName)
         -ApplyDesiredSpec()
         -Reapply()
     }
 
+    class ShapedRowQueries {
+        <<native, read-only>>
+        -ShapingEngine const& m_engine
+        -SourceTable const& m_source
+        +RowCount() uint32
+        +RowAt(index) ShapedNode*
+        +IndexOfKey(key) optional~uint32~
+        +IndexOfItem(value) optional~uint32~
+        +RowInfo(index) TableViewRowInfo
+        +TryResolveKey(key) ShapedNode*
+        +IsHierarchical() bool
+        +TryGetGroupMembership(index, position, size) bool
+        +IsItemInShapedTree(item) bool
+    }
+
+    class IShapedExpansion {
+        <<interface>>
+        +SetExpanded(node, desired) bool
+        +SetAllExpanded(axis, expanded)
+        +ExpandSubtree(node)
+        +Reveal(node) optional~uint32~
+    }
+
     class ShapedCollectionView {
         <<WinRT, derives ItemsSourceView>>
-        -ShapingManager* m_owner
+        -ShapedRowQueries const* m_rows
         #GetSizeCore() int
         #GetAtCore(index) IInspectable
         #HasKeyIndexMappingCore() bool
@@ -236,7 +254,8 @@ classDiagram
 
     class ShapedRowMetadata {
         <<ITableViewRowMetadataProvider adapter>>
-        -ShapingManager* m_owner
+        -ShapedRowQueries const* m_rows
+        -IShapedExpansion* m_expansion
         +GetRowInfo(index) TableViewRowInfo
         +GetIdentity(index) hstring
         +TryGetIndexForIdentity(identity, index) bool
@@ -425,14 +444,17 @@ classDiagram
     TableViewSource2 *-- ShapingManager : unique_ptr (forwards verbs)
     TableViewSource2 ..> IShapingOwner : raw m_owner, arbitrates (single owner, waiters)
     TableViewSource2 ..> DeferRefreshHandle : DeferRefresh() returns
-    ShapingManager ..> ExpansionAxis : SetAllExpanded
+    IShapedExpansion ..> ExpansionAxis : SetAllExpanded
     IShapingOwner ..> ShapingAppliedArgs
     ShapingManager *-- SourceTable : shared_ptr (weak captures in handlers only)
+    ShapingManager *-- ShapedRowQueries : m_rows (by value, reads m_engine and SourceTable)
+    ShapingManager ..|> IShapedExpansion : private
     ShapingManager o-- ShapedCollectionView : m_view (tracked, TableView also holds it)
-    ShapedCollectionView ..> ShapingManager : raw back-pointer, nulled by Detach()
+    ShapedCollectionView ..> ShapedRowQueries : raw pointer, nulled by Detach()
     ShapedCollectionView ..> GroupHeaderRow : header row value
     ShapingManager o-- ShapedRowMetadata : m_rowMetadata (shared_ptr, TableView also holds it)
-    ShapedRowMetadata ..> ShapingManager : raw back-pointer, nulled by Detach()
+    ShapedRowMetadata ..> ShapedRowQueries : raw pointer, nulled by Detach()
+    ShapedRowMetadata ..> IShapedExpansion : raw pointer, nulled by Detach()
     ShapingManager ..> IShapingOwner : raw m_owner sink (set by SetOwner), OnResetting, OnShapingApplied
     SourceTable *-- CollectionAccessor2 : owns source accessor (optional, reset on Clear)
     SourceTable ..> SourceChange : raises (single handler)
@@ -1784,14 +1806,16 @@ through `ShapedTree`'s walk (P1); it holds no copy.
     from the element's position.
   - Rejected: snapshotting the old rows (O(visible) per `Reset`).
 - Read-only: `ItemsSourceView` has no mutators, so neither the app nor a binding can edit the rows.
-- **Back-reference (decided, D2: a raw `ShapingManager*`, nulled by `Detach()`).** The view reads
-  through `ShapingManager`'s visible-list helpers (`RowCount`, `RowAt`, `IndexOfKey`,
-  `IndexOfItem`), never the tree, engine or `SourceTable` directly. `ShapingManager` owns the view (`m_view`), but `TableView` may keep it
+- **Back-reference (decided, D2: a raw `ShapedRowQueries*`, nulled by `Detach()`).** The view reads
+  through the coordinator's read-only row queries (`ShapingManager::m_rows`: `RowCount`, `RowAt`,
+  `IndexOfKey`, `IndexOfItem`), never the tree, engine or `SourceTable` directly, and cannot reach
+  the coordinator's verbs. `ShapingManager` owns the view (`m_view`), but `TableView` may keep it
   longer, so `ShapingManager::Clear()` calls `Detach()` first. A detached view reports `Count` 0,
   `GetAt` throws `E_BOUNDS`, and the lookups return -1. `Detach()` raises nothing (teardown).
   - Rejected: a `weak_ptr` to a shared coordinator (`ShapingManager` is a `unique_ptr` member and
-    lives on the UI thread with the view), and pointing the view at the `ShapedTree` (the key and
-    item lookups also need the engine and `SourceTable`).
+    lives on the UI thread with the view), pointing the view at the `ShapedTree` (the key and
+    item lookups also need the engine and `SourceTable`), and a `ShapingManager*` (the view would
+    see every verb; see *Row queries*).
 - **Event item lists (decided, D3: parity with `InspectingDataSource`).** `Remove` and `Add` args
   carry a bindable `Vector` of k `nullptr`s, the shape `InspectingDataSource::OnVectorChanged`
   already raises on the public `ItemsSourceView.CollectionChanged`. Only the size is meaningful:
@@ -1989,12 +2013,13 @@ Everything else is read through `node`:
 - **Shape (R1: an adapter over the existing interface).** `ShapedRowMetadata` (`View/`) implements
   `ITableViewRowMetadataProvider`, and `TableViewSource2::GetRowMetadata()` (internal, not in IDL)
   returns it, as v1 `TableViewSource::GetRowMetadata()` does, so `TableView` consumes v2 unchanged.
-  It holds no shaping logic: every call forwards to `ShapingManager`'s row-metadata helpers
-  (`RowInfo`, `TryResolveKey`, `SetExpanded`, `SetAllExpanded`, `ExpandSubtree`, `IsHierarchical`,
-  `TryGetGroupMembership`) and the visible-list helpers (`RowAt`, `IndexOfKey`). It is stateless:
+  It holds no shaping logic: reads forward to `ShapedRowQueries` (`RowInfo`, `TryResolveKey`,
+  `IsHierarchical`, `TryGetGroupMembership`, `RowAt`, `IndexOfKey`) and the four expansion actions
+  to `IShapedExpansion` (`SetExpanded`, `SetAllExpanded`, `ExpandSubtree`, `Reveal`, implemented
+  privately by `ShapingManager`). It is stateless:
   no `CollectionChanged` subscriptions and no caches (v1 keeps three event tokens, an identity →
   index map and a header-index list, rebuilt on every change).
-  - `GetRowInfo(i)`: `ShapingManager::RowInfo`, built from `RowAt(i)` per the field table above;
+  - `GetRowInfo(i)`: `ShapedRowQueries::RowInfo`, built from `RowAt(i)` per the field table above;
     `IsExpanded` through `ShapedTree::IsExpanded` (includes the F5 context-row overlay).
   - `GetIdentity` / `TryGetIndexForIdentity`: the row key (V3) and `IndexOfKey` (D4). The
     provider's identity and the view's key are the same string; v1's `group:` / `node:` prefixes
@@ -2003,12 +2028,12 @@ Everything else is read through `node`:
   - Rejected: `ShapingManager` implementing the interface itself (TableView holds the provider as a
     `shared_ptr`; the manager is a `unique_ptr` member), and a new v2 interface (TableView changes,
     or two paths until v1 is retired).
-- **Expansion (R2: typed entry points).** `ShapingManager::SetExpanded(ShapedNode*, optional<bool>)`
+- **Expansion (R2: typed entry points).** `IShapedExpansion::SetExpanded(ShapedNode*, optional<bool>)`
   (nullopt toggles; returns whether the state changed, false when not expandable),
   `SetAllExpanded(ExpansionAxis {Groups, Rows}, bool)` and `ExpandSubtree(ShapedNode*)` (new
   `ShapedTree::ExpandSubtree`: flags over the record subtree, one insert event for the revealed rows; no-op
-  for a group or a flat source). The adapter resolves the interface's string key with
-  `TryResolveKey` (the first half of `IndexOfKey`). Each runs inside the #19 apply scope and the
+  for a group or a flat source), implemented by `ShapingManager`. The adapter resolves the interface's string key with
+  `ShapedRowQueries::TryResolveKey` (the first half of `IndexOfKey`). Each runs inside the #19 apply scope and the
   manager's commit scope, like an engine commit; called while an apply runs, it throws, like a verb. A future
   public per-item expand (#20, Phase 6) will resolve to a `ShapedNode*` and reuse these.
   - Rejected: key-based entry points on the manager (its API takes the interface's shape, and #20
@@ -2017,7 +2042,7 @@ Everything else is read through `node`:
   - **Reveal (internal now).** Expands every collapsed ancestor of a node so it becomes shown; the
     node itself is not expanded. `ShapedRowMetadata::Reveal(key)` (new
     `ITableViewRowMetadataProvider::Reveal`, default -1 so v1 is untouched) resolves the key with
-    `TryResolveKey` and calls `ShapingManager::Reveal(ShapedNode*)`. That returns nullopt (-1 through
+    `TryResolveKey` and calls `IShapedExpansion::Reveal(ShapedNode*)`. That returns nullopt (-1 through
     the interface), changing nothing, when `ShapingEngine::InShapedTree(node)` is false (filtered
     out); otherwise it runs `ShapedTree::Reveal` in a commit scope and returns `IndexOf(node)`.
     `ShapedTree::Reveal` collects the ancestors that read collapsed (record `Expanded`, the group
@@ -2046,13 +2071,34 @@ Everything else is read through `node`:
   - Rejected: sibling-set meaning (equal to `TableViewRowInfo::PositionInSet`): changes UIA output,
     and nested rows would return false into the O(n) walk.
 - **Lifetime (R4: the D2 pattern).** `ShapingManager::RowMetadata()` creates the adapter on first
-  call with a raw `ShapingManager*` and caches it in `m_rowMetadata` (plain `shared_ptr`: it holds
-  no app object). `Clear()` calls its `Detach()` right after the view's. A detached provider returns
+  call with a raw `ShapedRowQueries*` (`&m_rows`) and a raw `IShapedExpansion*` (itself), and
+  caches it in `m_rowMetadata` (plain `shared_ptr`: it holds no app object). `Clear()` calls its
+  `Detach()` right after the view's, which nulls both. A detached provider returns
   a default `TableViewRowInfo`, an empty identity, and false or a no-op elsewhere.
 - **Inside a row event (P8).** Every read answers for the current tree, which is the list the
   last event described; per-node fields (`ChildCount`, `IsExpanded`, `IsExpandable`) may already
   reflect later changes of the same commit. The owner re-reads realized chrome in
   `OnShapingApplied` (P9).
+
+**Row queries (decided: reads out of the coordinator).** `ShapedRowQueries` (`View/`) is plain,
+read-only C++ over `ShapingEngine const&` and `SourceTable const&`, owned by value by
+`ShapingManager` (`m_rows`, declared after `m_engine`). It holds every read the adapters make:
+`RowCount`, `RowAt`, `IndexOfKey`, `IndexOfItem` (the view); `RowInfo`, `TryResolveKey`,
+`IsHierarchical`, `TryGetGroupMembership` (row metadata); and `IsItemInShapedTree`, the same
+lookup family, which `ShapingManager` forwards for `TableViewSource2`. It never writes, opens a
+commit scope or raises an event. The four expansion actions stay on `ShapingManager` behind
+`IShapedExpansion` (`Shaping/`), because they need the commit scope.
+- Why: these reads carry real logic (the `g|` key dispatch, building `TableViewRowInfo`, the
+  group-membership walk) but no coordination, so they do not belong in the coordinator; and each
+  adapter now holds only what it uses. The view can only read; row metadata can read and expand;
+  neither can reach the verbs, `Refresh` or `Clear`.
+- Lifetime is unchanged: the adapters' pointers are nulled by `Detach()` before the engine and the
+  `SourceTable` are cleared. `m_rows` outlives `Clear()` as a member; its queries then report
+  "not found".
+- Rejected: narrow interfaces on `ShapingManager` with the code left there (fixes the adapters'
+  reach, not the coordinator's size); merging `ShapedRowMetadata` into `ShapedCollectionView`
+  (two lifetime models in one object, COM ref count and `shared_ptr`, and the coordinator does
+  not shrink); keeping the helpers on `ShapingManager` (adapters see the whole coordinator).
 
 **Effect on downstream code.** `ShapedNode` and `GroupNode` stay native: the engine, the
 shaped tree, the WinRT visible list and the row metadata provider. `TableView` sees one list of
@@ -2394,7 +2440,7 @@ Decisions and open questions:
   | Owner | Owns |
   |---|---|
   | `TableViewSource2` | `std::unique_ptr<ShapingManager>` (the app collection lives in its `SourceTable`). Validates verb arguments and forwards; returns itself for chaining. |
-  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`, which owns the group expansion model), the row metadata provider and the WinRT visible list. |
+  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`), the engine (`m_engine`, which owns the applied spec and the `ShapedTree`, which owns the group expansion model), the read-only row queries (`m_rows`), the row metadata provider and the WinRT visible list. |
 
 - **Pipeline.** Spec verbs edit `m_desired`, then `ApplyDesiredSpec()` runs
   `Diff(applied, desired)` → engine apply, whose `ShapedTree` calls raise row events on the visible
@@ -2417,7 +2463,8 @@ Decisions and open questions:
   handler, and fans out to the engine, the visible list and the owner in a fixed order.
 - **Not the WinRT collection.** Unlike v1 `ShapedItemsSource`, it is not the collection the
   repeater binds to. That collection is `ShapedCollectionView`, which reads through the
-  coordinator's visible-list helpers (`RowCount`, `RowAt`, `IndexOfKey`, `IndexOfItem`).
+  coordinator's read-only row queries (`m_rows`, a `ShapedRowQueries`: `RowCount`, `RowAt`,
+  `IndexOfKey`, `IndexOfItem`).
 - **`View()` returns the `ShapedCollectionView`** (an `ItemsSourceView` subclass, D1), as v1
   `TableViewSource::GetItemsSourceView()` returns its view. It is created on first call and cached in
   `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, detached and reset by `Clear()`), and stays the same
@@ -2585,8 +2632,8 @@ public:
   same root, so the "old tree kept on throw" rule still holds. Rejected: a new root per rebuild
   (any held root `ShapedNode*` goes stale).
 - **Teardown order (decided).** `ShapingManager::Clear()` first calls
-  `ShapedCollectionView::Detach()` and `ShapedRowMetadata::Detach()` (both hold a raw
-  `ShapingManager*`, D2/R4), then `ShapingEngine::Clear()`, which calls `ShapedTree::Clear()`
+  `ShapedCollectionView::Detach()` and `ShapedRowMetadata::Detach()` (they hold raw
+  `ShapedRowQueries*` / `IShapedExpansion*` pointers into the manager, D2/R4), then `ShapingEngine::Clear()`, which calls `ShapedTree::Clear()`
   (drops the groups, the cursor and the listener; raises nothing) and drops the tracked keys. Only
   then does `SourceTable::Clear()` destroy the records. A consumer that still holds the
   `ItemsSourceView` afterwards sees `Size` 0, `GetAt` throws out of bounds, and lookups return -1.
@@ -3263,6 +3310,12 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       the live-shaping hold count.
 - [x] Rename `ContainsItem` to `IsItemInShapedTree` on `ShapingManager` and `TableViewSource2`
       (same lookup; a state query is deferred).
+- [x] Move the adapters' reads out of the coordinator: `ShapedRowQueries` (`View/`, owned by
+      value as `m_rows`) holds `RowCount`, `RowAt`, `IndexOfKey`, `IndexOfItem`, `RowInfo`,
+      `TryResolveKey`, `IsHierarchical`, `TryGetGroupMembership` and `IsItemInShapedTree`;
+      the four expansion actions move behind `IShapedExpansion` (`Shaping/`, with
+      `ExpansionAxis`), implemented privately by `ShapingManager`. `ShapedCollectionView` holds a
+      `ShapedRowQueries*`; `ShapedRowMetadata` holds that and an `IShapedExpansion*`.
 - [ ] Implement `ShapedTree` (`Engine/ShapedTree.cpp`) and `ShapedNode` helpers
       (`ShapedParent`, `ShapedChildCount`, `ShapedChildAt`).
 

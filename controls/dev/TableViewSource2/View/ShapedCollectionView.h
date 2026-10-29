@@ -7,7 +7,7 @@
 
 #include "ItemsSourceView.h"
 
-class ShapingManager;
+class ShapedRowQueries;
 
 // The visible list TableView binds to (declarations only). See
 // docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "WinRT visible list".
@@ -22,10 +22,10 @@ class ShapingManager;
 // GroupHeaderRow token, created on first read and cached on GroupNode::HeaderRow.
 // Row key (V3): a record's Identity() ("0x" + address); a group's GroupNode::Identity ("g|" ...).
 //
-// Back-reference (D2): a non-owning ShapingManager*, nulled by Detach() from ShapingManager::Clear().
-// TableView may hold the view after its TableViewSource2 is torn down; once detached, Count is 0,
-// GetAt throws E_BOUNDS and every key or item lookup returns -1. Every lookup goes through the
-// manager, which owns the engine (and its ShapedTree) and the SourceTable.
+// Back-reference (D2): a non-owning ShapedRowQueries* (ShapingManager::m_rows), nulled by Detach()
+// from ShapingManager::Clear(). TableView may hold the view after its TableViewSource2 is torn
+// down; once detached, Count is 0, GetAt throws E_BOUNDS and every key or item lookup returns -1.
+// Read-only by construction: the view sees the row queries only, never the coordinator's verbs.
 //
 // Events (P8): ShapedTree raises each change as it makes it; ShapingManager, its listener, calls
 // NotifyRemoved or NotifyAdded right away, so Count and GetAt already match every event. A rebuild
@@ -42,11 +42,11 @@ class ShapedCollectionView :
 public:
     ForwardRefToBaseReferenceTracker(ItemsSourceView)
 
-    explicit ShapedCollectionView(ShapingManager& owner);
+    explicit ShapedCollectionView(ShapedRowQueries const& rows);
 
 #pragma region ItemsSourceViewOverrides
 
-    // ShapingManager::RowCount(); 0 once detached.
+    // ShapedRowQueries::RowCount(); 0 once detached.
     int32_t GetSizeCore() override;
 
     // ShapedTree::GetAt(index) (tree walk with cursor, P1/P3) mapped to its row value: the app item, or the group's GroupHeaderRow (created
@@ -60,11 +60,11 @@ public:
     // or detached. Called on every realize and recycle; no allocation after the first call per row.
     winrt::hstring KeyFromIndexCore(int index) override;
 
-    // ShapingManager::IndexOfKey (V3 dispatch on the "g|" marker; record keys are parsed back to
+    // ShapedRowQueries::IndexOfKey (V3 dispatch on the "g|" marker; record keys are parsed back to
     // an address, D4). -1 when unknown, hidden or detached.
     int IndexFromKeyCore(winrt::hstring const& key) override;
 
-    // ShapingManager::IndexOfItem: the item's record through SourceTable::TryFindByItem, then its
+    // ShapedRowQueries::IndexOfItem: the item's record through SourceTable::TryFindByItem, then its
     // flat index, O(depth); a GroupHeaderRow resolves through its Identity. -1 when unknown, hidden
     // or detached. Not a linear scan.
     int IndexOfCore(winrt::IInspectable const& value) override;
@@ -86,11 +86,11 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Nulls m_owner. Called first by ShapingManager::Clear(), before anything the view reads is
+    // Nulls m_rows. Called first by ShapingManager::Clear(), before anything the view reads is
     // torn down. Raises no event: the consumer is going away or rebinding. Idempotent.
     void Detach() noexcept;
 
 private:
     // Non-owning (D2). Null after Detach().
-    ShapingManager* m_owner{ nullptr };
+    ShapedRowQueries const* m_rows{ nullptr };
 };

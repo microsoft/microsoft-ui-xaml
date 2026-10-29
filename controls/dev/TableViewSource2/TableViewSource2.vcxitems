@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapedTree.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapeState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\IShapingOwner.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\IShapedExpansion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\ShapingManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceHierarchy.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)View\GroupHeaderRow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedCollectionView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedRowMetadata.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)View\ShapedRowQueries.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource2.properties.cpp" />
