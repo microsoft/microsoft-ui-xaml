@@ -199,7 +199,7 @@ std::vector<Inspectable> CollectionAccessor2::Enumerate(bool throwIfUnsupported)
         if (throwIfUnsupported)
         {
             throw winrt::hresult_invalid_argument(
-                L"items must implement a supported collection interface: IVector<Inspectable>, IBindableVector, IIterable<Inspectable>, or IBindableIterable.");
+                L"items must implement a supported collection interface: IVector<IInspectable>, IBindableVector, IIterable<IInspectable>, or IBindableIterable.");
         }
         break;
     }
