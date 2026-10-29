@@ -422,6 +422,8 @@ void TableView::ResolveColumnWidths()
             }
         }
 
+        std::vector<std::pair<winrt::TableViewColumn, double>> lockedShares;
+        double lockedTotal = 0.0;
         DistributeStarWidths(
             authoredPool,
             std::max(0.0, layoutRound(viewport) - authoredFixedTotal),
@@ -431,13 +433,49 @@ void TableView::ResolveColumnWidths()
             {
                 if (isLocked(c))
                 {
-                    changed |= setResolvedActualWidth(c, width);
-                    fixedTotal += c.ActualWidth();
+                    lockedShares.emplace_back(c, width);
+                    lockedTotal += width;
                 }
             });
 
         starColumns.erase(
             std::remove_if(starColumns.begin(), starColumns.end(), isLocked), starColumns.end());
+
+        // The authored layout ignores what resizes already took, so cap the locked share at the room
+        // the current layout leaves; otherwise a Min/MaxWidth change elsewhere can overflow the viewport.
+        double room = layoutRound(viewport) - fixedTotal;
+        for (auto const& c : starColumns)
+        {
+            room -= MinWidthForStarFactor(c, std::max(0.0, c.Width().Value));
+        }
+
+        auto const resolveLocked = [&](winrt::TableViewColumn const& c, double width)
+        {
+            changed |= setResolvedActualWidth(c, width);
+            fixedTotal += c.ActualWidth();
+        };
+
+        if (lockedTotal > std::max(0.0, room))
+        {
+            std::vector<winrt::TableViewColumn> lockedPool;
+            for (auto const& share : lockedShares)
+            {
+                lockedPool.push_back(share.first);
+            }
+            DistributeStarWidths(
+                std::move(lockedPool),
+                std::max(0.0, room),
+                [&authoredOf](winrt::TableViewColumn const& c) { return std::max(0.0, authoredOf(c).Value); },
+                layoutRound,
+                resolveLocked);
+        }
+        else
+        {
+            for (auto const& share : lockedShares)
+            {
+                resolveLocked(share.first, share.second);
+            }
+        }
     }
 
     // The viewport basis is layout-rounded so the divided space is snapped consistently with the
