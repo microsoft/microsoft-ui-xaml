@@ -35,9 +35,10 @@ internal static class CliApplication
                      one bucket; --filter keeps events whose name or a field value contains <text>
                      (a number matches a field with exactly that value).
 
-          Events are the XAML TraceLogging events and the kernel's GPU memory usage and
-          budget events (DxgKrnl) of the process. A trace needs --pid; a session file
-          holds one process.
+          Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
+          and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls) and the kernel's
+          GPU memory usage and budget events (DxgKrnl) of the process. A trace needs --pid; a
+          session file holds one process.
         """;
 
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
@@ -214,26 +215,26 @@ internal static class CliApplication
 
     private static int Processes(Options options, TextWriter output, CancellationToken cancellationToken)
     {
+        var providers = Enum.GetValues<XamlProvider>();
         var counts = new Dictionary<int, long[]>();
         var result = Read(options, null, profilerEvent =>
         {
             if (!counts.TryGetValue(profilerEvent.ProcessId, out var perProvider))
             {
-                counts[profilerEvent.ProcessId] = perProvider = new long[Enum.GetValues<XamlProvider>().Length];
+                counts[profilerEvent.ProcessId] = perProvider = new long[providers.Length];
             }
 
             perProvider[(int)profilerEvent.Provider]++;
         }, cancellationToken);
 
         // In a trace, every process that uses the GPU has GPU memory events; only those with XAML events are listed.
-        output.WriteLine($"{"PID",8} {"Events",10} {"XAML",10} {"XAML-Prof",10} {"DxgKrnl",10}");
+        output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
         foreach (var (processId, perProvider) in counts
-            .Where(entry => options.IsSessionFile ||
-                entry.Value[(int)XamlProvider.Xaml] + entry.Value[(int)XamlProvider.XamlProfiler] > 0)
+            .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl])
             .OrderByDescending(entry => entry.Value.Sum()))
         {
-            output.WriteLine($"{processId,8} {perProvider.Sum(),10} {perProvider[(int)XamlProvider.Xaml],10} " +
-                $"{perProvider[(int)XamlProvider.XamlProfiler],10} {perProvider[(int)XamlProvider.DxgKrnl],10}");
+            output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
+                string.Join(" ", providers.Select(provider => $"{perProvider[(int)provider],10}")));
         }
 
         output.WriteLine($"{(options.IsSessionFile ? "Session" : "Trace")}: {result.Duration.TotalSeconds:F1} s, {result.EventsLost} events lost.");
@@ -421,7 +422,10 @@ internal static class CliApplication
     private static string ShortName(XamlProvider provider) => provider switch
     {
         XamlProvider.Xaml => "XAML",
+        XamlProvider.XamlDiagnostics => "XAML-Diag",
         XamlProvider.XamlProfiler => "XAML-Prof",
+        XamlProvider.MicrosoftUIXaml => "MUX",
+        XamlProvider.MicrosoftUIXamlControls => "MUXC",
         _ => "DxgKrnl"
     };
 

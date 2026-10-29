@@ -32,11 +32,12 @@ internal static class SessionSchema
             DroppedByProfiler INTEGER);
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
-            Provider TEXT NOT NULL,    -- Xaml, XamlProfiler or DxgKrnl (XamlProvider)
+            Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl
             Name TEXT NOT NULL,
             Opcode INTEGER NOT NULL,
             FieldNames TEXT NOT NULL,  -- comma-separated names; the Nth names the Nth value in Events.Payload
-            FieldTypes TEXT NOT NULL); -- comma-separated .NET type names (FieldType), one per value
+            FieldTypes TEXT NOT NULL,  -- comma-separated .NET type names (FieldType), one per value
+            TraceLogging INTEGER NOT NULL); -- 1 for a TraceLogging event, 0 for a manifest event
         CREATE TABLE Events (
             Seq INTEGER PRIMARY KEY,   -- arrival order: 1, 2, 3...
             Qpc INTEGER NOT NULL,
