@@ -19,10 +19,6 @@ runtimeclass TableViewSource
 {
     Boolean IsLiveShaping { get; set; };
     Object Source { get; };
-    Boolean HasFilter { get; };
-    Boolean HasSort { get; };
-    Boolean HasGroupBy { get; };
-    Boolean HasParentBy { get; };
 
     TableViewSource Filter(TableViewPredicate predicate);
     // Do not remove the [default_overload]/[method_name] metadata on the overloads below: it is frozen ABI, and
@@ -36,14 +32,10 @@ runtimeclass TableViewSource
     TableViewSource Sort(String sortMemberPath, SortDirection direction);
     [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
-    [method_name("SortWithComparer")]
-    TableViewSource Sort(ITableViewSortComparer comparer, SortDirection direction);
     [method_name("ThenSortByPath")]
     TableViewSource ThenSort(String sortMemberPath, SortDirection direction);
     [default_overload] [method_name("ThenSort")]
     TableViewSource ThenSort(TableViewKeySelector keySelector, SortDirection direction);
-    [method_name("ThenSortWithComparer")]
-    TableViewSource ThenSort(ITableViewSortComparer comparer, SortDirection direction);
     TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
