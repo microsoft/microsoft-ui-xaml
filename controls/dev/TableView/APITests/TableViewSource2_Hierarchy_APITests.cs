@@ -248,7 +248,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies ClearHierarchy restores the flat source-order projection (Task 1, 4).")]
+        [TestProperty("Description", "Verifies a ClearHierarchy restores the flat source-order projection (Task 1, 4); the expanded-flags-survive assertion pins unspecified behaviour.")]
         public void VerifyClearHierarchyRestoresFlat()
         {
             var source = FromOnUI(MakeTree());
@@ -263,7 +263,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyTreeOnUI(tableView, "Ada Ben Cy Dan Eve Fay Gus", "Second ClearHierarchy");
 
             OnUI(tableView, () => source.ParentBy(ById, ByManager));
-            // Expanded flags live on the records, so they survive the flat round trip.
+            // Pins unspecified behaviour (the spec is silent): expanded flags live on the records, so they survive the flat round trip.
             VerifyTreeOnUI(tableView, "Ada1- Ben2- Dan3 Cy2 Eve1- Fay2 Gus1", "ParentBy again after ClearHierarchy");
         }
 
@@ -510,7 +510,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             OnUI(tableView, () => people.Insert(0, new TreeEmployee { Id = 99, Name = "Zed" }));
             VerifyTreeOnUI(tableView, "Zed1+ Ada1- Ben2- Dan3 Cy2 Eve1", "Zed adopts Fay and Gus; expansion survives the Reset");
-            VerifyEvents(events, "Add@0,Reset", "adopting two orphans: Zed's Add, then one Reset");
+            VerifyEvents(events, "Reset", "adopting two orphans: exactly one Reset, no Add first");
 
             OnUI(tableView, () => tableView.ExpandAllRows());
             VerifyTreeOnUI(tableView, "Zed1- Fay2 Gus2 Ada1- Ben2- Dan3 Cy2 Eve1", "Fay and Gus under Zed, in source order");
@@ -709,7 +709,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an app handler on the projection that throws during a ParentBy removal with children leaves a consistent tree: the exact removal events still arrive, a Refresh re-reads the same tree and a later Add works (Task 3 zombie path, as far as the public API reaches).")]
+        [TestProperty("Description", "Verifies an app handler on the projection that throws during a ParentBy removal with children leaves a consistent tree: the exact removal events still arrive, a Refresh re-reads the same tree and a later Add works. The engine's own listener-fault and zombie path is not reachable through the public API (XAML absorbs the handler's exception), so it is not covered here.")]
         public void VerifyParentByThrowingViewHandlerDuringRemovalRecovers()
         {
             var people = MakeTree();
@@ -741,6 +741,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             OnUI(tableView, () => people.Add(new TreeEmployee { Id = 8, ManagerId = 3, Name = "Hal" }));
             VerifyTreeOnUI(tableView, "Ada1- Cy2- Hal3 Dan1 Eve1- Fay2 Gus1", "A later Add under Cy");
         }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a ChildrenBy root Replace whose replacement shares the leaving root's child collection is accepted, not rejected as a duplicate (Task 3 I3).")]
         public void VerifyChildrenByReplaceSharingChildrenAccepted()
@@ -763,7 +764,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an Add to a child collection that duplicates an item elsewhere in the tree is rejected with ArgumentException and the source stays consistent (Task 2).")]
+        [TestProperty("Description", "Verifies a rejected child-feed duplicate Add sets divergence (spec Misbehaving records): later notifications are whole-tree re-reads that reject again and raise nothing until the app removes the duplicate, then one Reset shows the current source (Task 2; final review I3).")]
         public void VerifyChildFeedDuplicateAddRejected()
         {
             var f = MakeChildrenFixture();
@@ -772,10 +773,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = PlaceTreeSource(source, s => s.ChildrenBy(f.Selector));
             ExpandAll(tableView);
             VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "start (Dee has an empty feed)");
+            var events = RecordViewEvents(tableView);
+
             RunOnUIThread.Execute(() =>
                 VerifyArgumentException(() => f.Children[f.Dee].Add(f.Cat), "more than once", "Cat is already under Ann"));
             SettleLayout(tableView);
             VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "Cat still appears once");
+            VerifyEvents(events, "", "a rejected change raises nothing");
+
+            // Diverged: an unrelated child edit is a whole-tree re-read, which finds the duplicate and
+            // rejects again, so the table stays frozen.
+            var eli = new LiveRow { Id = 6, Name = "Eli" };
+            RunOnUIThread.Execute(() =>
+            {
+                var ex = Thrown(() => f.Children[f.Bob].Add(eli));
+                Verify.IsTrue(ex is ArgumentException, $"The re-read must reject the standing duplicate (was {ex?.GetType().Name}).");
+            });
+            SettleLayout(tableView);
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "Frozen while the duplicate stands");
+            VerifyEvents(events, "", "a frozen table raises nothing");
+
+            // Removing the duplicate is the next notification: one re-read, one Reset, current source.
+            OnUI(tableView, () => f.Children[f.Dee].Remove(f.Cat));
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Eli3 Cat2 Dee1", "Re-read shows the source, including Eli");
+            VerifyEvents(events, "Reset", "recovery re-read");
         }
     }
 }
