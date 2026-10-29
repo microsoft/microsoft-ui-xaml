@@ -58,3 +58,32 @@ Adversarial angles tried with no defect:
 - Pass-through sampling and source order (source 0 is `Destination`).
 
 After round 2, the notes gained "Why this fixes the issue" and "Why it's safe" sections (3b1f98ac4).
+
+## Round 3 (reviewing 484ffe3a6)
+
+| Reviewer | Model | Kind | Result |
+|---|---|---|---|
+| r3-normal-a | claude-sonnet-5 | Normal | No significant issues. Checked every file:line citation in the notes. |
+| r3-normal-b | gpt-6.1-terra | Normal | 1 finding (below) |
+| r3-adv-a | gpt-5.6-sol | Adversarial | No significant issues |
+| r3-adv-b | grok-4.6 | Adversarial | No significant issues |
+
+| # | From | Severity | Finding | Disposition |
+|---|---|---|---|---|
+| 1 | r3-normal-b | Medium | Tests only check `WasConnected` and no crash. They never show that the mask or nine-grid `Source` is the wrapper. A fix that swapped in a transparent color brush would also pass. | **Fixed.** Each test now compares the mock DComp tree to a master file at 3 points (`Initial`, `Replaced`, `Restored`). The masters show `<EffectBrush />` as the `Source`. A color brush dumps as `<ColorBrush Color=... />` and a raw backdrop as `<BackdropBrush />`, so either would fail. The mock dump doesn't show which effect is inside; the round 1 real-DComp `Comment` readback covered that. |
+
+Adversarial angles tried with no defect:
+- App-visible brush identity, property readback, animations, and property sets on the XCBB brush.
+- `Comment` and source parameter name collisions.
+- Every mask, nine-grid, and effect `Source` site, including `BackgroundSizing`, text, shapes, reveal, and shadows.
+- The WUC shapes path (feature is off).
+- Header shadowing from the new include dir.
+- SOURCE_OVER with a transparent flood, sampling compared with Acrylic, effect factory lifetime, and threading.
+- New fail-fasts only run after the backdrop QI succeeds.
+- Open PRs that overlap (none).
+
+### Validation after round 3
+
+- Rebuilt Foundation tests and the masters resource project.
+- VM, mock DComp: `*BorderTests::BackdropXcbb*` 5/5 passed with the master compares.
+- VM, mock DComp: `*BorderTests::*` 19/19 passed.

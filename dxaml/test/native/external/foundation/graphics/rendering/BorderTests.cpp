@@ -683,6 +683,9 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
         VERIFY_IS_TRUE(backdropBrush->WasConnected);
     });
 
+    // The masters show the mask or nine grid Source as an EffectBrush (the backdrop wrapper), not a BackdropBrush.
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Initial");
+
     LOG_OUTPUT(L"[Resizing the element so the mask and nine grid are updated]");
     RunOnUIThread([&]()
     {
@@ -711,6 +714,7 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
         backdropBrush->ReplaceBackdrop();
     });
     TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Replaced");
 
     LOG_OUTPUT(L"[Switching to a SolidColorBrush and back]");
     RunOnUIThread([&]()
@@ -724,6 +728,7 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
         setBrush(backdropBrush);
     });
     TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Restored");
 }
 
 void BorderTests::RasterizationScale()

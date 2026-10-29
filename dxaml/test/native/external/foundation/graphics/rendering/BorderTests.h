@@ -92,11 +92,25 @@ public:
 
     // Regression tests for GitHub issue #12063. A XamlCompositionBrushBase that wraps a CompositionBackdropBrush
     // used to fail fast when the element needed a mask or nine grid.
-    TEST_METHOD(BackdropXcbbRoundedBackground)
-    TEST_METHOD(BackdropXcbbRoundedBorderBrush)
-    TEST_METHOD(BackdropXcbbSquareBorderBrush)
-    TEST_METHOD(BackdropXcbbEllipseFill)
-    TEST_METHOD(BackdropXcbbTextBlockForeground)
+    BEGIN_TEST_METHOD(BackdropXcbbRoundedBackground)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(BackdropXcbbRoundedBorderBrush)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(BackdropXcbbSquareBorderBrush)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(BackdropXcbbEllipseFill)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(BackdropXcbbTextBlockForeground)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
 
 private:
     enum class BackdropXcbbScenario
