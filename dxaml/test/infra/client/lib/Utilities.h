@@ -140,6 +140,7 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(SimulateDeviceLostOnCreatingSvgDecoder)();
 
         IFACEMETHOD(SetDCompDeviceLeakDetectionEnabled)(_In_ BOOLEAN enableLeakDetection) override;
+        IFACEMETHOD(SetMaxTextureSizeOverride)(_In_ int maxTextureSize) override;
 
         IFACEMETHOD(ResetWasCommitInvoked)() override;
         IFACEMETHOD(get_WasCommitInvoked)(_Out_ BOOLEAN* pWasCommitInvoked) override;

@@ -189,6 +189,11 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(PathMaskOffsetWhenClampedToMaxTextureSize)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies nonzero Path mask offsets when width, height, or both exceed a fixed texture limit.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 
