@@ -3519,7 +3519,11 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 
 void NavigationView::OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
+    // Owners can only select preselected descendants once the template is applied, which also propagates ownership.
+    if (m_appliedTemplate)
+    {
+        NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
+    }
     if (!IsTopNavigationView())
     {
         UpdatePaneLayout();
