@@ -3,7 +3,6 @@
 
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using MUXControlsTestApp.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,7 +10,6 @@ using Windows.Foundation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
-using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.UI.Xaml.Media;
 using Common;
@@ -19,13 +17,42 @@ using Common;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-using System.Xml.Linq;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
     public class ItemCollectionTransitionProviderTests : ApiTestBase
     {
+        private sealed class DerivedItemCollectionTransition : ItemCollectionTransition
+        {
+            public DerivedItemCollectionTransition(
+                ItemCollectionTransitionProvider owningProvider,
+                UIElement element,
+                ItemCollectionTransitionOperation operation,
+                ItemCollectionTransitionTriggers triggers)
+                : base(owningProvider, element, operation, triggers)
+            {
+            }
+        }
+
+        [TestMethod]
+        public void CanDeriveFromItemCollectionTransition()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var provider = new ItemCollectionTransitionProviderDerived();
+                var element = new Border();
+                var transition = new DerivedItemCollectionTransition(
+                    provider,
+                    element,
+                    ItemCollectionTransitionOperation.Add,
+                    ItemCollectionTransitionTriggers.CollectionChangeAdd);
+
+                Verify.AreEqual(ItemCollectionTransitionOperation.Add, transition.Operation);
+                Verify.AreEqual(ItemCollectionTransitionTriggers.CollectionChangeAdd, transition.Triggers);
+            });
+        }
+
         
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 35797826: ElementAnimatorTests.ValidateElementAnimator test disabled
