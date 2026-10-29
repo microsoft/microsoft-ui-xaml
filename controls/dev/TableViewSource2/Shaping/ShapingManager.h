@@ -128,7 +128,9 @@ public:
     // is nullptr. Called only by TableViewSource2, after it has accepted a claim (sink = the new
     // owner) or a release (sink = nullptr). When sink differs from the current one, every
     // live-shaping hold is dropped (holds belong to the owner that took them): m_liveHoldCount = 0,
-    // then PostLiveDrain if changes are pending. The same sink again is a no-op. Throws while an
+    // then PostLiveDrain if changes are pending. A non-null sink then calls
+    // SourceTable::BindOwnerThread(), so a source built off the UI thread is bound to the owner's
+    // thread once (see SourceTable, Threading). The same sink again is a no-op. Throws while an
     // apply runs (#19), before anything changes, so TableViewSource2 can call it before updating
     // its own state. Raw pointer: TableViewSource2 sets nullptr before the owner is destroyed.
     void SetOwner(IShapingOwner* sink);
@@ -187,23 +189,22 @@ private:
     // Live shaping (decided, E7: coalesce per dispatcher turn). Never shapes inside the app's
     // setter: adds (record, propertyName) to m_liveDirty (a second, different name for the same
     // record becomes the empty name, "re-read everything") and posts one DrainLiveChanges.
-    // record == nullptr (a dropped off-thread change) sets m_liveAllDirty instead. Ignored when no
-    // verb is active.
+    // Ignored when no verb is active.
     void OnItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
 
     // Posts DrainLiveChanges to the current DispatcherQueue unless one is already posted
     // (m_liveDrainPosted). The callback holds a weak reference to the owning TableViewSource2 and
-    // returns if it is gone.
+    // returns if it is gone. No queue on this thread (headless or test): nothing is posted, and the
+    // next verb or Refresh flushes m_liveDirty synchronously (never inside the app's setter).
     void PostLiveDrain();
 
     // The posted callback, and the synchronous flush before a verb. One commit:
-    //   m_liveAllDirty           -> Reapply();
-    //   one entry, or up to c_liveBulkThreshold entries
+    //   up to c_liveBulkThreshold entries
     //                            -> m_engine.ApplyItemChanged per entry (surgical);
     //   more than c_liveBulkThreshold
     //                            -> m_engine.ApplyItemsChanged (re-read dirty records only, then
     //                               one structural rebuild and a stable Reset).
-    // Moves m_liveDirty into a local batch and clears m_liveAllDirty and m_liveDrainPosted before
+    // Moves m_liveDirty into a local batch and clears m_liveDrainPosted before
     // any shaping, so a re-entrant OnItemChanged (app code run by the drain) lands in the fresh
     // map and posts the next drain. Runs only when CanDrain(): skipped while m_liveHoldCount > 0
     // (#18 O4: an in-progress cell edit or pointer press, v1 m_liveShapingHold), a DeferRefresh is
@@ -216,8 +217,7 @@ private:
     void ApplyDesiredSpec();
 
     // Rebuilds the shaped tree from SourceTable::Records() with the desired spec. Never reads
-    // the source. Used for a SourceTable Reset, a Diff that falls back to a full rebuild, and
-    // dropped-ItemChanged recovery.
+    // the source. Used for a SourceTable Reset and a Diff that falls back to a full rebuild.
     void Reapply();
 
     // ---- IShapedRowsListener (decided, P8) --------------------------------------------------
@@ -371,7 +371,6 @@ private:
     // record), and a verb drains it synchronously before applying, so a verb never runs over stale
     // keys. Clear() empties it, so a drain posted before teardown is a no-op.
     std::unordered_map<SourceRecord*, winrt::hstring> m_liveDirty;
-    bool m_liveAllDirty{ false };     // ItemChanged(nullptr): the drain does Reapply()
     bool m_liveDrainPosted{ false };
 
     // Source tree + applied spec -> shaped tree (ShapedTree, P10). Every entry point is bracketed

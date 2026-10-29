@@ -102,26 +102,33 @@
 //     existing orphans, each a Move from top level to the new item). Deliver them as an ordered
 //     batch in one dispatch, or collapse to Reset above a threshold.
 //   - ItemChanged: forwards (SourceRecord*, propertyName) when a subscribed record raises
-//     PropertyChanged. A null record means "unknown items changed" (see Threading); an empty
-//     propertyName means all properties changed.
+//     PropertyChanged. The record is never null; an empty propertyName means all properties
+//     changed.
 //
-// Threading (same contract as v1 ShapedItemsSource):
-//   - Create() captures the owning thread's DispatcherQueue and thread id. All table state, and
-//     both handlers, belong to that thread.
-//   - Source and child collection notifications must arrive on the owning thread (the contract
-//     every XAML collection consumer imposes); they are not marshalled.
-//   - Item PropertyChanged raised on another thread is posted to m_ownerQueue with only weak
-//     pointers and the property name; the weak pointers are locked there. If the post fails, or
-//     there is no queue and the thread differs, the change is dropped and m_itemChangeDropped is
-//     set. The next ItemChanged delivered on the owning thread is preceded by
-//     ItemChanged(nullptr, L"") so the coordinator re-evaluates every record. The flag is cleared
-//     by Refresh() and SetLiveShaping(false).
+// Threading (decided: bind once, from the no-queue state only):
+//   - Create() captures the current thread's DispatcherQueue and thread id into m_binding when the
+//     thread has a queue (bound). Off a dispatcher thread (a view model built in Task.Run, a
+//     headless test) it leaves m_binding unbound; Create() may run there.
+//   - BindOwnerThread() (from ShapingManager::SetOwner with a non-null owner, always on the UI
+//     thread) binds an unbound table to the owner's thread once. A table already bound keeps its
+//     binding; an owner on a different thread only asserts in debug. Nothing can have been posted
+//     while unbound (there was no queue), so binding never strands a post; only the one write
+//     needs safe publication (the thread id is stored last, with release order).
+//   - All table state and both handlers belong to the bound thread, or before binding to the
+//     thread the app uses it on.
+//   - Source and child collection notifications must arrive on that thread (the contract every
+//     XAML collection consumer imposes); they are not marshalled.
+//   - Item PropertyChanged: bound and on the bound thread, or unbound -> delivered inline. Bound
+//     and on another thread -> posted to the bound queue with only weak pointers and the property
+//     name; the weak pointers are locked there. A failed TryEnqueue means the queue is shutting
+//     down: the change is ignored (no dropped-change flag, no recovery).
 //
 // Lifetime: always owned by std::shared_ptr and created only through Create(). Every event lambda
 // registered on the source, a child collection or an item captures weak_from_this() (plus the
 // owning record's weak_ptr for child-collection and item events) and drops the notification if
 // either has expired, so a late or in-flight event can never touch a destroyed table. The weak
-// pointers are locked only on the owning UI thread: a lock taken on a worker thread could become
+// pointers are locked only on the bound thread (or, while unbound, the raising thread, which is
+// the only thread using the table): a lock taken on a worker thread could become
 // the last strong reference and run ~SourceTable() (and its UI-affine revokes) there.
 // Subscriptions start in Create(), after construction, because weak_from_this() is empty inside
 // the constructor.
@@ -156,9 +163,10 @@ public:
     using SourceChangedHandler = std::function<void(SourceChange const& change)>;
     using ItemChangedHandler = std::function<void(SourceRecord* record, winrt::hstring const& propertyName)>;
 
-    // Constructs the table, captures the owning thread's DispatcherQueue and thread id, resolves
-    // CollectionAccessor2(owner, source), subscribes to source change notifications, and performs
-    // the initial Refresh(). Must be called on the owning (UI) thread.
+    // Constructs the table, captures the current thread's DispatcherQueue and thread id when it has
+    // a queue (else leaves the table unbound; see Threading), resolves CollectionAccessor2(owner,
+    // source), subscribes to source change notifications, and performs the initial Refresh(). May
+    // run off the UI thread.
     static std::shared_ptr<SourceTable> Create(
         ITrackerHandleManager const* owner,
         winrt::Windows::Foundation::IInspectable const& source);
@@ -168,6 +176,12 @@ public:
 
     // Asserts the table was detached by Clear(); never touches m_trackerOwner.
     ~SourceTable();
+
+    // Binds an unbound table to the current thread's DispatcherQueue and thread id (see
+    // Threading). Called on the UI thread by ShapingManager::SetOwner for a non-null owner. No-op
+    // when already bound to this thread; when bound to another thread, keeps that binding and
+    // asserts in debug. No-op when detached.
+    void BindOwnerThread() noexcept;
 
     SourceTable(SourceTable const&) = delete;
     SourceTable& operator=(SourceTable const&) = delete;
@@ -378,7 +392,7 @@ private:
     void DrainPendingChanges();
 
     // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
-    // does; it only runs on the UI thread, so it does not depend on m_ownerQueue) unless one is
+    // does; it only runs on the UI thread, so it does not depend on m_binding) unless one is
     // already posted (m_rereadPosted). The
     // callback holds weak_from_this() and returns if the table is gone or detached; it clears
     // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
@@ -393,10 +407,9 @@ private:
     // Incremental paths only (reads Item.get()); Clear() clears the maps wholesale instead.
     void RemoveFromLookups(SourceRecord* record) noexcept;
 
-    // The PropertyChanged lambda captures weak_from_this(), the record's weak_ptr, m_ownerQueue,
-    // m_ownerThreadId and m_itemChangeDropped. Off the owning thread it posts to m_ownerQueue (or
-    // sets the dropped flag); on it, it locks the table and calls OnRecordPropertyChanged, which
-    // locks the record.
+    // The PropertyChanged lambda captures weak_from_this(), the record's weak_ptr and m_binding.
+    // Bound and off the bound thread, it posts to the bound queue (a failed post is ignored);
+    // otherwise it locks the table and calls OnRecordPropertyChanged, which locks the record.
     void SubscribeRecordPropertyChanged(SourceRecordPtr const& record);
     void UnsubscribeRecordPropertyChanged(SourceRecord* record) noexcept;
     void OnRecordPropertyChanged(SourceRecordWeakPtr const& weakRecord, winrt::hstring const& propertyName);
@@ -474,14 +487,16 @@ private:
 
     bool m_liveShapingEnabled{ false };
 
-    // Owning thread. Null queue off a dispatcher thread: item changes then run inline on the owner
-    // thread and are flagged as dropped on others.
-    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_ownerQueue{ nullptr };
-    DWORD m_ownerThreadId{ 0 };
-
-    // Set off-thread when an item PropertyChanged could not be marshalled to the owner. Shared so
-    // the subscription lambda can set it without locking the table off-thread.
-    std::shared_ptr<std::atomic<bool>> m_itemChangeDropped{ std::make_shared<std::atomic<bool>>(false) };
+    // Thread binding (see Threading). Written once: at Create() on a dispatcher thread, or by the
+    // first BindOwnerThread() while unbound; never changed after. Shared so the item lambdas read
+    // it without locking the table off-thread. threadId == 0 means unbound; it is stored after
+    // queue with release order and loaded with acquire, so a reader that sees it also sees queue.
+    struct ThreadBinding
+    {
+        winrt::Microsoft::UI::Dispatching::DispatcherQueue queue{ nullptr };
+        std::atomic<DWORD> threadId{ 0 };
+    };
+    std::shared_ptr<ThreadBinding> m_binding{ std::make_shared<ThreadBinding>() };
 
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;

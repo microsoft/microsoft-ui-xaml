@@ -182,7 +182,6 @@ classDiagram
         -ShapedRowQueries m_rows
         -IShapingOwner* m_owner
         -unordered_map~SourceRecord*, hstring~ m_liveDirty
-        -bool m_liveAllDirty
         -bool m_liveDrainPosted
         -uint32 m_liveHoldCount
         -uint32 m_deferDepth
@@ -346,9 +345,7 @@ classDiagram
         -bool m_identityIndexEnabled
         -unordered_map~hstring, SourceRecord*~ m_identityIndex
         -bool m_liveShapingEnabled
-        -DispatcherQueue m_ownerQueue
-        -DWORD m_ownerThreadId
-        -shared_ptr~atomic~bool~~ m_itemChangeDropped
+        -shared_ptr~ThreadBinding~ m_binding
         -SourceChangedHandler m_sourceChanged
         -ItemChangedHandler m_itemChanged
         -uint32 m_freezeDepth
@@ -357,6 +354,7 @@ classDiagram
         -bool m_rereadDue
         -bool m_rereadPosted
         +Create(owner, source)$ shared_ptr~SourceTable~
+        +BindOwnerThread()
         +Refresh()
         +Clear()
         +IsDetached() bool
@@ -1118,7 +1116,7 @@ table's state ("skip" = not applied; sets both bits):
   `ShapingManager::ResyncSource`, a verb's `Refresh`, `EndDeferRefresh`) therefore runs at most one
   re-read per turn.
   - `PostReread()` posts one callback (`m_rereadPosted`) to the current thread's `DispatcherQueue`
-    (as `PostLiveDrain` does, so it does not depend on `m_ownerQueue`). It runs `Refresh()`
+    (as `PostLiveDrain` does, so it does not depend on `m_binding`). It runs `Refresh()`
     only if `IsRereadDue()` and the table is neither frozen nor held (otherwise that freeze's or
     hold's report point takes it) and swallows a throw (the flags follow the failure rules above).
   - No queue (headless or test): nothing is posted; the re-read stays owed until the next report
@@ -1157,10 +1155,9 @@ on `IsLiveShaping`, **never on which shaping verbs are active**:
 | Verb-independent subscription | `SetLiveShaping(true)` subscribes every record in `m_records`, and `CreateRecord` subscribes newly added records while `m_liveShapingEnabled` is true. Adding or clearing verbs (`Filter`, `Sort`, `GroupBy`, `ParentBy`, `ChildrenBy`) never walks records to subscribe or unsubscribe. |
 | `WatchState` caching | First probe sets `WatchState::Subscribed` (storing `PropertyChangedToken`) or `WatchState::NotObservable`. `SetLiveShaping(false)` revokes tokens and resets `Subscribed` → `Unchecked`, but preserves `NotObservable` so re-enabling does not re-QI non-observable items. |
 | Automatic teardown | Removing a record (or `Clear()`) destroys the `SourceRecord`, whose destructor revokes `PropertyChangedToken` through `Item.safe_get()` (skipped if the item was already collected) before its `tracker_ref` handle is deleted. |
-| Callback contract | Each subscription lambda captures `weak_from_this()` (`weak_ptr<SourceTable>`), `SourceRecordWeakPtr` (`weak_ptr<SourceRecord>`), `m_ownerQueue`, `m_ownerThreadId` and `m_itemChangeDropped`. On the owning thread it locks the table and returns if it has expired; `OnRecordPropertyChanged` then locks the record (dropping stale notifications for removed records) and invokes `m_itemChanged(record, propertyName)`. Off the owning thread it marshals first (see *Threading*). Downstream (the coordinator) decides whether the changed property affects any active verb. |
+| Callback contract | Each subscription lambda captures `weak_from_this()` (`weak_ptr<SourceTable>`), `SourceRecordWeakPtr` (`weak_ptr<SourceRecord>`) and `m_binding`. On the bound thread, or while unbound, it locks the table and returns if it has expired; `OnRecordPropertyChanged` then locks the record (dropping stale notifications for removed records) and invokes `m_itemChanged(record, propertyName)`. Off the bound thread it marshals first (see *Threading*). Downstream (the coordinator) decides whether the changed property affects any active verb. |
 | Table lifetime | `SourceTable` derives from `enable_shared_from_this` and is always owned by `shared_ptr` (`Create()`). Items belong to the app and can outlive the table; a notification already in flight when `~SourceRecord()` revokes, or a revoke that fails on a torn-down event source, would otherwise call into a freed table. The source-change lambdas (`CollectionChanged` / `VectorChanged`) use the same `weak_from_this()` guard, mirroring v1 `ShapedItemsSource`. Because `weak_from_this()` is empty in the constructor, all subscriptions start in `AttachSource()` / `SetLiveShaping()`, never in the constructor. Weak pointers are locked only on the owning UI thread: a lock on a worker thread could become the last strong reference and run `~SourceTable()` (and its UI-affine revokes) there — v1 `TrackFlatItemPropertyChanged` has the same rule. |
 | Empty property name | Per the `INotifyPropertyChanged` convention, an empty or null `PropertyName` means "all properties changed". It is forwarded unchanged; the coordinator treats it as a change to every dependency of the active verbs. |
-| Null record | `ItemChanged(nullptr, L"")` means "unknown items changed": an off-thread change was dropped (see *Threading*). The coordinator re-evaluates every record against the active verbs. |
 | Reuse keeps subscriptions | `Refresh()` reuses records by raw pointer or address within the same collection (root or child feed), so a `Reset` or `Refresh()` does not drop and re-create subscriptions for items that are still there. |
 | Cost trade-off | With `IsLiveShaping` true and no verbs active, every observable item is still subscribed and every `PropertyChanged` is forwarded. This is deliberate: verb changes never walk the table to (un)subscribe, and the coordinator drops events cheaply when no verb reads the property. Apps that do not need live shaping leave `IsLiveShaping` false (the default) and pay nothing. |
 
@@ -1201,77 +1198,67 @@ untracked strong reference.
 
 | Rule | Detail |
 |---|---|
-| Owning thread | `Create()` must run on the UI thread. It captures `DispatcherQueue::GetForCurrentThread()` into `m_ownerQueue` and `GetCurrentThreadId()` into `m_ownerThreadId`. All table state and both handlers belong to that thread. |
+| Owning thread | `Create()` may run on any thread. If the thread has a `DispatcherQueue`, it binds the table there; otherwise the table stays unbound. `ShapingManager::SetOwner(non-null)` calls `BindOwnerThread()`, which binds an unbound table once to the owner's (UI) thread. A bound table keeps its binding; `BindOwnerThread()` on a different thread only asserts in debug. All table state and both handlers belong to the bound thread. |
+| Binding storage | `m_binding` is a `shared_ptr<ThreadBinding>` (`queue`, `atomic<DWORD> threadId`), shared with every item lambda so they never lock the table off-thread. `threadId` 0 means unbound; `queue` is written first and `threadId` stored with release order, loaded with acquire. The single unbound → bound write needs no lock: nothing could be posted while unbound, so no stale post exists. |
 | Source collection changes | Must arrive on the owning thread, the contract every XAML collection consumer imposes. Not marshalled: marshalling would let `m_records` drift from the live collection between the event and its delivery. |
-| Item change on the owning thread | Handled inline: lock table → `OnRecordPropertyChanged` → lock record → `m_itemChanged`. |
-| Item change off-thread, queue available | `m_ownerQueue.TryEnqueue` posts a lambda holding only the two weak pointers and the property name; they are locked on the owning thread. Order is preserved per raising thread only; a record removed before the post runs fails its lock and the change is dropped (correct, since it left the table). |
-| Item change off-thread, cannot marshal | If `TryEnqueue` fails, or there is no queue and the thread differs, the change is dropped and `m_itemChangeDropped` (a `shared_ptr<atomic<bool>>`, so the lambda never locks the table off-thread) is set. |
-| Recovery from a dropped change | The next `OnRecordPropertyChanged` on the owning thread does `m_itemChangeDropped->exchange(false)`; if it was set, it first raises `ItemChanged(nullptr, L"")` so the coordinator re-evaluates every record, then delivers the current change. `Refresh()` and `SetLiveShaping(false)` clear the flag, since both already resynchronize or stop tracking. |
+| Item change inline | On the bound thread, or while unbound: lock table → `OnRecordPropertyChanged` → lock record → `m_itemChanged`. |
+| Item change off-thread, bound | `queue.TryEnqueue` posts a lambda holding only the two weak pointers and the property name; they are locked on the bound thread. Order is preserved per raising thread only; a record removed before the post runs fails its lock and the change is dropped (correct, since it left the table). Off-thread marshalling is kept as a convenience (v1 parity). |
+| Failed `TryEnqueue` | Happens only while the queue shuts down (UI thread exiting); ignored. |
+| No queue (headless or test) | Nothing is posted. The coordinator's live drain and the re-read run synchronously at the next verb or `Refresh`, never inside the app's setter. |
 | Coalescing | Not done in `SourceTable`. Repeated changes are coalesced per dispatcher turn by the coordinator (Phase 5). |
 
-**Threading review: dropped-change recovery (proposed, open).** The *cannot marshal* and
-*Recovery* rows above protect against almost nothing reachable:
+**Threading review: dropped-change recovery (decided: option B).** An earlier draft dropped an
+off-thread change it could not marshal, set `m_itemChangeDropped`, and on the next on-thread change
+raised `ItemChanged(nullptr, L"")` so the coordinator (`m_liveAllDirty`) re-evaluated every record.
+It was removed because it protected against almost nothing reachable:
 
-- When a change can be dropped:
+- When a change could be dropped:
   - `TryEnqueue` fails only once the queue is shutting down (`ShutdownQueueAsync`, UI thread
     exiting). The queue is unbounded, so a busy UI thread never fails a post. The UI thread is
-    going away, so the "next change on the owning thread" that triggers recovery never comes.
-  - No queue: `Create()` ran on a thread without a `DispatcherQueue` (a test host). The
-    coordinator's `PostLiveDrain` and resync retry have no queue either, so live shaping is broken
-    as a whole, not just the off-thread case.
-- Recovery is lazy even when reachable: `ItemChanged(nullptr)` rides in on the next on-thread
-  change, so with no further change the view stays stale until a verb or `Refresh`.
-- Nothing exercises it. v2 has no tests yet. In v1 the same mechanism
-  (`m_liveShapingChangeDropped`, `ShapedItemsSource.cpp:84–108`, `:2935`) came in with the
-  squash merge `866ba81a1c`, with no test or bug behind it. `TableView_LiveShaping_APITests` runs
-  only on the UI thread. v1 does support a no-queue test host, by restoring synchronously
-  (`ShapedItemsSource.cpp:3028`) rather than posting.
+    going away, so the "next change on the owning thread" that triggered recovery never comes.
+  - No queue: `Create()` ran on a thread without a `DispatcherQueue`. Binding at the owner (below)
+    covers the pool-thread case; a pure test host drains at the next verb or `Refresh`.
+- Recovery was lazy even when reachable: `ItemChanged(nullptr)` rode in on the next on-thread
+  change, so with no further change the view stayed stale until a verb or `Refresh`.
+- Nothing exercised it. In v1 the same mechanism (`m_liveShapingChangeDropped`,
+  `ShapedItemsSource.cpp:84–108`, `:2935`) came in with the squash merge `866ba81a1c`, with no test
+  or bug behind it. `TableView_LiveShaping_APITests` runs only on the UI thread. v1 supports a
+  no-queue test host by restoring synchronously (`ShapedItemsSource.cpp:3028`) rather than posting.
 - Platform precedent: no WinUI items control marshals data notifications.
   - TreeView's only `TryEnqueue` calls (`TreeViewItem.cpp:745`, `TreeViewList.cpp:337`) push its
     own `IsExpanded` update past layout; node and child-collection changes are assumed on the UI
     thread.
   - ListView's `CollectionView` and `CollectionViewSource` are `DependencyObject`s.
     `DependencyObject::CheckThread()` (`DependencyObject.cpp:427`) returns `RPC_E_WRONG_THREAD`
-    off-thread; source `VectorChanged` and binding `PropertyChanged` are not marshalled, and the
-    app must `DispatcherQueue.TryEnqueue` itself.
-  - v1 and v2's off-thread item marshalling is therefore a convenience beyond the platform, and
-    the dropped-change flag has no counterpart.
-- Do not require a queue in `Create()` (rejected). `TableViewSource2` is not a
-  `DependencyObject`, and `From()` is legitimately called off the UI thread: view models built in
-  `Task.Run`, headless view-model tests, sources built before any UI. A throw there would be
-  stricter than the platform and surface far from the real use.
+    off-thread; source `VectorChanged` and binding `PropertyChanged` are not marshalled.
+  - Off-thread item marshalling is therefore a convenience beyond the platform; it is kept for v1
+    parity, but the dropped-change flag has no counterpart and is gone.
+- `Create()` does not require a queue. `TableViewSource2` is not a `DependencyObject`, and
+  `From()` is legitimately called off the UI thread: view models built in `Task.Run`, headless
+  view-model tests, sources built before any UI. A throw there would be stricter than the platform
+  and surface far from the real use.
 
-Proposal:
+Decisions:
 
-1. Remove `m_itemChangeDropped`, `ItemChanged(nullptr)` and `ShapingManager::m_liveAllDirty`.
-2. Treat a failed `TryEnqueue` as shutdown and ignore it silently.
-3. Bind the thread to the owner, not to creation: capture `m_ownerQueue` and the thread id at
-   `TrySetOwner` (always the UI thread), or at the first verb when there is no owner yet.
-   Caveat: "state belongs to the creating thread" becomes "the owning thread", so a source built
-   on a pool thread is handed to the UI thread; the subscriptions taken at `Create()` need
-   re-checking (v1 has the same exposure).
-4. No owner and no queue (headless or test): drain synchronously at the next verb or `Refresh`,
-   never inside the app's setter. This is v1's test-host fallback, moved to a safe point.
-5. (open) Keep off-thread item `PropertyChanged` marshalling as a convenience (v1 parity), or
-   drop it and document the platform's UI-thread rule.
+1. `m_itemChangeDropped`, `ItemChanged(nullptr)` and `ShapingManager::m_liveAllDirty` are removed.
+2. A failed `TryEnqueue` is treated as shutdown and ignored.
+3. Thread binding uses option B (below).
+4. With no queue, live changes and re-reads are flushed synchronously at the next verb or
+   `Refresh`, never inside the app's setter (v1's test-host fallback, moved to a safe point).
+5. Off-thread item `PropertyChanged` marshalling is kept (v1 parity).
 
-Thread binding options for item 3 (open; the recovery flags stay until one is chosen):
+Thread binding options considered:
 
-- **A. Rebind at `TrySetOwner`** (`SourceTable::BindOwnerThread()`, queue and thread id in a
-  shared, lock-guarded struct read by every item lambda). Fixes a source built on a pool thread.
-  Costs: a post already queued to the old queue runs on the old thread after the rebind, so the
-  posted lambda must re-check the binding and re-post or drop; one uncontended lock per item
-  notification; "owning UI thread" wording in the lifetime rules no longer holds before an owner.
-- **B. Bind once, only from the no-queue state.** A queue captured at `Create()` is kept;
-  `TrySetOwner` on another thread warns. With no queue, `TrySetOwner` binds once to the owner's
-  thread. Nothing can have been posted while there was no queue, so A's stale-post case cannot
-  occur; only the single first write needs safe publication.
-- **C. Keep the `Create()` capture; no queue means no marshalling.** With a null queue every item
-  change is delivered inline on the raising thread, so a pool-thread-built source used on the UI
-  thread keeps working, and the binding is immutable (no lock). An off-thread change with a null
-  queue races, which is app misuse under the platform's UI-thread rule (item 5). A source created
-  on UI thread A and used on thread B still posts B's changes to A (v1's exposure); an optional
-  thread check in `TrySetOwner` can warn.
+- **B. Bind once, only from the no-queue state (chosen).** A queue captured at `Create()` is kept;
+  `BindOwnerThread()` on another thread asserts in debug. With no queue, `SetOwner` binds once to
+  the owner's thread. Nothing can have been posted while there was no queue, so there is no stale
+  post; only the single first write needs safe publication (release/acquire on `threadId`).
+- **A. Rebind at every `TrySetOwner`** (rejected). Needs an uncontended lock per item
+  notification, and a post already queued to the old queue runs on the old thread after the
+  rebind, so the posted lambda would have to re-check the binding and re-post or drop.
+- **C. Keep the `Create()` capture; no queue means no marshalling** (rejected). A source built in
+  `Task.Run` never gets a queue, so every later off-thread change is delivered inline and races
+  the UI thread.
 
 **Null and duplicate items:**
 
@@ -2651,7 +2638,7 @@ remove, reparent or expand does not reset the list.
 
 | Change | Path |
 |---|---|
-| Spec verb that reshapes (`Filter`, `GroupBy`, `ClearGroupBy`, a `Sort` change), a hierarchy verb, a `SourceTable` `Reset`/`Refresh`, out-of-sync recovery, `ItemChanged(nullptr)`, a retry after a failed apply | Bulk: `Reapply()` → `BeginReset` / swap / `EndReset` |
+| Spec verb that reshapes (`Filter`, `GroupBy`, `ClearGroupBy`, a `Sort` change), a hierarchy verb, a `SourceTable` `Reset`/`Refresh`, out-of-sync recovery, a retry after a failed apply | Bulk: `Reapply()` → `BeginReset` / swap / `EndReset` |
 | `ExpandAllGroups` / `CollapseAllGroups` / `ExpandAllRows` / `CollapseAllRows` | Bulk: `ShapedTree::SetAll*Expanded` only (no engine) |
 | Range source event with k > 1 items; an insert that adopts more than one orphan | Bulk |
 | Single-item source add, remove, replace or move (k = 1, any subtree size); live-shaping filter, sort-key or group-key change; reparent; adoption of one orphan | Surgical: `Link` / `Unlink` |
@@ -3222,10 +3209,6 @@ private:
     `ApplyItemsChanged`, which is `Rebuild(Applied(), Filter | GroupKey | Sort, changes)`: the
     re-reads limited to the dirty records, the re-sorts over all cached keys, so
     app code runs O(k) times and the result is one stable `Reset` the owner re-anchors.
-  - `ItemChanged(nullptr)` (a dropped off-thread change) sets `m_liveAllDirty`; the drain does
-    `Reapply()`. Proposed for removal: see *Threading review: dropped-change recovery* under the
-    `SourceTable` threading rules. If kept, the other full rebuilds (a `SourceTable` `Reset`, any
-    `Reapply`) must also clear `m_liveAllDirty`, or the next drain does a redundant `Reapply`.
   - Dirty-set hygiene: `OnSourceChanged` erases removed records and their descendants before the
     engine applies the change; a `SourceTable` `Reset` or any `Reapply` empties the set; a verb
     drains it synchronously first, so `Rebuild` never runs over stale keys of a dirty record;
@@ -3235,11 +3218,13 @@ private:
     keeps at most one in the queue, and the callback carries no data. `m_liveDirty` holds the
     pending set (coalesced, unordered; each entry re-reads the record's current values, so only
     the final state matters). Everything runs on the UI thread: off-thread `PropertyChanged` is
-    marshalled by `SourceTable`, so it lands after a running drain returns.
+    marshalled by `SourceTable` once bound, so it lands after a running drain returns. With no
+    queue (headless or test) nothing is posted; the next verb or `Refresh` drains synchronously,
+    never inside the app's setter (v1's test-host fallback, moved to a safe point).
   - Re-entrancy during a drain. The drain runs app code (predicates, key delegates, getters, and
     handlers of the `CollectionChanged` it raises); a property set there re-enters `OnItemChanged`
     synchronously. Implementation requirements:
-    - Clear `m_liveDrainPosted` and `m_liveAllDirty`, and move `m_liveDirty` into a local batch,
+    - Clear `m_liveDrainPosted` and move `m_liveDirty` into a local batch,
       **before** any shaping. A re-entrant change then lands in the fresh map and posts the next
       drain (next turn). Clearing the posted flag at the end would strand it until an unrelated
       event or verb.
@@ -3318,7 +3303,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
     (`MatchRecords` / `CommitRecords`: position → raw pointer → address; per-feed `MatchForRefresh`), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
     `RaiseSourceChanged` ordering, the freeze (`BeginFreeze` / `EndFreeze`, dispatch included, `m_diverged` → `Refresh`, #19), source change subscriptions, and
     `SetLiveShaping` / per-record `INotifyPropertyChanged` subscription + `ItemChanged` forwarding,
-    off-thread marshalling to `m_ownerQueue` and dropped-change recovery, and `Clear()` detach
+    off-thread marshalling through `m_binding` (`BindOwnerThread`), and `Clear()` detach
     (optional accessor reset, `m_trackerOwner` nulled, `IsDetached()` guards) with `safe_get`-only
     teardown in `UnsubscribeFromSourceChanges`.
   - `TableViewSource2.cpp`: construct `m_shapingManager` (`ShapingManager(this, items)`, which
@@ -3455,11 +3440,11 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
       projection splices (when eligible) or cached reshapes over `SourceTable::Records()` on `Reset`.
 - [x] Declare the apply scope and resync after a source change during an apply: `ResyncSource`,
       `m_resyncPosted`, `SourceTable::BeginFreeze` / `EndFreeze` (#19).
-- [x] Declare live-shaping coalescing: `m_liveDirty`, `m_liveAllDirty`, `PostLiveDrain`,
+- [x] Declare live-shaping coalescing: `m_liveDirty`, `PostLiveDrain`,
       `DrainLiveChanges` (E7).
 - [ ] Handle `SourceTable::ItemChanged` (`(SourceRecord*, propertyName)`): filter by active
       `ShapeSpec` property dependencies, coalesce per dispatcher turn, and re-evaluate affected
-      records (every record for `ItemChanged(nullptr, L"")`) without managing `INotifyPropertyChanged` subscriptions in the coordinator.
+      records without managing `INotifyPropertyChanged` subscriptions in the coordinator.
 - [ ] Implement the listener and the commit scope (`OnRows*`, `BeginCommit` / `EndCommit`): the
       owner calls (`OnResetting`, `OnShapingApplied` with the retired records of the
       `SourceChange` being handled), the listener-fault Reset and rethrow, and the counted hold
