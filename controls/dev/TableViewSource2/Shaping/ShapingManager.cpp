@@ -91,8 +91,91 @@ void ShapingManager::Refresh()
         return;
     }
 
+    if (!CanReshape())
+    {
+        // Owed at the outermost EndDeferRefresh; the table is not marked diverged, so incremental
+        // changes keep showing until then.
+        m_sourceTable->ScheduleRefresh();
+        return;
+    }
+
     // The re-read's Reset comes back through OnSourceChanged, which opens the commit scope.
     m_sourceTable->Refresh();
+}
+
+void ShapingManager::BeginDeferRefresh()
+{
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2.DeferRefresh cannot be called while the source is being shaped.");
+    }
+
+    if (m_deferDepth++ == 0)
+    {
+        m_sourceTable->BeginHoldResets();
+    }
+}
+
+void ShapingManager::EndDeferRefresh()
+{
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"A DeferRefresh handle cannot be closed while the source is being shaped.");
+    }
+
+    MUX_ASSERT(m_deferDepth > 0);
+    if (m_deferDepth == 0 || --m_deferDepth > 0)
+    {
+        return;
+    }
+
+    bool const rereadOwed = m_sourceTable->EndHoldResets();
+    if (m_sourceTable->IsDetached())
+    {
+        return;
+    }
+
+    try
+    {
+        if (rereadOwed)
+        {
+            try
+            {
+                // One re-read (it also builds a parked hierarchy); its Reset reapplies m_desired.
+                m_sourceTable->Refresh();
+            }
+            catch (...)
+            {
+                // The records are as they were (compute before commit), so the verbs made in the
+                // scope still apply to them (drift #59); the re-read's error is the one surfaced.
+                auto const error = std::current_exception();
+                try
+                {
+                    ApplyDesiredSpec();
+                }
+                catch (...)
+                {
+                }
+                std::rethrow_exception(error);
+            }
+        }
+
+        // Nothing when the spec did not change (or the re-read applied it); releases dropped
+        // delegates either way.
+        ApplyDesiredSpec();
+    }
+    catch (...)
+    {
+        PostLiveDrain();
+        throw;
+    }
+
+    PostLiveDrain();
+}
+
+bool ShapingManager::IsRefreshDeferred() const noexcept
+{
+    return m_deferDepth > 0;
 }
 
 void ShapingManager::ParentBy(winrt::TableViewKeySelector const& key, winrt::TableViewKeySelector const& parentKey)

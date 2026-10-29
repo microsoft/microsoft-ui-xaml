@@ -15,8 +15,7 @@
 #include "Shaping/ShapingManager.h"
 
 // Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
-// From() constructs a working instance; DeferRefresh throws hresult_not_implemented until its
-// milestone. Shaping state lives in ShapingManager (the coordinator);
+// From() constructs a working instance. Shaping state lives in ShapingManager (the coordinator);
 // this class validates arguments and forwards.
 //
 // Reference-tracked for the same reasons as TableViewSource: tracker_ref members let the GC walk
@@ -56,6 +55,10 @@ public:
     // Internal (not in IDL): called once by DeferRefreshHandle::Close. Forwards to
     // ShapingManager::EndDeferRefresh; no-op after teardown.
     void EndDeferRefresh();
+
+    // Internal (not in IDL): true while a commit applies. DeferRefreshHandle::Close throws then,
+    // before it marks itself closed, so the handle can still be closed after the apply.
+    bool IsApplying() const noexcept;
 
     // Forwards to ShapingManager, which forwards to SourceTable (owner of the flag and the
     // per-item subscriptions). The setter throws while an apply runs (#19).
@@ -123,8 +126,6 @@ public:
     void EndLiveShapingHold(uint64_t generation);
 
 private:
-    [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);
-
     // Runs the waiters FIFO while no owner is registered: each is popped before it runs (it
     // re-enters TrySetOwner, and one that does not claim is not retried), and collected waiters
     // are skipped. A waiter may claim synchronously; the remaining ones stay queued. Called by

@@ -190,8 +190,28 @@ void TableViewSource2::Refresh()
 
 winrt::Windows::Foundation::IClosable TableViewSource2::DeferRefresh()
 {
-    // Milestone 8.
-    ThrowNotImplemented(L"DeferRefresh");
+    if (!m_shapingManager)
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2.DeferRefresh cannot be called after the source is torn down.");
+    }
+
+    // Created first, so a failed allocation leaves nothing open.
+    auto handle = winrt::make<DeferRefreshHandle>(winrt::make_weak(static_cast<winrt::TableViewSource2>(*this)));
+    m_shapingManager->BeginDeferRefresh();
+    return handle;
+}
+
+void TableViewSource2::EndDeferRefresh()
+{
+    if (m_shapingManager)
+    {
+        m_shapingManager->EndDeferRefresh();
+    }
+}
+
+bool TableViewSource2::IsApplying() const noexcept
+{
+    return m_shapingManager && m_shapingManager->IsApplying();
 }
 
 bool TableViewSource2::IsLiveShaping() const
@@ -338,7 +358,34 @@ void TableViewSource2::RemoveOwnerReleasedWaiter(winrt::IInspectable const& wait
     });
 }
 
-void TableViewSource2::ThrowNotImplemented(wchar_t const* verb)
+DeferRefreshHandle::DeferRefreshHandle(winrt::weak_ref<winrt::TableViewSource2> source) noexcept
+    : m_source(std::move(source))
 {
-    throw winrt::hresult_not_implemented(std::wstring(L"TableViewSource2.").append(verb).append(L" is not implemented yet."));
+}
+
+void DeferRefreshHandle::Close()
+{
+    if (m_closed)
+    {
+        return;
+    }
+
+    auto const source = m_source.get();
+    if (!source)
+    {
+        m_closed = true;
+        return;
+    }
+
+    auto* const impl = winrt::get_self<::TableViewSource2>(source);
+    if (impl->IsApplying())
+    {
+        // Left open, so a later Close (after the apply) still ends the deferral.
+        throw winrt::hresult_illegal_method_call(L"A DeferRefresh handle cannot be closed while the source is being shaped.");
+    }
+
+    // Closed before the reshape: an exception from app code leaves the deferral ended (depth
+    // released), so a second Close stays a no-op.
+    m_closed = true;
+    impl->EndDeferRefresh();
 }

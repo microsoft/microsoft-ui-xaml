@@ -108,15 +108,17 @@ public:
     // SourceTable::BeginHoldResets: an incremental source change still reaches OnSourceChanged and
     // is shaped surgically with the applied spec and published at once; a source Reset is held.
     // The live-shaping drain is skipped while open (changes stay in m_liveDirty, as under a hold).
-    // End: asserts depth > 0. Inner ends only decrement. The outermost end calls
+    // End: throws while an apply runs (#19), before anything changes (drift #60); asserts depth > 0.
+    // Inner ends only decrement. The outermost end calls
     // SourceTable::EndHoldResets; if it reports a pending change (a held Reset, a Refresh() while
     // open, or a parked hierarchy), it runs SourceTable::Refresh() (one re-read that also builds a
     // pending hierarchy), whose Reset goes to Reapply() with m_desired: one reshape, one Reset.
-    // Otherwise ApplyDesiredSpec() (nothing when the spec did not change). Then PostLiveDrain if
-    // changes are pending. An exception from app code propagates (applied spec stays old,
-    // m_desired is kept, as for a verb; a re-read that fails validation leaves the table diverged
-    // for the next notification or Refresh; any other failure leaves the re-read owed, so the next
-    // commit retries it); the depth is 0 either way.
+    // Then ApplyDesiredSpec() (nothing when the spec did not change or the re-read applied it).
+    // Then PostLiveDrain if changes are pending. An exception from app code propagates (applied
+    // spec stays old, m_desired is kept, as for a verb; a re-read that fails validation leaves the
+    // table diverged for the next notification or Refresh; any other failure leaves the re-read
+    // owed, so the next commit retries it). A failed re-read still applies m_desired to the
+    // unchanged records, its own error swallowed (drift #59). The depth is 0 either way.
     void BeginDeferRefresh();
     void EndDeferRefresh();
     bool IsRefreshDeferred() const noexcept;
