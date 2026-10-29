@@ -537,15 +537,21 @@ AutomaticDragHelper::HandleDirectManipulationDraggingStarted()
     // Pen cross-slide uses the mouse/pen path, which does not store a touch pointer.
     ASSERT(!m_isHoldingCompleted || (m_spPointerPoint && m_spPointer));
 
-    // Release cross-slide viewport now
-    IFC_RETURN(m_pOwnerNoRef->DirectManipulationCrossSlideContainerCompleted());
-    if (m_isHoldingCompleted)
-    {
-        IFC_RETURN(m_pOwnerNoRef->OnTouchDragStarted(m_spPointerPoint.Get(), m_spPointer.Get()));
-    }
-
+    // OnTouchDragStarted raises DragStarting synchronously. An app handler that clears CanDrag
+    // deletes this helper, so take what the callout needs and touch no member after it.
+    ctl::ComPtr<ixp::IPointerPoint> pointerPoint = m_spPointerPoint;
+    ctl::ComPtr<xaml_input::IPointer> pointer = m_spPointer;
     m_spPointerPoint = nullptr;
     m_spPointer = nullptr;
+    const bool startTouchDrag = m_isHoldingCompleted;
+    ctl::ComPtr<UIElement> owner(m_pOwnerNoRef);
+
+    // Release cross-slide viewport now
+    IFC_RETURN(owner->DirectManipulationCrossSlideContainerCompleted());
+    if (startTouchDrag)
+    {
+        IFC_RETURN(owner->OnTouchDragStarted(pointerPoint.Get(), pointer.Get()));
+    }
 
     return S_OK;
 }
