@@ -698,9 +698,21 @@ bool TableView::SyncTableViewSource2Sort(
         if (auto const customComparer = trigger.CustomSortComparer())
         {
             bool const descending = direction == winrt::SortDirection::Descending;
-            comparer = [customComparer, descending](winrt::IInspectable const& x, winrt::IInspectable const& y)
+            comparer = [customComparer, descending](winrt::IInspectable const& x, winrt::IInspectable const& y) -> int32_t
             {
-                int32_t const result = customComparer.Compare(x, y);
+                // v1 parity (drift #69): the v1 rank adapter degrades a throwing CustomSortComparer
+                // to "equal" (CustomSortRankAdapter::SafeCompare). Without this the throw escapes
+                // the DeferRefresh close into the header's input handler.
+                int32_t result = 0;
+                try
+                {
+                    result = customComparer.Compare(x, y);
+                }
+                catch (...)
+                {
+                    OutputDebugStringW(L"TableView: CustomSortComparer threw; the pair is treated as equal.\n");
+                    return 0;
+                }
                 // Sign only: negating INT32_MIN would overflow.
                 int32_t const sign = result < 0 ? -1 : result > 0 ? 1 : 0;
                 return descending ? -sign : sign;

@@ -207,5 +207,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Descending,None", ColumnSorts(tableView), "The comparer column keeps its chevron.");
             });
         }
+
+        private sealed partial class ThrowingSortComparer : ITableViewSortComparer
+        {
+            public int CompareCount { get; private set; }
+
+            public int Compare(object left, object right)
+            {
+                CompareCount++;
+                throw new InvalidOperationException("Comparer failure.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a throwing CustomSortComparer sorted through the TableView treats pairs as equal, as with a v1 source, and leaves the source usable.")]
+        public void VerifyThrowingCustomSortComparerOnSource2IsTreatedAsEqual()
+        {
+            TableViewSource2 source = null;
+            RunOnUIThread.Execute(() => source = TableViewSource2.From(MakeShapedPeople()));
+            var tableView = LoadOwnedTable(source);
+            var comparer = new ThrowingSortComparer();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[0].CustomSortComparer = comparer;
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "The comparer sort is accepted without throwing.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(comparer.CompareCount > 0, "Precondition: the comparer ran.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, p => p.Name), "every pair compares equal, so source order stands");
+                Verify.AreEqual("Ascending,None", ColumnSorts(tableView), "The sorted column is lit.");
+
+                // The source still takes verbs.
+                source.ClearSort().Sort("Name", SortDirection.Descending);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToArray(), RowValues(tableView, p => p.Name), "the app's sort applies");
+                Verify.AreEqual("Descending,None", ColumnSorts(tableView), "The chevron follows the app's Name level.");
+            });
+        }
     }
 }
