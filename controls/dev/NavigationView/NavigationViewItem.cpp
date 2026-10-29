@@ -286,6 +286,11 @@ bool NavigationViewItem::IsInNavigationViewMenu()
 
 void NavigationViewItem::UpdateNavigationViewForChildren()
 {
+    if (!MenuItemsSource() && MenuItems().Size() == 0)
+    {
+        return;
+    }
+
     if (auto const navigationView = GetNavigationView())
     {
         if (navigationView.IsLoaded())

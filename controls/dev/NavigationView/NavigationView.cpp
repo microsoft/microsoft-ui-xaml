@@ -2478,7 +2478,8 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
             // An unrealized descendant shows the indicator on its lowest visible ancestor.
-            const bool isUnrealizedDescendant = !winrt::VisualTreeHelper::GetParent(nvi) && GetIndexPathForContainer(nvi).GetSize() > 2;
+            auto const selectedIndex = m_selectionModel.SelectedIndex();
+            const bool isUnrealizedDescendant = !winrt::VisualTreeHelper::GetParent(nvi) && selectedIndex && selectedIndex.GetSize() > 2 && m_selectionModel.SelectedItem() == nextItem;
             AnimateSelectionChanged(isUnrealizedDescendant ? FindLowestLevelContainerToDisplaySelectionIndicator() : nvi);
             RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
@@ -5398,10 +5399,9 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Items
     for (int i = 0; i < items.Count(); i++)
     {
         auto const item = items.GetAt(i);
-        auto const itemPath = winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i);
         if (item == data)
         {
-            return itemPath;
+            return winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i);
         }
         if (auto const nvi = item.try_as<winrt::NavigationViewItem>())
         {
@@ -5412,7 +5412,7 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Items
                 {
                     childItems = winrt::ItemsSourceView(children);
                 }
-                if (auto const childPath = SearchEntireTreeForIndexPath(childItems, data, itemPath))
+                if (auto const childPath = SearchEntireTreeForIndexPath(childItems, data, winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i)))
                 {
                     return childPath;
                 }
