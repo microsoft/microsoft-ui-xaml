@@ -206,6 +206,7 @@ public sealed partial class MainWindow : Window
             SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy &&
                 !initialSnapshotPending && snapshotOperation is null;
             CompareSnapshotsButton.IsEnabled = Snapshots.Count >= 2;
+            SnapshotStatus.Visibility = snapshotOperation is null ? Visibility.Collapsed : Visibility.Visible;
             SnapshotStatus.Text = snapshotOperation is not null ? Text("SnapshotCapturing") :
                 snapshot is null ? "" : Format("SnapshotSavedFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Path);
             AutomationProperties.SetItemStatus(SnapshotStatus, JsonSerializer.Serialize(new
@@ -221,6 +222,7 @@ public sealed partial class MainWindow : Window
             ConnectionStatus.Title = Text(stateKey);
             ConnectionStatus.Message = model.Detail;
             ConnectionStatus.Severity = model.State == "Failed" ? InfoBarSeverity.Error : model.State == "Connected" ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
+            ConnectionStatus.Visibility = model.IsBusy || model.State == "Failed" ? Visibility.Visible : Visibility.Collapsed;
             AutomationProperties.SetItemStatus(ConnectionStatus, model.State);
             var connection = model.Connection;
             var scope = connection?.Scope;
@@ -243,6 +245,7 @@ JsonSerializer.Serialize(new
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
             var etw = model.Etw;
+            EtwSummary.Visibility = model.EtwError is null ? Visibility.Collapsed : Visibility.Visible;
             if (model.EtwError is { } etwError)
             {
                 var message = Format("EtwUnavailable", etwError);
@@ -257,6 +260,7 @@ JsonSerializer.Serialize(new
             }
 
             var recording = model.Recording;
+            RecordingSummary.Visibility = model.RecordingError is null ? Visibility.Collapsed : Visibility.Visible;
             if (model.RecordingError is { } recordingError)
             {
                 SetLine(RecordingSummary, recordingError, recordingError);

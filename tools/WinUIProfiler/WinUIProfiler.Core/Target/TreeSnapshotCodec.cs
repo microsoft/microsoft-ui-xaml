@@ -25,12 +25,49 @@ public static class TreeSnapshotCodec
         Check(bytes.Length is > 0 and <= TapProtocol.MaximumSnapshotBytes, "Snapshot size is invalid.");
         var value = JsonSerializer.Deserialize<TreeSnapshotDocument>(bytes.Span, Options)
             ?? throw new InvalidDataException("Snapshot document is null.");
-        Check(value.SchemaVersion == 1 && value.CaptureId != Guid.Empty && value.CaptureId == captureId,
+        Check(value.SchemaVersion is 1 or 2 or 3 && value.CaptureId != Guid.Empty && value.CaptureId == captureId,
             "Snapshot capture/schema identity disagrees with its request.");
         Check(target.CreationTimeFileTime.HasValue && value.ProcessId == target.ProcessId &&
             value.CreationTimeFileTime == target.CreationTimeFileTime, "Snapshot belongs to a different process instance.");
         Check(value.QpcFrequency > 0 && value.StartQpc >= 0 && value.EndQpc >= value.StartQpc,
             "Snapshot clock interval is invalid.");
+        if (value.SchemaVersion == 2)
+        {
+            Check(value.ResourceSnapshot is null && value.LegacyMemorySnapshot is not null,
+                "Legacy memory metadata disagrees with its schema.");
+            value = value with { SchemaVersion = 3, ResourceSnapshot = value.LegacyMemorySnapshot,
+                LegacyMemorySnapshot = null };
+        }
+        Check(value.LegacyMemorySnapshot is null &&
+            (value.SchemaVersion == 1 ? value.ResourceSnapshot is null : value.ResourceSnapshot is not null),
+            "Snapshot resource metadata disagrees with its schema.");
+        if (value.ResourceSnapshot is { } resources)
+        {
+            Check(resources.StartQpc >= value.StartQpc && resources.EndQpc >= resources.StartQpc &&
+                resources.EndQpc <= value.EndQpc, "Resource snapshot interval is invalid.");
+            Check(resources.Status switch
+            {
+                "available" => resources.HResult >= 0 && resources.Values is not null,
+                "unavailable" => resources.HResult == unchecked((int)0x80004002) && resources.Values is null,
+                "failed" => resources.HResult < 0 && resources.Values is null,
+                _ => false
+            }, "Resource snapshot status/result is inconsistent.");
+            if (resources.Values is { } metrics)
+            {
+                Check(metrics.AllocatedMemory >= 0 && metrics.Resources is { Count: <= 32 },
+                    "Resource snapshot metrics/graphics counters are invalid.");
+                var indices = new HashSet<int>();
+                foreach (var resource in metrics.Resources!)
+                {
+                    Check(resource is not null && resource.Index is >= 0 and < 32 && indices.Add(resource.Index),
+                        "Graphics resource slot is invalid or duplicated.");
+                }
+                value = value with { ResourceSnapshot = resources with
+                {
+                    Values = metrics with { Resources = Array.AsReadOnly(metrics.Resources.ToArray()) }
+                }};
+            }
+        }
         Check(value.Roots is { Count: > 0 and <= 1024 } && value.XamlNodes is { Count: > 0 } &&
             value.CompositionNodes is { Count: > 0 } && value.Correlations is { Count: > 0 } &&
             value.Limitations is not null, "Snapshot requires actual roots, both trees and object correlations.");

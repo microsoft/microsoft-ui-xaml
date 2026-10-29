@@ -10,6 +10,44 @@ public enum SnapshotChange { None = 0, Added = 1, Removed = 2, Properties = 4, M
 
 public sealed record SnapshotPropertyChange(string Name, JsonElement? Before, JsonElement? After);
 
+public sealed record SnapshotResourceRow(string Metric, int? ResourceIndex, bool IsBytes, decimal? Before, decimal? After)
+{
+    public decimal? Delta => Before.HasValue && After.HasValue ? After.Value - Before.Value : null;
+}
+
+public sealed class SnapshotResourceComparison
+{
+    public IReadOnlyList<SnapshotResourceRow> Rows { get; }
+    public bool HasChanges { get; }
+
+    public SnapshotResourceComparison(SnapshotResourceCapture? before, SnapshotResourceCapture? after)
+    {
+        var old = before?.Values;
+        var current = after?.Values;
+        var rows = new List<SnapshotResourceRow>
+        {
+            new("AllocCount", null, false, old?.AllocCount, current?.AllocCount),
+            new("AllocSize", null, true, old?.AllocSize, current?.AllocSize),
+            new("AllocatedMemory", null, true, old?.AllocatedMemory, current?.AllocatedMemory),
+            new("OutstandingAllocCount", null, false, old?.OutstandingAllocCount, current?.OutstandingAllocCount),
+            new("OutstandingAllocSize", null, true, old?.OutstandingAllocSize, current?.OutstandingAllocSize)
+        };
+        var oldResources = old?.Resources.ToDictionary(resource => resource.Index) ?? [];
+        var newResources = current?.Resources.ToDictionary(resource => resource.Index) ?? [];
+        foreach (var index in oldResources.Keys.Union(newResources.Keys).Order())
+        {
+            oldResources.TryGetValue(index, out var previous);
+            newResources.TryGetValue(index, out var next);
+            rows.Add(new("TotalCreated", index, false, previous?.TotalCreated, next?.TotalCreated));
+            rows.Add(new("TotalDestroyed", index, false, previous?.TotalDestroyed, next?.TotalDestroyed));
+            rows.Add(new("LiveCount", index, false, previous?.LiveCount, next?.LiveCount));
+        }
+        Rows = rows.AsReadOnly();
+        HasChanges = before?.Status != after?.Status || before?.HResult != after?.HResult ||
+            rows.Any(row => row.Before != row.After);
+    }
+}
+
 public sealed class SnapshotNodeDiff(SnapshotTreeNode? before, SnapshotTreeNode? after,
     IReadOnlyList<SnapshotPropertyChange> properties)
 {
@@ -56,6 +94,7 @@ public sealed class SnapshotDiffData
     public SnapshotViewerData After { get; }
     public SnapshotTreeDiff Xaml { get; }
     public SnapshotTreeDiff Composition { get; }
+    public SnapshotResourceComparison Resources { get; }
 
     private SnapshotDiffData(SnapshotViewerData before, SnapshotViewerData after, CancellationToken token)
     {
@@ -64,6 +103,7 @@ public sealed class SnapshotDiffData
             throw new InvalidDataException("Snapshots must belong to the same process ID and creation time.");
         Before = before;
         After = after;
+        Resources = new(before.Document.ResourceSnapshot, after.Document.ResourceSnapshot);
         Xaml = CompareTree(before.Xaml, after.Xaml, before.Document.Roots, after.Document.Roots, token);
         Composition = CompareTree(before.Composition, after.Composition, before.Document.Roots, after.Document.Roots, token);
     }
