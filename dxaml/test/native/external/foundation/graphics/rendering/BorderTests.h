@@ -90,7 +90,23 @@ public:
 
     TEST_METHOD(AllBorderBorder)
 
+    // Regression tests for GitHub issue #12063. A XamlCompositionBrushBase that wraps a CompositionBackdropBrush
+    // used to fail fast when the element needed a mask or nine grid.
+    TEST_METHOD(BackdropXcbbRoundedBackground)
+    TEST_METHOD(BackdropXcbbRoundedBorderBrush)
+    TEST_METHOD(BackdropXcbbSquareBorderBrush)
+    TEST_METHOD(BackdropXcbbEllipseFill)
+
 private:
+    enum class BackdropXcbbScenario
+    {
+        RoundedBackground,
+        RoundedBorderBrush,
+        SquareBorderBrush,
+        EllipseFill,
+    };
+    void BackdropXcbbHelper(BackdropXcbbScenario scenario);
+
     inline Platform::String^ GetResourcesPath() const;
 
     void BorderDiscardMaskOnResizeInternal();

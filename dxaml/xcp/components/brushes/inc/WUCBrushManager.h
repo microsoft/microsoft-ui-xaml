@@ -263,12 +263,23 @@ private:
         ElementBrushProperty elementBrushProperty,
         wf::TimeSpan duration);
 
+    // DComp rejects a CompositionBackdropBrush as the Source of a mask brush or a nine grid brush. If compositionBrush
+    // is a backdrop brush, this returns an effect brush that passes the backdrop through unchanged, which is a valid
+    // Source. It reuses existingSource if that is already our wrapper around the same backdrop. Any other brush is
+    // returned as is.
+    wrl::ComPtr<WUComp::ICompositionBrush> WrapBackdropBrushForSource(
+        _In_opt_ WUComp::ICompositionBrush* compositionBrush,
+        _In_opt_ WUComp::ICompositionBrush* existingSource);
+
 private:
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
     wrl::ComPtr<WUComp::ICompositor> m_compositor;
     wrl::ComPtr<WUComp::ICompositor2> m_compositor2;
     wrl::ComPtr<WUComp::ICompositor4> m_compositor4;
     wrl::ComPtr<WUComp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
+
+    // Pass-through effect used by WrapBackdropBrushForSource. Created on first use.
+    wrl::ComPtr<WUComp::ICompositionEffectFactory> m_backdropPassThroughEffectFactory;
 
     SharedTransitionAnimations* m_sharedTransitionAnimationsNoRef{};
 

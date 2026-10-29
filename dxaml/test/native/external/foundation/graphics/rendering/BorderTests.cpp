@@ -543,6 +543,154 @@ void BorderTests::RoundedCornersWithNoChildren()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
 }
 
+// A XamlCompositionBrushBase that hands Xaml a raw CompositionBackdropBrush.
+ref class BackdropXcbb sealed : public xaml_media::XamlCompositionBrushBase
+{
+public:
+    property bool WasConnected { bool get() { return m_wasConnected; } }
+
+protected:
+    void OnConnected() override
+    {
+        m_wasConnected = true;
+        if (m_brush == nullptr)
+        {
+            auto compositor = xaml_media::CompositionTarget::GetCompositorForCurrentThread();
+            m_brush = compositor->CreateBackdropBrush();
+        }
+        this->CompositionBrush = m_brush;
+    }
+
+    void OnDisconnected() override
+    {
+        this->CompositionBrush = nullptr;
+        delete m_brush;
+        m_brush = nullptr;
+    }
+
+private:
+    Microsoft::UI::Composition::CompositionBrush^ m_brush = nullptr;
+    bool m_wasConnected = false;
+};
+
+void BorderTests::BackdropXcbbRoundedBackground()
+{
+    BackdropXcbbHelper(BackdropXcbbScenario::RoundedBackground);
+}
+
+void BorderTests::BackdropXcbbRoundedBorderBrush()
+{
+    BackdropXcbbHelper(BackdropXcbbScenario::RoundedBorderBrush);
+}
+
+void BorderTests::BackdropXcbbSquareBorderBrush()
+{
+    BackdropXcbbHelper(BackdropXcbbScenario::SquareBorderBrush);
+}
+
+void BorderTests::BackdropXcbbEllipseFill()
+{
+    BackdropXcbbHelper(BackdropXcbbScenario::EllipseFill);
+}
+
+void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    BackdropXcbb^ backdropBrush;
+    xaml_controls::Border^ border;
+    xaml_shapes::Ellipse^ ellipse;
+
+    // Assigns the brush to whichever property the scenario is testing.
+    auto setBrush = [&](xaml_media::Brush^ brush)
+    {
+        switch (scenario)
+        {
+        case BackdropXcbbScenario::RoundedBackground:
+            border->Background = brush;
+            break;
+        case BackdropXcbbScenario::RoundedBorderBrush:
+        case BackdropXcbbScenario::SquareBorderBrush:
+            border->BorderBrush = brush;
+            break;
+        case BackdropXcbbScenario::EllipseFill:
+            ellipse->Fill = brush;
+            break;
+        }
+    };
+
+    LOG_OUTPUT(L"[Rendering an element with a backdrop XamlCompositionBrushBase]");
+    RunOnUIThread([&]()
+    {
+        auto rootGrid = ref new xaml_controls::Grid();
+        rootGrid->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Red);
+        backdropBrush = ref new BackdropXcbb();
+
+        if (scenario == BackdropXcbbScenario::EllipseFill)
+        {
+            ellipse = ref new xaml_shapes::Ellipse();
+            ellipse->Width = 100;
+            ellipse->Height = 100;
+            rootGrid->Children->Append(ellipse);
+        }
+        else
+        {
+            border = ref new xaml_controls::Border();
+            border->Width = 100;
+            border->Height = 100;
+            if (scenario != BackdropXcbbScenario::SquareBorderBrush)
+            {
+                border->CornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(20);
+            }
+            if (scenario != BackdropXcbbScenario::RoundedBackground)
+            {
+                border->BorderThickness = xaml::Thickness({ 8, 8, 8, 8 });
+            }
+            rootGrid->Children->Append(border);
+        }
+
+        setBrush(backdropBrush);
+        TestServices::WindowHelper->WindowContent = rootGrid;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_TRUE(backdropBrush->WasConnected);
+    });
+
+    LOG_OUTPUT(L"[Resizing the element so the mask and nine grid are updated]");
+    RunOnUIThread([&]()
+    {
+        if (scenario == BackdropXcbbScenario::EllipseFill)
+        {
+            ellipse->Width = 150;
+        }
+        else
+        {
+            border->Width = 150;
+            if (scenario != BackdropXcbbScenario::SquareBorderBrush)
+            {
+                border->CornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(30);
+            }
+        }
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    LOG_OUTPUT(L"[Switching to a SolidColorBrush and back]");
+    RunOnUIThread([&]()
+    {
+        setBrush(ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Green));
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        setBrush(backdropBrush);
+    });
+    TestServices::WindowHelper->WaitForIdle();
+}
+
 void BorderTests::RasterizationScale()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);

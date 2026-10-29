@@ -22,6 +22,7 @@
             $(XcpPath)\components\graphics\inc;
             $(XcpPath)\components\transforms\inc;
             $(XcpPath)\components\imaging\inc;
+            $(XcpPath)\core;
             $(XcpPath)\plat\win\desktop;
             $(XcpPath)\dxaml\lib;
             $(XcpPath)\dxaml\lib\winrtgeneratedclasses;

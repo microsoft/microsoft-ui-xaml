@@ -18,6 +18,11 @@
 #include "PropertyTransitions.h"
 #include "SharedTransitionAnimations.h"
 #include "DropShadowRecipe.h"
+#include <hw/effects.h>
+#include <MuxActivationFactory.h>
+
+// Name of the source parameter in the backdrop pass-through effect. It also lets us recognize our own wrapper later.
+static constexpr wchar_t c_backdropSourceParameterName[] = L"XamlBackdropSource";
 
 SolidColorBrushTransitionState::~SolidColorBrushTransitionState()
 {
@@ -84,6 +89,7 @@ void WUCBrushManager::ReleaseDCompResources()
     m_compositor.Reset();
     m_compositor2.Reset();
     m_compositor4.Reset();
+    m_backdropPassThroughEffectFactory.Reset();
     ReleaseGraphicsDevice();
     m_wucColorBrushTransitions->clear();
     m_dropShadowBrushCache.clear();
@@ -167,7 +173,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetMaskBrush(
 
             if (compositionBrush)
             {
-                IFCFAILFAST(compositionBrush.As(&newBrushSource));
+                newBrushSource = WrapBackdropBrushForSource(compositionBrush.Get(), existingBrushSource.Get());
             }
         }
         else
@@ -276,7 +282,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetNineGridBrush(
 
         if (compositionBrush)
         {
-            IFCFAILFAST(compositionBrush.As(&newBrushSource));
+            newBrushSource = WrapBackdropBrushForSource(compositionBrush.Get(), existingBrushSource.Get());
         }
     }
     else
@@ -292,6 +298,66 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetNineGridBrush(
     wrl::ComPtr<WUComp::ICompositionBrush> nineGridBrushAsBrush;
     IFCFAILFAST(nineGridBrush.As(&nineGridBrushAsBrush));
     return nineGridBrushAsBrush;
+}
+
+wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::WrapBackdropBrushForSource(
+    _In_opt_ WUComp::ICompositionBrush* compositionBrush,
+    _In_opt_ WUComp::ICompositionBrush* existingSource)
+{
+    wrl::ComPtr<WUComp::ICompositionBrush> result(compositionBrush);
+
+    wrl::ComPtr<WUComp::ICompositionBackdropBrush> backdropBrush;
+    if (compositionBrush == nullptr
+        || FAILED(compositionBrush->QueryInterface(IID_PPV_ARGS(&backdropBrush))))
+    {
+        return result;
+    }
+
+    const wrl_wrappers::HStringReference sourceName(c_backdropSourceParameterName);
+
+    // Reuse last frame's wrapper if it already wraps this backdrop, so we don't create a new effect brush every frame.
+    // Any failure here just means the existing source isn't our wrapper.
+    wrl::ComPtr<WUComp::ICompositionEffectBrush> existingEffectBrush;
+    if (existingSource != nullptr
+        && SUCCEEDED(existingSource->QueryInterface(IID_PPV_ARGS(&existingEffectBrush))))
+    {
+        wrl::ComPtr<WUComp::ICompositionBrush> existingWrappedBrush;
+        if (SUCCEEDED(existingEffectBrush->GetSourceParameter(sourceName.Get(), &existingWrappedBrush))
+            && existingWrappedBrush.Get() == compositionBrush)
+        {
+            result = existingSource;
+            return result;
+        }
+    }
+
+    if (m_backdropPassThroughEffectFactory == nullptr)
+    {
+        wrl::ComPtr<WUComp::ICompositionEffectSourceParameterFactory> sourceParameterFactory;
+        IFCFAILFAST(MuxGetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(),
+            &sourceParameterFactory));
+
+        wrl::ComPtr<WUComp::ICompositionEffectSourceParameter> sourceParameter;
+        IFCFAILFAST(sourceParameterFactory->Create(sourceName.Get(), &sourceParameter));
+
+        // Draw a transparent color over the backdrop, which leaves the backdrop unchanged. The backdrop is the
+        // Destination (source 0).
+        auto transparentEffect = wrl::Make<ColorSourceEffect>();
+        transparentEffect->Color = { 0, 0, 0, 0 };
+
+        auto passThroughEffect = wrl::Make<CompositeEffect>();
+        passThroughEffect->Mode = D2D1_COMPOSITE_MODE_SOURCE_OVER;
+        IFCFAILFAST(sourceParameter.As(&passThroughEffect->Destination));
+        passThroughEffect->Source = transparentEffect;
+
+        IFCFAILFAST(m_compositor->CreateEffectFactory(passThroughEffect.Get(), &m_backdropPassThroughEffectFactory));
+    }
+
+    wrl::ComPtr<WUComp::ICompositionEffectBrush> effectBrush;
+    IFCFAILFAST(m_backdropPassThroughEffectFactory->CreateBrush(&effectBrush));
+    IFCFAILFAST(effectBrush->SetSourceParameter(sourceName.Get(), compositionBrush));
+    IFCFAILFAST(effectBrush.As(&result));
+    return result;
 }
 
 wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush(
