@@ -51,12 +51,31 @@ ShapedNode* ShapedTree::GetAt(uint32_t index) const
 {
     MUX_ASSERT(index < Size());
 
-    if (m_cursorNode && index == m_cursorIndex)
+    if (m_cursorNode)
     {
-        return m_cursorNode;
+        if (index == m_cursorIndex)
+        {
+            return m_cursorNode;
+        }
+
+        ShapedNode* step = nullptr;
+        if (index == m_cursorIndex + 1)
+        {
+            step = NextShown(m_cursorNode);
+        }
+        else if (index + 1 == m_cursorIndex)
+        {
+            step = PreviousShown(m_cursorNode);
+        }
+
+        if (step)
+        {
+            m_cursorNode = step;
+            m_cursorIndex = index;
+            return step;
+        }
     }
 
-    // Milestone 7 adds the index +/- 1 step through NextShown / PreviousShown.
     ShapedNode* node = const_cast<GroupNode*>(&m_root);
     uint32_t r = index;
     for (;;)
@@ -223,16 +242,7 @@ void ShapedTree::SetAllRowsExpanded(bool expanded)
     BeginReset();
     for (SourceRecord* const record : records)
     {
-        auto& flags = record->Shape.Flags;
-        if ((flags & ShapeFlags::PassesFilter) != ShapeFlags::None)
-        {
-            flags = expanded ? (flags | ShapeFlags::Expanded) : (flags & ~ShapeFlags::Expanded);
-        }
-        else
-        {
-            // A context row (F5): expanded unless OverlayCollapsed.
-            flags = expanded ? (flags & ~ShapeFlags::OverlayCollapsed) : (flags | ShapeFlags::OverlayCollapsed);
-        }
+        SetExpanded(record, expanded);
     }
 
     ComputeSubtreeCounts(&m_root);
@@ -241,6 +251,119 @@ void ShapedTree::SetAllRowsExpanded(bool expanded)
     {
         m_listener->OnRowsReset();
     }
+}
+
+void ShapedTree::SetAllGroupsExpanded(bool expanded)
+{
+    // Ungrouped: the baseline is kept for the next GroupBy, and no row changes.
+    if (m_groupLevelCount == 0)
+    {
+        m_groupExpansion.SetAll(expanded);
+        return;
+    }
+
+    BeginReset();
+    m_groupExpansion.SetAll(expanded);
+    ComputeSubtreeCounts(&m_root);
+    InvalidateCursor();
+    if (m_listener)
+    {
+        m_listener->OnRowsReset();
+    }
+}
+
+bool ShapedTree::Expand(ShapedNode* node)
+{
+    if (!IsLinked(node) || node->ShapedChildCount() == 0 || IsExpanded(node))
+    {
+        return false;
+    }
+
+    // Compute: the children's counts are valid (P6); a stale list is rebuilt here.
+    uint32_t const count = CurrentChildRows(node).Total();
+
+    SetExpanded(node, true);
+    node->VisibleDescendantCount = count;
+    ApplyCountDelta(node, static_cast<int64_t>(count));
+    InvalidateCursor();
+
+    if (count > 0)
+    {
+        if (auto const shownAt = IndexOf(node))
+        {
+            RaiseInserted(*shownAt + 1, count, false);
+        }
+    }
+    return true;
+}
+
+bool ShapedTree::Collapse(ShapedNode* node)
+{
+    if (!IsLinked(node) || node->ShapedChildCount() == 0 || !IsExpanded(node))
+    {
+        return false;
+    }
+
+    // Position first, while the rows are still counted. ChildRows is kept for the next Expand.
+    auto const shownAt = IndexOf(node);
+    uint32_t const count = node->VisibleDescendantCount;
+
+    SetExpanded(node, false);
+    node->VisibleDescendantCount = 0;
+    ApplyCountDelta(node, -static_cast<int64_t>(count));
+    InvalidateCursor();
+
+    if (shownAt && count > 0)
+    {
+        RaiseRemoved(*shownAt + 1, count, false);
+    }
+    return true;
+}
+
+bool ShapedTree::ExpandSubtree(ShapedNode* node)
+{
+    if (!IsLinked(node) || node->IsGroup())
+    {
+        return false;
+    }
+
+    return ExpandSubtreeFrom(node);
+}
+
+bool ShapedTree::Reveal(ShapedNode* node)
+{
+    // Compute: the collapsed ancestors, bottom-up. A node whose walk does not reach this root is
+    // not linked.
+    std::vector<ShapedNode*> collapsed;
+    ShapedNode* current = node;
+    for (ShapedNode* parent = node->ShapedParent(); parent; parent = parent->ShapedParent())
+    {
+        if (parent != &m_root && !IsExpanded(parent))
+        {
+            collapsed.push_back(parent);
+        }
+        current = parent;
+    }
+
+    if (current != &m_root || node == &m_root || collapsed.empty())
+    {
+        return false;
+    }
+
+    // Every one but the topmost is hidden: flag and count only, no event (P6).
+    for (size_t i = 0; i + 1 < collapsed.size(); ++i)
+    {
+        ShapedNode* const ancestor = collapsed[i];
+        uint32_t const count = CurrentChildRows(ancestor).Total();
+        SetExpanded(ancestor, true);
+        ancestor->VisibleDescendantCount = count;
+        ApplyCountDelta(ancestor, static_cast<int64_t>(count));
+    }
+
+    // The topmost is shown: one insert for every revealed row.
+    Expand(collapsed.back());
+    InvalidateCursor();
+    return true;
 }
 
 void ShapedTree::Clear() noexcept
@@ -419,6 +542,156 @@ void ShapedTree::Renumber(ShapedNode* parent, uint32_t index) noexcept
     {
         parent->ShapedChildAt(j)->IndexInParent = j;
     }
+}
+
+void ShapedTree::SetExpanded(ShapedNode* node, bool expanded)
+{
+    if (GroupNode* const group = node->AsGroup())
+    {
+        m_groupExpansion.SetExpanded(group->Identity, expanded);
+        return;
+    }
+
+    auto& flags = node->AsRecord()->Shape.Flags;
+    if ((flags & ShapeFlags::PassesFilter) != ShapeFlags::None)
+    {
+        flags = expanded ? (flags | ShapeFlags::Expanded) : (flags & ~ShapeFlags::Expanded);
+    }
+    else
+    {
+        // A context row (F5): expanded unless OverlayCollapsed.
+        flags = expanded ? (flags & ~ShapeFlags::OverlayCollapsed) : (flags | ShapeFlags::OverlayCollapsed);
+    }
+}
+
+bool ShapedTree::IsLinked(ShapedNode* node) const noexcept
+{
+    if (!node || node == &m_root)
+    {
+        return false;
+    }
+
+    ShapedNode* current = node;
+    while (ShapedNode* const parent = current->ShapedParent())
+    {
+        current = parent;
+    }
+    return current == &m_root;
+}
+
+void ShapedTree::ApplyCountDelta(ShapedNode* node, int64_t delta) noexcept
+{
+    if (delta == 0)
+    {
+        return;
+    }
+
+    ShapedNode* const parent = node->ShapedParent();
+    if (!parent->ChildRows.IsStale())
+    {
+        parent->ChildRows.Add(node->IndexInParent, static_cast<int32_t>(delta));
+    }
+    PropagateCount(parent, delta);
+}
+
+bool ShapedTree::ExpandSubtreeFrom(ShapedNode* node)
+{
+    if (!IsExpanded(node))
+    {
+        if (node->ShapedChildCount() == 0)
+        {
+            // A leaf has no rows to show; its flag is set so it opens once it has children.
+            SetExpanded(node, true);
+            return true;
+        }
+
+        // The topmost collapsed node of this branch: flags over its subtree, then one insert for
+        // the revealed rows (contiguous after node).
+        std::vector<ShapedNode*> nodes{ node };
+        for (size_t i = 0; i < nodes.size(); ++i)
+        {
+            ShapedNode* const current = nodes[i];
+            uint32_t const childCount = current->ShapedChildCount();
+            for (uint32_t j = 0; j < childCount; ++j)
+            {
+                nodes.push_back(current->ShapedChildAt(j));
+            }
+        }
+        auto const shownAt = IndexOf(node);
+
+        for (ShapedNode* const current : nodes)
+        {
+            SetExpanded(current, true);
+        }
+        ComputeSubtreeCounts(node);
+        uint32_t const count = node->VisibleDescendantCount;
+        ApplyCountDelta(node, static_cast<int64_t>(count));
+        InvalidateCursor();
+
+        if (shownAt && count > 0)
+        {
+            RaiseInserted(*shownAt + 1, count, false);
+        }
+        return true;
+    }
+
+    // Already expanded: its shown rows stay; each collapsed branch below raises its own insert.
+    bool changed = false;
+    uint32_t const childCount = node->ShapedChildCount();
+    for (uint32_t j = 0; j < childCount; ++j)
+    {
+        changed = ExpandSubtreeFrom(node->ShapedChildAt(j)) || changed;
+    }
+    return changed;
+}
+
+ShapedNode* ShapedTree::NextShown(ShapedNode* node) const noexcept
+{
+    if (node->ShapedChildCount() > 0 && IsExpanded(node))
+    {
+        return node->ShapedChildAt(0);
+    }
+
+    for (ShapedNode* current = node; current != &m_root;)
+    {
+        ShapedNode* const parent = current->ShapedParent();
+        if (!parent)
+        {
+            return nullptr;
+        }
+
+        if (current->IndexInParent + 1 < parent->ShapedChildCount())
+        {
+            return parent->ShapedChildAt(current->IndexInParent + 1);
+        }
+        current = parent;
+    }
+    return nullptr;
+}
+
+ShapedNode* ShapedTree::PreviousShown(ShapedNode* node) const noexcept
+{
+    ShapedNode* const parent = node->ShapedParent();
+    if (!parent)
+    {
+        return nullptr;
+    }
+
+    if (node->IndexInParent == 0)
+    {
+        return parent == &m_root ? nullptr : parent;
+    }
+
+    ShapedNode* previous = parent->ShapedChildAt(node->IndexInParent - 1);
+    while (uint32_t const count = previous->ShapedChildCount())
+    {
+        if (!IsExpanded(previous))
+        {
+            break;
+        }
+        previous = previous->ShapedChildAt(count - 1);
+    }
+    return previous;
 }
 
 void ShapedTree::RaiseRemoved(uint32_t index, uint32_t count, bool isMove) const noexcept

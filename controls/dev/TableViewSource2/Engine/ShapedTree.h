@@ -290,7 +290,9 @@ public:
 
     // Expands a record and every record below it. Sets the flags first, then
     // ComputeSubtreeCounts(node), O(subtree), propagates, and if shown raises one OnRowsInserted of
-    // the newly revealed rows after node. Records only: the manager never passes a group.
+    // the newly revealed rows after node. When node is already expanded, each topmost collapsed
+    // record below it does this instead (one insert per collapsed branch, drift #52). Records only:
+    // the manager never passes a group.
     bool ExpandSubtree(ShapedNode* node);
 
     // Makes node shown by expanding its collapsed ancestors (decided, #20), bottom-up: every one but
@@ -302,7 +304,8 @@ public:
 
     // One verb per axis. Each sets the state, then recomputes every count and raises one reset
     // (OnRowsResetting, then OnRowsReset).
-    // Groups: GroupExpansion::SetAll (moves the baseline). O(1) + O(n).
+    // Groups: GroupExpansion::SetAll (moves the baseline). O(1) + O(n). Ungrouped: the baseline
+    // moves and nothing is raised (drift #53).
     void SetAllGroupsExpanded(bool expanded);
     // Records: set or clear ShapeFlags::Expanded on every record, and clear or set
     // OverlayCollapsed on every context row (F5). O(n).
@@ -320,6 +323,19 @@ private:
     // Writes the bit IsExpanded reads: OverlayCollapsed for a context row, else Expanded or
     // GroupExpansion.
     void SetExpanded(ShapedNode* node, bool expanded);
+
+    // node is a non-root node whose ShapedParent walk ends at this tree's root. A record that is
+    // not placed (ParentBy exclusion, a top-level record filtered out) is not. O(depth).
+    bool IsLinked(ShapedNode* node) const noexcept;
+
+    // node's own count just changed by delta: Add it to node's entry in its shaped parent's
+    // ChildRows (skipped if stale, P7), then PropagateCount(parent, delta).
+    void ApplyCountDelta(ShapedNode* node, int64_t delta) noexcept;
+
+    // ExpandSubtree's walk: a collapsed node gets its subtree's flags, ComputeSubtreeCounts and one
+    // insert of its revealed rows; an expanded node recurses into its children, so each collapsed
+    // branch raises its own contiguous insert. Returns whether any flag changed.
+    bool ExpandSubtreeFrom(ShapedNode* node);
 
     // Walks up from parent: adds delta to the entry for the child below it in that ancestor's
     // ChildRows (Add at the child's IndexInParent; skipped if the list is stale, P7), then, if the

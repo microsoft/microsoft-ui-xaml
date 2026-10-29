@@ -793,21 +793,37 @@ void ShapingManager::OnRowsReset() noexcept
     }
 }
 
-bool ShapingManager::SetExpanded(ShapedNode* /*node*/, std::optional<bool> /*desired*/)
+bool ShapingManager::SetExpanded(ShapedNode* node, std::optional<bool> desired)
 {
-    // Milestone 7. No flat row is expandable, so ShapedRowMetadata never calls this in Milestone 1.
-    throw winrt::hresult_not_implemented(L"TableViewSource2: expansion is not implemented yet.");
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2: rows cannot be expanded or collapsed while the source is being shaped.");
+    }
+
+    // A filtered-out record has no place to count its rows in.
+    if (!node || m_sourceTable->IsDetached() || node->ShapedChildCount() == 0 || !ShapingEngine::InShapedTree(node))
+    {
+        return false;
+    }
+
+    ShapedTree& tree = m_engine.Tree();
+    bool const expand = desired.value_or(!tree.IsExpanded(node));
+    if (expand == tree.IsExpanded(node))
+    {
+        return false;
+    }
+
+    bool changed = false;
+    {
+        CommitScope scope{ *this, {} };
+        changed = expand ? tree.Expand(node) : tree.Collapse(node);
+    }
+    AfterCommit();
+    return changed;
 }
 
 void ShapingManager::SetAllExpanded(ExpansionAxis axis, bool expanded)
 {
-    // Rows only (drift #19): TableView.ExpandAllRows / CollapseAllRows on a source tree. Groups
-    // and the per-row verbs are Milestone 7.
-    if (axis != ExpansionAxis::Rows)
-    {
-        throw winrt::hresult_not_implemented(L"TableViewSource2: expansion is not implemented yet.");
-    }
-
     if (!CanRunVerb())
     {
         throw winrt::hresult_illegal_method_call(L"TableViewSource2: rows cannot be expanded or collapsed while the source is being shaped.");
@@ -820,19 +836,62 @@ void ShapingManager::SetAllExpanded(ExpansionAxis axis, bool expanded)
 
     {
         CommitScope scope{ *this, {} };
-        m_engine.Tree().SetAllRowsExpanded(expanded);
+        if (axis == ExpansionAxis::Groups)
+        {
+            m_engine.Tree().SetAllGroupsExpanded(expanded);
+        }
+        else
+        {
+            m_engine.Tree().SetAllRowsExpanded(expanded);
+        }
     }
     AfterCommit();
 }
 
-void ShapingManager::ExpandSubtree(ShapedNode* /*node*/)
+void ShapingManager::ExpandSubtree(ShapedNode* node)
 {
-    throw winrt::hresult_not_implemented(L"TableViewSource2: expansion is not implemented yet.");
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2: rows cannot be expanded or collapsed while the source is being shaped.");
+    }
+
+    if (!node || node->IsGroup() || m_sourceTable->IsDetached() || !m_sourceTable->HasHierarchy() ||
+        !ShapingEngine::InShapedTree(node))
+    {
+        return;
+    }
+
+    {
+        CommitScope scope{ *this, {} };
+        m_engine.Tree().ExpandSubtree(node);
+    }
+    AfterCommit();
 }
 
-std::optional<uint32_t> ShapingManager::Reveal(ShapedNode* /*node*/)
+std::optional<uint32_t> ShapingManager::Reveal(ShapedNode* node)
 {
-    throw winrt::hresult_not_implemented(L"TableViewSource2: Reveal is not implemented yet.");
+    if (!CanRunVerb())
+    {
+        throw winrt::hresult_illegal_method_call(L"TableViewSource2: a row cannot be revealed while the source is being shaped.");
+    }
+
+    if (!node || m_sourceTable->IsDetached() || !ShapingEngine::InShapedTree(node))
+    {
+        return std::nullopt;
+    }
+
+    ShapedTree& tree = m_engine.Tree();
+    if (!tree.IsShown(node))
+    {
+        {
+            CommitScope scope{ *this, {} };
+            tree.Reveal(node);
+        }
+        AfterCommit();
+    }
+
+    // Not linked (a ParentBy-excluded record): nothing was changed, and IndexOf is nullopt.
+    return tree.IndexOf(node);
 }
 
 void ShapingManager::BeginCommit()
