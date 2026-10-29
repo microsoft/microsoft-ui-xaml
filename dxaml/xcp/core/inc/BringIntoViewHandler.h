@@ -54,6 +54,16 @@ public:
         _In_ XFLOAT physicalPixels);
 
 //private:
+    static _Check_return_ HRESULT GetFocusedElementBoundingRect(
+        _In_ CUIElement* rootElement,
+        _In_ float rootHeightInDips,
+        _In_ bool isIHMShowing,
+        _In_ CUIElement* focusedElement,
+        _In_ CUIElement* innerScroller,
+        _Out_ XRECTF_RB& rectFocusedElementGlobal,
+        _Out_ XRECTF& rectFocusedElement,
+        _In_ bool addExtraPadding = true);
+
     static _Check_return_ HRESULT BringFocusedElementIntoView(
         _In_ CUIElement* const rootElement,
         _In_ const float rootHeightInDips,
@@ -97,6 +107,7 @@ public:
     // LayoutToWindowBounds property is set, a padding of 20 logical pixels is added on all four edges. On top of that, padding
     // are added on all four edges based on the shrunk ApplicationView.VisibleBounds size compared to the CoreWindow bounds.
     // This prevents the focused element from entering the unsafe overscan zones on XBox.
+    // When addExtraPadding is false, the 20 logical pixels are omitted but the focus visual margin is still honored.
     static _Check_return_ HRESULT GetFocusedElementBoundingRectForPadding(
         _In_ CUIElement* const rootElement,
         _In_ CUIElement* const innerScroller,
@@ -107,6 +118,7 @@ public:
         _In_ XRECTF_RB rectInnerScrollerViewportBounds,
         _In_ bool isIHMShowing,
         _In_ XTHICKNESS focusVisualMargin,
+        _In_ bool addExtraPadding,
         _Inout_ XRECTF* const focusedElementRect);
 
     static _Check_return_ HRESULT GetCaretPosition(
