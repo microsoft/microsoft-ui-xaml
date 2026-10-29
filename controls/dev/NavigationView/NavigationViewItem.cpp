@@ -44,6 +44,10 @@ NavigationViewItem::NavigationViewItem()
     SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
     // Application DragStarting handlers can defer dispatch, so end the press first.
     DragStarting({ this, &NavigationViewItem::OnDragStarting });
+    // IsEnabledChanged is raised asynchronously; input can arrive before it. Cancel item-owned presses synchronously.
+    m_isEnabledPropertyChangedRevoker = RegisterPropertyChanged(*this, winrt::Control::IsEnabledProperty(), { this, &NavigationViewItem::OnIsEnabledPropertyChanged });
+    // Leaving the tree drops capture without a reliable notification.
+    Unloaded({ this, &NavigationViewItem::OnUnloaded });
 }
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -1232,6 +1236,31 @@ void NavigationViewItem::OnDragStarting(const winrt::UIElement&, const winrt::Dr
         // Pen release can omit PointerCaptureLost. DragStarting is a terminal path too.
         ReleaseCapturedPointer();
     }
+}
+
+void NavigationViewItem::CancelItemOwnedInteraction()
+{
+    if (m_captureOwnerIsItem)
+    {
+        m_isPressed = false;
+        m_isPointerOver = false;
+        ResetTrackedPointerId();
+        ReleaseCapturedPointer();
+        UpdateVisualState(true);
+    }
+}
+
+void NavigationViewItem::OnIsEnabledPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    if (!IsEnabled())
+    {
+        CancelItemOwnedInteraction();
+    }
+}
+
+void NavigationViewItem::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    CancelItemOwnedInteraction();
 }
 
 void NavigationViewItem::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
