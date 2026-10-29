@@ -252,5 +252,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Descending,None", ColumnSorts(tableView), "The chevron follows the app's Name level.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the chevron stays on the sorted column when another column shares its sort member path.")]
+        public void VerifySortIndicatorKeepsLitColumnWithSharedPath()
+        {
+            TableViewSource2 source = null;
+            RunOnUIThread.Execute(() => source = TableViewSource2.From(MakeShapedPeople()));
+            var tableView = LoadOwnedTable(source);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[1].SortMemberPath = "Name";
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "The column sort is accepted.");
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, p => p.Name), "sorted by Name");
+                Verify.AreEqual("None,Ascending", ColumnSorts(tableView), "The sorted column is lit, not the first Name column.");
+
+                // An app re-sort on the same path keeps the lit column.
+                source.ClearSort().Sort("Name", SortDirection.Descending);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("None,Descending", ColumnSorts(tableView), "The chevron stays on the lit column."));
+
+            // With nothing lit, the first matching column takes it.
+            RunOnUIThread.Execute(() => source.ClearSort());
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("Ascending,None", ColumnSorts(tableView), "The first matching column is lit."));
+        }
     }
 }

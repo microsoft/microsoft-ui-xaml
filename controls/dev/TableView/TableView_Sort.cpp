@@ -1172,7 +1172,18 @@ void TableView::ReconcileSortStateWithSource2()
     winrt::SortDirection matchedDirection = winrt::SortDirection::None;
     if (primary && primary->SortKind == SortSpec::Kind::Path && !primary->Path.empty())
     {
-        if (auto const columns = Columns())
+        // Two columns can share a sort member path; the lit one keeps the chevron while its path
+        // still matches, so a control sort on the second is not moved to the first.
+        if (m_sortedColumns.size() == 1)
+        {
+            if (auto const lit = m_sortedColumns[0].get(); lit && lit.GetSortMemberPathCore() == primary->Path)
+            {
+                matchedColumn = lit;
+                matchedDirection = primary->Direction;
+            }
+        }
+
+        if (auto const columns = Columns(); !matchedColumn && columns)
         {
             for (auto const& column : columns)
             {
