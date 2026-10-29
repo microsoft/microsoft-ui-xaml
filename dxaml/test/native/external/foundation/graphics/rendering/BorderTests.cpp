@@ -549,6 +549,14 @@ ref class BackdropXcbb sealed : public xaml_media::XamlCompositionBrushBase
 public:
     property bool WasConnected { bool get() { return m_wasConnected; } }
 
+    // Hands Xaml a different backdrop brush instance while connected.
+    void ReplaceBackdrop()
+    {
+        auto compositor = xaml_media::CompositionTarget::GetCompositorForCurrentThread();
+        m_brush = compositor->CreateBackdropBrush();
+        this->CompositionBrush = m_brush;
+    }
+
 protected:
     void OnConnected() override
     {
@@ -593,6 +601,11 @@ void BorderTests::BackdropXcbbEllipseFill()
     BackdropXcbbHelper(BackdropXcbbScenario::EllipseFill);
 }
 
+void BorderTests::BackdropXcbbTextBlockForeground()
+{
+    BackdropXcbbHelper(BackdropXcbbScenario::TextBlockForeground);
+}
+
 void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -600,6 +613,7 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
     BackdropXcbb^ backdropBrush;
     xaml_controls::Border^ border;
     xaml_shapes::Ellipse^ ellipse;
+    xaml_controls::TextBlock^ textBlock;
 
     // Assigns the brush to whichever property the scenario is testing.
     auto setBrush = [&](xaml_media::Brush^ brush)
@@ -615,6 +629,9 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
             break;
         case BackdropXcbbScenario::EllipseFill:
             ellipse->Fill = brush;
+            break;
+        case BackdropXcbbScenario::TextBlockForeground:
+            textBlock->Foreground = brush;
             break;
         }
     };
@@ -632,6 +649,13 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
             ellipse->Width = 100;
             ellipse->Height = 100;
             rootGrid->Children->Append(ellipse);
+        }
+        else if (scenario == BackdropXcbbScenario::TextBlockForeground)
+        {
+            textBlock = ref new xaml_controls::TextBlock();
+            textBlock->Text = L"Backdrop text";
+            textBlock->FontSize = 40;
+            rootGrid->Children->Append(textBlock);
         }
         else
         {
@@ -666,6 +690,10 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
         {
             ellipse->Width = 150;
         }
+        else if (scenario == BackdropXcbbScenario::TextBlockForeground)
+        {
+            textBlock->Text = L"More backdrop text";
+        }
         else
         {
             border->Width = 150;
@@ -674,6 +702,13 @@ void BorderTests::BackdropXcbbHelper(BackdropXcbbScenario scenario)
                 border->CornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(30);
             }
         }
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    LOG_OUTPUT(L"[Replacing the backdrop brush instance]");
+    RunOnUIThread([&]()
+    {
+        backdropBrush->ReplaceBackdrop();
     });
     TestServices::WindowHelper->WaitForIdle();
 

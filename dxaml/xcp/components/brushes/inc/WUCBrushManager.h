@@ -265,11 +265,14 @@ private:
 
     // DComp rejects a CompositionBackdropBrush as the Source of a mask brush or a nine grid brush. If compositionBrush
     // is a backdrop brush, this returns an effect brush that passes the backdrop through unchanged, which is a valid
-    // Source. It reuses existingSource if that is already our wrapper around the same backdrop. Any other brush is
+    // Source. If existingSource is already one of these wrappers, it's updated and reused. Any other brush is
     // returned as is.
     wrl::ComPtr<WUComp::ICompositionBrush> WrapBackdropBrushForSource(
         _In_opt_ WUComp::ICompositionBrush* compositionBrush,
         _In_opt_ WUComp::ICompositionBrush* existingSource);
+
+    // True if brush is a backdrop pass-through wrapper created by WrapBackdropBrushForSource.
+    static bool IsBackdropWrapper(_In_opt_ WUComp::ICompositionBrush* brush);
 
 private:
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;

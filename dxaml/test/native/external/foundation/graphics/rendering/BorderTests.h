@@ -96,6 +96,7 @@ public:
     TEST_METHOD(BackdropXcbbRoundedBorderBrush)
     TEST_METHOD(BackdropXcbbSquareBorderBrush)
     TEST_METHOD(BackdropXcbbEllipseFill)
+    TEST_METHOD(BackdropXcbbTextBlockForeground)
 
 private:
     enum class BackdropXcbbScenario
@@ -104,6 +105,7 @@ private:
         RoundedBorderBrush,
         SquareBorderBrush,
         EllipseFill,
+        TextBlockForeground,
     };
     void BackdropXcbbHelper(BackdropXcbbScenario scenario);
 

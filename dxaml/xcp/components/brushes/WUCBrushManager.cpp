@@ -21,8 +21,11 @@
 #include <hw/effects.h>
 #include <MuxActivationFactory.h>
 
-// Name of the source parameter in the backdrop pass-through effect. It also lets us recognize our own wrapper later.
+// Source parameter name for the backdrop pass-through effect.
 static constexpr wchar_t c_backdropSourceParameterName[] = L"XamlBackdropSource";
+
+// Comment set on the pass-through effect brushes we create, so we can recognize them later without probing app brushes.
+static constexpr wchar_t c_backdropWrapperComment[] = L"Microsoft.UI.Xaml.BackdropPassThrough";
 
 SolidColorBrushTransitionState::~SolidColorBrushTransitionState()
 {
@@ -315,19 +318,21 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::WrapBackdropBrushForSour
 
     const wrl_wrappers::HStringReference sourceName(c_backdropSourceParameterName);
 
-    // Reuse last frame's wrapper if it already wraps this backdrop, so we don't create a new effect brush every frame.
-    // Any failure here just means the existing source isn't our wrapper.
+    // Reuse last frame's wrapper if there is one, so we don't create a new effect brush every frame. Only brushes with
+    // our comment are ours. Other effect brushes (e.g. an AcrylicBrush the element used before) are left alone.
     wrl::ComPtr<WUComp::ICompositionEffectBrush> existingEffectBrush;
-    if (existingSource != nullptr
-        && SUCCEEDED(existingSource->QueryInterface(IID_PPV_ARGS(&existingEffectBrush))))
+    wrl::ComPtr<WUComp::ICompositionBrush> existingWrappedBrush;
+    if (IsBackdropWrapper(existingSource)
+        && SUCCEEDED(existingSource->QueryInterface(IID_PPV_ARGS(&existingEffectBrush)))
+        && SUCCEEDED(existingEffectBrush->GetSourceParameter(sourceName.Get(), &existingWrappedBrush)))
     {
-        wrl::ComPtr<WUComp::ICompositionBrush> existingWrappedBrush;
-        if (SUCCEEDED(existingEffectBrush->GetSourceParameter(sourceName.Get(), &existingWrappedBrush))
-            && existingWrappedBrush.Get() == compositionBrush)
+        if (existingWrappedBrush.Get() != compositionBrush)
         {
-            result = existingSource;
-            return result;
+            IFCFAILFAST(existingEffectBrush->SetSourceParameter(sourceName.Get(), compositionBrush));
         }
+
+        result = existingSource;
+        return result;
     }
 
     if (m_backdropPassThroughEffectFactory == nullptr)
@@ -356,8 +361,29 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::WrapBackdropBrushForSour
     wrl::ComPtr<WUComp::ICompositionEffectBrush> effectBrush;
     IFCFAILFAST(m_backdropPassThroughEffectFactory->CreateBrush(&effectBrush));
     IFCFAILFAST(effectBrush->SetSourceParameter(sourceName.Get(), compositionBrush));
+
+    // The comment only enables reuse, so a failure here isn't fatal.
+    wrl::ComPtr<WUComp::ICompositionObject2> effectBrushAsObject2;
+    if (SUCCEEDED(effectBrush.As(&effectBrushAsObject2)))
+    {
+        IGNOREHR(effectBrushAsObject2->put_Comment(wrl_wrappers::HStringReference(c_backdropWrapperComment).Get()));
+    }
+
     IFCFAILFAST(effectBrush.As(&result));
     return result;
+}
+
+/* static */ bool WUCBrushManager::IsBackdropWrapper(_In_opt_ WUComp::ICompositionBrush* brush)
+{
+    wrl::ComPtr<WUComp::ICompositionObject2> brushAsObject2;
+    if (brush == nullptr || FAILED(brush->QueryInterface(IID_PPV_ARGS(&brushAsObject2))))
+    {
+        return false;
+    }
+
+    wrl_wrappers::HString comment;
+    return SUCCEEDED(brushAsObject2->get_Comment(comment.GetAddressOf()))
+        && comment == wrl_wrappers::HStringReference(c_backdropWrapperComment);
 }
 
 wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush(
