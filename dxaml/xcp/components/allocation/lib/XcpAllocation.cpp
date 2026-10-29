@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <atomic>
 
-#include "XamlTelemetry.h"
+#include "XamlProfilerTracing.h"
 
 using namespace XcpAllocation;
 
@@ -50,84 +50,49 @@ _Check_return_ size_t XcpAllocation::OSMemoryGetBlockSize(_In_opt_ const void *p
     return size == static_cast<SIZE_T>(-1) ? 0 : size;
 }
 
-#if DBG
-#define COUNT_ALLOC 1
-#endif
-
-#if TRACE_ALLOC
-#define COUNT_ALLOC 1
-#endif
-
-#if COUNT_ALLOC && defined(XAMLPROFILER_ENABLED)
-#define COUNT_OUTSTANDING_ALLOC 1
-#endif
-
-#if COUNT_ALLOC
 std::atomic<size_t> g_allocCount = 0;
 std::atomic<size_t> g_allocSize = 0;
 std::atomic<size_t> g_deallocCount = 0;
-#endif
-
-#if COUNT_OUTSTANDING_ALLOC
 std::atomic<size_t> g_outstandingAllocCount = 0;
 std::atomic<size_t> g_outstandingAllocSize = 0;
-#endif
 
-#if COUNT_OUTSTANDING_ALLOC
-namespace
+static void RecordOutstandingAllocation(_In_ const void *pAddress)
 {
-    void RecordOutstandingAllocation(_In_ const void *pAddress)
-    {
-        const size_t cSize = XcpAllocation::OSMemoryGetBlockSize(pAddress);
-        g_outstandingAllocCount.fetch_add(1, std::memory_order_relaxed);
-        g_outstandingAllocSize.fetch_add(cSize, std::memory_order_relaxed);
-    }
+    const size_t cSize = XcpAllocation::OSMemoryGetBlockSize(pAddress);
+    g_outstandingAllocCount.fetch_add(1, std::memory_order_relaxed);
+    g_outstandingAllocSize.fetch_add(cSize, std::memory_order_relaxed);
 }
-#endif
 
 size_t XcpAllocation::GetAllocationCount()
 {
-#if COUNT_ALLOC
     return g_allocCount.load(std::memory_order_relaxed);
-#else
-    return 0;
-#endif
 }
 
 size_t XcpAllocation::GetAllocationSize()
 {
-#if COUNT_ALLOC
     return g_allocSize.load(std::memory_order_relaxed);
-#else
-    return 0;
-#endif
 }
 
 size_t XcpAllocation::GetDeallocationCount()
 {
-#if COUNT_ALLOC
     return g_deallocCount.load(std::memory_order_relaxed);
-#else
-    return 0;
-#endif
 }
 
-size_t XcpAllocation::GetOutstandingAllocationCount()
+XcpAllocation::AllocationSnapshot XcpAllocation::GetAllocationSnapshot() noexcept
 {
-#if COUNT_OUTSTANDING_ALLOC
-    return g_outstandingAllocCount.load(std::memory_order_relaxed);
-#else
-    return 0;
-#endif
-}
-
-size_t XcpAllocation::GetOutstandingAllocationSize()
-{
-#if COUNT_OUTSTANDING_ALLOC
-    return g_outstandingAllocSize.load(std::memory_order_relaxed);
-#else
-    return 0;
-#endif
+    AllocationSnapshot snapshot{};
+    snapshot.allocationCountsAvailable = XamlProfilerTracing::IsAllocationProfilingEnabled();
+    snapshot.outstandingAllocationCountsAvailable = snapshot.allocationCountsAvailable;
+    if (snapshot.allocationCountsAvailable)
+    {
+        snapshot.allocCount = GetAllocationCount();
+        snapshot.allocSize = GetAllocationSize();
+        snapshot.outstandingAllocCount = g_outstandingAllocCount.load(std::memory_order_relaxed);
+        snapshot.outstandingAllocSize = g_outstandingAllocSize.load(std::memory_order_relaxed);
+    }
+    snapshot.memoryTrackingEnabled = g_memoryTrackingEnabled;
+    snapshot.allocatedMemory = InterlockedCompareExchange64(&g_allocatedMemory, 0, 0);
+    return snapshot;
 }
 
 uint64_t XcpAllocation::GetHeapHandle()
@@ -176,14 +141,16 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
      void *pAddress = NULL;
 
     EnsureHeap();
+    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
 
     pAddress = HeapAlloc(ghHeap, 0, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
-#if COUNT_OUTSTANDING_ALLOC
-        RecordOutstandingAllocation(pAddress);
-#endif
+        if (profilerEnabled)
+        {
+            RecordOutstandingAllocation(pAddress);
+        }
     }
     else
     {
@@ -192,19 +159,11 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
         XAMLTerminateProcessOnMemoryExhaustion(cSize);
     }
 
-#if COUNT_ALLOC
-    g_allocCount.fetch_add(1, std::memory_order_relaxed);
-    g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
-#endif
-
-#if TRACE_ALLOC
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "HeapAlloc_OSMemoryAllocateFailFast",
-        TraceLoggingUInt64(cSize, "cSize"),
-        TraceLoggingUInt64(GetAllocationCount(), "AllocCount"),
-        TraceLoggingUInt64(GetAllocationSize(), "AllocSize"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
+    if (profilerEnabled)
+    {
+        g_allocCount.fetch_add(1, std::memory_order_relaxed);
+        g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
+    }
 
     return pAddress;
 }
@@ -214,14 +173,16 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
     void *pAddress = NULL;
 
     EnsureHeap();
+    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
 
     pAddress = HeapAlloc(ghHeap, HEAP_ZERO_MEMORY, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
-#if COUNT_OUTSTANDING_ALLOC
-        RecordOutstandingAllocation(pAddress);
-#endif
+        if (profilerEnabled)
+        {
+            RecordOutstandingAllocation(pAddress);
+        }
     }
     else
     {
@@ -230,19 +191,11 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
         XAMLTerminateProcessOnMemoryExhaustion(cSize);
     }
 
-#if COUNT_ALLOC
-    g_allocCount.fetch_add(1, std::memory_order_relaxed);
-    g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
-#endif
-
-#if TRACE_ALLOC
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "HeapAlloc_OSMemoryAllocateZeroMemoryFailFast",
-        TraceLoggingUInt64(cSize, "cSize"),
-        TraceLoggingUInt64(GetAllocationCount(), "AllocCount"),
-        TraceLoggingUInt64(GetAllocationSize(), "AllocSize"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
+    if (profilerEnabled)
+    {
+        g_allocCount.fetch_add(1, std::memory_order_relaxed);
+        g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
+    }
 
     return pAddress;
 }
@@ -252,28 +205,22 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
     void* pAddress = NULL;
 
     EnsureHeap();
+    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
 
-#if COUNT_ALLOC
-    g_allocCount.fetch_add(1, std::memory_order_relaxed);
-    g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
-#endif
-
-#if TRACE_ALLOC
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "HeapAlloc_OSMemoryAllocateNoFailFast",
-        TraceLoggingUInt64(cSize, "cSize"),
-        TraceLoggingUInt64(GetAllocationCount(), "AllocCount"),
-        TraceLoggingUInt64(GetAllocationSize(), "AllocSize"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
+    if (profilerEnabled)
+    {
+        g_allocCount.fetch_add(1, std::memory_order_relaxed);
+        g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
+    }
 
     pAddress = HeapAlloc(ghHeap, 0, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
-#if COUNT_OUTSTANDING_ALLOC
-        RecordOutstandingAllocation(pAddress);
-#endif
+        if (profilerEnabled)
+        {
+            RecordOutstandingAllocation(pAddress);
+        }
     }
 
     return pAddress;
@@ -282,19 +229,10 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
 _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize)
 {
     EnsureHeap();
-
-#if TRACE_ALLOC
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "HeapReAlloc_OSMemoryResize",
-        TraceLoggingUInt64(cSize, "cSize"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
+    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
 
     const bool trackMemory = g_memoryTrackingEnabled;
-    bool needBlockSize = trackMemory;
-#if COUNT_OUTSTANDING_ALLOC
-    needBlockSize = true;
-#endif
+    const bool needBlockSize = trackMemory || profilerEnabled;
 
     size_t cOldSize = 0;
     if (needBlockSize && pAddress)
@@ -322,8 +260,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         UpdateAllocatedMemory(static_cast<INT64>(cSize) - static_cast<INT64>(cOldSize));
     }
 
-#if COUNT_OUTSTANDING_ALLOC
-    if (newAddress)
+    if (profilerEnabled && newAddress)
     {
         const size_t cNewSize = XcpAllocation::OSMemoryGetBlockSize(newAddress);
         if (cNewSize >= cOldSize)
@@ -335,7 +272,6 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
             g_outstandingAllocSize.fetch_sub(cOldSize - cNewSize, std::memory_order_relaxed);
         }
     }
-#endif
 
     return newAddress;
 }
@@ -343,12 +279,10 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
 void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 {
     EnsureHeap();
+    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
 
     const bool trackMemory = g_memoryTrackingEnabled;
-    bool needBlockSize = trackMemory;
-#if COUNT_OUTSTANDING_ALLOC
-    needBlockSize = true;
-#endif
+    const bool needBlockSize = trackMemory || profilerEnabled;
 
     size_t cSize = 0;
     if (needBlockSize && pAddress)
@@ -364,23 +298,13 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 
     HeapFree(ghHeap, 0, pAddress);
 
-#if COUNT_ALLOC
-    g_deallocCount.fetch_add(1, std::memory_order_relaxed);
-#endif
-
-#if COUNT_OUTSTANDING_ALLOC
-    if (pAddress != nullptr)
+    if (profilerEnabled)
     {
-        g_outstandingAllocCount.fetch_sub(1, std::memory_order_relaxed);
-        g_outstandingAllocSize.fetch_sub(cSize, std::memory_order_relaxed);
+        g_deallocCount.fetch_add(1, std::memory_order_relaxed);
+        if (pAddress != nullptr)
+        {
+            g_outstandingAllocCount.fetch_sub(1, std::memory_order_relaxed);
+            g_outstandingAllocSize.fetch_sub(cSize, std::memory_order_relaxed);
+        }
     }
-#endif
-
-#if TRACE_ALLOC
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "HeapFree_OSMemoryFree",
-        TraceLoggingUInt64(GetDeallocationCount(), "DeallocCount"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
-
 }

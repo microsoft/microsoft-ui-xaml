@@ -4,11 +4,42 @@
 #pragma once
 
 #include <TraceLoggingInterop.h>
+#include <atomic>
+#include <cstdint>
+#include <evntrace.h>
 
-// XamlProfiler instrumentation is compiled when XAMLPROFILER_ENABLED is
-// defined by the build's XamlProfilerEnabled setting. This can include
+namespace XcpAllocation
+{
+    struct AllocationSnapshot
+    {
+        uint64_t allocCount; // Profiled allocation calls, including failed non-fail-fast calls; excludes reallocations.
+        uint64_t allocSize; // Cumulative requested bytes for those allocation calls; excludes reallocations.
+        int64_t allocatedMemory; // Nonnegative byte estimate used by the managed-runtime GC heuristic, independent of profiling.
+        uint64_t outstandingAllocCount; // Successful profiled allocations minus non-null profiled frees; transitions can cause underflow.
+        uint64_t outstandingAllocSize; // Net actual heap bytes (HeapSize), including realloc deltas; transitions can cause underflow.
+        bool allocationCountsAvailable; // Profiling was enabled when read; otherwise allocCount and allocSize are zero.
+        bool outstandingAllocationCountsAvailable; // Outstanding fields are populated; does not imply a complete live-heap baseline.
+        bool memoryTrackingEnabled; // The independent managed-runtime GC allocation heuristic is enabled.
+    };
+
+    AllocationSnapshot GetAllocationSnapshot() noexcept;
+}
+
+// Allocation profiling is available in every build. Other XamlProfiler instrumentation
+// is compiled when XAMLPROFILER_ENABLED is defined by XamlProfilerEnabled. This can include
 // fre/Release builds. Call sites are compile-time guarded, and event
 // emission is controlled by runtime ETW enablement.
+class XamlProfilerLogging : public wil::TraceLoggingProvider
+{
+    #pragma warning (suppress : 6387)
+    IMPLEMENT_TRACELOGGING_CLASS_WITH_MICROSOFT_TELEMETRY_AND_CALLBACK(
+        XamlProfilerLogging, "Microsoft-Windows-XAML-Profiler",
+        (0xa1b2c3d4, 0xe5f6, 0x4a5b, 0x9c, 0x8d, 0x7e, 0x6f, 0x5a, 0x4b, 0x3c, 0x2d));
+
+public:
+    ~XamlProfilerLogging();
+};
+
 #ifdef XAMLPROFILER_ENABLED
 
 #include "XamlTelemetry.h"
@@ -32,6 +63,8 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
 // measured on demand. 0 when obj is null. Defined in uielement.cpp alongside XamlProfilerGetPeerHandle.
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept;
 
+#endif // XAMLPROFILER_ENABLED
+
 // TraceLogging provider for XAML Profiler tree-tracking events.
 // These events allow an out-of-process profiler to reconstruct and diff the logical tree,
 // visual tree, and composition tree over the lifetime of the host process.
@@ -39,16 +72,28 @@ uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 // Provider GUID: {A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D}
 // Provider Name: "Microsoft-Windows-XAML-Profiler"
 
-#pragma warning (suppress : 6387)
-DECLARE_TRACELOGGING_CLASS(XamlProfilerLogging, "Microsoft-Windows-XAML-Profiler",
-    (0xa1b2c3d4, 0xe5f6, 0x4a5b, 0x9c, 0x8d, 0x7e, 0x6f, 0x5a, 0x4b, 0x3c, 0x2d));
-
 class XamlProfilerTracing final : public TelemetryBase
 {
+    inline static std::atomic<bool> g_profilerEnabled{false};
+
     #pragma warning (suppress : 6387)
     IMPLEMENT_TELEMETRY_CLASS(XamlProfilerTracing, XamlProfilerLogging);
 
 public:
+
+    static void EnableAllocationProfiling(bool enabled) noexcept
+    {
+        // Preserve the counters and their original arithmetic across profiling transitions.
+        // Allocation/free pairs spanning a transition are not balanced.
+        g_profilerEnabled.store(enabled, std::memory_order_relaxed);
+    }
+
+    static bool IsAllocationProfilingEnabled() noexcept
+    {
+        return g_profilerEnabled.load(std::memory_order_relaxed);
+    }
+
+#ifdef XAMLPROFILER_ENABLED
 
     // =====================================================================
     // Logical Tree Events
@@ -112,18 +157,6 @@ public:
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool, IsLive,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    // Snapshot of XAML allocator-owned CPU heap blocks. This excludes GPU texture backing and
-    // process allocations owned by other components/runtimes.
-    DEFINE_TRACELOGGING_EVENT_PARAM7(XamlHeapSnapshot,
-        uint64_t, HeapHandle,
-        bool,     IsPrivateHeap,
-        uint64_t, OutstandingBytes,
-        uint64_t, OutstandingAllocationCount,
-        uint64_t, CumulativeAllocatedBytes,
-        uint64_t, CumulativeAllocationCount,
-        uint64_t, CumulativeDeallocationCount,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
@@ -324,7 +357,24 @@ public:
     // No GPU memory usage event: the DirectX kernel traces each process's usage and budget on every
     // change (Microsoft-Windows-DxgKrnl VidMmProcessUsageChange and VidMmProcessBudgetChange), with
     // the same values IDXGIAdapter3::QueryVideoMemoryInfo returns.
+#endif // XAMLPROFILER_ENABLED
 };
+
+inline void NTAPI XamlProfilerLogging::Callback(
+    const GUID*, ULONG control, UCHAR, ULONGLONG, ULONGLONG, EVENT_FILTER_DESCRIPTOR*, void*)
+{
+    if (control == EVENT_CONTROL_CODE_ENABLE_PROVIDER || control == EVENT_CONTROL_CODE_DISABLE_PROVIDER)
+    {
+        XamlProfilerTracing::EnableAllocationProfiling(control == EVENT_CONTROL_CODE_ENABLE_PROVIDER);
+    }
+}
+
+inline XamlProfilerLogging::~XamlProfilerLogging()
+{
+    XamlProfilerTracing::EnableAllocationProfiling(false);
+}
+
+#ifdef XAMLPROFILER_ENABLED
 
 // Element-scoped events are TraceLogging events on the existing Microsoft-Windows-XAML provider
 // {531a35ab-63ce-4bcf-aa98-f88c7a89e455}, through the same XamlTelemetryLogging registration that
