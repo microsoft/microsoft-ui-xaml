@@ -74,9 +74,233 @@ void SourceTable::AttachSource(winrt::Windows::Foundation::IInspectable const& s
 {
     m_sourceAccessor.emplace(m_trackerOwner, source);
 
-    // Milestone 1 reads once and re-reads on Refresh(); SubscribeToSourceChanges() lands in
-    // Milestone 2.
+    // Read first: a From() that fails validation leaves no handler on the app's collection.
     Refresh();
+    SubscribeToSourceChanges();
+}
+
+void SourceTable::SubscribeToSourceChanges()
+{
+    using ObserveKind = CollectionAccessor2::ObserveKind;
+    std::weak_ptr<SourceTable> weakThis = weak_from_this();
+
+    switch (m_sourceAccessor->GetObserveKind())
+    {
+    case ObserveKind::NotifyCollectionChanged:
+        m_sourceEventToken = m_sourceAccessor->AsNotifyCollectionChanged().CollectionChanged(
+            [weakThis](auto const&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+            {
+                if (auto const self = weakThis.lock())
+                {
+                    self->OnSourceCollectionChanged(args);
+                }
+            });
+        break;
+
+    case ObserveKind::ObservableVector:
+        m_sourceEventToken = m_sourceAccessor->AsObservableVector().VectorChanged(
+            [weakThis](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+            {
+                if (auto const self = weakThis.lock())
+                {
+                    self->OnSourceVectorChanged(args);
+                }
+            });
+        break;
+
+    case ObserveKind::BindableObservableVector:
+        m_sourceEventToken = m_sourceAccessor->AsBindableObservableVector().VectorChanged(
+            [weakThis](auto const&, winrt::Windows::Foundation::IInspectable const&)
+            {
+                if (auto const self = weakThis.lock())
+                {
+                    self->OnSourceBindableVectorChanged();
+                }
+            });
+        break;
+
+    default:
+        break;
+    }
+}
+
+void SourceTable::UnsubscribeFromSourceChanges() noexcept
+{
+    if (!m_sourceAccessor || !m_sourceEventToken.value)
+    {
+        return;
+    }
+
+    using ObserveKind = CollectionAccessor2::ObserveKind;
+    auto const token = std::exchange(m_sourceEventToken, {});
+
+    try
+    {
+        // safe_get: a collected source is skipped.
+        switch (m_sourceAccessor->GetObserveKind())
+        {
+        case ObserveKind::NotifyCollectionChanged:
+            if (auto const source = m_sourceAccessor->AsNotifyCollectionChanged(true))
+            {
+                source.CollectionChanged(token);
+            }
+            break;
+
+        case ObserveKind::ObservableVector:
+            if (auto const source = m_sourceAccessor->AsObservableVector(true))
+            {
+                source.VectorChanged(token);
+            }
+            break;
+
+        case ObserveKind::BindableObservableVector:
+            if (auto const source = m_sourceAccessor->AsBindableObservableVector(true))
+            {
+                source.VectorChanged(token);
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
+void SourceTable::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    using Action = winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    if (IsDetached())
+    {
+        return;
+    }
+
+    auto const action = args.Action();
+    auto const newItems = args.NewItems();
+    auto const oldItems = args.OldItems();
+    int32_t const newIndex = args.NewStartingIndex();
+    int32_t const oldIndex = args.OldStartingIndex();
+    auto const size = static_cast<int32_t>(m_records.size());
+
+    // Apply only a single-item change whose positions and old item match the table.
+    auto const oneOf = [](auto const& items) { return items && items.Size() == 1; };
+    auto const recordIs = [this](int32_t index, auto const& items)
+    {
+        return TryFindByItem(items.GetAt(0)) == m_records[index].get();
+    };
+
+    bool isReset = true;
+    switch (action)
+    {
+    case Action::Add:
+        isReset = !oneOf(newItems) || newIndex < 0 || newIndex > size;
+        break;
+    case Action::Remove:
+        isReset = !oneOf(oldItems) || oldIndex < 0 || oldIndex >= size || !recordIs(oldIndex, oldItems);
+        break;
+    case Action::Replace:
+        isReset = !oneOf(newItems) || !oneOf(oldItems) || oldIndex < 0 || oldIndex >= size ||
+            newIndex != oldIndex || !recordIs(oldIndex, oldItems);
+        break;
+    case Action::Move:
+        isReset = !oneOf(oldItems) || oldIndex < 0 || oldIndex >= size || newIndex < 0 || newIndex >= size ||
+            !recordIs(oldIndex, oldItems);
+        break;
+    default:
+        break;
+    }
+
+    if (!AdmitChange(isReset))
+    {
+        return;
+    }
+
+    switch (action)
+    {
+    case Action::Add:
+        InsertAt(static_cast<uint32_t>(newIndex), newItems.GetAt(0));
+        break;
+    case Action::Remove:
+        RemoveAt(static_cast<uint32_t>(oldIndex));
+        break;
+    case Action::Replace:
+        ReplaceAt(static_cast<uint32_t>(oldIndex), newItems.GetAt(0));
+        break;
+    case Action::Move:
+        Move(static_cast<uint32_t>(oldIndex), static_cast<uint32_t>(newIndex));
+        break;
+    default:
+        break;
+    }
+
+    DrainPendingChanges();
+}
+
+void SourceTable::OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    using Change = winrt::Windows::Foundation::Collections::CollectionChange;
+
+    if (IsDetached())
+    {
+        return;
+    }
+
+    auto const change = args.CollectionChange();
+    auto const size = static_cast<uint32_t>(m_records.size());
+
+    // Index is not read for a Reset: some implementations throw from it.
+    uint32_t index = 0;
+    winrt::Windows::Foundation::IInspectable item{ nullptr };
+    bool isReset = true;
+    switch (change)
+    {
+    case Change::ItemInserted:
+        index = args.Index();
+        isReset = index > size || !m_sourceAccessor->TryGetAt(index, item);
+        break;
+    case Change::ItemRemoved:
+        index = args.Index();
+        isReset = index >= size;
+        break;
+    case Change::ItemChanged:
+        index = args.Index();
+        isReset = index >= size || !m_sourceAccessor->TryGetAt(index, item);
+        break;
+    default:
+        break;
+    }
+
+    if (!AdmitChange(isReset))
+    {
+        return;
+    }
+
+    switch (change)
+    {
+    case Change::ItemInserted:
+        InsertAt(index, item);
+        break;
+    case Change::ItemRemoved:
+        RemoveAt(index);
+        break;
+    case Change::ItemChanged:
+        ReplaceAt(index, item);
+        break;
+    default:
+        break;
+    }
+
+    DrainPendingChanges();
+}
+
+void SourceTable::OnSourceBindableVectorChanged()
+{
+    // IBindableObservableVector carries no detail: always a re-read (or skipped while frozen or
+    // held). AdmitChange(true) never asks the caller to apply anything.
+    (void)AdmitChange(true);
 }
 
 void SourceTable::Refresh()
@@ -266,6 +490,9 @@ void SourceTable::Clear()
     // Handlers first: from here on no consumer reads Item or Identity().
     m_sourceChanged = nullptr;
     m_itemChanged = nullptr;
+
+    // Before anything is released: no notification reaches a half-cleared table.
+    UnsubscribeFromSourceChanges();
 
     if (m_hierarchy)
     {
