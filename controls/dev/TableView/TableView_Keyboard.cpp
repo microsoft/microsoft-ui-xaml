@@ -2307,25 +2307,9 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
         return row;
     }
 
-    if (m_currentCellRow >= 0)
+    if (auto const remembered = FindRememberedEntryRowInternal())
     {
-        // m_currentCellRow is a bare index that reshapes don't renumber, so follow the remembered item.
-        auto const rememberedItem = m_currentItem.get();
-        winrt::IInspectable itemAtRememberedRow{ nullptr };
-        auto const stillTheSameRecord =
-            rememberedItem &&
-            TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
-            SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
-
-        // Realized rows only, so this never realizes or scrolls; a gone, off-screen or disabled item
-        // falls back to the viewport edge row.
-        auto const remembered = stillTheSameRecord
-            ? GetRealizedRowAt(m_currentCellRow)
-            : FindRealizedRowForItem(rememberedItem);
-        if (remembered && remembered.IsEnabled())
-        {
-            return remembered;
-        }
+        return remembered;
     }
 
     // XAML aims at a cache row outside the viewport, which would scroll; match ItemsView instead.
@@ -2335,6 +2319,29 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
     }
 
     return row;
+}
+
+winrt::TableViewRow TableView::FindRememberedEntryRowInternal()
+{
+    if (m_currentCellRow < 0)
+    {
+        return nullptr;
+    }
+
+    // m_currentCellRow is a bare index that reshapes don't renumber, so follow the remembered item.
+    auto const rememberedItem = m_currentItem.get();
+    winrt::IInspectable itemAtRememberedRow{ nullptr };
+    auto const stillTheSameRecord =
+        rememberedItem &&
+        TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
+        SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
+
+    // Realized rows only, so this never realizes or scrolls; a gone, off-screen or disabled item
+    // falls back to the viewport edge row.
+    auto const remembered = stillTheSameRecord
+        ? GetRealizedRowAt(m_currentCellRow)
+        : FindRealizedRowForItem(rememberedItem);
+    return remembered && remembered.IsEnabled() ? remembered : nullptr;
 }
 
 winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
@@ -2366,7 +2373,27 @@ bool TableView::TryRedirectBandEntryToViewport(
     {
         return false;
     }
-    if (index >= repeater.GetElementIndex(first) && index <= repeater.GetElementIndex(last))
+    const int32_t firstIndex = repeater.GetElementIndex(first);
+    const int32_t lastIndex = repeater.GetElementIndex(last);
+
+    // Resume the last focused row while it is in view; a row scrolled away stays put.
+    if (auto const remembered = FindRememberedEntryRowInternal())
+    {
+        const int32_t rememberedIndex = repeater.GetElementIndex(remembered);
+        if (rememberedIndex >= firstIndex && rememberedIndex <= lastIndex)
+        {
+            if (rememberedIndex == index)
+            {
+                return false;
+            }
+            if (TryRedirectBandEntryTo(remembered, args))
+            {
+                return true;
+            }
+        }
+    }
+
+    if (index >= firstIndex && index <= lastIndex)
     {
         if (target.try_as<winrt::TableViewGroupHeader>())
         {
@@ -2375,8 +2402,16 @@ bool TableView::TryRedirectBandEntryToViewport(
         return false;
     }
 
+    return TryRedirectBandEntryTo(direction == winrt::FocusNavigationDirection::Previous ? last : first, args);
+}
+
+bool TableView::TryRedirectBandEntryTo(
+    winrt::UIElement const& edge,
+    winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+{
+    winrt::DependencyObject const selfObject = *this;
+
     // Land at row level; the redirected row's own GettingFocus re-enters the column cursor's cell.
-    auto const edge = direction == winrt::FocusNavigationDirection::Previous ? last : first;
     auto const edgeRow = edge.try_as<winrt::TableViewRow>();
     auto const edgeRowImpl = edgeRow ? winrt::get_self<TableViewRow>(edgeRow) : nullptr;
     const bool edgeWasCellLevel = edgeRowImpl && edgeRowImpl->IsCellLevelInternal();

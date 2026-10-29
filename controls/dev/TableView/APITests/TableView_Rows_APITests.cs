@@ -467,8 +467,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => GetCellPeer(RequireFirstRow(tableView), 1).SetFocus());
+            // The cell cursor is armed on a row scrolled out of view, so Tab entry does not resume it.
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+            RunOnUIThread.Execute(() =>
+            {
+                var index = GetFirstFullyVisibleIndex(tableView);
+                var row = GetRowsRepeater(tableView).TryGetElement(index) as TableViewRow
+                    ?? GetRowsRepeater(tableView).TryGetElement(index + 1) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: a row is visible.");
+                GetCellPeer(row, 1).SetFocus();
+            });
             SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
 
             RunOnUIThread.Execute(() =>
             {

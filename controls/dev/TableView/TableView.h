@@ -384,10 +384,14 @@ public:
         winrt::DependencyObject const& oldFocusedElement,
         winrt::FocusNavigationDirection direction);
 
-    // Tab from another band onto a row or group header outside the viewport lands on the
-    // viewport edge row or group header instead. Returns true when focus was redirected.
+    // Tab from another band lands on the last focused row while it is in view; otherwise a row or
+    // group header outside the viewport lands on the viewport edge row or group header instead.
+    // Returns true when focus was redirected.
     bool TryRedirectBandEntryToViewport(
         winrt::UIElement const& target,
+        winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
+    bool TryRedirectBandEntryTo(
+        winrt::UIElement const& element,
         winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
 
     static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
@@ -407,6 +411,7 @@ public:
     void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
 
     winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
+    winrt::TableViewRow FindRememberedEntryRowInternal();
 
     winrt::hstring GetContainerIdentityInternal(winrt::UIElement const& container)
     {
