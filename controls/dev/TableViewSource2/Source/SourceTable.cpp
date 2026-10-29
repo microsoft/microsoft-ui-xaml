@@ -25,9 +25,9 @@ namespace
     constexpr wchar_t c_nullKeySelectorMessage[] =
         L"TableViewSource2.ParentBy: keySelector and parentKeySelector are required.";
 
-            constexpr wchar_t c_nullChildrenSelectorMessage[] =
-                L"TableViewSource2.ChildrenBy: childrenSelector is required.";
-        }
+    constexpr wchar_t c_nullChildrenSelectorMessage[] =
+        L"TableViewSource2.ChildrenBy: childrenSelector is required.";
+}
 
 std::shared_ptr<SourceTable> SourceTable::Create(
     ITrackerHandleManager const* owner,

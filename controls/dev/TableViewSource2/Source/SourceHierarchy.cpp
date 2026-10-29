@@ -1211,7 +1211,7 @@ void ChildCollectionsHierarchy::SubscribeToChildChanges(ISourceHierarchyHost& ho
     // this strategy only while it is still the host's current one.
     auto const weakHost = host.WeakHost();
     auto const threadCheck = host.MakeThreadCheck();
-    SourceHierarchy const* const self = this;
+    uint64_t const generation = Generation();
     SourceRecordWeakPtr const owner = feed.Owner;
 
     try
@@ -1220,13 +1220,13 @@ void ChildCollectionsHierarchy::SubscribeToChildChanges(ISourceHierarchyHost& ho
         {
         case ObserveKind::NotifyCollectionChanged:
             feed.EventToken = feed.Accessor->AsNotifyCollectionChanged().CollectionChanged(
-                [weakHost, threadCheck, self, owner](auto const&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+                [weakHost, threadCheck, generation, owner](auto const&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
                 {
                     threadCheck();
                     if (auto const locked = weakHost.lock())
                     {
                         SourceHierarchy* const current = locked->CurrentHierarchy();
-                        if (current && current == self)
+                        if (current && current->Generation() == generation)
                         {
                             static_cast<ChildCollectionsHierarchy*>(current)->OnChildCollectionChanged(*locked, owner, args);
                         }
@@ -1236,13 +1236,13 @@ void ChildCollectionsHierarchy::SubscribeToChildChanges(ISourceHierarchyHost& ho
 
         case ObserveKind::ObservableVector:
             feed.EventToken = feed.Accessor->AsObservableVector().VectorChanged(
-                [weakHost, threadCheck, self, owner](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+                [weakHost, threadCheck, generation, owner](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
                 {
                     threadCheck();
                     if (auto const locked = weakHost.lock())
                     {
                         SourceHierarchy* const current = locked->CurrentHierarchy();
-                        if (current && current == self)
+                        if (current && current->Generation() == generation)
                         {
                             static_cast<ChildCollectionsHierarchy*>(current)->OnChildVectorChanged(*locked, owner, args);
                         }
@@ -1252,13 +1252,13 @@ void ChildCollectionsHierarchy::SubscribeToChildChanges(ISourceHierarchyHost& ho
 
         case ObserveKind::BindableObservableVector:
             feed.EventToken = feed.Accessor->AsBindableObservableVector().VectorChanged(
-                [weakHost, threadCheck, self, owner](auto const&, winrt::Windows::Foundation::IInspectable const&)
+                [weakHost, threadCheck, generation, owner](auto const&, winrt::Windows::Foundation::IInspectable const&)
                 {
                     threadCheck();
                     if (auto const locked = weakHost.lock())
                     {
                         SourceHierarchy* const current = locked->CurrentHierarchy();
-                        if (current && current == self)
+                        if (current && current->Generation() == generation)
                         {
                             static_cast<ChildCollectionsHierarchy*>(current)->OnChildBindableVectorChanged(*locked, owner);
                         }
@@ -1373,9 +1373,10 @@ void ChildCollectionsHierarchy::OnChildCollectionChanged(
         return;
     }
 
+    std::exception_ptr error;
     if (action == Action::Add)
     {
-        InsertChild(host, owner, feed, static_cast<uint32_t>(newIndex), newItems.GetAt(0));
+        error = InsertChild(host, owner, feed, static_cast<uint32_t>(newIndex), newItems.GetAt(0));
     }
     else
     {
@@ -1383,6 +1384,10 @@ void ChildCollectionsHierarchy::OnChildCollectionChanged(
     }
 
     host.DrainPendingChanges();
+    if (error)
+    {
+        std::rethrow_exception(error);
+    }
 }
 
 void ChildCollectionsHierarchy::OnChildVectorChanged(
@@ -1432,9 +1437,10 @@ void ChildCollectionsHierarchy::OnChildVectorChanged(
         return;
     }
 
+    std::exception_ptr error;
     if (change == Change::ItemInserted)
     {
-        InsertChild(host, owner, feed, index, item);
+        error = InsertChild(host, owner, feed, index, item);
     }
     else
     {
@@ -1442,6 +1448,10 @@ void ChildCollectionsHierarchy::OnChildVectorChanged(
     }
 
     host.DrainPendingChanges();
+    if (error)
+    {
+        std::rethrow_exception(error);
+    }
 }
 
 void ChildCollectionsHierarchy::OnChildBindableVectorChanged(ISourceHierarchyHost& host, SourceRecordWeakPtr const&)
@@ -1450,7 +1460,7 @@ void ChildCollectionsHierarchy::OnChildBindableVectorChanged(ISourceHierarchyHos
     (void)host.AdmitChange(true);
 }
 
-void ChildCollectionsHierarchy::InsertChild(
+std::exception_ptr ChildCollectionsHierarchy::InsertChild(
     ISourceHierarchyHost& host,
     SourceRecordPtr const& owner,
     ChildFeed& feed,
@@ -1483,10 +1493,8 @@ void ChildCollectionsHierarchy::InsertChild(
     std::vector<SourceRecordPtr> removed;
     host.RaiseSourceChanged(SourceChangeKind::Add, nullptr, owner.get(), 0, index, added, removed);
 
-    if (error)
-    {
-        std::rethrow_exception(error);
-    }
+    // The caller drains the owed re-read first, then rethrows.
+    return error;
 }
 
 void ChildCollectionsHierarchy::RemoveChild(ISourceHierarchyHost& host, SourceRecord* owner, ChildFeed& feed, uint32_t index)
@@ -1495,7 +1503,7 @@ void ChildCollectionsHierarchy::RemoveChild(ISourceHierarchyHost& host, SourceRe
     feed.Records.erase(feed.Records.begin() + index);
 
     SourceRecord* const raw = record.get();
-    auto& siblings = owner->Children;
+    auto& siblings = host.SiblingsOf(owner);
     siblings.erase(std::remove(siblings.begin(), siblings.end(), raw), siblings.end());
     raw->Parent = nullptr;
 

@@ -228,8 +228,16 @@ public:
     // and keys. Teardown-safe: no app calls, revokes through safe_get. Idempotent.
     virtual void Release(ISourceHierarchyHost& host) noexcept = 0;
 
+    uint64_t Generation() const noexcept { return m_generation; }
+
 protected:
-    SourceHierarchy() = default;
+    SourceHierarchy() : m_generation(++s_lastGeneration) {}
+
+private:
+    // Unique per strategy: a stale event handler compares it, so a new strategy allocated at a
+    // freed one's address is never mistaken for it. UI thread only.
+    static inline uint64_t s_lastGeneration = 0;
+    uint64_t const m_generation;
 };
 
 // Appends record and its source subtree, pre-order (SourceChange::Added for an insert).
@@ -428,8 +436,9 @@ private:
     void TakeFeed(ISourceHierarchyHost& host, SourceRecord const* owner, std::vector<SourceRecordPtr>& removed);
 
     // One validated child Add / Remove in feed (owned by owner), raised as Add / Remove with
-    // NewParent / OldParent = owner.
-    void InsertChild(
+    // NewParent / OldParent = owner. InsertChild returns the first selector error (the tree is
+    // consistent); the caller drains pending changes and then rethrows it.
+    std::exception_ptr InsertChild(
         ISourceHierarchyHost& host,
         SourceRecordPtr const& owner,
         ChildFeed& feed,
