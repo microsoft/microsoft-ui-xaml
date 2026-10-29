@@ -28,9 +28,18 @@ internal static class XamlEventSubscription
 
     internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink)
     {
-        ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(sink);
+        Match(source, processId, (data, provider, owner) => sink(Capture(data, provider, owner)));
+    }
 
+    // Calls match for each event Subscribe delivers, with its provider and the process it belongs to, without copying
+    // it. TraceEvent reuses the event object after the call.
+    internal static void Match(TraceEventDispatcher source, int? processId, Action<TraceEvent, XamlProvider, int> match)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(match);
+
+        IgnoreOtherProviders(source);
         source.Dynamic.All += data =>
         {
             if (data.ProviderGuid == XamlProviders.DxgKrnl)
@@ -40,7 +49,7 @@ internal static class XamlEventSubscription
                 if ((int)data.ID is VidMmProcessBudgetChange or VidMmProcessUsageChange &&
                     PayloadProcessId(data) is { } owner && (processId is null || owner == processId))
                 {
-                    sink(Capture(data, XamlProvider.DxgKrnl, owner));
+                    match(data, XamlProvider.DxgKrnl, owner);
                 }
 
                 return;
@@ -56,8 +65,52 @@ internal static class XamlEventSubscription
                 return;
             }
 
-            sink(Capture(data, provider, data.ProcessID));
+            match(data, provider, data.ProcessID);
         };
+    }
+
+    // The dynamic parser asks TDH to describe each type of event that no template handles, and TDH asks WMI about a
+    // classic event, such as the kernel's in a WPR trace: seconds the first time a process reads such a trace. A type
+    // TDH cannot describe is asked about again at each of its events. Handlers for such events run in the order they
+    // were registered, so this one, registered before the parser's, gives each type from another provider a template
+    // that does nothing, and the parser never sees it.
+    private static void IgnoreOtherProviders(TraceEventDispatcher source)
+    {
+        var services = (ITraceParserServices)source;
+        var ignored = new HashSet<(Guid, ushort)>();
+        services.RegisterUnhandledEvent(unknown =>
+        {
+            var classic = unknown.IsClassicProvider;
+            var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
+            if (provider == XamlProviders.DxgKrnl || XamlProviders.TryGet(provider, out _))
+            {
+                return false;
+            }
+
+            // TraceEvent finds a classic event's template by its ID plus its opcode.
+            var id = (ushort)((int)unknown.ID + (classic ? (int)unknown.Opcode : 0));
+            if (id == (ushort)TraceEventID.Illegal || !ignored.Add((provider, id)))
+            {
+                return false;
+            }
+
+            services.RegisterEventTemplate(new IgnoredEvent(provider, id));
+            return true;
+        });
+    }
+
+    private sealed class IgnoredEvent(Guid provider, ushort id)
+        : TraceEvent(id, 0, null, Guid.Empty, 0, null, provider, null)
+    {
+        public override string[] PayloadNames => [];
+
+        public override object? PayloadValue(int index) => null;
+
+        protected override Delegate? Target
+        {
+            get => null;
+            set { }
+        }
     }
 
     private static int? PayloadProcessId(TraceEvent data)
@@ -80,7 +133,7 @@ internal static class XamlEventSubscription
         }
     }
 
-    private static ProfilerEvent Capture(TraceEvent data, XamlProvider provider, int processId)
+    internal static ProfilerEvent Capture(TraceEvent data, XamlProvider provider, int processId)
     {
 #pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
         var timestampQpc = data.TimeStampQPC;

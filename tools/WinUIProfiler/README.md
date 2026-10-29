@@ -35,9 +35,9 @@ connection work, joins polling and disconnects the TAP without killing the targe
 Unavailable and warm-up measurements remain labelled gaps, never invented zeros.
 
 The chart visuals, legends and searchable target-selection dialog are declared
-in XAML. Executable browsing uses
+in XAML. Executable and trace file browsing use
 `Microsoft.Windows.Storage.Pickers.FileOpenPicker`, including when elevated;
-it does not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
+they do not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
 picker preserves the existing target input.
 
 `WinUIProfiler.Core\Ingestion\NativeMetricAbi.cs` mirrors the fixed-width C ABI
@@ -51,7 +51,8 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file. The Frames tab shows its frames and
+GPU memory events for it, to a session file. It can also read them from a
+recorded trace (`.etl`) into a session file. The Frames tab shows its frames and
 the Elements tab its UI elements.
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
@@ -83,7 +84,8 @@ target PID, creation time, runtime path and latest hello. Errors and timeouts
 remain visible; connecting to a non-WinUI process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
-silently elevated.
+silently elevated. Select **Recorded trace (.etl)** to read a recorded trace
+instead (see "Recorded, from a trace file" below).
 
 ## Tree snapshots
 
@@ -220,8 +222,9 @@ wrote 116,000 to 138,000 events, 70 to 75 percent from Microsoft-Windows-XAML
 and nearly all the rest from Microsoft-Windows-XAML-Diagnostics: a 6 to 7 MB
 session file, with no events lost or dropped.
 
-Reading ETW needs an elevated process, or membership in the local Performance
-Log Users group.
+Reading ETW live, or recording a trace, needs an elevated process, or
+membership in the local Performance Log Users group. Reading a trace file does
+not.
 
 ### Live, from the app
 
@@ -270,8 +273,9 @@ whose profiler process no longer exists. To stop one by hand, find it with
 
 ### Session files
 
-While connected, the app saves every event it receives to a SQLite file, one
-per connection, in `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
+While connected, or while it reads a trace, the app saves every event it
+receives to a SQLite file, one per connection or trace read, in
+`%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
 `<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
@@ -366,11 +370,12 @@ The writer also records which frame each UI-thread event belongs to
 
 ### Frames tab
 
-The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
-file once a second while connected: only the frames that changed since the last
-read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
-the tab reads the file again. **Open session file...** shows a saved file
-instead, in this tab and the Elements tab, until the next connection.
+The app's Frames tab (`Views\FramesView.xaml`) reads the session file of the
+connection, or of the trace being read, once a second until the connection or
+the reading ends: only the frames that changed since the last read
+(`SessionFile.ReadChangedFrames`). When the writer trims the oldest events, the
+tab reads the file again. **Open session file...** shows a saved file instead,
+in this tab and the Elements tab, until the next connection or trace read.
 
 - Each frame shows when it was drawn (the end of its drawing tick), how long
   the drawing tick took (the bar is full at 50 ms; a warning icon marks more
@@ -394,9 +399,9 @@ session file, in the order they were first seen, with their type and name,
 address, when an event first and last mentioned them, and how many events do.
 The search box keeps elements whose type, name or address contains the text.
 Selecting an element shows its history: the events that mention it, 100 per
-page, each with the frame it belongs to. While connected, the tab reads the
-file once a second while it is shown, keeping the list's scroll position and
-selection.
+page, each with the frame it belongs to. While connected or reading a trace,
+the tab reads the file once a second while it is shown, keeping the list's
+scroll position and selection.
 
 Snapshots don't record the runtime's element addresses, only each XAML
 object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
@@ -441,6 +446,42 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
 & $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
+
+The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
+trace (.etl)** as the connection mode, then type the trace's path or browse for
+it. The app lists the processes with XAML events in the trace, most events
+first, with their event counts and the trace times of their first and last
+events, and selects the process if there is only one. A process is named only
+when the trace has the kernel's process events, as a WPR trace has. **Open
+trace** reads the selected process's events into a new session file, named
+after the process, or after the trace when the process has no name. The events
+go through the same pipeline and processors as a live session's, so the file
+holds the same events, UI elements and frames as one `record` writes from the
+trace, and the Frames and Elements tabs follow it as it grows.
+
+- A reader thread reads the file in its order and posts the process's events to
+  the processing thread in batches of 4,096. When 32 batches are queued, as
+  many events as a live session's queue holds, the reader waits instead of
+  dropping events, so no event of the process is dropped, and the connection
+  panel's dropped count stays 0. Its lost count is the number of events ETW
+  lost while the trace was recorded, of any process. As in a live session, the
+  500 MB limit can still delete the oldest events from the session file (see
+  Session files above); the panel then says from when the file is complete.
+- ETW delivers a trace's events in timestamp order, merging the processors'
+  buffers, but events with the same timestamp on different processors can come
+  in any order. The events keep the file's order; the connection panel
+  counts the process's events whose timestamp is earlier than the event before
+  them as out of order. In the traces measured, there were none.
+- The connection panel shows how much of the trace has been read. **Stop**
+  ends the reading, as does closing the app: the events already read are
+  stored, so the session file holds the process's events from the start of the
+  trace to about where the reading stopped.
+- Events of other providers, such as the kernel's in a WPR trace, are skipped
+  without being decoded, in the CLI too. On the machine measured, listing the
+  processes of a 17.9-second WPR trace of the WinUI 3 Gallery took about a
+  second, and reading the app's 101,281 events less than two.
+- A trace has no running process, so there are no live metrics or tree
+  snapshots for it.
 
 ## Limitations
 

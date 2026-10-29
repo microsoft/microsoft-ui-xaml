@@ -50,10 +50,11 @@
                         <ComboBoxItem x:Uid="UnpackagedMode" />
                         <ComboBoxItem x:Uid="PackagedMode" />
                         <ComboBoxItem x:Uid="AttachMode" />
+                        <ComboBoxItem x:Uid="TraceMode" />
                     </ComboBox>
                     <TextBox x:Name="TargetText" x:Uid="Target" Grid.Column="1" TextChanged="Target_TextChanged" />
                     <Button x:Name="Browse" x:Uid="Browse" Grid.Column="2" VerticalAlignment="Bottom" Click="Browse_Click" />
-                    <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnSpacing="12">
+                    <Grid x:Name="LaunchOptions" Grid.Row="1" Grid.ColumnSpan="3" ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
@@ -65,6 +66,15 @@
                                    Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact" />
                     </Grid>
                     <CheckBox x:Name="Trust" x:Uid="Trust" Grid.Row="2" Grid.ColumnSpan="3" />
+                    <StackPanel x:Name="TraceOptions" Grid.Row="1" Grid.ColumnSpan="3" Spacing="4" Visibility="Collapsed">
+                        <ComboBox x:Name="TraceProcessList" x:Uid="TraceProcess" HorizontalAlignment="Stretch"
+                                  SelectionChanged="TraceProcess_SelectionChanged" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ProgressRing x:Name="TraceScanProgress" Width="16" Height="16" IsActive="False"
+                                          AutomationProperties.AccessibilityView="Raw" />
+                            <TextBlock x:Name="TraceScanStatus" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                    </StackPanel>
                 </Grid>
             </Expander>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" Margin="0,8,0,0">
@@ -80,6 +90,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
                 <InfoBar x:Name="ConnectionStatus" x:Uid="ConnectionStatus" IsOpen="True" IsClosable="False" />
+                <ProgressBar x:Name="TraceProgress" Minimum="0" Maximum="1" Visibility="Collapsed" />
                 <TextBlock x:Name="ConnectionIdentity" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <TextBlock x:Name="EtwSummary" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <TextBlock x:Name="RecordingSummary" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
@@ -135,13 +146,14 @@
             <TabViewItem x:Uid="LiveMetricsTab" IsClosable="False">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="12" Padding="0,8,8,0">
+                        <TextBlock x:Name="TraceMetricsNote" x:Uid="TraceMetricsNote" TextWrapping="Wrap" Visibility="Collapsed" />
                         <views:MetricChart x:Name="UtilizationChart" />
                         <views:MetricChart x:Name="MemoryChart" />
                         <TextBlock x:Uid="MetricLimitations" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
                     </StackPanel>
                 </ScrollViewer>
             </TabViewItem>
-            <TabViewItem x:Uid="FramesTab" IsClosable="False">
+            <TabViewItem x:Name="FramesTab" x:Uid="FramesTab" IsClosable="False">
                 <views:FramesView x:Name="FramesPanel" />
             </TabViewItem>
             <TabViewItem x:Name="ElementsTab" x:Uid="ElementsTab" IsClosable="False">

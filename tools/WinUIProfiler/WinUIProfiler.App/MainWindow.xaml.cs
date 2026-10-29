@@ -12,6 +12,7 @@ using WinUIProfiler.App.Services;
 using WinUIProfiler.App.ViewModels;
 using WinUIProfiler.App.Views;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Target;
 
@@ -19,6 +20,8 @@ namespace WinUIProfiler.App;
 
 public sealed partial class MainWindow : Window
 {
+    private const int TraceModeIndex = 3;
+    private static readonly TimeSpan TraceScanDelay = TimeSpan.FromMilliseconds(400);
     private readonly LiveSessionViewModel model = new();
     private readonly SessionSource session = new();
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
@@ -33,6 +36,10 @@ public sealed partial class MainWindow : Window
     private bool? settingsFoldedFor;
     private bool initialSnapshotPending;
     private CancellationTokenSource? snapshotOperation;
+    // The trace named in the target box, once its processes are listed; the list's items are traceProcesses.
+    private CancellationTokenSource? traceScan;
+    private string? scannedTrace;
+    private IReadOnlyList<TraceProcess> traceProcesses = [];
     private SavedTreeSnapshot? snapshot;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
     private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
@@ -44,6 +51,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1280, 1050));
         Root.Loaded += SizeToDisplay;
         SetNames();
+        ApplyMode();
         model.PropertyChanged += Model_PropertyChanged;
         AppWindow.Closing += AppWindow_Closing;
         FramesPanel.Owner = AppWindow.Id;
@@ -87,6 +95,7 @@ public sealed partial class MainWindow : Window
 
         closing = true;
         snapshotOperation?.Cancel();
+        traceScan?.Cancel();
         connectionGeneration++;
         model.PropertyChanged -= Model_PropertyChanged;
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
@@ -112,6 +121,7 @@ public sealed partial class MainWindow : Window
             ToolTipService.SetToolTip(line, details);
         }
     }
+    // Not used in trace mode.
     private TargetLaunchKind Kind => Mode.SelectedIndex switch
     {
         0 => TargetLaunchKind.Unpackaged,
@@ -119,19 +129,32 @@ public sealed partial class MainWindow : Window
         _ => TargetLaunchKind.Attach
     };
 
+    // In trace mode the target box holds a recorded trace's path, and the process to read is chosen from its list.
+    private bool TraceMode => Mode.SelectedIndex == TraceModeIndex;
+
+    private static string SessionsDirectory =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUIProfiler", "Sessions");
+
+    private TraceProcess? SelectedTraceProcess
+    {
+        get
+        {
+            var index = TraceProcessList.SelectedIndex;
+            return scannedTrace is not null && index >= 0 && index < traceProcesses.Count ? traceProcesses[index] : null;
+        }
+    }
+
     private void SetNames()
     {
         foreach (var pair in new (DependencyObject Element, string Key)[]
         {
             (Mode, "ModeAutomation"),
-            (TargetText, "TargetAutomation"),
-            (Browse, "BrowseAutomation"),
             (ArgumentsText, "ArgumentsAutomation"),
             (WorkingDirectoryText, "DirectoryAutomation"),
             (Endpoint, "EndpointAutomation"),
             (Trust, "TrustAutomation"),
-            (ConnectButton, "ConnectAutomation"),
-            (DisconnectButton, "DisconnectAutomation"),
+            (TraceProcessList, "TraceProcessAutomation"),
+            (TraceProgress, "TraceProgressAutomation"),
             (SnapshotButton, "SnapshotAutomation"),
             (SnapshotStatus, "SnapshotStatusAutomation"),
             (ConnectionStatus, "StatusAutomation"),
@@ -142,6 +165,28 @@ public sealed partial class MainWindow : Window
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
         }
+    }
+
+    // Shows the settings, labels and names of the selected mode.
+    private void ApplyMode()
+    {
+        var trace = TraceMode;
+        TargetText.Header = Text(trace ? "TraceTargetHeader" : "TargetHeader");
+        ConnectButton.Content = Text(trace ? "OpenTraceLabel" : "ConnectLabel");
+        foreach (var pair in new (DependencyObject Element, string Key, string TraceKey)[]
+        {
+            (TargetText, "TargetAutomation", "TraceTargetAutomation"),
+            (Browse, "BrowseAutomation", "TraceBrowseAutomation"),
+            (ConnectButton, "ConnectAutomation", "OpenTraceAutomation"),
+            (DisconnectButton, "DisconnectAutomation", "StopTraceAutomation")
+        })
+        {
+            AutomationProperties.SetName(pair.Element, Text(trace ? pair.TraceKey : pair.Key));
+        }
+
+        LaunchOptions.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
+        Trust.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
+        TraceOptions.Visibility = trace ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void Model_PropertyChanged(object? sender, PropertyChangedEventArgs args)
@@ -200,9 +245,10 @@ public sealed partial class MainWindow : Window
 
             ArgumentsText.IsEnabled = idle && Kind != TargetLaunchKind.Attach;
             WorkingDirectoryText.IsEnabled = idle && Kind == TargetLaunchKind.Unpackaged;
-            ConnectButton.IsEnabled = idle;
+            TraceProcessList.IsEnabled = idle && traceProcesses.Count > 0;
+            ConnectButton.IsEnabled = idle && (!TraceMode || SelectedTraceProcess is not null);
             DisconnectButton.IsEnabled = model.CanDisconnect && !closing;
-            DisconnectButton.Content = Text(model.IsBusy ? "CancelConnection" : "DisconnectLabel");
+            DisconnectButton.Content = Text(TraceMode ? "StopTraceLabel" : model.IsBusy ? "CancelConnection" : "DisconnectLabel");
             SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy &&
                 !initialSnapshotPending && snapshotOperation is null;
             CompareSnapshotsButton.IsEnabled = Snapshots.Count >= 2;
@@ -218,32 +264,63 @@ public sealed partial class MainWindow : Window
                 compositionNodes = snapshot?.CompositionNodes
             }));
             var stateKey = "State" + model.State.Replace(" ", "", StringComparison.Ordinal);
+            var trace = model.TracePath is null ? null : model.TraceStatus;
             ConnectionStatus.Title = Text(stateKey);
-            ConnectionStatus.Message = model.Detail;
-            ConnectionStatus.Severity = model.State == "Failed" ? InfoBarSeverity.Error : model.State == "Connected" ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
+            ConnectionStatus.Message = model.TracePath is null ? model.Detail : TraceMessage(trace, model.Recording?.CompleteFromSeconds);
+            ConnectionStatus.Severity = model.State is "Failed" or "TraceFailed" ? InfoBarSeverity.Error :
+                model.State is "Connected" or "TraceFinished" ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
             AutomationProperties.SetItemStatus(ConnectionStatus, model.State);
-            var connection = model.Connection;
-            var scope = connection?.Scope;
-            SetLine(ConnectionIdentity,
-                scope is null ? "" : Format("IdentityFormat", scope.Process.ProcessId, Path.GetDirectoryName(connection!.RuntimePath)),
-                scope is null ? null : Format("IdentityDetailsFormat",
-                    scope.Process.CreationTimeFileTime is { } created ? DateTime.FromFileTime(created).ToString("G", CultureInfo.CurrentCulture) : null,
-                    connection!.LastHelloUtc?.ToLocalTime().ToString("T", CultureInfo.CurrentCulture),
-                    connection.RuntimePath));
-            AutomationProperties.SetItemStatus(ConnectionIdentity,
-JsonSerializer.Serialize(new
-{
-    processId = scope?.Process.ProcessId,
-    creationTimeFileTime = scope?.Process.CreationTimeFileTime,
-    sessionId = scope?.SessionId,
-    lastHelloUtc = connection?.LastHelloUtc,
-    runtimePath = connection?.RuntimePath,
-    samples = model.History?.TotalSamples ?? 0
-}));
+            var reading = model.State is "TraceOpening" or "TraceReading" or "TraceStopping";
+            TraceProgress.Visibility = reading ? Visibility.Visible : Visibility.Collapsed;
+            TraceProgress.IsIndeterminate = reading && (model.State != "TraceReading" || trace?.Progress is null);
+            TraceProgress.Value = trace?.Progress ?? 0;
+            if (model.TracePath is { } tracePath && model.TraceTarget is { } target)
+            {
+                SetLine(ConnectionIdentity, target.Name is { } name
+                        ? Format("TraceIdentityFormat", name, target.ProcessId, Path.GetFileName(tracePath))
+                        : Format("TraceUnnamedIdentityFormat", target.ProcessId, Path.GetFileName(tracePath)),
+                    tracePath);
+                AutomationProperties.SetItemStatus(ConnectionIdentity, JsonSerializer.Serialize(new
+                {
+                    processId = target.ProcessId,
+                    processName = target.Name,
+                    etlPath = tracePath
+                }));
+            }
+            else
+            {
+                var connection = model.Connection;
+                var scope = connection?.Scope;
+                SetLine(ConnectionIdentity,
+                    scope is null ? "" : Format("IdentityFormat", scope.Process.ProcessId, Path.GetDirectoryName(connection!.RuntimePath)),
+                    scope is null ? null : Format("IdentityDetailsFormat",
+                        scope.Process.CreationTimeFileTime is { } created ? DateTime.FromFileTime(created).ToString("G", CultureInfo.CurrentCulture) : null,
+                        connection!.LastHelloUtc?.ToLocalTime().ToString("T", CultureInfo.CurrentCulture),
+                        connection.RuntimePath));
+                AutomationProperties.SetItemStatus(ConnectionIdentity, JsonSerializer.Serialize(new
+                {
+                    processId = scope?.Process.ProcessId,
+                    creationTimeFileTime = scope?.Process.CreationTimeFileTime,
+                    sessionId = scope?.SessionId,
+                    lastHelloUtc = connection?.LastHelloUtc,
+                    runtimePath = connection?.RuntimePath,
+                    samples = model.History?.TotalSamples ?? 0
+                }));
+            }
+
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
             var etw = model.Etw;
-            if (model.EtwError is { } etwError)
+            if (trace is not null)
+            {
+                // Nothing read from a trace is dropped: the reader waits while the pipeline is full.
+                var counts = Format("EtwFormat", Text("EtwFromTrace"), trace.XamlEvents, trace.ProfilerEvents,
+                    trace.GpuMemoryEvents, trace.LostEvents, 0);
+                SetLine(EtwSummary,
+                    trace.OutOfOrderEvents == 0 ? counts : counts + Format("TraceOutOfOrderFormat", trace.OutOfOrderEvents),
+                    Format("EtwDetailsFormat", Text("EtwCoverageTrace")));
+            }
+            else if (model.EtwError is { } etwError)
             {
                 var message = Format("EtwUnavailable", etwError);
                 SetLine(EtwSummary, message, message);
@@ -270,7 +347,9 @@ JsonSerializer.Serialize(new
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
             }
 
-            session.ShowRecording(recording?.Path, model.State == "Connected");
+            // A trace's session file grows while it is read, so the tabs follow it as they follow a connection's.
+            session.ShowRecording(recording?.Path, model.State is "Connected" or "TraceReading" or "TraceStopping");
+            TraceMetricsNote.Visibility = model.TracePath is null ? Visibility.Collapsed : Visibility.Visible;
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
@@ -296,7 +375,9 @@ JsonSerializer.Serialize(new
 
         TargetText.Text = "";
         selectedTarget = null;
-        Refresh();
+        ApplyMode();
+        // TextChanged is raised later, so the previous trace's processes are cleared now.
+        ScanTrace();
     }
 
     private void Target_TextChanged(object sender, TextChangedEventArgs args)
@@ -306,22 +387,133 @@ JsonSerializer.Serialize(new
             selectedTarget = null;
         }
 
+        if (TraceMode)
+        {
+            ScanTrace();
+            return;
+        }
+
         UpdateTargetSummary();
     }
 
     private void Arguments_TextChanged(object sender, TextChangedEventArgs args) => UpdateTargetSummary();
+
+    // Lists the processes with XAML events in the trace named in the target box, a moment after its last edit. Another
+    // edit, a mode change or closing the window cancels the listing.
+    private async void ScanTrace()
+    {
+        traceScan?.Cancel();
+        traceScan = null;
+        scannedTrace = null;
+        traceProcesses = [];
+        TraceProcessList.ItemsSource = null;
+        TraceScanProgress.IsActive = false;
+        TraceScanStatus.Text = "";
+        var path = TargetText.Text.Trim().Trim('"');
+        if (closing || !TraceMode || path.Length == 0)
+        {
+            UpdateTargetSummary();
+            Refresh();
+            return;
+        }
+
+        using var cancellation = new CancellationTokenSource();
+        traceScan = cancellation;
+        TraceScanProgress.IsActive = true;
+        TraceScanStatus.Text = Text("TraceScanning");
+        UpdateTargetSummary();
+        Refresh();
+        try
+        {
+            await Task.Delay(TraceScanDelay, cancellation.Token);
+            var fullPath = Path.GetFullPath(path);
+            var contents = await Task.Run(() => OfflineEtlSource.ListProcesses(fullPath, cancellation.Token), cancellation.Token);
+            cancellation.Token.ThrowIfCancellationRequested();
+            scannedTrace = fullPath;
+            traceProcesses = contents.Processes;
+            TraceProcessList.ItemsSource = traceProcesses.Select(ProcessLabel).ToList();
+            TraceProcessList.SelectedIndex = traceProcesses.Count == 1 ? 0 : -1;
+            TraceScanStatus.Text = traceProcesses.Count == 0 ? Text("TraceScanEmpty") :
+                Format("TraceContentsFormat", traceProcesses.Count, contents.Duration.TotalSeconds, contents.EventsLost);
+        }
+        catch (Exception) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception error)
+        {
+            Trace.TraceError(error.ToString());
+            TraceScanStatus.Text = Format("TraceScanFailedFormat", ScanFailure(error));
+        }
+        finally
+        {
+            if (ReferenceEquals(traceScan, cancellation))
+            {
+                traceScan = null;
+                TraceScanProgress.IsActive = false;
+                UpdateTargetSummary();
+                Refresh();
+            }
+        }
+    }
+
+    private string ProcessLabel(TraceProcess process) => process.Name is { } name
+        ? Format("TraceProcessFormat", name, process.ProcessId, process.Events, process.FirstMilliseconds / 1000,
+            process.LastMilliseconds / 1000)
+        : Format("TraceUnnamedProcessFormat", process.ProcessId, process.Events, process.FirstMilliseconds / 1000,
+            process.LastMilliseconds / 1000);
+
+    // ETW reports a file that is not a trace, or is damaged, as ERROR_FILE_CORRUPT.
+    private string ScanFailure(Exception error) => error switch
+    {
+        FileNotFoundException or DirectoryNotFoundException => Text("TraceNotFound"),
+        BadImageFormatException => Text("TraceUnreadable"),
+        _ when error.HResult == unchecked((int)0x80070570) => Text("TraceUnreadable"),
+        _ => error.Message
+    };
+
+    private void TraceProcess_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+        UpdateTargetSummary();
+        Refresh();
+    }
+
+    // trimmedBefore is set once the session file's size limit removed the events before that time.
+    private string TraceMessage(TraceReplayStatus? status, double? trimmedBefore) => status switch
+    {
+        { State: TraceReplayState.Reading, Progress: { } read } => Format("TraceReadingFormat", read),
+        { State: TraceReplayState.Reading } => Text("TraceReading"),
+        { State: TraceReplayState.Stopping } => Text("TraceStopping"),
+        { State: TraceReplayState.Finished } => trimmedBefore is { } seconds
+            ? Format("TraceFinishedTrimmedFormat", seconds) : Text("TraceFinished"),
+        { State: TraceReplayState.Stopped, Progress: { } read } => trimmedBefore is { } seconds
+            ? Format("TraceStoppedTrimmedFormat", read, seconds) : Format("TraceStoppedFormat", read),
+        { State: TraceReplayState.Stopped } => trimmedBefore is { } seconds
+            ? Format("TraceStoppedTrimmed", seconds) : Text("TraceStopped"),
+        { State: TraceReplayState.Failed, Progress: { } read } => Format("TraceFailedFormat", read),
+        { State: TraceReplayState.Failed } => Text("TraceFailed"),
+        // Opening, or opening failed; the error bar says why.
+        _ => ""
+    };
 
     // The settings' header names the target, so it is still shown when they are folded away.
     private void UpdateTargetSummary()
     {
         var target = TargetText.Text.Trim();
         TargetSummary.Text = target.Length == 0 ? Text("TargetSettingsHeader")
-            : Format("TargetSummaryFormat", Path.GetFileName(target), ArgumentsText.Text.Trim());
+            : !TraceMode ? Format("TargetSummaryFormat", Path.GetFileName(target), ArgumentsText.Text.Trim())
+            : SelectedTraceProcess is { } process ? Format("TraceSummaryProcessFormat", Path.GetFileName(target.Trim('"')), process.ProcessId)
+            : Format("TraceSummaryFormat", Path.GetFileName(target.Trim('"')));
     }
 
     private async void Connect_Click(object sender, RoutedEventArgs args)
     {
         if (!model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
+        if (TraceMode)
+        {
+            await OpenTraceAsync();
+            return;
+        }
+
         initialSnapshotPending = true;
         snapshot = null;
         var generation = ++connectionGeneration;
@@ -340,7 +532,7 @@ Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
 Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
-Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUIProfiler", "Sessions"));
+SessionsDirectory);
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy)
@@ -364,6 +556,27 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
         {
             initialSnapshotPending = false;
             connectionGeneration++;
+            Refresh();
+        }
+    }
+
+    // Reads the chosen process's events from the listed trace into a new session file. There is no running process, so
+    // there are no snapshots or live metrics; the Frames tab shows the events as they are stored.
+    private async Task OpenTraceAsync()
+    {
+        if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
+        snapshot = null;
+        Tabs.SelectedItem = FramesTab;
+        try
+        {
+            await model.OpenTraceAsync(path, process, SessionsDirectory);
+        }
+        catch (Exception error)
+        {
+            model.ReportError(error);
+        }
+        finally
+        {
             Refresh();
         }
     }
@@ -483,6 +696,16 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
     {
         try
         {
+            if (TraceMode)
+            {
+                if (await TracePicker.PickAsync(AppWindow.Id) is { } trace)
+                {
+                    TargetText.Text = trace;
+                }
+
+                return;
+            }
+
             if (Kind == TargetLaunchKind.Unpackaged)
             {
                 var path = await ExecutablePicker.PickAsync(AppWindow.Id);
