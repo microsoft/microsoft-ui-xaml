@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <functional>
+
 // Marks a group header row and carries what the header needs that an index alone cannot supply.
 //
 // A data row IS the app item, so this is produced for headers only — "is a GroupedEntry" and "is a
@@ -21,7 +23,9 @@
 // Shared by v1 (GroupedSourceAdapter) and v2 (TableViewSource2 ShapedCollectionView), so TableView
 // has one header test (TryGetGroupedEntry) for both.
 //   - v1: Group() is the ShapedGroup; a fresh entry per change (re-minted on expand); Identity() empty.
-//   - v2: Group() is the GroupBy key; one entry per group, created on the first read and cached on
+//   - v2: Group() is the GroupBy key, resolved on each call through the owning view (no strong
+//     reference to the key; null once the group or the view is gone); one entry per group, created
+//     on the first read and cached on
 //     GroupNode::HeaderRow (a stable DataContext); Identity() is GroupNode::Identity ("g|" ...).
 //     GroupItemCount / IsExpanded are snapshots taken at creation and never updated: TableView
 //     prefers row metadata and reads them only in the fallback window above, so a stale value
@@ -42,6 +46,14 @@ public:
         bool isExpanded,
         winrt::hstring const& identity = {});
 
+    // v2: Group() is resolved on every call through `groupResolver` (the owning view's GroupNode
+    // key, a tracker_ref), so the entry holds no strong reference to the app's key object.
+    GroupedEntry(
+        std::function<winrt::IInspectable()> groupResolver,
+        int32_t groupItemCount,
+        bool isExpanded,
+        winrt::hstring const& identity);
+
     winrt::IInspectable Group() const;
     int32_t GroupItemCount() const;
     bool IsExpanded() const;
@@ -51,6 +63,7 @@ public:
 
 private:
     winrt::IInspectable m_group{ nullptr };
+    std::function<winrt::IInspectable()> m_groupResolver;
     winrt::hstring m_identity;
     int32_t m_groupItemCount{ 0 };
     bool m_isExpanded{ true };

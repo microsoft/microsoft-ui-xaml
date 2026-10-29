@@ -102,6 +102,17 @@ public:
     // Reset, a range event and a failed-apply retry.
     void Reapply(ShapeSpec const& desired);
 
+    // Reapply for a source change that has already happened (a SourceTable Reset, or a change the
+    // engine cannot apply surgically). Departed records always leave the tree: when the compute
+    // phase throws, UnlinkOnly rebuilds the tree from the current records without app code (one
+    // Reset), then the exception is rethrown. `arrivals` are the change's new records
+    // (SourceChange::Added), hidden by that fallback.
+    void ReapplyForSource(ShapeSpec const& desired, std::span<SourceRecord* const> arrivals);
+
+    // True after UnlinkOnly: cached filter results, keys and placements may be stale, so the next
+    // Rebuild re-reads everything (ShapeDelta::All) even when Diff(Applied(), desired) is empty.
+    bool IsStale() const noexcept;
+
     // One source notification with k <= c_bulkThreshold items (any subtree size): places, removes,
     // moves or replaces the record and its subtree with Tree().Unlink / Link. While grouped it
     // also creates missing groups and prunes emptied ones (E9; see StageGroupChain and
@@ -230,12 +241,38 @@ private:
     // re-reading every sort level; the re-sorts still run over all cached keys.
     void Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::span<LiveChange const> only = {});
 
+    // Rebuild's write phase, shared with UnlinkOnly: Tree().BeginReset, moves `staged` into every
+    // record in `records` (breadth-first; the first topCount are top-level) and under the root,
+    // swaps the group map, sets Applied() to `applied`, Tree().EndReset. Records keep the `kept`
+    // bits of their flags; keysRead marks the records whose SortKeys were read into `staged`.
+    // Clears m_stale.
+    void CommitStaged(
+        std::vector<SourceRecord*> const& records,
+        uint32_t topCount,
+        StagedReapply& staged,
+        std::vector<uint8_t> const& keysRead,
+        ShapeSpec&& applied,
+        uint16_t levels,
+        bool newGroupSelector,
+        ShapeFlags kept) noexcept;
+
+    // Fallback after a failed compute in ReapplyForSource. Runs no app code: rebuilds the tree
+    // for the current records with the applied spec from cached state only. Records keep their
+    // cached PassesFilter and their previous relative order; records that left the source are
+    // dropped; `arrivals`, and records with no cached place (a top-level record with no group
+    // while grouped), are hidden; emptied groups are dropped. One Reset. Sets m_stale.
+    // noexcept: an allocation failure fails fast rather than leaving freed records linked.
+    void UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;
+
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
     SourceTable const& m_source;
     ShapeDelegates& m_delegates;
     PathEvaluator& m_paths;
 
     ShapeSpec m_applied;
+
+    // Set by UnlinkOnly, cleared by CommitStaged (see IsStale).
+    bool m_stale{ false };
 
     // Owns the shaped root (no other group). Stable for the engine's lifetime.
     ShapedTree m_tree;

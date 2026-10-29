@@ -138,6 +138,11 @@ public:
     // torn down. Raises no event: the consumer is going away or rebinding. Idempotent.
     void Detach() noexcept;
 
+    // The key of the group whose GroupNode::Identity is `identity`, read through its tracker_ref;
+    // null when the group is gone or the view is detached. Backs GroupedEntry::Group() (the
+    // header holds this view weakly, never the key).
+    winrt::Windows::Foundation::IInspectable GroupKeyOf(winrt::hstring const& identity) const;
+
 private:
     void Raise(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
 

@@ -270,7 +270,12 @@ void ShapingManager::ClearSort()
 
 void ShapingManager::ApplyDesiredSpec()
 {
-    ShapeDelta const delta = Diff(m_engine.Applied(), m_desired);
+    ShapeDelta delta = Diff(m_engine.Applied(), m_desired);
+    if (delta == ShapeDelta::None && m_engine.IsStale())
+    {
+        // A failed source change left cached state the next apply must re-read.
+        delta = ShapeDelta::All;
+    }
     if (delta != ShapeDelta::None)
     {
         {
@@ -414,44 +419,61 @@ void ShapingManager::Clear()
 
 void ShapingManager::OnSourceChanged(SourceChange const& change)
 {
+    // A delegate throw during the re-shape: the engine has already dropped the departed records
+    // (ReapplyForSource) and raised a Reset, so the commit ends normally and the owner hears it;
+    // the error is rethrown after, into the app's mutation. Nothing is reposted.
+    std::exception_ptr fault;
     {
         CommitScope scope{ *this, change.Removed };
-        if (change.Kind == SourceChangeKind::Reset)
+        try
         {
-            Reapply();
-        }
-        else
-        {
-            // Removed holds the departed subtree, so no stale key survives the change.
-            for (SourceRecord const* const record : change.Removed)
+            if (change.Kind == SourceChangeKind::Reset)
             {
-                m_liveDirty.erase(const_cast<SourceRecord*>(record));
+                Reapply(change.Added);
             }
-
-            m_engine.ApplySourceChange(change);
-            m_commit.chromeDirty = true;
-
-            // A Replace, or a change the engine could not apply surgically, rebuilt the list: the
-            // owner hears Reset | Membership.
-            if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
+            else
             {
-                m_commit.changes |= ShapingChangeFlags::Membership;
+                // Removed holds the departed subtree, so no stale key survives the change.
+                for (SourceRecord const* const record : change.Removed)
+                {
+                    m_liveDirty.erase(const_cast<SourceRecord*>(record));
+                }
+
+                m_commit.chromeDirty = true;
+                m_engine.ApplySourceChange(change);
             }
         }
+        catch (...)
+        {
+            fault = std::current_exception();
+        }
+
+        // A Reset, a Replace, or a change the engine could not apply surgically rebuilt the list:
+        // the owner hears Reset | Membership.
+        if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
+        {
+            m_commit.changes |= ShapingChangeFlags::Membership;
+        }
+    }
+
+    if (fault)
+    {
+        try
+        {
+            AfterCommit();
+        }
+        catch (...)
+        {
+        }
+        std::rethrow_exception(fault);
     }
     AfterCommit();
 }
 
-void ShapingManager::Reapply()
+void ShapingManager::Reapply(std::span<SourceRecord* const> arrivals)
 {
     m_liveDirty.clear();
-    m_engine.Reapply(m_desired);
-
-    // A Reapply replaces the list: the owner hears Reset | Membership.
-    if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
-    {
-        m_commit.changes |= ShapingChangeFlags::Membership;
-    }
+    m_engine.ReapplyForSource(m_desired, arrivals);
 }
 
 void ShapingManager::OnRowsRemoved(uint32_t index, uint32_t count, bool isMove) noexcept

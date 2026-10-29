@@ -245,8 +245,9 @@ private:
     void ApplyDesiredSpec();
 
     // Rebuilds the shaped tree from SourceTable::Records() with the desired spec. Never reads
-    // the source. Used for a SourceTable Reset and a Diff that falls back to a full rebuild.
-    void Reapply();
+    // the source. Used for a SourceTable Reset (`arrivals` = SourceChange::Added); goes through
+    // ShapingEngine::ReapplyForSource, so a delegate throw still drops the departed records.
+    void Reapply(std::span<SourceRecord* const> arrivals);
 
     // ---- IShapedRowsListener (decided, P8) --------------------------------------------------
     // The single path from the tree to consumers, whatever made the change (an engine commit, an

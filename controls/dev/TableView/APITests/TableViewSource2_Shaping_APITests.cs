@@ -7,6 +7,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using WEX.TestExecution;
@@ -79,12 +80,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return true;
                 });
 
-                Verify.AreNotEqual("no exception", ThrownTypeName(() => source.Filter(throwing)), "The predicate's exception must propagate.");
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => source.Filter(throwing)), "The predicate's exception must propagate.");
                 VerifyShaped(tableView, "C D", "A failed Filter keeps the applied filter's rows");
             });
 
             OnUI(tableView, () => source.ClearFilter());
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C D", "ClearFilter after the failure"));
+        }
+
+        // Score >= 15, but throws for B while `armed` is set (drift #33).
+        private static TableViewPredicate ThrowingForB(Func<bool> armed) => new TableViewPredicate(o =>
+        {
+            var row = (LiveRow)o;
+            if (armed() && row.Name == "B")
+            {
+                throw new InvalidOperationException("predicate failed");
+            }
+            return row.Score >= 15;
+        });
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filter that throws during a source Remove propagates to the mutation, still drops the removed row, and keeps the rest of the view.")]
+        public void VerifyFilterThrowsDuringRemoveDropsDepartedRow()
+        {
+            var tableView = PlaceFlat(out var source, out var rows);
+            bool armed = false;
+            OnUI(tableView, () => source.Filter(ThrowingForB(() => armed)));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C D", "Score >= 15"));
+
+            RunOnUIThread.Execute(() =>
+            {
+                armed = true;
+                var d = rows[3];
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => rows.Remove(d)), "The predicate's exception must surface from the Remove.");
+                Verify.AreEqual(2, GetRowsRepeater(tableView).ItemsSourceView.Count, "The removed row left the view.");
+                VerifyShaped(tableView, "B C", "Departed row removed, the rest kept");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C", "Still consistent after idle"));
+
+            RunOnUIThread.Execute(() => armed = false);
+            OnUI(tableView, () => source.ClearFilter());
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C", "ClearFilter after the failure re-reads everything"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a source Clear under a throwing filter empties the view, and an arrival the filter throws on stays hidden until the next apply.")]
+        public void VerifyFilterThrowsAroundClearKeepsViewConsistent()
+        {
+            var tableView = PlaceFlat(out var source, out var rows);
+            bool armed = false;
+            OnUI(tableView, () => source.Filter(ThrowingForB(() => armed)));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C D", "Score >= 15"));
+
+            RunOnUIThread.Execute(() =>
+            {
+                armed = true;
+                Verify.AreEqual("no exception", ThrownTypeName(() => rows.Clear()), "Clear reads no predicate.");
+                Verify.AreEqual(0, GetRowsRepeater(tableView).ItemsSourceView.Count, "Clear empties the view.");
+
+                var b = new LiveRow { Id = 5, Name = "B", Score = 20, Team = "Y", Addr = new LiveAddress("Bern") };
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => rows.Add(b)), "The predicate's exception must surface from the Add.");
+                Verify.AreEqual(0, GetRowsRepeater(tableView).ItemsSourceView.Count, "The arrival the filter threw on is hidden.");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "", "Still consistent after idle"));
+
+            RunOnUIThread.Execute(() => armed = false);
+            OnUI(tableView, () => source.ClearFilter());
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B", "ClearFilter shows the arrival"));
         }
 
         [TestMethod]
@@ -227,7 +291,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var throwingKey = LiveKey(r => throw new InvalidOperationException("key failed"));
-                Verify.AreNotEqual("no exception", ThrownTypeName(() => source.Sort(throwingKey, SortDirection.Ascending)), "A sort key's exception must propagate.");
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => source.Sort(throwingKey, SortDirection.Ascending)), "A sort key's exception must propagate.");
                 VerifyShaped(tableView, "D C B", "A failed Sort keeps the applied shape");
             });
         }
@@ -257,9 +321,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             public TableViewSource2 Source;
             public int MinScore = 15;
+            private readonly Dictionary<string, TeamKey> m_teams = new Dictionary<string, TeamKey>();
             public bool Keep(object o) => ((LiveRow)o).Score >= MinScore;
-            public object Team(object o) => ((LiveRow)o).Team;
+            public object Team(object o)
+            {
+                var team = ((LiveRow)o).Team;
+                if (!m_teams.TryGetValue(team, out var key))
+                {
+                    key = new TeamKey { Owner = this, Team = team };
+                    m_teams.Add(team, key);
+                }
+                return key;
+            }
             public object Score(object o) => ((LiveRow)o).Score;
+        }
+
+        // A group key object that refers back to the view model: the group header must not hold it.
+        private sealed class TeamKey
+        {
+            public ShapingViewModel Owner;
+            public string Team;
         }
 
         [TestMethod]
@@ -293,9 +374,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             vm.Source = TableViewSource2.From(MakeLiveFlat())
                 .Filter(new TableViewPredicate(vm.Keep))
                 .Sort(new TableViewKeySelector(vm.Score), SortDirection.Descending)
-                .GroupBy(new TableViewKeySelector(vm.Team), SortDirection.Ascending);
+                .GroupBy(new TableViewKeySelector(vm.Team), SortDirection.None);
             var tableView = CreateTreeTable(vm.Source);
             LoadContent(tableView);
+            var labels = ShapedLabels(tableView);
+            Verify.AreEqual(2, labels.Split(' ').Count(p => p == "[H]"), $"Both group headers (object keys) are read: {labels}.");
             weakSource = new WeakReference(vm.Source);
             weakViewModel = new WeakReference(vm);
         }

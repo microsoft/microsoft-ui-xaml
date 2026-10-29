@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <unordered_set>
 
 ShapingEngine::ShapingEngine(
     ITrackerHandleManager const* trackerOwner,
@@ -156,11 +157,36 @@ void ShapingEngine::Reapply(ShapeSpec const& desired)
     Rebuild(desired, ShapeDelta::All);
 }
 
+void ShapingEngine::ReapplyForSource(ShapeSpec const& desired, std::span<SourceRecord* const> arrivals)
+{
+    try
+    {
+        Rebuild(desired, ShapeDelta::All);
+    }
+    catch (...)
+    {
+        // The source has already changed: departed records must not stay linked once the
+        // SourceTable frees them.
+        UnlinkOnly(arrivals);
+        throw;
+    }
+}
+
+bool ShapingEngine::IsStale() const noexcept
+{
+    return m_stale;
+}
+
 void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::span<LiveChange const> only)
 {
     // Live re-reads (`only`) arrive with live shaping (Milestone 6).
     MUX_ASSERT(only.empty());
     (void)only;
+
+    if (m_stale)
+    {
+        delta = ShapeDelta::All;
+    }
 
     bool const filterActive = !desired.Filters.empty();
     bool const sortActive = !desired.Sorts.empty();
@@ -499,11 +525,28 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
     ShapeSpec appliedNext{ desired };
     m_retired.reserve(m_retired.size() + m_groupsByIdentity.size());
 
+    ShapeFlags const kept = ShapeFlags::Expanded | ShapeFlags::PlacementMark |
+        (clearOverlay ? ShapeFlags::None : ShapeFlags::OverlayCollapsed);
+    CommitStaged(records, topCount, staged, keysRead, std::move(appliedNext), levels, newGroupSelector, kept);
+}
+
+void ShapingEngine::CommitStaged(
+    std::vector<SourceRecord*> const& records,
+    uint32_t topCount,
+    StagedReapply& staged,
+    std::vector<uint8_t> const& keysRead,
+    ShapeSpec&& applied,
+    uint16_t levels,
+    bool newGroupSelector,
+    ShapeFlags kept) noexcept
+{
+    GroupNode& root = m_tree.Root();
+    uint32_t const n = static_cast<uint32_t>(records.size());
+    bool const childrenShaped = !applied.Filters.empty() || !applied.Sorts.empty();
+
     // ---- Write: nothing below throws. ----
     m_tree.BeginReset();
 
-    ShapeFlags const kept = ShapeFlags::Expanded | ShapeFlags::PlacementMark |
-        (clearOverlay ? ShapeFlags::None : ShapeFlags::OverlayCollapsed);
     for (uint32_t i = 0; i < n; ++i)
     {
         SourceRecord* const record = records[i];
@@ -563,8 +606,221 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
     }
     staged.GroupsByIdentity.clear();
 
-    m_applied = std::move(appliedNext);
+    m_applied = std::move(applied);
+    m_stale = false;
     m_tree.EndReset(levels, m_groupsByIdentity, newGroupSelector);
+}
+
+void ShapingEngine::UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept
+{
+    ShapeSpec const& applied = m_applied;
+    bool const filterActive = !applied.Filters.empty();
+    bool const sortActive = !applied.Sorts.empty();
+    bool const childrenShaped = filterActive || sortActive;
+    uint16_t const levels = static_cast<uint16_t>(applied.Groups.size());
+
+    // The current records breadth-first, as in Rebuild.
+    auto const& topLevel = m_source.TopLevel();
+    uint32_t const topCount = static_cast<uint32_t>(topLevel.size());
+    std::vector<SourceRecord*> records(topLevel.begin(), topLevel.end());
+    std::vector<uint32_t> childStart;
+    for (size_t i = 0; i < records.size(); ++i)
+    {
+        childStart.push_back(static_cast<uint32_t>(records.size()));
+        records.insert(records.end(), records[i]->Children.begin(), records[i]->Children.end());
+    }
+    uint32_t const n = static_cast<uint32_t>(records.size());
+
+    // Old lists are matched by pointer value only: an old entry not found here left the source
+    // and is never dereferenced.
+    std::unordered_map<ShapedNode const*, uint32_t> indexOf;
+    indexOf.reserve(n);
+    for (uint32_t i = 0; i < n; ++i)
+    {
+        indexOf.emplace(static_cast<ShapedNode const*>(records[i]), i);
+    }
+    std::unordered_set<SourceRecord const*> const arrived(arrivals.begin(), arrivals.end());
+
+    std::vector<uint8_t> passes(n, 1);
+    if (childrenShaped)
+    {
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            passes[i] = !arrived.contains(records[i]) &&
+                (!filterActive || (records[i]->Shape.Flags & ShapeFlags::PassesFilter) != ShapeFlags::None);
+        }
+    }
+
+    std::vector<uint8_t> inShaped(passes);
+    for (uint32_t i = n; i-- > 0;)
+    {
+        uint32_t const first = childStart[i];
+        uint32_t const last = first + static_cast<uint32_t>(records[i]->Children.size());
+        for (uint32_t j = first; j < last && !inShaped[i]; ++j)
+        {
+            inShaped[i] = inShaped[j];
+        }
+    }
+
+    StagedReapply staged;
+    staged.Records.resize(n);
+    std::vector<uint8_t> placed(n, 0);
+
+    // Takes a current record from an old list when it still belongs to [first, last).
+    auto const take = [&](ShapedNode const* old, uint32_t first, uint32_t last) -> std::optional<uint32_t>
+    {
+        auto const it = indexOf.find(old);
+        if (it == indexOf.end())
+        {
+            return std::nullopt;
+        }
+        uint32_t const j = it->second;
+        if (j < first || j >= last || !inShaped[j] || placed[j])
+        {
+            return std::nullopt;
+        }
+        placed[j] = 1;
+        return j;
+    };
+
+    // Shaped children: the survivors in their old order, then the rest in source order.
+    if (childrenShaped)
+    {
+        for (uint32_t i = 0; i < n; ++i)
+        {
+            uint32_t const first = childStart[i];
+            uint32_t const last = first + static_cast<uint32_t>(records[i]->Children.size());
+            auto& shapedChildren = staged.Records[i].Shape.ShapedChildren;
+            for (SourceRecord const* const old : records[i]->Shape.ShapedChildren)
+            {
+                if (auto const j = take(old, first, last))
+                {
+                    shapedChildren.push_back(records[*j]);
+                }
+            }
+            for (uint32_t j = first; j < last; ++j)
+            {
+                if (inShaped[j] && !placed[j])
+                {
+                    placed[j] = 1;
+                    shapedChildren.push_back(records[j]);
+                }
+            }
+        }
+    }
+
+    GroupNode& root = m_tree.Root();
+    if (levels == 0)
+    {
+        for (ShapedNode const* const old : root.Children)
+        {
+            if (auto const j = take(old, 0, topCount))
+            {
+                staged.RootChildren.push_back(records[*j]);
+            }
+        }
+        for (uint32_t j = 0; j < topCount; ++j)
+        {
+            if (inShaped[j] && !placed[j])
+            {
+                placed[j] = 1;
+                staged.RootChildren.push_back(records[j]);
+            }
+        }
+        for (ShapedNode* const node : staged.RootChildren)
+        {
+            staged.Records[indexOf.at(node)].Shape.Group = &root;
+        }
+    }
+    else
+    {
+        // The old groups, mirrored with the same identity and key; an emptied group is dropped.
+        std::unordered_set<ShapedNode const*> oldGroups;
+        oldGroups.reserve(m_groupsByIdentity.size());
+        for (auto const& entry : m_groupsByIdentity)
+        {
+            oldGroups.insert(static_cast<ShapedNode const*>(entry.second.get()));
+        }
+
+        auto const mirror = [&](auto const& self, std::vector<ShapedNode*> const& oldList, GroupNode* parent, std::vector<ShapedNode*>& out) -> void
+        {
+            for (ShapedNode* const old : oldList)
+            {
+                if (oldGroups.contains(old))
+                {
+                    auto const* const oldGroup = static_cast<GroupNode const*>(old);
+                    auto group = std::make_unique<GroupNode>();
+                    if (oldGroup->Key)
+                    {
+                        group->Key.emplace(m_trackerOwner, oldGroup->Key->get());
+                    }
+                    group->Identity = oldGroup->Identity;
+                    group->Parent = parent;
+                    group->GroupLevel = oldGroup->GroupLevel;
+                    self(self, oldGroup->Children, group.get(), group->Children);
+                    if (group->Children.empty())
+                    {
+                        continue;
+                    }
+
+                    if (group->GroupLevel + 1u == levels)
+                    {
+                        group->ItemCount = static_cast<uint32_t>(group->Children.size());
+                    }
+                    else
+                    {
+                        for (ShapedNode* const child : group->Children)
+                        {
+                            group->ItemCount += static_cast<GroupNode const*>(child)->ItemCount;
+                        }
+                    }
+                    out.push_back(group.get());
+                    winrt::hstring const identity = group->Identity;
+                    staged.GroupsByIdentity.emplace(identity, std::move(group));
+                }
+                else if (auto const j = take(old, 0, topCount))
+                {
+                    out.push_back(records[*j]);
+                    staged.Records[*j].Shape.Group = parent;
+                }
+            }
+        };
+        mirror(mirror, root.Children, &root, staged.RootChildren);
+
+        // A top-level record with no cached group (it was not bucketed before) has no safe place.
+        for (uint32_t j = 0; j < topCount; ++j)
+        {
+            if (inShaped[j] && !placed[j])
+            {
+                inShaped[j] = 0;
+                passes[j] = 0;
+                staged.Records[j].Shape.ShapedChildren.clear();
+            }
+        }
+    }
+
+    for (uint32_t i = 0; i < n; ++i)
+    {
+        ShapeFlags flags = passes[i] ? ShapeFlags::PassesFilter : ShapeFlags::None;
+        if (childrenShaped)
+        {
+            flags |= ShapeFlags::ChildrenShaped;
+        }
+        if (sortActive && inShaped[i] && (records[i]->Shape.Flags & ShapeFlags::SortKeysValid) != ShapeFlags::None)
+        {
+            flags |= ShapeFlags::SortKeysValid;
+        }
+        staged.Records[i].Record = records[i];
+        staged.Records[i].Shape.Flags = flags;
+    }
+
+    std::vector<uint8_t> const keysRead(n, 0);
+    ShapeSpec appliedNext{ applied };
+    m_retired.reserve(m_retired.size() + m_groupsByIdentity.size());
+
+    ShapeFlags const kept = ShapeFlags::Expanded | ShapeFlags::PlacementMark | ShapeFlags::OverlayCollapsed;
+    CommitStaged(records, topCount, staged, keysRead, std::move(appliedNext), levels, false /* newGroupSelector */, kept);
+    m_stale = true;
 }
 
 void ShapingEngine::ApplySourceChange(SourceChange const& change)
@@ -577,7 +833,7 @@ void ShapingEngine::ApplySourceChange(SourceChange const& change)
     if (!surgical)
     {
         ShapeSpec const applied{ m_applied };
-        Reapply(applied);
+        ReapplyForSource(applied, change.Added);
         return;
     }
 
