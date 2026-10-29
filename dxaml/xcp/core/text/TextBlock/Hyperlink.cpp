@@ -289,6 +289,11 @@ _Check_return_ HRESULT CHyperlink::FocusChangedEventListener(
                 CTextBlock* textObject = do_pointer_cast<CTextBlock>(pContentStartVisualParent);
                 IFC_RETURN(textObject->GetSelectionStart(selectionStart.ReleaseAndGetAddressOf()));
                 IFC_RETURN(textObject->GetSelectionEnd(selectionEnd.ReleaseAndGetAddressOf()));
+                if (!selectionStart || !selectionEnd)
+                {
+                    // Text selection is disabled, so there's no caret to move.
+                    return S_OK;
+                }
                 IFC_RETURN(selectionStart->GetOffset(&selectionStartOffset));
                 IFC_RETURN(selectionEnd->GetOffset(&selectionEndOffset));
 
@@ -303,6 +308,11 @@ _Check_return_ HRESULT CHyperlink::FocusChangedEventListener(
                 CRichTextBlock* textObject = do_pointer_cast<CRichTextBlock>(pContentStartVisualParent);
                 IFC_RETURN(textObject->GetSelectionStart(selectionStart.ReleaseAndGetAddressOf()));
                 IFC_RETURN(textObject->GetSelectionEnd(selectionEnd.ReleaseAndGetAddressOf()));
+                if (!selectionStart || !selectionEnd)
+                {
+                    // Text selection is disabled, so there's no caret to move.
+                    return S_OK;
+                }
                 IFC_RETURN(selectionStart->GetOffset(&selectionStartOffset));
                 IFC_RETURN(selectionEnd->GetOffset(&selectionEndOffset));
 
@@ -317,6 +327,11 @@ _Check_return_ HRESULT CHyperlink::FocusChangedEventListener(
                 CRichTextBlock* richTextBlock = textObject->m_pMaster;
                 IFCFAILFAST(richTextBlock->GetSelectionStart(selectionStart.ReleaseAndGetAddressOf()));
                 IFCFAILFAST(richTextBlock->GetSelectionEnd(selectionEnd.ReleaseAndGetAddressOf()));
+                if (!selectionStart || !selectionEnd)
+                {
+                    // Text selection is disabled, so there's no caret to move.
+                    return S_OK;
+                }
                 IFC_RETURN(selectionStart->GetOffset(&selectionStartOffset));
                 IFC_RETURN(selectionEnd->GetOffset(&selectionEndOffset));
 

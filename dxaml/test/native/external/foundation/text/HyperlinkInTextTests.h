@@ -171,8 +171,32 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CaretBrowsingTabToHyperlinkInNonSelectableTextBlock)
+        TEST_METHOD_PROPERTY(L"Description", L"With caret browsing on, tab to a Hyperlink in a TextBlock with IsTextSelectionEnabled=False. (GitHub #10764)")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CaretBrowsingTabToHyperlinkInNonSelectableRichTextBlock)
+        TEST_METHOD_PROPERTY(L"Description", L"With caret browsing on, tab to a Hyperlink in a RichTextBlock with IsTextSelectionEnabled=False. (GitHub #10764)")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CaretBrowsingTabToHyperlinkInNonSelectableRichTextBlockOverflow)
+        TEST_METHOD_PROPERTY(L"Description", L"With caret browsing on, tab to a Hyperlink in the overflow of a RichTextBlock with IsTextSelectionEnabled=False. (GitHub #10764)")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CaretBrowsingTabToHyperlinkInSelectableTextBlock)
+        TEST_METHOD_PROPERTY(L"Description", L"With caret browsing on, tab to a Hyperlink in a selectable TextBlock and verify the caret moves to the Hyperlink.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
+    void CaretBrowsingTabToHyperlink(
+        const wchar_t* hostXaml,
+        const wchar_t* visualParentName,
+        std::function<void(::Microsoft::UI::Xaml::FrameworkElement^, ::Microsoft::UI::Xaml::Documents::Hyperlink^)> verifyAfterFocus);
     void ValidateHyperlinkInText(bool testPointerOver, bool withUnderline, bool useHighContrast);
     void ValidateHyperlinkKeyInput(const Platform::String ^key);
     void ValidateForegroundBrushes(bool withSystemControlColors, bool withCustomSystemControlColors = false);

@@ -2323,4 +2323,131 @@ void HyperlinkInTextTests::ValidateTapAndClick()
     rtbO2Helper.MouseOverAndClickHyperlink();
 }
 
+// Turns on caret browsing, then tabs from a Button until the Hyperlink named 'myhl' in hostXaml has focus.
+// With caret browsing on, the text host can be a tab stop too, so Tab may stop on it first.
+void HyperlinkInTextTests::CaretBrowsingTabToHyperlink(
+    const wchar_t* hostXaml,
+    const wchar_t* visualParentName,
+    std::function<void(FrameworkElement^, Hyperlink^)> verifyAfterFocus)
+{
+    TestCleanupWrapper cleanup;
+    auto caretBrowsingGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->SetCaretBrowsingModeGlobal(false, false);
+    });
+
+    Button^ button = nullptr;
+    Hyperlink^ hyperlink = nullptr;
+    FrameworkElement^ visualParent = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        std::wstring xamlString =
+            L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+            L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+            L"    <Button x:Name='button' Content='Button'/>";
+        xamlString += hostXaml;
+        xamlString += L"</StackPanel>";
+
+        auto rootPanel = safe_cast<StackPanel^>(XamlReader::Load(ref new Platform::String(xamlString.c_str())));
+        button = safe_cast<Button^>(rootPanel->FindName(L"button"));
+        hyperlink = safe_cast<Hyperlink^>(rootPanel->FindName(L"myhl"));
+        visualParent = safe_cast<FrameworkElement^>(rootPanel->FindName(ref new Platform::String(visualParentName)));
+        VERIFY_IS_NOT_NULL(button);
+        VERIFY_IS_NOT_NULL(hyperlink);
+        VERIFY_IS_NOT_NULL(visualParent);
+
+        TestServices::WindowHelper->WindowContent = rootPanel;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        // Guards the setup: the Hyperlink's caret-browsing code branches on this element's type.
+        VERIFY_IS_TRUE(visualParent == hyperlink->ContentStart->VisualParent);
+    });
+
+    FocusTestHelper::EnsureFocus(button, FocusState::Keyboard);
+    TestServices::WindowHelper->SetCaretBrowsingModeGlobal(true, false);
+    TestServices::WindowHelper->WaitForIdle();
+
+    bool hyperlinkHasFocus = false;
+    for (int i = 0; i < 3 && !hyperlinkHasFocus; i++)
+    {
+        LOG_OUTPUT(L"Pressing Tab");
+        TestServices::KeyboardHelper->Tab();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            hyperlinkHasFocus = FocusManager::GetFocusedElement(button->XamlRoot)->Equals(hyperlink);
+        });
+    }
+    VERIFY_IS_TRUE(hyperlinkHasFocus);
+
+    RunOnUIThread([&]()
+    {
+        verifyAfterFocus(visualParent, hyperlink);
+    });
+}
+
+void HyperlinkInTextTests::CaretBrowsingTabToHyperlinkInNonSelectableTextBlock()
+{
+    CaretBrowsingTabToHyperlink(
+        L"<TextBlock x:Name='host' IsTextSelectionEnabled='False'>"
+        L"    Some text <Hyperlink x:Name='myhl'>Hyperlink</Hyperlink>"
+        L"</TextBlock>",
+        L"host",
+        [](FrameworkElement^ host, Hyperlink^)
+        {
+            VERIFY_IS_NULL(safe_cast<TextBlock^>(host)->SelectionStart);
+        });
+}
+
+void HyperlinkInTextTests::CaretBrowsingTabToHyperlinkInNonSelectableRichTextBlock()
+{
+    CaretBrowsingTabToHyperlink(
+        L"<RichTextBlock x:Name='host' IsTextSelectionEnabled='False'>"
+        L"    <Paragraph>Some text <Hyperlink x:Name='myhl'>Hyperlink</Hyperlink></Paragraph>"
+        L"</RichTextBlock>",
+        L"host",
+        [](FrameworkElement^ host, Hyperlink^)
+        {
+            VERIFY_IS_NULL(safe_cast<RichTextBlock^>(host)->SelectionStart);
+        });
+}
+
+void HyperlinkInTextTests::CaretBrowsingTabToHyperlinkInNonSelectableRichTextBlockOverflow()
+{
+    // The first paragraph fills the RichTextBlock, so the Hyperlink lands in the overflow.
+    CaretBrowsingTabToHyperlink(
+        L"<RichTextBlock x:Name='master' IsTextSelectionEnabled='False' Width='200' Height='25' FontSize='15'"
+        L"    OverflowContentTarget='{Binding ElementName=overflow}'>"
+        L"    <Paragraph>First line</Paragraph>"
+        L"    <Paragraph><Hyperlink x:Name='myhl'>Hyperlink</Hyperlink></Paragraph>"
+        L"</RichTextBlock>"
+        L"<RichTextBlockOverflow x:Name='overflow' Width='200' Height='100'/>",
+        L"overflow",
+        [](FrameworkElement^ host, Hyperlink^)
+        {
+            VERIFY_IS_NULL(safe_cast<RichTextBlockOverflow^>(host)->ContentSource->SelectionStart);
+        });
+}
+
+void HyperlinkInTextTests::CaretBrowsingTabToHyperlinkInSelectableTextBlock()
+{
+    CaretBrowsingTabToHyperlink(
+        L"<TextBlock x:Name='host' IsTextSelectionEnabled='True'>"
+        L"    Some text <Hyperlink x:Name='myhl'>Hyperlink</Hyperlink>"
+        L"</TextBlock>",
+        L"host",
+        [](FrameworkElement^ host, Hyperlink^ hyperlink)
+        {
+            // Focusing the Hyperlink moves the caret to its start.
+            auto textBlock = safe_cast<TextBlock^>(host);
+            VERIFY_ARE_EQUAL(hyperlink->ContentStart->Offset, textBlock->SelectionStart->Offset);
+            VERIFY_ARE_EQUAL(hyperlink->ContentStart->Offset, textBlock->SelectionEnd->Offset);
+        });
+}
+
 } } } } } }
