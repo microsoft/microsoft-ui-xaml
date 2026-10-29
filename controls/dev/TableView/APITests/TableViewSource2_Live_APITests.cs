@@ -135,6 +135,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a bulk live drain with one throwing key falls back to per-row placement: every other change applies and only the failing row stays.")]
+        public void VerifyLiveBulkDrainExceptionDropsOnlyFailingRow()
+        {
+            var rows = new ObservableCollection<LiveRow>(
+                Enumerable.Range(0, 20).Select(i => NewLive(i, $"R{i}", i + 1, "X")));
+            var source = FromOnUI(rows);
+            var tableView = PlaceTreeSource(source, null);
+            var throwingAt99 = LiveKey(r => r.Score == 99 ? throw new InvalidOperationException("key") : r.Score);
+            OnUI(tableView, () => source.Sort(throwingAt99, SortDirection.Ascending).IsLiveShaping = true);
+            var events = RecordViewEvents(tableView);
+
+            OnUI(tableView, () =>
+            {
+                foreach (var row in rows)
+                {
+                    row.Score = row.Id == 5 ? 99 : -row.Score;
+                }
+            });
+
+            // R5's key throws, so it keeps its old key (6) and sorts after every negated row.
+            var negated = Enumerable.Range(0, 20).Reverse().Where(i => i != 5).Select(i => $"R{i}");
+            string expected = string.Join(" ", negated.Concat(new[] { "R5" }));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, expected, "every change but R5's applied"));
+            Verify.IsFalse(events.Contains("Reset"), "The failed rebuild fell back to per-row edits.");
+
+            OnUI(tableView, () => rows[5].Score = -50);
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "R5 " + string.Join(" ", negated), "R5's next change applies"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a live change raised by app code while a verb applies is drained after it, not lost.")]
+        public void VerifyLiveChangeDuringApplyIsDrainedAfter()
+        {
+            var tableView = PlaceLiveFlat(out var source, out var rows);
+            OnUI(tableView, () => source.Sort(LiveByScore, SortDirection.Ascending));
+            bool changed = false;
+            var a = rows[0];
+            var touching = new TableViewPredicate(o =>
+            {
+                if (!changed)
+                {
+                    changed = true;
+                    a.Score = 35;
+                }
+                return true;
+            });
+
+            OnUI(tableView, () => source.Filter(touching));
+            Verify.IsTrue(changed, "The predicate ran.");
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C A D", "A's change made during the apply was drained"));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a property change raised off the UI thread is applied on the UI thread.")]
         public void VerifyOffThreadPropertyChangeIsMarshalled()
         {
