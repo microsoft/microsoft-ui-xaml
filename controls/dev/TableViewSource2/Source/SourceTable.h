@@ -275,6 +275,17 @@ public:
     // once the re-read has happened (a notification already re-read) or is no longer owed.
     bool IsRereadDue() const noexcept;
 
+    // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
+    // does; it only runs on the UI thread, so it does not depend on m_binding) unless one is
+    // already posted (m_rereadPosted). The
+    // callback holds weak_from_this() and returns if the table is gone or detached; it clears
+    // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
+    // nor held (otherwise the owed re-read is left for that freeze's or hold's report point). A
+    // throw from it is swallowed: the flags follow Refresh()'s failure rules. No queue (headless
+    // or test): nothing is posted and the re-read stays owed until the next report point or
+    // Refresh(). Also the posted retry of `ShapingManager::ResyncSource`.
+    void PostReread() noexcept;
+
     // ---- Source tree (hierarchy) ------------------------------------------------------------
 
     // Top-level records of the source tree, in source order. Flat: the same records as Records().
@@ -397,16 +408,8 @@ private:
     // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
     void DrainPendingChanges();
 
-    // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
-    // does; it only runs on the UI thread, so it does not depend on m_binding) unless one is
-    // already posted (m_rereadPosted). The
-    // callback holds weak_from_this() and returns if the table is gone or detached; it clears
-    // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
-    // nor held (otherwise the owed re-read is left for that freeze's or hold's report point). A
-    // throw from it is swallowed: the flags follow Refresh()'s failure rules. No queue (headless
-    // or test): nothing is posted and the re-read stays owed until the next report point or
-    // Refresh().
-    void PostReread() noexcept;
+    // Refresh() epilogue: posts a re-read owed by its own dispatch, unless a freeze or hold will report it.
+    void PostRereadIfOwed() noexcept;
 
     void AddToLookups(SourceRecord* record);
 

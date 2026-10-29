@@ -111,7 +111,27 @@ void SourceTable::Refresh()
     m_diverged = false;
     m_rereadDue = false;
 
-    RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, added, removed);
+    // Anti-loop (one synchronous re-read per turn): a change skipped during this Reset's dispatch
+    // is posted, never re-read here.
+    try
+    {
+        RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, added, removed);
+    }
+    catch (...)
+    {
+        PostRereadIfOwed();
+        throw;
+    }
+
+    PostRereadIfOwed();
+}
+
+void SourceTable::PostRereadIfOwed() noexcept
+{
+    if (m_rereadDue && !IsFrozen() && m_resetHoldDepth == 0)
+    {
+        PostReread();
+    }
 }
 
 void SourceTable::ValidateItems(std::vector<winrt::Windows::Foundation::IInspectable> const& items)
@@ -311,14 +331,38 @@ bool SourceTable::EndFreeze() noexcept
     MUX_ASSERT(m_freezeDepth > 0);
     --m_freezeDepth;
 
-    // A re-read is reported at the outermost EndFreeze with no hold. Nothing sets m_rereadDue in
-    // Milestone 1; Milestone 2 acts on the result.
+    // Reported at the outermost freeze with no hold open (an open hold reports at EndHoldResets).
     return m_freezeDepth == 0 && m_resetHoldDepth == 0 && m_rereadDue;
 }
 
 bool SourceTable::IsFrozen() const noexcept
 {
     return m_freezeDepth > 0;
+}
+
+void SourceTable::BeginHoldResets() noexcept
+{
+    ++m_resetHoldDepth;
+}
+
+bool SourceTable::EndHoldResets() noexcept
+{
+    MUX_ASSERT(m_resetHoldDepth > 0);
+    --m_resetHoldDepth;
+
+    // Like EndFreeze, reporting does not clear m_rereadDue: only Refresh() does.
+    return m_resetHoldDepth == 0 && (m_rereadDue || m_pendingHierarchy.has_value());
+}
+
+void SourceTable::ScheduleRefresh() noexcept
+{
+    MUX_ASSERT(m_resetHoldDepth > 0);
+    m_rereadDue = true;
+}
+
+bool SourceTable::IsRereadDue() const noexcept
+{
+    return m_rereadDue;
 }
 
 std::vector<SourceRecord*> const& SourceTable::TopLevel() const noexcept
@@ -436,10 +480,87 @@ void SourceTable::Reparent(SourceRecord*, SourceRecord*, uint32_t)
     throw winrt::hresult_not_implemented();
 }
 
-bool SourceTable::AdmitChange(bool)
+bool SourceTable::AdmitChange(bool isReset)
 {
-    // Milestone 2 adds the freeze, hold and divergence gating.
+    if (IsDetached())
+    {
+        return false;
+    }
+
+    // Frozen: nothing changes under the engine. Held: a Reset (or anything after one) waits for
+    // the re-read at EndHoldResets; incremental changes are still applied.
+    if (IsFrozen() || (m_resetHoldDepth > 0 && (isReset || m_diverged)))
+    {
+        m_diverged = true;
+        m_rereadDue = true;
+        return false;
+    }
+
+    // A whole-collection change, or any change once diverged, is a re-read. Its throw (validation,
+    // enumerator) propagates into the app's mutation. This is the turn's synchronous re-read, so
+    // the caller must not DrainPendingChanges afterwards.
+    if (isReset || m_diverged)
+    {
+        Refresh();
+        return false;
+    }
+
     return true;
+}
+
+void SourceTable::DrainPendingChanges()
+{
+    // A change skipped during this notification's own dispatch: the turn's one synchronous re-read.
+    if (!IsDetached() && !IsFrozen() && m_resetHoldDepth == 0 && m_rereadDue)
+    {
+        Refresh();
+    }
+}
+
+void SourceTable::PostReread() noexcept
+{
+    if (m_rereadPosted || IsDetached())
+    {
+        return;
+    }
+
+    try
+    {
+        auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        if (!queue)
+        {
+            // Headless or test: the re-read stays owed until the next report point or Refresh().
+            return;
+        }
+
+        m_rereadPosted = queue.TryEnqueue([weakThis = weak_from_this()]()
+        {
+            auto const self = weakThis.lock();
+            if (!self || self->IsDetached())
+            {
+                return;
+            }
+
+            self->m_rereadPosted = false;
+            if (!self->m_rereadDue || self->IsFrozen() || self->m_resetHoldDepth > 0)
+            {
+                // Done already, or left for the open freeze's or hold's report point.
+                return;
+            }
+
+            try
+            {
+                self->Refresh();
+            }
+            catch (...)
+            {
+                // The flags follow Refresh()'s failure rules.
+            }
+        });
+    }
+    catch (...)
+    {
+    }
 }
 
 void SourceTable::RaiseSourceChanged(
