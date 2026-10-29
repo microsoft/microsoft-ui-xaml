@@ -804,9 +804,17 @@ void SourceTable::OnRecordPropertyChanged(SourceRecordWeakPtr const& weakRecord,
     }
 
     auto const record = weakRecord.lock();
-    if (!record || !m_itemChanged)
+    if (!record)
     {
-        // m_itemChanged is null until Milestone 6 (ShapingManager::OnItemChanged).
+        return;
+    }
+
+    // ParentBy: a key may have changed. Its error propagates into the app's setter.
+    (void)ReevaluateHierarchy(record.get(), propertyName);
+
+    // m_itemChanged is null until Milestone 6 (ShapingManager::OnItemChanged).
+    if (!m_itemChanged || IsDetached())
+    {
         return;
     }
 
@@ -918,12 +926,17 @@ void SourceTable::ValidateIncoming(
 
 void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
 {
-    MUX_ASSERT(!m_hierarchy);
     MUX_ASSERT(index <= m_records.size());
 
     try
     {
-        ValidateIncoming({ item }, nullptr);
+        // ChildrenBy: the item brings its whole subtree; every item in it is checked first.
+        std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
+        if (m_hierarchy && item)
+        {
+            m_hierarchy->CollectIncoming(item, incoming);
+        }
+        ValidateIncoming(incoming, nullptr);
     }
     catch (...)
     {
@@ -935,31 +948,132 @@ void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspecta
     auto record = CreateRecord(item);
     SourceRecord* const raw = record.get();
     m_records.insert(m_records.begin() + index, std::move(record));
-    m_topLevel.insert(m_topLevel.begin() + index, raw);
 
     std::vector<SourceRecordPtr> removed;
-    RaiseEdit(SourceChangeKind::Add, nullptr, nullptr, 0, index, { raw }, removed);
+    if (!m_hierarchy)
+    {
+        m_topLevel.insert(m_topLevel.begin() + index, raw);
+        RaiseEdit(SourceChangeKind::Add, nullptr, nullptr, 0, index, { raw }, removed);
+        return;
+    }
+
+    // Spec Misbehaving records: a bad key or a throwing selector never undoes the insert. The
+    // strategy places the record (or excludes it: no Add), the Add is raised, the strategy then
+    // raises what follows from it (ParentBy adoption: one Move, or one Reset for more than one),
+    // and the first error propagates into the app's Add / Insert.
+    std::exception_ptr error;
+    if (m_hierarchy->OnInserted(*this, raw, error))
+    {
+        std::vector<SourceRecord*> added;
+        AppendSourceSubtree(raw, added);
+        try
+        {
+            RaiseEdit(
+                SourceChangeKind::Add,
+                nullptr,
+                raw->Parent,
+                0,
+                IndexInSourceSiblings(SiblingsOf(raw->Parent), raw),
+                added,
+                removed);
+        }
+        catch (...)
+        {
+            // AfterInserted (orphan adoption) is skipped: the next notification re-reads.
+            RequestReset();
+            throw;
+        }
+
+        try
+        {
+            m_hierarchy->AfterInserted(*this, raw);
+        }
+        catch (...)
+        {
+            PostRereadIfOwed();
+            throw;
+        }
+    }
+
+    if (error)
+    {
+        std::rethrow_exception(error);
+    }
 }
 
 void SourceTable::RemoveAt(uint32_t index)
 {
-    MUX_ASSERT(!m_hierarchy);
     MUX_ASSERT(index < m_records.size());
 
     std::vector<SourceRecordPtr> removed;
     removed.push_back(std::move(m_records[index]));
     m_records.erase(m_records.begin() + index);
-    m_topLevel.erase(m_topLevel.begin() + index);
-    RemoveFromLookups(removed.front().get());
+    SourceRecord* const raw = removed.front().get();
+    RemoveFromLookups(raw);
 
-    // `removed` keeps the record alive (Item, Identity()) until the handler returns.
-    RaiseEdit(SourceChangeKind::Remove, nullptr, nullptr, index, 0, {}, removed);
+    // `removed` keeps the records alive (Item, Identity()) until the handler returns.
+    if (!m_hierarchy)
+    {
+        m_topLevel.erase(m_topLevel.begin() + index);
+        RaiseEdit(SourceChangeKind::Remove, nullptr, nullptr, index, 0, {}, removed);
+        return;
+    }
+
+    // ParentBy moves its children to the top level first (one Move each, raised while it is
+    // still in the shaped tree); ChildrenBy appends its subtree to removed. An excluded record
+    // is in no sibling list and raises nothing.
+    bool linked = false;
+    try
+    {
+        linked = m_hierarchy->OnRemoving(*this, raw, removed);
+    }
+    catch (...)
+    {
+        PostRereadIfOwed();
+        throw;
+    }
+
+    if (!linked)
+    {
+        return;
+    }
+
+    SourceRecord* const oldParent = raw->Parent;
+    auto& siblings = SiblingsOf(oldParent);
+    uint32_t const oldIndex = IndexInSourceSiblings(siblings, raw);
+    siblings.erase(siblings.begin() + oldIndex);
+    raw->Parent = nullptr;
+    RaiseEdit(SourceChangeKind::Remove, oldParent, nullptr, oldIndex, 0, {}, removed);
 }
 
 void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
 {
-    MUX_ASSERT(!m_hierarchy);
     MUX_ASSERT(index < m_records.size());
+
+    if (m_hierarchy)
+    {
+        // Drift #16: validate the incoming item (and, under ChildrenBy, its subtree) against the
+        // leaving record first, so a rejection writes nothing; then a Remove and an Add, each
+        // placed by the strategy (InsertAt validates again; the children selector may run twice).
+        try
+        {
+            std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
+            if (item)
+            {
+                m_hierarchy->CollectIncoming(item, incoming);
+            }
+            ValidateIncoming(incoming, m_records[index].get());
+        }
+        catch (...)
+        {
+            m_diverged = true;
+            throw;
+        }
+
+        RemoveAt(index);
+        InsertAt(index, item);
+        return;
+    }
 
     SourceRecord* const old = m_records[index].get();
     try
@@ -986,7 +1100,6 @@ void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspect
 
 void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
 {
-    MUX_ASSERT(!m_hierarchy);
     MUX_ASSERT(fromIndex < m_records.size() && toIndex < m_records.size());
 
     if (fromIndex == toIndex)
@@ -994,16 +1107,29 @@ void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
         return;
     }
 
-    auto record = std::move(m_records[fromIndex]);
+    auto moving = std::move(m_records[fromIndex]);
+    SourceRecord* const raw = moving.get();
     m_records.erase(m_records.begin() + fromIndex);
-    m_records.insert(m_records.begin() + toIndex, std::move(record));
-
-    SourceRecord* const raw = m_topLevel[fromIndex];
-    m_topLevel.erase(m_topLevel.begin() + fromIndex);
-    m_topLevel.insert(m_topLevel.begin() + toIndex, raw);
+    m_records.insert(m_records.begin() + toIndex, std::move(moving));
 
     std::vector<SourceRecordPtr> removed;
-    RaiseEdit(SourceChangeKind::Move, nullptr, nullptr, fromIndex, toIndex, {}, removed);
+    if (!m_hierarchy)
+    {
+        m_topLevel.erase(m_topLevel.begin() + fromIndex);
+        m_topLevel.insert(m_topLevel.begin() + toIndex, raw);
+        RaiseEdit(SourceChangeKind::Move, nullptr, nullptr, fromIndex, toIndex, {}, removed);
+        return;
+    }
+
+    // The record keeps its parent; only its place among its siblings can change.
+    SourceRecord* const parent = raw->Parent;
+    uint32_t const oldSibling = IndexInSourceSiblings(SiblingsOf(parent), raw);
+    m_hierarchy->OnMoved(*this, raw, fromIndex, toIndex);
+    uint32_t const newSibling = IndexInSourceSiblings(SiblingsOf(parent), raw);
+    if (oldSibling != newSibling)
+    {
+        RaiseEdit(SourceChangeKind::Move, parent, parent, oldSibling, newSibling, {}, removed);
+    }
 }
 
 void SourceTable::RaiseEdit(
@@ -1072,6 +1198,31 @@ void SourceTable::UpdateDepths(SourceRecord* record)
             pending.push_back(child);
         }
     }
+}
+
+bool SourceTable::ReevaluateHierarchy(SourceRecord* record, winrt::hstring const& propertyName)
+{
+    // The same gate as a single-item change (drift #17): frozen or held, it is skipped and a
+    // re-read is owed; diverged, it re-reads now.
+    if (!m_hierarchy || !AdmitChange(false))
+    {
+        return false;
+    }
+
+    bool changed = false;
+    try
+    {
+        changed = m_hierarchy->Reevaluate(*this, record, propertyName);
+    }
+    catch (...)
+    {
+        // A selector or key error (after the tree changes were raised) or a listener fault.
+        PostRereadIfOwed();
+        throw;
+    }
+
+    DrainPendingChanges();
+    return changed;
 }
 
 bool SourceTable::AdmitChange(bool isReset)
