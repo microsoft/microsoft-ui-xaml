@@ -221,6 +221,8 @@ void ShapedCollectionView::NotifyReset()
 
 void ShapedCollectionView::Detach() noexcept
 {
+    // Subscribers (InspectingDataSource) may fail to unsubscribe during teardown; drop them here.
+    m_collectionChanged.clear();
     m_rows = nullptr;
 }
 
