@@ -267,7 +267,8 @@ private:
     // posted); on a throw they are merged back.
     void ApplyDesiredSpec();
 
-    // Rebuilds the shaped tree from SourceTable::Records() with the desired spec. Never reads
+    // Rebuilds the shaped tree from SourceTable::Records() with the desired spec (the applied
+    // spec while a DeferRefresh is open, drift #62). Never reads
     // the source. Used for a SourceTable Reset (`arrivals` = SourceChange::Added); goes through
     // ShapingEngine::ReapplyForSource, so a delegate throw still drops the departed records.
     void Reapply(std::span<SourceRecord* const> arrivals);

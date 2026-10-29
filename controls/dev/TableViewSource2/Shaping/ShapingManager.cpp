@@ -783,7 +783,18 @@ void ShapingManager::OnSourceChanged(SourceChange const& change)
 void ShapingManager::Reapply(std::span<SourceRecord* const> arrivals)
 {
     m_liveDirty.clear();
-    m_engine.ReapplyForSource(m_desired, arrivals);
+    if (CanReshape())
+    {
+        m_engine.ReapplyForSource(m_desired, arrivals);
+    }
+    else
+    {
+        // A Reset that reaches here inside a DeferRefresh (a ParentBy adoption raises one directly,
+        // bypassing the hold) keeps the applied spec; the verbs in the scope wait for the close
+        // (drift #62). Copied: the engine replaces Applied() while it rebuilds.
+        ShapeSpec const applied = m_engine.Applied();
+        m_engine.ReapplyForSource(applied, arrivals);
+    }
 }
 
 void ShapingManager::OnRowsRemoved(uint32_t index, uint32_t count, bool isMove) noexcept

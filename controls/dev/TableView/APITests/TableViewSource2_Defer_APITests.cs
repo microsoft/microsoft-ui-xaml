@@ -257,5 +257,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyEvents(events, "Reset", "The deferral ended: ClearFilter applies at once");
             RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C D E", "ClearFilter applied"));
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a ParentBy adoption Reset inside DeferRefresh (raised by the hierarchy, not held) keeps the applied spec: a deferred Filter waits for Close, which applies it with one Reset.")]
+        public void VerifyDeferRefreshParentByAdoptionResetKeepsAppliedSpec()
+        {
+            var people = MakeTree();
+            Named(people, "Fay").ManagerId = 99;
+            var source = FromOnUI(people);
+            var tableView = PlaceTreeSource(source, s => s.ParentBy(ById, ByManager));
+            ExpandAll(tableView);
+            VerifyTreeOnUI(tableView, "Ada1- Ben2- Dan3 Cy2 Eve1 Fay1 Gus1", "Fay and Gus are orphans");
+            var events = RecordViewEvents(tableView);
+
+            IDisposable handle = null;
+            RunOnUIThread.Execute(() =>
+            {
+                handle = source.DeferRefresh();
+                source.Filter(new TableViewPredicate(o => ((TreeEmployee)o).Name != "Fay"));
+            });
+            SettleLayout(tableView);
+            VerifyEvents(events, "", "The Filter is deferred");
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("no exception", ThrownTypeName(() => people.Insert(0, new TreeEmployee { Id = 99, Name = "Zed" })), "Adopting two orphans inside the scope does not throw."));
+            SettleLayout(tableView);
+            VerifyEvents(events, "Reset", "Adopting two orphans raises the hierarchy's Reset");
+            OnUI(tableView, () => tableView.ExpandAllRows());
+            VerifyTreeOnUI(tableView, "Zed1- Fay2 Gus2 Ada1- Ben2- Dan3 Cy2 Eve1", "The Reset kept the applied spec: Fay is not filtered yet");
+            RunOnUIThread.Execute(() => events.Clear());
+
+            OnUI(tableView, () => handle.Dispose());
+            VerifyEvents(events, "Reset", "Close applies the deferred Filter once");
+            OnUI(tableView, () => tableView.ExpandAllRows());
+            VerifyTreeOnUI(tableView, "Zed1- Gus2 Ada1- Ben2- Dan3 Cy2 Eve1", "Fay filtered out after Close");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a predicate that closes the handle or opens a DeferRefresh while a commit applies gets InvalidOperationException for both, the handle stays open, and a later Close applies once.")]
+        public void VerifyDeferRefreshReentrantCloseAndOpenThrow()
+        {
+            var tableView = PlaceFlat(out var source, out var rows);
+            IDisposable handle = null;
+            bool armed = false;
+            string closeResult = null;
+            string openResult = null;
+            var reentrant = new TableViewPredicate(o =>
+            {
+                if (armed && ((LiveRow)o).Name == "E")
+                {
+                    armed = false;
+                    closeResult = ThrownTypeName(() => handle.Dispose());
+                    openResult = ThrownTypeName(() => source.DeferRefresh());
+                }
+                return true;
+            });
+            OnUI(tableView, () => source.Filter(reentrant));
+            var events = RecordViewEvents(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                handle = source.DeferRefresh();
+                source.Sort("Score", SortDirection.Descending);
+                armed = true;
+                rows.Add(new LiveRow { Id = 5, Name = "E", Score = 50, Team = "X" });
+            });
+            SettleLayout(tableView);
+            VerifyEvents(events, "Add@4", "The Add is shaped with the applied spec");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("InvalidOperationException", closeResult, "Close during an apply throws.");
+                Verify.AreEqual("InvalidOperationException", openResult, "DeferRefresh during an apply throws.");
+                VerifyShaped(tableView, "A B C D E", "The Sort is still deferred");
+            });
+
+            OnUI(tableView, () => handle.Dispose());
+            VerifyEvents(events, "Reset", "The handle stayed open; a later Close applies once");
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "E D C B A", "Sort applied"));
+        }
     }
 }
