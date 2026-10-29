@@ -2567,6 +2567,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyBackButtonHitTargetFollowsMinHeight()
+        {
+            // The backplate keeps a MinHeight larger than the style's Height, including one the app sets after load.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                Content = navView;
+                Content.UpdateLayout();
+                var backButton = GetBackButton(navView);
+                var visual = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
+
+                Log.Comment("App sets MinHeight 48 after load");
+                backButton.MinHeight = 48;
+                Content.UpdateLayout();
+                VerifyBackButtonStartsAtCorner(navView, backButton);
+                Verify.AreEqual(54.0, backButton.ActualHeight, "Back button hit target height");
+                VerifyElementOffset(navView, visual, 4.0, 6.0, "Back button visual");
+                Verify.AreEqual(48.0, visual.ActualHeight, "Back button visual height");
+
+                Log.Comment("App clears MinHeight");
+                backButton.ClearValue(FrameworkElement.MinHeightProperty);
+                Content.UpdateLayout();
+                VerifyBackButtonGeometry(navView, backButton, 48.0, isTopMode: false);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBackButtonHitTargetFollowsContainerMargin()
+        {
+            // The hit target extends over the back button's container margin; a runtime change of that margin is followed.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                Content = navView;
+                Content.UpdateLayout();
+                var backButton = GetBackButton(navView);
+                var holder = VisualTreeHelper.GetParent(backButton) as FrameworkElement;
+                var visual = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
+
+                holder.Margin = new Thickness(0, 8, 0, 8);
+                Content.UpdateLayout();
+                VerifyBackButtonStartsAtCorner(navView, backButton);
+                Verify.AreEqual(46.0, backButton.ActualHeight, "Back button hit target height");
+                VerifyElementOffset(navView, visual, 4.0, 10.0, "Back button visual");
+                Verify.AreEqual(36.0, visual.ActualHeight, "Back button visual height");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBackButtonHitTargetKeepsValueSetDuringUpdate()
+        {
+            // While NavigationView recomputes the hit target it briefly clears its own Height to read the style's. An app
+            // callback that binds Height at that moment must keep its binding.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                Content = navView;
+                Content.UpdateLayout();
+                var backButton = GetBackButton(navView);
+                VerifyBackButtonGeometry(navView, backButton, 48.0, isTopMode: false);
+
+                bool installed = false;
+                long token = backButton.RegisterPropertyChangedCallback(FrameworkElement.HeightProperty, (sender, dp) =>
+                {
+                    if (!installed && backButton.ReadLocalValue(FrameworkElement.HeightProperty) == DependencyProperty.UnsetValue)
+                    {
+                        installed = true;
+                        backButton.SetBinding(FrameworkElement.HeightProperty, new Microsoft.UI.Xaml.Data.Binding() { Source = 30.0 });
+                    }
+                });
+
+                Log.Comment("CompactPaneLength 64 recomputes the hit target");
+                navView.CompactPaneLength = 64;
+                Content.UpdateLayout();
+                backButton.UnregisterPropertyChangedCallback(FrameworkElement.HeightProperty, token);
+
+                Verify.IsTrue(installed, "App binding installed during the update");
+                Verify.IsNotNull(backButton.GetBindingExpression(FrameworkElement.HeightProperty), "App Height binding kept");
+                Verify.AreEqual(30.0, backButton.ActualHeight, "Back button height");
+                VerifyNoHitTargetValues(backButton, FrameworkElement.HeightProperty);
+            });
+        }
+
         // The back button shows the app's geometry and none of the values NavigationView sets for the enlarged hit target.
         private void VerifyBackButtonHasAppGeometry(NavigationView navView, Button backButton, Thickness appMargin, double x, double y, double width, double height)
         {
