@@ -4,15 +4,98 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewSource.h"
+#include "TableViewTip.h"
 #include "RowMetadataProvider.h"
 #include "GroupedSourceAdapter.h"
+#include "HierarchicalSourceAdapter.h"
 #include "ShapedItemsSource.h"
+#include "ShapingHelpers.h"
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
 
 namespace
 {
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
+}
+
+struct TableViewSource::ShapingTip
+{
+    ShapingTip(TableViewSource& source, TableViewTip::Operation kind, bool meaningful = true) :
+        source(source), kind(kind), handlers(source.m_shapingTipHandlers),
+        previous(std::exchange(source.m_shapingTip, this)), ownerGeneration(source.m_ownerGeneration)
+    {
+        observation.unproven = previous || source.m_notificationDepth;
+        if (previous) { previous->observation.unproven = true; }
+        if (handlers)
+        {
+            generation = handlers->begin(kind, meaningful);
+        }
+    }
+
+    ~ShapingTip()
+    {
+        source.m_shapingTip = previous;
+        if (handlers)
+        {
+            auto const stale = ownerGeneration != source.m_ownerGeneration;
+            handlers->complete(kind, generation, !stale && observation.Failed(),
+                stale ? std::optional{ TableViewTip::IgnoreReason::Stale } : observation.Ignored(),
+                observation.error, observation.appFaultKind, observation.contained);
+        }
+    }
+
+    ShapingTip(ShapingTip const&) = delete;
+    ShapingTip& operator=(ShapingTip const&) = delete;
+
+    template<class Callback>
+    void Apply(Callback&& callback)
+    {
+        // The verb counts its own contained delegate faults, however it ends. A tally already running belongs to the verb
+        // a delegate started this one in, and goes back to it; with no such verb it is live shaping's or a source
+        // change's, not this verb's.
+        auto const enclosing = source.m_engine->ExchangeSwallowedFaults({});
+        auto takeContained = gsl::finally([this, enclosing]() noexcept
+        {
+            auto const own = source.m_engine->ExchangeSwallowedFaults(previous ? enclosing : ShapingHelpers::SwallowedFaults{});
+            observation.contained = { own.count, own.firstError };
+        });
+        try
+        {
+            std::forward<Callback>(callback)();
+            observation.completed = true;
+        }
+        catch (...)
+        {
+            // The app's collection, its broken contract, or a callout arrive tagged as the app's; TableView's own
+            // invalid arguments stay its own.
+            auto const fault = TableViewTip::CurrentFault();
+            if (!observation.error) { observation.error = fault.error; }
+            if (observation.appFaultKind == TableViewTip::AppFaultKind::None) { observation.appFaultKind = fault.appFault; }
+            throw;
+        }
+    }
+
+    TableViewSource& source;
+    TableViewTip::Operation kind;
+    std::shared_ptr<ShapingTipHandlers> handlers;
+    ShapingTip* previous{};
+    uint64_t ownerGeneration{};
+    uint64_t generation{};
+    TableViewTip::ShapingObservation observation;
+};
+
+void TableViewSource::SetShapingTipHandlers(
+    winrt::IInspectable const& owner,
+    std::function<uint64_t(TableViewTip::Operation, bool)> begin,
+    ShapingTipCompleted complete)
+{
+    if (m_owningTableView.get() != owner) { return; }
+    try
+    {
+        m_shapingTipHandlers = std::make_shared<ShapingTipHandlers>(
+            ShapingTipHandlers{ std::move(begin), std::move(complete) });
+    }
+    catch (...) { OutputDebugStringW(L"TableView TiP: source observation unavailable.\n"); }
 }
 
 TableViewSource::~TableViewSource() = default;
@@ -46,7 +129,11 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     {
         throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
     }
-    m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
+    ShapingTip tip{ *this, TableViewTip::Operation::Filter };
+    tip.Apply([&]()
+    {
+        m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
+    });
     return *this;
 }
 
@@ -62,44 +149,84 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
 
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration };
     RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
     {
         groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
     }
 
-    m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
+    tip.Apply([&]()
+    {
+        m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
+    });
     return *this;
 }
 
+// A clear is measured only when the engine holds something to clear. The engine keeps a declaration
+// even when re-projecting it throws, so it, not a flag set around the call, is the answer.
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
-    m_engine->ClearFilter();
+    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_engine->HasFilter() };
+    tip.Apply([&]() { m_engine->ClearFilter(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
-    m_engine->ClearGroup();
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
+    tip.Apply([&]() { m_engine->ClearGroup(); });
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
+{
+    if (!keySelector || !parentKeySelector)
+    {
+        throw winrt::hresult_invalid_argument(L"ParentBy: keySelector and parentKeySelector are required.");
+    }
+
+    m_engine->SetParent(
+        [keySelector](winrt::IInspectable const& item) { return keySelector(item); },
+        [parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ClearParentBy()
+{
+    m_engine->ClearParentBy();
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    m_engine->ClearSorts();
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
+    tip.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
-    m_engine->ClearSort(sortAxisToken);
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis(sortAxisToken) };
+    tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
-    m_engine->ClearSortsExcept(sortAxisToken);
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortOtherThan(sortAxisToken) };
+    tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
+}
+
+bool TableViewSource::IsLiveShaping() const
+{
+    return m_engine->IsLiveShapingEnabled();
+}
+
+void TableViewSource::IsLiveShaping(bool value)
+{
+    m_engine->SetLiveShaping(value);
 }
 
 std::vector<TableViewSource::ActiveSortAxisInfo> TableViewSource::ActiveSortAxisInfos() const
@@ -173,19 +300,92 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
     // delegate, so the identity stays valid for as long as the axis lives.
-    m_engine->SetSort(
-        previousSortAxisToken,
-        sortAxisToken,
-        [key](winrt::IInspectable const& item) { return key(item); },
-        key.as<winrt::Windows::Foundation::IUnknown>(),
-        sortMemberPath,
-        direction);
+    auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
+    // Removing an axis that is not there is a no-op, measured no more than a clear with nothing to clear.
+    bool const meaningful = direction != winrt::SortDirection::None ||
+        m_engine->HasMatchingSort(sortAxisToken, keyIdentity) ||
+        (!previousSortAxisToken.empty() && previousSortAxisToken != sortAxisToken && m_engine->HasSortAxis(previousSortAxisToken));
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, meaningful };
+    tip.Apply([&]()
+    {
+        m_engine->SetSort(
+            previousSortAxisToken,
+            sortAxisToken,
+            [key](winrt::IInspectable const& item) { return key(item); },
+            keyIdentity,
+            sortMemberPath,
+            direction);
+    });
     return *this;
 }
 
 bool TableViewSource::IsGrouped() const
 {
     return m_engine->IsProjectedAsGrouped();
+}
+
+bool TableViewSource::HasFilter() const
+{
+    return m_engine->HasFilter();
+}
+
+bool TableViewSource::HasGroupBy() const
+{
+    return m_engine->HasGroup();
+}
+
+bool TableViewSource::HasParentBy() const
+{
+    return m_engine->HasParentBy();
+}
+
+uint32_t TableViewSource::SourceRowCount() const
+{
+    return m_engine->SourceRowCount();
+}
+
+uint32_t TableViewSource::DataRowCount() const
+{
+    // Rows() is only a snapshot of a tree's visible rows; the published index holds every node the filter keeps.
+    if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
+    {
+        return adapter->KeptNodeCount();
+    }
+    // Rows() is the shaped data without headers and ignores group expansion.
+    auto const rows = m_engine->Rows();
+    return rows ? rows.Size() : 0;
+}
+
+bool TableViewSource::ContainsShapedItem(winrt::IInspectable const& item) const
+{
+    if (!item)
+    {
+        return false;
+    }
+
+    // Decided by the published index, not Kind(): a rebuild publishes the index (or releases it)
+    // before raising the Reset that closes the edit, while Kind() is only updated afterwards.
+    if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
+    {
+        // Rows() is only a snapshot of the visible rows here; the index holds every filtered node.
+        return adapter->IndexContainsItem(item);
+    }
+
+    // Rows() is the shaped data without headers and ignores group expansion.
+    auto const rows = m_engine->Rows();
+    if (!rows)
+    {
+        return false;
+    }
+    auto const identity = item.as<winrt::Windows::Foundation::IUnknown>();
+    for (auto const& row : rows)
+    {
+        if (row && row.as<winrt::Windows::Foundation::IUnknown>() == identity)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
@@ -208,9 +408,47 @@ void TableViewSource::OnProjectionRebuilt()
     case ::ShapedItemsSource::ProjectionKind::Grouped:
     {
         auto const adapter = m_engine->GroupedAdapter();
+        if (!adapter)
+        {
+            // A projection kind without its adapter is never published coherently; keep the
+            // previous projection until the engine publishes again.
+            MUX_ASSERT_MSG(false, L"TableViewSource: Grouped projection published without a grouped adapter.");
+            return;
+        }
         // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
         m_itemsSourceView.set(adapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(adapter, MakeIdentitySelector());
+        break;
+    }
+    case ::ShapedItemsSource::ProjectionKind::Hierarchical:
+    {
+        auto const adapter = m_engine->HierarchicalAdapter();
+        if (!adapter)
+        {
+            MUX_ASSERT_MSG(false, L"TableViewSource: Hierarchical projection published without a hierarchical adapter.");
+            return;
+        }
+        // Same as grouped: consumed directly.
+        m_itemsSourceView.set(adapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(adapter, MakeIdentitySelector());
+        break;
+    }
+    case ::ShapedItemsSource::ProjectionKind::GroupedHierarchical:
+    {
+        // Grouped adapter supplies the presented axis (header rows); hierarchy adapter supplies
+        // level and expansion.
+        auto const groupedAdapter = m_engine->GroupedAdapter();
+        auto const hierarchicalAdapter = m_engine->HierarchicalAdapter();
+        if (!groupedAdapter || !hierarchicalAdapter)
+        {
+            MUX_ASSERT_MSG(false, L"TableViewSource: GroupedHierarchical projection published without both adapters.");
+            return;
+        }
+        m_itemsSourceView.set(groupedAdapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedHierarchicalRows(
+            groupedAdapter,
+            hierarchicalAdapter,
+            MakeIdentitySelector());
         break;
     }
     case ::ShapedItemsSource::ProjectionKind::Flat:
@@ -237,6 +475,7 @@ void TableViewSource::OnProjectionRebuilt()
     // Every rebuild mints a fresh row-metadata provider and can swap the view, so anything the
     // owner cached from the previous projection is stale from here - whether or not grouped-ness
     // changed.
+    if (m_shapingTip) { m_shapingTip->observation.published = true; }
     NotifyOwnerProjectionChanged();
 }
 
@@ -271,7 +510,7 @@ TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
     };
 }
 
-void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
+bool TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
 {
     // Sharing one shaped TableViewSource across two TableView controls has no coherent
     // semantics: shaping verbs (Filter/Sort/GroupBy) mutate a single projection, and the two
@@ -280,52 +519,129 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
     // exists, silently overwriting m_owningTableView here left the previous owner rendering
     // against stale shape metadata and never receiving projection-shape notifications.
     //
-    // Contract: fail-fast if a second live TableView tries to bind to a TableViewSource that
-    // is already owned by a different TableView. In chk this asserts (same shape as the
-    // null-queue and identity fail-fasts in this file); in fre we keep the existing owner
-    // intact and refuse the new binding rather than corrupt the projection state, so a
-    // shipping app degrades gracefully instead of crashing. Callers must Unbind the source
-    // from the previous TableView (assign a different ItemsSource) before binding it here.
-    if (owner)
+    // Contract: a second TableView cannot bind a source another TableView already owns; it is
+    // refused and renders empty until the owner releases it (assigns a different ItemsSource or
+    // is unloaded). Not an assert: a navigation loads the new page before it unloads the old one,
+    // so a refusal is a normal transient state.
+    if (auto existingOwner = m_owningTableView.get())
     {
-        if (auto existingOwner = m_owningTableView.get())
+        if (existingOwner != owner)
         {
-            if (existingOwner != owner)
-            {
-                MUX_ASSERT_MSG(false,
-                    L"TableViewSource: attempted to bind an already-owned source to a second TableView. "
-                    L"A TableViewSource has single-owner semantics; unbind it from the previous "
-                    L"TableView (assign a different ItemsSource) before binding to another.");
-                return;
-            }
-            // Same TableView re-registering itself (e.g. re-entrant ItemsSource re-assignment
-            // with the same value). Idempotent.
+            return false;
+        }
+        // Same TableView re-registering itself (e.g. reclaiming on Loaded). Idempotent.
+    }
+
+    if (m_owningTableView.get() != owner) { ++m_ownerGeneration; }
+    m_owningTableView = winrt::weak_ref<winrt::IInspectable>{ owner };
+    RemoveOwnerReleasedHandler(owner);
+    return true;
+}
+
+void TableViewSource::AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler)
+{
+    RemoveOwnerReleasedHandler(waiter);
+    m_ownerReleasedWaiters.push_back({ winrt::weak_ref<winrt::IInspectable>{ waiter }, std::move(handler) });
+}
+
+void TableViewSource::RemoveOwnerReleasedHandler(winrt::IInspectable const& waiter)
+{
+    // Also prunes waiters that have been collected.
+    std::erase_if(m_ownerReleasedWaiters, [&waiter](OwnerReleasedWaiter const& entry)
+    {
+        auto const entryWaiter = entry.Waiter.get();
+        return !entryWaiter || entryWaiter == waiter;
+    });
+}
+
+void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
+{
+    // Only the owner can release; a table whose bind was refused must not detach the real owner.
+    if (auto existingOwner = m_owningTableView.get(); existingOwner && existingOwner != owner)
+    {
+        return;
+    }
+
+    if (m_owningTableView.get()) { ++m_ownerGeneration; }
+    m_owningTableView = winrt::weak_ref<winrt::IInspectable>{ nullptr };
+
+    // Drop the owner's handlers with the owner itself, so a source that has been swapped out of
+    // ItemsSource cannot drive the control it used to belong to.
+    m_projectionChanged = nullptr;
+    m_shapingChanged = nullptr;
+    m_shapingTipHandlers.reset();
+    // A restore held for the former owner's editor must not wait on an edit it will no longer
+    // hear the end of.
+    m_engine->SetLiveShapingHold(nullptr);
+    m_engine->SetLiveItemChangedHook(nullptr);
+    m_engine->SetRowsReleasedHook(nullptr);
+    m_engine->SetLiveItemReshapeHandler(nullptr);
+    m_engine->ResumeHeldLiveShaping();
+
+    // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
+    // it re-enters SetOwningTableView, and one that does not claim must not be retried.
+    while (!m_owningTableView.get() && !m_ownerReleasedWaiters.empty())
+    {
+        auto waiter = std::move(m_ownerReleasedWaiters.front());
+        m_ownerReleasedWaiters.erase(m_ownerReleasedWaiters.begin());
+        if (waiter.Waiter.get() && waiter.Handler)
+        {
+            waiter.Handler();
         }
     }
+}
 
-    m_owningTableView = owner ? winrt::weak_ref<winrt::IInspectable>{ owner } : winrt::weak_ref<winrt::IInspectable>{ nullptr };
+void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
+{
+    m_engine->SetLiveShapingHold(std::move(isHeld));
+}
 
-    if (!owner)
-    {
-        // Detaching: drop the owner's handlers with the owner itself, so a source that has been
-        // swapped out of ItemsSource cannot drive the control it used to belong to.
-        m_projectionChanged = nullptr;
-        m_shapingChanged = nullptr;
-    }
+void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
+{
+    m_engine->SetLiveItemChangedHook(std::move(hook));
+}
+
+void TableViewSource::SetLiveItemReshapeHandler(std::function<void()> handler)
+{
+    m_engine->SetLiveItemReshapeHandler(std::move(handler));
+}
+
+void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)
+{
+    m_engine->SetRowsReleasedHook(std::move(hook));
+}
+
+void TableViewSource::ResumeHeldLiveShaping()
+{
+    m_engine->ResumeHeldLiveShaping();
+}
+
+bool TableViewSource::CanApplySort() const
+{
+    return m_engine->CanProjectWithRowIdentity();
 }
 
 void TableViewSource::NotifyOwnerProjectionChanged()
 {
     if (m_projectionChanged)
     {
+        // The owner can run app code that releases the last reference to this source.
+        auto const strongThis = get_strong();
+        ++m_notificationDepth;
+        auto restore = gsl::finally([this]() noexcept { --m_notificationDepth; });
         m_projectionChanged();
     }
 }
 
 void TableViewSource::NotifyOwnerShapingChanged(bool reorderOnly)
 {
+    // Only the in-place reorder notification proves computation; Refresh can merely defer.
+    if (reorderOnly && m_shapingTip) { m_shapingTip->observation.published = true; }
     if (m_shapingChanged)
     {
+        auto const strongThis = get_strong();
+        ++m_notificationDepth;
+        auto restore = gsl::finally([this]() noexcept { --m_notificationDepth; });
         m_shapingChanged(reorderOnly);
     }
 }

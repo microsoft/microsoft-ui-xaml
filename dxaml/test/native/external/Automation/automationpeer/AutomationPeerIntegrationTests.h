@@ -98,7 +98,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyPeerFromPointWithNon100DpiIsCorrect)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that retrieving an automation peer from a point when DPI is something other than 100% retrieves the correct peer.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP,WPF")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
         END_TEST_METHOD()
 

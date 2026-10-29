@@ -42,6 +42,10 @@ NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
     SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
+
+    // Items outside a NavigationView-owned repeater are only prepared on load (see OnLoaded), and they can be
+    // moved to a different host later (for example from MenuItems to PaneFooter or Content).
+    Loaded({ this, &NavigationViewItem::OnLoaded });
 }
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -100,12 +104,6 @@ void NavigationViewItem::OnApplyTemplate()
     if (auto splitView = GetSplitView())
     {
         PrepNavigationViewItem(splitView);
-    }
-    else
-    {
-        // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView. So check OnLoaded
-        // if it the reference has been manually set in NavigationViewItemBase::OnLoaded(). 
-        Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
     if (HasPotentialChildren())
@@ -175,9 +173,14 @@ void NavigationViewItem::LoadMenuItemsHost()
 
 void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
+    // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView, so it is prepared here once
+    // NavigationViewItemBase::OnLoaded() has set the NavigationView. This also runs again when the item is loaded in a new host
+    // (for example moved between MenuItems, PaneFooter, Content or another NavigationView), so the SplitView subscriptions and
+    // the closed compact state follow the new host. Re-preparing replaces the previous SplitView subscriptions.
     if (auto splitView = GetSplitView())
     {
         PrepNavigationViewItem(splitView);
+        ReparentRepeater();
     }
 
     UpdateVisualStateForChevron();
@@ -425,7 +428,18 @@ void NavigationViewItem::UpdateVisualStateForClosedCompact()
 {
     if (const auto presenter = GetPresenter())
     {
-        presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
+        // Items placed directly in PaneFooter or PaneCustomContent are not prepared by a NavigationView-owned
+        // repeater, so IsTopLevelItem() is never set for them. They are still shown at the root level of the pane
+        // and need the same closed compact layout as top-level menu items, otherwise the icon gets clipped.
+        bool isRootLevelItem = IsTopLevelItem();
+        if (!isRootLevelItem && m_isClosedCompact && !IsInNavigationViewOwnedRepeater())
+        {
+            if (auto const nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
+            {
+                isRootLevelItem = nvImpl->IsInLeftPaneFooterOrCustomContent(*this);
+            }
+        }
+        presenter->UpdateClosedCompactVisualState(isRootLevelItem, m_isClosedCompact);
     }
 }
 
@@ -1326,12 +1340,23 @@ void NavigationViewItem::UnhookEventsAndClearFields()
 
 void NavigationViewItem::PrepNavigationViewItem(const winrt::SplitView& splitView)
 {
+    // XAML's weak reference is cleared when reference tracking collects the item.
+    const winrt::DependencyPropertyChangedCallback callback =
+        [weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)](
+            const winrt::DependencyObject& sender, const winrt::DependencyProperty& property)
+        {
+            if (auto const item = weakThis.get())
+            {
+                winrt::get_self<NavigationViewItem>(item)->OnSplitViewPropertyChanged(sender, property);
+            }
+        };
+
     m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+        winrt::SplitView::IsPaneOpenProperty(), callback);
     m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+        winrt::SplitView::DisplayModeProperty(), callback);
     m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+        winrt::SplitView::CompactPaneLengthProperty(), callback);
 
     UpdateCompactPaneLength();
     UpdateIsClosedCompact();

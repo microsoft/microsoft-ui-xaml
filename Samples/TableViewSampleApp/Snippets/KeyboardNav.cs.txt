@@ -1,0 +1,7 @@
+Source = TableViewSource.From(People);
+InitializeComponent();
+PeopleTable.ItemsSource = Source;
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }

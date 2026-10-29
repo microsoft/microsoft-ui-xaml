@@ -1,0 +1,118 @@
+<Window
+    x:Class="WinUIProfiler.App.Views.SnapshotViewerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:views="using:WinUIProfiler.App.Views"
+    xmlns:vm="using:WinUIProfiler.App.ViewModels">
+    <Grid x:Name="Root" Padding="20" RowSpacing="12"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <DataTemplate x:Key="SnapshotTreeTemplate" x:DataType="controls:TreeViewNode">
+                <Grid>
+                    <Border BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}" BorderThickness="2"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Visibility="{x:Bind ((views:SnapshotTreeLabel)Content).MatchVisibility, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind ((views:SnapshotTreeLabel)Content).Label, Mode=OneWay}" Margin="4,0"
+                               ToolTipService.ToolTip="{x:Bind ((views:SnapshotTreeLabel)Content).Label, Mode=OneWay}" />
+                </Grid>
+            </DataTemplate>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Spacing="4">
+            <TextBlock x:Name="Heading" x:Uid="SnapshotViewerHeading" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock x:Name="Identity" x:Uid="SnapshotViewerIdentity" Text="{x:Bind Entry.CaptureId}"
+                       IsTextSelectionEnabled="True" />
+            <TextBlock Text="{x:Bind Entry.Title}" />
+            <TextBlock Text="{x:Bind Entry.Summary}" />
+            <TextBlock Text="{x:Bind Entry.Saved.Path}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+            <TextBlock x:Uid="SnapshotViewerScope" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" />
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <ProgressRing x:Name="Loading" x:Uid="SnapshotViewerLoading" IsActive="True" Width="28" Height="28" />
+            <InfoBar x:Name="LoadError" x:Uid="SnapshotViewerError" Severity="Error" IsClosable="False" />
+        </Grid>
+        <Grid x:Name="Viewer" Grid.Row="2" Visibility="Collapsed" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="100" />
+            </Grid.RowDefinitions>
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Uid="SnapshotXamlHeading" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="XamlExpandAll" x:Uid="SnapshotXamlExpandAll" Click="ExpandAll_Click" />
+                        <Button x:Name="XamlCollapseAll" x:Uid="SnapshotXamlCollapseAll" Click="CollapseAll_Click" />
+                    </StackPanel>
+                    <TreeView x:Name="XamlTree" x:Uid="SnapshotXamlTree" Grid.Row="2"
+                              SelectionMode="Single" CanDragItems="False" CanReorderItems="False"
+                              ItemTemplate="{StaticResource SnapshotTreeTemplate}"
+                              Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged"
+                              DoubleTapped="XamlTree_DoubleTapped" />
+                </Grid>
+                <Grid Grid.Column="1" RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Uid="SnapshotCompositionHeading" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="CompositionExpandAll" x:Uid="SnapshotCompositionExpandAll" Click="ExpandAll_Click" />
+                        <Button x:Name="CompositionCollapseAll" x:Uid="SnapshotCompositionCollapseAll" Click="CollapseAll_Click" />
+                    </StackPanel>
+                    <TreeView x:Name="CompositionTree" x:Uid="SnapshotCompositionTree" Grid.Row="2"
+                              SelectionMode="Single" CanDragItems="False" CanReorderItems="False"
+                              ItemTemplate="{StaticResource SnapshotTreeTemplate}"
+                              Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="1" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="MappingStatus" x:Uid="SnapshotMappingStatus"
+                           TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                <ComboBox x:Name="Matches" x:Uid="SnapshotMatches" Grid.Column="1"
+                          HorizontalAlignment="Stretch" SelectionChanged="Matches_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SnapshotTreeNode">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+            <Grid Grid.Row="2" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              HorizontalContentAlignment="Stretch">
+                    <TextBlock x:Name="XamlDetails" x:Uid="SnapshotXamlDetails"
+                               IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                </ScrollViewer>
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              HorizontalContentAlignment="Stretch">
+                    <TextBlock x:Name="CompositionDetails" x:Uid="SnapshotCompositionDetails"
+                               IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

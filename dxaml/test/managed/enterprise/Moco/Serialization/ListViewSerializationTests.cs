@@ -23,7 +23,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.Serialization
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void Setup(TestContext context)
@@ -38,30 +38,35 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.Serialization
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListViewPersistenceHelperNonGroupedList()
         {
             VerifyListViewPersistenceHelper(false /* isGrouped */, false /* scrollInLoaded */);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListViewPersistenceHelperGroupedList()
         {
             VerifyListViewPersistenceHelper(true /* isGrouped */, false /* scrollInLoaded */);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListViewPersistenceHelperNonGroupedListInLoaded()
         {
             VerifyListViewPersistenceHelper(false /* isGrouped */, true /* scrollInLoaded */);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListViewPersistenceHelperGroupedListInLoaded()
         {
             VerifyListViewPersistenceHelper(true /* isGrouped */, true /* scrollInLoaded */);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListViewPersistenceHelperNavigateFooter()
         {
             CustomPage page = null;
@@ -87,6 +92,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.Serialization
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListViewPersistenceHelperNavigateHeader()
         {
             CustomPage page = null;
@@ -112,6 +118,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.Serialization
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanSerializeAndDeserialize()
         {
             ListView list = null;
@@ -194,6 +201,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.Serialization
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanRefreshListViewBeforeDeserialization()
         {
             Log.Comment("Preparing ListView...");

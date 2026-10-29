@@ -46,13 +46,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateFlyoutPositioningAndSizing)
             TEST_METHOD_PROPERTY(L"Description", L"Validate that the TimePickerFlyout is positioned and sized correctly")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateMinuteIncrementProperty)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the MinuteIncrement property works correctly.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateClockIdentifierProperty)
@@ -63,13 +63,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the TimePicker can be opened and closed with the keyboard, projected shadow mode.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // We're on drop shadows now
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanOpenAndCloseUsingKeyboardDropShadow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the TimePicker can be opened and closed with the keyboard, drop shadow mode.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #36633792
         END_TEST_METHOD()
 
@@ -79,7 +79,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(SelectingTimeSetsSelectedTime)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that selecting a time from the TimePicker sets SelectedTime to a non-null value.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSelectedTimePropagatesToTime)

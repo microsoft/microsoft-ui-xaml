@@ -1,0 +1,53 @@
+Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
+InitializeComponent();
+ApplyFilter();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(60);
+
+public TableViewSource Source { get; }
+
+private string Query => SearchBox?.Text?.Trim() ?? string.Empty;
+
+private bool ActiveOnly => ActiveOnlyToggle?.IsOn == true;
+
+private void OnSearchChanged(object sender, TextChangedEventArgs e)
+{
+    ApplyFilter();
+}
+
+private void OnActiveToggled(object sender, RoutedEventArgs e)
+{
+    ApplyFilter();
+}
+
+// ItemsSource is never reassigned, so selection, scroll offset and group state survive.
+private void ApplyFilter()
+{
+    var query = Query;
+    var activeOnly = ActiveOnly;
+    if (query.Length > 0 || activeOnly)
+    {
+        Source.Filter(item => Matches((Person)item, query, activeOnly));
+    }
+    else
+    {
+        Source.ClearFilter();
+    }
+}
+
+private static bool Matches(Person person, string query, bool activeOnly)
+{
+    if (activeOnly && !person.IsActive)
+    {
+        return false;
+    }
+
+    return query.Length == 0
+        || Contains(person.FullName, query)
+        || Contains(person.Department, query)
+        || Contains(person.Role, query)
+        || Contains(person.Email, query);
+}
+
+private static bool Contains(string? value, string query) =>
+    value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);

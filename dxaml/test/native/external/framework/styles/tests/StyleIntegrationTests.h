@@ -65,6 +65,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanUseSetterValueAsContent)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Check that a Setter's value can be specified as its content")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanStyleSetterDetectMissingValue)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that if a style setter doesn't have a defined value, a XAML parse exception is thrown")
@@ -276,28 +281,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(CanSetDefaultStyle)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies the style of a custom control with DefaultStyleKey set")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetDefaultStyleResourceUri)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies the style of a custom control with DefaultStyleResourceUri set")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DefaultStyleResourceUriWithEmptyDefaultStyleKey)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Tests a custom control with a valid DefaultStyleResourceUri and an empty DefaultStyleKey")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DefaultStyleResourceUriWithInvalidDefaultStyleKey)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Tests a custom control with a valid DefaultStyleResourceUri and an invalid DefaultStyleKey")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -305,7 +310,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(PageThemeResourceCustomSourceObject)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleSetterWithUid)
@@ -367,4 +372,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TestCanCreateOptimizedStyle(bool useSetterTarget);
     };
 } } } } } }
-

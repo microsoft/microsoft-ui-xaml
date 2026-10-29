@@ -16,7 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP") // DCPP NoCoreWindow mode - SemanticZoom tests fail get stuck "Waiting for BuildTreeService to finish..."
+            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -27,30 +27,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // Platform:Any
         //
         BEGIN_TEST_METHOD(CanInstantiate)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully create a SemanticZoom.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanEnterAndLeaveLiveTree)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove a SemanticZoom from the live tree.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanZoomOutToKeysList)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully zoom out to the view showing list of group keys.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyBackButtonExitsZoomedOutView)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully zoom out to the view showing list of group keys.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanZoomInToKey)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully zoom in to a list of items grouped by a key.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetAndGetProperties)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully set and get SemanticZom specific properties.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanChangeAlignment)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the VerticalAlignment of the SemanticZoom can be changed without causing a layout cycle.")
         END_TEST_METHOD()
 

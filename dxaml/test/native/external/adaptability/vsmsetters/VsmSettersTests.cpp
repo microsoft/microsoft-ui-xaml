@@ -437,6 +437,55 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        void VsmSetterIntegrationTests::VerifyVisualStateSetterCanUseXNullForTypeWithoutTypeConverter()
+        {
+            TestCleanupWrapper cleanup;
+            xaml_controls::Control^ root = nullptr;
+            xaml_controls::Border^ border = nullptr;
+            xaml_controls::Button^ button = nullptr;
+
+            RunOnUIThread([&]() {
+                root = safe_cast<xaml_controls::Control^> (xaml_markup::XamlReader::Load(
+                    L"<UserControl xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"    <Border x:Name='MyBorder'>"
+                    L"        <VisualStateManager.VisualStateGroups>"
+                    L"            <VisualStateGroup x:Name='Group1'>"
+                    L"                <VisualState x:Name='State1'>"
+                    L"                    <VisualState.Setters>"
+                    L"                        <Setter Target='MyBorder.Child' Value='{x:Null}' />"
+                    L"                    </VisualState.Setters>"
+                    L"                </VisualState>"
+                    L"                <VisualState x:Name='State2' />"
+                    L"            </VisualStateGroup>"
+                    L"        </VisualStateManager.VisualStateGroups>"
+                    L"        <Button x:Name='Button1' />"
+                    L"    </Border>"
+                    L"</UserControl>"
+                    ));
+                TestServices::WindowHelper->WindowContent = root;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]() {
+                border = safe_cast<xaml_controls::Border^>(root->FindName(L"MyBorder"));
+                button = safe_cast<xaml_controls::Button^>(root->FindName(L"Button1"));
+                VERIFY_IS_TRUE(border->Child == button);
+                VERIFY_IS_TRUE(VisualStateManager::GoToState(root, Platform::StringReference(L"State1"), false));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]() {
+                VERIFY_IS_NULL(border->Child);
+                VERIFY_IS_NULL(xaml_media::VisualTreeHelper::GetParent(button));
+                VERIFY_IS_TRUE(VisualStateManager::GoToState(root, Platform::StringReference(L"State2"), false));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]() {
+                VERIFY_IS_TRUE(border->Child == button);
+            });
+        }
+
         void VsmSetterIntegrationTests::VerifyVisualStateSettersCanHaveUnsetValue()
         {
             TestCleanupWrapper cleanup;

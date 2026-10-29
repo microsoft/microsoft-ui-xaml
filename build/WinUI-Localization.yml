@@ -3,13 +3,8 @@ trigger: none
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-parameters: # parameters are shown up in ADO UI in a build queue time
-- name: PublishToMaestro
-  type: boolean
-  default: false
-
 variables:
-- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-Versions.yml
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUITeamKeyVault-Secrets
 - group: WinUI-Variable-Library
@@ -20,14 +15,10 @@ resources:
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
       ref: refs/heads/main
-    - repository: WindowsAppSDKConfig
+    - repository: WinAppSDK
       type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
-    - repository: WindowsAppSDKVersionConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
+      name: OS/WinAppSDK
+      ref: refs/heads/release/main
 
 extends:
   template: v2/Microsoft.Official.yml@templates
@@ -71,9 +62,28 @@ extends:
         pipelineKind: Localization
         signOutput: true # this is true for official builds
         runStaticAnalysis: false
+        # InteractiveExperiences (IXP) binaries that the build copies unchanged from the IXP package.
+        # WinUI doesn't sign them, and the dev mono-build IXP package that eng\Versions.props falls back
+        # to is test-signed, so CodeSign Validation reports CodeSign.NoMatchingPolicy for them. Remove
+        # once that fallback is a production-signed IXP package.
+        codeSignValidationExcludes:
+        - '**\CoreMessagingXP.dll'
+        - '**\dcompi.dll'
+        - '**\dwmcorei.dll'
+        - '**\DwmSceneI.dll'
+        - '**\marshal.dll'
+        - '**\Microsoft.DirectManipulation.dll'
+        - '**\Microsoft.Graphics.Display.dll'
+        - '**\Microsoft.InputStateManager.dll'
+        - '**\Microsoft.UI.Composition.OSSupport.dll'
+        - '**\Microsoft.UI.Designer.dll'
+        - '**\Microsoft.UI.dll'
+        - '**\Microsoft.UI.Input.dll'
+        - '**\Microsoft.UI.Windowing.Core.dll'
+        - '**\Microsoft.UI.Windowing.dll'
+        - '**\wuceffectsi.dll'
 
     - template: AzurePipelinesTemplates\WinUI-Localization-Stage.yml
       parameters:
         pipelineKind: Localization
         buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
-        publishToMaestro: ${{ parameters.PublishToMaestro }}

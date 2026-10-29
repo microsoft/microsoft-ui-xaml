@@ -29,7 +29,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
@@ -53,6 +53,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void GV_IWG_HVirt_Basics()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -84,6 +85,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_Panning()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -105,6 +107,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_HideIfEmpty()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -167,6 +170,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_GroupHeaderPlacement()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -186,6 +190,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_ForwardTabTest()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -205,6 +210,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_BackwardTabTest()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -225,6 +231,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_TabArrowTest()
         {
             LoadXaml("GridView_Template", "ItemsWrapGrid", "Vertical", "ScrollViewer.HorizontalScrollBarVisibility='Auto' ScrollViewer.VerticalScrollBarVisibility='Disabled' ScrollViewer.HorizontalScrollMode='Enabled' ScrollViewer.VerticalScrollMode='Disabled'");
@@ -429,6 +436,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_PageDownPageUpHomeEndTest()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -467,6 +475,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationLocal()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -509,6 +518,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationLocal_EmptyGroups()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -551,6 +561,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationCycle()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -592,6 +603,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationCycle_EmptyGroups()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -633,6 +645,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationLocal_OnlyEmptyGroups()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -676,6 +689,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "OneCore")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void LV_ISP_VVirt_Basics()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -708,6 +722,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_ForwardTabTest()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -727,6 +742,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_BackwardTabTest()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -746,6 +762,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationLocal()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -788,6 +805,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationLocal_EmptyGroups()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -830,6 +848,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationCycle()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -871,6 +890,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationCycle_EmptyGroups()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -912,6 +932,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationLocal_OnlyEmptyGroups()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -954,6 +975,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_VVdir_Basics()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirVertical();

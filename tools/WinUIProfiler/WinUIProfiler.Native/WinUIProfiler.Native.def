@@ -1,0 +1,7 @@
+LIBRARY "WinUIProfiler.Native.dll"
+EXPORTS
+    WupNormalizeCpu
+    WupCaptureCpu
+    WupCaptureProcessMemory
+    WupCaptureGpu
+    WupNormalizeGpu

@@ -1,0 +1,29 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+public ObservableCollection<Person> People { get; } = new();
+
+public TableViewSource Source { get; }
+
+private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
+{
+    var mode = Enum.Parse<TableViewSelectionMode>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
+    PeopleTable.SelectionMode = mode;
+}
+
+private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
+{
+    var visibility = Enum.Parse<TableViewHeadersVisibility>((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
+    PeopleTable.HeadersVisibility = visibility;
+}
+
+private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
+{
+    if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
+    {
+        return;
+    }
+
+    var show = checkBox.IsChecked == true;
+    column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+}

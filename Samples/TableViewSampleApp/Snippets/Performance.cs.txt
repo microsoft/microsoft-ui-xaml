@@ -1,0 +1,8 @@
+// Build the rows off the UI thread, then bind them once: one collection, one source, one assignment.
+// Under GroupBy, adding rows one by one regroups every row: ClearGroupBy, add, then GroupBy once.
+private void BindRows(List<Person> rows)
+{
+    _people = new ObservableCollection<Person>(rows);
+    _source = TableViewSource.From(_people);
+    PerfTable.ItemsSource = _source;
+}

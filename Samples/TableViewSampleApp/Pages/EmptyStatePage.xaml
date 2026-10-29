@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pages:SamplePageBase
+    x:Class="TableViewSampleApp.Pages.EmptyStatePage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:system="using:System">
+
+    <Page.Resources>
+        <!-- snippet -->
+        <!-- Text and shapes only: a FontIcon inside an EmptyTemplate crashes at startup (known issue). -->
+        <DataTemplate x:Key="EmptyStateTemplate" x:DataType="system:Object">
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="320"
+                Spacing="12">
+                <Grid Width="64" Height="64" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+                    <Ellipse
+                        Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
+                        StrokeThickness="1"/>
+                    <Rectangle
+                        Width="26" Height="20"
+                        RadiusX="3" RadiusY="3"
+                        Fill="Transparent"
+                        Stroke="{ThemeResource TextFillColorTertiaryBrush}"
+                        StrokeThickness="2"/>
+                    <Rectangle
+                        Width="26" Height="1.5"
+                        Fill="{ThemeResource TextFillColorTertiaryBrush}"/>
+                </Grid>
+                <TextBlock
+                    Text="No rows to display"
+                    HorizontalAlignment="Center"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                <TextBlock
+                    Text="There are no people to show. Choose Populated as the data source, or press Restore the rows."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </DataTemplate>
+        <!-- /snippet -->
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Empty state"
+        Description="TableView.EmptyTemplate is a DataTemplate the control centres over the row area whenever there are no rows to show. A table can be empty in three ways: ItemsSource is null, the bound source holds zero rows, or TableViewSource.Filter matches nothing. Pick each data source, remove rows one at a time, or filter to zero matches, and the same template takes over. Switch Shaping to Grouped first to see that an empty grouped set shows the template too, not an empty group band."
+        Snippet="EmptyState"
+        StretchExample="True"
+        TryIt="Set Data source to Null ItemsSource, then to Zero rows: the empty template appears both times. Choose Populated, switch Shaping to Grouped, and press Filter to zero matches: every group disappears and the template takes over. Press Restore the rows to bring the people back."
+        WhatToLookFor="A null ItemsSource, an emptied source and a filter that matches nothing all look the same to the user: the column headers stay and the empty template fills the row area. When grouped, groups vanish with their last member; with zero rows there is no group band at all, only the template. Filtering keeps the 40 people in the collection, so Restore brings them back without reloading.">
+
+        <controls:SamplePresenter.Example>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="EmptyStateTable"
+                AutomationProperties.Name="People, with an empty state"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                EmptyTemplate="{StaticResource EmptyStateTemplate}"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+            </tv:TableView>
+            <!-- /snippet -->
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Data source"
+                    Description="Null ItemsSource sets TableView.ItemsSource to null. Zero rows keeps the TableViewSource attached and clears the collection behind it. Both show the EmptyTemplate.">
+                    <ComboBox
+                        x:Name="DataSourceSelector"
+                        AutomationProperties.AutomationId="EmptyStateDataSourceSelector"
+                        Header="Data source"
+                        SelectedIndex="0"
+                        SelectionChanged="OnDataSourceChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Populated" Tag="Populated"/>
+                        <ComboBoxItem Content="Null ItemsSource" Tag="Null"/>
+                        <ComboBoxItem Content="Zero rows" Tag="ZeroRows"/>
+                    </ComboBox>
+                </controls:RailSection>
+
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="EmptyState"
+                    Description="Grouping an empty set is legal: the projection yields no groups, and the empty template wins over an empty group band. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
+
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Each action empties or refills the table a different way, so you can compare how the empty template appears and goes away. Watch the table and the Last action readout. Actions that change one row need a selected row.">
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="RemoveAllRowsButton"
+                            AutomationProperties.AutomationId="EmptyStateRemoveAllRowsButton"
+                            Content="Remove every row"
+                            Click="OnRemoveAllRowsClick"
+                            ToolTipService.ToolTip="Clears the collection behind the attached source and switches Data source to Zero rows."
+                            AutomationProperties.HelpText="Clears the collection behind the attached source and switches Data source to Zero rows."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemoveLastRowButton"
+                            AutomationProperties.AutomationId="EmptyStateRemoveLastRowButton"
+                            Content="Remove the last row"
+                            Click="OnRemoveLastRowClick"
+                            ToolTipService.ToolTip="Removes the last person in the collection. Removing the last member of a group removes the group; removing the last row shows the empty template."
+                            AutomationProperties.HelpText="Removes the last person in the collection. Removing the last row shows the empty template."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="FilterToZeroButton"
+                            AutomationProperties.AutomationId="EmptyStateFilterToZeroButton"
+                            Content="Filter to zero matches"
+                            Click="OnFilterToZeroClick"
+                            ToolTipService.ToolTip="Calls TableViewSource.Filter with 'joined after today', which matches nobody. The collection keeps its rows, yet the empty template shows."
+                            AutomationProperties.HelpText="Calls TableViewSource.Filter with a predicate that matches nobody."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveSelectedRowButton"
+                            AutomationProperties.AutomationId="EmptyStateMoveSelectedRowButton"
+                            Content="Move selected row to the next group"
+                            Click="OnMoveSelectedRowClick"
+                            ToolTipService.ToolTip="Gives the selected person the next department (or flips Active when grouped by Active). Grouped, the row moves to that group."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RestoreRowsButton"
+                            AutomationProperties.AutomationId="EmptyStateRestoreRowsButton"
+                            Content="Restore the rows"
+                            Click="OnRestoreRowsClick"
+                            ToolTipService.ToolTip="Clears the filter, reloads 40 people and switches Data source back to Populated."
+                            AutomationProperties.HelpText="Clears the filter, reloads 40 people and switches Data source back to Populated."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </controls:RailSection>
+
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="EmptyState">
+                    <TextBlock x:Name="ItemsSourceText" controls:StatusPanel.Label="ItemsSource" Text="TableViewSource"/>
+                    <TextBlock x:Name="EmptyTemplateText" controls:StatusPanel.Label="Empty template" Text="Hidden"/>
+                </controls:StatusPanel>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</pages:SamplePageBase>

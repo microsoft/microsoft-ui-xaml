@@ -273,6 +273,10 @@ void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspec
     {
         SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
     }
+    else
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Visible);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -692,6 +696,7 @@ void NavigationView::OnApplyTemplate()
     m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
 
     m_appliedTemplate = true;
+    m_templateAppliedOnce = true;
 
     // Do initial setup
     UpdatePaneDisplayMode();
@@ -1053,9 +1058,10 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         UpdateSelectionModelSelection(ip);
     }
 
-    // Item was invoked but already selected, so raise event here.
+    // Selection did not change, so consume the pending invocation before raising the event directly.
     if (selectedItem == SelectedItem())
     {
+        m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvokedForNavigationViewItem(nvi);
     }
 
@@ -1418,10 +1424,18 @@ void NavigationView::UpdateOpenPaneLength(double width)
 {
     if (!IsTopNavigationView() && m_rootSplitView)
     {
-        m_OpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const auto newOpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const bool openPaneLengthChanged = m_OpenPaneLength != newOpenPaneLength;
+        m_OpenPaneLength = newOpenPaneLength;
 
         const auto templateSettings = GetTemplateSettings();
         templateSettings->OpenPaneLength(m_OpenPaneLength);
+
+        // With a PaneTitle, UpdatePaneToggleSize stretches TogglePaneButton to m_OpenPaneLength.
+        if (openPaneLengthChanged)
+        {
+            UpdatePaneToggleSize();
+        }
     }
 }
 
@@ -1817,8 +1831,17 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
 
+    const bool paneToggleButtonWidthChanged = templateSettings->PaneToggleButtonWidth() != newButtonWidths;
+
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
     templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
+
+    // UpdatePaneToggleSize copies PaneToggleButtonWidth into TogglePaneButton.Width. It can run before this
+    // template setting is first initialized (still 0), so re-apply it when the width changes.
+    if (paneToggleButtonWidthChanged)
+    {
+        UpdatePaneToggleSize();
+    }
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -2070,8 +2093,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 areElementsAtSameDepth = prevPosPoint.X == nextPosPoint.X;
             }
 
-            winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-            winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            // Creating the batch must not request the NavigationView's non-strict handoff visual.
+            winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             if (!areElementsAtSameDepth)
             {
@@ -4142,6 +4165,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         property == s_ExpandedModeThresholdWidthProperty)
     {
         UpdateAdaptiveLayout(ActualWidth());
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_AlwaysShowHeaderProperty || property == s_HeaderProperty)
     {
@@ -4201,7 +4225,12 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // m_wasForceClosed is set to true because ToggleButton is clicked and Pane is closed.
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
-        m_wasForceClosed = false;
+        // Before the template is first applied, the flag can only have come from the app setting IsPaneOpen=false
+        // (e.g. in XAML ahead of PaneDisplayMode), so keep it to honor that initial state. Re-templating still resets it.
+        if (m_templateAppliedOnce)
+        {
+            m_wasForceClosed = false;
+        }
 
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
@@ -4209,6 +4238,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualState();
         UpdatePaneButtonsWidths();
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -4631,7 +4661,8 @@ void NavigationView::UpdatePaneToggleSize()
 
             if (auto toggleButton = m_paneToggleButton.get())
             {
-                toggleButton.Width(togglePaneButtonWidth);
+                // OpenPaneLength can be smaller than the back/close button, and Width rejects negative values.
+                toggleButton.Width(std::max(0.0, togglePaneButtonWidth));
             }
         }
     }
@@ -4697,6 +4728,13 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
                 leftPaddingForBackOrCloseButton += paneHeaderPaddingForCloseButton;
             }
         }
+    }
+
+    if (useLeftPaddingForBackOrCloseButton && leftPaddingForBackOrCloseButton == 0.0)
+    {
+        // NavigationViewMinimalHeaderMargin has a negative left value that pulls the header back into the
+        // first button slot. Keep that slot reserved when no buttons are shown, so the header isn't clipped.
+        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
     }
 
     if (auto contentLeftPadding = m_contentLeftPadding.get())
@@ -5748,6 +5786,33 @@ void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& co
 bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
 {
     return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
+}
+
+// Returns true if the item lives in the left pane's PaneFooter or PaneCustomContent (and is not nested inside another item).
+bool NavigationView::IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib)
+{
+    auto const footerContentBorder = m_leftNavFooterContentBorder.get();
+    auto const paneCustomContentBorder = m_leftNavPaneCustomContentBorder.get();
+    if (!footerContentBorder && !paneCustomContentBorder)
+    {
+        return false;
+    }
+
+    winrt::NavigationView const navView = *this;
+    auto parent = winrt::VisualTreeHelper::GetParent(nvib);
+    while (parent)
+    {
+        if (parent == footerContentBorder || parent == paneCustomContentBorder)
+        {
+            return true;
+        }
+        if (parent == navView || parent.try_as<winrt::NavigationViewItemBase>())
+        {
+            return false;
+        }
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+    return false;
 }
 
 bool NavigationView::IsVisible(const winrt::DependencyObject& obj)

@@ -180,6 +180,7 @@ ScrollViewer::ScrollViewer()
     , m_isCanManipulateElementsInvalid(FALSE)
     , m_isScrollBarIgnoringUserInputInvalid(FALSE)
     , m_isPointerLeftButtonPressed(FALSE)
+    , m_pointerPressedCount(0)
     , m_shouldFocusOnRightTapUnhandled(FALSE)
     , m_showingMouseIndicators(FALSE)
     , m_preferMouseIndicators(FALSE)
@@ -308,6 +309,8 @@ _Check_return_ HRESULT ScrollViewer::Initialize()
     ctl::ComPtr<wf::ITypedEventHandler<xaml::UIElement*, xaml::BringIntoViewRequestedEventArgs*>> spBringIntoViewRequestedEventHandler;
     ctl::ComPtr<xaml::IRoutedEventHandler> spLoadedEventHandler;
     ctl::ComPtr<xaml::IRoutedEventHandler> spUnloadedEventHandler;
+    ctl::ComPtr<xaml_input::IPointerEventHandler> spPointerPressedEventHandler;
+    ctl::ComPtr<xaml_input::IPointerEventHandler> spPointerReleasedEventHandler;
     EventRegistrationToken token1;
     EventRegistrationToken token2;
 
@@ -337,6 +340,28 @@ _Check_return_ HRESULT ScrollViewer::Initialize()
         IInspectable,
         xaml::IRoutedEventArgs >(this, &ScrollViewer::OnUnloaded, true /* subscribingToSelf */));
     IFC_RETURN(add_Unloaded(spUnloadedEventHandler.Get(), &token2));
+
+    spPointerPressedEventHandler.Attach(
+        new ClassMemberEventHandler<
+        ScrollViewer,
+        xaml_controls::IScrollViewer,
+        xaml_input::IPointerEventHandler,
+        IInspectable,
+        xaml_input::IPointerRoutedEventArgs>(this, &ScrollViewer::OnPointerPressedHandledEventsToo, true /* subscribingToSelf */));
+    PointerPressedEventSourceType* pointerPressedEventSource = nullptr;
+    IFC_RETURN(GetPointerPressedEventSourceNoRef(&pointerPressedEventSource));
+    IFC_RETURN(pointerPressedEventSource->AddHandler(spPointerPressedEventHandler.Get(), true /* handledEventsToo */));
+
+    spPointerReleasedEventHandler.Attach(
+        new ClassMemberEventHandler<
+        ScrollViewer,
+        xaml_controls::IScrollViewer,
+        xaml_input::IPointerEventHandler,
+        IInspectable,
+        xaml_input::IPointerRoutedEventArgs>(this, &ScrollViewer::OnPointerReleasedHandledEventsToo, true /* subscribingToSelf */));
+    PointerReleasedEventSourceType* pointerReleasedEventSource = nullptr;
+    IFC_RETURN(GetPointerReleasedEventSourceNoRef(&pointerReleasedEventSource));
+    IFC_RETURN(pointerReleasedEventSource->AddHandler(spPointerReleasedEventHandler.Get(), true /* handledEventsToo */));
 
     if (!IsRootScrollViewer())
     {
@@ -2491,7 +2516,6 @@ IFACEMETHODIMP ScrollViewer::OnPointerPressed(
     IFCPTR(spPointerProperties);
     IFC(spPointerProperties->get_IsLeftButtonPressed(&m_isPointerLeftButtonPressed));
 
-
     // Don't handle PointerPressed event to raise up
 
 Cleanup:
@@ -2582,6 +2606,30 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
 
 Cleanup:
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT ScrollViewer::OnPointerPressedHandledEventsToo(
+    _In_ IInspectable*,
+    _In_ xaml_input::IPointerRoutedEventArgs*)
+{
+    ++m_pointerPressedCount;
+    return S_OK;
+}
+
+_Check_return_ HRESULT ScrollViewer::OnPointerReleasedHandledEventsToo(
+    _In_ IInspectable*,
+    _In_ xaml_input::IPointerRoutedEventArgs*)
+{
+    if (m_pointerPressedCount > 0)
+    {
+        --m_pointerPressedCount;
+    }
+    // A handled release skips OnPointerReleased, but must not leave stale focus state.
+    if (m_pointerPressedCount == 0)
+    {
+        m_isPointerLeftButtonPressed = FALSE;
+    }
+    return S_OK;
 }
 
 // RightTappedUnhandled event handler.
@@ -5532,6 +5580,12 @@ ScrollViewer::OnVerticalScrollbarPointerExited(
 {
     m_isPointerOverVerticalScrollbar = FALSE;
 
+    // The indicator storyboard may have completed while the pointer was over the scrollbar.
+    if (!m_keepIndicatorsShowing && !m_isPointerOverHorizontalScrollbar)
+    {
+        IFC_RETURN(UpdateVisualState());
+    }
+
     return S_OK;
 }
 
@@ -5553,6 +5607,11 @@ ScrollViewer::OnHorizontalScrollbarPointerExited(
     _In_ xaml_input::IPointerRoutedEventArgs* /*pArgs unused*/)
 {
     m_isPointerOverHorizontalScrollbar = FALSE;
+
+    if (!m_keepIndicatorsShowing && !m_isPointerOverVerticalScrollbar)
+    {
+        IFC_RETURN(UpdateVisualState());
+    }
 
     return S_OK;
 }
@@ -15053,6 +15112,8 @@ _In_ IInspectable* pSender,
 _In_ xaml::IRoutedEventArgs* pArgs)
 {
     m_isLoaded = FALSE;
+    m_isPointerLeftButtonPressed = FALSE;
+    m_pointerPressedCount = 0;
 
     m_showingMouseIndicators = FALSE;
     m_keepIndicatorsShowing = FALSE;

@@ -1,0 +1,15 @@
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="People, right-to-left"
+    ItemsSource="{x:Bind Source}"
+    FlowDirection="RightToLeft"
+    SelectionMode="Single"
+    IsReadOnly="False">
+    <!-- The name columns are editable text so caret order and bidi text can be checked. -->
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="140" Binding="{Binding FirstName}" CellToolTipBinding="{Binding Bio}"/>
+    <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="120" Binding="{Binding LastName}"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+</tv:TableView>

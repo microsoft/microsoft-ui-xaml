@@ -37,12 +37,64 @@ public:
     BEGIN_TEST_METHOD(CanOpenAndCloseProjectedShadow)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully open and close a ContentDialog, projected shadow mode.")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // We're on drop shadows now
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(CanOpenAndCloseDropShadow)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully open and close a ContentDialog, drop shadow mode.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays when OptimizeApplyStyles is disabled (compat mode).")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        // Force compat mode: PerfOptIn OR's into OptimizeApplyStyles, so both must be off to actually
+        // exercise the pre-optimization behavior (see OptionalChangeState::IsOptimizeApplyStylesEnabled).
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an explicit style set in markup when OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        // Isolate OptimizeApplyStyles as the only variable versus the compat test: PerfOptIn off, optimization on.
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithCodeExplicitStyleAndOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an explicit style set in code before entering the tree when OptimizeApplyStyles is enabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithBuiltInStyleWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with the control's built-in (default) style when OptimizeApplyStyles is disabled (compat mode).")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithBuiltInStyleAndOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with the control's built-in (default) style when OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that ApplyTemplate uses markup-explicit and Application implicit styles when OptimizeApplyStyles is disabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWithOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that ApplyTemplate uses markup-explicit and Application implicit styles when OptimizeApplyStyles is enabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateUnconstrainedPopupPlacementBehavior)
@@ -69,13 +121,13 @@ public:
 
     BEGIN_TEST_METHOD(ValidateFocusTrapping)
         TEST_METHOD_PROPERTY(L"Description", L"Focus should not escape from an open ContentDialog when moving focus with GamePad and Keyboard")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateFocusShiftWhenPreviouslyFocusedElementIsRemoved)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the focus shift away from the ContentDialog Content (different types) when last focused element has been removed.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -93,7 +145,7 @@ public:
 
     BEGIN_TEST_METHOD(DoesFullSizeWorkCorrectlyInV2Template)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that toggling the FullSizeDesired property of the ContentDialog results a correct layout with apps that use the ContentDialog V2 template.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateUIETDefault)
@@ -112,7 +164,7 @@ public:
 
     BEGIN_TEST_METHOD(ValidateTextPanelFitsWithinWindow)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the text panel fits within the window.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateAddingContentDialogToWindowContentDoesNotChangePositioning)
@@ -143,7 +195,7 @@ public:
 
     BEGIN_TEST_METHOD(DoesTabBehaviorWork)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully tab between the ContentDialog contents and the buttons.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -232,7 +284,7 @@ public:
     BEGIN_TEST_METHOD(DoesSupportCloseButton)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that a 3rd button can be added and interacted with.")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateButtonsLayout)
@@ -341,7 +393,7 @@ public:
 
     BEGIN_TEST_METHOD(DoesRestyledXboxInsiderHubDialogStretchHorizontally)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that a dialog using a template similar to the Xbox Insider app's dialog stretches to the full window width.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(CanShowPopupAndInPlaceDialogsAtSameTime)
@@ -410,12 +462,12 @@ public:
 
     BEGIN_TEST_METHOD(CanUseContentDialogWithSmokeBackgroundPart)
         TEST_METHOD_PROPERTY(L"Description", L"Uses a ContentDialog style that includes a smoke background Rectangle which reflects theme brushes.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(InPlaceContentDialogWithoutSmokeBackgroundPart)
         TEST_METHOD_PROPERTY(L"Description", L"Uses a ContentDialog style that includes a removed smoke background Rectangle in in-place placement.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(LoadedAndUnloadedArriveAtTheRightTimes)
@@ -440,6 +492,14 @@ private:
     {
         DefaultSize,
         FullSize
+    };
+
+    enum class ContentDialogStyleSource
+    {
+        ExplicitInMarkup,
+        ExplicitInCode,
+        Implicit,
+        BuiltIn
     };
 
     struct ValidateFootprintExpectedValues
@@ -470,6 +530,10 @@ private:
     static xaml_controls::Button^ GetButton(xaml_controls::ContentDialog^, xaml_controls::ContentDialogButton button);
 
     static void CanOpenAndCloseWorker(xaml_controls::ContentDialogPlacement placement = xaml_controls::ContentDialogPlacement::Popup, bool validateDCompTree = false);
+    static void ShowingAnimationPlaysWorker(
+        bool expectOptimizeApplyStylesEnabled,
+        ContentDialogStyleSource styleSource = ContentDialogStyleSource::ExplicitInMarkup);
+    static void ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWorker(bool expectOptimizeApplyStylesEnabled);
     static void CanClickButtonsWorker(xaml_controls::ContentDialogPlacement placement = xaml_controls::ContentDialogPlacement::Popup);
 
     static void CanDeferButtonClickHelper(xaml_controls::ContentDialogButton buttonType);

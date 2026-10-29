@@ -1,0 +1,42 @@
+<!-- A StackPanel, not a Grid with a * column: the header content is sized to its desired width,
+     so a * column would collapse the count and the chip to zero. -->
+<DataTemplate x:Key="CustomGroupHeaderTemplate" x:DataType="tv:TableViewGroupInfo">
+    <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6" VerticalAlignment="Center">
+        <TextBlock
+            Text="{x:Bind KeyText, Mode=OneWay}"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            VerticalAlignment="Center"
+            TextTrimming="CharacterEllipsis"/>
+        <TextBlock
+            Text="{x:Bind ItemCount, Mode=OneWay, Converter={StaticResource GroupCountTextConverter}}"
+            Style="{ThemeResource CaptionTextBlockStyle}"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            VerticalAlignment="Center"/>
+        <Border
+            Padding="8,2"
+            CornerRadius="10"
+            VerticalAlignment="Center"
+            Background="{ThemeResource ControlAltFillColorSecondaryBrush}">
+            <TextBlock
+                Text="{x:Bind IsExpanded, Mode=OneWay, Converter={StaticResource GroupExpansionTextConverter}}"
+                Style="{ThemeResource CaptionTextBlockStyle}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Border>
+    </StackPanel>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="Grouped people"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="False"
+    EmptyTemplate="{StaticResource GroupsEmptyTemplate}">
+    <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTextColumn Header="Salary" Width="100" IsReadOnly="True" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+</tv:TableView>

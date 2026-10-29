@@ -1,0 +1,34 @@
+<!-- A cell whose OWN content carries an app-set tooltip (the e-mail address). The control
+     never replaces or clears it: hovering the envelope shows the app's tooltip. -->
+<DataTemplate x:Key="EmailIconCellTemplate" x:DataType="models:Person">
+    <Grid Background="Transparent"
+          ToolTipService.ToolTip="{x:Bind Email, Mode=OneWay}"
+          AutomationProperties.Name="{x:Bind Email, Mode=OneWay}">
+        <FontIcon Glyph="&#xE715;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  AutomationProperties.AccessibilityView="Raw"/>
+    </Grid>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="People with tooltips"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single">
+    <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
+                             Binding="{Binding FullName}"
+                             HeaderToolTip="Full name, as entered"/>
+    <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140"
+                             Binding="{Binding Bio}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
+                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
+                                 HeaderToolTip="Team the person reports into"/>
+    <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
+                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
+                             HeaderToolTip="Salary"/>
+    <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="74"
+                                 CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
+</tv:TableView>

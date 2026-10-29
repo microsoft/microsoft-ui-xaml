@@ -48,7 +48,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies that updating CanBeScrollAnchor registers/unregisters the element on the anchor provider.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyAnchorCandidateRegistration()
         {
             ScrollViewer outerScrollViewer = null;
@@ -178,7 +178,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end (HorizontalAnchorRatio=1).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtRightEdgeWhileIncreasingContentWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, 0 /*viewportSizeChange*/);
@@ -186,7 +186,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end (VerticalAnchorRatio=1).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 0 /*viewportSizeChange*/);
@@ -201,7 +201,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and growning viewport (VerticalAnchorRatio=1).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentAndViewportHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 10 /*viewportSizeChange*/);
@@ -415,7 +415,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies HorizontalOffset growns when inserting an item at the beginning (HorizontalAnchorRatio=0).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtAlmostLeftEdge()
         {
             AnchoringAtAlmostNearEdge(Orientation.Horizontal);
@@ -423,7 +423,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset grows when inserting an item at the beginning (VerticalAnchorRatio=0).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtAlmostTopEdge()
         {
             AnchoringAtAlmostNearEdge(Orientation.Vertical);
@@ -494,7 +494,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset does not change when inserting an item at the end (VerticalAnchorRatio=1).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtAlmostBottomEdge()
         {
             AnchoringAtAlmostFarEdge(Orientation.Vertical);
@@ -563,7 +563,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies HorizontalOffset increases when shrinking the viewport width (HorizontalAnchorRatio=0.5).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringElementWithShrinkingViewport()
         {
             AnchoringElementWithResizedViewport(Orientation.Horizontal, -100.0);
@@ -571,7 +571,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset decreases when growning the viewport height (VerticalAnchorRatio=0.5).")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringElementWithGrowningViewport()
         {
             AnchoringElementWithResizedViewport(Orientation.Vertical, 100.0);
@@ -758,7 +758,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies vertical offset does not exceed its max value because of anchoring, when reducing the extent height.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringWithReducedExtent()
         {
             AnchoringWithOffsetCoercion(false /*reduceAnchorOffset*/);

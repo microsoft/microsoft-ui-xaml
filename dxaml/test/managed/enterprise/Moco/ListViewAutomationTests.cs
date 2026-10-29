@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
@@ -46,13 +46,14 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateGetAutomationControlType()
         {
             ValidateGetAutomationControlTypeImpl(AutomationControlType.Separator);
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateSelectionPatternOnListView()
         {
             ListView list = null;

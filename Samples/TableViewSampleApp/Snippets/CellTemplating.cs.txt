@@ -1,0 +1,14 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
+
+private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
+{
+    var full = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "datepicker";
+    var resources = Application.Current.Resources;
+    JoinDateColumn.CellTemplate = (DataTemplate)resources[full ? "JoinDatePickerTemplate" : "JoinCalendarDateTemplate"];
+    JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);
+}

@@ -1,0 +1,419 @@
+# Issue triage automation
+
+The `AI Issue Triage` workflow prepares a bounded issue context, uses GitHub
+Copilot to analyze it, and independently verifies the result before making any
+issue changes. The Markdown workflow is the source of truth; its compiled
+`issue-triage.lock.yml` is the workflow GitHub Actions executes.
+
+## Deterministic evidence handoff
+
+The trusted `prepare` step fetches and bounds the issue evidence. A
+`pre-agent-steps` hook then inserts that public JSON into the already-rendered
+prompt, before the model starts. The model receives the complete evidence in its
+initial input: it does not need to discover a filename, paginate a native file
+reader, search JSON, or build a temporary result file.
+
+The hook runs after gh-aw has rendered and downloaded the activation prompt.
+This is deliberately not `${{ steps.prepare.outputs.context }}` interpolation:
+agent-job step outputs do not exist when activation renders that prompt.
+Late insertion also leaves issue text that resembles Actions expressions or
+template directives as literal data; it is never reprocessed by the renderer.
+The hook requires exactly one trusted placeholder and rejects repeated
+attachment instead of silently omitting or duplicating context.
+
+Public JSON uses UTF-8 rather than escaping every non-ASCII character. It is
+enclosed in an untrusted-data block, with angle brackets in JSON values escaped
+so issue text cannot close that boundary. Escaping does not change parsed values
+or the input fingerprint. Maximum-length supplementary-Unicode bodies,
+follow-ups, and candidate records are passed directly, including their suffixes;
+they no longer depend on a tool's per-line output limit. A one-MiB evidence limit
+and two-MiB final-prompt limit fail visibly before inference rather than truncate
+input silently. These byte limits are separate from model credit/context limits.
+
+The model returns structured arguments through the native safe-output MCP tool,
+not a shell-mounted CLI. All agent shell execution and file writes are denied;
+trusted preprocessing steps still run outside the agent sandbox. The publisher
+still rebuilds live evidence independently.
+
+## Behavior
+
+| Situation | Behavior |
+| --- | --- |
+| Clear primary area, no existing area label | Add one existing `area-*` label at HIGH confidence. |
+| One area with a configured owner, no existing team label | Derive and add its `team-*` label from the selected configured routing rule. |
+| Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
+| Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
+| Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
+| Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
+| Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
+| Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
+| Multiple existing areas | Preserve all of them; do not infer one team. |
+| BUG clearly specific to WinUI 2 UWP, with supporting report evidence | Add the existing `appModel-UWP` label independently of area confidence, unless context is truncated or a human app-model label conflicts. |
+| BUG assessment with an insufficient repro and an actionable REPRODUCTION request | Ask for the specified details and add `needs-repro`, unless the intake is a feature or context is truncated. |
+| Missing version but otherwise actionable reproduction | Ask for the version in the comment; do not add `needs-repro` for that alone. |
+| Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
+| Intake type and content assessment disagree | Preserve existing type labels and surface the discrepancy for human triage; do not fail otherwise valid routing. |
+| Non-bug reproduction rating or incomplete repro without an actionable request | Reconcile applicability or defer the affected request/label; keep useful summary/routing and explain the review requirement. |
+| Strong evidence of a duplicate | Suggest up to five older issues in the canonical comment, for human confirmation. |
+| Subsequent author follow-up or title/body edit | Re-analyze and update the same bot-owned comment. |
+| Malformed output, unsafe/unconfigured routing, API failure, or changed input | Fail closed without publishing that result. |
+
+The workflow **never** creates labels, removes labels, applies
+`needs-author-feedback` or `duplicate`, closes an issue, submits a duplicate-close
+suggestion, changes assignees/milestones, or sets severity or priority. It leaves
+`needs-triage` in place.
+
+Existing `needs-repro` labels remain until a maintainer confirms the new
+reproduction. Applying or clearing `needs-author-feedback` remains a human
+decision: the existing repository policy enrolls that label in stale closure.
+This workflow does not change that policy or the `/needs-repro` command.
+
+One comment is recognized by `<!-- winui-ai-triage:canonical:v1 -->`, at the
+beginning of a comment authored by `github-actions[bot]`. A marker in an issue
+author's comment cannot make the publisher edit it.
+
+## Comment presentation
+
+The canonical comment uses a compact, decorated triage-summary layout:
+
+- A brief thank-you is the first visible line, before the triage heading. The
+  wording applies to bugs, feature proposals, and questions without mentioning
+  the author or making commitments.
+- An **issue-author** section appears only when there is an actual information
+  request. The request stays visible outside collapsed details, without adding
+  new mention/notification behavior.
+- The **WinUI-team** section shows area, team, issue-kind, and optional reported
+  package-version badges, followed by the summary.
+- **Investigation details** contains reproduction status, routing/confidence,
+  conditional rationale, and triage notes. It opens automatically when an
+  assessment needs review or the analyzed context was truncated.
+- **Possible duplicates** is a separate expandable section when suggestions
+  exist, preserving issue state, confidence, rationale, and human confirmation.
+
+The metadata uses the preserved/planned routing, not a model suggestion that
+would be ignored. Sufficient reproduction details are not presented as a claim
+that the automation reproduced the bug. All issue-derived prose and package
+metadata remain escaped, and the canonical marker remains the first line so
+updates do not create additional comments. Routing is explicitly an
+assessment-time snapshot: later maintainer label changes take precedence.
+This does not introduce label-change triggers or retroactively refresh old comments.
+
+Prepared evidence includes up to six non-author, non-bot follow-ups carrying
+GitHub `OWNER`, `MEMBER`, or `COLLABORATOR` association, in addition to the
+author's existing bounded follow-ups. These associations identify repository
+affiliation, not verified area ownership or policy authority. The first three
+and last three are retained with author/association provenance; omitted or
+oversized context is flagged. Affiliated comments participate in the input
+fingerprint, so changing them during analysis invalidates publication. Comment
+bodies remain untrusted evidence and cannot override workflow policy. Existing
+author-only re-triage triggers and human-label preservation are unchanged.
+
+## Ownership mapping
+
+Ownership changes are reviewed in pull requests, like other configuration
+changes. The workflow uses the checked-in `area-team-map.json` immediately;
+there is no separate mapping approval or activation step.
+
+The team-maintained configuration maps area labels to their default owners;
+`area-External` and `area-Performance` deliberately have no default owner.
+It also provides keyword guidance, ownership confidence, and
+conditional routes. Teams are derived from this configuration,
+never accepted as arbitrary model output.
+
+Parent relationships are maintained separately in `team-parent-map.json`:
+
+```json
+{
+  "team-Markup": "team-Core",
+  "team-Reach": "team-Core",
+  "team-Rendering": "team-Core"
+}
+```
+
+Each entry maps one child label to one parent. No entry means no parent.
+The trusted scripts load this file, validate all names against the live label
+catalog, and reject cycles before analysis or publication. Parent chains are
+expanded deterministically and duplicate ancestors are added only once.
+The mapping stays out of the model's evidence and prompt; the LLM neither
+chooses nor needs to know the parent labels. Editing this JSON changes parent
+routing without changing the LLM instructions or Python code.
+
+The publisher includes configured parents of existing or proposed team labels,
+and the comment shows the same final label set. Existing specific teams are
+preserved; an ancestor-only issue can gain an area-evidenced child without
+being reassigned to a sibling. Under the current configuration, Controls,
+CompInput, and Design have no parent. Adding a missing parent alone does not
+restart a completed human triage decision. This applies on normal eligible
+triage runs, not as a bulk relabeling operation.
+
+Each area entry contains:
+
+- `team`: an existing team label, or `null` for no default owner.
+- `confidence`: `high`, `medium`, or `low` ownership confidence, separate from
+  the model's confidence in its area classification.
+- `match`: control/API names and scenario keywords used for area selection.
+- Optional `note`: additional area-selection guidance.
+- Optional `overrides`: entries with a stable `id`, an evidence-based `when`
+  condition, and an existing `team` label.
+
+The model picks an area and either `default` or a rule ID configured for that
+area. Conditional choices require a short evidence-based explanation. The
+default rule requires a supporting explanation for HIGH area confidence.
+An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
+without discarding the summary, reproduction assessment, or duplicate handling.
+This checks for a missing rationale, not its semantic correctness.
+First-level routing does not require independently verifying the root cause.
+A clear reporter diagnosis identifying the failing component, operation, or
+boundary can support HIGH area confidence and the configured team route.
+The rationale attributes the diagnosis to the reporter rather than presenting
+it as a verified finding. Unverified root cause alone is not a reason to lower
+routing confidence; contradictory observations or unresolved competing areas
+outside the initial-investigation defaults below still require an advisory
+assessment. A bare label request or unsupported guess
+is not diagnostic evidence, and human labels and configured routing rules remain
+authoritative. This is model guidance, not a publisher-side confidence promotion.
+Unknown rule IDs remain errors. A cross-area rule can be normalized
+to `default` only if the selected area has no conditional rules and its fixed
+default owner exactly matches the unambiguous owner of that known rule. This
+cannot introduce a new owner or bypass a selected area's conditions, and the
+adjustment is recorded in the result, comment, and workflow log.
+For example, `area-Scrolling` normally maps to `team-Controls`, but its
+`compositor-input` rule maps compositor-thread interaction tracker/input-latency
+problems to `team-CompInput`.
+
+For a window-behavior report that does not distinguish XAML/WinUI Window from
+AppWindow, prefer `area-XamlWindow` for initial investigation. A working
+AppWindow alternative is not required: maintainers can redirect later. HIGH
+confidence can express this clear initial route, not a verified root cause;
+the rationale explains the report and policy. Direct AppWindow failures and
+clearly identified control/content-layout failures retain their own areas.
+Existing human areas and teams are never replaced by this default.
+
+The AppWindow `xaml-window-facade` rule handles an evidenced XAML/WinUI Window
+size-propagation or activation-ordering failure when the corresponding direct
+AppWindow operation works. Its stable identifier is retained for compatibility;
+the descriptions refer directly to XAML/WinUI Window. This exception preserves
+an existing AppWindow area rather than replacing the human area decision.
+`area-WebView` defaults to `team-Controls` across product generations, without
+a version-specific exception or inherited Rendering/Core labels. Area selection
+must still distinguish WinUI control/integration defects from evidenced external
+browser-runtime failures. These distinctions use report evidence without adding
+other product/app-model labels. UWP-specific bugs are assessed separately from
+area ownership, as described below.
+
+`area-TitleBar` defaults to `team-Controls`; its existing `pointer-handling`
+exception still routes evidenced hit-testing, drag-region input, or caption-button
+pointer handling to `team-CompInput`. Existing human team labels are preserved.
+`ExtendsContentIntoTitleBar` is a Window/AppWindow API, not a TitleBar control
+property. Custom title-bar integration reports can start in `area-TitleBar`
+when the control/window boundary is unclear, without claiming API ownership or
+a verified control defect. Failures isolated to Window/AppWindow properties or
+operations follow the window guidance instead. The property name alone does
+not select the TitleBar area.
+
+Maintainers can change individual mappings in `area-team-map.json` as ownership
+changes. An absent entry or a `null` default team means "do not auto-assign a
+default owner." Team names must already exist in the live label catalog. The
+publisher fails visibly if a configured team has been removed rather than
+creating or guessing a replacement.
+If a pre-existing area has conditional routes but the model assessed a different
+or uncertain area, no default team is guessed: it remains for human routing.
+
+## Assessment reconciliation
+
+### UWP app model
+
+The model returns a boolean `uwp_specific` assessment and bounded `uwp_reason`
+alongside its area/routing assessment. Clear report evidence of a WinUI 2 UWP
+failure, such as a CoreWindow reproduction tied to a WinUI 2-only handler, can
+support the existing `appModel-UWP` label without independent root-cause
+verification. A UWP mention, WinUI 2 version alone, migration/comparison example,
+shared failure, or bare label request is not sufficient. Uncertain app models
+and FEATURE/OTHER assessments return false.
+
+The publisher validates the types and requires a nonempty supporting rationale.
+It adds only the fixed existing label, never an arbitrary model-supplied name,
+and only for a BUG assessment that is not a feature intake. Missing rationale,
+truncated context, or an existing conflicting `appModel-*` label defers this
+label and surfaces a review note without discarding valid area/team triage.
+No existing app-model label is removed or replaced. Area confidence does not
+gate this independent classification. No other product/app-model label is added.
+As with area rationale, validation checks for an explanation, not its semantic
+correctness; the model must establish UWP specificity from the supplied evidence.
+
+Older output artifacts without both app-model fields remain usable but cannot
+authorize app-model labels; the omission is recorded in the comment and log.
+Partially present or malformed fields fail closed. Label existence, changed-input,
+preview, threat-detection and canonical-comment publication checks still apply.
+
+### Issue kind and reproduction
+
+The prepared issue kind is a label/template-based hint, not a verdict about the
+report's content. The model assesses BUG, FEATURE, or OTHER independently, while
+the publisher never changes the existing bug/feature labels. Disagreements with
+a known intake category stay in `needs-triage`.
+
+Non-bug reproduction ratings are treated as `NOT_APPLICABLE`; the original
+rating is retained for audit. Bug reports marked not applicable, or marked
+insufficient without an actionable request, go to human review instead of
+failing the entire issue or inventing a generic request.
+
+`missing_information_kind` separates reproduction gaps from environment/version
+requests and other clarification. `needs-repro` requires a BUG assessment, an
+INSUFFICIENT reproduction, an actual REPRODUCTION request, and untruncated
+context. A feature intake never receives that automatic label. Ambiguous or
+contradictory repro requests are deferred; unrelated valid triage remains usable.
+Older output artifacts without a request category are accepted conservatively,
+but their free-form prose alone cannot authorize a `needs-repro` label.
+
+Well-formed MEDIUM-confidence duplicate suggestions are omitted without rejecting
+the remaining triage. HIGH-confidence suggestions, routing, and reproduction
+actions remain usable. The omission is reported without linking the excluded
+candidates. Duplicate schema, candidate membership, uniqueness, and reason bounds
+are still validated before filtering; LOW or unknown confidence remains an error.
+
+These recoveries are explicit, not silent defaults: review/normalization notes
+appear in the comment and job log. Schema/type errors, unknown labels, genuinely
+unconfigured routes, and out-of-set duplicate suggestions still fail closed.
+
+## Operation
+
+**Automatic intake starts when the workflow merges to the default branch.**
+The approved mapping is picked up from the trusted workflow commit. There is
+no repository activation variable or post-merge mapping review process.
+
+GitHub Actions and Copilot agentic workflow access must be permitted under the
+organization's policy, including the Copilot CLI policy **Allow use of Copilot
+CLI billed to the organization**. The generated analysis job requests
+`copilot-requests: write`; issue reads and writes use job-scoped `GITHUB_TOKEN`.
+Do not add a broad personal access token to make the analysis job work.
+
+An optional manual dispatch with an existing `issue_number` and `publish=false`
+(the manual default) runs analysis but only writes the validated comment and
+proposed label list to the Actions job summary. It does not disable or gate
+automatic intake. Preview still consumes AI credits. A fork with the same label
+catalog can exercise `publish=true` without affecting real reporter issues; the
+workflow must be on the fork's default branch to receive automatic issue events.
+
+Intake runs on issue open, edit, reopen, and the
+addition of `needs-triage`. It also runs when the issue author creates or edits
+a comment. It excludes pull requests, closed/locked issues, bot-authored issues,
+`WinUI OSS` tracking issues, and reports without `bug`, `feature proposal`, or
+`needs-triage`. Bot comments and the labels this workflow adds do not retrigger it.
+
+For an emergency stop, disable `AI Issue Triage` in Actions and cancel active
+runs. Re-enable that workflow in Actions to resume intake.
+
+The initial rollout does not modify project boards, internal mirroring, existing
+stale handling, or the maintainer's acceptance/closure process.
+
+## Detection reports
+
+An `agent_failure` warning in the generated Detection Runs issue does not by
+itself establish prompt injection or another detected threat. The earlier runs
+linked from [#12206](https://github.com/microsoft/microsoft-ui-xaml/issues/12206)
+either exhausted the old five-invocation budget while reading evidence or were
+superseded before activation/agent artifacts were available.
+
+Threat detection now starts only after successful activation and agent analysis,
+and not after workflow cancellation. Cancelled/superseded runs no longer launch
+a detector with missing artifacts and produce a misleading detector-failure
+warning. A failed analysis remains a failed workflow with its original job logs
+and failure handling; it is not converted to success.
+
+This does not relax publication safety. Successful analysis still requires a
+successful detection job **and** `detection_success == true` before the
+independent publisher can run. Detection has `continue-on-error: false`: an
+incomplete/failed safety analysis fails the job visibly rather than producing an
+overall green run with a skipped publisher. Real detection failures are still
+reported and block publication. Historical comments in the framework-managed
+Detection Runs issue are not edited or removed.
+
+The detector has a separate **20-credit per-run budget**; the intake agent
+remains capped at ten credits. The configured detector cap is also exported to
+the harness so a proxy budget rejection can be distinguished from the CLI's
+generic HTTP 403 authentication message. Additive detector instructions encourage
+bounded reads without removing untrusted evidence or weakening threat coverage.
+After execution, `detection_diagnostics.py` reports response-level credit usage,
+the configured cap, and result-file presence. Missing accounting is reported as
+unknown, not zero. These read-only diagnostics never create a verdict or authorize
+publication; the existing strict detector conclusion and publisher gate remain
+authoritative.
+
+## Trust boundaries and limits
+
+- Prepared JSON is attached directly to the rendered prompt by trusted code,
+  preserving the complete bounded evidence and fingerprint without agent file
+  reads. Agent shell execution is disabled, and safe outputs use the native MCP
+  interface rather than CLI wrappers.
+- Issue content, comments, code samples, links, and candidate text are untrusted.
+  The model cannot search GitHub, download attachments, run sample code, or write
+  directly to issues. It can only return a structured triage result.
+- Retrieval performs at most six scoped searches of twenty results each, then
+  ranks and retains at most thirty unique older issues. Both open and closed
+  issues are considered. Similarity scores are retrieval evidence, not duplicate
+  confidence; shared metadata alone is not sufficient. Canonical ordering uses
+  the repository's issue numbers, not creation timestamps, which transferred
+  issues can retain from another repository.
+- Evidence includes up to 16,000 characters of the report and up to ten author
+  comments (the first five and last five, at most 2,000 characters each).
+  Truncated context is flagged and cannot cause an automatic `needs-repro`.
+  Issues with 1,000 or more comments require manual triage instead.
+- The analysis job has no issue-write permission. A separate job with
+  `issues: write` checks out the trusted workflow commit, rebuilds current
+  evidence, and verifies the exact output schema, hash, labels, and candidate
+  membership. It never trusts model-written evidence files.
+- The fingerprint includes title, body, author comments, and current labels.
+  The publisher checks it again immediately before commenting and before
+  additive label writes. GitHub does not provide a transaction across these
+  operations; a concurrent edit can stop label publication after the comment
+  was written. A later run safely refreshes the single comment.
+- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added.
+  The current parent configuration permits at most five additions per run (one
+  area, its specific team, the optional parent, and the two workflow-state
+  labels). The publisher uses additive label writes, never replacement.
+- Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
+  issue authors: pre-activation is not a Microsoft organization-membership gate.
+  Its repository-permission lookup only exempts `admin`, `maintain`, and `write`
+  actors from rate limiting. Other actors, including non-collaborators, may
+  trigger five runs per hour. A permission-lookup failure continues through
+  that rate-limit check instead of rejecting the reporter. Manual dispatch still
+  requires GitHub's normal workflow-dispatch permissions.
+  Ignored label events and other people's comments use separate
+  concurrency groups so they cannot cancel an active intake. The triage agent
+  is bounded to twelve model invocations (including evidence/tool iterations)
+  and ten AI credits, leaving room to assess the supplied evidence and submit its result;
+  the separate output-safety analysis has its own twenty-credit budget. A
+  300-credit rolling 24-hour guardrail stops starting further automatic analyses
+  after the measured threshold is reached; concurrent runs may already be in
+  flight. Manual dispatch bypasses this daily guardrail, not the per-run limits.
+  GitHub API rate limits use bounded backoff.
+- Action references and generated runtime containers are immutable pins. Only
+  GitHub services are used for issue retrieval and AI analysis.
+
+## Development
+
+Python 3.12+ and the Python standard library are sufficient for scripts/tests.
+From the repository root:
+
+```powershell
+python -m unittest discover -s .github\scripts\issue-triage\tests -v
+gh extension install github/gh-aw --pin v0.89.21
+gh aw compile issue-triage --strict --no-check-update
+```
+
+Commit the Markdown source, compiled `.lock.yml`, and `.github/aw/actions-lock.json`
+together. Do not hand-edit the generated workflow. The focused CI workflow runs
+the tests and checks that the pinned compiler reproduces the committed lockfile.
+Product binaries do not need rebuilding for these automation-only changes.
+
+`find_duplicates.py` implements deterministic retrieval and ranking.
+`triage.py prepare EVENT_PATH CONTEXT_PATH` builds model input.
+`triage.py attach-context CONTEXT_PATH PROMPT_PATH` fills the rendered prompt's
+single evidence slot without a GitHub token or network access.
+`triage.py publish EVENT_PATH AGENT_OUTPUT_PATH` independently validates and
+previews unless `TRIAGE_PUBLISH` is explicitly `true`.
+
+The `prepare` and `publish` commands require `GITHUB_REPOSITORY` and a job-scoped `GITHUB_TOKEN`.
+For local read-only checks, use an existing authenticated GitHub environment;
+never put a token in a fixture, command output, source file, or commit.

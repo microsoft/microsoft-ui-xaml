@@ -158,6 +158,11 @@ public:
                                                     // Run it manually by using the -RunIgnoredTests flag
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(GetDispatcherQueueFromThreadpoolAfterCoreShutdown)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")  // Shuts XAML down on a UI thread; isolate from other tests.
+        TEST_METHOD_PROPERTY(L"Description", L"Reading Window.DispatcherQueue from a thread-pool worker after the window's XAML core has shut down returns the window's DispatcherQueue.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(PointerInput)
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
@@ -202,6 +207,11 @@ public:
 
     TEST_METHOD(ValidateDispatcherShutdownModeInIslandsApp)
     TEST_METHOD(ValidateDispatcherShutdownModeInDesktopApp)
+
+    BEGIN_TEST_METHOD(ApplicationBehaviorAtCoreShutdown)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        TEST_METHOD_PROPERTY(L"Description", L"Validate Application behavior before shutdown, after shutdown, and after restart.")
+    END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateCallbackErrorPropagatesInDesktopApp)
         TEST_METHOD_PROPERTY(L"Description", L"Verify that an app callback failure in Application.Start propagates as an error return instead of fail-fasting inside WinUI.")

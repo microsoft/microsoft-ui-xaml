@@ -1,0 +1,56 @@
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="People with templated cells"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="False">
+    <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}" IsReadOnly="True"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTemplateColumn Header="Shift" Width="150" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"/>
+    <tv:TableViewTemplateColumn Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office"/>
+    <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
+</tv:TableView>
+
+<!-- From Templates\PersonCellTemplates.xaml -->
+<DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
+    <Border
+        CornerRadius="10"
+        Padding="8,2"
+        Margin="6,2"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Center"
+        Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipTintConverter}}"
+        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"
+        AutomationProperties.AccessibilityView="Raw">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Ellipse
+                Width="8"
+                Height="8"
+                VerticalAlignment="Center"
+                Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipDotConverter}}"
+                AutomationProperties.AccessibilityView="Raw"/>
+            <TextBlock
+                Text="{x:Bind Department, Mode=OneWay}"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"/>
+        </StackPanel>
+    </Border>
+</DataTemplate>
+
+<!-- From Templates\PersonCellTemplates.xaml -->
+<DataTemplate x:Key="ActiveCheckBoxTemplate" x:DataType="models:Person">
+    <CheckBox
+        IsChecked="{x:Bind IsActive, Mode=TwoWay}"
+        MinWidth="0"
+        Margin="14,2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Left"
+        AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Active for {0}'}"/>
+</DataTemplate>

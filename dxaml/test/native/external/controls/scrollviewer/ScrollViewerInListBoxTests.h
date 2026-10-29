@@ -24,14 +24,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
  BEGIN_TEST_METHOD(ChangeZoomFactorOfVSP)
  TEST_METHOD_PROPERTY(L"Description", L"Validates that ZoomToFactor properly changes the view for a ScrollViewer hosting a VirtualizingStackPanel.")
- TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+ TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
  TEST_METHOD_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_RS5) // Test fails with baseline file mismatch with output file only on RS4
  TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
  END_TEST_METHOD()
 
  BEGIN_TEST_METHOD(ChangeZoomFactorOfVSPWithPen)
  TEST_METHOD_PROPERTY(L"Description", L"Validates that using pen input to change the ZoomToFactor properly changes the view for a ScrollViewer hosting a VirtualizingStackPanel.")
- TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+ TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
  TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
  TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
  END_TEST_METHOD()

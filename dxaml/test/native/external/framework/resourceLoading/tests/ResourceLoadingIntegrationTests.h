@@ -70,7 +70,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(VerifyCanReplaceGenericXaml)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies that resources are loaded from replacement generic.xaml")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
         END_TEST_METHOD()
 
@@ -82,7 +82,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(VerifyIncompleteGenericXamlReplacement)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies that resources are missing when replacement is incomplete")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
         END_TEST_METHOD()
     private:

@@ -1,0 +1,121 @@
+Source = TableViewSource.From(People);     // one source; ParentBy, Filter, Sort and GroupBy reshape it in place
+Source.IsLiveShaping = true;               // an edit to a key or shaped value reshapes the tree
+InitializeComponent();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
+
+public TableViewSource Source { get; }
+
+private void OnLiveToggled(object sender, RoutedEventArgs e)
+{
+    Source.IsLiveShaping = ((ToggleSwitch)sender).IsOn;
+}
+
+private void OnFilterChanged(object sender, TextChangedEventArgs e)
+{
+    var text = ((TextBox)sender).Text.Trim();
+    if (text.Length == 0)
+    {
+        Source.ClearFilter();
+    }
+    else
+    {
+        // Matches rows; the ancestors of a match stay as ordinary rows, expanded while the filter is on.
+        Source.Filter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+    }
+}
+
+private void OnSortChanged(object sender, SelectionChangedEventArgs e)
+{
+    // A key-selector sort adds an axis rather than replacing one, so clear the previous axis first.
+    Source.ClearSort();
+    switch (((ComboBox)sender).SelectedIndex)
+    {
+        case 1:
+            Source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
+            break;
+        case 2:
+            Source.Sort(item => ((Person)item).FullName, SortDirection.Descending);
+            break;
+        case 3:
+            Source.Sort(item => ((Person)item).Role, SortDirection.Ascending);
+            break;
+    }
+}
+
+// TableView.Columns is the live column collection: moving an entry moves the column. The first
+// visible column hosts the level indent and the expander chevron.
+private void SetFirstColumn(TableViewColumn first)
+{
+    var columns = PeopleTable.Columns;
+    var from = columns.IndexOf(first);
+    if (from > 0)
+    {
+        columns.RemoveAt(from);
+        columns.Insert(0, first);
+    }
+}
+
+// From Controls\ShapingOptions.xaml.cs
+// ParentBy takes each row's key and its parent's key. A second ParentBy replaces the relation and
+// resets expansion, so declare it once.
+private static void NestRows(TableViewSource source, ParentRelation relation) =>
+    source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+
+// From Controls\ShapingOptions.xaml.cs
+// Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+// the tree rows, so Grouped hierarchy calls both.
+private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.ExpandAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.ExpandAllRows();
+    }
+}
+
+private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.CollapseAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.CollapseAllRows();
+    }
+}
+
+// From Helpers\ParentRelation.cs
+// The two selectors ParentBy takes: a row's unique key, and its parent's key (null for a root).
+// Person rows: EmployeeId under ManagerId (the org chart).
+public static ParentRelation Manager { get; } = new(
+    "Manager",
+    row => (row as Person)?.EmployeeId,
+    row => (row as Person)?.ManagerId);
+
+// Person rows: EmployeeId under MentorId, a second tree over the same rows.
+public static ParentRelation Mentor { get; } = new(
+    "Mentor",
+    row => (row as Person)?.EmployeeId,
+    row => (row as Person)?.MentorId);
+
+// From Models\Person.cs
+// The Name column binds FullName, so it needs a setter to be editable: the first word becomes
+// FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+public string FullName
+{
+    get => $"{_firstName} {_lastName}".Trim();
+    set
+    {
+        var name = (value ?? string.Empty).Trim();
+        var split = name.IndexOfAny(new[] { ' ', '\t' });
+        FirstName = split < 0 ? name : name[..split];
+        LastName = split < 0 ? string.Empty : name[(split + 1)..].Trim();
+    }
+}

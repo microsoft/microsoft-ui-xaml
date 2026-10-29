@@ -95,7 +95,7 @@
                       <Visual Tag="PrependVisual" Visible="False">
                         <Visual VisualId="2" Tag="PrimaryVisual" SizeX="353" SizeY="67" OffsetX="0" OffsetY="1200" OffsetZ="0">
                           <Visual Tag="ContentVisual">
-                            <wucSpriteVisual SizeX="348" SizeY="37" BorderMode="Hard" OffsetX="4" OffsetY="17" OffsetZ="0">
+                            <wucSpriteVisual SizeX="350" SizeY="39" BorderMode="Hard" OffsetX="3" OffsetY="16" OffsetZ="0">
                               <MaskBrush>
                                 <Source>
                                   <ColorBrush Color="#ffffffff" />
@@ -115,7 +115,7 @@
             </Visual>
           </Visual>
           <Visual Tag="PrependVisual">
-            <Visual Tag="PrimaryVisual">
+            <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
               <Visual Tag="ContentVisual" />
               <wucSpriteVisual Tag="ConnectedAnimationSnapshotVisual" SizeX="251.8" SizeY="66.5">
                 <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />

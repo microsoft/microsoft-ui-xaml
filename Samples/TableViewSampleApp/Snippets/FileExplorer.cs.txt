@@ -1,0 +1,47 @@
+Source = TableViewSource.From(Entries);    // created once; filtered and grouped in place
+InitializeComponent();
+
+FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+FileTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+FileTable.Density = TableViewDensity.Compact;
+// handledEventsToo: the table consumes Enter for its own row navigation.
+FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
+
+// Folder contents replace the items of this one collection; the source is never rebuilt.
+public ObservableCollection<FileSystemEntry> Entries { get; } = new();
+
+public TableViewSource Source { get; }
+
+private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
+{
+    if (e.Key == VirtualKey.Enter)
+    {
+        e.Handled = true;
+        OpenSelectedFolder();
+    }
+    else if (e.Key == VirtualKey.Back)
+    {
+        e.Handled = true;
+        GoUp();
+    }
+}
+
+private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+{
+    var filter = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag;
+    switch (filter)
+    {
+        case "folders":
+            Source.Filter(item => item is FileSystemEntry { IsFolder: true });
+            break;
+        case "files":
+            Source.Filter(item => item is FileSystemEntry { IsFolder: false });
+            break;
+        case "none":
+            Source.Filter(_ => false);
+            break;
+        default:
+            Source.ClearFilter();
+            break;
+    }
+}

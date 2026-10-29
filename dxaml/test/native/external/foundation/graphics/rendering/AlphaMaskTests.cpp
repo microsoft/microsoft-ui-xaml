@@ -224,20 +224,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // text alpha-mask surface. Most masks are byte-identical across OS builds.
         // The one surface we parameterize here via $$TextMaskCRC$$ is the Thai run
         // (tb6 in the test XAML). Thai stacks combining vowel marks above the base
-        // glyph, and that glyph shaping/positioning got touched in newer OS builds,
-        // so its rasterized mask (and thus its CRC) moved. Verified on real VMs: the
-        // older baseline (rs5_release) renders CRC 980343538, and newer builds
-        // (ge_current) render 1545754801. There's no JPEG here -- this is a real
-        // text-rendering difference, not decode rounding. (A couple of other surfaces in
-        // this test also shift between OS builds; those already ship both CRC variants as
-        // additive .master.png files, so only this one needs the per-OS swap.)
+        // glyph, and that glyph shaping/positioning differs across supported OS builds.
+        // With the one-pixel glyph-mask padding, builds 26200 and later render CRC
+        // 1838690936, while earlier builds render 2367817773. Other varying surfaces
+        // already ship additive master images, so only this one needs a variable.
         if (IsOSBuildAtLeast(26200))
         {
-            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"1545754801");
+            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"1838690936");
         }
         else
         {
-            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"980343538");
+            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"2367817773");
         }
         WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree, false);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 800));
@@ -281,6 +278,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AlphaMaskTests::RenderTransforms()
     {
+        // If this test runs in a loop in WPF mode, something causes a few pixels of the text alpha-mask
+        // surfaces to differ by one grayscale value. This difference changes the text alpha-mask CRCs.
+        // Reinitialize Xaml so each invocation starts with the same rendering state.
+        TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->InitializeXaml();
+
         VerificationSettings verificationSettings;
         VerifyAlphaMasksInFile(
             GetRenderingPath() + L"AlphaMaskRenderTransforms.xaml",

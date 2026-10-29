@@ -1,0 +1,21 @@
+<!-- The glyph is decorative (Raw); the name carries the row. -->
+<DataTemplate x:Key="FileNameTemplate" x:DataType="models:FileSystemEntry">
+    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+        <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+        <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+    </StackPanel>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="FileTable"
+    AutomationProperties.Name="Folder contents"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="True">
+    <!-- Name, Type and Size sort by a folders-first key; Date modified sorts by the DateModified value,
+         not its display text. -->
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
+    <tv:TableViewTextColumn Header="Type" Width="140" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
+    <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="150" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
+    <tv:TableViewTextColumn Header="Size" Width="100" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
+</tv:TableView>

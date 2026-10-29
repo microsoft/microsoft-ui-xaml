@@ -101,6 +101,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualState setters are able to use {x:Null} as the Value.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(VerifyVisualStateSetterCanUseXNullForTypeWithoutTypeConverter)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualState setters can use {x:Null} as the Value for a property whose type has no type converter (e.g. Border.Child).")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyVisualStateSettersCanHaveUnsetValue)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualState setters are allowed to not have a Value (this is a no-op).")
             END_TEST_METHOD()

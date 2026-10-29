@@ -35,7 +35,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(FocusedTextBoxAtCoreShutdown)
             TEST_METHOD_PROPERTY(L"Description", L"Tear down the core with a focused TextBox still in the tree without faulting in input services.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OffThreadReleaseBeforeIslandCreation)
+            TEST_METHOD_PROPERTY(L"Description", L"Queued releases must not leave frame-dependent work pending before a WPF host creates a XAML island.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OffThreadReleaseWakesIdleCleanup)
+            TEST_METHOD_PROPERTY(L"Description", L"Release native resources on an idle UI thread without requesting rendering or manual cleanup.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
         END_TEST_METHOD()
     };
 } } } } } }

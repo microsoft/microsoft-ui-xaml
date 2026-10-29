@@ -196,7 +196,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "If another element is occluding the focused element, the focus rect should be occluded as well.  Currently occlusion isn't perfect in all cases.")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void OccludedFocusedElement()
         {
@@ -360,7 +360,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestProperty("Description", "Ensure focus rect displays underneath a 'shy header' rather than on top.  (Shy header implementation modeled after RS2-era Groove app)")]
         [TestProperty("IsolationLevel", "Method")]  // There are some lifetime problems with this test that result in the next test crashing.
                                                     // Likely because of the way it uses MockDComp and hand-off visuals.
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ShyHeader()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -473,7 +473,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "The focused element is inside a ScrollViewer and is occluded by another element in the ScrollViewer.")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails with a crash in WPF Islands
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void FocusedElementOccludedInScrollViewer()
         {
@@ -558,7 +558,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         // [TestMethod] 24023385
         [TestProperty("Description", "Ensure when a focused list view item scrolls out of view, the focus rect is clipped rather than nudged")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListViewItemOnEdgeOfView()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -617,7 +617,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "When a button is clipped by a parent, the focus rect should be nudged rather than clipped")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ButtonContainerClipsFocusRect()
         {
@@ -656,7 +656,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a Canvas")]
-        [TestProperty("Hosting:Mode", "UAP")]   
+        [TestProperty("Hosting:Mode", "UAP")]
         public void BringFocusedMenuFlyoutItemIntoViewWithRootCanvas()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: true);
@@ -776,7 +776,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         // [TestMethod] 24023385
         [TestProperty("Description", "Once ContextMenyKey input opens up the flyout, focus rect should be visible on first list item")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ButtonFlyoutFocusRectOnKeyboardContextKeyInput()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -833,7 +833,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         // [TestMethod] 24023385
         [TestProperty("Description", "When releasing long pressed GamepadMenuKey should not take focus rect away from first list item")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ButtonFlyoutFocusRectOnGamepadMenuKeyInput()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -889,7 +889,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "When the user presses shift-f10 to show a button flyout, the FocusState of the MenuFlyoutItem should be 'Keyboard' so that the focus rect shows")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ButtonContextFlyoutShowsFocusRectAfterShiftF10()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -952,7 +952,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         // [TestMethod] 24023385
         [TestProperty("Description", "If the UseSystemFocusVisuals resource is overridden to false, we should not render a focus rect.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void UseSystemFocusVisualsStaticResource()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -999,7 +999,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ValidateFocusRectInListView()
         {
@@ -1129,7 +1129,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")] // fails with a crash in WPF islands
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ValidateFocusRectInThirdPartyScrollingSurface()
         {
@@ -1200,7 +1200,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validate rendering of focus rect on basic UIElements")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         async public void UIElementTests()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -1468,4 +1468,3 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
     }
 }
-
