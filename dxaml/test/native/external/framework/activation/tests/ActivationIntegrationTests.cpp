@@ -33,7 +33,7 @@ namespace
     // MUXC's activation fallback turns a class name into a DLL name by its namespace.
     // For this class it tries to load Microsoft.Web.WebView2.Core.dll.
     constexpr PCWSTR webView2OptionsClassName = L"Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions";
-    constexpr PCWSTR webView2CoreDllName = L"Microsoft.Web.WebView2.Core.dll";
+    constexpr PCWSTR webViewCoreDllName = L"Microsoft.Web.WebView2.Core.dll";
 
     // Detours notes:
     // * DetourAttach redirects every call to the real function into our hook.
@@ -44,9 +44,9 @@ namespace
     // The hooks only change behavior on the test's thread, and only while this is set.
     thread_local bool isHookActive = false;
 
-    // What the fallback did when it tried to load the Core DLL.
-    unsigned int coreLoadCount = 0;
-    DWORD coreLoadFlags = 0;
+    // What the fallback did when it tried to load the WebView2 Core DLL.
+    unsigned int webViewCoreLoadCount = 0;
+    DWORD webViewCoreLoadFlags = 0;
 
     // Hook 1: Make WinRT activation of the options class fail with "class not registered".
     // The test host's manifest registers WebView2's classes, so normal activation would succeed
@@ -61,15 +61,15 @@ namespace
         return realRoGetActivationFactory(classId, iid, factory);
     }
 
-    // Hook 2: Record how the fallback asks for the Core DLL, then report "not found".
+    // Hook 2: Record how the fallback asks for the WebView2 Core DLL, then report "not found".
     // We only care about the search flags, so there's no need to really load it.
     // KernelBase's LoadLibraryW calls LoadLibraryExW with flags 0, so this catches both.
     HMODULE WINAPI LoadLibraryExWHook(PCWSTR fileName, HANDLE file, DWORD flags)
     {
-        if (isHookActive && fileName && _wcsicmp(fileName, webView2CoreDllName) == 0)
+        if (isHookActive && fileName && _wcsicmp(fileName, webViewCoreDllName) == 0)
         {
-            ++coreLoadCount;
-            coreLoadFlags = flags;
+            ++webViewCoreLoadCount;
+            webViewCoreLoadFlags = flags;
             SetLastError(ERROR_MOD_NOT_FOUND);
             return nullptr;
         }
@@ -149,8 +149,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     GetProcAddress(GetModuleHandleW(L"kernelbase.dll"), "LoadLibraryExW"));
                 VERIFY_IS_NOT_NULL(realLoadLibraryExW);
 
-                coreLoadCount = 0;
-                coreLoadFlags = 0;
+                webViewCoreLoadCount = 0;
+                webViewCoreLoadFlags = 0;
                 isHookActive = true;
                 AttachHooks(true);
                 auto detachHooks = wil::scope_exit([&]()
@@ -160,11 +160,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 });
 
                 // This activates the WebView2 options class, which hook 1 makes fail.
-                // MUXC then falls back to loading the Core DLL, which hook 2 records.
+                // MUXC then falls back to loading the WebView2 Core DLL, which hook 2 records.
                 webView->EnsureCoreWebView2Async();
 
-                VERIFY_ARE_EQUAL(1u, coreLoadCount);
-                VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), coreLoadFlags);
+                VERIFY_ARE_EQUAL(1u, webViewCoreLoadCount);
+                VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), webViewCoreLoadFlags);
             });
         }
 
