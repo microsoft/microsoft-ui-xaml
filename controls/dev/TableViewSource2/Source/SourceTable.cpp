@@ -470,6 +470,98 @@ void SourceTable::ValidateIncoming(
     }
 }
 
+void SourceTable::InsertAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
+{
+    MUX_ASSERT(!m_hierarchy);
+    MUX_ASSERT(index <= m_records.size());
+
+    try
+    {
+        ValidateIncoming({ item }, nullptr);
+    }
+    catch (...)
+    {
+        // The source now holds an item the table rejected: the next notification re-reads.
+        m_diverged = true;
+        throw;
+    }
+
+    auto record = CreateRecord(item);
+    SourceRecord* const raw = record.get();
+    m_records.insert(m_records.begin() + index, std::move(record));
+    m_topLevel.insert(m_topLevel.begin() + index, raw);
+    AddToLookups(raw);
+
+    std::vector<SourceRecordPtr> removed;
+    RaiseSourceChanged(SourceChangeKind::Add, nullptr, nullptr, 0, index, { raw }, removed);
+}
+
+void SourceTable::RemoveAt(uint32_t index)
+{
+    MUX_ASSERT(!m_hierarchy);
+    MUX_ASSERT(index < m_records.size());
+
+    std::vector<SourceRecordPtr> removed;
+    removed.push_back(std::move(m_records[index]));
+    m_records.erase(m_records.begin() + index);
+    m_topLevel.erase(m_topLevel.begin() + index);
+    RemoveFromLookups(removed.front().get());
+
+    // `removed` keeps the record alive (Item, Identity()) until the handler returns.
+    RaiseSourceChanged(SourceChangeKind::Remove, nullptr, nullptr, index, 0, {}, removed);
+}
+
+void SourceTable::ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item)
+{
+    MUX_ASSERT(!m_hierarchy);
+    MUX_ASSERT(index < m_records.size());
+
+    SourceRecord* const old = m_records[index].get();
+    try
+    {
+        ValidateIncoming({ item }, old);
+    }
+    catch (...)
+    {
+        m_diverged = true;
+        throw;
+    }
+
+    // Always a new record, even for the same object: the old one leaves the lookups first.
+    auto record = CreateRecord(item);
+    SourceRecord* const raw = record.get();
+    RemoveFromLookups(old);
+
+    std::vector<SourceRecordPtr> removed;
+    removed.push_back(std::exchange(m_records[index], std::move(record)));
+    m_topLevel[index] = raw;
+    AddToLookups(raw);
+
+    RaiseSourceChanged(SourceChangeKind::Replace, nullptr, nullptr, index, index, { raw }, removed);
+}
+
+void SourceTable::Move(uint32_t fromIndex, uint32_t toIndex)
+{
+    MUX_ASSERT(!m_hierarchy);
+    MUX_ASSERT(fromIndex < m_records.size() && toIndex < m_records.size());
+
+    if (fromIndex == toIndex)
+    {
+        return;
+    }
+
+    auto record = std::move(m_records[fromIndex]);
+    m_records.erase(m_records.begin() + fromIndex);
+    m_records.insert(m_records.begin() + toIndex, std::move(record));
+
+    SourceRecord* const raw = m_topLevel[fromIndex];
+    m_topLevel.erase(m_topLevel.begin() + fromIndex);
+    m_topLevel.insert(m_topLevel.begin() + toIndex, raw);
+
+    std::vector<SourceRecordPtr> removed;
+    RaiseSourceChanged(SourceChangeKind::Move, nullptr, nullptr, fromIndex, toIndex, {}, removed);
+}
+
 std::vector<SourceRecord*>& SourceTable::SiblingsOf(SourceRecord* parent) noexcept
 {
     return parent ? parent->Children : m_topLevel;
