@@ -115,6 +115,11 @@ struct SourceRecord : ShapedNode
     // SourceTable::TryFindByAddress, which is always on, instead of the identity index (D4).
     static std::optional<ObjectAddress> TryParseIdentity(winrt::hstring const& identity) noexcept;
 
+    // The canonical COM identity of an item: the address of its IUnknown. A managed item can reach
+    // native code through different interface pointers on different calls; all of them QI to the
+    // same IUnknown, so this is the key that lookups fall back to when the raw pointer misses.
+    static ObjectAddress AddressOf(winrt::Windows::Foundation::IInspectable const& item);
+
 private:
     mutable winrt::hstring m_identity;
 };

@@ -46,6 +46,9 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource2.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceRecord.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TableViewSource2.idl" />
