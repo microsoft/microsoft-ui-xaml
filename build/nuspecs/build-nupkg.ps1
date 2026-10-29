@@ -19,6 +19,14 @@ Param(
     [string]$MonobuildPinnedVersion = ''
 )
 
+# Report unhandled PowerShell errors as failures instead of letting the command
+# wrapper return the last successful NuGet process's exit code.
+trap
+{
+    Write-Error -ErrorRecord $_ -ErrorAction Continue
+    Exit 1
+}
+
 #
 # Version is read from the VERSION file.
 #
@@ -259,17 +267,36 @@ try
     if (Test-Path $FinalPackagePath)
     {
         $ExistingPackageContents = Join-Path $StagingDir "existing"
-        [System.IO.Compression.ZipFile]::ExtractToDirectory($FinalPackagePath, $ExistingPackageContents)
-        $ExistingPackageHashes = Get-PackageFileHashes $ExistingPackageContents
-        $ExistingManifestHash = (Get-FileHash -LiteralPath "$ExistingPackageContents\$ManifestName" -ErrorAction Stop).Hash
-        $FinalPackageUnchanged = ($StagedManifestHash -eq $ExistingManifestHash) -and ($StagedPackageHashes.Count -eq $ExistingPackageHashes.Count)
-        foreach ($RelativePath in $StagedPackageHashes.Keys)
+        # A damaged old archive is stale, not a reason to block publication.
+        # Other errors, such as denied access, must still fail the script.
+        try
         {
-            if ($StagedPackageHashes[$RelativePath] -ne $ExistingPackageHashes[$RelativePath])
+            [System.IO.Compression.ZipFile]::ExtractToDirectory($FinalPackagePath, $ExistingPackageContents)
+            $ExistingManifestPath = Join-Path $ExistingPackageContents $ManifestName
+            if (Test-Path -LiteralPath $ExistingManifestPath -PathType Leaf -ErrorAction Stop)
+            {
+                $ExistingPackageHashes = Get-PackageFileHashes $ExistingPackageContents
+                $ExistingManifestHash = (Get-FileHash -LiteralPath $ExistingManifestPath -ErrorAction Stop).Hash
+                $FinalPackageUnchanged = ($StagedManifestHash -eq $ExistingManifestHash) -and ($StagedPackageHashes.Count -eq $ExistingPackageHashes.Count)
+                foreach ($RelativePath in $StagedPackageHashes.Keys)
+                {
+                    if ($StagedPackageHashes[$RelativePath] -ne $ExistingPackageHashes[$RelativePath])
+                    {
+                        $FinalPackageUnchanged = $false
+                        break
+                    }
+                }
+            }
+            else
             {
                 $FinalPackageUnchanged = $false
-                break
+                Write-Warning "Replacing package archive '$FinalPackagePath' because it is missing '$ManifestName'."
             }
+        }
+        catch [System.IO.InvalidDataException]
+        {
+            $FinalPackageUnchanged = $false
+            Write-Warning "Replacing invalid package archive '$FinalPackagePath': $($_.Exception.Message)"
         }
     }
 
@@ -294,25 +321,56 @@ try
             $CachedArchivePath = Join-Path $CachedPackagePath "$PackageId.$version.nupkg"
             if (Test-Path $CachedArchivePath)
             {
-                $CachedArchive = [System.IO.Compression.ZipFile]::OpenRead($CachedArchivePath)
+                $CachedArchive = $null
                 try
                 {
-                    $CachedManifestPath = Join-Path $StagingDir "cached.nuspec"
-                    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($CachedArchive.GetEntry($ManifestName), $CachedManifestPath, $true)
-                    if ($StagedManifestHash -ne (Get-FileHash -LiteralPath $CachedManifestPath -ErrorAction Stop).Hash)
+                    $CachedArchive = [System.IO.Compression.ZipFile]::OpenRead($CachedArchivePath)
+                    $CachedManifestEntry = $CachedArchive.GetEntry($ManifestName)
+                    if ($CachedManifestEntry)
+                    {
+                        $CachedManifestPath = Join-Path $StagingDir "cached.nuspec"
+                        [System.IO.Compression.ZipFileExtensions]::ExtractToFile($CachedManifestEntry, $CachedManifestPath, $true)
+                        if ($StagedManifestHash -ne (Get-FileHash -LiteralPath $CachedManifestPath -ErrorAction Stop).Hash)
+                        {
+                            $CachedPackageUnchanged = $false
+                        }
+                    }
+                    else
                     {
                         $CachedPackageUnchanged = $false
+                        Write-Warning "Refreshing cached package '$CachedArchivePath' because it is missing '$ManifestName'."
                     }
+                }
+                catch [System.IO.InvalidDataException]
+                {
+                    $CachedPackageUnchanged = $false
+                    Write-Warning "Refreshing invalid cached package '$CachedArchivePath': $($_.Exception.Message)"
                 }
                 finally
                 {
-                    $CachedArchive.Dispose()
+                    if ($CachedArchive) { $CachedArchive.Dispose() }
                 }
             }
             else
             {
                 $CachedPackageUnchanged = $false
             }
+
+            # Modern ID\version caches need the extracted manifest for restore.
+            # Legacy ID.version installs legitimately omit it.
+            if ((Split-Path -Leaf $CachedPackagePath) -eq $version)
+            {
+                $InstalledManifestPath = Join-Path $CachedPackagePath $ManifestName
+                if (!(Test-Path -LiteralPath $InstalledManifestPath -PathType Leaf -ErrorAction Stop))
+                {
+                    $CachedPackageUnchanged = $false
+                }
+                elseif ($StagedManifestHash -ne (Get-FileHash -LiteralPath $InstalledManifestPath -ErrorAction Stop).Hash)
+                {
+                    $CachedPackageUnchanged = $false
+                }
+            }
+
             # Check installed files as well as the manifest, so missing, extra,
             # or modified payload files cannot masquerade as an up-to-date cache.
             $CachedPackageHashes = Get-PackageFileHashes $CachedPackagePath
