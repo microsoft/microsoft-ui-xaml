@@ -266,10 +266,24 @@ class ValidationTests(TriageFixture):
                 self.result(duplicate_candidates_json=json.dumps([
                     {"number": value, "reason": "Same report.", "confidence": "HIGH"}
                 ]))
-        with self.assertRaises(t.TriageError):
-            self.result(duplicate_candidates_json=json.dumps([
-                {"number": 1, "reason": "Maybe.", "confidence": "MEDIUM"}
-            ]))
+        for confidence in ("LOW", "INVALID", None):
+            with self.subTest(confidence=confidence), self.assertRaises(t.TriageError):
+                self.result(duplicate_candidates_json=json.dumps([
+                    {"number": 1, "reason": "Maybe.", "confidence": confidence}
+                ]))
+
+    def test_medium_duplicates_still_require_valid_schema_candidates_and_reasons(self):
+        medium = {"number": 1, "reason": "Possibly related.", "confidence": "MEDIUM"}
+        for suggestions in (
+            [{**medium, "number": 2}],
+            [{**medium, "number": True}],
+            [{**medium, "reason": ""}],
+            [{**medium, "reason": "x" * 401}],
+            [{**medium, "url": "https://example.com"}],
+            [medium, {**medium, "confidence": "HIGH"}],
+        ):
+            with self.subTest(suggestions=suggestions), self.assertRaises(t.TriageError):
+                self.result(duplicate_candidates_json=json.dumps(suggestions))
 
     def test_duplicate_count_shape_and_reason_are_bounded(self):
         duplicate = {"number": 1, "reason": "Same report.", "confidence": "HIGH"}
@@ -879,6 +893,38 @@ class MappingConfigurationTests(unittest.TestCase):
 
 
 class PublicationTests(TriageFixture):
+    def test_medium_duplicates_are_omitted_without_losing_other_triage_or_high_matches(self):
+        high = {"number": 1, "reason": "Same first-expansion flash.", "confidence": "HIGH"}
+        medium = {"number": 2, "reason": "Omitted candidate reason.", "confidence": "MEDIUM"}
+        for include_high in (False, True):
+            with self.subTest(include_high=include_high):
+                client = FakeGitHub()
+                client.candidates.append(candidate(2))
+                evidence = t.prepare(client, event(), MAPPING)
+                suggestions = [medium, high] if include_high else [medium]
+                result = t.validate(agent_output(
+                    evidence, duplicate_candidates_json=json.dumps(suggestions),
+                    reproduction="INSUFFICIENT", missing_information="Please supply concrete steps.",
+                ), evidence)
+                self.assertEqual(result["duplicates"], [high] if include_high else [])
+                plan = t.publish(client, result, evidence, MAPPING, write=True)
+                self.assertTrue(plan["published"])
+                self.assertEqual(
+                    client.writes[1][2],
+                    {"labels": ["area-Expander", "needs-repro", "team-Controls"]},
+                )
+                body = client.comments[0]["body"]
+                self.assertIn(result["summary"], body)
+                self.assertIn("Please supply concrete steps.", body)
+                self.assertIn("MEDIUM-confidence duplicate suggestions were omitted", body)
+                self.assertNotIn("#2", body)
+                self.assertNotIn(medium["reason"], body)
+                if include_high:
+                    self.assertIn("#1", body)
+                    self.assertIn(high["reason"], body)
+                else:
+                    self.assertNotIn("Possible duplicates", body)
+
     def test_preview_has_no_writes(self):
         plan = t.publish(self.client, self.result(), self.evidence, MAPPING, write=False)
         self.assertFalse(plan["published"])

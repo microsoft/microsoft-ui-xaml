@@ -92,6 +92,12 @@ public:
         return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
     }
 
+    // Internal: the projection entry this header was last prepared for. DataContext carries the
+    // public TableViewGroupInfo once prepared, so a re-prepare that cannot read the projection
+    // falls back to this instead.
+    winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
+    void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateTerminalBottomGridLineSuppression();
@@ -103,7 +109,9 @@ private:
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };

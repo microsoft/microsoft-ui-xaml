@@ -154,6 +154,7 @@
   <!-- External SDK/nuget related paths -->
   <PropertyGroup>
     <TaefPkgDirectory>$(NugetPackageDirectory)\Microsoft.Taef.$(TaefNugetPackageVersion)\</TaefPkgDirectory>
+    <WinUITestResourcesPath>$(NugetPackageDirectory)\$(WinUITestResourcesPackageName).$(WinUITestResourcesPackageVersion)</WinUITestResourcesPath>
     <AbiWinRtPackageDirectory>$(NugetPackageDirectory)\Microsoft.Windows.AbiWinRT.$(AbiWinRtVersion)\</AbiWinRtPackageDirectory>
     <AbiWinRtExePath>$(AbiWinRtPackageDirectory)bin\abi.exe</AbiWinRtExePath>
   </PropertyGroup>

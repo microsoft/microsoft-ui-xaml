@@ -95,7 +95,7 @@ visible on purpose.
 - Selection, sorting, filtering, keyboard navigation, and accessibility behavior
 - Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
   lifecycle (add, remove, reorder at runtime), plus header visibility
-- Tooltips, grid lines, cell templating, text wrapping, row height, cell editing,
+- Tooltips, context menus, grid lines, cell templating, text wrapping, row height, cell editing,
   empty state, density, and grouped rows
 - Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
   filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
@@ -111,6 +111,50 @@ visible on purpose.
 
 The pages are code-behind on purpose (no view models): each one demonstrates TableView API calls,
 not app architecture.
+
+## Context menus
+
+The **Context menus** page (`ContextMenus`) demonstrates per-column cell/header
+flyouts and row fallback with the shared people data: a **Name** cell menu whose
+items bind to the row item, a shared row menu (**Copy row**, **Move to next
+department**, **Remove from list**) set through an implicit `TableViewRow` style,
+per-column header menus that hide columns, a group header menu set through an
+implicit `TableViewGroupHeader` style, and the table's own `ContextFlyout` as the
+final fallback. The rail switches the cell, row and header menus off.
+
+The row menu varies per row kind: its `Opening` handler reads `MenuFlyout.Target`
+(the row, also for a cell request) and keeps the items tagged for that kind, so
+under Hierarchy shaping managers (expandable rows) also get **Email team**.
+**Deactivate** / **Reactivate** bind `Visibility` to the person's `IsActive`.
+
+There is no row menu property: rows get their menu from their own `ContextFlyout`,
+set through an implicit `TableViewRow` style or a row template; a menu's `Opening`
+handler can vary its items per row through `MenuFlyout.Target`. Column cell menus
+take precedence over it; the native `TableView.ContextFlyout` is the final
+fallback. A column header uses its
+`HeaderContextFlyout`, otherwise native fallback. Group headers use their own
+`ContextFlyout` (its items see the `TableViewGroupInfo`), otherwise native fallback. Setting a menu property to null (or removing the row style) removes that
+candidate.
+
+Keyboard requests (Shift+F10, Menu key) follow the focus level: with focus on a
+cell, that cell's menu opens; with focus on the row itself (press Left from the
+first cell), the row menu opens even if the remembered current column has a cell
+menu. UI Automation `ShowContextMenu` on a row peer likewise opens the row menu.
+
+A `ContextFlyout` you set inside a cell or header (`CellTemplate`,
+`HeaderTemplate`, or an implicit style) wins over the column properties, for
+mouse, keyboard (Shift+F10, Menu key) and UI Automation alike. It covers the
+whole cell or header, padding included.
+
+On text controls only a `ContextFlyout` set on the element itself counts: their
+built-in copy/select flyouts and flyouts set through a style are skipped.
+
+Context requests move body focus without changing selection. Headers do not move
+body focus.
+Menus are not stamped on realized cells; each menu inherits the requested row's
+item as its `DataContext` while open. A target invalidated while focus moves is
+not retargeted: custom display is suppressed. A body request with no applicable
+custom candidate still permits native fallback if focus invalidates its target.
 
 ## More detail
 

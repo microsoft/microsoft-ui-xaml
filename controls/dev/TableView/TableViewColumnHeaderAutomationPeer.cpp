@@ -285,6 +285,29 @@ bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
     return IsTableViewOwned() ? true : __super::IsOffscreenCore();
 }
 
+void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
+{
+    if (!IsTableViewOwned())
+    {
+        __super::ShowContextMenuCore();
+        return;
+    }
+
+    auto const column = m_column.get();
+    if (!column || !IsVisibleColumn(column))
+    {
+        return;
+    }
+
+    if (auto const header = GetHeaderElement())
+    {
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header))
+        {
+            peer.ShowContextMenu();
+        }
+    }
+}
+
 bool TableViewColumnHeaderAutomationPeer::IsTableViewOwned()
 {
     return Owner().try_as<winrt::TableView>() != nullptr;

@@ -137,6 +137,22 @@ winrt::TableViewRow TableViewRowAutomationPeer::GetRow() const
     return Owner().try_as<winrt::TableViewRow>();
 }
 
+void TableViewRowAutomationPeer::ShowContextMenuCore()
+{
+    // A recycled row raising the request would open a menu for whatever item it holds next.
+    if (!GetOwningTableView())
+    {
+        ThrowElementNotAvailable();
+    }
+
+    if (auto const row = GetRow(); row && winrt::get_self<TableViewRow>(row)->ShowContextMenuFromPeer())
+    {
+        return;
+    }
+
+    __super::ShowContextMenuCore();
+}
+
 bool TableViewRowAutomationPeer::IsHierarchicalRow() const
 {
     // Level: 0 for flat/grouped, 1-based for tree rows.
