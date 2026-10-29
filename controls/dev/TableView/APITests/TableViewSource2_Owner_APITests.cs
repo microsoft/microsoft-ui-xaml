@@ -163,9 +163,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a control-initiated column sort applies to a TableViewSource2 and replaces its levels.")]
-        public void VerifyTipAttachesToSource2()
+        [TestProperty("Description", "Verifies a control-initiated column sort applies to a TableViewSource2, replaces its levels and raises Sorted once.")]
+        public void VerifyControlSortReplacesSource2Sort()
         {
+            // TiP outcomes (drift #63) are not observable from API tests; this covers the control
+            // sort path the verb observer brackets.
             TableViewSource2 source = null;
             RunOnUIThread.Execute(() => source = TableViewSource2.From(MakeShapedPeople()).Sort("Role", SortDirection.Ascending));
             var tableView = LoadOwnedTable(source);
@@ -183,7 +185,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // The control sort replaces the app's Role level rather than ranking under it.
                 VerifySequence(NameAscendingOrder, RowValues(tableView, p => p.Name), "sorted by Name only");
                 Verify.AreEqual("Ascending,None", ColumnSorts(tableView), "The sorted column is lit.");
-                Verify.IsTrue(sorted > 0, "Sorted is raised.");
+                Verify.AreEqual(1, sorted, "Sorted is raised once.");
+                sorted = 0;
                 Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Descending), "A second column sort is accepted.");
             });
             SettleLayout(tableView);
@@ -193,6 +196,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySequence(new[] { "Diego", "Rafa", "Owen", "Asha", "Ines", "Mei" }, RowValues(tableView, p => p.Name),
                     "sorted by Role descending, stable in source order");
                 Verify.AreEqual("None,Descending", ColumnSorts(tableView), "Only the new column is lit.");
+                Verify.AreEqual(1, sorted, "Sorted is raised once for the second sort.");
+                sorted = 0;
 
                 // A comparer column sorts through a TableViewComparer2 and keeps its own chevron.
                 tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
@@ -205,6 +210,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySequence(new[] { "Diego", "Rafa", "Owen", "Ines", "Asha", "Mei" }, RowValues(tableView, p => p.Name),
                     "sorted by the comparer, descending");
                 Verify.AreEqual("Descending,None", ColumnSorts(tableView), "The comparer column keeps its chevron.");
+                Verify.AreEqual(1, sorted, "Sorted is raised once for the comparer sort.");
             });
         }
 

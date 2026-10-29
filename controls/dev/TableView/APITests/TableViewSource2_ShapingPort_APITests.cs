@@ -367,6 +367,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // of the test protocol forbids. What is asserted is only that the app's bug costs it
                 // nothing beyond the rows it was asked about.
                 // v2: the predicate's exception propagates out of the verb (v1 swallowed it).
+                bool threw = false;
                 try
                 {
                     source.Filter(o =>
@@ -381,7 +382,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 catch (Exception)
                 {
+                    threw = true;
                 }
+
+                Verify.IsTrue(threw, "A throwing predicate must propagate out of TableViewSource2.Filter.");
             });
 
             SettleLayout(tableView);
