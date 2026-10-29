@@ -22,9 +22,9 @@ SourceRecord::SourceRecord(
 
 SourceRecord::~SourceRecord()
 {
-    // Teardown never calls Item.get(): the item may already be collected.     A record subscribed
-        // for live shaping (SourceTable::SubscribeRecordPropertyChanged) is revoked here. Revoke
-        // failures are swallowed.
+    // Teardown never calls Item.get(): the item may already be collected. A record subscribed
+    // for live shaping (SourceTable::SubscribeRecordPropertyChanged) is revoked here. Revoke
+    // failures are swallowed.
     if (PropertyChangedToken.value)
     {
         try

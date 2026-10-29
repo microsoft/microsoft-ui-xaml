@@ -422,7 +422,7 @@ private:
     // The PropertyChanged lambda captures weak_from_this(), the record's weak_ptr and m_binding.
     // Bound and off the bound thread, it posts to the bound queue (a failed post is ignored);
     // otherwise it locks the table and calls OnRecordPropertyChanged, which locks the record.
-    void SubscribeRecordPropertyChanged(SourceRecordPtr const& record);
+    void SubscribeRecordPropertyChanged(SourceRecordPtr const& record) noexcept;
     void UnsubscribeRecordPropertyChanged(SourceRecord* record) noexcept;
     void OnRecordPropertyChanged(SourceRecordWeakPtr const& weakRecord, winrt::hstring const& propertyName);
 

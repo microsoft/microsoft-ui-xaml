@@ -626,7 +626,7 @@ void SourceTable::SetLiveShaping(bool enabled)
     }
 }
 
-void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record)
+void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record) noexcept
 {
     // NotObservable stays cached across toggles: an item is probed once.
     if (record->Watch != WatchState::Unchecked)
@@ -641,37 +641,46 @@ void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record)
         return;
     }
 
-    record->PropertyChangedToken = notifier.PropertyChanged(
-        [weakThis = weak_from_this(), weakRecord = SourceRecordWeakPtr{ record }, binding = m_binding](
-            auto const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
-        {
-            auto const name = args.PropertyName();
-            DWORD const threadId = binding->threadId.load(std::memory_order_acquire);
-            if (threadId != 0 && threadId != ::GetCurrentThreadId())
+    // A subscribe failure must not unwind a record commit; the item is treated as not observable.
+    try
+    {
+        record->PropertyChangedToken = notifier.PropertyChanged(
+            [weakThis = weak_from_this(), weakRecord = SourceRecordWeakPtr{ record }, binding = m_binding](
+                auto const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
             {
-                try
+                auto const name = args.PropertyName();
+                DWORD const threadId = binding->threadId.load(std::memory_order_acquire);
+                if (threadId != 0 && threadId != ::GetCurrentThreadId())
                 {
-                    (void)binding->queue.TryEnqueue([weakThis, weakRecord, name]()
+                    try
                     {
-                        if (auto const self = weakThis.lock())
+                        (void)binding->queue.TryEnqueue([weakThis, weakRecord, name]()
                         {
-                            self->OnRecordPropertyChanged(weakRecord, name);
-                        }
-                    });
+                            if (auto const self = weakThis.lock())
+                            {
+                                self->OnRecordPropertyChanged(weakRecord, name);
+                            }
+                        });
+                    }
+                    catch (...)
+                    {
+                        // A failed post is ignored.
+                    }
+                    return;
                 }
-                catch (...)
+    
+                if (auto const self = weakThis.lock())
                 {
-                    // A failed post is ignored.
+                    self->OnRecordPropertyChanged(weakRecord, name);
                 }
-                return;
-            }
-
-            if (auto const self = weakThis.lock())
-            {
-                self->OnRecordPropertyChanged(weakRecord, name);
-            }
-        });
-    record->Watch = WatchState::Subscribed;
+            });
+        record->Watch = WatchState::Subscribed;
+    }
+    catch (...)
+    {
+        record->PropertyChangedToken = {};
+        record->Watch = WatchState::NotObservable;
+    }
 }
 
 void SourceTable::UnsubscribeRecordPropertyChanged(SourceRecord* record) noexcept
