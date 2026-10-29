@@ -318,8 +318,12 @@ public static class SessionFile
         // type is among the types read.
         using var transaction = connection.BeginTransaction(deferred: true);
         var (info, frequency, startQpc) = ReadSession(connection, transaction);
-        var types = new Dictionary<long, (XamlProvider Provider, string Name, int Opcode, string[] Names, FieldType[] Types)>();
-        using (var command = Command(connection, transaction, "SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes FROM EventTypes"))
+        // Files written before TraceLogging was added hold only TraceLogging events, apart from DxgKrnl's manifest events.
+        var traceLogging = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('EventTypes') WHERE name = 'TraceLogging'",
+            transaction) > 0 ? "TraceLogging" : $"Provider <> '{XamlProvider.DxgKrnl}'";
+        var types = new Dictionary<long, (XamlProvider Provider, bool TraceLogging, string Name, int Opcode, string[] Names, FieldType[] Types)>();
+        using (var command = Command(connection, transaction,
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, {traceLogging} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -332,8 +336,8 @@ public static class SessionFile
                     throw new InvalidDataException("An event type's field names and types do not match.");
                 }
 
-                types[reader.GetInt64(0)] = (Enum.Parse<XamlProvider>(reader.GetString(1)), reader.GetString(2), reader.GetInt32(3),
-                    names, fieldTypes);
+                types[reader.GetInt64(0)] = (Enum.Parse<XamlProvider>(reader.GetString(1)), reader.GetBoolean(6), reader.GetString(2),
+                    reader.GetInt32(3), names, fieldTypes);
             }
         }
 
@@ -347,8 +351,9 @@ public static class SessionFile
                 var qpc = reader.GetInt64(0);
                 startQpc ??= qpc;
                 var type = types[reader.GetInt64(2)];
-                sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, info.ProcessId, reader.GetInt32(1), type.Provider, type.Name,
-                    type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types)), reader);
+                sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, info.ProcessId, reader.GetInt32(1), type.Provider,
+                    type.TraceLogging, type.Name, type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types)),
+                    reader);
                 delivered++;
             }
         }
