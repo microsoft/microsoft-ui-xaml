@@ -167,6 +167,7 @@ namespace MUXControlsTestApp
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
+            CellControlsTableView.ItemsSource = _scrollingItems;
             GroupedTableView.ItemsSource = _groupedSource;
 
             // Reports the column each edit opens on. Appends rather than overwrites so a test can tell a
@@ -972,6 +973,8 @@ namespace MUXControlsTestApp
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
         private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
+        private void OnGoToCellControlsClick(object sender, RoutedEventArgs e) => ShowTableHost(CellControlsTableHost);
+
         private void ShowTableHost(FrameworkElement host)
         {
             BasicTableHost.Visibility = Visibility.Collapsed;
@@ -981,6 +984,7 @@ namespace MUXControlsTestApp
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
             ContextMenuTableHost.Visibility = Visibility.Collapsed;
+            CellControlsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 

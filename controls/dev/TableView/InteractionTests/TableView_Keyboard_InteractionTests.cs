@@ -2425,6 +2425,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Row-level Up from the first row of a table whose cells host controls moves to the header band, not into a cell control (#12441).")]
+        public void UpFromFirstRowWithCellControlsMovesToHeaderNotIntoCellControl()
+        {
+            // PART_BodyScroller handles an unhandled Up by focusing a candidate inside the body, which for row 0
+            // can be a control in that row's own cells; that focus move hides the key from the TableView.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Precondition: row 1 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(table).Children[0].HasKeyboardFocus, "Precondition: Up from row 1 lands on row 0 at row level.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Row-level Up from the first row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                UIObject header = FindFocusedHeader(CellControlsTable);
+                Verify.IsNotNull(header, "Up from the first row must move focus to the header band, not into a cell control.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(table));
+                Verify.IsNotNull(bodyFocus, "Down from a header must return to the first row.");
+                if (bodyFocus != null)
+                {
+                    Verify.AreEqual(GetRowsHost(table).Children[0].RuntimeId, bodyFocus.RuntimeId, "Down from a header must land on the FIRST row.");
+                }
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
         public void BodyTabReentryReturnsToSameRecordAfterSort()
         {

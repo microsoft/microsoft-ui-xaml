@@ -432,6 +432,50 @@
                 </controls:TableView>
             </Grid>
 
+            <!-- Body cells that host controls, like the sample's Keyboard navigation page: row-level Up
+                 from the first row must reach the header band, not a cell control. -->
+            <Grid x:Name="CellControlsTableHost" Visibility="Collapsed">
+                <controls:TableView x:Name="CellControlsTableView"
+                                    AutomationProperties.Name="CellControlsTableView"
+                                    AutomationProperties.AutomationId="CellControlsTableView"
+                                    Height="300"
+                                    Width="640"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="ControlsName" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="ControlsActive" Width="84">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <CheckBox IsChecked="True" MinWidth="0" HorizontalAlignment="Center" AutomationProperties.Name="CellActiveCheckBox" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTemplateColumn Header="ControlsCity" Width="150">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <ComboBox SelectedIndex="0"
+                                          MinWidth="0"
+                                          Margin="6,2"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Stretch"
+                                          AutomationProperties.Name="CellCityComboBox">
+                                    <x:String>Redmond</x:String>
+                                    <x:String>Seattle</x:String>
+                                </ComboBox>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTemplateColumn Header="ControlsDetails" Width="96">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <Button Content="Details" Margin="6,2" HorizontalAlignment="Stretch" AutomationProperties.Name="CellDetailsButton" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                </controls:TableView>
+            </Grid>
+
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
@@ -467,6 +511,10 @@
                     AutomationProperties.Name="GoToContextMenuButton"
                     AutomationProperties.AutomationId="GoToContextMenuButton"
                     Click="OnGoToContextMenuClick" />
+            <Button Content="CellControls"
+                    AutomationProperties.Name="GoToCellControlsButton"
+                    AutomationProperties.AutomationId="GoToCellControlsButton"
+                    Click="OnGoToCellControlsClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"
