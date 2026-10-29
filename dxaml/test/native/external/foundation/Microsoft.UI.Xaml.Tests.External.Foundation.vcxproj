@@ -91,6 +91,7 @@
     <ClInclude Include="graphics\image\ImageLifetimeTests.h" />
     <ClInclude Include="graphics\image\ImageTestEngine.h" />
     <ClInclude Include="graphics\image\ImageTests.h" />
+    <ClInclude Include="graphics\image\ImmediateReadRandomAccessStream.h" />
     <ClInclude Include="graphics\image\LoadedImageSurfaceTests.h" />
     <ClInclude Include="graphics\image\SoftwareBitmapSourceTests.h" />
     <ClInclude Include="graphics\image\SVGImageSourceTests.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="graphics\image\ImageLifetimeTests.cpp" />
     <ClCompile Include="graphics\image\ImageTestEngine.cpp" />
     <ClCompile Include="graphics\image\ImageTests.cpp" />
+    <ClCompile Include="graphics\image\ImmediateReadRandomAccessStream.cpp" />
     <ClCompile Include="graphics\image\BitmapSourceTests.cpp" />
     <ClCompile Include="graphics\image\AppRegressionTests.cpp" />
     <ClCompile Include="graphics\image\SoftwareBitmapSourceTests.cpp" />

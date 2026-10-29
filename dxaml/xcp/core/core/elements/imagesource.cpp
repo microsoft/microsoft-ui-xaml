@@ -271,6 +271,8 @@ CImageSource::~CImageSource()
 
     DisconnectImageOperation();
 
+    CompleteAsyncAction(E_ABORT);
+
     core->RemoveImageUpdateRequest(m_pImageSurfaceWrapper);
 
     VERIFYHR(UnregisterWithReloadManager());
@@ -762,6 +764,15 @@ CImageSource::SetSource(
     }
     m_pAsyncAction = pCoreAsyncAction;
 
+    // The caller transfers its reference only after SetSource succeeds.
+    auto clearProvisionalAsyncActionOnFailure = wil::scope_exit([this, assignedAsyncAction = pCoreAsyncAction]()
+    {
+        if (m_pAsyncAction == assignedAsyncAction)
+        {
+            m_pAsyncAction = nullptr;
+        }
+    });
+
     IFC_RETURN(PrepareDecode(false /*retainPlaybackState*/));
 
     // Flag all callbacks that they should get events.
@@ -784,6 +795,8 @@ CImageSource::SetSource(
 
         IFC_RETURN(SetImageCache(std::move(imageCache)));
     }
+
+    clearProvisionalAsyncActionOnFailure.release();
 
     return S_OK;
 }

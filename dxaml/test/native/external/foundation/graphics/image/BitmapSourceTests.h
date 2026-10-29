@@ -34,6 +34,13 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(SetSourceAsync_ImageDestroyedDuringDecode_ReleasesAction)
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(
+            L"Description",
+            L"Verifies SetSourceAsync actions are completed and released when their BitmapImages are destroyed.")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 };
@@ -47,4 +54,3 @@ public ref class TestBitmapSource : public Microsoft::UI::Xaml::Media::Imaging::
 };
 
 } } } }
-
