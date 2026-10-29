@@ -42,6 +42,9 @@ parameters:
   # build-nupkg.ps1 resolving them from eng\Versions.props.
   # Mirrors Foundation's BuildAll.ps1 -PackageVersion / -ComponentPackageVersion pattern.
   monobuildPinnedVersion: ''
+  # Optional canonical public-component license, applied after merging artifacts and before pack/sign.
+  # Empty preserves the license produced by the native build.
+  componentNuGetLicensePath: ''
 
 steps:
   - ${{ if eq(parameters.IsMonobuild, 'true') }}:
@@ -184,6 +187,27 @@ steps:
     inputs:
       command: 'custom'
       arguments: 'locals -clear http-cache'
+
+  - ${{ if ne(parameters.componentNuGetLicensePath, '') }}:
+    - task: PowerShell@2
+      displayName: 'Stage WinUI component license'
+      env:
+        COMPONENT_NUGET_LICENSE_PATH: ${{ parameters.componentNuGetLicensePath }}
+      inputs:
+        targetType: inline
+        script: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+
+          $licensePath = $env:COMPONENT_NUGET_LICENSE_PATH
+          $componentRoot = '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}\ComponentNuGet'
+          if (-not (Test-Path -LiteralPath $licensePath -PathType Leaf)) {
+            throw "WinUI component license source was not found: $licensePath"
+          }
+          if (-not (Test-Path -LiteralPath $componentRoot -PathType Container)) {
+            throw "WinUI component packaging directory was not found: $componentRoot"
+          }
+          Copy-Item -LiteralPath $licensePath -Destination (Join-Path $componentRoot 'license.txt') -Force
 
   # ── Pack Microsoft.WindowsAppSDK.WinUI ──
   # -MonobuildPinnedVersion carries an empty string in standalone (build-nupkg.ps1's
