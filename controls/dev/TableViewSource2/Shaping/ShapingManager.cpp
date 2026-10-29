@@ -53,6 +53,10 @@ ShapingManager::ShapingManager(ITrackerHandleManager const* trackerOwner, winrt:
         // the records now; there is no listener or owner yet, so nothing is raised.
         m_engine.Reapply(m_desired);
         m_engine.ReleaseRetired();
+
+        // From here on every commit reaches the listener, which forwards to the owner and the
+        // view as each appears (both may be null). An owner may claim before View() is called.
+        m_engine.Tree().SetListener(static_cast<IShapedRowsListener*>(this));
     }
     catch (...)
     {
@@ -143,9 +147,6 @@ winrt::Microsoft::UI::Xaml::Interop::IBindableVector ShapingManager::View()
         auto const view = winrt::make_self<ShapedCollectionView>(m_rows);
         m_view.emplace(m_trackerOwner, view.as<winrt::Microsoft::UI::Xaml::Interop::IBindableVector>());
         m_viewImpl = view.get();
-
-        // Until now the tree had no listener, so nothing was raised.
-        m_engine.Tree().SetListener(static_cast<IShapedRowsListener*>(this));
     }
 
     return m_view->get();
@@ -176,6 +177,7 @@ void ShapingManager::Clear()
     // No callbacks during teardown; nothing below calls get() on a tracker_ref.
     m_owner = nullptr;
     m_liveHoldCount = 0;
+    m_engine.Tree().SetListener(nullptr);
 
     if (m_viewImpl)
     {

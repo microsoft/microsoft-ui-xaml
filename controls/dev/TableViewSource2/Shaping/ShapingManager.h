@@ -324,8 +324,8 @@ private:
 
     // Cached result of View(): the ShapedCollectionView (the listener reaches it through
     // winrt::get_self<ShapedCollectionView>). Tracked, because TableView holds it too. Null until
-    // the first View(), which also calls m_engine.Tree().SetListener(this): until then nothing is
-    // raised. std::optional because ~tracker_ref
+    // the first View(); the tree listener is installed by the constructor, so commits before then
+    // still reach the owner. std::optional because ~tracker_ref
     // dereferences the owner; Clear() detaches and resets it while the owner is alive.
     std::optional<tracker_ref<winrt::Microsoft::UI::Xaml::Interop::IBindableVector>> m_view;
 
