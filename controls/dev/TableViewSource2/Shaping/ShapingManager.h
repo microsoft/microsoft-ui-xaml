@@ -140,7 +140,8 @@ public:
     // Sets the notification target: OnResetting / OnShapingApplied go to sink, or nowhere when it
     // is nullptr. Called only by TableViewSource2, after it has accepted a claim (sink = the new
     // owner) or a release (sink = nullptr). When sink differs from the current one, every
-    // live-shaping hold is dropped (holds belong to the owner that took them): m_liveHoldCount = 0,
+    // live-shaping hold is dropped (holds belong to the owner that took them): m_liveHoldCount = 0
+    // and ++m_ownerGeneration,
     // then PostLiveDrain if changes are pending. A non-null sink then calls
     // SourceTable::BindOwnerThread(), so a source built off the UI thread is bound to the owner's
     //     thread once (see SourceTable, Threading). The same sink again is a no-op. A non-null sink
@@ -162,12 +163,20 @@ public:
 
     // Counted live-shaping hold (O4): while m_liveHoldCount > 0, DrainLiveChanges defers (changes
     // stay in m_liveDirty). The owner takes one per reason (cell edit, pointer press), so nested
-    // reasons compose. End at count 0 is a no-op (SetOwner or Clear dropped the holds). Dropping
-    // to 0 calls PostLiveDrain if changes are
+    // reasons compose. Begin returns the owner generation the hold belongs to (m_ownerGeneration,
+    // bumped by SetOwner and Clear, which drop every hold); End with that value releases it, and
+    // End with an older generation is ignored, so an owner that ends a hold after a handoff cannot
+    // release the next owner's (drift #48). Dropping to 0 calls PostLiveDrain if changes are
     // pending: never drains inline, since the owner is usually inside an input handler. Verbs and
     // Refresh are not held: a reshape folds m_liveDirty into its rebuild (drift #41).
-    void BeginLiveShapingHold() noexcept;
-    void EndLiveShapingHold();
+    uint64_t BeginLiveShapingHold() noexcept;
+    void EndLiveShapingHold(uint64_t generation);
+
+    // Called once by TableViewSource2 after construction: returns a weak reference to it. The
+    // posted drain resolves it and holds the strong reference until DrainLiveChanges returns, so
+    // app code run by the drain (or a final release on another thread) cannot destroy this object
+    // mid-drain (drift #42). Not set: the drain is not posted.
+    void SetWeakOwnerResolver(std::function<winrt::weak_ref<winrt::IInspectable>()> resolver) noexcept;
 
     // ---- Output -----------------------------------------------------------------------------
 
@@ -223,8 +232,10 @@ private:
 
     // Posts DrainLiveChanges to the current DispatcherQueue unless one is already posted
     // (m_liveDrainPosted), nothing is pending, or !CanDrain() (EndCommit, EndLiveShapingHold and
-    // SetOwner post again). The callback holds m_liveDrainToken weakly (drift #42) and returns if
-    // it expired; it swallows the drain's exception (drift #40). Never throws. No queue on this
+    // SetOwner post again). The callback holds a weak reference to the owning TableViewSource2
+    // and m_liveDrainToken weakly (drift #42): it returns if either expired, and otherwise keeps
+    // the owner alive until the drain returns; it swallows the drain's exception (drift #40).
+    // Never throws. No queue on this
     // thread (headless): nothing is posted, and the changes wait for the next post or a reshape.
     void PostLiveDrain();
 
@@ -236,7 +247,9 @@ private:
     //                               commit (drift #40);
     //   more than c_liveBulkThreshold
     //                            -> m_engine.ApplyItemsChanged (re-read dirty records only, then
-    //                               one structural rebuild and a stable Reset).
+    //                               one structural rebuild and a stable Reset); if it throws
+    //                               (nothing written), the per-entry path runs instead, so only
+    //                               the entries that throw are dropped (drift #40).
     // Moves m_liveDirty into a local batch and clears m_liveDrainPosted before
     // any shaping, so a re-entrant OnItemChanged (app code run by the drain) lands in the fresh
     // map and posts the next drain. Runs only when CanDrain(): skipped while m_liveHoldCount > 0
@@ -245,8 +258,11 @@ private:
     void DrainLiveChanges();
 
     // Applies Diff(applied, desired); then Retain()s the delegates and paths both specs use. A
-    // sort-only Diff (sort or group direction changed, nothing else) adds ShapingChangeFlags::Order
-    // to the Reset it raises; any other reshape adds Membership (#18 O5).
+    // sort-only Diff (sort or group direction changed, nothing else) with no live changes folded
+    // in adds ShapingChangeFlags::Order to the Reset it raises; any other reshape adds Membership
+    // (#18 O5). Folding (drift #41): pending m_liveDirty entries move to a local before the apply;
+    // on success they are consumed and only entries queued during the apply stay (and are
+    // posted); on a throw they are merged back.
     void ApplyDesiredSpec();
 
     // Rebuilds the shaped tree from SourceTable::Records() with the desired spec. Never reads
@@ -363,8 +379,10 @@ private:
     IShapingOwner* m_owner{ nullptr };
 
     // Live-shaping holds taken by the owner (#18 O4). Reset to 0 when SetOwner changes the sink,
-    // and by Clear().
+    // and by Clear(), both of which also bump m_ownerGeneration so a hold taken before cannot be
+    // ended against the new count (drift #48).
     uint32_t m_liveHoldCount{ 0 };
+    uint64_t m_ownerGeneration{ 0 };
 
     // A source notification with more than this many items (a range event, or an insert adopting
     // several orphans under ParentBy) goes through Reapply() and one stable Reset instead of
@@ -427,10 +445,12 @@ private:
     uint64_t m_liveSequence{ 0 };
     bool m_liveDrainPosted{ false };
 
-    // What a posted drain holds instead of a reference to TableViewSource2 (drift #42): points at
-    // this object, created by the constructor and reset by Clear(), so a drain that runs after
-    // teardown finds it expired and does nothing.
+    // The drain's lifetime guards (drift #42). m_liveDrainToken points at this object, created by
+    // the constructor and reset by Clear(), so a drain that runs after teardown finds it expired
+    // and does nothing. m_weakOwnerResolver (SetWeakOwnerResolver) gives the weak reference to
+    // TableViewSource2 the posted callback resolves and holds for the length of the drain.
     std::shared_ptr<ShapingManager*> m_liveDrainToken;
+    std::function<winrt::weak_ref<winrt::IInspectable>()> m_weakOwnerResolver;
 
     // Source tree + applied spec -> shaped tree (ShapedTree, P10). Every entry point is bracketed
     // here by the commit scope. Built in the constructor's member-init list after m_sourceTable is

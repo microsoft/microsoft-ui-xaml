@@ -284,23 +284,49 @@ void ShapingManager::ApplyDesiredSpec()
         // A failed source change left cached state the next apply must re-read.
         delta = ShapeDelta::All;
     }
-    if (delta != ShapeDelta::None && !m_liveDirty.empty())
-    {
-        // Pending live changes fold into this rebuild (drift #41): it re-reads every record, so
-        // the verb raises one Reset and no drain runs over keys the rebuild replaced.
-        delta |= ShapeDelta::Filter | ShapeDelta::GroupKey | ShapeDelta::Sort;
-    }
     if (delta != ShapeDelta::None)
     {
+        // Pending live changes fold into this rebuild (drift #41): it re-reads every record, so
+        // the verb raises one Reset and no drain runs over keys the rebuild replaced. They move to
+        // a local first, so a change queued by app code during the apply is not lost.
+        decltype(m_liveDirty) folded;
+        folded.swap(m_liveDirty);
+        bool const foldsLive = !folded.empty();
+        if (foldsLive)
+        {
+            delta |= ShapeDelta::Filter | ShapeDelta::GroupKey | ShapeDelta::Sort;
+        }
+
         {
             CommitScope scope{ *this, {} };
-            m_engine.Apply(m_desired, delta);
-            m_liveDirty.clear();
+            try
+            {
+                m_engine.Apply(m_desired, delta);
+            }
+            catch (...)
+            {
+                // Nothing was applied: the folded changes are still owed. An entry queued during
+                // the apply keeps its (later) sequence; a second name means "re-read everything".
+                for (auto& [record, dirty] : folded)
+                {
+                    auto const [it, added] = m_liveDirty.try_emplace(record, dirty);
+                    if (!added)
+                    {
+                        if (it->second.PropertyName != dirty.PropertyName)
+                        {
+                            it->second.PropertyName = {};
+                        }
+                        it->second.Sequence = dirty.Sequence;
+                    }
+                }
+                throw;
+            }
 
             // #18 O5: only the order changed (sort or group direction) -> Order; else Membership.
+            // Folded live changes can move rows between groups or in and out of the filter.
             if ((m_commit.changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset)
             {
-                bool const orderOnly = verbDelta != ShapeDelta::None &&
+                bool const orderOnly = !foldsLive && verbDelta != ShapeDelta::None &&
                     (verbDelta & ~(ShapeDelta::Sort | ShapeDelta::GroupOrder)) == ShapeDelta::None;
                 m_commit.changes |= orderOnly ? ShapingChangeFlags::Order : ShapingChangeFlags::Membership;
             }
@@ -354,6 +380,7 @@ void ShapingManager::SetOwner(IShapingOwner* sink)
 
     // Holds belong to the owner that took them; changes they deferred drain on the next turn.
     m_liveHoldCount = 0;
+    ++m_ownerGeneration;
     m_owner = sink;
 
     if (sink)
@@ -364,16 +391,17 @@ void ShapingManager::SetOwner(IShapingOwner* sink)
     PostLiveDrain();
 }
 
-void ShapingManager::BeginLiveShapingHold() noexcept
+uint64_t ShapingManager::BeginLiveShapingHold() noexcept
 {
     ++m_liveHoldCount;
+    return m_ownerGeneration;
 }
 
-void ShapingManager::EndLiveShapingHold()
+void ShapingManager::EndLiveShapingHold(uint64_t generation)
 {
-    if (m_liveHoldCount == 0)
+    if (generation != m_ownerGeneration || m_liveHoldCount == 0)
     {
-        // Only after SetOwner or Clear dropped the holds.
+        // Taken before SetOwner or Clear dropped the holds: it is not one of the current count.
         return;
     }
 
@@ -381,6 +409,11 @@ void ShapingManager::EndLiveShapingHold()
     {
         PostLiveDrain();
     }
+}
+
+void ShapingManager::SetWeakOwnerResolver(std::function<winrt::weak_ref<winrt::IInspectable>()> resolver) noexcept
+{
+    m_weakOwnerResolver = std::move(resolver);
 }
 
 winrt::Microsoft::UI::Xaml::Interop::IBindableVector ShapingManager::View()
@@ -426,6 +459,7 @@ void ShapingManager::Clear()
     m_owner = nullptr;
     m_commitEnded = nullptr;
     m_liveHoldCount = 0;
+    ++m_ownerGeneration;
     m_engine.Tree().SetListener(nullptr);
 
     if (m_viewImpl)
@@ -449,6 +483,7 @@ void ShapingManager::Clear()
 
     m_liveDirty.clear();
     m_liveDrainToken.reset();
+    m_weakOwnerResolver = nullptr;
     m_liveDrainPosted = false;
     m_deferDepth = 0;
 }
@@ -476,7 +511,8 @@ void ShapingManager::OnItemChanged(SourceRecord* record, winrt::hstring const& p
 
 void ShapingManager::PostLiveDrain()
 {
-    if (m_liveDrainPosted || m_liveDirty.empty() || !m_liveDrainToken || m_sourceTable->IsDetached() || !CanDrain())
+    if (m_liveDrainPosted || m_liveDirty.empty() || !m_liveDrainToken || !m_weakOwnerResolver ||
+        m_sourceTable->IsDetached() || !CanDrain())
     {
         return;
     }
@@ -489,9 +525,19 @@ void ShapingManager::PostLiveDrain()
             return;
         }
 
+        winrt::weak_ref<winrt::IInspectable> owner = m_weakOwnerResolver();
         std::weak_ptr<ShapingManager*> const token = m_liveDrainToken;
-        m_liveDrainPosted = queue.TryEnqueue([token]()
+        m_liveDrainPosted = queue.TryEnqueue([owner = std::move(owner), token]()
         {
+            // Drift #42: the strong reference keeps TableViewSource2 (and so this object) alive
+            // until the drain returns, whatever app code it runs; the token says Clear() has not
+            // run. Declared first, so it is released last.
+            auto const strongOwner = owner.get();
+            if (!strongOwner)
+            {
+                return;
+            }
+
             auto const alive = token.lock();
             if (!alive)
             {
@@ -536,6 +582,7 @@ void ShapingManager::DrainLiveChanges()
     std::exception_ptr fault;
     {
         CommitScope scope{ *this, {} };
+        bool applied = false;
         if (batch.size() > c_liveBulkThreshold)
         {
             std::vector<LiveChange> changes;
@@ -548,13 +595,16 @@ void ShapingManager::DrainLiveChanges()
             try
             {
                 m_engine.ApplyItemsChanged(changes);
+                applied = true;
             }
             catch (...)
             {
-                fault = std::current_exception();
+                // The rebuild wrote nothing; fall back to one entry at a time below, so only the
+                // entries that throw are dropped (drift #40).
             }
         }
-        else
+
+        if (!applied)
         {
             // Each change is computed before it is committed, so one that throws leaves the tree
             // as it was and the rest still apply (drift #40).

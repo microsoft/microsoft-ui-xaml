@@ -116,9 +116,11 @@ public:
     void RemoveOwnerReleasedWaiter(winrt::IInspectable const& waiter);
 
     // Counted live-shaping hold (O4). Forward to ShapingManager, which owns the drain; replaces v1
-    // SetLiveShapingHold and ResumeHeldLiveShaping. Holds are dropped when the owner is released.
-    void BeginLiveShapingHold() noexcept;
-    void EndLiveShapingHold();
+    // SetLiveShapingHold and ResumeHeldLiveShaping. Begin returns the owner generation to pass to
+    // End; holds are dropped when the owner changes, and an End from an earlier owner is ignored
+    // (drift #48). Begin returns 0 and End is a no-op after teardown.
+    uint64_t BeginLiveShapingHold() noexcept;
+    void EndLiveShapingHold(uint64_t generation);
 
 private:
     [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);

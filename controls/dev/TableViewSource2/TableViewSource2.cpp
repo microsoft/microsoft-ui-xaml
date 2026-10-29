@@ -16,6 +16,14 @@ TableViewSource2::TableViewSource2(winrt::IInspectable const& items)
     {
         RunOwnerReleasedWaiters();
     });
+
+    // The posted live drain holds this object strongly while it runs (drift #42). Resolved at
+    // post time, never here: the object is not fully constructed yet.
+    m_shapingManager->SetWeakOwnerResolver([this]()
+    {
+        winrt::IInspectable const self = static_cast<winrt::TableViewSource2>(*this);
+        return winrt::make_weak(self);
+    });
 }
 
 TableViewSource2::~TableViewSource2()
@@ -199,19 +207,16 @@ void TableViewSource2::IsLiveShaping(bool value)
     }
 }
 
-void TableViewSource2::BeginLiveShapingHold() noexcept
+uint64_t TableViewSource2::BeginLiveShapingHold() noexcept
 {
-    if (m_shapingManager)
-    {
-        m_shapingManager->BeginLiveShapingHold();
-    }
+    return m_shapingManager ? m_shapingManager->BeginLiveShapingHold() : 0;
 }
 
-void TableViewSource2::EndLiveShapingHold()
+void TableViewSource2::EndLiveShapingHold(uint64_t generation)
 {
     if (m_shapingManager)
     {
-        m_shapingManager->EndLiveShapingHold();
+        m_shapingManager->EndLiveShapingHold(generation);
     }
 }
 
