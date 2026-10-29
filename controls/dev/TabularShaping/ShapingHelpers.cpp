@@ -756,6 +756,8 @@ namespace ShapingHelpers
             }
         }
 
+        // Always the box's own class name, never inferred from the vtable hint: a boxing vtable can be shared by
+        // several enum types (CsWinRT, XAML), so only the getter, whose result is a value either way, is hinted.
         if (includeTypeName)
         {
             try

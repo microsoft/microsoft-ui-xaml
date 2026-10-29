@@ -33,7 +33,7 @@ TableView and TableViewSource are preview API. This review checks whether the pr
 | Changed | `TableViewColumn.SortDirection` `{ get; }` → `{ get; set; }` | App-owned (e.g. server) sorts can show the arrow. Display only. |
 | Changed | `TableView.ClearSort()` clears column **and** source item sorts | Previously returned `false` when only a source key-selector sort was active. |
 | Changed | `TableViewIdentitySelector` → `TableViewGroupIdentitySelector` | Used only by `GroupBy`. |
-| Changed | `TableViewDensity`: `Standard = 0`, `Compact = 1` | Zero value now equals the default. Persisted integers change meaning. |
+| Changed | `TableViewDensity`: `Standard = 0`, `Compact = 1`, `Comfortable = 2` | Zero value now equals the default. Persisted integers change meaning. |
 | Changed | `TableViewGroupHeader.IsExpanded`/`IsExpandable` → read-only | Setters changed visuals but not rows, so UI/UIA could disagree with data. |
 | Changed | `TableViewColumnHeaderAutomationPeer` ctor `(TableView, TableViewColumn)` → `(TableViewColumnHeader owner)` | Owner is the element (WinUI convention); old ctor made the TableView the owner. Stays unsealed. |
 | Changed | `TableViewCellAutomationPeer` ctor `(FrameworkElement, TableViewRow, TableViewColumn, Int32)` → `(FrameworkElement owner)` | Owner-only, like every WinUI peer; row, column and index are derived from the cell, and a non-cell owner throws `E_INVALIDARG`. Stays unsealed. |
@@ -125,7 +125,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | `TableViewColumn.CanUserSort` | `Boolean`, `true` | Gates **user input only** (pointer, keyboard, UIA Invoke on the header). Turning it off does not clear an active sort on the column. |
 | `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
 | `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()`. |
-| `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. |
+| `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
 | `TableViewColumn.SortDirection` | `SortDirection`, `None` | **Display only.** Set by the control on a column sort; settable by the app, including in XAML or before the column is added (honoured when it joins `Columns`; the last added wins). |
 | `SortByColumn(column, direction)` | `Boolean` | Declares the control's sort axis. `None` clears. |
 | `ToggleSortDirection(column)` | `Boolean` | Advances the column's `SortCycle`. |
@@ -162,7 +162,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | `StartBringItemIntoView(Int32, BringIntoViewOptions)` | `void` | `ItemsView` shape. Out-of-range → `E_INVALIDARG`; `options` may be null. Asynchronous; realizes the row and lays it out before bringing its real bounds into view (ItemsView pattern); accounts for the sticky header and frozen columns; safe before `Loaded`. A pending request is cancelled when `ItemsSource` or the projection changes, or on `Unloaded`. |
 | `SelectionChanged` | `TypedEventHandler<TableView, SelectionChangedEventArgs>` | Platform args; raised once after the selection settles; not raised for index shifts. |
 
-**Projection index space.** `SelectedIndex`, `Select`, `IsSelected`, `Deselect`, `IndexOf` and `StartBringItemIntoView` share one space: the displayed rows, where **group headers take slots** and collapsed descendants are absent. It is not an `ItemsSource` index once any shaping is active. Headers cannot be selected (`Select` on a header index is rejected). Typical use: `var i = table.IndexOf(item); if (i >= 0) { table.Select(i); table.StartBringItemIntoView(i, null); }`.
+**Projection index space.** `SelectedIndex`, `Select`, `IsSelected`, `Deselect`, `IndexOf` and `StartBringItemIntoView` all use **display-projection indexes**: the displayed rows, where **group headers take slots** and collapsed descendants are absent. It is not an `ItemsSource` index once any shaping is active. Indexes are a snapshot: expanding or collapsing a group or row, sorting, filtering, regrouping and source changes all shift them. Call `IndexOf` immediately before `Select` or `StartBringItemIntoView` rather than caching an index. Headers cannot be selected (`Select` on a header index is rejected). Typical use: `var i = table.IndexOf(item); if (i >= 0) { table.Select(i); table.StartBringItemIntoView(i, null); }`.
 
 **Nuances.** Selection follows the item across reshapes; removing it clears the selection. `Select` before `ItemsSource` is set or while `SelectionMode == None` is a no-op (not queued). Selection is stashed across unload/reload. Keyboard follows the treegrid model (dev spec); selection follows focus for Up/Down; Ctrl+click toggles. Pointer selection is not blocked during an open edit (known limitation).
 
@@ -171,17 +171,17 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | Member | Type | Semantics / default |
 |---|---|---|
 | `TableView.IsReadOnly` | `Boolean`, **`true`** | Editing is opt-in. Setting `true` closes an open edit. |
-| `TableView.IsEditing` (+ `IsEditingProperty`) | `Boolean` read-only DP, `false` | `true` when an editor opens; set to `false` synchronously when the edit closes, before `CellEditEnded`. An external `SetValue` is reverted. |
+| `TableView.IsEditing` (+ `IsEditingProperty`) | `Boolean` read-only DP, `false` | `true` when an editor opens; set to `false` synchronously when the edit closes, before `CellEditEnded`. An external `SetValue` is reverted. Because the revert happens in the property-changed callback, observers can see a transient change notification for the rejected value; bind these properties `OneWay` only, never `TwoWay`. |
 | `CommitEdit()` / `CancelEdit()` | `Boolean` | Close the open **cell** edit; `false` if none, vetoed, validation rejected, or the column could not write. |
 | `BeginningEdit` | args `Item`, `Column`, `Cancel` | Before an editor opens. |
-| `CellEditEnding` | args `Item`, `Column`, `EditAction`, `EditingElement`, `Cancel` | Before close; synchronous veto. On commit the source is **not yet written**: validate via `EditingElement` (valid only during the handler). |
+| `CellEditEnding` | args `Item`, `Column`, `EditAction`, `EditingElement`, `Cancel` | Before close; synchronous veto. For user and programmatic (`CommitEdit`) commits it is raised synchronously **before the write**: validate via `EditingElement` (valid only during the handler). For a forced commit (layout- or DP-change-forced teardown) the value is written first and `CellEditEnding` may be posted. |
 | `CellEditEnded` | args `Item`, `Column`, `EditAction` | Exactly once per edit session after close. |
 | `TableViewEditAction` | `Commit = 0`, `Cancel = 1` | |
 | `TableViewColumn.CommitCellEditCore` | see §2.2 | |
 
 **Sequence (commit).** `CellEditEnding` (veto → edit stays open, no `Ended`) → `CommitCellEditCore` writes (`false`/throw → edit stays open, no `Ended`) → validation (`INotifyDataErrorInfo`; failure → stays open) → editor closes, `IsEditing = false` → `CellEditEnded` → reshapes queued during the edit run.
 
-**Contracts.** `IsEditing` is never posted; only `CellEditEnded` may be. It is posted when the close happens during layout or during a teardown forced by a DP change (`ItemsSource` swap, table or column `IsReadOnly`, projection swap); a posted `CellEditEnded` is always raised before the next session's `BeginningEdit`. `CellEditEnding` for a forced close still has a live `EditingElement`. Forced closes (item removed or filtered out, `ItemsSource` replaced, recycle, unload) raise `CellEditEnded` with `EditAction == Cancel`. If the item is still present after a sort/regroup, a valid pending value is committed. Editing starts from user gestures only (double-click/tap, F2). Writes happen per cell on commit (no row transaction). Live-shaping reshapes are held while editing.
+**Contracts.** `IsEditing` is never posted; only `CellEditEnded` may be. It is posted when the close happens during layout or during a teardown forced by a DP change (`ItemsSource` swap, table or column `IsReadOnly`, projection swap); a posted `CellEditEnded` is always raised before the next session's `BeginningEdit`. `CellEditEnding` for a forced close may be posted, still has a live `EditingElement`, and on a forced commit runs after the value was written (it cannot veto that write). Forced closes (item removed or filtered out, `ItemsSource` replaced, recycle, unload) raise `CellEditEnded` with `EditAction == Cancel`. If the item is still present after a sort/regroup, a valid pending value is committed. Editing starts from user gestures only (double-click/tap, F2). Writes happen per cell on commit (no row transaction). Live-shaping reshapes are held while editing.
 
 ### 2.6 Grouping and hierarchy
 
@@ -189,7 +189,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 |---|---|---|
 | `TableView.GroupHeaderTemplate` | `DataTemplate` | Content of the control-owned band; data context `TableViewGroupInfo`. |
 | `TableViewGroupInfo` | INPC; `Key`, `ItemCount`, `IsExpandable`, `IsExpanded`, `KeyText`, `ItemCountText` | Updated in place on recycle; `KeyText`/`ItemCountText` lazily culture-formatted. |
-| `TableViewGroupHeader` | unsealed `ContentControl`; `IsExpanded`, `IsExpandable` read-only DPs (`false`) | Realized band; written internally only. |
+| `TableViewGroupHeader` | unsealed `ContentControl`; `IsExpanded`, `IsExpandable` read-only DPs (`false`) | Realized band; written internally only. An external `SetValue` is reverted (observers may see a transient change notification); bind `OneWay` only. |
 | `ExpandGroup(Object key)` / `CollapseGroup(Object key)` | `void` | The key is resolved to a group identity exactly as `GroupBy` does (built-in identity, or the source's `TableViewGroupIdentitySelector`) and matched by identity; a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
 | `ExpandAllGroups()` / `CollapseAllGroups()` | `void` | Moves the default (applies to groups that appear later) and resets per-group exceptions. No-op when not grouped. |
 | `GroupExpanding` | args `GroupKey` | Always synchronous, before the state changes. Not cancellable. |
@@ -197,7 +197,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | `ExpandAllRows()` / `CollapseAllRows()` | `void` | Tree rows under `ParentBy`; no-op otherwise. |
 | `TableViewRow.Level` / `IsExpandable` / `IsExpanded` | read-only DPs | `Level` 1-based for tree rows, `0` otherwise (matches `AutomationProperties.Level`). |
 
-**Group events.** Raised for **every** group whose state changes, from any source: pointer, keyboard, UIA ExpandCollapse, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per changed group). Order: `GroupExpanding` (synchronous) → state change → UIA `ExpandCollapseState` change; `GroupCollapsed` after the change. A request that arrives during layout (including the measure/arrange of rows, headers and the cells panel) posts the **whole operation** to the next dispatcher turn, so the events are never raised after the state already changed. While `GroupExpanding` is raised and the state applied, the control holds a refresh deferral on the source: a handler that changes the source (lazy load, `Filter`, `Sort`) is coalesced into one reshape, and the group is then found again by identity. Exceptions thrown by group-event handlers are contained and logged, as for `CellEditEnded`. `TableViewGroupHeader.IsExpanded`/`IsExpandable` revert an external `SetValue`; pooled headers re-prepare through internal writes that raise nothing.
+**Group events.** Raised for **every** group whose state changes, from any source: pointer, keyboard, UIA ExpandCollapse, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per changed group). Order: `GroupExpanding` (synchronous) → state change → UIA `ExpandCollapseState` change; `GroupCollapsed` after the change. A request that arrives during layout (including the measure/arrange of rows, headers and the cells panel) posts the **whole operation** to the next dispatcher turn, so the events are never raised after the state already changed. While `GroupExpanding` is raised and the state applied, the control holds a refresh deferral on the source: a handler that changes the source (lazy load, `Filter`, `Sort`) is coalesced into one reshape, and the group is then found again by identity. Exceptions thrown by group-event handlers are contained and logged, as for `CellEditEnded`. Once `GroupExpanding` has been raised the direction is pinned: the operation never toggles back after the handler, and a handler that calls `ExpandGroup` on the same group is a no-op (one `GroupExpanding`, no recursion). After the handler the control re-checks the state and the source generation, so a handler that swaps `ItemsSource` does not expand the new source's groups. A bulk request made while a `GroupExpanding` is being raised is queued until it finishes. `TableViewGroupHeader.IsExpanded`/`IsExpandable` revert an external `SetValue`; pooled headers re-prepare through internal writes that raise nothing.
 
 **Nuances.** Expansion is intent keyed by group identity, so a collapse survives sort, filter and regroup. Grouping is single-level. Tree rows have no per-row expand API and no events (§6). Group order: see §2.1 (`SortGroups(None)` follows first items; `Ascending`/`Descending` pins key order).
 
@@ -225,7 +225,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 |---|---|---|---|---|
 | `TableViewAutomationPeer` | no | `(TableView)` | `DataGrid` | `Selection`, `Grid`, `Table`, `ItemContainer` |
 | `TableViewRowAutomationPeer` | no | `(TableViewRow)` | `DataItem` | `SelectionItem`, `ExpandCollapse` |
-| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`; `E_INVALIDARG` unless a TableView cell | see §6 | `GridItem`, `TableItem`, `Value` |
+| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | see §6 | `GridItem`, `TableItem`, `Value` |
 | `TableViewColumnHeaderAutomationPeer` | no | `(TableViewColumnHeader)` | `HeaderItem` | `Invoke` (+ `Transform`, implementation-only) |
 | `TableViewGroupHeaderAutomationPeer` | no | `(TableViewGroupHeader)` | `Group` | `ExpandCollapse`, `GridItem` |
 
@@ -407,6 +407,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | **Per-row expand APIs** | Tree rows: only `ExpandAllRows`/`CollapseAllRows`; no row events. | Additive `ExpandRow(item)`/`CollapseRow(item)` + row `Expanding`/`Collapsed` mirroring the group events. Consider `ExpandAllNodes` naming. |
 | **Row lifecycle events** | No prepared/cleared events and no way to supply a derived `TableViewRow`. | `RowPrepared`/`RowClearing` (ItemsRepeater/`LoadingRow` precedent) and/or a container factory. |
 | **Current cell** | No `CurrentItem`/`CurrentColumn`/`CurrentCellChanged`; no `BeginEdit`. | Add together when a scenario needs them. |
+| **Data-index APIs** | Every index API uses display-projection indexes (group-header slots, collapsed rows absent), which shift on any expand, collapse or reshape. | Deferred: `GetItemFromDisplayIndex`, data-index or item-based overloads of `Select`/`StartBringItemIntoView`. Today: call `IndexOf` immediately before use. |
 | **Multi-select** | `Multiple`/`Extended`, `SelectedItems`, anchor model. | Append enum values; add `SelectedItems` with them. |
 | **Column reorder** | No `DisplayIndex`; collection order is visual and UIA order. | Lock "collection order = visual order + `MoveColumn`" vs `DisplayIndex` before reorder ships. |
 | **Incremental loading** | No `ISupportIncrementalLoading` story. | Define how the shaped projection interacts with partial data. |

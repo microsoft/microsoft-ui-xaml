@@ -723,6 +723,33 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
     SampleInstanceTelemetry();
 
+    // A StartBringItemIntoView made before Loaded; posted so the rows have their first layout.
+    if (m_pendingBringIntoViewIndex >= 0)
+    {
+        if (auto const queue = DispatcherQueue())
+        {
+            queue.TryEnqueue([weakThis = get_weak()]()
+            {
+                auto const strongThis = weakThis.get();
+                if (!strongThis || strongThis->m_pendingBringIntoViewIndex < 0)
+                {
+                    return;
+                }
+                try
+                {
+                    if (strongThis->TryBringPendingItemIntoView())
+                    {
+                        strongThis->RevokePendingBringIntoViewLayout();
+                    }
+                }
+                catch (...)
+                {
+                    strongThis->CancelPendingBringItemIntoView();
+                }
+            });
+        }
+    }
+
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
     {

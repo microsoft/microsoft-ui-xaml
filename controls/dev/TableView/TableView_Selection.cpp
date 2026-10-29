@@ -8,6 +8,7 @@
 #include "TableViewSource.h"
 #include "TableViewGroupInfo.h"
 #include "GroupedEntry.h"
+#include "TVDiag.h"
 
 #include <utility>
 #include <vector>
@@ -269,16 +270,25 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
     {
-        // Identity, not ABI-pointer equality: the same object reached through a different
-        // interface (boxed values, projected interfaces) must still match.
-        if (auto const candidate = UnwrapEditingDataItem(view.GetAt(index));
-            candidate && SameInspectableIdentity(candidate, target))
+        if (IsDisplayedItemMatch(view.GetAt(index), target))
         {
             return index;
         }
     }
 
     return -1;
+}
+
+// Values by value (a fresh box each read), reference items by COM identity, not ABI-pointer
+// equality. Group headers are projection entries, never app items.
+bool TableView::IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target) const
+{
+    auto const candidate = UnwrapEditingDataItem(row);
+    if (!candidate || !target || TryGetGroupedEntry(candidate))
+    {
+        return false;
+    }
+    return target.try_as<winrt::IPropertyValue>() ? SameGroupKey(candidate, target) : SameInspectableIdentity(candidate, target);
 }
 
 // ----- The single writer -----
@@ -976,30 +986,26 @@ int32_t TableView::IndexOf(winrt::IInspectable const& item)
         return -1;
     }
 
-    // Values by value (a fresh box each read), reference items by identity. Group headers are
-    // projection entries, never app items, so they cannot match.
-    auto const matches = [&item](winrt::IInspectable const& candidate)
-    {
-        return candidate && !TryGetGroupedEntry(candidate) &&
-            (item.try_as<winrt::IPropertyValue>() ? SameGroupKey(candidate, item) : SameInspectableIdentity(candidate, item));
-    };
+    auto const target = UnwrapEditingDataItem(item);
 
-    try
+    // The view's own lookup is authoritative for reference items. A boxed value can be a different
+    // box than the one in the source, so values, and a view that cannot look up, are scanned.
+    if (!target.try_as<winrt::IPropertyValue>())
     {
-        if (const int32_t index = view.IndexOf(item); index >= 0 && matches(view.GetAt(index)))
+        try
         {
-            return index;
+            const int32_t index = view.IndexOf(target);
+            return index >= 0 && IsDisplayedItemMatch(view.GetAt(index), target) ? index : -1;
         }
-    }
-    catch (...)
-    {
-        // The source's own lookup is optional; fall back to the scan.
+        catch (...)
+        {
+        }
     }
 
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
     {
-        if (matches(view.GetAt(index)))
+        if (IsDisplayedItemMatch(view.GetAt(index), target))
         {
             return index;
         }
@@ -1040,9 +1046,18 @@ void TableView::ArmPendingBringIntoView()
     {
         if (auto const strongThis = weakThis.get())
         {
-            if (strongThis->m_pendingBringIntoViewIndex < 0 || strongThis->TryBringPendingItemIntoView())
+            try
             {
-                strongThis->RevokePendingBringIntoViewLayout();
+                if (strongThis->m_pendingBringIntoViewIndex < 0 || strongThis->TryBringPendingItemIntoView())
+                {
+                    strongThis->RevokePendingBringIntoViewLayout();
+                }
+            }
+            catch (...)
+            {
+                strongThis->CancelPendingBringItemIntoView();
+                TVDiag::LogRetailF(L"[TableView] A pending StartBringItemIntoView failed (HRESULT 0x%08X).",
+                    static_cast<unsigned int>(winrt::to_hresult()));
             }
         }
     });
@@ -1095,8 +1110,14 @@ bool TableView::TryBringPendingItemIntoView()
     }
     if (repeater.GetElementIndex(element) != index)
     {
+        // Recycled during that layout: lay the replacement out too, and check again.
         element = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>();
-        if (!element || repeater.GetElementIndex(element) != index)
+        if (!element)
+        {
+            return true;
+        }
+        element.UpdateLayout();
+        if (repeater.ItemsSourceView() != view || index >= view.Count() || repeater.GetElementIndex(element) != index)
         {
             return true;
         }

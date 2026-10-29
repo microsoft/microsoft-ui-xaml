@@ -953,9 +953,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation.")]
+        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation, raising Ending with the live editor, then Ended once, then any sort queued behind the edit.")]
+        [TestProperty("data:Queued", "{None, Sort}")]
         public void VerifyRecycleDuringLayoutRollsBackInvalidPendingValue()
         {
+            var queued = ((string)TestContext.DataRow["Queued"]).Trim();
             TableView tableView = null;
             List<EditablePerson> items = null;
             Button focusSink = null;
@@ -1006,8 +1008,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 editor.Text = InvalidPrefix + "NopeY";
             });
 
-            var ended = new List<TableViewEditAction>();
-            RunOnUIThread.Execute(() => tableView.CellEditEnded += (s, e) => ended.Add(e.EditAction));
+            var log = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.CellEditEnding += (s, e) => log.Add($"Ending:{e.EditAction}:{(e.EditingElement != null ? "editor" : "null")}");
+                tableView.CellEditEnded += (s, e) => log.Add($"Ended:{e.EditAction}:IsEditing={tableView.IsEditing}");
+                tableView.Sorting += (s, e) => log.Add("Sorting");
+                if (queued == "Sort")
+                {
+                    // The invalid pending value cannot be committed, so the sort waits for the edit to close.
+                    tableView.SortByColumn(tableView.Columns[1], SortDirection.Descending);
+                    Verify.IsTrue(tableView.IsEditing, "Precondition: the sort must not close the invalid edit.");
+                }
+            });
 
             // Row 0 leaves the realization window, so the repeater recycles it inside measure.
             ScrollBodyTo(tableView, ScrollAxis.Vertical, 3000);
@@ -1017,8 +1030,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("Asha", items[0].Name, "Recycling the edited row must not leave a rejected value on the item.");
                 Verify.IsFalse(tableView.IsEditing, "Recycling the edited row must close the edit.");
-                Verify.AreEqual(1, ended.Count, "The recycle must raise CellEditEnded exactly once, after layout.");
-                Verify.AreEqual(TableViewEditAction.Cancel, ended.FirstOrDefault(), "A recycle-forced close is a Cancel.");
+
+                var closing = log.SkipWhile(entry => !entry.StartsWith("Ending:Cancel", StringComparison.Ordinal)).ToList();
+                var expected = queued == "Sort"
+                    ? new[] { "Ending:Cancel:editor", "Ended:Cancel:IsEditing=False", "Sorting" }
+                    : new[] { "Ending:Cancel:editor", "Ended:Cancel:IsEditing=False" };
+                Verify.AreEqual(string.Join(",", expected), string.Join(",", closing),
+                    $"The forced close must raise Ending with the live editor, then Ended once{(queued == "Sort" ? ", then the queued Sorting" : string.Empty)}; log [{string.Join(", ", log)}].");
             });
         }
 

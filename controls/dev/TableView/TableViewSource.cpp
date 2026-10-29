@@ -35,6 +35,30 @@ namespace
         }
     }
 
+    // Ends one deferral of source on a later turn of queue. An end refused as re-entrant leaves the deferral open
+    // and is posted again; a failure of the reshape itself has already ended it, so it is not retried.
+    void PostEndDeferRefresh(winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue, winrt::TableViewSource const& source) noexcept
+    {
+        try
+        {
+            queue.TryEnqueue([queue, source]()
+            {
+                auto const self = winrt::get_self<::TableViewSource>(source);
+                try
+                {
+                    self->ThrowIfEndDeferRefreshReentrant();
+                }
+                catch (...)
+                {
+                    PostEndDeferRefresh(queue, source);
+                    return;
+                }
+                try { self->EndDeferRefresh(); } catch (...) {}
+            });
+        }
+        catch (...) {}
+    }
+
     // DeferRefresh's IClosable. Close is idempotent and ends exactly one deferral.
     struct TableViewSourceDeferral : winrt::implements<TableViewSourceDeferral, winrt::Windows::Foundation::IClosable>
     {
@@ -54,14 +78,7 @@ namespace
 
             // Never closed: end it on a later turn of the source's thread, never inside Release, which
             // may run on a finalizer thread or inside app code.
-            try
-            {
-                m_queue.TryEnqueue([source = m_source]()
-                {
-                    try { winrt::get_self<::TableViewSource>(source)->EndDeferRefresh(); } catch (...) {}
-                });
-            }
-            catch (...) {}
+            PostEndDeferRefresh(m_queue, m_source);
         }
 
         void Close()
@@ -327,11 +344,8 @@ void TableViewSource::Refresh()
     m_engine->RefreshShaping();
 }
 
-winrt::Windows::Foundation::IClosable TableViewSource::DeferRefresh()
+winrt::Microsoft::UI::Dispatching::DispatcherQueue TableViewSource::DeferralQueue()
 {
-    ThrowIfWrongThread();
-
-    // An unclosed deferral is ended by a post to this queue.
     auto queue = m_engine->OwnerQueue();
     if (!queue)
     {
@@ -345,7 +359,15 @@ winrt::Windows::Foundation::IClosable TableViewSource::DeferRefresh()
     {
         throw winrt::hresult_illegal_method_call(L"DeferRefresh requires a thread with a DispatcherQueue.");
     }
+    return queue;
+}
 
+winrt::Windows::Foundation::IClosable TableViewSource::DeferRefresh()
+{
+    ThrowIfWrongThread();
+
+    // An unclosed deferral is ended by a post to this queue.
+    auto const queue = DeferralQueue();
     winrt::TableViewSource const self = *this;
     m_engine->BeginDeferRefresh();
     try
@@ -368,6 +390,12 @@ void TableViewSource::BeginDeferRefresh()
 void TableViewSource::EndDeferRefresh()
 {
     m_engine->EndDeferRefresh();
+}
+
+void TableViewSource::EndDeferRefreshLater()
+{
+    winrt::TableViewSource const self = *this;
+    PostEndDeferRefresh(DeferralQueue(), self);
 }
 
 std::optional<winrt::hstring> TableViewSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key) const

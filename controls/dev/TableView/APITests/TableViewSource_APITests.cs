@@ -2969,6 +2969,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             TableViewSource source = null;
+            string outerThrown = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -2987,7 +2988,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     source.GroupBy(o => Person(o).Role, key => string.Empty);
                 }
 
-                TableViewTreeTestHelpers.ThrownTypeName(() => outer.Dispose());
+                outerThrown = TableViewTreeTestHelpers.ThrownTypeName(() => outer.Dispose());
             });
 
             SettleLayout(tableView);
@@ -3003,8 +3004,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual("no exception", outerThrown, "Closing the outermost deferral must surface the failed GroupBy.");
                 VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" },
-                    "the failed GroupBy must be gone and a later deferral must apply"));
+                    "the failed GroupBy must be gone and a later deferral must apply");
+            });
         }
 
         [TestMethod]
@@ -3055,11 +3059,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a deferral released without Close ends on a later dispatcher turn rather than reshaping inside Release.")]
+        [TestProperty("Description", "Verifies a deferral released without Close ends on its own later dispatcher turn on the UI thread, rather than reshaping inside Release.")]
         public void VerifyUnclosedDeferralEndsOnALaterTurn()
         {
             TableView tableView = null;
             TableViewSource source = null;
+            var resets = new List<string>();
 
             RunOnUIThread.Execute(() =>
             {
@@ -3070,8 +3075,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => DeclareSortUnderAbandonedDeferral(source));
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) =>
+                    resets.Add($"{e.Action}:access={tableView.DispatcherQueue.HasThreadAccess}");
+                DeclareSortUnderAbandonedDeferral(source);
+            });
 
+            // Release runs on the finalizer thread; the end must be posted to the UI thread, not run there.
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
@@ -3079,8 +3090,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Reset:access=True", string.Join(",", resets),
+                    "The released deferral must end with one Reset raised on the UI thread, not inside Release on the finalizer thread.");
                 VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" },
-                    "the released deferral must end and apply the held Sort"));
+                    "the released deferral must end and apply the held Sort");
+            });
         }
 
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]

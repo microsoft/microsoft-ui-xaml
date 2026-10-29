@@ -25,14 +25,7 @@
 
 namespace
 {
-    struct CellOwner
-    {
-        winrt::TableViewRow Row{ nullptr };
-        winrt::TableViewColumn Column{ nullptr };
-        int32_t ColumnIndex{ -1 };
-    };
-
-    CellOwner CellOwnerForPublicConstructor(winrt::FrameworkElement const& owner)
+    TableViewCellAutomationPeer::CellOwner CellOwnerForPublicConstructor(winrt::FrameworkElement const& owner)
     {
         auto const access = owner ? owner.try_as<ITableViewCellAutomationPeerAccess>() : nullptr;
         if (!access)
@@ -42,20 +35,28 @@ namespace
 
         winrt::IInspectable row{ nullptr };
         winrt::IInspectable column{ nullptr };
-        CellOwner result;
+        TableViewCellAutomationPeer::CellOwner result;
         winrt::check_hresult(access->GetCellOwner(
             reinterpret_cast<::IInspectable**>(winrt::put_abi(row)),
             reinterpret_cast<::IInspectable**>(winrt::put_abi(column)),
             &result.ColumnIndex));
         result.Row = row.try_as<winrt::TableViewRow>();
         result.Column = column.try_as<winrt::TableViewColumn>();
+        if (!result.Row || !result.Column || result.ColumnIndex < 0)
+        {
+            throw winrt::hresult_invalid_argument();
+        }
         return result;
     }
 }
 
 TableViewCellAutomationPeer::TableViewCellAutomationPeer(winrt::FrameworkElement const& owner)
-    : TableViewCellAutomationPeer(TrustedOwnerTag{}, owner, CellOwnerForPublicConstructor(owner).Row,
-        CellOwnerForPublicConstructor(owner).Column, CellOwnerForPublicConstructor(owner).ColumnIndex)
+    : TableViewCellAutomationPeer(owner, CellOwnerForPublicConstructor(owner))
+{
+}
+
+TableViewCellAutomationPeer::TableViewCellAutomationPeer(winrt::FrameworkElement const& owner, CellOwner const& cell)
+    : TableViewCellAutomationPeer(TrustedOwnerTag{}, owner, cell.Row, cell.Column, cell.ColumnIndex)
 {
 }
 

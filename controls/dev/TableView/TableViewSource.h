@@ -90,6 +90,9 @@ public:
     // calls EndDeferRefresh.
     void BeginDeferRefresh();
     void EndDeferRefresh();
+    // Internal: ends one deferral on a later dispatcher turn, posting again while the end is refused
+    // as re-entrant. Throws E_ILLEGAL_METHOD_CALL only when there is no queue to post to.
+    void EndDeferRefreshLater();
     // Internal: the group identity key maps to under the current GroupBy, computed as bucketing
     // computes it (the groupIdentitySelector when given, else the value identity). nullopt without
     // GroupBy, or when the key has no identity (null; an empty string without a selector).
@@ -219,6 +222,8 @@ private:
     // A key selector that reads sortMemberPath through a binding; throws E_INVALIDARG for an empty path.
     static winrt::TableViewKeySelector MakePathKeySelector(winrt::hstring const& sortMemberPath);
     void ThrowIfWrongThread() const;
+    // The owner's queue, or this thread's when the source was created without one; throws when neither exists.
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue DeferralQueue();
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
     TableViewRowItemKeySelector MakeIdentitySelector() const;

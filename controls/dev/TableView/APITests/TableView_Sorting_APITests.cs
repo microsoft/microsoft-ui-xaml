@@ -1206,6 +1206,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             var wrote = false;
+            var sorted = new List<TableViewSortedEventArgs>();
 
             RunOnUIThread.Execute(() =>
             {
@@ -1225,6 +1226,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         tableView.Columns[1].SortDirection = SortDirection.Descending;
                     }
                 });
+                tableView.Sorted += (s, e) => sorted.Add(e);
                 tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending);
             });
 
@@ -1233,6 +1235,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(wrote, "Precondition: the callback wrote the other column.");
+                Verify.AreEqual(1, sorted.Count, "SortByColumn must raise Sorted once.");
+                Verify.AreSame(tableView.Columns[0], sorted.FirstOrDefault()?.Column, "Sorted must name the requested column.");
+                Verify.AreEqual(SortDirection.Ascending, sorted.FirstOrDefault()?.Direction ?? SortDirection.None,
+                    "Sorted must report the requested direction, not one an app wrote during the sort.");
                 Verify.AreEqual(1, tableView.Columns.Count(c => c.SortDirection != SortDirection.None), "Exactly one column may be lit.");
                 for (var i = 0; i < 2; i++)
                 {
@@ -1317,10 +1323,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort whose comparer throws while ranking leaves the previous sort, its arrow and its row order in place.")]
+        [TestProperty("Description", "Verifies a sort whose comparer throws while ranking leaves the previous sort, its arrow and its row order in place, raising Sorting but not Sorted.")]
         public void VerifyThrowingComparerKeepsThePreviousSort()
         {
             TableView tableView = null;
+            var sortingCount = 0;
+            var sortedCount = 0;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1336,6 +1344,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                tableView.Sorting += (s, e) => sortingCount++;
+                tableView.Sorted += (s, e) => sortedCount++;
                 tableView.Columns[1].CustomSortComparer = new ThrowingSortComparer();
                 try
                 {
@@ -1354,6 +1364,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The previous sort must stay lit.");
                 Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection, "The failed sort must not light its column.");
                 VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the previous order must survive");
+                Verify.AreEqual(1, sortingCount, "Sorting is raised before the comparer runs.");
+                Verify.AreEqual(0, sortedCount, "Sorted must not be raised for a sort that was not committed.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies setting CustomSortComparer on a column lit by an app TableViewSource sort raises no events and keeps the app's sort level.")]
+        public void VerifyCustomSortComparerOnAppSourceSortedColumnKeepsAppSort()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            LengthThenOrdinalComparer comparer = null;
+            var events = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "Precondition: the app sort lights the Name column.");
+                tableView.Sorting += (s, e) => events++;
+                tableView.Sorted += (s, e) => events++;
+                comparer = new LengthThenOrdinalComparer();
+                tableView.Columns[0].CustomSortComparer = comparer;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, events, "No Sorting or Sorted may be raised.");
+                Verify.AreEqual(0, comparer.CompareCount, "The comparer must not replace the app's sort level.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the app's Name sort must stay");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The column must stay lit.");
             });
         }
 

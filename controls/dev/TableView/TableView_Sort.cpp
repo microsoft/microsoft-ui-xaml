@@ -330,9 +330,9 @@ bool TableView::SortByColumnInternal(
         return false;
     }
 
-    RecomputeSortDPsAndRaiseInternal(column, measureTip, false, direction);
+    const bool applied = RecomputeSortDPsAndRaiseInternal(column, measureTip, false, direction);
     DrainCoalescedEditReshape();
-    return true;
+    return applied;
 }
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
@@ -408,9 +408,9 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    RecomputeSortDPsAndRaiseInternal(column, true, false, next);
+    const bool applied = RecomputeSortDPsAndRaiseInternal(column, true, false, next);
     DrainCoalescedEditReshape();
-    return true;
+    return applied;
 }
 
 bool TableView::ClearSort()
@@ -762,6 +762,15 @@ bool TableView::SyncTableViewSourceSort(
                             return static_cast<int>(customComparer.Compare(a, b));
                         };
                     rankedWith->Rank(comparer, rows);
+
+                    // A comparer that threw ranks nothing reliable: the sort is abandoned before
+                    // anything is committed, and the previous sort and arrow stay.
+                    if (auto const contained = rankedWith->TakeSwallowedFaults(); contained.count)
+                    {
+                        rankedWith.reset();
+                        m_sortAbortedByComparerFault = TableViewTip::ContainedFaults{ contained.count, contained.firstError };
+                        return false;
+                    }
                 }
             }
         }
@@ -918,7 +927,7 @@ int32_t TableView::FindEntryIndexForDataItem(const winrt::IInspectable& item) co
     return -1;
 }
 
-void TableView::RecomputeSortDPsAndRaiseInternal(
+bool TableView::RecomputeSortDPsAndRaiseInternal(
     const winrt::TableViewColumn& trigger, bool measureTip, bool explicitClear, std::optional<winrt::SortDirection> applyDirection)
 {
     // Stale-deferred-clear guard. A null trigger means "clear", and every legitimate null-trigger
@@ -930,7 +939,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // clear - update the invariant before adding one.
     if (!trigger && !m_sortedColumns.empty())
     {
-        return;
+        return false;
     }
 
     const auto invalidatedSort = !measureTip && m_tip.operation == TableViewTip::Operation::Sort
@@ -966,7 +975,21 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
         // afterwards so the selection follows the row rather than the slot.
         const auto preservedSelection = SelectedItemInternal();
+        m_sortAbortedByComparerFault.reset();
         const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration, explicitClear || static_cast<bool>(trigger));
+        if (auto const aborted = std::exchange(m_sortAbortedByComparerFault, std::nullopt))
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Sort, TableViewTip::Stage::Sort,
+                true, TableViewTip::Attribution::Application, aborted->firstError, TableViewTip::AppFaultKind::Callback,
+                aborted->count);
+            if (measureTip)
+            {
+                TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::ApplicationFault,
+                    aborted->firstError, TableViewTip::AppFaultKind::Callback);
+            }
+            completed = true;
+            return false;
+        }
         // The arrow moves only once the source accepted the sort.
         if (applyDirection && trigger)
         {
@@ -1000,7 +1023,8 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
 
         if (m_sortedEventSource && !keptSourceSort)
         {
-            const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
+            // The requested direction: an app write made from a SortDirection callback must not change what is reported.
+            const auto appliedDirection = trigger ? requestedDirection : winrt::SortDirection::None;
             auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
             try
             {
@@ -1029,7 +1053,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
                     header = TableViewDetails::GetColumnHeaderText(trigger);
                 }
 
-                switch (trigger.SortDirection())
+                switch (requestedDirection)
                 {
                 case winrt::SortDirection::Ascending:
                     AnnounceSortChange(StringUtil::FormatString(
@@ -1068,6 +1092,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         QueueReconcileSortStateWithSource();
     }
+    return true;
 }
 
 void TableView::QueueReconcileSortStateWithSource()

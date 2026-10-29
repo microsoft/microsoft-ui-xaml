@@ -513,18 +513,19 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         }
         if (auto const queue = DispatcherQueue())
         {
-            if (queue.TryEnqueue([weakThis = get_weak(), weakColumn = winrt::make_weak(column)]()
+            if (queue.TryEnqueue([weakColumn = winrt::make_weak(column)]()
                 {
-                    auto const strongThis = weakThis.get();
                     auto const liveColumn = weakColumn.get();
                     if (!liveColumn)
                     {
                         return;
                     }
-                    const bool reset = winrt::get_self<TableViewColumn>(liveColumn)->TakeQueuedCellContentChangeInternal();
-                    if (strongThis && winrt::get_self<TableViewColumn>(liveColumn)->GetOwningTableView() == *strongThis)
+                    // The column may have moved to another table meanwhile; its current owner regenerates.
+                    auto* const liveColumnImpl = winrt::get_self<TableViewColumn>(liveColumn);
+                    const bool reset = liveColumnImpl->TakeQueuedCellContentChangeInternal();
+                    if (auto const owner = liveColumnImpl->GetOwningTableView())
                     {
-                        strongThis->OnColumnCellTemplateChanged(liveColumn, reset);
+                        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(liveColumn, reset);
                     }
                 }))
             {

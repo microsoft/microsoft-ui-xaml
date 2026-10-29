@@ -445,9 +445,9 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
     // the active direction rather than leaving the rows in the old comparer's order.
-    // A direction the app only displayed has no rows ordered by it, so there is nothing to re-sort.
+    // A direction the app set, or the app's own source sort, is not this table's to re-sort.
     if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None &&
-        !winrt::get_self<TableView>(owner)->IsSortDisplaySetByAppInternal())
+        !winrt::get_self<TableView>(owner)->IsSortLitOnlyByAppInternal())
     {
         auto const direction = SortDirection();
         auto ownerImpl = winrt::get_self<TableView>(owner);

@@ -333,25 +333,40 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
         // A posted raise outlives the editor's place in the row, so its DataContext is pinned to
         // the edited item until the handler returns; otherwise a recycled row would rebind it.
         auto const editingElement = CurrentEditingElement();
-        const bool deferred = m_insideLayoutPass;
+        const bool deferred = IsInLayoutCallback();
+        winrt::IInspectable pinnedDataContext = winrt::DependencyProperty::UnsetValue();
         if (deferred && editingElement)
         {
-            try { editingElement.DataContext(item); }
+            try
+            {
+                pinnedDataContext = editingElement.ReadLocalValue(winrt::FrameworkElement::DataContextProperty());
+                editingElement.DataContext(item);
+            }
             catch (...) {}
         }
         auto cellArgs = winrt::make_self<TableViewCellEditEndingEventArgs>(item, column, action, editingElement);
         auto const self = get_strong();
         const auto lifetime = m_tipLifetimeGeneration;
-        PostEditNotification([self, cellArgs, lifetime, deferred, editingElement,
+        PostEditNotification([self, cellArgs, lifetime, deferred, editingElement, pinnedDataContext,
             operation = action == winrt::TableViewEditAction::Commit ?
                 TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
-            tip = m_insideLayoutPass ? nullptr : tip]()
+            tip = deferred ? nullptr : tip]()
         {
-            auto const unpin = wil::scope_exit([deferred, editingElement]() noexcept
+            auto const unpin = wil::scope_exit([deferred, editingElement, pinnedDataContext]() noexcept
             {
                 if (deferred && editingElement)
                 {
-                    try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
+                    try
+                    {
+                        if (pinnedDataContext == winrt::DependencyProperty::UnsetValue())
+                        {
+                            editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty());
+                        }
+                        else
+                        {
+                            editingElement.SetValue(winrt::FrameworkElement::DataContextProperty(), pinnedDataContext);
+                        }
+                    }
                     catch (...) {}
                 }
             });
@@ -675,7 +690,7 @@ void TableView::PostEditNotification(std::function<void()> notify)
         return;
     }
 
-    if (!m_insideLayoutPass)
+    if (!IsInLayoutCallback())
     {
         notify();
         return;
@@ -740,6 +755,8 @@ void TableView::RaiseCellEditEnded(
                     {
                         strongThis->m_cellEditEndedFlushPosted = false;
                         strongThis->FlushPendingCellEditEnded();
+                        // Reshapes the close queued run after Ended, outside layout.
+                        strongThis->DrainCoalescedEditReshape();
                     }
                 }))
             {
@@ -945,7 +962,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
             // and re-committed so the item stops holding a value the control rejected.
             if (m_editSourceWritten)
             {
-                if (m_insideLayoutPass)
+                if (IsInLayoutCallback())
                 {
                     // Restoring the editor here is the layout re-entrancy above, so post it. By then
                     // the editor is detached and has no inherited DataContext, so pin it to our item.
@@ -1319,16 +1336,13 @@ void TableView::DrainCoalescedEditReshape()
     // reshape the source; running one from ItemsRepeater's element-clearing/measure callback
     // re-enters the repeater mid-pass. m_suppressEditVisualRestore is exactly the "we are inside
     // layout" signal, so it gates this too.
-    if (m_suppressEditVisualRestore)
+    if (m_suppressEditVisualRestore || IsInLayoutCallback())
     {
         return;
     }
 
     // The closed session's CellEditEnded comes before anything its close queued.
-    if (!IsInLayoutCallback())
-    {
-        FlushPendingCellEditEnded();
-    }
+    FlushPendingCellEditEnded();
 
     if (!IsEditInProgress() && !m_reshapesAfterEditCloses.empty())
     {
@@ -1392,8 +1406,17 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         return false;
     }
 
-    // The previous session's CellEditEnded comes before this one's BeginningEdit.
-    FlushPendingCellEditEnded();
+    // The previous session's CellEditEnded comes before this one's BeginningEdit; it stays posted
+    // while app code must not run. If a handler opened an edit of its own, that edit wins.
+    if (!m_pendingCellEditEnded.empty() && !IsInLayoutCallback() && !m_suppressEditVisualRestore)
+    {
+        const auto stateBeforeFlush = m_editState;
+        FlushPendingCellEditEnded();
+        if (m_editState != stateBeforeFlush)
+        {
+            return false;
+        }
+    }
 
     if (m_editState == EditState::Editing)
     {

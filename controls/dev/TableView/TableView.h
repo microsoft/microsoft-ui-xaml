@@ -646,7 +646,8 @@ public:
     bool ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& column);
     // The app wrote TableViewColumn.SortDirection (not the control). Display only.
     void OnColumnSortDirectionSetByApp(const winrt::TableViewColumn& column, winrt::SortDirection direction);
-    bool IsSortDisplaySetByAppInternal() const noexcept { return m_sortDisplaySetByApp; }
+    // The lit direction is the app's (set through SortDirection, or its own source sort), not one this table applied.
+    bool IsSortLitOnlyByAppInternal() const { return IsSortLitOnlyByApp(); }
     void RaiseColumnSortStateAutomationChanged(const winrt::TableViewColumn& column, winrt::SortDirection oldDirection);
 
     // Republishes every realized header chevron from its column's SortDirection DP. A push rather
@@ -697,6 +698,7 @@ private:
     // Index of `item` in the ItemsSource, by identity; -1 when absent or the source is not set.
     // Still needed because SelectionModel indexes but does not look items up.
     int32_t IndexOfItem(winrt::IInspectable const& item) const;
+    bool IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target) const;
 
     // The selected item for an already-read index, so a caller that has one does not rebuild the
     // model's IndexPath just to resolve it again.
@@ -1207,6 +1209,10 @@ private:
     void SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool expand);
     // Never raised inside measure or arrange: every caller runs on a later turn or is posted out of layout.
     void RaiseGroupExpanding(winrt::IInspectable const& groupKey);
+    void RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::IInspectable const& groupKey);
+    bool IsRaisingGroupExpanding(winrt::hstring const& identity) const;
+    // Identities whose GroupExpanding is being raised; a nested request for one of them is a no-op.
+    std::vector<winrt::hstring> m_groupsRaisingExpanding;
     void RaiseGroupCollapsed(winrt::IInspectable const& groupKey);
 
     void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
@@ -1287,7 +1293,7 @@ private:
     // selection, raises Sorted, and announces.
     // A non-null trigger is always an explicit request; a null one is explicit only when asked.
     // applyDirection: write this direction to the trigger's arrow once the reshape succeeded.
-    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true, bool explicitClear = false,
+    bool RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true, bool explicitClear = false,
         std::optional<winrt::SortDirection> applyDirection = std::nullopt);
 
     // Silently drops the active sort when the data set is replaced. See the definition for why this
@@ -1317,6 +1323,8 @@ private:
     void EndSortStateUpdate() noexcept;
     std::vector<winrt::TableViewColumn> SnapshotSortedColumns() const;
     uint32_t m_sortStateUpdateDepth{ 0 };
+    // Set by SyncTableViewSourceSort when the column's comparer threw while ranking.
+    std::optional<TableViewTip::ContainedFaults> m_sortAbortedByComparerFault;
     std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_deferredAppSortWrites;
     void AdoptColumnSortDirection(winrt::TableViewColumn const& column);
     TableViewSourceSortBinding m_tableViewSourceSort;
