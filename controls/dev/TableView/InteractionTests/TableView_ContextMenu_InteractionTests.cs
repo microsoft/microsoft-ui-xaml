@@ -473,7 +473,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 UIObject row = GetRow(table, 3);
                 if (row == null) { Verify.Fail("Row 3 was not found."); return; }
-                InputHelper.TapAndHold(row, ContextMenuNameTextX, row.BoundingRectangle.Height / 2, 1500);
+                UIObject cell = row.Children[ContextMenuNameColumn];
+                InputHelper.TapAndHold(cell, 1500);
 
                 VerifyMenuOpened(CellMenu, ContextMenuName(3), CellFocus(3, ContextMenuNameColumn));
                 Verify.AreEqual(NoneValue, ReadContextMenuField(SelectedField), "A press-and-hold must not select the row.");
