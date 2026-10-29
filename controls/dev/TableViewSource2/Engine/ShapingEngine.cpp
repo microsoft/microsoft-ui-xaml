@@ -641,14 +641,13 @@ void ShapingEngine::UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept
     }
     std::unordered_set<SourceRecord const*> const arrived(arrivals.begin(), arrivals.end());
 
+    // An arrival is never shown: its delegates were not read. Under the empty spec this hides only
+    // top-level arrivals (children are not shaped there).
     std::vector<uint8_t> passes(n, 1);
-    if (childrenShaped)
+    for (uint32_t i = 0; i < n; ++i)
     {
-        for (uint32_t i = 0; i < n; ++i)
-        {
-            passes[i] = !arrived.contains(records[i]) &&
-                (!filterActive || (records[i]->Shape.Flags & ShapeFlags::PassesFilter) != ShapeFlags::None);
-        }
+        passes[i] = !arrived.contains(records[i]) &&
+            (!childrenShaped || !filterActive || (records[i]->Shape.Flags & ShapeFlags::PassesFilter) != ShapeFlags::None);
     }
 
     std::vector<uint8_t> inShaped(passes);
@@ -712,11 +711,16 @@ void ShapingEngine::UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept
     GroupNode& root = m_tree.Root();
     if (levels == 0)
     {
-        for (ShapedNode const* const old : root.Children)
+        // Under the empty spec root keeps source order (the order surgical edits index by);
+        // otherwise the survivors keep their shaped order.
+        if (childrenShaped)
         {
-            if (auto const j = take(old, 0, topCount))
+            for (ShapedNode const* const old : root.Children)
             {
-                staged.RootChildren.push_back(records[*j]);
+                if (auto const j = take(old, 0, topCount))
+                {
+                    staged.RootChildren.push_back(records[*j]);
+                }
             }
         }
         for (uint32_t j = 0; j < topCount; ++j)
@@ -827,8 +831,9 @@ void ShapingEngine::ApplySourceChange(SourceChange const& change)
 {
     // Spec §6: under the empty spec a single-item Add, Remove or Move (including a ParentBy
     // reparent and an orphan moving to the top level) links or unlinks that one node (drift #20).
-    // Replace, and any non-empty spec, rebuild with the applied spec (one Reset).
-    bool const surgical = m_applied == ShapeSpec{} &&
+    // Replace, any non-empty spec, and a stale engine (drift #33: root may hide arrivals) rebuild
+    // with the applied spec (one Reset).
+    bool const surgical = m_applied == ShapeSpec{} && !m_stale &&
         (change.Kind == SourceChangeKind::Add || change.Kind == SourceChangeKind::Remove || change.Kind == SourceChangeKind::Move);
     if (!surgical)
     {

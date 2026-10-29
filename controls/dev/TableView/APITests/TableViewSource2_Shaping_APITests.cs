@@ -152,6 +152,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a failed Filter followed by a Reset that inserts at the front keeps the rows in source order, and a later single Remove drops exactly that row.")]
+        public void VerifyFailedFilterThenResetThenRemoveKeepsSourceOrder()
+        {
+            var rows = new ResettableCollection<LiveRow>(MakeLiveFlat());
+            var source = FromOnUI(rows);
+            var tableView = PlaceTreeSource(source, null);
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C D", "No shaping"));
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => source.Filter(ThrowingForB(() => true))), "The Filter fails.");
+                VerifyShaped(tableView, "A B C D", "A failed Filter keeps the empty spec's rows");
+
+                var e = new LiveRow { Id = 5, Name = "E", Score = 50, Team = "X", Addr = new LiveAddress("Essen") };
+                var next = new List<LiveRow> { e };
+                next.AddRange(rows);
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => rows.ReplaceAll(next)), "The desired filter's exception surfaces from the Reset.");
+                VerifyShaped(tableView, "A B C D", "Source order kept; the arrival is hidden");
+
+                var c = rows[3];
+                Verify.AreEqual("no exception", ThrownTypeName(() => rows.Remove(c)), "The Remove rebuilds with the applied (empty) spec.");
+                VerifyShaped(tableView, "E A B D", "Exactly C left; the engine re-read everything");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "E A B D", "Still consistent after idle"));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Sort by path orders rows by the property path; calling it again on the same path replaces the level.")]
         public void VerifySortByPathOrdersRows()
         {
