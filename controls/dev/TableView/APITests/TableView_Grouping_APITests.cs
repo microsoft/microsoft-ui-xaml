@@ -282,6 +282,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the default group header sets its key and count text without {Binding}, and keeps it current.")]
+        public void VerifyDefaultGroupHeaderTextDoesNotDependOnBinding()
+        {
+            // GH #12352: in a trimmed app {Binding} cannot resolve TableViewGroupInfo, so binding-driven
+            // default text renders blank.
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var source = TableViewSource.From(items);
+                source.GroupBy(o => Person(o).Role);
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var expected = new[] { ("Designer", 2), ("Engineer", 3), ("Architect", 1) };
+                for (var i = 0; i < expected.Length; i++)
+                {
+                    var header = GetGroupHeader(tableView, i);
+                    var presenter = FindVisualChildrenByType<ContentPresenter>(header).First();
+                    var textBlocks = FindVisualChildrenByType<TextBlock>(presenter).ToList();
+                    Verify.AreEqual(2, textBlocks.Count, "The default content shows a key and a count.");
+                    foreach (var textBlock in textBlocks)
+                    {
+                        Verify.IsNull(textBlock.GetBindingExpression(TextBlock.TextProperty),
+                            "Default group header text must not come from {Binding}.");
+                    }
+
+                    var info = GetGroupInfo(tableView, i);
+                    Verify.AreEqual(expected[i].Item1, textBlocks[0].Text, $"Group {i} must show its key.");
+                    Verify.AreEqual(info.ItemCountText, textBlocks[1].Text, $"Group {i} must show its count.");
+                    Verify.IsTrue(textBlocks[1].Text.Contains(expected[i].Item2.ToString()), $"Group {i} count text must carry the count.");
+                }
+
+                items.Add(new ShapedPerson("Nadia", "Designer", "Studio"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var text = HeaderText(tableView, 0);
+                Log.Comment($"Designer header after an add: '{text}'.");
+                Verify.IsTrue(text.StartsWith("Designer") && text.Contains("3"),
+                    $"The default header must follow an in-place count change, was '{text}'.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies GroupHeaderTemplate replaces the default group header content.")]
         public void VerifyGroupHeaderTemplateApplies()
         {
