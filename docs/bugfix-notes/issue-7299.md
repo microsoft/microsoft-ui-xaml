@@ -31,11 +31,42 @@ Use the character count instead of `IsNullOrEmpty` where the TextBlock decides w
 | `text.cpp` `ShouldRemoveEmptyRun` | `GetCount() == 0` |
 | `TextBlockViewHelpers.cpp/.h` | Return `false` (keep walking) when the `InlineCollection` is null. Params changed to `_In_opt_`. |
 
-Compat risk is low:
+Compat risk is low. See "Why it's safe" below.
 
-- A string with count 0 behaves the same as before.
-- A string that starts with NUL used to render the text (DWrite) but had an empty text container, which crashed on selection. Now the container matches the rendered text.
-- The null-guard changes only affect code paths that used to AV.
+## Why this fixes the issue
+
+Leading NUL (TextBlock):
+
+- The crash happens because the layout sees 5 characters but the text container sees 0. Selection then builds a position the container can't resolve.
+- `SetTextToInlineCollection` now adds the full counted string as a Run (`TextBlock.cpp:488`). `ShouldRemoveEmptyRun` no longer removes that Run (`text.cpp:220`). So the container holds the same 5 characters that DWrite lays out, and the position resolves.
+- This matches what TextBlock already does elsewhere. Its own empty-text fast paths already test `m_strText.GetCount() == 0` (`TextBlock.cpp:1658`, `:1790`, unchanged from main).
+- The line services test covers the other layout path. It failed before the fix ("Element has no width") because that path lays out from the empty container.
+
+Empty Paragraph or Span (RichTextBlock):
+
+- The crash is a null dereference of `inlines` at the top of each helper. An empty Paragraph or Span has a null `InlineCollection`.
+- All three helpers now return `false` for a null collection (`TextBlockViewHelpers.cpp:16`, `:100`, `:187`). `false` means "not found here, keep walking", which is the right answer for an empty collection. The callers then move on to the next paragraph (`RichTextBlockView.cpp:440`, `:502`, `PageNode.cpp:237`) or the next inline. That's the same result as a non-null collection with no items.
+
+All 5 tests crashed or failed before the fix and pass after it.
+
+## Why it's safe
+
+Who can see a behavior change:
+
+| Case | Before | After |
+|---|---|---|
+| `Text` with count 0 | Empty Run | Unchanged. `IsNullOrEmpty` was already true for these. The two checks only differ when count > 0 and the first char is NUL. |
+| `Text` with no NUL, or a NUL that isn't first | Full Run | Unchanged. `IsNullOrEmpty` was already false. |
+| `Text` that starts with NUL, count > 0 | Renders the text, container empty, selection crashes | Renders the text, container matches, selection works |
+| Explicit `<Run>` elements | Never removed by `ShouldRemoveEmptyRun` (`text.cpp:210` checks `RunFlagsRunElement`) | Unchanged |
+| RichTextBlock with no empty Paragraph or Span | Works | Unchanged. The null checks only run when `inlines` is null. |
+| RichTextBlock with an empty Paragraph or Span | AV on selection, highlight, or IUC lookup | Skips the empty collection |
+
+Other risks I checked:
+
+- **Who reaches `ShouldRemoveEmptyRun`.** It's called from `CompressInlinesWhitespace`, used by TextBlock (`TextBlock.cpp:181`) and Paragraph (`paragraph.cpp:148`). It only looks at Runs created from content, not explicit Run elements. XAML markup can't contain a NUL character, so in practice only code that sets `Text` with a leading NUL sees the change. Those apps used to crash on word selection.
+- **Reading `Text` back.** Still returns `""` for a leading-NUL string, same as before. That's a separate, pre-existing issue (see Follow-ups).
+- **Chk-only `VERIFY` in `TextBlockView`.** A null collection now returns `false` instead of crashing. That can trip the chk assert in one unreachable-from-selection case (see Follow-ups). Release builds are unaffected.
 
 ## Tests
 
