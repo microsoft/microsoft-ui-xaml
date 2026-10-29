@@ -58,7 +58,7 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Internal: the only writer of the read-only IsExpandable/IsExpanded DPs. Requests nothing.
-    void SetExpansionStateInternal(bool isExpandable, bool isExpanded, bool syncContent = true);
+    void SetExpansionStateInternal(bool isExpandable, bool isExpanded, bool syncContent = true, bool useTransitions = true);
     void SyncExpansionToContentInternal() { SyncExpansionToContent(); }
 
     // Internal: the band gesture, forwarded to the owning TableView. The ExpandCollapse peer does

@@ -223,7 +223,7 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
     }
 }
 
-void TableViewGroupHeader::SetExpansionStateInternal(bool isExpandable, bool isExpanded, bool syncContent)
+void TableViewGroupHeader::SetExpansionStateInternal(bool isExpandable, bool isExpanded, bool syncContent, bool useTransitions)
 {
     m_internalIsExpandable = isExpandable;
     m_internalIsExpanded = isExpanded;
@@ -245,7 +245,7 @@ void TableViewGroupHeader::SetExpansionStateInternal(bool isExpandable, bool isE
     {
         SyncExpansionToContent();
     }
-    UpdateVisualStates(true /* useTransitions */);
+    UpdateVisualStates(useTransitions);
 }
 
 void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState)

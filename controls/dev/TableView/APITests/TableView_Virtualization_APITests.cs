@@ -329,7 +329,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies StartBringItemIntoView called before Loaded is applied once the table lays out.")]
+        [TestProperty("Description", "Verifies StartBringItemIntoView called before Loaded shows the row after a single idle, with no forced layout pass.")]
         public void VerifyStartBringItemIntoViewBeforeLoaded()
         {
             const int target = 300;
@@ -339,10 +339,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateVirtualizationTable(MakeManyItems(500));
                 tableView.StartBringItemIntoView(target, new BringIntoViewOptions { AnimationDesired = false });
-                LoadContent(tableView);
+                // Hosted without LoadContent's synchronous UpdateLayout, so only the normal layout passes run.
+                EnsureTabularControlsResources();
+                Content = tableView;
             });
 
-            SettleLayout(tableView);
+            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => RequireVisibleRow(tableView, target));
         }
