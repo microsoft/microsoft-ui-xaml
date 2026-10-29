@@ -1,0 +1,17 @@
+{
+  "number": 12,
+  "head": {
+    "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ref": "users/example/perf-change",
+    "repo": {
+      "fork": false
+    }
+  },
+  "base": {
+    "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "ref": "main",
+    "repo": {
+      "fork": false
+    }
+  }
+}

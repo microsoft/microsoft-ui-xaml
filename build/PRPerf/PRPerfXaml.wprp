@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Records nothing but the XAML provider.
+
+    The general purpose profiles record the whole system, which on a lab agent means a
+    large trace, a long decode, and a real chance of dropped events. Every number this
+    feature reports comes from three XAML events, so everything else is weight.
+-->
+<WindowsPerformanceRecorder Version="1.0" Author="WinUI PR perf">
+  <Profiles>
+    <EventCollector Id="EventCollector_PRPerfXaml" Name="PRPerfXamlCollector">
+      <BufferSize Value="1024" />
+      <Buffers Value="64" />
+    </EventCollector>
+
+    <EventProvider Id="EventProvider_Microsoft-Windows-XAML"
+                   Name="531a35ab-63ce-4bcf-aa98-f88c7a89e455"
+                   Level="5" />
+
+    <Profile Id="PRPerfXaml.Verbose.File"
+             Name="PRPerfXaml"
+             Description="XAML startup regions"
+             LoggingMode="File"
+             DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_PRPerfXaml">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_Microsoft-Windows-XAML" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+
+    <!-- wpr refuses a profile family that has no memory counterpart, so both are declared. -->
+    <Profile Id="PRPerfXaml.Verbose.Memory"
+             Name="PRPerfXaml"
+             Description="XAML startup regions"
+             LoggingMode="Memory"
+             DetailLevel="Verbose"
+             Base="PRPerfXaml.Verbose.File" />
+  </Profiles>
+</WindowsPerformanceRecorder>
