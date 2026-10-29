@@ -1533,6 +1533,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a locked Star column never pushes the columns past the viewport after resizes and a MaxWidth change.")]
+        public void VerifyLockedStarColumnFitsAfterResizeAndMaxWidthChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Locked", new GridLength(2.0, GridUnitType.Star)),
+                    ("Third", new GridLength(1.0, GridUnitType.Star)),
+                    ("Last", new GridLength(3.0, GridUnitType.Star)));
+                tableView.Columns[1].CanResize = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var (index, delta) in new[] { (0, 114.0), (2, 100.0) })
+                {
+                    var gripper = RequireGripper(tableView, index);
+                    gripper.BeginDrag();
+                    gripper.TryDrag(delta);
+                    gripper.EndDrag(false);
+                    tableView.UpdateLayout();
+                }
+
+                // GH #12446: the MaxWidth clamp frees authored space that the locked column used to absorb
+                // whether or not the resized columns had already taken it.
+                tableView.Columns[3].MaxWidth = 50.0;
+                tableView.UpdateLayout();
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+
+                Verify.IsLessThanOrEqual(widths.Sum(), viewport + 1.0,
+                    "Star columns must still fit the viewport after a MaxWidth change follows resizes.");
+                Verify.IsLessThanOrEqual(widths[3], 50.0, "The MaxWidth-capped column must not exceed its MaxWidth.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the last Star column, which has no later Star column to trade width with, shows no gripper.")]
         public void VerifyPinnedStarColumnHidesGripper()
         {
