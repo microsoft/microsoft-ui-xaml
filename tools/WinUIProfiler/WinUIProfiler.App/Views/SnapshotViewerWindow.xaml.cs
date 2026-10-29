@@ -4,13 +4,13 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIProfiler.App.ViewModels;
 
 namespace WinUIProfiler.App.Views;
 
-public sealed class SnapshotTreeLabel(string label, SnapshotTreeNode? node = null) : INotifyPropertyChanged
+public class SnapshotTreeLabel(string label, SnapshotTreeNode? node = null) : INotifyPropertyChanged
 {
     public string Label { get; } = label;
     public SnapshotTreeNode? Node { get; } = node;
@@ -41,6 +41,7 @@ public sealed partial class SnapshotViewerWindow : Window
     private bool closed;
     public SnapshotHistoryEntry Entry { get; }
     public SnapshotViewerData? Data { get; private set; }
+    public event EventHandler<SnapshotElement>? ElementRequested;
 
     public SnapshotViewerWindow(SnapshotHistoryEntry entry)
     {
@@ -125,6 +126,14 @@ public sealed partial class SnapshotViewerWindow : Window
     private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args) =>
         Populate(args.Node, sender == XamlTree ? SnapshotTreeKind.Xaml : SnapshotTreeKind.Composition);
 
+    // Double-clicking a XAML node asks the main window to show its element's history in the Elements tab.
+    private void XamlTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
+    {
+        if (Data is null || SnapshotTreeExpansion.NodeAt(XamlTree, args.OriginalSource)?.Content is not SnapshotTreeLabel { Node: { } node }) return;
+        args.Handled = true;
+        ElementRequested?.Invoke(this, SnapshotElement.From(Data.Document, node));
+    }
+
     private async void ExpandAll_Click(object sender, RoutedEventArgs args) =>
         await SetExpandedAsync(ReferenceEquals(sender, XamlExpandAll) ? XamlTree : CompositionTree, true);
 
@@ -141,16 +150,7 @@ public sealed partial class SnapshotViewerWindow : Window
         {
             foreach (var control in controls) control.IsEnabled = false;
             var kind = tree == XamlTree ? SnapshotTreeKind.Xaml : SnapshotTreeKind.Composition;
-            var pending = new Stack<TreeViewNode>(tree.RootNodes);
-            var processed = 0;
-            while (pending.TryPop(out var node))
-            {
-                if (closed) return;
-                if (expanded) Populate(node, kind);
-                node.IsExpanded = expanded;
-                foreach (var child in node.Children) pending.Push(child);
-                if (++processed % 128 == 0) await Task.Yield();
-            }
+            await SnapshotTreeExpansion.SetExpandedAsync(tree, expanded, node => Populate(node, kind), lifetime.Token);
         }
         catch (Exception error) { ReportInteractionError(error); }
         finally
@@ -235,25 +235,7 @@ public sealed partial class SnapshotViewerWindow : Window
             if (path.Count > 0) { Populate(uiNode, kind); uiNode.IsExpanded = true; }
         }
         var result = nodes[id];
-        if (!DispatcherQueue.TryEnqueue(() =>
-        {
-            if (closed) return;
-            var pending = new Stack<DependencyObject>();
-            pending.Push(tree);
-            while (pending.TryPop(out var element))
-            {
-                if (element is ListView list && list.Name == "ListControl")
-                {
-                    list.ScrollIntoView(result);
-                    return;
-                }
-                for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); ++i)
-                    pending.Push(VisualTreeHelper.GetChild(element, i));
-            }
-            if (tree.ContainerFromNode(result) is FrameworkElement container) container.StartBringIntoView();
-            else Trace.TraceWarning("Snapshot mapping selected, but its TreeView scroll container was unavailable.");
-        }) && !closed)
-            Trace.TraceWarning("The dispatcher rejected scrolling to the selected snapshot node.");
+        SnapshotTreeExpansion.ScrollIntoView(tree, result, lifetime.Token);
         return result;
     }
 

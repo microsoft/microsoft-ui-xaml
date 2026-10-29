@@ -17,11 +17,18 @@
         <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
 
-    <Grid x:Name="HeaderPanel" Grid.Row="0" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
+    <!-- The Source button sits at the right end of the title row; ArrangeHeader wraps it under the
+         title when the row is too narrow for both. -->
+    <Grid x:Name="HeaderPanel" Grid.Row="0" RowSpacing="8" ColumnSpacing="12" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
         <TextBlock
             x:Name="HeaderText"
@@ -29,12 +36,91 @@
             Style="{ThemeResource TitleTextBlockStyle}"
             Text="{x:Bind Header, Mode=OneWay}"
             AutomationProperties.HeadingLevel="Level1"
+            TextWrapping="Wrap"
             VerticalAlignment="Center"/>
+
+        <!-- Links to this page's source and the control's source; shown on pages with a Snippet.
+             The GitHub mark is the WinUI Gallery's GitHubIconPath; PathIcon takes the button's Foreground. -->
+        <DropDownButton
+            x:Name="SourceLinksButton"
+            Grid.Row="0"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            AutomationProperties.AutomationId="SampleSourceLinksButton"
+            AutomationProperties.Name="Source"
+            ToolTipService.ToolTip="Source code of this sample page and of TableView"
+            Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Viewbox Height="18" AutomationProperties.AccessibilityView="Raw">
+                    <PathIcon Data="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+                </Viewbox>
+                <TextBlock Text="Source"/>
+            </StackPanel>
+            <DropDownButton.Flyout>
+                <Flyout Placement="BottomEdgeAlignedRight">
+                    <StackPanel Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                Text="Sample page source code"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level3"/>
+                            <FontIcon
+                                Glyph="&#xE946;"
+                                FontSize="14"
+                                ToolTipService.ToolTip="The files of this sample page on GitHub."
+                                AutomationProperties.AccessibilityView="Raw"/>
+                        </StackPanel>
+                        <HyperlinkButton
+                            x:Name="SourceXamlLink"
+                            Content="XAML"
+                            AutomationProperties.AutomationId="SampleSourceXamlLink"
+                            AutomationProperties.HelpText="The files of this sample page on GitHub."
+                            Click="OnSourceLinkClick"/>
+                        <HyperlinkButton
+                            x:Name="SourceCSharpLink"
+                            Content="C#"
+                            AutomationProperties.AutomationId="SampleSourceCSharpLink"
+                            AutomationProperties.HelpText="The files of this sample page on GitHub."
+                            Click="OnSourceLinkClick"/>
+                        <Border
+                            Height="1"
+                            Margin="0,6"
+                            Background="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                Text="Control source code"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level3"/>
+                            <FontIcon
+                                Glyph="&#xE946;"
+                                FontSize="14"
+                                ToolTipService.ToolTip="The TableView control's implementation and its API spec on GitHub."
+                                AutomationProperties.AccessibilityView="Raw"/>
+                        </StackPanel>
+                        <HyperlinkButton
+                            Content="TableView"
+                            Tag="https://github.com/microsoft/microsoft-ui-xaml/tree/main/controls/dev/TableView"
+                            AutomationProperties.AutomationId="SampleControlSourceLink"
+                            AutomationProperties.HelpText="The TableView control's implementation and its API spec on GitHub."
+                            Click="OnSourceLinkClick"/>
+                        <HyperlinkButton
+                            Content="Spec"
+                            Tag="https://github.com/microsoft/microsoft-ui-xaml/blob/main/docs/api-specs/TableView/TableView-spec.md"
+                            AutomationProperties.AutomationId="SampleControlSpecLink"
+                            AutomationProperties.HelpText="The TableView control's implementation and its API spec on GitHub."
+                            Click="OnSourceLinkClick"/>
+                    </StackPanel>
+                </Flyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
 
         <!-- Description -->
         <TextBlock
             x:Name="DescriptionText"
             Grid.Row="1"
+            Grid.ColumnSpan="2"
             Style="{ThemeResource BodyTextBlockStyle}"
             Text="{x:Bind Description, Mode=OneWay}"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -198,12 +284,10 @@
             AutomationProperties.Name="Source code"
             Expanding="OnSourceExpanderExpanding"
             Collapsed="OnSourceExpanderCollapsed"
+            KeyDown="OnSourceExpanderKeyDown"
             Visibility="Collapsed">
             <Expander.Header>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE943;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
-                    <TextBlock Text="Source" FontWeight="SemiBold"/>
-                </StackPanel>
+                <TextBlock Text="Source code"/>
             </Expander.Header>
             <ScrollViewer
                 x:Name="SourceContentScroller"
@@ -211,17 +295,45 @@
                 VerticalScrollBarVisibility="Auto"
                 HorizontalScrollMode="Disabled"
                 HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Spacing="12">
-                    <local:CodeBlock
-                        x:Name="SourceCodeBlock"
-                        Caption="{x:Bind SourceCaption, Mode=OneWay}"
-                        Code="{x:Bind SourceXaml, Mode=OneWay}"/>
-                    <local:CodeBlock
-                        x:Name="AdditionalSourceCodeBlock"
-                        Caption="{x:Bind AdditionalSnippetCaption, Mode=OneWay}"
-                        Code="{x:Bind AdditionalSourceCode, Mode=OneWay}"
-                        Visibility="{x:Bind AdditionalSourceVisibility, Mode=OneWay}"/>
-                </StackPanel>
+                <local:CodeBlock x:Name="SourceCodeBlock">
+                    <local:CodeBlock.HeaderContent>
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <SelectorBar
+                                x:Name="SourceTabs"
+                                AutomationProperties.AutomationId="SampleSourceTabs"
+                                AutomationProperties.Name="Source language">
+                                <SelectorBarItem
+                                    x:Name="SourceXamlTab"
+                                    Text="XAML"
+                                    IsSelected="True"
+                                    AutomationProperties.AutomationId="SampleSourceXamlTab"
+                                    AutomationProperties.Name="XAML"/>
+                                <SelectorBarItem
+                                    x:Name="SourceCSharpTab"
+                                    Text="C#"
+                                    AutomationProperties.AutomationId="SampleSourceCSharpTab"
+                                    AutomationProperties.Name="C#"/>
+                            </SelectorBar>
+                            <!-- The checked state is the announcement; the name stays the same. -->
+                            <ToggleButton
+                                x:Name="SourceFullScreenButton"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Padding="8,4"
+                                AutomationProperties.AutomationId="SampleSourceFullScreenButton"
+                                AutomationProperties.Name="Full screen"
+                                ToolTipService.ToolTip="Full screen"
+                                Checked="OnSourceFullScreenChanged"
+                                Unchecked="OnSourceFullScreenChanged">
+                                <FontIcon x:Name="SourceFullScreenIcon" Glyph="&#xE740;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                            </ToggleButton>
+                        </Grid>
+                    </local:CodeBlock.HeaderContent>
+                </local:CodeBlock>
             </ScrollViewer>
         </Expander>
     </Grid>

@@ -42,7 +42,6 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- snippet -->
                 <TextBlock Text="Files" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <!-- MaxWidth, not Width: names wrap instead of trimming when text is scaled. -->
                 <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" MaxWidth="320" VerticalAlignment="Stretch">
@@ -61,6 +60,7 @@
                 </Border>
 
                 <TextBlock Grid.Column="1" Text="Properties" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <!-- snippet -->
                 <tv:TableView
                     x:Name="PropTable"
                     Grid.Row="1"
@@ -70,12 +70,11 @@
                     ItemsSource="{x:Bind Source}"
                     SelectionMode="Single"
                     IsReadOnly="True"
-                    SelectionChanged="OnPropSelectionChanged"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
                     <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
-                    <tv:TableViewTemplateColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" CellTemplate="{StaticResource PropertyNameTemplate}" SortMemberPath="Property"/>
-                    <tv:TableViewTemplateColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource PropertyValueTemplate}" SortMemberPath="Value"/>
+                    <tv:TableViewTemplateColumn Header="Property" Width="170" CellTemplate="{StaticResource PropertyNameTemplate}" SortMemberPath="Property"/>
+                    <tv:TableViewTemplateColumn Header="Value" Width="*" MinWidth="140" CellTemplate="{StaticResource PropertyValueTemplate}" SortMemberPath="Value"/>
                 </tv:TableView>
                 <!-- /snippet -->
             </Grid>

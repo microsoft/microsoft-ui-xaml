@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
@@ -37,51 +38,130 @@ public sealed partial class CellEditingPage : SamplePageBase
     public CellEditingPage()
     {
         // <snippet>
+        foreach (var person in People)
+        {
+            person.ValidatesNames = true;          // a first and last name are required on this page
+        }
+
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
+        PeopleTable.BeginningEdit += OnBeginningEdit;
+        PeopleTable.SelectionChanged += OnSelectionChanged;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
+    // </snippet>
 
     /// <summary>Values written to the model, newest first (bound in XAML).</summary>
     public ObservableCollection<string> EditLog { get; } = new();
 
     // <snippet>
-    // ---- Editing ------------------------------------------------------------------------
-
     private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
     {
-        if (PeopleTable is null || ReadOnlyToggle is null)
-        {
-            return;
-        }
+        if (PeopleTable is null || ReadOnlyToggle is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
+        PeopleTable.IsReadOnly = ((ToggleSwitch)sender).IsOn;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "IsReadOnly -> {0}", PeopleTable.IsReadOnly));
     }
+    // </snippet>
 
     private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
     {
-        FlushPendingCommit(); // snippet:skip
-        _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
-        _isEditOpen = true; // snippet:skip
-        _editsAtBeginEdit = _editsCommitted; // snippet:skip
+        FlushPendingCommit();
+        ClearRejectedWrite();
+        _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName);
+        _isEditOpen = true;
+        _editsAtBeginEdit = _editsCommitted;
         SetEditButtonsEnabled(true);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Began editing {0}", _openEdit));
     }
 
-    // Raised for every close, with EditAction saying whether it committed or cancelled.
+    // <snippet>
+    // Raised before the control writes and validates, for a commit and a cancel alike.
     private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
     {
         var what = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
         _openEdit = "(none)"; // snippet:skip
-        SetEditButtonsEnabled(false);
+        SetEditButtonsEnabled(false); // snippet:skip
         AnnounceEditEnding(args.EditAction, what); // snippet:skip
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!PeopleTable.IsEditing)
+            {
+                ValidationInfoBar.IsOpen = false;
+            }
+        });
+    }
+    // </snippet>
+
+    // A rejected commit writes the invalid value, then the previous value back; neither is an edit.
+    private bool IsRejectedWrite(Person person, string property)
+    {
+        foreach (var error in person.GetErrors(property))
+        {
+            _rejectedPerson = person;
+            _rejectedProperty = property;
+            _rejectedError = error?.ToString();
+            _rollbackPending = true;
+            return true;
+        }
+
+        if (_rollbackPending && ReferenceEquals(person, _rejectedPerson) && property == _rejectedProperty)
+        {
+            _rollbackPending = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    // <snippet>
+    // Queued after a commit. _rejectedError is the GetErrors text of a write the control rejected;
+    // the editor then stays open.
+    private void OnCommitSettled()
+    {
+        var error = _rejectedError;
+        ClearRejectedWrite(); // snippet:skip
+        if (error is null || !PeopleTable.IsEditing)
+        {
+            FlushPendingCommit(); // snippet:skip
+            return;
+        }
+
+        _openEdit = _pendingCommit ?? _openEdit; // snippet:skip
+        _pendingCommit = null; // snippet:skip
+        _isEditOpen = true; // snippet:skip
+        SetEditButtonsEnabled(true); // snippet:skip
+        var message = error + " The editor stays open with the previous value: type a new value and press Enter, or press Esc to cancel.";
+        if (ValidationInfoBar.IsOpen)
+        {
+            // InfoBar announces only when it opens, so announce a repeat.
+            FrameworkElementAutomationPeer.FromElement(ValidationInfoBar)?.RaiseNotificationEvent(
+                AutomationNotificationKind.ActionAborted, AutomationNotificationProcessing.ImportantAll,
+                message, "CellEditingValidationRejected");
+        }
+
+        ValidationInfoBar.Message = message;
+        ValidationInfoBar.IsOpen = true;
+        RefreshReadouts(); // snippet:skip
+    }
+    // </snippet>
+
+    private void ClearRejectedWrite()
+    {
+        _rejectedPerson = null;
+        _rejectedProperty = null;
+        _rejectedError = null;
+        _rollbackPending = false;
     }
 
     private void SetEditButtonsEnabled(bool enabled)
@@ -90,23 +170,26 @@ public sealed partial class CellEditingPage : SamplePageBase
         CancelEditButton.IsEnabled = enabled;
     }
 
-    // The buttons set AllowFocusOnInteraction="False", so clicking one leaves focus, and the
-    // open editor, where they are.
+    // <snippet>
+    // Buttons that call these need AllowFocusOnInteraction="False", or the click takes focus from the editor first.
     private void OnCommitEditClick(object sender, RoutedEventArgs e)
     {
-        if (!PeopleTable.CommitEdit())
-        {
-            SetLastAction("CommitEdit returned false: no edit was open, or the value was rejected.");
-        }
+        var committed = PeopleTable.CommitEdit();
+        if (!committed && _rejectedError is null) // snippet:skip
+        { // snippet:skip
+            SetLastAction("CommitEdit returned false: no edit was open, or the value could not be written."); // snippet:skip
+        } // snippet:skip
     }
 
     private void OnCancelEditClick(object sender, RoutedEventArgs e)
     {
-        if (!PeopleTable.CancelEdit())
-        {
-            SetLastAction("CancelEdit returned false: no edit was open.");
-        }
+        var cancelled = PeopleTable.CancelEdit();
+        if (!cancelled) // snippet:skip
+        { // snippet:skip
+            SetLastAction("CancelEdit returned false: no edit was open."); // snippet:skip
+        } // snippet:skip
     }
+    // </snippet>
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -115,10 +198,14 @@ public sealed partial class CellEditingPage : SamplePageBase
             return;
         }
 
+        if (IsRejectedWrite(person, e.PropertyName!))
+        {
+            return;
+        }
+
         LogEdit(person, e.PropertyName!);
 
-        // The write arrives from inside the control's commit. Re-group after it returns, so the
-        // reshape never runs while the edit is still closing.
+        // The write arrives from inside the control's commit; re-group after it returns.
         var property = e.PropertyName;
         EnqueueIfLoaded(() =>
         {
@@ -127,7 +214,6 @@ public sealed partial class CellEditingPage : SamplePageBase
             ReapplyIfGroupedOn(property);
             if (regrouped && hadFocus)
             {
-                // The reshape recycles the containers; put focus back on the edited row.
                 RestoreRowFocusAfterLayout(person);
             }
 
@@ -135,7 +221,6 @@ public sealed partial class CellEditingPage : SamplePageBase
         });
         RefreshReadouts();
     }
-    // </snippet>
 
     private void LogEdit(Person person, string propertyName)
     {
@@ -176,7 +261,7 @@ public sealed partial class CellEditingPage : SamplePageBase
         if (action == TableViewEditAction.Commit && _editsCommitted == _editsAtBeginEdit)
         {
             _pendingCommit = what;
-            EnqueueIfLoaded(FlushPendingCommit);
+            EnqueueIfLoaded(OnCommitSettled);
             return;
         }
 

@@ -51,8 +51,9 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file.
-There is no object or frame view, heap capture or instrumented-product
+GPU memory events for it, to a session file. The Frames tab shows its frames and
+the Elements tab its UI elements.
+There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
 
@@ -105,13 +106,48 @@ reuses its open viewer; different snapshots can be compared in separate windows.
 Tree labels include the XAML object's COM identity address or the Composition
 visual's IVisual interface address. Each tree has Expand all and Collapse all
 buttons; expanding includes descendants that have not yet been realized.
-Composition node details hide known default-valued properties. Non-default
-values, unknown properties and property errors remain visible; XAML details and
-the complete saved snapshot JSON are unchanged.
+XAML and Composition node details hide known default-valued properties, including
+the XAML identity render-transform matrix. Non-default values, unknown properties,
+computed XAML geometry and property errors remain visible. Theme-dependent brush
+colors are not assumed to be defaults. The complete saved snapshot JSON and
+comparisons retain all captured values, including changes back to defaults.
 History remains available across disconnect/reconnect for the current profiler
 session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
 No recording database, heap capture or MUX changes are required.
+
+Double-clicking a XAML node, in a snapshot's viewer or in a comparison, shows
+that element's history in the main window's Elements tab (see below).
+
+XAML properties include margin, horizontal/vertical alignment, layout slot,
+transformed bounds relative to the visual parent, render transform and origin,
+and backgrounds on controls, panels and borders. Parentless bounds use the visual
+root; bounds do not account for clipping or prove on-screen visibility.
+TextBlocks also include text and foreground. Brushes include type/opacity and,
+for solid brushes, `#AARRGGBB` color; other brush content is not captured.
+Standard render transforms include their numeric properties; transform groups
+include their combined `[m11, m12, m21, m22, offsetX, offsetY]` matrix.
+Text over 4,096 UTF-16 code units is recorded as an explicit property error, not
+silently truncated. This is a fixed SDK-property list, not arbitrary app getters,
+all dependency properties, bindings or resources. New properties appear in both
+the viewer and comparison; existing saved snapshots are not modified.
+
+Select **Compare snapshots...** in history to choose **Before** and **After**
+captures from the same process instance (PID and creation time). The comparison
+highlights additions, removals, reparenting, sibling reordering, changed properties,
+and affected ancestor subtrees in both trees. Select a node for before/after values
+and parent locations; turn off **Show only changed subtrees** for unchanged context.
+Selecting either tree also reveals its directly mapped counterparts in the other
+tree. The match picker identifies mappings from Before, After, or both captures.
+Unchanged matches and their ancestors remain visible while the changes-only filter
+is enabled; link icons distinguish these correlations from actual changes.
+The merged view uses the After hierarchy, retaining removed nodes at their old
+parents. Matching is best-effort by UI thread, XamlRoot address, canonical COM
+identity address and type, never capture-local node IDs. Address reuse cannot be
+distinguished from a surviving object; cross-root moves appear as removals/additions.
+All captured properties are compared, including default values, with semantic JSON
+equality. Insertions/removals alone do not mark surviving siblings as reordered.
+Visibility-property changes are shown, not inferred rendered visibility.
 
 Root discovery uses public `IVisualTreeService` callbacks on the target's UI
 threads; traversal uses `VisualTreeHelper`, `ElementCompositionPreview` and
@@ -242,7 +278,7 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element the events mention: address, type and `x:Name` (see below) |
@@ -328,6 +364,49 @@ The writer also records which frame each UI-thread event belongs to
   work, such as `ApplyTemplate/Start` or Microsoft-Windows-XAML-Diagnostics'
   `ElementAdded`, are `Other`.
 
+### Frames tab
+
+The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
+file once a second while connected: only the frames that changed since the last
+read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
+the tab reads the file again. **Open session file...** shows a saved file
+instead, in this tab and the Elements tab, until the next connection.
+
+- Each frame shows when it was drawn (the end of its drawing tick), how long
+  the drawing tick took (the bar is full at 50 ms; a warning icon marks more
+  than 16.7 ms) and its events per bucket. `*` marks a thread's latest frame.
+  Ticks that draw nothing keep the frame number, so after an idle period a
+  frame's first tick can be long before it was drawn; the frame's title shows
+  both.
+- Selecting a frame shows its events, 100 per page, all or one bucket. The
+  filter keeps events whose name or a string field contains the text; a number
+  (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the
+  selected event mentions UI elements, its details link to each one's history
+  in the Elements tab.
+- For a launch recorded from process start, the tab gives when the first ten
+  drawn frames of the first UI thread ended, from the process's creation;
+  otherwise from the start of the recording. A trimmed file no longer has them.
+
+### Elements tab
+
+The Elements tab (`Views\ElementsView.xaml`) lists the UI elements of the same
+session file, in the order they were first seen, with their type and name,
+address, when an event first and last mentioned them, and how many events do.
+The search box keeps elements whose type, name or address contains the text.
+Selecting an element shows its history: the events that mention it, 100 per
+page, each with the frame it belongs to. While connected, the tab reads the
+file once a second while it is shown, keeping the list's scroll position and
+selection.
+
+Snapshots don't record the runtime's element addresses, only each XAML
+object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
+`PeerAssociated`, `ElementEnteredTree`, `ChildAdded` and `ChildInserted` carry
+both an element's address and its WinRT object's, so
+`SessionFile.FindSnapshotElement` maps a snapshot node to the element that was
+at that address when the snapshot was taken. That needs the recording to have
+seen the element being created or added to the tree: a session attached to a
+running app finds only the elements added since.
+
 ### Recorded, from a trace file
 
 To record a trace, use `logman`. Start it before the app: the kernel writes the
@@ -358,9 +437,9 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
 & $cli objects session.sqlite --type Button    # UI elements, with first/last seen and event counts
-& $cli timeline session.sqlite --object <id>   # the events that mention one element (or --address 0x...)
+& $cli timeline session.sqlite --object <id>   # the events that mention one element, with their frames (or --address 0x...)
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
-& $cli frames session.sqlite --frame <id> --bucket Xaml   # one frame's events
+& $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
 
 ## Limitations

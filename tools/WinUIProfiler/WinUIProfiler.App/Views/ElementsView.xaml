@@ -1,0 +1,160 @@
+<UserControl
+    x:Class="WinUIProfiler.App.Views.ElementsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:WinUIProfiler.App.ViewModels">
+    <UserControl.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style x:Key="CompactItemStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </UserControl.Resources>
+    <Grid Padding="0,8,0,0" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button x:Uid="OpenSessionFile" Click="Open_Click" />
+            <TextBlock x:Name="FileSummary" Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        </Grid>
+        <InfoBar x:Name="ReadError" x:Uid="FramesReadError" Grid.Row="1" Severity="Error" IsClosable="False" />
+        <InfoBar x:Name="NotFound" Grid.Row="2" Severity="Informational" />
+        <Grid Grid.Row="3" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="584" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBox x:Name="SearchBox" x:Uid="ElementSearch" Margin="0,0,0,4" TextChanged="SearchBox_TextChanged" />
+                <Grid Grid.Row="1" Padding="12,0,24,0" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="112" />
+                        <ColumnDefinition Width="72" />
+                        <ColumnDefinition Width="72" />
+                        <ColumnDefinition Width="52" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Uid="ElementsHeaderElement" Style="{StaticResource HeaderTextStyle}" />
+                    <TextBlock Grid.Column="1" x:Uid="ElementsHeaderAddress" Style="{StaticResource HeaderTextStyle}" />
+                    <TextBlock Grid.Column="2" x:Uid="ElementsHeaderFirst" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
+                    <TextBlock Grid.Column="3" x:Uid="ElementsHeaderLast" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
+                    <TextBlock Grid.Column="4" x:Uid="ElementsHeaderEvents" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
+                </Grid>
+                <ListView x:Name="ElementList" x:Uid="ElementList" Grid.Row="2" SelectionMode="Single"
+                          ItemContainerStyle="{StaticResource CompactItemStyle}" SelectionChanged="ElementList_SelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ElementRow">
+                            <Grid ColumnSpacing="8" Margin="0,0,12,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="112" />
+                                    <ColumnDefinition Width="72" />
+                                    <ColumnDefinition Width="72" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           ToolTipService.ToolTip="{x:Bind FullType, Mode=OneWay}">
+                                    <Run Text="{x:Bind Type, Mode=OneWay}" />
+                                    <Run Text="{x:Bind Name, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </TextBlock>
+                                <TextBlock Grid.Column="1" Text="{x:Bind Address}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{x:Bind First, Mode=OneWay}" VerticalAlignment="Center" TextAlignment="Right" />
+                                <TextBlock Grid.Column="3" Text="{x:Bind Last, Mode=OneWay}" VerticalAlignment="Center" TextAlignment="Right" />
+                                <TextBlock Grid.Column="4" Text="{x:Bind Events, Mode=OneWay}" VerticalAlignment="Center" TextAlignment="Right" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+            <Grid Grid.Column="1" RowSpacing="8" Padding="16,0,0,0" BorderThickness="1,0,0,0"
+                  BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="ElementTitle" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                <Grid Grid.Row="1" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="240" />
+                    </Grid.ColumnDefinitions>
+                    <Grid RowSpacing="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid Padding="12,0" ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="72" />
+                                <ColumnDefinition Width="44" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Uid="HistoryHeaderTime" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
+                            <TextBlock Grid.Column="1" x:Uid="HistoryHeaderFrame" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
+                            <TextBlock Grid.Column="2" x:Uid="HistoryHeaderEvent" Style="{StaticResource HeaderTextStyle}" />
+                        </Grid>
+                        <ListView x:Name="HistoryList" x:Uid="HistoryList" Grid.Row="1" SelectionMode="Single"
+                                  ItemsSource="{x:Bind History}" ItemContainerStyle="{StaticResource CompactItemStyle}"
+                                  SelectionChanged="HistoryList_SelectionChanged">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ElementEventRow">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="72" />
+                                            <ColumnDefinition Width="44" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Time}" VerticalAlignment="Center" TextAlignment="Right" />
+                                        <TextBlock Grid.Column="1" Text="{x:Bind Frame}" VerticalAlignment="Center" TextAlignment="Right" />
+                                        <TextBlock Grid.Column="2" Text="{x:Bind Name}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{x:Bind Fields}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                    <Border Grid.Column="1" Padding="12,8" CornerRadius="4"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="EventDetails" x:Uid="EventDetails" IsTextSelectionEnabled="True" TextWrapping="Wrap"
+                                       Style="{ThemeResource CaptionTextBlockStyle}" />
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+                <Grid Grid.Row="2" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="PreviousButton" x:Uid="PreviousEvents" Grid.Column="1" Click="Previous_Click" IsEnabled="False" />
+                    <TextBlock x:Name="Position" Grid.Column="2" VerticalAlignment="Center" />
+                    <Button x:Name="NextButton" x:Uid="NextEvents" Grid.Column="3" Click="Next_Click" IsEnabled="False" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
