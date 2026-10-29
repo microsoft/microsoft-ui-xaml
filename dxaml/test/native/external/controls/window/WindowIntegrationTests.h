@@ -79,6 +79,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowPlacementMaximizedRestoreTracksNormalSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Width and Height keep the restored client size when switching directly from restored maximized placement to FullScreen or CompactOverlay.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(WindowPlacementRestoreMinimizedNormal)
             TEST_METHOD_PROPERTY(L"Description", L"restore-minimized-normal: Reopens a minimized normal window as normal, preserving its bounds.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
@@ -245,7 +250,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementPreserveLogicalSize)
-            TEST_METHOD_PROPERTY(L"Description", L"preserve-logical-size: Edits saved DPI to 192 and restores at 96 DPI without changing display settings; requires a 100% target display.")
+            TEST_METHOD_PROPERTY(L"Description", L"preserve-logical-size: Doubles the recorded DPI and restores at the target display's actual DPI without changing display settings.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -255,7 +260,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementRespectsSnappingSetting)
-            TEST_METHOD_PROPERTY(L"Description", L"Checks native snap-setting behavior on both placement paths and restores the original setting after testing.")
+            TEST_METHOD_PROPERTY(L"Description", L"Checks the available native path's snap-setting behavior and restores the original setting after testing.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
         
