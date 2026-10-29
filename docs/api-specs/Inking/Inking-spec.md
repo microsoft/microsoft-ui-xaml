@@ -206,6 +206,9 @@ presenter.StrokesCollected += (s, e) =>
 >
 > If `ActivateCustomDrying()` is not called, the `InkPresenter` uses the default drying behavior and
 > renders committed (dry) strokes automatically.
+>
+> When the app runs on the system compositor, `EndDry` removes the wet ink in the same frame that shows
+> the app's dry ink, as in UWP. On the lifted compositor the wet ink is removed one frame earlier.
 
 # API Pages
 

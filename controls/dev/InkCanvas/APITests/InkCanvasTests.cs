@@ -369,5 +369,77 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Repeated create/load/unload/collect cycles completed without crashing.");
         }
+
+        // EndDry without BeginDry, or a second EndDry for the same BeginDry (from any thread), throws E_ILLEGAL_METHOD_CALL
+        // synchronously, as in UWP. Back-to-back handoffs must not fail: a held EndDry is sent to the OS before the next BeginDry.
+        [TestMethod]
+        public void InkSynchronizerHandoffTest()
+        {
+            InkCanvas inkCanvas = null;
+            InkSynchronizer synchronizer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                inkCanvas = new InkCanvas { Width = 400, Height = 300 };
+                // UWP rule: activate custom drying before the canvas is first laid out.
+                synchronizer = inkCanvas.InkPresenter.ActivateCustomDrying();
+                Verify.IsNotNull(synchronizer, "ActivateCustomDrying should return a synchronizer.");
+                Content = inkCanvas;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var hr = 0;
+                try
+                {
+                    synchronizer.EndDry();
+                }
+                catch (Exception ex)
+                {
+                    hr = ex.HResult;
+                }
+                Verify.AreEqual(unchecked((int)0x8000000E), hr, "EndDry without BeginDry should throw E_ILLEGAL_METHOD_CALL synchronously.");
+
+                for (int i = 0; i < 3; i++)
+                {
+                    var strokes = synchronizer.BeginDry();
+                    Verify.IsNotNull(strokes, "BeginDry should return a (possibly empty) stroke collection.");
+                    synchronizer.EndDry();
+                }
+            });
+
+            // Let the deferred EndDry calls reach the OS, then do one more handoff.
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                synchronizer.BeginDry();
+                synchronizer.EndDry();
+            });
+
+            // A second EndDry for the same BeginDry, here from a worker thread, is rejected like in UWP.
+            var duplicateHr = global::System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    synchronizer.EndDry();
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    return ex.HResult;
+                }
+            }).Result;
+            Verify.AreEqual(unchecked((int)0x8000000E), duplicateHr, "A second EndDry should throw E_ILLEGAL_METHOD_CALL.");
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                synchronizer.BeginDry();
+                synchronizer.EndDry();
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
     }
 }

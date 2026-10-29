@@ -59,6 +59,15 @@ private:
     void ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept;
     void SubscribeToStrokeTelemetry() noexcept;
     void AttachToSystemCompositor();
+    bool StartAttachInkOnXamlDevice(winrt::Microsoft::UI::Composition::Compositor const& compositor, winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual);
+    void OnXamlDeviceBindCompleted(
+        uint32_t generation,
+        HRESULT bindResult,
+        winrt::com_ptr<IDCompositionVisual2> const& inkVisual,
+        winrt::Windows::UI::Composition::ContainerVisual const& systemParent,
+        winrt::Microsoft::UI::Composition::Compositor const& compositor,
+        winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual);
+    void AttachInkThroughSplice(winrt::Microsoft::UI::Composition::Compositor const& compositor, winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual);
     void AttachToLiftedCompositor();
     // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
     // it to the presenter. Called first by AttachToSystemCompositor/AttachToLiftedCompositor, before
@@ -102,6 +111,9 @@ private:
     // touching torn-down visual resources. Data ops (see QueueInkPresenterWorkItem) do NOT gate on
     // this. AttachToVisualLink clears it for the rapid Loaded/Unloaded re-attach case.
     std::atomic<bool> m_isDetached{ false };
+
+    // UI thread only. Bumped on every detach, so an asynchronous XAML-device bind result for an older attach is ignored.
+    uint32_t m_attachGeneration{ 0 };
 
     InkTelemetry::CanvasState m_telemetryState;
 
