@@ -87,3 +87,25 @@ Adversarial angles tried with no defect:
 - Rebuilt Foundation tests and the masters resource project.
 - VM, mock DComp: `*BorderTests::BackdropXcbb*` 5/5 passed with the master compares.
 - VM, mock DComp: `*BorderTests::*` 19/19 passed.
+
+## Round 4 (reviewing d4fa3f389)
+
+| Reviewer | Model | Kind | Result |
+|---|---|---|---|
+| r4-normal-a | gpt-6.1-sol | Normal | No significant issues |
+| r4-normal-b | claude-sonnet-5.5 | Normal | No significant issues |
+| r4-adv-a | gpt-6-astra | Adversarial | No significant issues |
+| r4-adv-b | grok-4.7 | Adversarial | No significant issues. Rechecked every file:line citation in the notes. No overlapping open PR. |
+
+No findings, so no code changes.
+
+Adversarial angles tried with no defect:
+- Apps that already worked. Non-backdrop brushes return unchanged. Win2D or effect brushes that only contain a backdrop don't implement `ICompositionBackdropBrush`, so they aren't wrapped.
+- Type changes and shared brushes. The existing `Source` is this visual's own mask or nine-grid brush, not one shared across elements.
+- Factory and compositor lifetime. The factory is per brush manager and is cleared with the compositor.
+- Effect graph. Source 0 is `Destination`, and transparent `SOURCE_OVER` is the identity.
+- Old-source lifetime. `SetSourceParameter` holds the previous backdrop, so address reuse can't skip an update.
+- Include path and forced PCH.
+- Tests. They can't pass without the fix, and the masters reject both `<BackdropBrush />` and `<ColorBrush>`.
+
+The review is done: 4 rounds, 16 reviews, 1 finding (fixed in round 3).
