@@ -1285,6 +1285,47 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection in Single mode fails with UIA_E_INVALIDOPERATION when another row is selected, and leaves the selection alone (#12448).")]
+        public void VerifyRowPeerAddToSelectionFailsWhenAnotherRowIsSelectedInSingleMode()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = RequireSelectionItemProvider(tableView, 1);
+                var second = RequireSelectionItemProvider(tableView, 2);
+                if (first == null || second == null)
+                {
+                    return;
+                }
+
+                // Empty selection: AddToSelection selects the row.
+                first.AddToSelection();
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "AddToSelection() with nothing selected must select the row.");
+
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => second.AddToSelection(),
+                    "AddToSelection() on another row of a single-select table must fail.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "A failed AddToSelection() must leave the selection on the first row.");
+                Verify.IsFalse(second.IsSelected, "The second row must not become selected.");
+                Verify.AreEqual(0, selectionChangedCount, "A failed AddToSelection() must not raise SelectionChanged.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies RemoveFromSelection on a row that is not the current selection is a no-op.")]
         public void VerifyRowPeerRemoveFromSelectionOnlyClearsWhenItIsTheSelection()
         {
