@@ -7,6 +7,8 @@
 
 #include <unordered_set>
 
+#include <winrt/Microsoft.UI.Xaml.Data.h>
+
 namespace
 {
     // v1 wording, prefixed with the type name. hresult_invalid_argument surfaces as
@@ -605,8 +607,109 @@ bool SourceTable::HasHierarchy() const noexcept
 
 void SourceTable::SetLiveShaping(bool enabled)
 {
-    // Milestone 6 subscribes and unsubscribes the records here; until then the flag is only stored.
+    if (m_liveShapingEnabled == enabled)
+    {
+        return;
+    }
+
     m_liveShapingEnabled = enabled;
+    for (auto const& record : m_records)
+    {
+        if (enabled)
+        {
+            SubscribeRecordPropertyChanged(record);
+        }
+        else
+        {
+            UnsubscribeRecordPropertyChanged(record.get());
+        }
+    }
+}
+
+void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record)
+{
+    // NotObservable stays cached across toggles: an item is probed once.
+    if (record->Watch != WatchState::Unchecked)
+    {
+        return;
+    }
+
+    auto const notifier = record->Item.get().try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>();
+    if (!notifier)
+    {
+        record->Watch = WatchState::NotObservable;
+        return;
+    }
+
+    record->PropertyChangedToken = notifier.PropertyChanged(
+        [weakThis = weak_from_this(), weakRecord = SourceRecordWeakPtr{ record }, binding = m_binding](
+            auto const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+        {
+            auto const name = args.PropertyName();
+            DWORD const threadId = binding->threadId.load(std::memory_order_acquire);
+            if (threadId != 0 && threadId != ::GetCurrentThreadId())
+            {
+                try
+                {
+                    (void)binding->queue.TryEnqueue([weakThis, weakRecord, name]()
+                    {
+                        if (auto const self = weakThis.lock())
+                        {
+                            self->OnRecordPropertyChanged(weakRecord, name);
+                        }
+                    });
+                }
+                catch (...)
+                {
+                    // A failed post is ignored.
+                }
+                return;
+            }
+
+            if (auto const self = weakThis.lock())
+            {
+                self->OnRecordPropertyChanged(weakRecord, name);
+            }
+        });
+    record->Watch = WatchState::Subscribed;
+}
+
+void SourceTable::UnsubscribeRecordPropertyChanged(SourceRecord* record) noexcept
+{
+    if (record->Watch != WatchState::Subscribed)
+    {
+        return;
+    }
+
+    auto const token = std::exchange(record->PropertyChangedToken, {});
+    record->Watch = WatchState::Unchecked;
+    try
+    {
+        if (auto const notifier = record->Item.safe_get().try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
+        {
+            notifier.PropertyChanged(token);
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
+void SourceTable::OnRecordPropertyChanged(SourceRecordWeakPtr const& weakRecord, winrt::hstring const& propertyName)
+{
+    if (IsDetached())
+    {
+        return;
+    }
+
+    auto const record = weakRecord.lock();
+    if (!record || !m_itemChanged)
+    {
+        // m_itemChanged is null until Milestone 6 (ShapingManager::OnItemChanged).
+        return;
+    }
+
+    m_itemChanged(record.get(), propertyName);
 }
 
 bool SourceTable::IsLiveShaping() const noexcept
@@ -673,7 +776,12 @@ std::vector<SourceRecordPtr> const& SourceTable::RootRecords() const noexcept
 
 SourceRecordPtr SourceTable::CreateRecord(winrt::Windows::Foundation::IInspectable const& item)
 {
-    return std::make_shared<SourceRecord>(m_trackerOwner, item);
+    auto record = std::make_shared<SourceRecord>(m_trackerOwner, item);
+    if (m_liveShapingEnabled)
+    {
+        SubscribeRecordPropertyChanged(record);
+    }
+    return record;
 }
 
 void SourceTable::ReleaseRecord(SourceRecord* record) noexcept
