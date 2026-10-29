@@ -85,7 +85,7 @@
             Margin=-0,-4,4,2
             MinWidth=44
             Name=NavigationViewBackButton
-            Padding=4,6,0,0
+            Padding=11,5,11,6
             RenderSize=44,42
             Visibility=Visible
             Width=40
@@ -164,7 +164,7 @@
             Height=36
             Margin=4,2,4,2
             Name=NavigationViewCloseButton
-            Padding=0,0,0,0
+            Padding=11,5,11,6
             RenderSize=0,0
             Visibility=Collapsed
             Width=40
