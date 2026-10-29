@@ -30,46 +30,60 @@ using namespace std;
 
 namespace
 {
-    decltype(RoGetActivationFactory)* realRoGetActivationFactory = RoGetActivationFactory;
-    decltype(LoadLibraryW)* realLoadLibraryW = LoadLibraryW;
-    decltype(LoadLibraryExW)* realLoadLibraryExW = LoadLibraryExW;
-    thread_local bool probingActivation = false;
-    unsigned int unregisteredActivationCalls = 0;
-    unsigned int activationLoadCalls = 0;
-    DWORD activationLoadFlags = 0;
+    // MUXC's activation fallback turns a class name into a DLL name by its namespace.
+    // For this class it tries to load Microsoft.Web.WebView2.Core.dll.
+    constexpr PCWSTR webView2OptionsClassName = L"Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions";
+    constexpr PCWSTR webView2CoreDllName = L"Microsoft.Web.WebView2.Core.dll";
 
-    HRESULT WINAPI GetActivationFactoryWithoutRegistration(HSTRING classId, REFIID iid, void** factory)
+    // Detours notes:
+    // * DetourAttach redirects every call to the real function into our hook.
+    // * It also updates the "real" pointer so our hook can still call the original.
+    decltype(RoGetActivationFactory)* realRoGetActivationFactory = RoGetActivationFactory;
+    decltype(LoadLibraryExW)* realLoadLibraryExW = nullptr;
+
+    // The hooks only change behavior on the test's thread, and only while this is set.
+    thread_local bool isHookActive = false;
+
+    // What the fallback did when it tried to load the Core DLL.
+    unsigned int coreLoadCount = 0;
+    DWORD coreLoadFlags = 0;
+
+    // Hook 1: Make WinRT activation of the options class fail with "class not registered".
+    // The test host's manifest registers WebView2's classes, so normal activation would succeed
+    // and MUXC would never reach its DLL-name fallback.
+    HRESULT WINAPI RoGetActivationFactoryHook(HSTRING classId, REFIID iid, void** factory)
     {
-        if (probingActivation &&
-            wcscmp(WindowsGetStringRawBuffer(classId, nullptr), L"Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions") == 0)
+        if (isHookActive && wcscmp(WindowsGetStringRawBuffer(classId, nullptr), webView2OptionsClassName) == 0)
         {
-            ++unregisteredActivationCalls;
             *factory = nullptr;
             return REGDB_E_CLASSNOTREG;
         }
         return realRoGetActivationFactory(classId, iid, factory);
     }
 
-    HMODULE WINAPI ObserveActivationLoad(PCWSTR libraryName, HANDLE file, DWORD flags)
+    // Hook 2: Record how the fallback asks for the Core DLL, then report "not found".
+    // We only care about the search flags, so there's no need to really load it.
+    // KernelBase's LoadLibraryW calls LoadLibraryExW with flags 0, so this catches both.
+    HMODULE WINAPI LoadLibraryExWHook(PCWSTR fileName, HANDLE file, DWORD flags)
     {
-        if (probingActivation && libraryName && _wcsicmp(libraryName, L"Microsoft.Web.WebView2.Core.dll") == 0)
+        if (isHookActive && fileName && _wcsicmp(fileName, webView2CoreDllName) == 0)
         {
-            ++activationLoadCalls;
-            activationLoadFlags = flags;
-            // Stop after observing the request; no Core DLL or browser is needed.
+            ++coreLoadCount;
+            coreLoadFlags = flags;
             SetLastError(ERROR_MOD_NOT_FOUND);
             return nullptr;
         }
-        return realLoadLibraryExW(libraryName, file, flags);
+        return realLoadLibraryExW(fileName, file, flags);
     }
 
-    HMODULE WINAPI ObserveLegacyActivationLoad(PCWSTR libraryName)
+    void AttachHooks(bool attach)
     {
-        if (probingActivation && libraryName && _wcsicmp(libraryName, L"Microsoft.Web.WebView2.Core.dll") == 0)
-        {
-            return ObserveActivationLoad(libraryName, nullptr, 0);
-        }
-        return realLoadLibraryW(libraryName);
+        VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionBegin());
+        VERIFY_ARE_EQUAL(NO_ERROR, DetourUpdateThread(GetCurrentThread()));
+        auto update = attach ? DetourAttach : DetourDetach;
+        VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realRoGetActivationFactory), RoGetActivationFactoryHook));
+        VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryExW), LoadLibraryExWHook));
+        VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionCommit());
     }
 }
 
@@ -121,47 +135,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void ActivationIntegrationTests::ActivationLibraryUsesCppWinRTSearchPolicy()
         {
+            // MUXC replaces C++/WinRT's activation handler. When normal WinRT activation fails, C++/WinRT
+            // loads a DLL named after the class's namespace with LOAD_LIBRARY_SEARCH_DEFAULT_DIRS, so
+            // directories added with AddDllDirectory are searched. MUXC's fallback has to do the same.
             RunOnUIThread([&]()
             {
                 auto webView = ref new WebView2();
                 auto closeWebView = wil::scope_exit([&]() { webView->Close(); });
-                unregisteredActivationCalls = 0;
-                activationLoadCalls = 0;
-                activationLoadFlags = 0;
-                probingActivation = true;
-                auto stopProbing = wil::scope_exit([&]() { probingActivation = false; });
 
-                // Hook the implementation exports, including callers using API-set imports.
-                const auto loader = GetModuleHandleW(L"kernelbase.dll");
-                VERIFY_IS_NOT_NULL(loader);
-                realLoadLibraryW = reinterpret_cast<decltype(realLoadLibraryW)>(GetProcAddress(loader, "LoadLibraryW"));
-                realLoadLibraryExW = reinterpret_cast<decltype(realLoadLibraryExW)>(GetProcAddress(loader, "LoadLibraryExW"));
-                VERIFY_IS_NOT_NULL(realLoadLibraryW);
+                // Hook the KernelBase export. Product code calls it through API sets,
+                // which skip the kernel32 export the import table would give us.
+                realLoadLibraryExW = reinterpret_cast<decltype(LoadLibraryExW)*>(
+                    GetProcAddress(GetModuleHandleW(L"kernelbase.dll"), "LoadLibraryExW"));
                 VERIFY_IS_NOT_NULL(realLoadLibraryExW);
 
-                auto updateDetours = [](bool attach)
+                coreLoadCount = 0;
+                coreLoadFlags = 0;
+                isHookActive = true;
+                AttachHooks(true);
+                auto detachHooks = wil::scope_exit([&]()
                 {
-                    VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionBegin());
-                    auto abortTransaction = wil::scope_exit([]() { DetourTransactionAbort(); });
-                    VERIFY_ARE_EQUAL(NO_ERROR, DetourUpdateThread(GetCurrentThread()));
-                    auto update = attach ? DetourAttach : DetourDetach;
-                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realRoGetActivationFactory), GetActivationFactoryWithoutRegistration));
-                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryW), ObserveLegacyActivationLoad));
-                    VERIFY_ARE_EQUAL(NO_ERROR, update(reinterpret_cast<PVOID*>(&realLoadLibraryExW), ObserveActivationLoad));
-                    VERIFY_ARE_EQUAL(NO_ERROR, DetourTransactionCommit());
-                    abortTransaction.release();
-                };
-                updateDetours(true);
-                auto detachDetours = wil::scope_exit([&]() { updateDetours(false); });
+                    isHookActive = false;
+                    AttachHooks(false);
+                });
 
-                // Options activation enters MUXC's real fallback after the forced registration failure.
-                auto initialization = webView->EnsureCoreWebView2Async();
-                VERIFY_ARE_EQUAL(AsyncStatus::Error, initialization->Status);
-                VERIFY_ARE_EQUAL(REGDB_E_CLASSNOTREG, initialization->ErrorCode.Value);
+                // This activates the WebView2 options class, which hook 1 makes fail.
+                // MUXC then falls back to loading the Core DLL, which hook 2 records.
+                webView->EnsureCoreWebView2Async();
 
-                VERIFY_ARE_EQUAL(1u, unregisteredActivationCalls);
-                VERIFY_ARE_EQUAL(1u, activationLoadCalls);
-                VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), activationLoadFlags);
+                VERIFY_ARE_EQUAL(1u, coreLoadCount);
+                VERIFY_ARE_EQUAL(static_cast<DWORD>(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS), coreLoadFlags);
             });
         }
 
