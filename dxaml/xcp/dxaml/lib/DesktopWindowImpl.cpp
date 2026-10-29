@@ -548,8 +548,8 @@ bool DesktopWindowImpl::TryApplySavedWindowPlacement()
         return false;
     }
 
-    // Saved placement wins over fallback dimensions. Remove them before native callbacks,
-    // so a reentrant app size request is not discarded when TryRestore returns.
+    // Saved placement overrides Width/Height set before activation.
+    // Clear the pending dimensions before restoring: event handlers may set new values that we must keep.
     const auto width = m_pendingClientWidthDips;
     const auto height = m_pendingClientHeightDips;
     m_pendingClientWidthDips.reset();
@@ -565,6 +565,31 @@ bool DesktopWindowImpl::TryApplySavedWindowPlacement()
         if (!m_pendingClientHeightDips)
         {
             m_pendingClientHeightDips = height;
+        }
+    }
+
+    if (applied && !m_bIsClosed)
+    {
+        // Restoring a window as maximized can skip the resize notification that
+        // updates our cached unmaximized size. Update the cache now so Width and Height
+        // stay correct if the app switches to FullScreen or CompactOverlay.
+        bool useRestoredClientSize = false;
+        wf::Size restoredClientSize{};
+        SIZE chromePx{};
+        if (SUCCEEDED(TryGetWin32RestoredClientSizeInDips(&useRestoredClientSize, &restoredClientSize)) &&
+            useRestoredClientSize &&
+            SUCCEEDED(GetSavedRestoreChromeSizeInPixels(&chromePx)))
+        {
+            // The window is maximized/minimized. Use Windows' saved normal bounds, not its live size.
+            const float scale = GetWindowScale();
+            SetTrackedRestoredSize(restoredClientSize,
+                wf::Size{ static_cast<float>(chromePx.cx) / scale, static_cast<float>(chromePx.cy) / scale });
+        }
+        else
+        {
+            // Measure the live client area and title bar/borders if the window is normal.
+            // This helper deliberately ignores maximized/minimized windows.
+            TrackLastRestoredClientSize();
         }
     }
 

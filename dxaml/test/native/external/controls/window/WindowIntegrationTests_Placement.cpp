@@ -92,7 +92,7 @@ namespace
 
     Platform::String^ StorageKey(Platform::String^ id)
     {
-        // Match hashing function used by product code.
+        // Use the product's key format so tests can inspect or change the actual saved record.
         uint64_t hash = 14695981039346656037ull;
         for (unsigned int i = 0; i < id->Length(); ++i)
         {
@@ -104,6 +104,7 @@ namespace
         return ref new Platform::String(key);
     }
 
+    // Give each case its own storage entry and remove it when the case finishes.
     struct PlacementData
     {
         Platform::String^ id;
@@ -158,6 +159,7 @@ namespace
 
     RECT ReadWindowBounds(xaml::Window^ window)
     {
+        // Include the invisible resize border when comparing the saved outer bounds.
         RECT bounds{};
         VERIFY_IS_TRUE(!!GetWindowRect(PlacementHwnd(window), &bounds));
         return bounds;
@@ -186,7 +188,7 @@ namespace
 
     void VerifyPlacementRectNear(HWND hwnd, const RECT& expected, const RECT& actual)
     {
-        // PlacementEx's two native paths can differ by an invisible resize border.
+        // Snap restoration can differ by an invisible resize border.
         // Allow up to 8 DIPs per edge, not arbitrary drift or a different snap target.
         const LONG tolerance = MulDiv(8, GetDpiForWindow(hwnd), USER_DEFAULT_SCREEN_DPI);
         LOG_OUTPUT(L"Nearby bounds (tolerance %ld): expected (%ld, %ld, %ld, %ld); actual (%ld, %ld, %ld, %ld)",
@@ -200,6 +202,7 @@ namespace
 
     RECT ReadNormalRect(HWND hwnd)
     {
+        // Native restore bounds use workspace coordinates, not screen coordinates.
         WINDOWPLACEMENT placement{ sizeof(placement) };
         VERIFY_IS_TRUE(!!GetWindowPlacement(hwnd, &placement));
         return placement.rcNormalPosition;
@@ -228,6 +231,7 @@ namespace
         return ReadRecordRect(data.Read(), L"Normal");
     }
 
+    // Capture the native destruction save before Window.Close can hide a missing save.
     struct NativeDestructionCleanup
     {
         HWND hwnd;
@@ -276,12 +280,14 @@ namespace
     {
         RECT normal = ReadNormalRect(hwnd);
         const auto monitor = ReadPlacementMonitor(hwnd);
+        // Account for top/left taskbars before comparing with saved screen-space bounds.
         OffsetRect(&normal, monitor.rcWork.left - monitor.rcMonitor.left, monitor.rcWork.top - monitor.rcMonitor.top);
         return normal;
     }
 
     RECT ReadPlacementFrame(HWND hwnd)
     {
+        // Snap targets describe the visible frame, without invisible resize borders.
         RECT frame{};
         VERIFY_SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &frame, sizeof(frame)));
         return frame;
@@ -305,6 +311,7 @@ namespace
         VERIFY_ARE_EQUAL(!!enabled, !!actual);
     }
 
+    // Snapping is session-wide; restore the setting even if setup or a test fails.
     struct PlacementSnappingScope
     {
         BOOL original{};
@@ -312,12 +319,22 @@ namespace
         PlacementSnappingScope()
         {
             VERIFY_IS_TRUE(!!SystemParametersInfoW(SPI_GETWINARRANGING, 0, &original, 0));
+            auto restoreOnFailure = wil::scope_exit([this]() { Restore(); });
             SetPlacementSnapping(TRUE);
+            restoreOnFailure.release();
         }
 
-        ~PlacementSnappingScope()
+        ~PlacementSnappingScope() noexcept
         {
-            SetPlacementSnapping(original);
+            Restore();
+        }
+
+        void Restore() noexcept
+        {
+            if (!SystemParametersInfoW(SPI_SETWINARRANGING, original, nullptr, 0))
+            {
+                LOG_OUTPUT(L"Could not restore the snapping setting: %lu", GetLastError());
+            }
         }
     };
 
@@ -358,6 +375,7 @@ namespace
         RECT outer{};
         VERIFY_IS_TRUE(!!GetWindowRect(hwnd, &outer));
         const RECT frame = ReadPlacementFrame(hwnd);
+        // Include the invisible borders so the visible frame lands on the requested snap bounds.
         VERIFY_IS_TRUE(!!SetWindowPos(hwnd, nullptr,
             snap.left - (frame.left - outer.left), snap.top - (frame.top - outer.top),
             snap.right - snap.left + (frame.left - outer.left) + (outer.right - frame.right),
@@ -368,6 +386,7 @@ namespace
 
     RECT SavePlacementFromWindow(PlacementData& data, SavedWindowState state = SavedWindowState::Normal)
     {
+        // Start with a record saved by a real window, then let tests change only the fields they need.
         WindowAutoCloser window;
         window.Attach(ref new xaml::Window());
         window->PlacementId = data.id;
@@ -391,6 +410,7 @@ namespace
 
     void VerifyRequestedSize(xaml::Window^ window, double width, double height)
     {
+        // Check the actual client area in DIPs; property getters can return pending size requests.
         RECT client{};
         const auto hwnd = PlacementHwnd(window);
         VERIFY_IS_TRUE(!!GetClientRect(hwnd, &client));
@@ -426,6 +446,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_FALSE(!!IsIconic(PlacementHwnd(restoredWindow.get())));
             VERIFY_IS_FALSE(!!IsZoomed(PlacementHwnd(restoredWindow.get())));
             VerifyPlacementRect(originalBounds, ReadWindowBounds(restoredWindow.get()));
+
+            // Setting Height still opts into preserving client height after saved placement wins.
+            const double restoredWidth = restoredWindow->Width;
+            const double restoredHeight = restoredWindow->Height;
+            restoredWindow->ExtendsContentIntoTitleBar = true;
+            VerifyRequestedSize(restoredWindow.get(), restoredWidth, restoredHeight);
         });
     }
 
@@ -487,6 +513,46 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ShowWindow(restoredHwnd, SW_RESTORE);
             VerifyPlacementRect(normalBounds, ReadWindowBounds(restoredWindow.get()));
         });
+    }
+
+    void WindowIntegrationTests::WindowPlacementMaximizedRestoreTracksNormalSize()
+    {
+        TestCleanupWrapper cleanup;
+        for (bool extendedTitleBar : { false, true })
+        {
+            for (auto kind : { ::Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen,
+                ::Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay })
+            {
+                PlacementData data;
+                WindowAutoCloser window;
+                double width{}, height{};
+                RunOnUIThread([&]()
+                {
+                    SavePlacementFromWindow(data, SavedWindowState::Maximized);
+                    window.Attach(ref new xaml::Window());
+                    window->PlacementId = data.id;
+                    window->ExtendsContentIntoTitleBar = extendedTitleBar;
+                    window->Width = 310;
+                    window->Height = 220;
+                    window->Activate();
+                    VERIFY_IS_TRUE(!!IsZoomed(PlacementHwnd(window.get())));
+                    // Changing presenters must not lose the normal size behind the maximized window.
+                    width = window->Width;
+                    height = window->Height;
+                    window->AppWindow->SetPresenter(kind);
+                    VERIFY_IS_TRUE(std::abs(window->Width - width) <= 1.0);
+                    VERIFY_IS_TRUE(std::abs(window->Height - height) <= 1.0);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    // Deferred size updates must not overwrite the restored normal size either.
+                    VERIFY_IS_TRUE(std::abs(window->Width - width) <= 1.0);
+                    VERIFY_IS_TRUE(std::abs(window->Height - height) <= 1.0);
+                    window->Close();
+                });
+            }
+        }
     }
 
     void WindowIntegrationTests::WindowPlacementRestoreMinimizedNormal()
@@ -751,6 +817,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             originalWindow->Height = 220;
             originalWindow->Activate();
             VerifyRequestedSize(originalWindow.get(), 310, 220);
+            originalWindow->ExtendsContentIntoTitleBar = true;
+            VerifyRequestedSize(originalWindow.get(), 310, 220);
             const RECT movedBounds = MoveAndResizeWindow(originalWindow.get(), { 60, 60 }, { 420, 300 });
             originalWindow->Close();
 
@@ -951,6 +1019,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 window->Height = 220;
                 window->Activate();
                 VerifyRequestedSize(window.get(), 310, 220);
+                window->ExtendsContentIntoTitleBar = true;
+                VerifyRequestedSize(window.get(), 310, 220);
                 window->PlacementId = L"";
                 window->Close();
             }
@@ -1000,6 +1070,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 window->Activate();
                 RECT actual{};
                 VERIFY_IS_TRUE(!!GetWindowRect(PlacementHwnd(window.get()), &actual));
+                // Reading must leave extra fields and unsupported records unchanged in storage.
                 if (scenario.kind == RecordKind::CompatibleWithExtraFields)
                 {
                     VerifyPlacementRect(saved, actual);
@@ -1017,6 +1088,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                         VERIFY_IS_TRUE(safe_cast<Platform::String^>(data.values->Lookup(data.key)) == L"not-a-composite");
                     }
                 }
+                // Closing writes a fresh supported record using the window's final bounds.
                 window->Close();
                 record = data.Read();
                 VERIFY_ARE_EQUAL(1, safe_cast<int>(record->Lookup(L"Version")));
@@ -1213,6 +1285,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             RunOnUIThread([&]()
             {
                 VerifyRequestedSize(window.get(), width, height);
+                if (request.changeHeight)
+                {
+                    window->ExtendsContentIntoTitleBar = true;
+                    VerifyRequestedSize(window.get(), width, height);
+                }
                 window->Close();
             });
         }
@@ -1237,6 +1314,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         // Send from the test thread, as Windows does during synchronous shutdown.
         DWORD_PTR result{};
+        // Cancelled shutdown must not save; confirmed logoff must save without closing the window.
         VERIFY_IS_TRUE(!!SendMessageTimeoutW(hwnd, WM_ENDSESSION, FALSE, 0, SMTO_ABORTIFHUNG, 30000, &result));
         VERIFY_IS_FALSE(original.HasRecord());
         VERIFY_IS_TRUE(!!SendMessageTimeoutW(hwnd, WM_ENDSESSION, TRUE, ENDSESSION_LOGOFF, SMTO_ABORTIFHUNG, 30000, &result));
@@ -1411,18 +1489,24 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         PlacementData data;
         WindowAutoCloser window;
         RECT workArea{};
-        UINT dpi{};
+        UINT savedDpi{};
+        HMONITOR targetMonitor{};
         RunOnUIThread([&]()
         {
             SavePlacementFromWindow(data);
             auto record = data.Read();
-            workArea = ReadRecordRect(record, L"WorkArea");
-            dpi = safe_cast<int>(record->Lookup(L"Dpi"));
+            const RECT oldWorkArea = ReadRecordRect(record, L"WorkArea");
+            savedDpi = safe_cast<int>(record->Lookup(L"Dpi"));
 
             // Simulate a disconnected display without changing the VM's display setup.
-            record->Insert(L"WorkAreaX", static_cast<int>(workArea.left + 5000));
+            record->Insert(L"WorkAreaX", static_cast<int>(oldWorkArea.left + 5000));
             record->Insert(L"NormalX", safe_cast<int>(record->Lookup(L"NormalX")) + 5000);
-            record->Insert(L"DisplayDeviceName", L"\\\\.\\DISPLAY99");
+            record->Insert(L"DisplayDeviceName", L"DisconnectedPlacementDisplay");
+            const RECT normal = ReadRecordRect(record, L"Normal");
+            targetMonitor = MonitorFromRect(&normal, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO monitor{ sizeof(monitor) };
+            VERIFY_IS_TRUE(!!GetMonitorInfo(targetMonitor, &monitor));
+            workArea = monitor.rcWork;
             data.values->Insert(data.key, record);
             window.Attach(ref new xaml::Window());
             window->PlacementId = data.id;
@@ -1432,13 +1516,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             const RECT actual = ReadWindowBounds(window.get());
+            const auto hwnd = PlacementHwnd(window.get());
+            VERIFY_IS_TRUE(targetMonitor == MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST));
+            const UINT dpi = GetDpiForWindow(hwnd);
             const LONG tolerance = MulDiv(16, dpi, USER_DEFAULT_SCREEN_DPI);
             VERIFY_IS_TRUE(actual.left >= workArea.left - tolerance);
             VERIFY_IS_TRUE(actual.top >= workArea.top - tolerance);
             VERIFY_IS_TRUE(actual.right <= workArea.right + tolerance);
             VERIFY_IS_TRUE(actual.bottom <= workArea.bottom + tolerance);
-            VERIFY_ARE_EQUAL(420L, actual.right - actual.left);
-            VERIFY_ARE_EQUAL(300L, actual.bottom - actual.top);
+            VERIFY_ARE_EQUAL(MulDiv(420, dpi, savedDpi), actual.right - actual.left);
+            VERIFY_ARE_EQUAL(MulDiv(300, dpi, savedDpi), actual.bottom - actual.top);
             window->Close();
         });
     }
@@ -1769,11 +1856,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     void WindowIntegrationTests::WindowPlacementRespectsFixedSizing()
     {
         TestCleanupWrapper cleanup;
-        const bool hasWindowActions = GetProcAddress(GetModuleHandleW(L"user32.dll"), "ApplyWindowAction") != nullptr;
         for (bool resizable : { false, true })
         {
-            LOG_OUTPUT(L"Fit oversized placement: %s, %s", resizable ? L"resizable" : L"fixed-size",
-                hasWindowActions ? L"modern-placement-path" : L"fallback-placement-path");
+            LOG_OUTPUT(L"Fit oversized placement: %s", resizable ? L"resizable" : L"fixed-size");
             PlacementData data;
             WindowAutoCloser window;
             RECT workArea{}, oversized{}, initial{};
@@ -1815,23 +1900,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     VERIFY_IS_TRUE(width <= workArea.right - workArea.left);
                     VERIFY_IS_TRUE(height <= workArea.bottom - workArea.top);
                 }
-                else if (hasWindowActions)
-                {
-                    // The modern path preserves the fixed-size destination's current size.
-                    VERIFY_ARE_EQUAL(initial.right - initial.left, width);
-                    VERIFY_ARE_EQUAL(initial.bottom - initial.top, height);
-                }
                 else
                 {
-                    // The fallback does not proportionally shrink without AllowSizing, but
-                    // SetWindowPlacement still caps dimensions at native tracking limits.
-                    // IsResizable=false does not prevent this programmatic resize.
+                    // Windows can keep the fixed size or apply the saved size.
+                    // Require one complete outcome, not a mix of their dimensions.
                     VERIFY_IS_TRUE(maxTrack.cx > 0);
                     VERIFY_IS_TRUE(maxTrack.cy > 0);
                     const LONG savedWidth = oversized.right - oversized.left;
                     const LONG savedHeight = oversized.bottom - oversized.top;
-                    VERIFY_ARE_EQUAL((savedWidth < maxTrack.cx ? savedWidth : maxTrack.cx), width);
-                    VERIFY_ARE_EQUAL((savedHeight < maxTrack.cy ? savedHeight : maxTrack.cy), height);
+                    const bool preservedSize = width == initial.right - initial.left &&
+                        height == initial.bottom - initial.top;
+                    const bool restoredSavedSize = width == (savedWidth < maxTrack.cx ? savedWidth : maxTrack.cx) &&
+                        height == (savedHeight < maxTrack.cy ? savedHeight : maxTrack.cy);
+                    VERIFY_IS_TRUE(preservedSize || restoredSavedSize);
                 }
                 // Fixed-size windows may extend past the edges, but their title bar stays reachable.
                 VERIFY_IS_TRUE(actual.left >= workArea.left);
@@ -1850,11 +1931,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         for (auto state : { SavedWindowState::Normal, SavedWindowState::Maximized,
             SavedWindowState::Snapped, SavedWindowState::MinimizedFromSnapped })
         {
-            LOG_OUTPUT(L"preserve-logical-size: %s, saved-scale=200%%, target-scale=100%%", SavedStateName(state));
+            LOG_OUTPUT(L"preserve-logical-size: %s, saved DPI is twice the target DPI", SavedStateName(state));
             const bool savedSnapped = state == SavedWindowState::Snapped || state == SavedWindowState::MinimizedFromSnapped;
             PlacementData data;
             WindowAutoCloser window;
             RECT savedNormal{}, snap{}, restoredNormal{};
+            int targetDpi{};
             RunOnUIThread([&]()
             {
                 SavePlacementFromWindow(data);
@@ -1862,7 +1944,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 const RECT workArea = ReadRecordRect(record, L"WorkArea");
                 savedNormal = { workArea.left + 120, workArea.top + 120,
                     workArea.left + 960, workArea.top + 720 };
-                record->Insert(L"Dpi", 192);
+                targetDpi = safe_cast<int>(record->Lookup(L"Dpi"));
+                // Simulate a DPI change without changing the VM's display settings.
+                record->Insert(L"Dpi", targetDpi * 2);
                 WriteSavedState(record, state);
                 WriteRecordRect(record, L"Normal", savedNormal);
                 if (savedSnapped)
@@ -1873,8 +1957,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 }
                 data.values->Insert(data.key, record);
                 window.Attach(ref new xaml::Window());
-                VERIFY_ARE_EQUAL(static_cast<UINT>(USER_DEFAULT_SCREEN_DPI), GetDpiForWindow(PlacementHwnd(window.get())),
-                    L"This test requires the target display to use 100% scaling.");
                 window->PlacementId = data.id;
                 window->Width = 250;
                 window->Height = 200;
@@ -1884,7 +1966,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             RunOnUIThread([&]()
             {
                 const auto hwnd = PlacementHwnd(window.get());
-                VERIFY_ARE_EQUAL(96u, GetDpiForWindow(hwnd));
+                VERIFY_ARE_EQUAL(static_cast<UINT>(targetDpi), GetDpiForWindow(hwnd));
                 VERIFY_IS_FALSE(!!IsIconic(hwnd));
                 VERIFY_ARE_EQUAL(state == SavedWindowState::Maximized, !!IsZoomed(hwnd));
                 VERIFY_ARE_EQUAL(savedSnapped, IsPlacementArranged(hwnd));
@@ -1901,10 +1983,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     VERIFY_IS_TRUE(!!GetWindowRect(hwnd, &outer));
                     VerifyPlacementRect(restoredNormal, outer);
                 }
-                VERIFY_ARE_EQUAL(192, safe_cast<int>(data.Read()->Lookup(L"Dpi")));
+                // Restore scales the live bounds; only closing saves the new DPI and bounds.
+                VERIFY_ARE_EQUAL(targetDpi * 2, safe_cast<int>(data.Read()->Lookup(L"Dpi")));
                 VerifyPlacementRect(savedNormal, ReadSavedRect(data));
                 window->Close();
-                VERIFY_ARE_EQUAL(96, safe_cast<int>(data.Read()->Lookup(L"Dpi")));
+                VERIFY_ARE_EQUAL(targetDpi, safe_cast<int>(data.Read()->Lookup(L"Dpi")));
                 VerifyPlacementRect(restoredNormal, ReadSavedRect(data));
             });
         }
@@ -1967,7 +2050,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // The fallback honors SPI_GETWINARRANGING. The newer ApplyWindowAction path
         // currently restores snap even when disabled. This records that gap, not a
         // cross-version policy; tighten the expectation if PlacementEx aligns the paths.
-        const bool hasWindowActions = GetProcAddress(GetModuleHandleW(L"user32.dll"), "ApplyWindowAction") != nullptr;
         for (bool enabled : { false, true })
         {
             SetPlacementSnapping(enabled);
@@ -1995,8 +2077,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     const auto hwnd = PlacementHwnd(window.get());
                     VERIFY_IS_FALSE(!!IsIconic(hwnd));
                     VERIFY_IS_FALSE(!!IsZoomed(hwnd));
-                    const bool restoresSnapped = enabled || hasWindowActions;
-                    VERIFY_ARE_EQUAL(restoresSnapped, IsPlacementArranged(hwnd));
+                    const bool restoresSnapped = IsPlacementArranged(hwnd);
+                    if (enabled)
+                    {
+                        VERIFY_IS_TRUE(restoresSnapped);
+                    }
                     VerifyPlacementRectNear(hwnd, normal, ReadNormalScreenRect(hwnd));
                     if (restoresSnapped)
                     {

@@ -126,7 +126,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ClearWindow();
             WinUISampleAppTestsUtils.ClearErrorReport();
             SelectWindowName("MainWindow");
-            ReadWindowProperties(true, "rootStackPanel", "WinUI Desktop - 0");
+            ReadWindowProperties(true, "rootGrid", "WinUI Desktop - 0");
         }
 
         [TestMethod]
