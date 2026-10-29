@@ -191,6 +191,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies GetSelection reports a row that was selected while it was never realized.")]
+        public void VerifyGetSelectionReportsUnrealizedSelectedRow()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable(TableViewRowTestHelpers.MakeManyItems(200));
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+
+                var repeater = GetRowsRepeater(tableView);
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                var selection = RequireTablePeer(tableView).GetPattern(PatternInterface.Selection) as ISelectionProvider;
+                if (selection == null)
+                {
+                    Verify.Fail("Selection must be advertised while SelectionMode is Single.");
+                    return;
+                }
+
+                // GH #12445: SelectedIndex reports the row, so the Selection pattern must too.
+                var selected = selection.GetSelection();
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length,
+                    "GetSelection must report the selected row even when it was never realized.");
+                Verify.IsNotNull(repeater.TryGetElement(150), "The reported provider must belong to the selected row.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the Scroll pattern is answered by the body scroller's peer and never by the TableView peer itself.")]
         public void VerifyScrollPatternIsForwardedToBodyScrollerNotThePeer()
         {
