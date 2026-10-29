@@ -772,12 +772,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = PlaceTreeSource(source, s => s.ChildrenBy(f.Selector));
             ExpandAll(tableView);
             VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "start (Dee has an empty feed)");
-            var events = RecordViewEvents(tableView);
-
             RunOnUIThread.Execute(() =>
                 VerifyArgumentException(() => f.Children[f.Dee].Add(f.Cat), "more than once", "Cat is already under Ann"));
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() => Describe(events));
             VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "Cat still appears once");
         }
     }
