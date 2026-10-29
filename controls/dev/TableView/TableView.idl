@@ -106,7 +106,6 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Double MaxWidth { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserResize { get; set; };
 
@@ -131,6 +130,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     String SortMemberPath { get; set; };
     ITableViewSortComparer CustomSortComparer { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
     SortDirection SortDirection { get; set; };
 
@@ -146,7 +146,6 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
     overridable String GetSortMemberPathCore();
-    Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
     overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
     overridable Boolean CommitCellEditCore(Microsoft.UI.Xaml.FrameworkElement editingElement);
     protected void NotifyCellContentChanged();
@@ -222,7 +221,6 @@ runtimeclass TableViewCellEditEndedEventArgs
     Object Item { get; };
     MU_XC_NAMESPACE.TableViewColumn Column { get; };
     MU_XC_NAMESPACE.TableViewEditAction EditAction { get; };
-    Microsoft.UI.Xaml.FrameworkElement EditingElement { get; };
 }
 
 [MUX_PREVIEW]
@@ -246,14 +244,14 @@ runtimeclass TableViewSortedEventArgs
 [webhosthidden]
 runtimeclass TableViewGroupExpandingEventArgs
 {
-    MU_XC_NAMESPACE.TableViewGroupInfo Group { get; };
+    Object GroupKey { get; };
 }
 
 [MUX_PREVIEW]
 [webhosthidden]
 runtimeclass TableViewGroupCollapsedEventArgs
 {
-    MU_XC_NAMESPACE.TableViewGroupInfo Group { get; };
+    Object GroupKey { get; };
 }
 
 [MUX_PREVIEW]
@@ -310,6 +308,7 @@ runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     Boolean IsExpandable { get; };
     Boolean IsExpanded { get; };
     String KeyText { get; };
+    String ItemCountText { get; };
 }
 
 [MUX_PREVIEW]
@@ -320,9 +319,11 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
     TableViewGroupHeader();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsExpanded { get; set; };
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpanded { get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("false")]
     Boolean IsExpandable { get; };
 
     static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
@@ -401,6 +402,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     void DeselectAll();
     Int32 IndexOf(Object item);
     void StartBringItemIntoView(Int32 index, Microsoft.UI.Xaml.BringIntoViewOptions options);
+    void ExpandGroup(Object groupKey);
+    void CollapseGroup(Object groupKey);
     void ExpandAllGroups();
     void CollapseAllGroups();
     void ExpandAllRows();
@@ -461,7 +464,7 @@ runtimeclass TableViewCellAutomationPeer
 
 [MUX_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TableViewColumnHeaderAutomationPeer
+runtimeclass TableViewColumnHeaderAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
       Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
 {
