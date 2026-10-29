@@ -192,8 +192,8 @@ namespace winrt::");
         ::winrt::hstring const& fullName, 
         IXamlType baseType)
             : _provider(provider)
-            , _fullName(fullName)
             , _baseType(baseType)
+            , _fullName(fullName)
     {
     }
 
@@ -322,8 +322,8 @@ namespace winrt::");
                     "row ::winrt::hresult_invalid_argument {};\r\n    }\r\n\r\n \r\n    XamlMember::XamlMembe" +
                     "r(\r\n        std::shared_ptr<XamlTypeInfoProvider> const& provider, \r\n        ::w" +
                     "inrt::hstring const& name, \r\n        ::winrt::hstring const& typeName)\r\n        " +
-                    "    : _provider(provider)\r\n            , _name(name)\r\n            , _typeName(ty" +
-                    "peName)\r\n    {\r\n    }\r\n\r\n    void XamlMember::TargetTypeName(::winrt::hstring co" +
+                    "    : _name(name)\r\n            , _typeName(typeName)\r\n            , _provider(pr" +
+                    "ovider)\r\n    {\r\n    }\r\n\r\n    void XamlMember::TargetTypeName(::winrt::hstring co" +
                     "nst& value)\r\n    { \r\n        _targetTypeName = value; \r\n    }\r\n\r\n    bool XamlMe" +
                     "mber::IsAttachable() const\r\n    {\r\n        return _isAttachable;\r\n    }\r\n\r\n    v" +
                     "oid XamlMember::IsAttachable(bool value)\r\n    {\r\n        _isAttachable = value;\r" +

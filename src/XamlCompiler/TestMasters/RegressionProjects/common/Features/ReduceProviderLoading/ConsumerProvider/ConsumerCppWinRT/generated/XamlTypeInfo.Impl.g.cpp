@@ -316,8 +316,8 @@ namespace winrt::ConsumerCppWinRT::implementation
         ::winrt::hstring const& fullName, 
         IXamlType baseType)
             : _provider(provider)
-            , _fullName(fullName)
             , _baseType(baseType)
+            , _fullName(fullName)
     {
     }
 
@@ -583,9 +583,9 @@ namespace winrt::ConsumerCppWinRT::implementation
         std::shared_ptr<XamlTypeInfoProvider> const& provider, 
         ::winrt::hstring const& name, 
         ::winrt::hstring const& typeName)
-            : _provider(provider)
-            , _name(name)
+            : _name(name)
             , _typeName(typeName)
+            , _provider(provider)
     {
     }
 

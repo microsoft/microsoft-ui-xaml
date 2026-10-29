@@ -404,15 +404,15 @@ void ::XamlTypeInfo::InfoProvider::XamlSystemBaseType::RunInitializer()
 ::XamlTypeInfo::InfoProvider::XamlUserType::XamlUserType(::XamlTypeInfo::InfoProvider::XamlTypeInfoProvider^ provider, ::Platform::String^ fullName, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
             this.Write(@"::IXamlType^ baseType) :
+    _provider(provider),
+    _baseType(baseType),
+    _fullName(fullName),
     _isArray(false),
     _isMarkupExtension(false),
     _isEnum(false),
     _isBindable(false),
     _isReturnTypeStub(false),
-    _isLocalType(false),
-    _fullName(fullName),
-    _provider(provider),
-    _baseType(baseType)
+    _isLocalType(false)
 {
 }
 
