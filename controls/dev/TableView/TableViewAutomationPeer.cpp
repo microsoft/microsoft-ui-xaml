@@ -372,12 +372,25 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         return {};
     }
 
-    // Only a realized row has a provider. A selected row scrolled out of the realization window
-    // reports as unrealized here rather than fabricating a peer for an element that does not
-    // exist; AT clients reach it through ItemContainer.FindItemByProperty, which realizes it.
     if (auto const repeater = impl->GetRowsRepeaterInternal())
     {
-        if (auto const rowElement = repeater.TryGetElement(selectedIndex))
+        winrt::UIElement rowElement{ nullptr };
+        try
+        {
+            // Realize only the selected row, as Grid.GetItem does, so an unrealized selection is
+            // still reported.
+            rowElement = repeater.TryGetElement(selectedIndex);
+            if (!rowElement)
+            {
+                rowElement = repeater.GetOrCreateElement(selectedIndex);
+            }
+        }
+        catch (...)
+        {
+            return {};
+        }
+
+        if (rowElement)
         {
             if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
             {

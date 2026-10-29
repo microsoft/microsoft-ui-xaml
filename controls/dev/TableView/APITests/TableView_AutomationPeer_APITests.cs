@@ -179,8 +179,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, empty == null ? 0 : empty.Length, "With nothing selected the selection array must be empty.");
 
                 // Row 1 is realized at this size, so this asserts the selection report rather than the
-                // virtualization behaviour - a selected row scrolled out of realization reports as
-                // unselected here by design.
+                // virtualization behaviour; VerifyGetSelectionReportsUnrealizedSelectedRow covers that.
                 tableView.Select(1);
                 tableView.UpdateLayout();
 
