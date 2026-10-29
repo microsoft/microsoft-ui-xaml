@@ -349,7 +349,8 @@ public:
 
 private:
     // Called by Create() once the object is owned by a shared_ptr: binds m_sourceAccessor,
-    // subscribes to source changes with weak_from_this(), and performs the initial Refresh().
+    // performs the initial Refresh(), then subscribes to source changes with weak_from_this() (so
+    // a From() that fails validation leaves no handler).
     void AttachSource(winrt::Windows::Foundation::IInspectable const& source);
 
     // Subscribes to the accessor's one notification interface (switch on GetObserveKind(); the
