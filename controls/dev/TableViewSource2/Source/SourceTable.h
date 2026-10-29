@@ -98,9 +98,10 @@
 //       held, diverged       | skip               | skip
 //       free, not diverged   | apply              | re-read
 //       free, diverged       | re-read            | re-read
-//     OPEN: under ParentBy one source change can produce several tree changes (an insert adopts
-//     existing orphans, each a Move from top level to the new item). Deliver them as an ordered
-//     batch in one dispatch, or collapse to Reset above a threshold.
+//     Under ParentBy one source change can produce several tree changes (an insert adopts
+//     existing orphans, each a Move from top level to the new item). Decided: adopting one orphan
+//     is surgical (the insert plus one Move); adopting more goes to Reapply() through
+//     ShapingManager::c_bulkThreshold.
 //   - ItemChanged: forwards (SourceRecord*, propertyName) when a subscribed record raises
 //     PropertyChanged. The record is never null; an empty propertyName means all properties
 //     changed.
@@ -280,6 +281,10 @@ public:
     // Shaping walks these and SourceRecord::Children.
     std::vector<SourceRecord*> const& TopLevel() const noexcept;
 
+    // True when a ParentBy or ChildrenBy strategy is committed (m_hierarchy set). A strategy parked
+    // in m_pendingHierarchy (DeferRefresh) does not count until Refresh() commits it. Backs
+    // ShapedRowQueries::IsHierarchical().
+    bool HasHierarchy() const noexcept;
 
     // ParentBy and ChildrenBy construct the strategy, then Prepare() it (every app call and check;
     // a throw leaves the previous tree and strategy in place), TakeChildRecords() and Release() the
@@ -384,7 +389,8 @@ private:
     // CreateRecord and RaiseSourceChanged are host members (below). RaiseSourceChanged raises
     // SourceChanged inside a freeze (BeginFreeze / EndFreeze around the handler call; nothing is
     // queued: a re-entrant change is skipped), then destroys the records that left;
-    // records in `removed` must already be out of their owner, the tree and the lookups.
+    // records in `removed` must already be out of their owner, the tree and the lookups. It fills
+    // m_removedView from `removed` for SourceChange::Removed (see SourceRecord.h).
 
     // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
     // true (re-read due, outermost, no hold), Refresh() (one Reset). This is the turn's one
@@ -467,6 +473,12 @@ private:
 
     // Backs TopLevel() (non-owning).
     std::vector<SourceRecord*> m_topLevel;
+
+    // Scratch for SourceChange::Removed: RaiseSourceChanged clears it, copies the raw pointers of
+    // its owning `removed` vector in, raises, then clears it again. One buffer is enough: the
+    // freeze around the handler skips a re-entrant change, so raises never nest. Keeps its
+    // capacity across changes.
+    std::vector<SourceRecord const*> m_removedView;
 
     // The current hierarchy strategy; null = flat. Its selectors and keys are tracked, so Clear()
     // releases it first, while m_trackerOwner is alive. Kept off SourceRecord so flat tables pay

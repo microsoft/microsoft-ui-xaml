@@ -72,7 +72,7 @@ public:
     // it works without the identity index, D4). Shown or not. nullptr when unknown.
     ShapedNode* TryResolveKey(winrt::hstring const& key) const;
 
-    // The source tree has a hierarchy (SourceTable's hierarchy kind is not None).
+    // The source tree has a hierarchy (SourceTable::HasHierarchy()).
     bool IsHierarchical() const noexcept;
 
     // R3, v1 meaning: index is a data row; walk ShapedParent up to its bottom-level group

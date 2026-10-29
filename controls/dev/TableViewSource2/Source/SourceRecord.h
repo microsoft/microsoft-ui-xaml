@@ -17,7 +17,8 @@
 // Per-item source record and record-level change for TableViewSource2
 // (docs/design-notes/TabularControls/TableView-Row-Identity-Reuse-Spec.md).
 //
-// One SourceRecord per source position holds the values that depend only on the object: the item,
+// One SourceRecord per item in the source tree (a root-collection position, or a child-collection
+// position under ChildrenBy) holds the values that depend only on the object: the item,
 // its canonical address, its lazily formatted identity, and its live-shaping subscription. Every
 // consumer that asks "which row is this?" reads these instead of re-deriving them.
 //
@@ -150,5 +151,8 @@ struct SourceChange
 
     // Remove and Replace: the departed subtree in pre-order, alive (Item, Identity()) until the
     // handler returns. Reset: every record that left (root and child; reused ones did not).
+    // A non-owning view: RaiseSourceChanged receives the owning vector<SourceRecordPtr> and binds
+    // this to SourceTable::m_removedView, which holds each .get(); the owning vector is destroyed
+    // after the handler returns.
     std::vector<SourceRecord const*> const& Removed;
 };

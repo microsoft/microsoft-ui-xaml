@@ -111,6 +111,7 @@ classDiagram
         +Refresh()
         +DeferRefresh() IClosable
         +IsLiveShaping : bool
+        +AppliedSpec() ShapeSpec*
         +TrySetOwner(owner) bool
         +ReleaseOwner(owner)
         +AddOwnerReleasedWaiter(waiter, handler)
@@ -196,6 +197,7 @@ classDiagram
         +EndDeferRefresh()
         +IsRefreshDeferred() bool
         +IsLiveShaping : bool
+        +AppliedSpec() ShapeSpec
         +BeginLiveShapingHold() noexcept
         +EndLiveShapingHold()
         +SetOwner(sink)
@@ -362,6 +364,7 @@ classDiagram
         +At(index) SourceRecord*
         +Records() vector~SourceRecordPtr~
         +TopLevel() vector~SourceRecord*~
+        +HasHierarchy() bool
         +SetParentKeyHierarchy(key, parentKey)
         +SetChildCollectionHierarchy(children)
         +ClearHierarchy()
@@ -922,8 +925,12 @@ whether `Sort` was declared before or after `GroupBy`.
 ## 2. `TableViewSource2` runtime class
 
 - **Not activatable.** It is created only through `From(items)`.
-- **A `ReferenceTracker`, like v1.** `final_release` runs on the owning UI thread, and `tracker_ref`
-  members let the garbage collector walk references to app objects.
+- **A `ReferenceTracker`, like v1.** `tracker_ref` members let the garbage collector walk
+  references to app objects. `final_release` posts the delete to the constructing thread's
+  `DispatcherQueue` when it has one; `From()` called off a dispatcher thread (`Task.Run`) has
+  none, so the delete and `~TableViewSource2()` → `Clear()` run on the releasing thread.
+  **Open:** for a table bound later by `SetOwner`, that thread may not be the owner's. Either
+  marshal teardown to `SourceTable`'s bound queue or require `From()` on the UI thread.
 - **Members:**
   - `m_shapingManager` is a `unique_ptr<ShapingManager>`, the coordinator (§6). It owns the
     `shared_ptr<SourceTable>`, which holds the app collection; the `shared_ptr` exists so event
@@ -1020,7 +1027,7 @@ identity index     Identity      -> SourceRecord*   shaped only; selection, focu
 | `Create(owner, source)` | Public (static) | The only way to build a table. `make_shared<SourceTable>(PrivateToken{}, owner)`, then private `AttachSource(source)`: resolves `CollectionAccessor2(owner, source)`, subscribes to change notifications (storing `m_sourceEventToken`), and performs the initial `Refresh()`. `owner` is the enclosing `TableViewSource2`'s `ITrackerHandleManager const*`. The constructor takes a private `PrivateToken`, so it is reachable by `make_shared` but not by callers; there is no default constructor. |
 | `Refresh()` | Public | Re-enumerates `m_sourceAccessor` (and the hierarchy) and reconciles against existing records, reusing every record whose item is still in the same collection (initial load, `Reset`, out-of-sync recovery, the end of a freeze or reset hold, or explicit `Refresh()` for non-observable sources). One `Reset`. No-op when detached. See *Refresh: record reuse (decided)*. |
 | `Clear()` | Public | Teardown, called by `~TableViewSource2()` on the UI thread while the owner is alive. Nulls both handlers (raises nothing), drops `m_pendingHierarchy`, releases `m_hierarchy` (`SourceHierarchy::Release`: unsubscribes every child collection via `safe_get`, destroys the child feeds and their records, drops the selectors and key index), unsubscribes from the source, clears the lookups wholesale, then destroys every root record, resets `m_sourceAccessor`, and nulls `m_trackerOwner`. Idempotent. Afterwards the table is detached. |
-| `TopLevel()` / `SetParentKeyHierarchy` / `SetChildCollectionHierarchy` / `ClearHierarchy` | Public | Source tree. See *Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)*. |
+| `TopLevel()` / `HasHierarchy()` / `SetParentKeyHierarchy` / `SetChildCollectionHierarchy` / `ClearHierarchy` | Public | Source tree. See *Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)*. |
 | `IsDetached()` | Public | True after `Clear()`. Every public entry point and event lambda returns early when detached. |
 | `SetSourceChangedHandler` | Public | Single handler (the coordinator) for normalized, record-level `SourceChange` notifications. See *Source change notification* below. |
 | `SetItemChangedHandler` | Public | Single handler (the coordinator) for per-record `PropertyChanged` notifications (`(SourceRecord*, hstring const& propertyName)`). See *Item property change notification* below. |
@@ -1156,7 +1163,7 @@ on `IsLiveShaping`, **never on which shaping verbs are active**:
 | `WatchState` caching | First probe sets `WatchState::Subscribed` (storing `PropertyChangedToken`) or `WatchState::NotObservable`. `SetLiveShaping(false)` revokes tokens and resets `Subscribed` → `Unchecked`, but preserves `NotObservable` so re-enabling does not re-QI non-observable items. |
 | Automatic teardown | Removing a record (or `Clear()`) destroys the `SourceRecord`, whose destructor revokes `PropertyChangedToken` through `Item.safe_get()` (skipped if the item was already collected) before its `tracker_ref` handle is deleted. |
 | Callback contract | Each subscription lambda captures `weak_from_this()` (`weak_ptr<SourceTable>`), `SourceRecordWeakPtr` (`weak_ptr<SourceRecord>`) and `m_binding`. On the bound thread, or while unbound, it locks the table and returns if it has expired; `OnRecordPropertyChanged` then locks the record (dropping stale notifications for removed records) and invokes `m_itemChanged(record, propertyName)`. Off the bound thread it marshals first (see *Threading*). Downstream (the coordinator) decides whether the changed property affects any active verb. |
-| Table lifetime | `SourceTable` derives from `enable_shared_from_this` and is always owned by `shared_ptr` (`Create()`). Items belong to the app and can outlive the table; a notification already in flight when `~SourceRecord()` revokes, or a revoke that fails on a torn-down event source, would otherwise call into a freed table. The source-change lambdas (`CollectionChanged` / `VectorChanged`) use the same `weak_from_this()` guard, mirroring v1 `ShapedItemsSource`. Because `weak_from_this()` is empty in the constructor, all subscriptions start in `AttachSource()` / `SetLiveShaping()`, never in the constructor. Weak pointers are locked only on the owning UI thread: a lock on a worker thread could become the last strong reference and run `~SourceTable()` (and its UI-affine revokes) there — v1 `TrackFlatItemPropertyChanged` has the same rule. |
+| Table lifetime | `SourceTable` derives from `enable_shared_from_this` and is always owned by `shared_ptr` (`Create()`). Items belong to the app and can outlive the table; a notification already in flight when `~SourceRecord()` revokes, or a revoke that fails on a torn-down event source, would otherwise call into a freed table. The source-change lambdas (`CollectionChanged` / `VectorChanged`) use the same `weak_from_this()` guard, mirroring v1 `ShapedItemsSource`. Because `weak_from_this()` is empty in the constructor, all subscriptions start in `AttachSource()` / `SetLiveShaping()`, never in the constructor. Weak pointers are locked only on the bound thread (or, while unbound, the thread using the table; see *Threading*): a lock on a worker thread could become the last strong reference and run `~SourceTable()` (and its UI-affine revokes) there — v1 `TrackFlatItemPropertyChanged` has the same rule. |
 | Empty property name | Per the `INotifyPropertyChanged` convention, an empty or null `PropertyName` means "all properties changed". It is forwarded unchanged; the coordinator treats it as a change to every dependency of the active verbs. |
 | Reuse keeps subscriptions | `Refresh()` reuses records by raw pointer or address within the same collection (root or child feed), so a `Reset` or `Refresh()` does not drop and re-create subscriptions for items that are still there. |
 | Cost trade-off | With `IsLiveShaping` true and no verbs active, every observable item is still subscribed and every `PropertyChanged` is forwarded. This is deliberate: verb changes never walk the table to (un)subscribe, and the coordinator drops events cheaply when no verb reads the property. Apps that do not need live shaping leave `IsLiveShaping` false (the default) and pay nothing. |
@@ -1452,6 +1459,12 @@ struct SourceChange
     std::vector<SourceRecord const*> const& Removed;  // subtree in pre-order; alive for the handler
 };
 ```
+
+`Removed` is a non-owning view. `RaiseSourceChanged` receives the owning
+`vector<SourceRecordPtr>`, copies each `.get()` into the scratch `m_removedView` (kept across
+changes, so no allocation per change), binds `Removed` to it for the handler call, then destroys
+the owning vector. One buffer is enough: the freeze around the handler skips a re-entrant change,
+so raises never nest.
 
 **Threading, lifetime and teardown** follow the existing `SourceTable` contracts:
 
@@ -2319,7 +2332,8 @@ Decisions and open questions:
   - **Engine freedom:** the engine may physically sort before bucketing for efficiency, as long
     as the result matches this logical order.
 - **Filter (decided):** the spec holds a list of predicates combined with AND, evaluated in order
-  and stopping at the first rejection; a throwing predicate rejects the item. This matches v1's
+  and stopping at the first rejection; a throwing predicate's exception propagates (see
+  *Misbehaving records*). The list order matches v1's
   engine (`ShapingPipeline::m_filters`, `PassesFilter`). The public API keeps v1's behaviour: a
   `Filter` call replaces the existing filter, and `ClearFilter` removes it, so today the list
   holds at most one entry. The list leaves room for per-column filters later (v1's engine keys
@@ -2364,8 +2378,9 @@ Decisions and open questions:
     propagates; every call into app code runs before any write, so a failed apply leaves the
     shaped state as it was. See *Misbehaving records* below. Invalid arguments are rejected
     synchronously at the verb call.
-  - **Re-entrancy.** A verb (or `Refresh`) called while apply runs, for example
-    from inside a delegate, throws `InvalidOperationException`, like WPF's edit guards.
+  - **Re-entrancy.** A verb (or `Refresh`, or the `IsLiveShaping` setter) called while apply
+    runs, for example from inside a delegate, throws `InvalidOperationException`, like WPF's edit
+    guards.
   - **Readers.** Properties that describe the spec itself (the declared sort levels,
     `IsGrouped`) read the desired spec, as WPF's `SortDescriptions` do. Sort indicators in column
     headers read the applied spec, so the arrow never claims an order the rows do not have; this
@@ -3252,6 +3267,8 @@ private:
     the view stale; may be added later as an optional filter on top).
 - **Applied spec (decided earlier, §5).** `m_applied` lives here; `Applied()` serves
   `Diff(applied, desired)` and column sort indicators. A throwing apply leaves it unchanged.
+  TableView reads it read-only through `TableViewSource2::AppliedSpec()` →
+  `ShapingManager::AppliedSpec()` (replaces v1 `ActiveSortAxisInfos`).
 - **Teardown.** `Clear()` drops every `GroupNode` (and its tracked `Key`), every record's
   `SortKeys` and `ShapedChildren`, empties the root (`ShapedTree::Clear()`, which raises nothing)
   and resets the applied spec. It runs before `SourceTable::Clear()`, while the tracker owner is

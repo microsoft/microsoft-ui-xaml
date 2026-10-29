@@ -18,8 +18,12 @@
 // until the new engine is wired in. Shaping state lives in ShapingManager (the coordinator);
 // this class validates arguments and forwards.
 //
-// Reference-tracked for the same reasons as TableViewSource: final_release runs on the owning
-// UI thread, and tracker_ref members let the GC walk references to app-supplied objects.
+// Reference-tracked for the same reasons as TableViewSource: tracker_ref members let the GC walk
+// references to app-supplied objects. final_release (ReferenceTracker) posts the delete to the
+// constructing thread's DispatcherQueue when it has one. From() called off a dispatcher thread
+// (Task.Run) captures no queue, so the delete, and the Clear() in ~TableViewSource2(), run on
+// the releasing thread. OPEN: for a table bound later by SetOwner that thread may not be the
+// owner's; marshal teardown to SourceTable's bound queue, or require From() on the UI thread.
 class TableViewSource2 :
     public ReferenceTracker<TableViewSource2, winrt::implementation::TableViewSource2T, winrt::composable, winrt::composing>
 {
@@ -53,9 +57,13 @@ public:
     void EndDeferRefresh();
 
     // Forwards to ShapingManager, which forwards to SourceTable (owner of the flag and the
-    // per-item subscriptions).
+    // per-item subscriptions). The setter throws while an apply runs (#19).
     bool IsLiveShaping() const;
     void IsLiveShaping(bool value);
+
+    // Internal (not in IDL): the applied spec, read-only, for column sort indicators (replaces v1
+    // ActiveSortAxisInfos). Forwards to ShapingManager::AppliedSpec(). nullptr after teardown.
+    ShapeSpec const* AppliedSpec() const noexcept;
 
     // Internal (not in IDL): the row metadata provider for TableView, as v1
     // TableViewSource::GetRowMetadata(). Forwards to ShapingManager::RowMetadata(). nullptr after

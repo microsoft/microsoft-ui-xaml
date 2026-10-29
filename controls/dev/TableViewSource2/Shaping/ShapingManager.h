@@ -31,9 +31,10 @@
 // a thin WinRT shell: it validates verb arguments and forwards here.
 //
 //   Owns:  SourceTable (records and source tree), the desired ShapeSpec, ShapeDelegates,
-//          PathEvaluator, the group expansion model, the engine (applied spec, ShapedTree), the
-//          read-only row queries (ShapedRowQueries), the visible list (ShapedCollectionView,
-//          handed to TableView) and the row metadata provider (ShapedRowMetadata).
+//          PathEvaluator, the engine (applied spec, ShapedTree, which owns the group expansion
+//          model), the read-only row queries (ShapedRowQueries), the visible list
+//          (ShapedCollectionView, handed to TableView) and the row metadata provider
+//          (ShapedRowMetadata).
 //   Runs:  verb -> Diff(applied, desired) -> engine apply, inside one commit scope. The tree
 //          raises each row event as the engine makes the change (P8); this object is its
 //          IShapedRowsListener and forwards each to the view. Local changes are surgical Link /
@@ -54,13 +55,15 @@
 // tracker_refs to m_trackerOwner (the owning TableViewSource2). Clear() must run while that owner
 // is alive; ~TableViewSource2() calls it.
 //
-// Threading: UI-thread affine, like SourceTable.
+// Threading: follows SourceTable's binding (see SourceTable, Threading). Constructed on any thread
+// (From() may run in Task.Run); after SetOwner binds the table, used only on the owner's thread.
 
 class ShapingManager final : private IShapedRowsListener, private IShapedExpansion
 {
 public:
     // Creates the SourceTable over `items` (SourceTable::Create, initial load) and installs this
-    // object as its SourceChanged and ItemChanged handler. Must be called on the UI thread.
+    // object as its SourceChanged and ItemChanged handler. May run off the UI thread, like
+    // SourceTable::Create; the table stays unbound until SetOwner binds it.
     ShapingManager(ITrackerHandleManager const* trackerOwner, winrt::IInspectable const& items);
     ~ShapingManager();
 
@@ -117,8 +120,17 @@ public:
     void EndDeferRefresh();
     bool IsRefreshDeferred() const noexcept;
 
+    // The getter never throws. The setter forwards to SourceTable::SetLiveShaping; called while an
+    // apply runs it throws InvalidOperationException (#19), like a verb.
     bool IsLiveShaping() const;
     void IsLiveShaping(bool value);
+
+    // The spec the shown tree reflects (m_engine.Applied()), read-only. Column sort indicators read
+    // it, so an arrow never claims an order the rows do not have (spec, "Readers"; replaces v1
+    // ActiveSortAxisInfos). Lags
+    // m_desired while a DeferRefresh is open, and stays old when an apply throws. The object is
+    // updated in place by each apply; copy what must survive the next one.
+    ShapeSpec const& AppliedSpec() const noexcept;
 
     // ---- Owner sink (#18) -------------------------------------------------------------------
     // Arbitration (single owner, refusal, waiters, handoff) lives in TableViewSource2 (decided,

@@ -106,9 +106,10 @@ struct GroupSpec
 
 struct ShapeSpec
 {
-    // Combined with AND, evaluated in order, stopping at the first rejection; a throwing predicate
-    // rejects the item. The public Filter verb replaces the existing filter, so today this holds at
-    // most one entry; the list leaves room for per-column filters.
+    // Combined with AND, evaluated in order, stopping at the first rejection. A throwing predicate's
+    // exception propagates (spec, "Misbehaving records"). The public Filter verb replaces the
+    // existing filter, so today this holds at most one entry; the list leaves room for per-column
+    // filters.
     std::vector<FilterSpec> Filters;
 
     // [0] = outermost group level. Empty = not grouped. The public GroupBy verb replaces the

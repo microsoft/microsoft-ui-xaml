@@ -57,8 +57,8 @@ public:
     void Retain(std::span<ShapeSpec const* const> specsInUse);
 
     // Invocation, used by the engine and live shaping. Exceptions from app code propagate (spec,
-    // "Misbehaving records"); the engine treats a throwing predicate's record as not passing and
-    // calls these only in its compute phase, before anything is written.
+    // "Misbehaving records"). The engine calls these only in its compute phase, before anything is
+    // written, so a throw leaves nothing written for the record.
     bool Passes(DelegateId predicate, winrt::IInspectable const& item) const;
     winrt::IInspectable Key(DelegateId keySelector, winrt::IInspectable const& item) const;
     int32_t Compare(DelegateId comparer, winrt::IInspectable const& x, winrt::IInspectable const& y) const;

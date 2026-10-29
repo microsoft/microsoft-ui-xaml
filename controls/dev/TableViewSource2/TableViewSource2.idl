@@ -74,7 +74,9 @@ runtimeclass TableViewSource2
 
     // When true, a PropertyChanged on an item re-applies the active filter, sort, group and
     // hierarchy to it. Defaults to false: property edits leave rows in place until the next
-    // collection change, verb or Refresh.
+    // collection change, verb or Refresh. Setting it from app code that a reshape calls (a
+    // predicate, key selector or comparer) throws InvalidOperationException, as Filter, Sort and
+    // the other verbs do there.
     Boolean IsLiveShaping{ get; set; };
 }
 

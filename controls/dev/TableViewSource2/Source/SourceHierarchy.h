@@ -171,7 +171,7 @@ public:
 
     // Root-collection edits, after m_records changed and before the SourceChange is raised. Each
     // fills the change's tree fields (parents, sibling indexes) and may add Moves to raise after it
-    // (ParentBy orphan adoption; see the open batching item in SourceTable).
+    // (ParentBy orphan adoption; see SourceChanged in SourceTable).
     //   OnInserted: ParentBy keys the record, links it under its parent (or top level) and adopts
     //     orphans whose parent key matches; ChildrenBy builds its feed and subtree.
     //   OnRemoving: ParentBy unkeys it and moves its children to the top level; ChildrenBy destroys
