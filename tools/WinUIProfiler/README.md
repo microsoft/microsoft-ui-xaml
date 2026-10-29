@@ -53,8 +53,9 @@ This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
 GPU memory events for it, to a session file. The Frames tab shows its frames and
 the Elements tab its UI elements.
-There is no heap capture or instrumented-product
-dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
+There is no heap capture. Trees and OS metrics do not require instrumented
+product binaries; optional XAML resource counters require the target's private
+diagnostics interface. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
 
 ## Build and run
@@ -86,6 +87,30 @@ have matching architecture and access rights. Access denial is reported, not
 silently elevated.
 
 ## Tree snapshots
+
+Each capture also calls the target's private `IXamlDiagnostics3::GetResourceSnapShot`
+once, before tree enumeration, and saves the result and its QPC interval in the
+snapshot JSON (schema 3, `resourceSnapshot`). The resource view currently shows
+the five allocator/GC metrics and any populated graphics counter slots, identified
+by their fixed array index rather than a generated string name. Comparison shows **Before**, **After**, and
+signed **Delta (After - Before)** values, in counts or bytes; resource-only changes
+are included even when the trees are unchanged. Deltas preserve the full 64-bit
+counter range, including decreases. A resource absent from either capture has
+an unavailable delta, not an assumed zero.
+
+The private interface requires a target runtime containing resource diagnostics.
+Its IID changed with the smaller graphics-counter ABI so older runtimes fail
+the interface query safely instead of writing an incompatible snapshot layout.
+Missing support or a failed call preserves the tree capture and reports unavailable
+resources with the HRESULT. Schema-1 snapshots remain readable and report resources not
+recorded. Existing allocation-only schema-2 memory captures are normalized on read;
+old named graphics entries without fixed-slot identities are rejected, not assigned
+invented identities. Allocator totals cover enabled profiling only, not the process heap.
+The first resource snapshot ensures the provider is registered; earlier allocations are missed,
+and allocation/free pairs across profiling transitions can be unbalanced.
+`AllocatedMemory` is the independent managed-runtime GC heuristic. Resource and
+tree intervals are not atomic. Graphics counters are still unimplemented;
+all-zero placeholder slots are omitted, not reported as measured zeros.
 
 As soon as a connection succeeds after the genuine TAP hello, the app
 automatically captures and saves an **Initial snapshot** as the first snapshot

@@ -5,7 +5,7 @@
 
 #include <XamlOM.WinUI.Private.h>
 
-namespace AllocationDiagnostics
+namespace ResourceDiagnostics
 {
-    HRESULT GetMemorySnapshot(_Out_ XamlMemorySnapshot* snapshot);
+    HRESULT GetResourceSnapShot(_Out_ XamlResourceSnapshot* snapshot);
 }

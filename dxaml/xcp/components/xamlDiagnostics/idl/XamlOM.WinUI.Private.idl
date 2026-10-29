@@ -22,33 +22,31 @@ interface IXamlDiagnosticsTestHooks : IUnknown
 
 typedef struct XamlGraphicsResourceCounterSnapshot
 {
-    UINT32 Reserved;
-    WCHAR Name[64];
     UINT64 TotalCreated;
     UINT64 TotalDestroyed;
     UINT64 LiveCount;
 } XamlGraphicsResourceCounterSnapshot;
 
-const UINT32 XamlMemorySnapshotResourceCapacity = 32;
+const UINT32 XamlResourceSnapshotGraphicsCapacity = 32;
 
-typedef struct XamlMemorySnapshot
+typedef struct XamlResourceSnapshot
 {
     UINT64 AllocCount;
     UINT64 AllocSize;
     INT64 AllocatedMemory;
     UINT64 OutstandingAllocCount;
     UINT64 OutstandingAllocSize;
-    XamlGraphicsResourceCounterSnapshot Resources[XamlMemorySnapshotResourceCapacity];
-} XamlMemorySnapshot;
+    XamlGraphicsResourceCounterSnapshot Resources[XamlResourceSnapshotGraphicsCapacity];
+} XamlResourceSnapshot;
 
 [
     object,
-    uuid(e4663afc-ea1a-4b94-8c21-56e938403965),
+    uuid(2b2681be-7a8a-43c5-889f-374ce8cab061),
     pointer_default(unique)
 ]
 interface IXamlDiagnostics3 : IUnknown
 {
-    HRESULT GetMemorySnapshot([out] XamlMemorySnapshot* snapshot);
+    HRESULT GetResourceSnapShot([out] XamlResourceSnapshot* snapshot);
 };
 
 cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */ ")

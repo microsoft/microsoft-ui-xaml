@@ -5,7 +5,7 @@
 #include "XamlDiagnostics.h"
 #include "RuntimeObject.h"
 #include "RuntimeElement.h"
-#include <AllocationDiagnostics.h>
+#include <ResourceDiagnostics.h>
 
 
 IFACEMETHODIMP XamlDiagnostics::UnregisterInstance(_In_ InstanceHandle handle)
@@ -33,7 +33,7 @@ IFACEMETHODIMP XamlDiagnostics::TryGetDispatcherQueueForObject(_In_ InstanceHand
     return S_OK;
 }
 
-IFACEMETHODIMP XamlDiagnostics::GetMemorySnapshot(_Out_ XamlMemorySnapshot* snapshot)
+IFACEMETHODIMP XamlDiagnostics::GetResourceSnapShot(_Out_ XamlResourceSnapshot* snapshot)
 {
-    return AllocationDiagnostics::GetMemorySnapshot(snapshot);
+    return ResourceDiagnostics::GetResourceSnapShot(snapshot);
 }

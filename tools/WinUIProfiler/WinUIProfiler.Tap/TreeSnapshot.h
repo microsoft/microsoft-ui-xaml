@@ -12,7 +12,7 @@ namespace WinUIProfiler::Tap
         std::string Json;
     };
 
-    // Called from the pipe's MTA worker. No product/private diagnostics bridge is used.
+    // Called from the pipe's MTA worker; private memory diagnostics are optional.
     HRESULT CaptureTreeSnapshot(IXamlDiagnostics* diagnostics, HANDLE stop, GUID captureId,
         uint64_t targetCreationFileTime, TreeSnapshotResult& result, std::string& failure) noexcept;
 }

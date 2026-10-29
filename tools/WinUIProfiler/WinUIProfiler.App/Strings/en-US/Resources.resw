@@ -69,15 +69,39 @@
   <data name="SnapshotDiffCompare.Content" xml:space="preserve"><value>Compare</value></data>
   <data name="SnapshotDiffTitle" xml:space="preserve"><value>Snapshot comparison</value></data>
   <data name="SnapshotDiffHeading.Text" xml:space="preserve"><value>Snapshot comparison</value></data>
-  <data name="SnapshotDiffBeforeFormat" xml:space="preserve"><value>Before: {0} | {1}</value></data>
-  <data name="SnapshotDiffAfterFormat" xml:space="preserve"><value>After: {0} | {1}</value></data>
+  <data name="SnapshotDiffBeforeFormat" xml:space="preserve"><value>Before: PID {0} | {1}</value></data>
+  <data name="SnapshotDiffAfterFormat" xml:space="preserve"><value>After: PID {0} | {1}</value></data>
   <data name="SnapshotDiffBeforeIdentity.AutomationProperties.Name" xml:space="preserve"><value>Before snapshot identity</value></data>
   <data name="SnapshotDiffAfterIdentity.AutomationProperties.Name" xml:space="preserve"><value>After snapshot identity</value></data>
-  <data name="SnapshotDiffScope.Text" xml:space="preserve"><value>Best-effort matching by root, COM identity address, and type. Addresses may be reused; matches do not prove object lifetimes. Trees use After hierarchy with removed nodes retained at their old parents. Highlighted ancestors contain changed subtrees. Only captured properties are compared; visibility changes do not prove pixels became visible. Double-click a XAML node to see its element's history in the Elements tab.</value></data>
   <data name="SnapshotDiffLoading.AutomationProperties.Name" xml:space="preserve"><value>Comparing tree snapshots</value></data>
   <data name="SnapshotDiffError.Title" xml:space="preserve"><value>Snapshot comparison failed</value></data>
   <data name="SnapshotDiffChangesOnly.Content" xml:space="preserve"><value>Show only changed subtrees</value></data>
-  <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No tree or captured property differences.</value></data>
+  <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No differences in comparable tree, property, or memory values.</value></data>
+  <data name="SnapshotResourceHeading.Header" xml:space="preserve"><value>XAML resources</value></data>
+  <data name="SnapshotResourceStatus.AutomationProperties.Name" xml:space="preserve"><value>Resource snapshot availability</value></data>
+  <data name="SnapshotResourceScope.Text" xml:space="preserve"><value>Sampled before tree enumeration. Allocator counters cover enabled profiling, not the whole process heap; allocation/free pairs across profiling transitions can be unbalanced. Allocations before profiling starts are not counted. All-zero graphics resource slots are not measurements.</value></data>
+  <data name="SnapshotResourceMetric.Text" xml:space="preserve"><value>Metric</value></data>
+  <data name="SnapshotResourceBefore.Text" xml:space="preserve"><value>Before</value></data>
+  <data name="SnapshotResourceAfter" xml:space="preserve"><value>After</value></data>
+  <data name="SnapshotResourceDelta.Text" xml:space="preserve"><value>Delta (After - Before)</value></data>
+  <data name="SnapshotResourceValues.AutomationProperties.Name" xml:space="preserve"><value>Captured XAML resource values</value></data>
+  <data name="SnapshotResourceValue" xml:space="preserve"><value>Value</value></data>
+  <data name="SnapshotResourceUnavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="SnapshotResourceNotRecorded" xml:space="preserve"><value>Resources were not recorded in this older snapshot.</value></data>
+  <data name="SnapshotResourceAvailable" xml:space="preserve"><value>Resource snapshot available.</value></data>
+  <data name="SnapshotResourceUnsupported" xml:space="preserve"><value>IXamlDiagnostics3 is unavailable in this target ({0}).</value></data>
+  <data name="SnapshotResourceFailed" xml:space="preserve"><value>GetResourceSnapShot failed ({0}).</value></data>
+  <data name="SnapshotResourceStatusFormat" xml:space="preserve"><value>Before: {0} After: {1}</value></data>
+  <data name="SnapshotResourceGraphicsFormat" xml:space="preserve"><value>Graphics slot {0}: {1}</value></data>
+  <data name="SnapshotResourceBytesFormat" xml:space="preserve"><value>{0} (bytes)</value></data>
+  <data name="SnapshotResourceAllocCount" xml:space="preserve"><value>Cumulative allocation calls</value></data>
+  <data name="SnapshotResourceAllocSize" xml:space="preserve"><value>Cumulative requested allocation size</value></data>
+  <data name="SnapshotResourceAllocatedMemory" xml:space="preserve"><value>Managed-runtime GC heuristic</value></data>
+  <data name="SnapshotResourceOutstandingAllocCount" xml:space="preserve"><value>Outstanding allocations</value></data>
+  <data name="SnapshotResourceOutstandingAllocSize" xml:space="preserve"><value>Outstanding allocation size</value></data>
+  <data name="SnapshotResourceTotalCreated" xml:space="preserve"><value>Total created</value></data>
+  <data name="SnapshotResourceTotalDestroyed" xml:space="preserve"><value>Total destroyed</value></data>
+  <data name="SnapshotResourceLiveCount" xml:space="preserve"><value>Live count</value></data>
   <data name="SnapshotDiffSummaryFormat" xml:space="preserve"><value>{0:N0} added | {1:N0} removed | {2:N0} with property changes | {3:N0} moved | {4:N0} reordered</value></data>
   <data name="SnapshotDiffXamlSummary.AutomationProperties.Name" xml:space="preserve"><value>XAML change counts</value></data>
   <data name="SnapshotDiffCompositionSummary.AutomationProperties.Name" xml:space="preserve"><value>Composition change counts</value></data>

@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <AllocationDiagnostics.h>
+#include <ResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
 
-namespace AllocationDiagnostics
+namespace ResourceDiagnostics
 {
-    HRESULT GetMemorySnapshot(_Out_ XamlMemorySnapshot* snapshot)
+    HRESULT GetResourceSnapShot(_Out_ XamlResourceSnapshot* snapshot)
     {
         IFCPTR_RETURN(snapshot);
         *snapshot = {};

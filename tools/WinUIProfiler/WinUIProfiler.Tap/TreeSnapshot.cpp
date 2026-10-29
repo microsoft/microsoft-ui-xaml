@@ -1,5 +1,6 @@
 #include "TreeSnapshot.h"
 #include "TreeSnapshotJson.h"
+#include "ResourceSnapshot.h"
 #include "Tap.h"
 #include <xamlom.h>
 #include <wrl.h>
@@ -75,6 +76,35 @@ namespace WinUIProfiler::Tap
         {
             if (value.size() > MaxBytes / 6) Fail(HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW));
             return Quote(winrt::to_string(value));
+        }
+        std::string ResourceJson(HRESULT status, const ResourceSnapshotAbi::Snapshot& snapshot,
+            int64_t start, int64_t end)
+        {
+            std::string json = "{\"status\":" + Quote(SUCCEEDED(status) ? "available" :
+                status == E_NOINTERFACE ? "unavailable" : "failed") +
+                ",\"hResult\":" + std::to_string(static_cast<int32_t>(status)) +
+                ",\"startQpc\":" + std::to_string(start) + ",\"endQpc\":" + std::to_string(end) +
+                ",\"values\":";
+            if (FAILED(status)) return json + "null}";
+            json += "{\"allocCount\":" + std::to_string(snapshot.AllocCount) +
+                ",\"allocSize\":" + std::to_string(snapshot.AllocSize) +
+                ",\"allocatedMemory\":" + std::to_string(snapshot.AllocatedMemory) +
+                ",\"outstandingAllocCount\":" + std::to_string(snapshot.OutstandingAllocCount) +
+                ",\"outstandingAllocSize\":" + std::to_string(snapshot.OutstandingAllocSize) +
+                ",\"resources\":[";
+            bool first = true;
+            for (size_t index = 0; index < std::size(snapshot.Resources); ++index)
+            {
+                const auto& resource = snapshot.Resources[index];
+                if (!resource.TotalCreated && !resource.TotalDestroyed && !resource.LiveCount) continue;
+                if (!first) json += ',';
+                first = false;
+                json += "{\"index\":" + std::to_string(index) +
+                    ",\"totalCreated\":" + std::to_string(resource.TotalCreated) +
+                    ",\"totalDestroyed\":" + std::to_string(resource.TotalDestroyed) +
+                    ",\"liveCount\":" + std::to_string(resource.LiveCount) + "}";
+            }
+            return json + "]}}";
         }
         std::string Number(double value)
         {
@@ -637,6 +667,13 @@ namespace WinUIProfiler::Tap
             if (Running.exchange(true))
             { failure = "A previous tree subscription is still running or awaiting UI dispatch."; return HRESULT_FROM_WIN32(ERROR_BUSY); }
             ownsRunning = true;
+            LARGE_INTEGER frequency{};
+            if (!QueryPerformanceFrequency(&frequency) || frequency.QuadPart <= 0) Fail(E_UNEXPECTED);
+            const int64_t start = Qpc();
+            const int64_t resourceStart = Qpc();
+            ResourceSnapshotAbi::Snapshot resources{};
+            const HRESULT resourceStatus = ResourceSnapshotAbi::Read(diagnostics, resources);
+            const int64_t resourceEnd = Qpc();
             auto job = std::make_shared<Job>();
             if (!job->Done.Get()) Fail(HRESULT_FROM_WIN32(GetLastError()));
             job->Diagnostics = diagnostics;
@@ -647,9 +684,6 @@ namespace WinUIProfiler::Tap
                     SYNCHRONIZE, FALSE, 0)) Fail(HRESULT_FROM_WIN32(GetLastError()));
                 job->Stop.Reset(duplicate);
             }
-            LARGE_INTEGER frequency{};
-            if (!QueryPerformanceFrequency(&frequency) || frequency.QuadPart <= 0) Fail(E_UNEXPECTED);
-            const int64_t start = Qpc();
             if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
                 reinterpret_cast<LPCWSTR>(&Worker), &module)) Fail(HRESULT_FROM_WIN32(GetLastError()));
             auto args = std::make_unique<WorkerArgs>();
@@ -682,16 +716,18 @@ namespace WinUIProfiler::Tap
             job->Check();
             const auto guid = SnapshotJson::CaptureIdText(captureId);
             if (guid.empty()) Fail(E_UNEXPECTED);
-            result.Json = "{\"schemaVersion\":1,\"captureId\":" + String(winrt::hstring(guid)) +
+            result.Json = "{\"schemaVersion\":3,\"captureId\":" + String(winrt::hstring(guid)) +
                 ",\"processId\":" + std::to_string(GetCurrentProcessId()) +
                 ",\"creationTimeFileTime\":" + std::to_string(actualCreation) +
                 ",\"qpcFrequency\":" + std::to_string(frequency.QuadPart) +
                 ",\"startQpc\":" + std::to_string(start) + ",\"endQpc\":" + std::to_string(Qpc()) +
+                ",\"resourceSnapshot\":" + ResourceJson(resourceStatus, resources, resourceStart, resourceEnd) +
                 ",\"roots\":[" + job->Roots.Json + "],\"xamlNodes\":[" + job->Xaml.Json +
                 "],\"compositionNodes\":[" + job->Composition.Json + "],\"correlations\":[" +
                 job->Correlations.Json + "],\"limitations\":["
                 "\"Public realized visual-tree scope only; unrealized and nonvisual logical objects are excluded.\","
                 "\"Each root is sampled on its owning UI thread over its recorded interval; roots are not globally atomic.\","
+                "\"XAML resources are sampled before tree enumeration, not atomically with the trees. Allocator counters cover enabled profiling only; transition-spanning allocations/frees can be unbalanced. AllocatedMemory is the independent GC heuristic, not process heap size. All-zero graphics resource slots are not measurements.\","
                 "\"Open popup children are separate visual subtrees, without fabricated logical parent links.\","
                 "\"GetElementVisual can materialize public handout visuals; no adorners or visual mutations are requested.\","
                 "\"Composition includes all descendants exposed by ContainerVisual.Children and public ancestors of handout visuals, not private compositor trees.\","

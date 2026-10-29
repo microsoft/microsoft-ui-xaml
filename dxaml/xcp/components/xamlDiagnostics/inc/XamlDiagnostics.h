@@ -234,8 +234,8 @@ public:
         _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) override;
 
     // IXamlDiagnostics3 Interface
-    IFACEMETHOD(GetMemorySnapshot)(
-        _Out_ XamlMemorySnapshot* snapshot) override;
+    IFACEMETHOD(GetResourceSnapShot)(
+        _Out_ XamlResourceSnapshot* snapshot) override;
 
     // IXamlDiagnosticsTestHooks Interface
     IFACEMETHOD(UnregisterInstance)(\
