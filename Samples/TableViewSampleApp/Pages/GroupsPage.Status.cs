@@ -152,4 +152,49 @@ public sealed partial class GroupsPage
             expanded ? "Expanded" : "Collapsed",
             group.KeyText));
     }
+
+    // UI Automation ExpandCollapse toggles a group without any input event, so every group header
+    // also reports its IsExpanded changes (the implicit TableViewGroupHeader Style sets this).
+    public static readonly DependencyProperty ReportsExpansionProperty = DependencyProperty.RegisterAttached(
+        "ReportsExpansion", typeof(bool), typeof(GroupsPage), new PropertyMetadata(false, OnReportsExpansionChanged));
+
+    public static bool GetReportsExpansion(DependencyObject element) => (bool)element.GetValue(ReportsExpansionProperty);
+
+    public static void SetReportsExpansion(DependencyObject element, bool value) => element.SetValue(ReportsExpansionProperty, value);
+
+    private static void OnReportsExpansionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is TableViewGroupHeader header && e.NewValue is true)
+        {
+            header.RegisterPropertyChangedCallback(TableViewGroupHeader.IsExpandedProperty, OnHeaderIsExpandedChanged);
+        }
+    }
+
+    private static void OnHeaderIsExpandedChanged(DependencyObject sender, DependencyProperty property)
+    {
+        DependencyObject? node = sender;
+        while (node is not null and not GroupsPage)
+        {
+            node = VisualTreeHelper.GetParent(node);
+        }
+
+        (node as GroupsPage)?.RecordHeaderExpansion((TableViewGroupHeader)sender);
+    }
+
+    // A recycled header also reports here, with the state of the group it now shows; that is still
+    // that group's real state, so recording it is correct either way.
+    private void RecordHeaderExpansion(TableViewGroupHeader header)
+    {
+        if (!IsGrouped || !header.IsExpandable || header.Content is not TableViewGroupInfo group)
+        {
+            return;
+        }
+
+        var identity = SampleShaping.GroupIdentity(group.Key);
+        var changed = header.IsExpanded ? _collapsedGroups.Remove(identity) : _collapsedGroups.Add(identity);
+        if (changed)
+        {
+            RefreshReadouts();
+        }
+    }
 }

@@ -216,8 +216,8 @@ public sealed partial class MainWindow : Window
     // Extends content into the title bar so we get the modern WinUI shell
     // (Mica backdrop + flush nav). SetTitleBar(AppTitleBar) registers our
     // Grid as the drag region. We also subscribe to NavView.DisplayModeChanged
-    // so the title bar's left padding stays clear of the hamburger / back
-    // buttons at narrow widths.
+    // so the page stays clear of the back / menu buttons that Minimal mode
+    // overlays on it at narrow widths.
 
     private void ConfigureTitleBar()
     {
@@ -378,9 +378,8 @@ public sealed partial class MainWindow : Window
             // OnAppWindowChanged reapplies after Activate() wires XamlRoot.
             var scale = (Content as FrameworkElement)?.XamlRoot?.RasterizationScale ?? 1.0;
             if (scale <= 0) scale = 1.0;
-            // System-rendered caption buttons drive the system insets. The
-            // NavView hamburger inset still composes on top of LeftInset in
-            // UpdateTitleBarLeftInset (left = max(systemLeft, navInset)).
+            // System-rendered caption buttons drive the system insets;
+            // UpdateTitleBarLeftInset applies the left one.
             RightPaddingColumn.Width = new GridLength(titleBar.RightInset / scale);
             m_systemLeftInset = titleBar.LeftInset / scale;
             UpdateTitleBarLeftInset(NavView.DisplayMode);
@@ -453,16 +452,13 @@ public sealed partial class MainWindow : Window
 
     private void UpdateTitleBarLeftInset(NavigationViewDisplayMode mode)
     {
-        // Minimal mode shows both the hamburger AND the back button at the
-        // top-left, occupying ~96 DIPs, so the title must clear them there.
-        // Compact / Expanded keep the hamburger in the pane (below the title
-        // bar), so the title sits flush-left at the standard 16 DIP inset.
+        // The NavigationView sits below the title bar, so in Minimal mode its back and menu buttons
+        // overlay the top of the page, not the title. Push the page below them, by the same 44 DIPs
+        // NavigationViewMinimalHeaderMargin uses, and keep the title at the standard 16 DIP inset.
         // On RTL system locales, AppWindow.TitleBar moves the caption buttons
-        // to the left side, so we must also reserve m_systemLeftInset. Use the
-        // larger of the two so neither layer is clipped.
-        var navInset = mode == NavigationViewDisplayMode.Minimal ? 96 : 16;
-        var leftInset = Math.Max(navInset, m_systemLeftInset);
-        LeftPaddingColumn.Width = new GridLength(leftInset);
+        // to the left side, so we must also reserve m_systemLeftInset.
+        ContentFrame.Margin = new Thickness(0, mode == NavigationViewDisplayMode.Minimal ? 44 : 0, 0, 0);
+        LeftPaddingColumn.Width = new GridLength(Math.Max(16, m_systemLeftInset));
     }
 
     private void OnThemeToggleClick(object sender, RoutedEventArgs e)

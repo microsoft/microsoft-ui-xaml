@@ -19,13 +19,17 @@
         <Grid x:Name="AppTitleBar" Grid.Row="0" Height="40" Background="Transparent">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="16"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="4,0,0,0">
+            <!-- A * column, not Auto, so a narrow window trims the title before the caption buttons. -->
+            <Grid Grid.Column="1" ColumnSpacing="10" VerticalAlignment="Center" Margin="4,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <Border Width="20" Height="20" CornerRadius="3"
                         Background="{ThemeResource AccentFillColorDefaultBrush}"
                         VerticalAlignment="Center">
@@ -35,13 +39,16 @@
                                    AutomationProperties.AccessibilityView="Raw"/>
                 </Border>
                 <TextBlock x:Name="AppTitleTextBlock"
+                           Grid.Column="1"
                            Text="WinUI TableView Samples"
                            Style="{ThemeResource CaptionTextBlockStyle}"
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center"/>
-            </StackPanel>
+            </Grid>
 
             <Button x:Name="ThemeToggleButton"
-                    Grid.Column="3"
+                    Grid.Column="2"
                     AutomationProperties.AutomationId="ThemeToggleButton"
                     Style="{ThemeResource SubtleButtonStyle}"
                     Width="36" Height="32"
