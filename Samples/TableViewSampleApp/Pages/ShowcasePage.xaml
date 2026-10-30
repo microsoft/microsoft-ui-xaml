@@ -39,7 +39,7 @@
 
     <controls:SamplePresenter
         Header="Showcase"
-        Description="A people directory that combines the TableView features in one table. The Department pills and Salary tints are template cells bound through converters, so a live update recolors only the cells whose values changed. Click a header to sort, drag a header edge to resize (the Active column opts out with CanResize), and show or hide columns at run time with TableViewColumn.Visibility. SelectionMode switches between None and Single, HeadersVisibility hides the header row, and TableViewSource.GroupBy groups the same rows in place."
+        Description="A people directory that combines the TableView features in one table. The Department pills and Salary tints are template cells bound through converters, so a live update recolors only the cells whose values changed. Click a header to sort, drag a header edge to resize (the Active column opts out with CanUserResize), and show or hide columns at run time with TableViewColumn.Visibility. SelectionMode switches between None and Single, HeadersVisibility hides the header row, and TableViewSource.GroupBy groups the same rows in place."
         Snippet="Showcase"
         StretchExample="True"
         TryIt="Live updates are on: watch the Salary tints and Active checkboxes change on the first rows. Click the Salary header to sort, select a row and give it a raise, and watch it move to its sorted place. Then switch Shaping to Grouped, or turn on the Shift, Office or Email column in the rail."
@@ -56,17 +56,17 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
-                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False" HeaderToolTip="Fixed width: this column sets CanResize to False."/>
+                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanUserResize="False" HeaderToolTip="Fixed width: this column sets CanUserResize to False."/>
                 <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
                 <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="100" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
                 <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="150" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
                 <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
                 <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="220" Binding="{Binding Email}" Visibility="Collapsed"/>
                 <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="200" Binding="{Binding Role}" Visibility="Collapsed"/>
-                <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
+                <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False" Visibility="Collapsed"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -129,7 +129,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Showcase"
-                    Description="Grouped, a header sort applied after grouping orders the rows within each group (a sort applied before grouping orders the groups too), and live updates keep running. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped, a header sort orders the rows within each group and the groups follow their first rows, and live updates keep running. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

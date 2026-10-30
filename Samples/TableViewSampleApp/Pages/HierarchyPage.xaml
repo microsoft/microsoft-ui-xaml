@@ -32,7 +32,7 @@
                     <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
                 </tv:TableView.Resources>
                 <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
