@@ -111,6 +111,14 @@ struct ColumnResizeFrozenColumn
     winrt::IInspectable width{ nullptr };
 };
 
+// A locked Star column before a resized one, held at the width it rendered when the resize began,
+// as FreezeColumnsBeforeResize holds an unlocked one.
+struct LockedColumnHold
+{
+    winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+    double width{ 0.0 };
+};
+
 // One in-flight resize drag. The gripper owns the gesture; this is only the host's anchor for it,
 // kept reachable so Escape can cancel the drag in flight.
 struct ColumnResizeDragState
@@ -132,6 +140,8 @@ struct ColumnResizeDragState
     bool didDelta{ false };
     // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
     std::vector<ColumnResizeFrozenColumn> frozen;
+    // The table's locked-column holds before the first write, restored if the drag is canceled.
+    std::optional<std::pair<std::vector<LockedColumnHold>, size_t>> lockedHoldsBefore;
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -1254,6 +1264,8 @@ private:
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
+    std::vector<LockedColumnHold> m_lockedColumnHolds;
+    size_t m_lockedColumnHoldsSignature{ 0 };
     // True while a control-initiated sort verb is mutating the source. Its own mutations must not
     // be mistaken for the app declaring a sort behind the control's back.
     bool m_isApplyingControlInitiatedSort{ false };
@@ -1441,7 +1453,9 @@ private:
     bool IsColumnResizePinned(const winrt::TableViewColumn& column);
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
-    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen);
+    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
+    // Hash of every input that sizes the columns other than user resizes; holds die when it changes.
+    size_t LockedColumnHoldsSignature();
     winrt::ResizeGripper GetAvailableResizeGripper(const winrt::TableViewColumn& column);
     bool IsColumnResizeAllowed(const winrt::TableViewColumn& column);
     static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);

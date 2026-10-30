@@ -1533,6 +1533,308 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a locked Star column shares the viewport with the other Star columns once its authored share no longer fits after resizes and a MaxWidth change.")]
+        public void VerifyLockedStarColumnFitsAfterResizeAndMaxWidthChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                DragLockedStarTableColumns(tableView);
+
+                // GH #12446: the clamp frees authored space; the locked share then no longer fits.
+                tableView.Columns[3].MaxWidth = 50.0;
+                tableView.UpdateLayout();
+
+                VerifyLockedStarLayout(tableView, "after resizes and a MaxWidth change");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a resize after the locked Star column stopped holding its share never moves the locked column before the resized one, during or after the resize, by pointer, keyboard or UI Automation.")]
+        public void VerifyDragAfterLockedStarCapHoldsEarlierLockedColumn()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                DragLockedStarTableColumns(tableView);
+                tableView.Columns[3].MaxWidth = 50.0;
+                tableView.UpdateLayout();
+                VerifyLockedStarLayout(tableView, "before the resizes");
+
+                var gripper = RequireGripper(tableView, 2);
+                gripper.KeyboardIncrement = 20.0;
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[2])
+                    .GetPattern(global::Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Transform) as global::Microsoft.UI.Xaml.Automation.Provider.ITransformProvider;
+                var scale = tableView.XamlRoot.RasterizationScale;
+
+                foreach (var (input, delta) in new[] { ("pointer", -20.0), ("keyboard", 20.0), ("UI Automation", -20.0) })
+                {
+                    // End any hold an earlier step latched, so each input has to latch its own.
+                    tableView.Columns[3].MaxWidth = 51.0;
+                    tableView.UpdateLayout();
+                    tableView.Columns[3].MaxWidth = 50.0;
+                    tableView.UpdateLayout();
+                    VerifyLockedStarLayout(tableView, $"before the {input} resize");
+
+                    var before = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                    switch (input)
+                    {
+                        case "pointer":
+                            gripper.BeginDrag();
+                            gripper.TryDrag(delta);
+                            tableView.UpdateLayout();
+                            var during = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                            Log.Comment($"during={string.Join(", ", during)}.");
+                            VerifyNear(before[1], during[1], 0.5, "The drag must not move the locked column before the dragged one while it is in flight");
+                            gripper.EndDrag(false);
+                            break;
+                        case "keyboard":
+                            Verify.IsTrue(gripper.TryKeyboardStep(VirtualKey.Right), "The keyboard step must be acted on.");
+                            break;
+                        default:
+                            transform.Resize((before[2] + delta) * scale, 0.0);
+                            break;
+                    }
+                    tableView.UpdateLayout();
+
+                    var after = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                    Log.Comment($"{input} {delta}: before={string.Join(", ", before)}, after={string.Join(", ", after)}.");
+                    VerifyNear(before[2] + delta, after[2], 1.0, $"The {input} resize must take effect");
+                    VerifyNear(before[0], after[0], 0.5, $"The {input} resize must not move the column before the resized one");
+                    VerifyNear(before[1], after[1], 0.5, $"The {input} resize must not move the locked column before the resized one, after it ends");
+                    // The last column is at most at its MaxWidth, so width a resize frees beyond that is left empty.
+                    var viewport = GetBodyViewportWidth(tableView);
+                    VerifyNear(Math.Min(50.0, viewport - after[0] - after[1] - after[2]), after[3], 1.0,
+                        $"The column after the {input} resize must give or take the width");
+                }
+
+                // Any other change to the inputs ends the hold, so the columns fill the viewport again.
+                tableView.Columns[3].MaxWidth = 60.0;
+                tableView.UpdateLayout();
+                VerifyLockedStarLayout(tableView, "after a MaxWidth change ends the hold");
+            });
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing a held locked Star column ends its hold, so resizes while it is hidden cannot leave a stale hold that overflows the viewport when it returns.")]
+        public void VerifyCollapsingHeldLockedColumnEndsItsHold()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                DragLockedStarTableColumns(tableView);
+                tableView.Columns[3].MaxWidth = 50.0;
+                tableView.UpdateLayout();
+                DragAndVerify(tableView, 2, -20.0);
+
+                tableView.Columns[1].Visibility = Visibility.Collapsed;
+                tableView.UpdateLayout();
+                DragAndVerify(tableView, 0, 100.0);
+                tableView.Columns[1].Visibility = Visibility.Visible;
+                tableView.UpdateLayout();
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+                Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, "The columns must fill the viewport without overflowing once the column returns.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a drag clamped at its bound does not knock a locked Star column out of its held share through rounding.")]
+        public void VerifyDragClampedAtBoundKeepsLockedStarShare()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                // Off the pixel grid, so the bound the drag clamps at and the room layout measures round differently.
+                tableView.Columns[3].MinWidth = 20.3;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var locked = tableView.Columns[1].ActualWidth;
+                var gripper = RequireGripper(tableView, 2);
+                gripper.BeginDrag();
+                gripper.TryDrag(1000.0);
+                gripper.EndDrag(false);
+                tableView.UpdateLayout();
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+                VerifyNear(locked, widths[1], 1.0, "A drag clamped at its bound must leave the locked column at its share");
+                Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, "The columns must fill the viewport.");
+            });
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies a MaxWidth that does not bind leaves a resized table with a locked Star column unchanged.")]
+        public void VerifyNonBindingMaxWidthKeepsLockedStarLayout()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                DragLockedStarTableColumns(tableView);
+                var before = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+
+                tableView.Columns[3].MaxWidth = GetBodyViewportWidth(tableView);
+                tableView.UpdateLayout();
+
+                var after = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"before={string.Join(", ", before)}, after={string.Join(", ", after)}.");
+                for (int i = 0; i < before.Length; ++i)
+                {
+                    VerifyNear(before[i], after[i], 0.5, $"Column {i} must not change for a MaxWidth that does not bind");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a locked Star column takes its authored share when a later Star column clamps at MaxWidth with no prior resize.")]
+        public void VerifyLockedStarColumnHonorsMaxWidthWithoutResize()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[3].MaxWidth = 50.0;
+                tableView.UpdateLayout();
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+
+                var expected = ExpectedStarWidths(viewport, new[] { 1.0, 2.0, 1.0, 3.0 },
+                    new[] { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 50.0 });
+                for (int i = 0; i < expected.Length; ++i)
+                {
+                    VerifyNear(expected[i], widths[i], 1.0, $"Column {i} must take its Star share");
+                }
+            });
+        }
+
+        private static TableView CreateLockedStarTable()
+        {
+            var tableView = CreateResizableTable(
+                ("First", new GridLength(1.0, GridUnitType.Star)),
+                ("Locked", new GridLength(2.0, GridUnitType.Star)),
+                ("Third", new GridLength(1.0, GridUnitType.Star)),
+                ("Last", new GridLength(3.0, GridUnitType.Star)));
+            tableView.Columns[1].CanResize = false;
+            return tableView;
+        }
+
+        // The GH #12446 drags, scaled down to the test viewport.
+        private static void DragLockedStarTableColumns(TableView tableView)
+        {
+            DragAndVerify(tableView, 0, 114.0);
+            DragAndVerify(tableView, 2, 100.0);
+        }
+
+        private static void DragAndVerify(TableView tableView, int index, double delta)
+        {
+            var column = tableView.Columns[index];
+            var start = column.ActualWidth;
+            var gripper = RequireGripper(tableView, index);
+            gripper.BeginDrag();
+            gripper.TryDrag(delta);
+            gripper.EndDrag(false);
+            tableView.UpdateLayout();
+            VerifyNear(start + delta, column.ActualWidth, 1.0, $"The drag on column {index} must take effect");
+        }
+
+        // Locked column 1 (2*) and column 3 (3*, MaxWidth) divide what the dragged columns 0 and 2 leave.
+        private static void VerifyLockedStarLayout(TableView tableView, string when)
+        {
+            var viewport = GetBodyViewportWidth(tableView);
+            var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+            Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+
+            var expected = ExpectedStarWidths(viewport - widths[0] - widths[2], new[] { 2.0, 3.0 },
+                new[] { double.PositiveInfinity, tableView.Columns[3].MaxWidth });
+            Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, $"The columns must fill the viewport {when}.");
+            VerifyNear(expected[1], widths[3], 1.0, $"The MaxWidth column must sit at its Star share {when}");
+            VerifyNear(expected[0], widths[1], 1.0, $"The locked column must take the rest of the Star space {when}");
+        }
+
+        // WPF star division: a column whose share passes its MaxWidth is fixed there and the rest re-divide.
+        private static double[] ExpectedStarWidths(double available, double[] factors, double[] maxWidths)
+        {
+            var widths = new double[factors.Length];
+            var open = Enumerable.Range(0, factors.Length).ToList();
+            for (bool clamped = true; clamped && open.Count > 0; )
+            {
+                clamped = false;
+                var unit = available / open.Sum(i => factors[i]);
+                foreach (var i in open)
+                {
+                    if (unit * factors[i] > maxWidths[i])
+                    {
+                        widths[i] = maxWidths[i];
+                        available -= maxWidths[i];
+                        open.Remove(i);
+                        clamped = true;
+                        break;
+                    }
+                }
+            }
+
+            foreach (var i in open)
+            {
+                widths[i] = available * factors[i] / open.Sum(j => factors[j]);
+            }
+            return widths;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the last Star column, which has no later Star column to trade width with, shows no gripper.")]
         public void VerifyPinnedStarColumnHidesGripper()
         {
