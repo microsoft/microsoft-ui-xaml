@@ -578,7 +578,7 @@ void SourceTable::ResetTreeToFlat() noexcept
 
 void SourceTable::AddToLookups(SourceRecord* record)
 {
-    m_rawLookup[winrt::get_abi(record->Item.get())] = record;
+    m_rawLookup[winrt::get_abi(record->Item)] = record;
     m_addressLookup[record->Address] = record;
     if (m_identityIndexEnabled)
     {
@@ -597,7 +597,7 @@ void SourceTable::RemoveFromLookups(SourceRecord* record) noexcept
         }
     };
 
-    eraseIfOwned(m_rawLookup, winrt::get_abi(record->Item.get()));
+    eraseIfOwned(m_rawLookup, winrt::get_abi(record->Item));
     eraseIfOwned(m_addressLookup, record->Address);
     if (m_identityIndexEnabled)
     {
@@ -631,7 +631,7 @@ void SourceTable::Clear()
     m_removedView.clear();
     m_zombies.clear();
 
-    // ~SourceRecord() revokes through Item.safe_get().
+    // ~SourceRecord() revokes through Item.
     m_records.clear();
     m_sourceAccessor.reset();
 
@@ -763,7 +763,7 @@ void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record) 
         return;
     }
 
-    auto const notifier = record->Item.get().try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>();
+    auto const notifier = record->Item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>();
     if (!notifier)
     {
         record->Watch = WatchState::NotObservable;
@@ -823,7 +823,7 @@ void SourceTable::UnsubscribeRecordPropertyChanged(SourceRecord* record) noexcep
     record->Watch = WatchState::Unchecked;
     try
     {
-        if (auto const notifier = record->Item.safe_get().try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
+        if (auto const notifier = record->Item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
         {
             notifier.PropertyChanged(token);
         }
@@ -922,7 +922,7 @@ std::vector<SourceRecordPtr> const& SourceTable::RootRecords() const noexcept
 
 SourceRecordPtr SourceTable::CreateRecord(winrt::Windows::Foundation::IInspectable const& item)
 {
-    auto record = std::make_shared<SourceRecord>(m_trackerOwner, item);
+    auto record = std::make_shared<SourceRecord>(item);
     try
     {
         AddToLookups(record.get());
@@ -1532,7 +1532,7 @@ void SourceTable::ReplaceHierarchy(std::unique_ptr<SourceHierarchy> next)
         items.reserve(m_records.size());
         for (auto const& record : m_records)
         {
-            items.push_back(record->Item.get());
+            items.push_back(record->Item);
         }
 
         next->Prepare(*this, items);

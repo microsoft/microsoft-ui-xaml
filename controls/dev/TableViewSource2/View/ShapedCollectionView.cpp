@@ -98,8 +98,8 @@ winrt::IInspectable ShapedCollectionView::GetAt(uint32_t index)
         // is stable. Its count and expansion are creation-time snapshots (fallback only).
         if (!group->HeaderRow)
         {
-            // Group() reads the key through the GroupNode's tracker_ref on each call (weak to
-            // this view), so the header holds no strong reference to the app's key object.
+            // Group() reads the key from the GroupNode on each call (weak to this view), so the
+            // header holds no strong reference to the app's key object.
             group->HeaderRow = winrt::make<GroupedEntry>(
                 std::function<winrt::IInspectable()>{ [weakView = get_weak(), identity = group->Identity]() -> winrt::IInspectable
                 {
@@ -113,7 +113,7 @@ winrt::IInspectable ShapedCollectionView::GetAt(uint32_t index)
         return group->HeaderRow;
     }
 
-    return node->AsRecord()->Item.get();
+    return node->AsRecord()->Item;
 }
 
 winrt::IInspectable ShapedCollectionView::GroupKeyOf(winrt::hstring const& identity) const
@@ -125,7 +125,7 @@ winrt::IInspectable ShapedCollectionView::GroupKeyOf(winrt::hstring const& ident
 
     ShapedNode* const node = m_rows->TryResolveKey(identity);
     GroupNode const* const group = node ? node->AsGroup() : nullptr;
-    return group && group->Key ? group->Key->get() : nullptr;
+    return group ? group->Key : nullptr;
 }
 
 bool ShapedCollectionView::IndexOf(winrt::IInspectable const& value, uint32_t& index)

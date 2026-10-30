@@ -10,26 +10,22 @@
 
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 
-SourceRecord::SourceRecord(
-    ITrackerHandleManager const* owner,
-    winrt::Windows::Foundation::IInspectable const& item)
+SourceRecord::SourceRecord(winrt::Windows::Foundation::IInspectable const& item)
     : ShapedNode(ShapedNodeKind::Record)
-    , Item(owner)
+    , Item(item)
     , Address(AddressOf(item))
 {
-    Item.set(item);
 }
 
 SourceRecord::~SourceRecord()
 {
-    // Teardown never calls Item.get(): the item may already be collected. A record subscribed
-    // for live shaping (SourceTable::SubscribeRecordPropertyChanged) is revoked here. Revoke
-    // failures are swallowed.
+    // A record subscribed for live shaping (SourceTable::SubscribeRecordPropertyChanged) is
+    // revoked here. Revoke failures are swallowed.
     if (PropertyChangedToken.value)
     {
         try
         {
-            if (auto const notifier = Item.safe_get().try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
+            if (auto const notifier = Item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
             {
                 notifier.PropertyChanged(PropertyChangedToken);
             }

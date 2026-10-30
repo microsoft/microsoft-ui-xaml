@@ -41,7 +41,7 @@ ShapingManager::ShapingManager(ITrackerHandleManager const* trackerOwner, winrt:
     : m_trackerOwner(trackerOwner)
     , m_sourceTable(SourceTable::Create(trackerOwner, items))
     , m_delegates(trackerOwner)
-    , m_engine(trackerOwner, *m_sourceTable, m_delegates, m_paths)
+    , m_engine(*m_sourceTable, m_delegates, m_paths)
     , m_rows(m_engine, *m_sourceTable)
 {
     try

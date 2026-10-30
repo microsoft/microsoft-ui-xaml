@@ -40,8 +40,8 @@
 // Routing stays in ShapingManager: the engine never sees a range event (k > c_bulkThreshold); the
 // manager calls Reapply for those.
 //
-// Reference tracking: GroupNode::Key and ShapeState::SortKeys are tracker_refs bound to
-// trackerOwner (the owning TableViewSource2). Clear() must run while that owner is alive.
+// Reference holding: GroupNode::Key and ShapeState::SortKeys are strong references (Header-Changes
+// drift #73), not tracker_refs, so the engine needs no tracker owner.
 //
 // Threading: UI-thread affine.
 
@@ -58,7 +58,6 @@ class ShapingEngine final
 {
 public:
     ShapingEngine(
-        ITrackerHandleManager const* trackerOwner,
         SourceTable const& source,
         ShapeDelegates& delegates,
         PathEvaluator& paths);
@@ -145,7 +144,7 @@ public:
     // ---- Lifetime ---------------------------------------------------------------------------
 
     // Calls Tree().Clear() (unlinks the root's Children), then drops every GroupNode (and its
-    // tracked Key) by clearing m_groupsByIdentity and m_retired, every record's SortKeys and
+    // Key) by clearing m_groupsByIdentity and m_retired, every record's SortKeys and
     // ShapedChildren, and resets Applied() to the empty spec. Called by ShapingManager::Clear()
     // before SourceTable::Clear(). Idempotent.
     void Clear();
@@ -313,9 +312,8 @@ private:
     // dropped; `arrivals`, and records with no cached place (a top-level record with no group
     // while grouped), are hidden; emptied groups are dropped. One Reset. Sets m_stale.
     // noexcept: an allocation failure fails fast rather than leaving freed records linked.
-    void UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;
+    void     UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;
 
-    ITrackerHandleManager const* m_trackerOwner{ nullptr };
     SourceTable const& m_source;
     ShapeDelegates& m_delegates;
     PathEvaluator& m_paths;

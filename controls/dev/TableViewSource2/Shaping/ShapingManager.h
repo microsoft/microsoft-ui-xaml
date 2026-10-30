@@ -457,7 +457,7 @@ private:
 
     // Source tree + applied spec -> shaped tree (ShapedTree, P10). Every entry point is bracketed
     // here by the commit scope. Built in the constructor's member-init list after m_sourceTable is
-    // created (it binds to *m_sourceTable), with m_trackerOwner, m_delegates and m_paths. Group
+    // created (it binds to *m_sourceTable), with m_delegates and m_paths. Group
     // expansion lives in its ShapedTree (reached through Tree()).
     ShapingEngine m_engine;
 

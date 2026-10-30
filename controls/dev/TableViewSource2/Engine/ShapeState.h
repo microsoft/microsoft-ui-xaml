@@ -9,7 +9,6 @@
 
 #include <winrt/Windows.Foundation.h>
 
-#include "tracker_ref.h"
 #include "Engine/FenwickTree.h"
 
 struct GroupNode;
@@ -19,7 +18,7 @@ struct SourceRecord;
 // only). See docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Shaped tree
 // representation" and "Engine state storage".
 //
-// A leaf header: only the standard library, WinRT, tracker_ref and FenwickTree (itself a leaf).
+// A leaf header: only the standard library, WinRT and FenwickTree (itself a leaf).
 // SourceRecord.h includes it, so Source/ depends on these headers and not on the engine.
 
 // Which concrete type a ShapedNode is. Fixed at construction.
@@ -163,10 +162,11 @@ struct ShapeState
 
     // One cached key per SortSpec of the applied spec, in level order. Path and Key levels hold the
     // value read once per record (PathEvaluator / ShapeDelegates); Comparer levels hold nothing (the
-    // comparer is called with the items). Optional so the engine can destroy keys while the owner
-    // is alive; tracked like SourceRecord::Item because a key can reference the app's objects.
+    // comparer is called with the items; their slot stays null). A null slot reads as a null key.
+    // Strong references, like SourceRecord::Item (Header-Changes drift #73): a key can reference
+    // the app's objects, which then stay alive while the record holds the key.
     // Valid only while SortKeysValid is set.
-    std::vector<std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>>> SortKeys;
+    std::vector<winrt::Windows::Foundation::IInspectable> SortKeys;
 
     // Source children after filter and sort, in shaped order. Non-owning. Valid only while
     // ChildrenShaped is set. Built eagerly for every parent whenever a filter or sort is active,

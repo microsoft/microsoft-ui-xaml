@@ -57,10 +57,10 @@ struct GroupNode : ShapedNode
 {
     GroupNode() noexcept : ShapedNode(ShapedNodeKind::Group) {}
 
-    // The GroupBy selector's result for this bucket; empty on the shaped root. Tracked through the
-    // owning TableViewSource2 (an object key may reference the VM; see SourceTable's Reference
-    // tracking). Optional so the engine can drop it while the owner is alive.
-    std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>> Key;
+    // The GroupBy selector's result for this bucket; null on the shaped root and for a null key.
+    // A strong reference (Header-Changes drift #73): an object key stays alive while its group
+    // exists.
+    winrt::Windows::Foundation::IInspectable Key{ nullptr };
 
     // Stable identity: the group key path from the top level down, one length-prefixed segment
     // per level (the parent's Identity plus this Key's ValueKey::ToObjectLookupKey form:

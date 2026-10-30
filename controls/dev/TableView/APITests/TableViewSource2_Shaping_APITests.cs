@@ -301,6 +301,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies object group keys held only by the source survive a GC and stay correct across a resort and an Add, and cached sort keys keep ordering rows (drift #73).")]
+        public void VerifyNativeHeldKeysSurviveCollectionAndResort()
+        {
+            var tableView = PlaceFlat(out var source, out var rows);
+
+            // The selector caches its keys weakly: once applied, only the source holds them.
+            var cache = new Dictionary<string, WeakReference<TeamKey>>();
+            var byTeamObject = LiveKey(r =>
+            {
+                if (!cache.TryGetValue(r.Team, out var weak) || !weak.TryGetTarget(out var key))
+                {
+                    key = new TeamKey { Team = r.Team };
+                    cache[r.Team] = new WeakReference<TeamKey>(key);
+                }
+                return key;
+            });
+
+            OnUI(tableView, () =>
+            {
+                source.GroupBy(byTeamObject, SortDirection.None);
+                source.Sort(LiveByScore, SortDirection.Descending);
+            });
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] C A [H] D B", "GroupBy object key, Score descending"));
+
+            CollectUntil(() => false);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(cache["X"].TryGetTarget(out _), "The source keeps the X group key alive.");
+                Verify.IsTrue(cache["Y"].TryGetTarget(out _), "The source keeps the Y group key alive.");
+            });
+
+            OnUI(tableView, () => source.Sort(LiveByScore, SortDirection.Ascending));
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyShaped(tableView, "[H] A C [H] B D", "Resort after a GC reorders rows inside the same groups");
+                var info = GetGroupInfo(tableView, 0);
+                Verify.IsTrue(cache["X"].TryGetTarget(out var x), "X key still alive.");
+                Verify.AreSame(x, info.Key, "The first header's key is the X key object.");
+            });
+
+            OnUI(tableView, () => rows.Add(new LiveRow { Id = 5, Name = "E", Score = 5, Team = "Y", Addr = new LiveAddress("Essen") }));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "[H] A C [H] E B D", "An Add joins the existing Y group by key identity"));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies ClearGroupBy, ClearSort and ClearFilter restore the source order.")]
         public void VerifyClearVerbsRestoreSourceOrder()
         {
@@ -380,7 +425,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var team = ((LiveRow)o).Team;
                 if (!m_teams.TryGetValue(team, out var key))
                 {
-                    key = new TeamKey { Owner = this, Team = team };
+                    key = new TeamKey { Team = team };
                     m_teams.Add(team, key);
                 }
                 return key;
@@ -388,10 +433,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public object Score(object o) => ((LiveRow)o).Score;
         }
 
-        // A group key object that refers back to the view model: the group header must not hold it.
+        // A group key object the view model caches. It holds no reference back to the view model:
+        // group keys are strong native references (Header-Changes drift #73), so a key that
+        // referred back to the view model would form a cycle the GC cannot see.
         private sealed class TeamKey
         {
-            public ShapingViewModel Owner;
             public string Team;
         }
 

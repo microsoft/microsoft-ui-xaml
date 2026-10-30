@@ -11,7 +11,6 @@
 #include <winrt/Microsoft.UI.Xaml.Interop.h>
 #include <winrt/Windows.Foundation.h>
 
-#include "tracker_ref.h"
 #include "Engine/ShapeState.h"
 
 // Per-item source record and record-level change for TableViewSource2
@@ -48,23 +47,21 @@ enum class WatchState : uint8_t
 // adds by keeping its one-byte Flags apart from the base.
 struct SourceRecord : ShapedNode
 {
-    SourceRecord(
-        ITrackerHandleManager const* owner,
-        winrt::Windows::Foundation::IInspectable const& item);
+    explicit SourceRecord(winrt::Windows::Foundation::IInspectable const& item);
 
-    // Revokes PropertyChangedToken through Item.safe_get(): during a GC-driven teardown the item may
-    // already be collected, in which case the revoke is skipped. Never uses Item.get().
+    // Revokes PropertyChangedToken through Item. Item is a strong reference, so it is always alive
+    // here; revoke failures are swallowed.
     ~SourceRecord();
 
     SourceRecord(SourceRecord const&) = delete;
     SourceRecord& operator=(SourceRecord const&) = delete;
 
-    // Reference-tracked through the owning TableViewSource2 (like Vector<IInspectable>) so the .NET
-    // GC can collect cycles when an item references its owner. Kept alive until ~SourceRecord() so
-    // COM addresses are not reused while the record is in the table. get_abi(Item.get()) is the
-    // raw-pointer lookup key. Item.get() is valid only on live paths (incremental changes, Refresh,
-    // PropertyChanged handling); teardown paths use Item.safe_get().
-    tracker_ref<winrt::Windows::Foundation::IInspectable> Item;
+    // A strong reference, like v1 (Header-Changes drift #73). Not reference-tracked: a tracker
+    // handle per record made whole-table edits O(n^2) in the owner's tracker list, so an
+    // item <-> owner cycle is invisible to the GC and lives until the item leaves the source or
+    // the source is cleared. Kept alive until ~SourceRecord() so COM addresses are not reused while
+    // the record is in the table. get_abi(Item) is the raw-pointer lookup key.
+    winrt::Windows::Foundation::IInspectable Item{ nullptr };
 
     // One QI at creation.
     ObjectAddress Address{ 0 };
@@ -102,8 +99,7 @@ struct SourceRecord : ShapedNode
     // The per-node counts and position (VisibleDescendantCount, IndexInParent, ChildRows) are on
     // the ShapedNode base. The record-only rest is stored inline (Engine/ShapeState.h): filter
     // flags, cached sort keys, filtered and sorted children, the group link. Tree links stay in
-    // Parent/Children above. Cached keys are tracker_refs, so ~SourceRecord destroys them with
-    // Item, under the same teardown rules.
+    // Parent/Children above. Cached keys are strong references, destroyed with the record.
     ShapeState Shape;
 
     // Logical identity, formatted on first use and then cached. The only way to read it.

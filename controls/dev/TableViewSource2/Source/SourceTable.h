@@ -138,13 +138,16 @@
 // the constructor.
 //
 // Reference tracking: m_trackerOwner points to the owning TableViewSource2 (an
-// ITrackerHandleManager). Every app-supplied object or delegate held here goes through tracker_ref
-// bound to m_trackerOwner: CollectionAccessor2 (root and child feeds), each SourceRecord::Item, the
-// hierarchy selectors and ParentBy object keys. A strong reference to a .NET object (an app lambda
-// capturing the page or VM) would root a cycle through TableViewSource2 that the GC cannot see.
+// ITrackerHandleManager). Every app-supplied delegate and collection held here goes through
+// tracker_ref bound to m_trackerOwner: CollectionAccessor2 (root and kept child feeds) and the
+// hierarchy selectors. A strong reference to a .NET object (an app lambda capturing the page or VM)
+// would root a cycle through TableViewSource2 that the GC cannot see. Per-item values are the
+// exception (Header-Changes drift #73): each SourceRecord::Item, its cached sort keys, group keys
+// and ParentBy object keys are strong references, as in v1, because a tracker handle per item made
+// whole-table edits O(n^2) in the owner's tracker list. An item <-> VM <-> TableViewSource2 cycle
+// therefore lives until the item leaves the source or the source is cleared.
 // Source-change subscriptions store a raw event_token rather than winrt::event_revoker (which holds
-// an untracked strong COM pointer). Each record costs one NewTrackerHandle + SetTrackerValue on
-// creation and one DeleteTrackerHandle on removal (same as Vector<IInspectable>).
+// an untracked strong COM pointer).
 //
 // Detach contract:
 //   - ~tracker_ref dereferences its owner even when empty, so no tracker_ref may outlive
@@ -155,10 +158,10 @@
 //     Every public entry point and event lambda returns early when detached. ~SourceTable() asserts
 //     it was detached.
 //   - tracker_ref holds no reference count itself; the owner's tracker handle does. When the GC
-//     collects a cycle (item <-> VM <-> TableViewSource2), items and the collection may already be
+//     collects a cycle (delegate <-> VM <-> TableViewSource2), the collection may already be
 //     collected when Clear() runs, so teardown never calls tracker_ref::get(): handlers are nulled
-//     first (Clear() raises nothing), lookups are cleared wholesale, and every revoke goes through
-//     safe_get().
+//     first (Clear() raises nothing), lookups are cleared wholesale, and every collection revoke
+//     goes through safe_get(). Items are strong references and always alive.
 class SourceTable : public std::enable_shared_from_this<SourceTable>, private ISourceHierarchyHost
 {
     struct PrivateToken { explicit PrivateToken() = default; };
@@ -445,7 +448,7 @@ private:
 
     void AddToLookups(SourceRecord* record);
 
-    // Incremental paths only (reads Item.get()); Clear() clears the maps wholesale instead.
+    // Incremental paths only (reads Item); Clear() clears the maps wholesale instead.
     void RemoveFromLookups(SourceRecord* record) noexcept;
 
     // The PropertyChanged lambda captures weak_from_this(), the record's weak_ptr and m_binding.

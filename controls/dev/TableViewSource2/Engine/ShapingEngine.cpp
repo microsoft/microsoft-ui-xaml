@@ -11,12 +11,10 @@
 #include <unordered_set>
 
 ShapingEngine::ShapingEngine(
-    ITrackerHandleManager const* trackerOwner,
     SourceTable const& source,
     ShapeDelegates& delegates,
     PathEvaluator& paths)
-    : m_trackerOwner(trackerOwner)
-    , m_source(source)
+    : m_source(source)
     , m_delegates(delegates)
     , m_paths(paths)
 {
@@ -233,7 +231,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
     std::vector<winrt::IInspectable> items(n, nullptr);
     for (uint32_t i = 0; i < n; ++i)
     {
-        items[i] = records[i]->Item.get();
+        items[i] = records[i]->Item;
     }
 
     // Live shaping (E7): the re-reads `delta` names cover only the dirty records; every other
@@ -314,7 +312,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
                 for (size_t l = 0; l < desired.Sorts.size(); ++l)
                 {
                     auto const& slot = record->Shape.SortKeys[l];
-                    keys[i][l] = slot ? slot->get() : nullptr;
+                    keys[i][l] = slot;
                 }
                 continue;
             }
@@ -331,7 +329,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
                 keys[i][l] = level.SortKind == SortSpec::Kind::Path ?
                     m_paths.Value(level.Path, items[i]) :
                     m_delegates.Key(level.Delegate.Id, items[i]);
-                slots[l].emplace(m_trackerOwner, keys[i][l]);
+                slots[l] = keys[i][l];
             }
             keysRead[i] = 1;
         }
@@ -425,7 +423,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
             {
                 for (GroupNode* g = cachedGroup; g && !g->IsRoot(); g = g->Parent)
                 {
-                    groupKeys[g->GroupLevel] = g->Key ? g->Key->get() : nullptr;
+                    groupKeys[g->GroupLevel] = g->Key;
                 }
             }
             else
@@ -451,7 +449,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
                 if (it == staged.GroupsByIdentity.end())
                 {
                     auto group = std::make_unique<GroupNode>();
-                    group->Key.emplace(m_trackerOwner, groupKeys[l]);
+                    group->Key = groupKeys[l];
                     group->Identity = identity;
                     group->Parent = parent;
                     group->GroupLevel = l;
@@ -504,7 +502,7 @@ void ShapingEngine::Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::spa
             for (uint32_t k = 0; k < list.size(); ++k)
             {
                 GroupNode const* const group = list[k]->AsGroup();
-                groupKey.push_back(group->Key ? group->Key->get() : nullptr);
+                groupKey.push_back(group->Key);
                 order.push_back(k);
             }
             StableSortIndices(order, [&](uint32_t a, uint32_t b)
@@ -808,10 +806,7 @@ void ShapingEngine::UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept
                 {
                     auto const* const oldGroup = static_cast<GroupNode const*>(old);
                     auto group = std::make_unique<GroupNode>();
-                    if (oldGroup->Key)
-                    {
-                        group->Key.emplace(m_trackerOwner, oldGroup->Key->get());
-                    }
+                    group->Key = oldGroup->Key;
                     group->Identity = oldGroup->Identity;
                     group->Parent = parent;
                     group->GroupLevel = oldGroup->GroupLevel;
@@ -1120,7 +1115,7 @@ void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const&
     }
 
     // ---- Compute: every app call (predicates, keys, comparers) runs before any write. ----
-    winrt::IInspectable const item = record->Item.get();
+    winrt::IInspectable const item = record->Item;
     bool passes = true;
     for (FilterSpec const& filter : spec.Filters)
     {
@@ -1189,13 +1184,13 @@ void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const&
                 continue;
             }
 
-            winrt::IInspectable const old = keysValid && record->Shape.SortKeys[l] ? record->Shape.SortKeys[l]->get() : nullptr;
+            winrt::IInspectable const old = keysValid ? record->Shape.SortKeys[l] : nullptr;
             bool const read = !keysValid || level.SortKind == SortSpec::Kind::Key ||
                 propertyName.empty() || FirstPathSegment(level.Path) == std::wstring_view{ propertyName };
             winrt::IInspectable const key = !read ? old : level.SortKind == SortSpec::Kind::Path ?
                 m_paths.Value(level.Path, item) :
                 m_delegates.Key(level.Delegate.Id, item);
-            next.SortKeys[l].emplace(m_trackerOwner, key);
+            next.SortKeys[l] = key;
             sortChanged = sortChanged || !keysValid || CompareKeys(old, key, winrt::SortDirection::Ascending) != 0;
         }
     }
@@ -1293,9 +1288,9 @@ int32_t ShapingEngine::CompareRows(
     ShapeState const& bShape) const
 {
     auto const key = [](ShapeState const& shape, size_t level) -> winrt::IInspectable {
-        if (level < shape.SortKeys.size() && shape.SortKeys[level])
+        if (level < shape.SortKeys.size())
         {
-            return shape.SortKeys[level]->get();
+            return shape.SortKeys[level];
         }
         return nullptr;
     };
@@ -1335,7 +1330,7 @@ GroupNode* ShapingEngine::StageInsert(StagedEdit& edit, std::span<SourceRecord* 
             winrt::IInspectable const key = level.SortKind == SortSpec::Kind::Path ?
                 m_paths.Value(level.Path, item) :
                 m_delegates.Key(level.Delegate.Id, item);
-            shape.SortKeys[l].emplace(m_trackerOwner, key);
+            shape.SortKeys[l] = key;
         }
     };
 
@@ -1346,7 +1341,7 @@ GroupNode* ShapingEngine::StageInsert(StagedEdit& edit, std::span<SourceRecord* 
     for (uint32_t i = 0; i < n; ++i)
     {
         staged[i].Record = added[i];
-        items[i] = added[i]->Item.get();
+        items[i] = added[i]->Item;
         indexOf.emplace(added[i], i);
     }
 
@@ -1450,7 +1445,7 @@ GroupNode* ShapingEngine::StageInsert(StagedEdit& edit, std::span<SourceRecord* 
         if (sortActive)
         {
             link.Shape.Flags |= ShapeFlags::SortKeysValid;
-            readSortKeys(current->Item.get(), link.Shape);
+            readSortKeys(current->Item, link.Shape);
         }
         link.Shape.ShapedChildren.push_back(lower);
         edit.Chain.push_back(std::move(link));
@@ -1476,7 +1471,7 @@ GroupNode* ShapingEngine::StageInsert(StagedEdit& edit, std::span<SourceRecord* 
 
     // A throwing group key selector puts the record in the null-key group (spec, "Misbehaving
     // records"), as in a rebuild.
-    winrt::IInspectable const item = top.Record->Item.get();
+    winrt::IInspectable const item = top.Record->Item;
     std::vector<winrt::IInspectable> keys(spec.Groups.size(), nullptr);
     for (size_t l = 0; l < spec.Groups.size(); ++l)
     {
@@ -1518,7 +1513,7 @@ GroupNode* ShapingEngine::StageGroupChain(StagedEdit& edit, std::vector<winrt::I
         {
             winrt::hstring const identity = ChildGroupIdentity(bottom->Identity, keys[level]);
             auto group = std::make_unique<GroupNode>();
-            group->Key.emplace(m_trackerOwner, keys[level]);
+            group->Key = keys[level];
             group->Identity = identity;
             group->Parent = bottom;
             group->GroupLevel = level;
@@ -1600,7 +1595,7 @@ uint32_t ShapingEngine::PlacementIndex(
         return 0;
     }
 
-    winrt::IInspectable const item = record->Item.get();
+    winrt::IInspectable const item = record->Item;
     auto const sibling = [&](uint32_t v) { return parent->ShapedChildAt(actual(v))->AsRecord(); };
 
     // The run of siblings whose keys tie with the record's: [first, last).
@@ -1610,7 +1605,7 @@ uint32_t ShapingEngine::PlacementIndex(
     {
         uint32_t const mid = first + (hi - first) / 2;
         SourceRecord* const s = sibling(mid);
-        if (CompareRows(s->Item.get(), s->Shape, item, shape) < 0)
+        if (CompareRows(s->Item, s->Shape, item, shape) < 0)
         {
             first = mid + 1;
         }
@@ -1625,7 +1620,7 @@ uint32_t ShapingEngine::PlacementIndex(
     {
         uint32_t const mid = last + (hi - last) / 2;
         SourceRecord* const s = sibling(mid);
-        if (CompareRows(item, shape, s->Item.get(), s->Shape) < 0)
+        if (CompareRows(item, shape, s->Item, s->Shape) < 0)
         {
             hi = mid;
         }
@@ -1674,14 +1669,14 @@ uint32_t ShapingEngine::GroupPlacementIndex(GroupNode const* group, ShapedNode* 
         return size;
     }
 
-    winrt::IInspectable const key = group->Key ? group->Key->get() : nullptr;
+    winrt::IInspectable const key = group->Key;
     uint32_t lo = 0;
     uint32_t hi = size;
     while (lo < hi)
     {
         uint32_t const mid = lo + (hi - lo) / 2;
         GroupNode const* const other = parent->ShapedChildAt(mid >= skipAt ? mid + 1 : mid)->AsGroup();
-        winrt::IInspectable const otherKey = other->Key ? other->Key->get() : nullptr;
+        winrt::IInspectable const otherKey = other->Key;
         if (CompareKeys(key, otherKey, direction) < 0)
         {
             hi = mid;

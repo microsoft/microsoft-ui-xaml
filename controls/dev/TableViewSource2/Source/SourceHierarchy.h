@@ -30,8 +30,9 @@
 // HierarchicalSourceTable subclass. Strategies reach back only through ISourceHierarchyHost.
 //
 // Lifetime and threading: a strategy lives on the UI thread inside its SourceTable. Its tracker_refs
-// (selectors, object keys, child accessors) are bound to host.TrackerOwner(), so Release() must run
-// while that owner is alive (SourceTable::Clear() calls it first). Every app call (selectors,
+// (selectors, kept child accessors) are bound to host.TrackerOwner(), so Release() must run
+// while that owner is alive (SourceTable::Clear() calls it first). ParentBy object keys are strong
+// references (drift #73). Every app call (selectors,
 // child enumeration) happens in Prepare(), CollectIncoming() or Reevaluate(), never in Release().
 
 class SourceHierarchy;
@@ -295,8 +296,8 @@ private:
     {
         winrt::hstring Key;
         winrt::hstring ParentKey;
-        // Object keys only (value keys need only Key); tracked like Item.
-        std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>> KeyObject;
+        // Object keys only (value keys need only Key); a strong reference like Item (drift #73).
+        winrt::Windows::Foundation::IInspectable KeyObject{ nullptr };
     };
 
     // Placement after the verb (spec Misbehaving records; rulings 5 and 6). Each raises its own

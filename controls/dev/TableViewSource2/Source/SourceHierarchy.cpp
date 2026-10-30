@@ -324,7 +324,7 @@ void ParentKeyHierarchy::Prepare(
                 // The record that holds the key now keeps it; otherwise the first one does.
                 auto const holder = m_keyIndex.find(keys.Key);
                 bool const isHolder = holder != m_keyIndex.end() &&
-                    winrt::get_abi(holder->second->Item.get()) == winrt::get_abi(rootItems[i]);
+                    winrt::get_abi(holder->second->Item) == winrt::get_abi(rootItems[i]);
                 if (!isHolder)
                 {
                     continue;  // excluded
@@ -332,15 +332,12 @@ void ParentKeyHierarchy::Prepare(
 
                 NodeKeys& displaced = m_stagedNodeKeys[slot->second];
                 displaced.Key = {};
-                displaced.KeyObject.reset();
+                displaced.KeyObject = nullptr;
                 slot->second = i;
             }
 
             staged.Key = keys.Key;
-            if (keys.KeyObject)
-            {
-                staged.KeyObject.emplace(host.TrackerOwner(), keys.KeyObject);
-            }
+            staged.KeyObject = keys.KeyObject;
         }
 
         if (strict)
@@ -444,7 +441,7 @@ void ParentKeyHierarchy::CollectIncoming(
 }
 
 bool ParentKeyHierarchy::Keys(
-    ISourceHierarchyHost& host,
+    ISourceHierarchyHost& /*host*/,
     SourceRecord const* record,
     NodeKeys& keys,
     std::exception_ptr& error) const
@@ -456,7 +453,7 @@ bool ParentKeyHierarchy::Keys(
         }
     };
 
-    auto const item = record->Item.get();
+    auto const& item = record->Item;
     winrt::Windows::Foundation::IInspectable key{ nullptr };
     try
     {
@@ -499,7 +496,7 @@ bool ParentKeyHierarchy::Keys(
 
     if (ShapingHelpers::IsObjectNodeKey(keys.Key))
     {
-        keys.KeyObject.emplace(host.TrackerOwner(), key);
+        keys.KeyObject = key;
     }
 
     return true;
@@ -859,7 +856,7 @@ void ParentKeyHierarchy::ForEachChildRecord(std::function<void(SourceRecordPtr c
 
 void ParentKeyHierarchy::Release(ISourceHierarchyHost&) noexcept
 {
-    // Destroys the KeyObject and selector tracker_refs while the tracker owner is alive.
+    // Destroys the KeyObjects and the selector tracker_refs while the tracker owner is alive.
     m_keyIndex.clear();
     m_nodeKeys.clear();
     m_stagedKeyIndex.clear();
@@ -991,7 +988,7 @@ void ChildCollectionsHierarchy::MatchForRefresh(
         {
             auto const& item = m_staged[cursor].Item;
             SourceRecord* found = nullptr;
-            if (i < feedSize && !used[i] && winrt::get_abi(feed->Records[i]->Item.get()) == winrt::get_abi(item))
+            if (i < feedSize && !used[i] && winrt::get_abi(feed->Records[i]->Item) == winrt::get_abi(item))
             {
                 found = feed->Records[i].get();
                 used[i] = true;
@@ -1185,7 +1182,7 @@ void ChildCollectionsHierarchy::BuildChildFeed(
     std::vector<winrt::Windows::Foundation::IInspectable> children;
     try
     {
-        collection = m_childrenSelector->get()(record->Item.get());
+        collection = m_childrenSelector->get()(record->Item);
         if (!collection)
         {
             return;
