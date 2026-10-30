@@ -3059,12 +3059,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the app's DeferRefresh stays open across a group expansion's own nested deferral, and a key selector refused with E_ILLEGAL_METHOD_CALL during the closing reshape does not end it early or lose the held changes.")]
+        public void VerifyAppDeferralStaysOpenUntilItsClose()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            IDisposable appDeferral = null;
+            Exception reentrantError = null;
+            var armed = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople()).GroupBy(o =>
+                {
+                    if (armed)
+                    {
+                        armed = false;
+                        try
+                        {
+                            source.Refresh();
+                        }
+                        catch (Exception e)
+                        {
+                            reentrantError = e;
+                        }
+                    }
+
+                    return Person(o).Role;
+                });
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                appDeferral = source.DeferRefresh();
+                source.Sort("Name", SortDirection.Descending);
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var engineers = GetProjectedLabels(tableView, includeCount: false).Where(l => l == "Diego" || l == "Rafa" || l == "Owen").ToList();
+                VerifySequence(new[] { "Diego", "Rafa", "Owen" }, engineers,
+                    "the held Sort must not apply: the expansion's own deferral must not end the app's deferral");
+                armed = true;
+                appDeferral.Dispose();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(E_ILLEGAL_METHOD_CALL, reentrantError?.HResult ?? 0, "The key selector's re-entrant Refresh must be refused.");
+                VerifyProjection(tableView,
+                    new List<string> { "#Engineer(3)", "Rafa", "Owen", "Diego", "#Architect(1)", "Mei", "#Designer(2)", "Ines", "Asha" },
+                    "closing the app's deferral must apply the held Sort and expansion");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a deferral released without Close ends on its own later dispatcher turn on the UI thread, rather than reshaping inside Release.")]
         public void VerifyUnclosedDeferralEndsOnALaterTurn()
         {
             TableView tableView = null;
             TableViewSource source = null;
             var resets = new List<string>();
+            var resetsBeforeQueueAdvanced = -1;
+            var resetsAtNextTurn = -1;
 
             RunOnUIThread.Execute(() =>
             {
@@ -3075,22 +3145,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
+            // Flush unrelated garbage first, so the collection below only has to release the deferral.
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
             RunOnUIThread.Execute(() =>
             {
                 GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) =>
                     resets.Add($"{e.Action}:access={tableView.DispatcherQueue.HasThreadAccess}");
                 DeclareSortUnderAbandonedDeferral(source);
-            });
 
-            // Release runs on the finalizer thread; the end must be posted to the UI thread, not run there.
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
+                // Collected while this turn holds the UI thread: Release runs on the finalizer thread and
+                // may only post the end, so nothing can reshape until the queue advances.
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                resetsBeforeQueueAdvanced = resets.Count;
+                tableView.DispatcherQueue.TryEnqueue(global::Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                    () => resetsAtNextTurn = resets.Count);
+            });
 
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
             {
+                Verify.AreEqual(0, resetsBeforeQueueAdvanced, "Releasing the deferral must not reshape inside Release.");
+                Verify.AreEqual(1, resetsAtNextTurn, "The posted end must run exactly once when the UI queue advances.");
                 Verify.AreEqual("Reset:access=True", string.Join(",", resets),
                     "The released deferral must end with one Reset raised on the UI thread, not inside Release on the finalizer thread.");
                 VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" },

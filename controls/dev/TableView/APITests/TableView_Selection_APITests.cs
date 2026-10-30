@@ -443,6 +443,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies IndexOf matches reference items by identity, so the second of two equal records resolves to its own row.")]
+        public void VerifyIndexOfDistinguishesEqualRecords()
+        {
+            TableView tableView = null;
+            EqualByValueItem first = null;
+            EqualByValueItem second = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                first = new EqualByValueItem("Same");
+                second = new EqualByValueItem("Same");
+                tableView = CreateTableView(new List<EqualByValueItem> { first, second }, headers: new[] { "Name" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(Equals(first, second), "Precondition: the two records compare equal.");
+                Verify.AreEqual(0, tableView.IndexOf(first), "The first record must resolve to row 0.");
+                Verify.AreEqual(1, tableView.IndexOf(second), "An equal but distinct record must resolve to its own row.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies IndexOf counts group header slots, and returns -1 under a collapsed group, for a filtered-out item and for a group info object.")]
         public void VerifyIndexOfInGroupedProjection()
         {
@@ -1011,4 +1037,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 $"Exactly one realized row should report IsSelected in a single-selection control ({context}).");
         }
     }
+
+    // Value equality, so a matcher that uses Equals instead of identity finds the wrong row.
+    internal sealed record EqualByValueItem(string Name);
 }
