@@ -1408,9 +1408,16 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 
     if (m_OrientationChangedPendingAnimation)
     {
+        if (!SelectedItem())
+        {
+            // The selection was cleared after the PaneDisplayMode change, so there's nothing to restore. Don't consult the
+            // selection model here: clearing SelectedItem leaves its old index path in place.
+            m_OrientationChangedPendingAnimation = false;
+            AnimateSelectionChanged(nullptr);
+        }
         // Layout can run before the new pane has realized the selected item's container, e.g. while the NavigationView is in a
         // collapsed subtree. Keep the restore pending then; MeasureOverride hooks this handler again on the next measure.
-        if (FindLowestLevelContainerToDisplaySelectionIndicator() || NavigationViewItemOrSettingsContentFromData(SelectedItem()))
+        else if (FindLowestLevelContainerToDisplaySelectionIndicator() || NavigationViewItemOrSettingsContentFromData(SelectedItem()))
         {
             m_OrientationChangedPendingAnimation = false;
             AnimateSelectionChangedToSelectedItem();
