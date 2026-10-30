@@ -995,7 +995,8 @@ void TableView::OnKeyDownForNavigation(
 
     int32_t newRow = currentRow;
     bool consumeKey = true;
-    // Absolute/page keys are consumed at boundaries; Up/Down may escape the table.
+    // Absolute/page keys are consumed at boundaries; cell-level Up/Down may escape the table, and
+    // row-level Up/Down stop at the edges.
     bool absoluteRowNav = false;
     std::optional<double> alignRatio{};
 
@@ -1080,11 +1081,12 @@ void TableView::OnKeyDownForNavigation(
         {
             args.Handled(true);
         }
-        else if (m_navKeyHandledEarly && !hasCellAnchor &&
+
+        // Row-level Up/Down that could not move (a boundary or a disabled target row) is a no-op, as
+        // in WPF DataGrid; unhandled, the body scroller would focus a control inside this row's cells.
+        if (!args.Handled() && m_navKeyHandledEarly && !hasCellAnchor &&
             (key == winrt::Windows::System::VirtualKey::Up || key == winrt::Windows::System::VirtualKey::Down))
         {
-            // Row-level Up/Down at a boundary is a no-op, as in WPF DataGrid; unhandled, the body
-            // scroller would focus a control inside this row's cells.
             args.Handled(true);
         }
     }
