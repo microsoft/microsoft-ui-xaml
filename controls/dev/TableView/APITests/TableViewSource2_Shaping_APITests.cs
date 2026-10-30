@@ -407,13 +407,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Content = null);
             IdleSynchronizer.Wait();
 
-            for (int attempt = 0; attempt < 5 && (weakSource.IsAlive || weakViewModel.IsAlive); attempt++)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                IdleSynchronizer.Wait();
-            }
+            CollectUntil(() => !weakSource.IsAlive && !weakViewModel.IsAlive);
 
             Verify.IsFalse(weakSource.IsAlive, "The TableViewSource2 must be collected.");
             Verify.IsFalse(weakViewModel.IsAlive, "The view model its delegates close over must be collected.");

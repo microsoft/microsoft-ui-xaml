@@ -61,6 +61,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.Fail($"{context}: expected an ArgumentException.");
         }
 
+        // A TableView whose wrapper the GC finalizes is released through XAML's UI-thread release
+        // queue, which drains in time-budgeted slices on later message-pump passes; until then it
+        // still holds its source. Pump the UI thread between collections. Retrying cannot hide a
+        // leak: a rooted object never becomes collectable.
+        private static void CollectUntil(Func<bool> collected)
+        {
+            for (int attempt = 0; attempt < 20 && !collected(); attempt++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => { });
+                global::System.Threading.Thread.Sleep(50);
+            }
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a TableViewSource2 over a flat list projects every item in source order.")]
         public void VerifyFlatBindProjectsSourceOrder()
@@ -444,13 +461,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Content = null);
             IdleSynchronizer.Wait();
 
-            for (int attempt = 0; attempt < 5 && firstTable.IsAlive; attempt++)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                IdleSynchronizer.Wait();
-            }
+            CollectUntil(() => !firstTable.IsAlive);
 
             Verify.IsFalse(firstTable.IsAlive, "The first TableView must be collected.");
 
@@ -958,13 +969,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
 
-            for (int attempt = 0; attempt < 5 && (weakSource.IsAlive || people.SubscriberCount != 0); attempt++)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                IdleSynchronizer.Wait();
-            }
+            CollectUntil(() => !weakSource.IsAlive && people.SubscriberCount == 0);
 
             Verify.IsFalse(weakSource.IsAlive, "The TableViewSource2 must be collected.");
 
