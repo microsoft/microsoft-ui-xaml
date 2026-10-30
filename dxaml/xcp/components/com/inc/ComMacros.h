@@ -99,5 +99,5 @@
       protected:\
       HRESULT GetRuntimeClassNameImpl(_Out_ HSTRING *className)\
       {\
-         return wrl_wrappers::HStringReference(NAME, SZ_COUNT(NAME)).CopyTo(className);\
+         return WindowsCreateString(NAME, SZ_COUNT(NAME), className);\
       }

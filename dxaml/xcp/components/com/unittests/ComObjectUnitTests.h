@@ -17,6 +17,18 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         BEGIN_TEST_METHOD(CanInstantiateComObject)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can instantiate a ComObject instance.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RuntimeClassNamePreservesOwnership)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates runtime class name contents, ownership, and null output handling.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RuntimeClassNameHandlesEmptyAndEmbeddedNulls)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates empty names and exact UTF-16 contents and lengths.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AggregatedRuntimeClassNameUsesOuter)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates delegating and non-delegating runtime class names.")
+        END_TEST_METHOD()
     };
 
 } } } } }
