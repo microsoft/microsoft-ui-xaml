@@ -6,20 +6,36 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="AppTitle" xml:space="preserve"><value>WinUI Profiler</value></data>
   <data name="PageTitle.Text" xml:space="preserve"><value>WinUI Profiler</value></data>
-  <data name="PageIntroduction.Text" xml:space="preserve"><value>Launch or attach to a WinUI application. Live process graphs start after the injected TAP replies hello.</value></data>
+  <data name="PageIntroduction.Text" xml:space="preserve"><value>Launch or attach to a WinUI application, or open a recorded trace (.etl) of one. Live process graphs start after the injected TAP replies hello.</value></data>
   <data name="Mode.Header" xml:space="preserve"><value>Connection mode</value></data>
   <data name="UnpackagedMode.Content" xml:space="preserve"><value>Unpackaged executable</value></data>
   <data name="PackagedMode.Content" xml:space="preserve"><value>Packaged application</value></data>
   <data name="AttachMode.Content" xml:space="preserve"><value>Attach to process ID</value></data>
+  <data name="TraceMode.Content" xml:space="preserve"><value>Recorded trace (.etl)</value></data>
   <data name="Target.Header" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
+  <data name="TargetHeader" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
+  <data name="TraceTargetHeader" xml:space="preserve"><value>Trace file (.etl)</value></data>
   <data name="Browse.Content" xml:space="preserve"><value>Browse...</value></data>
   <data name="Arguments.Header" xml:space="preserve"><value>Launch arguments</value></data>
   <data name="WorkingDirectory.Header" xml:space="preserve"><value>Working directory (optional; unpackaged only)</value></data>
   <data name="Endpoint.Header" xml:space="preserve"><value>Diagnostics endpoint</value></data>
   <data name="Trust.Content" xml:space="preserve"><value>Trust local injector and TAP binaries (executes native code in the target)</value></data>
+  <data name="TraceProcess.Header" xml:space="preserve"><value>Process</value></data>
+  <data name="TraceProcess.PlaceholderText" xml:space="preserve"><value>Select a process with XAML events</value></data>
+  <data name="TraceProcessFormat" xml:space="preserve"><value>{0} (PID {1}) | {2:N0} events | {3:F1} s to {4:F1} s</value></data>
+  <data name="TraceUnnamedProcessFormat" xml:space="preserve"><value>PID {0} | {1:N0} events | {2:F1} s to {3:F1} s</value></data>
+  <data name="TraceScanning" xml:space="preserve"><value>Listing the processes in the trace...</value></data>
+  <data name="TraceContentsFormat" xml:space="preserve"><value>Processes with XAML events: {0:N0} | trace length {1:F1} s | events lost {2:N0}</value></data>
+  <data name="TraceScanEmpty" xml:space="preserve"><value>No process in the trace has XAML events.</value></data>
+  <data name="TraceScanFailedFormat" xml:space="preserve"><value>Could not read the trace. {0}</value></data>
+  <data name="TraceNotFound" xml:space="preserve"><value>The file was not found.</value></data>
+  <data name="TraceUnreadable" xml:space="preserve"><value>The file is not an ETW trace, or it is damaged.</value></data>
   <data name="Connect.Content" xml:space="preserve"><value>Launch and connect</value></data>
+  <data name="ConnectLabel" xml:space="preserve"><value>Launch and connect</value></data>
+  <data name="OpenTraceLabel" xml:space="preserve"><value>Open trace</value></data>
   <data name="Disconnect.Content" xml:space="preserve"><value>Disconnect</value></data>
   <data name="DisconnectLabel" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="StopTraceLabel" xml:space="preserve"><value>Stop</value></data>
   <data name="Snapshot.Content" xml:space="preserve"><value>Take tree snapshot</value></data>
   <data name="SnapshotAutomation" xml:space="preserve"><value>Take XAML and Composition tree snapshot</value></data>
   <data name="SnapshotStatusAutomation" xml:space="preserve"><value>Tree snapshot status</value></data>
@@ -128,20 +144,43 @@
   <data name="StateVerifyinghello" xml:space="preserve"><value>Verifying TAP hello</value></data>
   <data name="StateConnected" xml:space="preserve"><value>Connected: hello received</value></data>
   <data name="StateFailed" xml:space="preserve"><value>Connection failed</value></data>
+  <data name="StateTraceOpening" xml:space="preserve"><value>Opening the trace</value></data>
+  <data name="StateTraceReading" xml:space="preserve"><value>Reading the trace</value></data>
+  <data name="StateTraceStopping" xml:space="preserve"><value>Stopping</value></data>
+  <data name="StateTraceFinished" xml:space="preserve"><value>Trace read</value></data>
+  <data name="StateTraceStopped" xml:space="preserve"><value>Reading stopped</value></data>
+  <data name="StateTraceFailed" xml:space="preserve"><value>Reading the trace failed</value></data>
+  <data name="TraceReadingFormat" xml:space="preserve"><value>{0:P0} of the trace read. The Frames and Elements tabs show the events as they are stored.</value></data>
+  <data name="TraceReading" xml:space="preserve"><value>The Frames and Elements tabs show the events as they are stored.</value></data>
+  <data name="TraceStopping" xml:space="preserve"><value>Storing the events already read.</value></data>
+  <data name="TraceFinished" xml:space="preserve"><value>Every event of the process in the trace is in the session file.</value></data>
+  <data name="TraceFinishedTrimmedFormat" xml:space="preserve"><value>The whole trace was read. The process's events in the first {0:F1} s after its first event were removed to keep the session file within its size limit.</value></data>
+  <data name="TraceStoppedFormat" xml:space="preserve"><value>Stopped at {0:P0} of the trace. The session file holds the process's events from the start of the trace to about that point.</value></data>
+  <data name="TraceStopped" xml:space="preserve"><value>The session file holds the process's events from the start of the trace to about where reading stopped.</value></data>
+  <data name="TraceStoppedTrimmedFormat" xml:space="preserve"><value>Stopped at {0:P0} of the trace. The session file holds the process's events from {1:F1} s after its first event to about that point; older events were removed to keep it within its size limit.</value></data>
+  <data name="TraceStoppedTrimmedNoProgressFormat" xml:space="preserve"><value>The session file holds the process's events from {0:F1} s after its first event to about where reading stopped; older events were removed to keep it within its size limit.</value></data>
+  <data name="TraceFailedFormat" xml:space="preserve"><value>Reading ended at {0:P0} of the trace. The session file holds the events stored before the error.</value></data>
+  <data name="TraceFailed" xml:space="preserve"><value>The session file holds the events stored before the error.</value></data>
+  <data name="TraceEndAnnouncementFormat" xml:space="preserve"><value>{0}. {1}</value></data>
   <data name="InvalidEndpoint" xml:space="preserve"><value>Select a whole diagnostics endpoint number between 1 and 65535.</value></data>
   <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | WinUI from {1}</value></data>
   <data name="IdentityDetailsFormat" xml:space="preserve"><value>Process started {0}&#10;Last TAP heartbeat {1}&#10;WinUI runtime {2}</value></data>
+  <data name="TraceIdentityFormat" xml:space="preserve"><value>{0} (PID {1}) | trace {2}</value></data>
+  <data name="TraceUnnamedIdentityFormat" xml:space="preserve"><value>PID {0} | trace {1}</value></data>
   <data name="EtwFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | GPU memory {3:N0} | lost {4:N0} | dropped {5:N0}</value></data>
+  <data name="EtwOutOfOrderFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | GPU memory {3:N0} | lost {4:N0} | dropped {5:N0} | out of order {6:N0}</value></data>
   <data name="EtwDetailsFormat" xml:space="preserve"><value>{0}&#10;XAML: Microsoft-Windows-XAML, Microsoft-Windows-XAML-Diagnostics, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls events&#10;Profiler: Microsoft-Windows-XAML-Profiler events&#10;GPU memory: the kernel's GPU memory usage and budget events for the process (Microsoft-Windows-DxgKrnl)&#10;Lost: events ETW could not deliver&#10;Dropped: events the profiler discarded because its queue was full</value></data>
   <data name="EtwFromProcessStart" xml:space="preserve"><value>ETW from process start</value></data>
   <data name="EtwFromConnection" xml:space="preserve"><value>ETW from connection</value></data>
   <data name="EtwCoverageProcessStart" xml:space="preserve"><value>Every event since the process started is included.</value></data>
   <data name="EtwCoverageConnection" xml:space="preserve"><value>Events written before the profiler connected are not included.</value></data>
+  <data name="EtwFromTrace" xml:space="preserve"><value>ETW from trace</value></data>
+  <data name="EtwCoverageTrace" xml:space="preserve"><value>The process's events are read in the trace's order, all of them unless reading is stopped or fails. Lost counts the events ETW lost while the trace was recorded, of any process. Events read from a trace are never dropped. Out of order counts the process's events whose timestamp is earlier than the event before them.</value></data>
   <data name="EtwUnavailable" xml:space="preserve"><value>ETW: {0}</value></data>
   <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
   <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>
   <data name="RecordingDetailsFormat" xml:space="preserve"><value>{0}&#10;Limit {1:N0} MB: the oldest events are removed to stay within it.</value></data>
-  <data name="ModeAutomation" xml:space="preserve"><value>Launch or attach mode</value></data>
+  <data name="ModeAutomation" xml:space="preserve"><value>Launch, attach, or trace mode</value></data>
   <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
   <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>
   <data name="ArgumentsAutomation" xml:space="preserve"><value>Launch arguments</value></data>
@@ -150,6 +189,12 @@
   <data name="TrustAutomation" xml:space="preserve"><value>Trust local injection binaries</value></data>
   <data name="ConnectAutomation" xml:space="preserve"><value>Launch and connect</value></data>
   <data name="DisconnectAutomation" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="TraceTargetAutomation" xml:space="preserve"><value>Trace file path</value></data>
+  <data name="TraceBrowseAutomation" xml:space="preserve"><value>Browse for a trace file</value></data>
+  <data name="OpenTraceAutomation" xml:space="preserve"><value>Open trace</value></data>
+  <data name="StopTraceAutomation" xml:space="preserve"><value>Stop reading the trace</value></data>
+  <data name="TraceProcessAutomation" xml:space="preserve"><value>Process to read from the trace</value></data>
+  <data name="TraceProgressAutomation" xml:space="preserve"><value>Trace reading progress</value></data>
   <data name="StatusAutomation" xml:space="preserve"><value>Live connection status</value></data>
   <data name="IdentityAutomation" xml:space="preserve"><value>Connected target identity</value></data>
   <data name="EtwAutomation" xml:space="preserve"><value>XAML ETW event counts</value></data>
@@ -169,7 +214,8 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected; the Frames and Elements tabs show them.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected or while a recorded trace is read; the Frames and Elements tabs show them.</value></data>
+  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Frames and Elements tabs show its events.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
@@ -182,11 +228,13 @@
   <data name="TargetSettings.AutomationProperties.Name" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSettingsHeader" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSummaryFormat" xml:space="preserve"><value>Target: {0} {1}</value></data>
+  <data name="TraceSummaryFormat" xml:space="preserve"><value>Trace: {0}</value></data>
+  <data name="TraceSummaryProcessFormat" xml:space="preserve"><value>Trace: {0} | PID {1}</value></data>
   <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
   <data name="FramesTab.Header" xml:space="preserve"><value>Frames</value></data>
   <data name="OpenSessionFile.Content" xml:space="preserve"><value>Open session file...</value></data>
   <data name="FramesReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
-  <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, or open a saved session file.</value></data>
+  <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file.</value></data>
   <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} frames</value></data>
   <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} frames | older events were trimmed</value></data>
   <data name="LaunchItemFormat" xml:space="preserve"><value>frame {0:N0} at {1:N1} ms</value></data>

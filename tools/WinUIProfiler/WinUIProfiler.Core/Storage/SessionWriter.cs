@@ -21,8 +21,9 @@ public enum SessionCoverage
     Trace
 }
 
-// Where a session's events come from. For a recorded trace, a null QpcFrequency is derived from the events and a
-// null StartQpc makes the first event time zero.
+// Where a session's events come from. For a recorded trace, pass the trace's QpcFrequency
+// (OfflineEtlSource.ReadQpcFrequency): a null one is derived from the events once they span a second, and until then
+// readers time events with this machine's frequency. A null StartQpc makes the first event time zero.
 public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? ProcessCreatedUtc, long? QpcFrequency,
     long? StartQpc, SessionCoverage Coverage, string? EtlPath = null);
 
@@ -338,8 +339,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // A recorded trace gives neither: time zero is its first event, and the frequency comes from the events' QPC
-    // timestamps and their milliseconds since the trace started, measured over at least a second.
+    // A recorded trace gives no start: time zero is its first event. Its frequency is normally given; if not, it comes
+    // from the events' QPC timestamps and their milliseconds since the trace started, measured over at least a second.
     private void UpdateTimeBase(ProfilerEvent first, ProfilerEvent last, SqliteTransaction transaction)
     {
         var changed = false;

@@ -310,8 +310,11 @@ internal static class CliApplication
 
     private static int Record(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
     {
+        // The trace's clock frequency is stored before any event, as the app stores it, so the file's times never depend
+        // on how long the process ran.
         var writer = SessionWriter.Create(options.OutputPath!,
-            new(options.ProcessId!.Value, null, null, null, null, SessionCoverage.Trace, options.InputPath), options.LimitBytes);
+            new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
+                SessionCoverage.Trace, options.InputPath), options.LimitBytes);
         long sequence = 0;
         EtlReadResult? result = null;
         try
