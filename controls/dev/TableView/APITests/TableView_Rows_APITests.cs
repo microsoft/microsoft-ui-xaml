@@ -435,6 +435,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Tab from outside a grouped table with no header band, which XAML aims at a group header, resumes the last focused row or cell (GH #12447).")]
+        [TestProperty("data:Level", "{Row, Cell}")]
+        public void VerifyTabFromOutsideOntoGroupHeaderResumesLastFocusedRow()
+        {
+            bool cellLevel = ((string)TestContext.DataRow["Level"]).Trim() == "Cell";
+            TableView tableView = null;
+            TableViewRow remembered = null;
+            Button before = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // One row per group, so headers and rows alternate and the first tab stop is a group header.
+                var source = TableViewSource.From(MakeManyItems(200));
+                source.GroupBy(o => ((Person)o).Role);
+                tableView = CreateTableViewWithColumns(source, height: 400, columns: new[]
+                {
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)),
+                });
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                before = new Button { Content = "Before" };
+                var panel = new StackPanel();
+                panel.Children.Add(before);
+                panel.Children.Add(tableView);
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                remembered = GetRowsRepeater(tableView).TryGetElement(5) as TableViewRow;
+                Verify.IsNotNull(remembered, "Precondition: element 5 is a realized data row.");
+                if (cellLevel)
+                {
+                    GetCellPeer(remembered, 1).SetFocus();
+                }
+                else
+                {
+                    Verify.IsTrue(remembered.Focus(FocusState.Keyboard), "Precondition: row 5 takes focus.");
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: the button before the table takes focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the button must move focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as UIElement;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                object expected = cellLevel ? GetRowCell(remembered, 1) : remembered;
+                Verify.IsTrue(ReferenceEquals(expected, focused),
+                    "Tab into the body must resume the last focused " + (cellLevel ? "cell (5, 1)." : "row 5."));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Tab from the header band at cell level that lands on a viewport group header leaves cell level.")]
         public void VerifyTabFromHeaderBandOntoGroupHeaderLeavesCellLevel()
         {
