@@ -24,6 +24,20 @@ Commit under review: 73948de78.
 | r2-sol | gpt-6.1-sol | No issues. | None. |
 | r2-argon | gemini-4-argon | No issues. Verified every citation in the notes. | None. |
 | r2-skeptic-a | gpt-5.6-terra | No issues. | None. |
-| r2-skeptic-b | claude-sonnet-5.5 | Checked that the old `Simple` master lines 308 and 575 match the error lines in the issue, which backs up the red result. Should-fix: `docs\bugfix-notes` is a new directory. Nit: the red/green results are first-hand claims. Nit: the Tests section says the regression projects guard every template, but they only guard C++/WinRT. | Kept `docs\bugfix-notes`, since it's the flow's convention and is easy to drop before a PR. Kept the red/green claims; they come from runs recorded in Validation. Fixed the Tests wording. While fixing it, I found there's no C++/CX master either, so I said that in Tests and "Not covered". |
+| r2-skeptic-b | claude-sonnet-5.5 | Checked that the old `Simple` master lines 308 and 575 match the error lines in the issue, which backs up the red result. Should-fix: `docs\bugfix-notes` is a new directory. Nit: the red/green results are first-hand claims. Nit: the Tests section says the regression projects guard every template, but they only guard C++/WinRT. | Kept `docs\bugfix-notes`, since it's the flow's convention and is easy to drop before a PR. Kept the red/green claims. They come from my local runs; no log is attached. The old master lines back up the red side independently. Fixed the Tests wording. While fixing it, I found there's no C++/CX master either, so I said that in Tests and "Not covered". |
 
 Result: notes-only changes. No code changes.
+
+## Round 3
+
+Commit under review: 08c89e996.
+
+| Reviewer | Model | Findings | Disposition |
+|---|---|---|---|
+| r3-opus | claude-opus-5.5 | Should-fix: the Bug section said `/w15038` makes the build fail. That's only true with `/WX`, and it clashed with "from a warning or error". Nit: the "4 vs 5" skip comparison cited a run that isn't in the table. Nit: the "No runtime change" label repeated "Runtime behavior is identical". | Fixed all three. The Bug section now says warning, or failure under `/we5038` or `/WX`. The skip paragraph now explains the earlier 4-skip run. The label is now "No WinUI binary change". |
+| r3-sol | gpt-6.1-sol | No issues. | None. |
+| r3-argon | gemini-4-argon | No issues. | None. |
+| r3-skeptic-a | gpt-5.6-terra | No issues. | None. |
+| r3-skeptic-b | claude-sonnet-5.5 | Confirmed that no C++/CX master or project exists, and that the round-2 dispositions hold. Nits: "Nothing else changes" contradicts the preamble rows in the table. The skip cause is inferred, not observed. The round-2 disposition about red/green was circular. The template-audit credit was loose. The `docs\bugfix-notes` dir and model IDs shouldn't go into a public PR. | Fixed the first four. Kept `docs\bugfix-notes`, since the bug-fixer flow requires it. Drop the dir before any PR. |
+
+Result: notes-only changes. Over three rounds, no code change was needed. All 5 reviewers in round 3 found the code correct, and none had a must-fix. Stopping here.
