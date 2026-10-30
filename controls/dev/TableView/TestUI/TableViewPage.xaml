@@ -129,6 +129,10 @@
                     AutomationProperties.AutomationId="navigateToVirtualization"
                     IsTabStop="False"
                     AllowFocusOnInteraction="False" />
+            <Button Content="Toggle Name CanResize"
+                    AutomationProperties.Name="ToggleNameCanResizeButton"
+                    AutomationProperties.AutomationId="ToggleNameCanResizeButton"
+                    Click="OnToggleNameCanResizeClick" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -145,7 +149,8 @@
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="Name"
+                    <controls:TableViewTextColumn x:Name="NameColumn"
+                                                  Header="Name"
                                                   Width="160"
                                                   MinWidth="60"
                                                   CanSort="True"

@@ -159,6 +159,8 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 
 **Keyboard.** The column header is the keyboard target; the gripper is not a tab stop. `Alt+Left`/`Alt+Right` on a header call `TryKeyboardStep`, which owns direction, the RTL mirror, `KeyboardIncrement` (8) and the `Shift` multiplier (4×). `Alt` is the only resize modifier, as in WPF.
 
+**Double-click to fit.** A mouse double-click on a gripper (counted by the table from `PointerPressed`, handled events too) sets the column's `Width` in pixels to the widest of its header and realized cells measured unconstrained, through the same `BeginDrag`/`TryDrag`/`EndDrag` path, so the gates, announcement and bounds match a drag: `MinWidth`/`MaxWidth` and `ResizeBoundsForColumn` (shrink-only with no donor, capped by the donor), so the result can be narrower than the content.
+
 **Bounds.** `ResizeBoundsForColumn` applies three rules derived by measuring WPF `DataGrid`:
 
 1. **Donor.** Only a resizable `*` column after the dragged one can give width, because only `*` columns are re-divided.

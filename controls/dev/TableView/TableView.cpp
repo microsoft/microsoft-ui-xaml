@@ -3671,6 +3671,7 @@ void TableView::OnTableViewUnloaded()
         return;
     }
 
+    CancelColumnResizeDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
@@ -3927,6 +3928,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         state->didWrite = false;
         state->didDelta = false;
         state->frozen.clear();
+        state->lastPressTimestamp = 0;
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -4035,11 +4037,160 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
             strongThis->RefreshResizeGripperAvailability();
         }
     });
+
+    // Counted from PointerPressed with handledEventsToo: the gripper marks its presses handled, so
+    // Tapped/DoubleTapped never reach the table.
+    gripperVisual.AddHandler(
+        winrt::UIElement::PointerPressedEvent(),
+        winrt::box_value(winrt::PointerEventHandler(
+            [weakColumn, weakThis, state](winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+    {
+        auto const gripper = sender.try_as<winrt::UIElement>();
+        auto const point = args.GetCurrentPoint(gripper);
+        if (!point ||
+            args.Pointer().PointerDeviceType() != winrt::Microsoft::UI::Input::PointerDeviceType::Mouse ||
+            !point.Properties().IsLeftButtonPressed())
+        {
+            state->lastPressTimestamp = 0;
+            return;
+        }
+
+        const auto timestamp = point.Timestamp();
+        const auto position = point.Position();
+        const double slop = TableView::DoubleClickSlop(gripper);
+        const bool isDoubleClick =
+            state->lastPressTimestamp != 0 &&
+            timestamp >= state->lastPressTimestamp &&
+            (timestamp - state->lastPressTimestamp) <= TableView::DoubleClickIntervalMicroseconds() &&
+            std::abs(position.X - state->lastPressPosition.X) <= slop &&
+            std::abs(position.Y - state->lastPressPosition.Y) <= slop;
+
+        state->lastPressTimestamp = isDoubleClick ? 0 : timestamp;
+        state->lastPressPosition = position;
+
+        if (isDoubleClick)
+        {
+            auto const strongThis = weakThis.get();
+            if (auto const col = weakColumn.get(); strongThis && col)
+            {
+                strongThis->AutoFitColumn(col);
+            }
+        }
+    })),
+        true /* handledEventsToo */);
+
     return gripperVisual;
 }
 
-// Escape is the only host-driven cancel left: the gripper ends its own gesture on release, on a
-// canceled contact and on unload. Idempotent - EndDrag no-ops when no drag is in flight.
+double TableView::DoubleClickSlop(const winrt::UIElement& element)
+{
+    // SM_CXDOUBLECLK is in physical pixels and positions are in DIPs, so divide by the rasterization
+    // scale or the tolerance halves at 200%. Read per press: the metric and the scale both change at
+    // run time (mouse settings, moving between monitors), and GetSystemMetrics is a cheap cached read.
+    const auto cx = static_cast<double>(::GetSystemMetrics(SM_CXDOUBLECLK));
+    const auto cy = static_cast<double>(::GetSystemMetrics(SM_CYDOUBLECLK));
+    const double physical = (std::max)((std::max)(cx, cy), 4.0) / 2.0;
+
+    double scale = 1.0;
+    if (element)
+    {
+        if (auto const root = element.XamlRoot())
+        {
+            const auto rasterization = root.RasterizationScale();
+            if (rasterization > 0.0)
+            {
+                scale = rasterization;
+            }
+        }
+    }
+
+    return physical / scale;
+}
+
+uint64_t TableView::DoubleClickIntervalMicroseconds()
+{
+    // PointerPoint.Timestamp is in microseconds, GetDoubleClickTime in milliseconds. Not cached, so a
+    // mouse control panel change applies immediately.
+    return static_cast<uint64_t>(::GetDoubleClickTime()) * 1000ull;
+}
+
+namespace
+{
+    // Re-measures at the previous constraint so the probe leaves layout as it found it.
+    double MeasureUnconstrainedWidth(const winrt::UIElement& cell)
+    {
+        auto const fe = cell.try_as<winrt::FrameworkElement>();
+        if (!fe || cell.Visibility() != winrt::Visibility::Visible)
+        {
+            return 0.0;
+        }
+
+        const auto previous = winrt::Microsoft::UI::Xaml::Controls::Primitives::LayoutInformation::GetAvailableSize(fe);
+        cell.Measure({ std::numeric_limits<float>::infinity(), previous.Height });
+        const double width = cell.DesiredSize().Width;
+        cell.Measure(previous);
+        return std::isfinite(width) ? std::max(0.0, width) : 0.0;
+    }
+}
+
+// Measured fresh: cached Auto widths are grow-only and absent for Pixel and Star columns.
+bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
+{
+    if (!GetAvailableResizeGripper(column))
+    {
+        return false;
+    }
+
+    double fitted = 0.0;
+    if (ShouldShowColumnHeaders())
+    {
+        if (auto const host = m_headerHost.get())
+        {
+            if (winrt::UIElement const headerCell = TableViewCellsPanel::CellForColumn(host, column))
+            {
+                fitted = MeasureUnconstrainedWidth(headerCell);
+            }
+        }
+    }
+
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        ForEachRealizedRow([&](winrt::TableViewRow const& row)
+        {
+            if (repeater.GetElementIndex(row) < 0)
+            {
+                return;
+            }
+
+            auto const rowImpl = winrt::get_self<TableViewRow>(row);
+            winrt::UIElement const cell = TableViewCellsPanel::CellForColumn(rowImpl->GetCellsHostPanelInternal(), column);
+            if (!cell)
+            {
+                return;
+            }
+
+            // An open editor is not the data's width; hold the column's current width for that row.
+            if (cell == rowImpl->GetEditingCellWrapper())
+            {
+                fitted = std::max(fitted, column.ActualWidth());
+                return;
+            }
+
+            fitted = std::max(fitted, MeasureUnconstrainedWidth(cell));
+        });
+    }
+
+    if (!(fitted > 0.0))
+    {
+        return false;
+    }
+
+    const double lo = NonNegativeFiniteOrZero(column.MinWidth());
+    const double hi = MaxWidthForColumn(column, lo);
+    return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi));
+}
+
+// For Escape and unload. Idempotent - EndDrag no-ops when no drag is in flight.
 void TableView::CancelColumnResizeDrag()
 {
     auto const state = m_activeColumnResizeDrag;
