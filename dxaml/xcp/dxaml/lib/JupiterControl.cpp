@@ -640,11 +640,23 @@ Cleanup:
 
 HRESULT CJupiterControl::CreateUIAHostWindowForHwnd(_In_ HWND hwnd)
 {
+    wrl::ComPtr<CUIAHostWindow> uiaWindow;
     RETURN_IF_FAILED(CUIAHostWindow::Create(
                         UIAHostEnvironmentInfo(hwnd, hwnd),
                         this,
                         nullptr,  // pRootVisual
-                        &m_pUIAWindow));
+                        &uiaWindow));
+
+    // Initializing the UIA window can pump messages. Don't adopt it if this control was deinitialized meanwhile,
+    // or if a reentrant request already created a UIA window.
+    if (!IsInit() || m_pUIAWindow)
+    {
+        uiaWindow->Deinit();
+    }
+    else
+    {
+        m_pUIAWindow = std::move(uiaWindow);
+    }
     return S_OK;
 }
 

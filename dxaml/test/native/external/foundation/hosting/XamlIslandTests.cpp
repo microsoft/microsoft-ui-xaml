@@ -22,6 +22,10 @@
 
 #include <AutomationClient/AutomationClientManager.h>
 #include <shlwapi.h>
+#include <UIAutomation.h>
+#include <detours.h>
+#include <intrin.h>
+#include <utility>
 
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Composition;
@@ -51,6 +55,88 @@ namespace Microsoft::UI::Xaml::Tests::Foundation::Hosting {
 #include "ApplicationWithMuxc.h"
 #include "ApplicationLikeFileExplorer.h"
 #include "XamlIslandTestHelper.h"
+
+namespace
+{
+    auto g_realUiaLookupId = &::UiaLookupId;
+    thread_local std::function<void()> g_onXamlIsControlElementLookup;
+
+    bool IsCalledFromMicrosoftUIXaml(void* returnAddress)
+    {
+        HMODULE caller{};
+        return ::GetModuleHandleExW(
+                GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                static_cast<LPCWSTR>(returnAddress),
+                &caller) &&
+            caller == ::GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
+    }
+
+    int WINAPI UiaLookupIdDetour(AutomationIdentifierType type, const GUID* guid)
+    {
+        const int id = g_realUiaLookupId(type, guid);
+
+        // CUIAWindow::InitIds is the only Microsoft.UI.Xaml caller of this lookup.
+        if (g_onXamlIsControlElementLookup &&
+            type == AutomationIdentifierType_Property &&
+            IsEqualGUID(*guid, IsControlElement_Property_GUID) &&
+            IsCalledFromMicrosoftUIXaml(_ReturnAddress()))
+        {
+            // Disarm before invoking, since closing the island can reenter UIA.
+            std::exchange(g_onXamlIsControlElementLookup, nullptr)();
+        }
+
+        return id;
+    }
+
+    // The detour is process-wide; tests using it must run with method isolation.
+    class UiaLookupIdDetourScope
+    {
+    public:
+        UiaLookupIdDetourScope()
+        {
+            VERIFY_ARE_EQUAL(NO_ERROR, Update(true /* attach */));
+        }
+
+        ~UiaLookupIdDetourScope()
+        {
+            g_onXamlIsControlElementLookup = nullptr;
+            const LONG result = Update(false /* attach */);
+            if (result != NO_ERROR)
+            {
+                LOG_OUTPUT(L"Failed to remove the UiaLookupId detour: %d", result);
+            }
+        }
+
+        UiaLookupIdDetourScope(const UiaLookupIdDetourScope&) = delete;
+        UiaLookupIdDetourScope& operator=(const UiaLookupIdDetourScope&) = delete;
+
+    private:
+        static LONG Update(bool attach)
+        {
+            LONG result = DetourTransactionBegin();
+            if (result != NO_ERROR)
+            {
+                return result;
+            }
+
+            result = DetourUpdateThread(::GetCurrentThread());
+            if (result == NO_ERROR)
+            {
+                auto target = reinterpret_cast<PVOID*>(&g_realUiaLookupId);
+                auto detour = reinterpret_cast<PVOID>(UiaLookupIdDetour);
+                result = attach ? DetourAttach(target, detour) : DetourDetach(target, detour);
+            }
+
+            if (result != NO_ERROR)
+            {
+                DetourTransactionAbort();
+                return result;
+            }
+
+            return DetourTransactionCommit();
+        }
+    };
+}
 
 ref class XamlIslandTests_Application sealed : Microsoft::UI::Xaml::Application
 {
@@ -3648,6 +3734,62 @@ void XamlIslandTests::ValidateUiaAfterVisualTreeReset()
     VERIFY_IS_NOT_NULL(findUiaElement(L"AfterButton").Get());
 
     LowBudgetWaitForIdle(ih);
+}
+
+void XamlIslandTests::ValidateIslandCloseDuringUiaInitialization()
+{
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+    testHelper.StartAndPrepNewUIThreadWithWindow();
+
+    testHelper.RunOnIslandUIThread([&]()
+    {
+        auto dwxs = CreateDesktopWindowXamlSource(testHelper.m_topLevelHwnd, L"UIA initialization");
+
+        wrl::ComPtr<ABI::Windows::Foundation::IClosable> closable;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(dwxs)->QueryInterface(IID_PPV_ARGS(&closable)));
+        auto closeIsland = wil::scope_exit([&] { (void)closable->Close(); });
+
+        HWND islandHwnd{};
+        VERIFY_SUCCEEDED(ABI::Microsoft::UI::GetWindowFromWindowId(
+            ABI::Microsoft::UI::WindowId{ dwxs->SiteBridge->WindowId.Value },
+            &islandHwnd));
+        VERIFY_IS_NOT_NULL(islandHwnd);
+
+        wrl::ComPtr<IUIAutomation> automation;
+        VERIFY_SUCCEEDED(::CoCreateInstance(CLSID_CUIAutomation8, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&automation)));
+
+        bool closeInjected = false;
+        HRESULT closeResult = E_PENDING;
+        UiaLookupIdDetourScope detour;
+
+        g_onXamlIsControlElementLookup = [&]
+        {
+            closeInjected = true;
+            LOG_OUTPUT(L"Closing the island before UiaLookupId returns to CUIAWindow::InitIds.");
+            // A synchronous close is not deferred by the PauseNewDispatch in InitIds.
+            closeResult = closable->Close();
+        };
+
+        // Like a focus-driven accessibility query, a same-thread UIA query makes the island create its
+        // UIA window lazily through ContentIsland.AutomationProviderRequested.
+        wrl::ComPtr<IUIAutomationElement> root;
+        HRESULT queryResult = automation->ElementFromHandle(islandHwnd, &root);
+        if (SUCCEEDED(queryResult) && !closeInjected)
+        {
+            wrl::ComPtr<IUIAutomationCondition> trueCondition;
+            wrl::ComPtr<IUIAutomationElement> child;
+            queryResult = automation->CreateTrueCondition(&trueCondition);
+            if (SUCCEEDED(queryResult))
+            {
+                queryResult = root->FindFirst(TreeScope_Children, trueCondition.Get(), &child);
+            }
+        }
+        LOG_OUTPUT(L"UIA query returned 0x%08x.", queryResult);
+
+        VERIFY_IS_TRUE(closeInjected, L"The provider request must reach CUIAWindow::InitIds.");
+        VERIFY_SUCCEEDED(closeResult);
+    });
 }
 
 void XamlIslandTests::ValidateUiaConcurrentWithIslandClose()
