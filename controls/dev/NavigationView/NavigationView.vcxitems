@@ -8,7 +8,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(MSBuildThisFileDirectory)..\ShapedItemsSource</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);NAVIGATIONVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -41,7 +41,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewPaneClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewSelectionChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\ShapedItemsSource\LiveShapingTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenterTemplateSettings.properties.h" />
@@ -68,7 +67,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SplitDataSourceBase.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTrace.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\ShapedItemsSource\LiveShapingTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)NavigationView.idl" />

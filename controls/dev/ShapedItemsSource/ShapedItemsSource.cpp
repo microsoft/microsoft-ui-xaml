@@ -81,16 +81,16 @@ void ShapedItemsSource::Start()
 {
     // Not in the constructor: needs weak_from_this so an off-thread handler cannot outlive us.
     m_liveShaping->SetChangeHandler(
-        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId, dropped = m_liveShapingChangeDropped](winrt::IInspectable const& item, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId, dropped = m_liveShapingChangeDropped](winrt::IInspectable const& item, winrt::hstring const& propertyName)
         {
             if (queue && !queue.HasThreadAccess())
             {
                 // Off-thread: all touched state belongs to the owning thread, so marshal it.
-                const bool posted = queue.TryEnqueue([weakThis, item, args]()
+                const bool posted = queue.TryEnqueue([weakThis, item, propertyName]()
                     {
                         if (auto const strongThis = weakThis.lock())
                         {
-                            strongThis->OnLiveShapedItemChanged(item, args.PropertyName());
+                            strongThis->OnLiveShapedItemChanged(item, propertyName);
                         }
                     });
                 if (!posted)
@@ -110,7 +110,7 @@ void ShapedItemsSource::Start()
 
             if (auto const strongThis = weakThis.lock())
             {
-                strongThis->OnLiveShapedItemChanged(item, args.PropertyName());
+                strongThis->OnLiveShapedItemChanged(item, propertyName);
             }
         });
 

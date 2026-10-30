@@ -50,7 +50,7 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
     auto const handler = m_changeHandler;
     auto onChanged = [handler](winrt::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
     {
-        handler(sender, args);
+        handler(sender, args.PropertyName());
     };
 
     Subscription subscription{};

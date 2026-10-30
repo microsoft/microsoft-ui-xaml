@@ -720,15 +720,6 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 void NavigationViewItem::OnChildrenChanged(bool isCollectionChange)
 {
     UpdateVisualStateForChevron();
-
-    if (m_appliedTemplate && !IsOnLeftNav())
-    {
-        if (auto navView = GetNavigationView())
-        {
-            const auto navViewImpl = winrt::get_self<NavigationView>(navView);
-            navViewImpl->TopNavigationViewItemChildrenChanged(*this);
-        }
-    }
     InvalidateTopNavigationItemWidth(isCollectionChange);
 }
 

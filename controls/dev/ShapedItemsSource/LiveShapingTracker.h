@@ -19,9 +19,8 @@ class LiveShapingTracker
 public:
     using ChangeHandler = std::function<void(
         winrt::IInspectable const& item,
-        winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)>;
+        winrt::hstring const& propertyName)>;
 
-    // Event arguments may be UI-affine; consumers must dispatch before reading them.
     void SetChangeHandler(ChangeHandler handler) { m_changeHandler = std::move(handler); }
 
     // Idempotent: re-subscribing an already-tracked item is a no-op.
@@ -31,7 +30,6 @@ public:
     void RetainOnly(std::unordered_set<void const*> const& live);
     void UnsubscribeAll() noexcept;
     bool Empty() const noexcept { return m_subscriptions.empty(); }
-    static void const* Identity(winrt::IInspectable const& item);
 
 private:
     struct Subscription
@@ -56,6 +54,8 @@ private:
 
         void Revoke() noexcept;
     };
+
+    static void const* Identity(winrt::IInspectable const& item);
 
     std::unordered_map<void const*, Subscription> m_subscriptions;
     ChangeHandler m_changeHandler;

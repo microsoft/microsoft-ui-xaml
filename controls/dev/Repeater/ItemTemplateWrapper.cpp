@@ -120,11 +120,10 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
 void ItemTemplateWrapper::RecycleElement(winrt::ElementFactoryRecycleArgs const& args)
 {
     auto element = args.Element();
-    auto selectedTemplate = element ? RecyclePool::GetOriginTemplate(element) : nullptr;
-    if (!selectedTemplate)
-    {
-        selectedTemplate = GetDataTemplate();
-    }
+    auto dataTemplate = GetDataTemplate();
+    winrt::DataTemplate selectedTemplate = dataTemplate ?
+        dataTemplate :
+        RecyclePool::GetOriginTemplate(element);
     auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     if (!recyclePool)
     {

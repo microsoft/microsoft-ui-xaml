@@ -10,13 +10,6 @@
     <Import_RootNamespace>NavigationView_ApiTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewPhasedTemplatePage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewPhasedTemplatePage.xaml.cs">
-      <DependentUpon>NavigationViewPhasedTemplatePage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTests.cs" />
   </ItemGroup>
 </Project>
