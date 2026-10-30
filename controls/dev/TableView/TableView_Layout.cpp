@@ -385,23 +385,31 @@ void TableView::ResolveColumnWidths()
     {
         // A locked Star column holds its share of the authored layout, so a neighbor's drag leaves it
         // alone while that share still fits next to the other Star columns' MinWidth. Once it does not,
-        // it is divided with the other Star columns by factor, so a later drag can move it; while a
-        // drag is in flight, a locked column before the dragged one still keeps its width.
-        uint32_t draggedIndex = 0;
-        auto const drag = m_activeColumnResizeDrag;
-        auto const draggedColumn = drag ? drag->column.get() : nullptr;
-        const bool dragInFlight = draggedColumn && columns.IndexOf(draggedColumn, draggedIndex);
-        auto const isHeld = [&](winrt::TableViewColumn const& c)
+        // it is divided with the other Star columns by factor. Either way, a resize of a later column
+        // never moves it: FreezeColumnsBeforeResize holds it at the width it rendered until an input
+        // other than a user resize changes.
+        if (!m_lockedColumnHolds.empty() && LockedColumnHoldsSignature() != m_lockedColumnHoldsSignature)
         {
-            uint32_t index = 0;
-            return dragInFlight && isLocked(c) && columns.IndexOf(c, index) && index < draggedIndex;
+            m_lockedColumnHolds.clear();
+        }
+        auto const heldWidth = [this](winrt::TableViewColumn const& c) -> std::optional<double>
+        {
+            for (auto const& hold : m_lockedColumnHolds)
+            {
+                if (hold.column.get() == c)
+                {
+                    return hold.width;
+                }
+            }
+            return std::nullopt;
         };
+        auto const isHeld = [&](winrt::TableViewColumn const& c) { return isLocked(c) && heldWidth(c).has_value(); };
         for (auto const& c : starColumns)
         {
             if (isHeld(c))
             {
+                changed |= setResolvedActualWidth(c, *heldWidth(c));
                 fixedTotal += c.ActualWidth();
-                drag->heldLockedColumn = true;
             }
         }
         starColumns.erase(
@@ -546,9 +554,9 @@ void TableView::RestoreColumnWidth(const winrt::TableViewColumn& column, const w
 
 // A resize takes space only from the columns after the dragged one (the WPF DataGrid contract).
 // Holding the earlier Star columns at the width they already render keeps them out of the
-// redistribution pass without changing what the user sees. A locked column is skipped: freezing
-// it would double-count it in the authored pass, so layout holds it for the drag instead.
-void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen)
+// redistribution pass without changing what the user sees. A locked column can't take a pixel
+// Width (the authored pass would count it twice), so it gets a hold that layout honors instead.
+void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state)
 {
     auto columns = Columns();
     uint32_t index = 0;
@@ -560,20 +568,50 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
     // Collected before any write: writing Width runs app callbacks that may mutate Columns, and
     // indexing a live vector across that would throw out of the manipulation.
     std::vector<winrt::TableViewColumn> candidates;
+    std::vector<LockedColumnHold> holds;
     for (uint32_t i = 0; i < index && i < columns.Size(); ++i)
     {
         auto const other = columns.GetAt(i);
         if (!other ||
             winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
-            other.Visibility() != winrt::Visibility::Visible ||
-            other.Width().GridUnitType != winrt::GridUnitType::Star ||
-            !other.CanResize())
+            other.Visibility() != winrt::Visibility::Visible)
+        {
+            continue;
+        }
+        if (CanUserResizeColumns() && !other.CanResize() &&
+            winrt::get_self<TableViewColumn>(other)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
+        {
+            holds.push_back({ winrt::make_weak(other), other.ActualWidth() });
+            continue;
+        }
+        if (other.Width().GridUnitType != winrt::GridUnitType::Star || !other.CanResize())
         {
             continue;
         }
         candidates.push_back(other);
     }
 
+    if (!holds.empty())
+    {
+        state.lockedHoldsBefore.emplace(m_lockedColumnHolds, m_lockedColumnHoldsSignature);
+        const size_t signature = LockedColumnHoldsSignature();
+        if (signature != m_lockedColumnHoldsSignature)
+        {
+            m_lockedColumnHolds.clear();
+        }
+        for (auto const& hold : holds)
+        {
+            auto const column = hold.column.get();
+            m_lockedColumnHolds.erase(
+                std::remove_if(m_lockedColumnHolds.begin(), m_lockedColumnHolds.end(),
+                    [&column](LockedColumnHold const& existing) { return existing.column.get() == column; }),
+                m_lockedColumnHolds.end());
+            m_lockedColumnHolds.push_back(hold);
+        }
+        m_lockedColumnHoldsSignature = signature;
+    }
+
+    auto& frozen = state.frozen;
     for (auto const& other : candidates)
     {
         frozen.push_back({ winrt::make_weak(other), other.ReadLocalValue(winrt::TableViewColumn::WidthProperty()) });
@@ -582,6 +620,34 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
         auto const resizeScope = columnImpl->BeginUserResizeScope();
         other.Width(winrt::GridLengthHelper::FromPixels(other.ActualWidth()));
     }
+}
+
+size_t TableView::LockedColumnHoldsSignature()
+{
+    size_t seed = 0;
+    auto const mix = [&seed](size_t value) { seed ^= value + 0x9e3779b97f4a7c15ull + (seed << 6) + (seed >> 2); };
+    auto const bodyScroller = m_bodyScroller.get();
+    mix(std::hash<double>{}(bodyScroller ? bodyScroller.ViewportWidth() : 0.0));
+    mix(CanUserResizeColumns());
+    if (auto const columns = Columns())
+    {
+        for (auto const& c : columns)
+        {
+            mix(std::hash<void*>{}(winrt::get_abi(c)));
+            if (c)
+            {
+                // The authored Width, not Width: a user resize writes Width and must not drop the holds.
+                auto const authored = winrt::get_self<TableViewColumn>(c)->AuthoredWidthInternal();
+                mix(std::hash<double>{}(authored.Value));
+                mix(static_cast<size_t>(authored.GridUnitType));
+                mix(std::hash<double>{}(c.MinWidth()));
+                mix(std::hash<double>{}(c.MaxWidth()));
+                mix(static_cast<size_t>(c.Visibility()));
+                mix(c.CanResize());
+            }
+        }
+    }
+    return seed;
 }
 
 // How far a drag may take this column. A table whose columns divide the viewport may not grow past

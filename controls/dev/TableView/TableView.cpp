@@ -3879,7 +3879,7 @@ bool TableView::ApplyColumnResizeDrag(TableView* owner, const winrt::TableViewCo
     auto const columnImpl = winrt::get_self<TableViewColumn>(col);
     if (!state.didWrite && owner)
     {
-        owner->FreezeColumnsBeforeResize(col, state.frozen);
+        owner->FreezeColumnsBeforeResize(col, state);
     }
     auto const resizeScope = columnImpl->BeginUserResizeScope();
     col.Width(winrt::GridLengthHelper::FromPixels(next));
@@ -3927,8 +3927,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         state->didWrite = false;
         state->didDelta = false;
         state->frozen.clear();
-        state->column = nullptr;
-        state->heldLockedColumn = false;
+        state->lockedHoldsBefore.reset();
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -3962,7 +3961,6 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         if (strongThis)
         {
             state->gripper = winrt::make_weak(sender.try_as<winrt::ResizeGripper>());
-            state->column = weakColumn;
             strongThis->m_activeColumnResizeDrag = state;
         }
     });
@@ -3995,10 +3993,6 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
             strongThis->m_activeColumnResizeDrag.reset();
         }
         state->gripper = nullptr;
-        if (strongThis && std::exchange(state->heldLockedColumn, false))
-        {
-            strongThis->InvalidateMeasure();
-        }
 
         auto const col = weakColumn.get();
 
@@ -4014,6 +4008,11 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
                 {
                     TableView::RestoreColumnWidth(frozenCol, entry.width);
                 }
+            }
+            if (strongThis && state->lockedHoldsBefore)
+            {
+                std::tie(strongThis->m_lockedColumnHolds, strongThis->m_lockedColumnHoldsSignature) = std::move(*state->lockedHoldsBefore);
+                strongThis->InvalidateMeasure();
             }
 
             if (state->didWrite && col)
