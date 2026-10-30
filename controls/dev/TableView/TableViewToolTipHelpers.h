@@ -15,6 +15,8 @@ namespace TableViewDetails
     {
         winrt::ToolTip ToolTip{ nullptr };
         winrt::hstring PublishedHelpText{};
+        // Detached by SuppressOwnedToolTip and still ours; RestoreOwnedToolTip re-attaches it.
+        bool IsSuppressed{ false };
     };
 
     inline GlobalDependencyProperty s_cellToolTipRecordProperty{ nullptr };
@@ -62,6 +64,12 @@ namespace TableViewDetails
         }
     }
 
+    inline bool IsOwnedToolTip(const winrt::FrameworkElement& element, const CellToolTipRecord& record)
+    {
+        auto const attached = winrt::ToolTipService::GetToolTip(element);
+        return record.ToolTip && (record.IsSuppressed ? !attached : record.ToolTip == attached.try_as<winrt::ToolTip>());
+    }
+
     inline std::optional<winrt::hstring> TryGetString(const winrt::IInspectable& value)
     {
         if (auto const propertyValue = value ? value.try_as<winrt::IPropertyValue>() : nullptr;
@@ -95,7 +103,7 @@ namespace TableViewDetails
 
         RetractPublishedHelpText(element, *record);
 
-        if (record->ToolTip && record->ToolTip == winrt::ToolTipService::GetToolTip(element).try_as<winrt::ToolTip>())
+        if (IsOwnedToolTip(element, *record))
         {
             // Close before dropping content: clearing an open tooltip's content removes a live
             // popup's child, the shape behind the reentrant CPopup::RemoveChild crash.
@@ -129,8 +137,7 @@ namespace TableViewDetails
         auto record = GetRecord(element);
         // The raw value, not a ToolTip-narrowed one: a bare string would otherwise read as empty.
         auto const existingValue = winrt::ToolTipService::GetToolTip(element);
-        auto const owned = (record && record->ToolTip && record->ToolTip == existingValue.try_as<winrt::ToolTip>())
-            ? record->ToolTip : nullptr;
+        auto const owned = (record && IsOwnedToolTip(element, *record)) ? record->ToolTip : nullptr;
 
         if (existingValue && !owned)
         {
@@ -307,6 +314,32 @@ namespace TableViewDetails
         {
             TVDiag::LogRetailF(L"[TableView] Applying a header tooltip failed (HRESULT 0x%08X).",
                 static_cast<unsigned int>(winrt::to_hresult()));
+        }
+    }
+
+    // Workaround: a tooltip opening under a resting pointer resets its ProtectedCursor to the arrow
+    // until the pointer moves. That is a framework bug; remove this pair once it is fixed there.
+    // Detached rather than disabled: a disabled ToolTip still opens (at zero opacity) and still
+    // resets the cursor. Detaching also closes it or cancels its pending open.
+    inline void SuppressOwnedToolTip(const winrt::FrameworkElement& element)
+    {
+        if (auto const record = GetRecord(element); record && !record->IsSuppressed && IsOwnedToolTip(element, *record))
+        {
+            record->IsSuppressed = true;
+            winrt::ToolTipService::SetToolTip(element, nullptr);
+        }
+    }
+
+    inline void RestoreOwnedToolTip(const winrt::FrameworkElement& element)
+    {
+        if (auto const record = GetRecord(element); record && record->IsSuppressed)
+        {
+            const bool owned = IsOwnedToolTip(element, *record);
+            record->IsSuppressed = false;
+            if (owned)
+            {
+                winrt::ToolTipService::SetToolTip(element, record->ToolTip);
+            }
         }
     }
 }

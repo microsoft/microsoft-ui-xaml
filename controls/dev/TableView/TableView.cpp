@@ -3912,6 +3912,21 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
     // resizes, and unlike the XamlRoot it is below any scale an app applies above the control.
     gripperVisual.ManipulationContainer(*this);
 
+    auto weakHeaderCell = winrt::make_weak(headerCell);
+    gripperVisual.PointerEntered([weakHeaderCell](auto const&, auto const&)
+    {
+        TableViewDetails::SuppressOwnedToolTip(weakHeaderCell.get());
+    });
+    // Exited alone can be missed (a gesture torn down, the header left from the gripper's edge).
+    auto const restoreHeaderToolTip = [weakHeaderCell](auto const&, auto const&)
+    {
+        TableViewDetails::RestoreOwnedToolTip(weakHeaderCell.get());
+    };
+    gripperVisual.PointerExited(restoreHeaderToolTip);
+    gripperVisual.PointerCanceled(restoreHeaderToolTip);
+    gripperVisual.PointerCaptureLost(restoreHeaderToolTip);
+    headerCell.PointerExited(restoreHeaderToolTip);
+
     // shared_ptr so the handler closures keep it alive, and so Escape can reach the live drag.
     auto state = std::make_shared<ColumnResizeDragState>();
     auto weakColumn = winrt::make_weak(column);
@@ -3979,7 +3994,6 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
 
     // Canceled means the gesture was torn down rather than released (Escape, palm rejection, the
     // header rebuilt mid-drag): revert. A clean release announces the new width instead.
-    auto weakHeaderCell = winrt::make_weak(headerCell);
     gripperVisual.DragCompleted(
         [weakColumn, weakThis, weakHeaderCell, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragCompletedEventArgs const& cargs)
     {

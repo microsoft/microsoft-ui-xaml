@@ -535,6 +535,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the resize cursor holds on the gripper of a column with a HeaderToolTip while the pointer rests past the tooltip delay, before and after the first sort, and that a drag then resizes (GH #12436).")]
+        public void ResizeCursorHoldsOnGripperOfColumnWithHeaderToolTip()
+        {
+            // Name sets HeaderToolTip; a sort click suppresses that tooltip until the pointer re-enters,
+            // which is why the cursor seemed to appear only after sorting.
+            const string column = "Name";
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), column);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found.", column));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                var bounds = header.BoundingRectangle;
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int y = bounds.Top + (bounds.Height / 2);
+
+                foreach (string phase in new[] { "before any sort", "after the first sort" })
+                {
+                    InputHelper.MoveMouse(new Point(gripperX, bounds.Top - 40));
+                    InputHelper.MoveMouse(new Point(gripperX, y));
+                    Wait.ForMilliseconds(2500);
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, string.Format("Resting on the gripper {0} must keep the west-east size cursor.", phase), requiredMatches: 5))
+                    {
+                        return;
+                    }
+
+                    if (phase == "before any sort")
+                    {
+                        InputHelper.LeftClick(header); // None -> Ascending
+                        Wait.ForIdle();
+                    }
+                }
+
+                DragColumnBoundary(header, 80);
+                Wait.ForIdle();
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), column).BoundingRectangle.Width;
+                Log.Comment("Width before={0}, after={1}.", bounds.Width, widthAfter);
+                Verify.IsGreaterThan(widthAfter, bounds.Width + 20.0, "After the first sort a gripper drag must widen the column.");
+            }
+        }
+        [TestMethod]
         [TestProperty("Description", "Verifies Escape during a pointer resize releases the gripper's mouse capture, so the pointer stops showing the resize cursor away from the gripper.")]
         public void PointerResizeEscapeReleasesCapture()
         {

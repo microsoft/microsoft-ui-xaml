@@ -350,6 +350,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column's HeaderToolTip does not open while the pointer rests on its resize gripper, so the resize cursor holds (GH #12436).")]
+        public void HeaderToolTipStaysClosedOverResizeGripper()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject nameHeader = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                if (nameHeader == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found on the header host.");
+                    return;
+                }
+
+                // Opening the tooltip under a resting pointer reset the cursor to the arrow; the cursor itself is checked in the layout tests.
+                var bounds = nameHeader.BoundingRectangle;
+                var gripper = new Point(bounds.Left + bounds.Width - 3, bounds.Top + (bounds.Height / 2));
+                HoverPoint(gripper, "the Name header's resize gripper");
+                UIObject toolTip = FindOpenToolTip("while resting on the gripper");
+
+                Verify.IsNull(toolTip, "The header tooltip must not open while the pointer is on the resize gripper.");
+
+                // Moving back onto the header content and re-entering restores the tooltip.
+                HoverPoint(new Point(bounds.Left + (bounds.Width / 3), gripper.Y), "the Name header's content");
+                UIObject contentToolTip = FindOpenToolTip("after hovering the header content");
+                Verify.IsNotNull(contentToolTip, "Hovering the header content must still open its tooltip.");
+                if (contentToolTip != null)
+                {
+                    Verify.IsTrue(ReadToolTipText(contentToolTip).Contains("The person's name"), "The restored tooltip must carry the header's text.");
+                }
+            }
+        }
+
         // The screen point over a given column's cell in a given row: the column's x from its HEADER, the row's
         // y from the ROW. See the note in CellToolTipAppearsOnHover for why this composition is what keeps the
         // test clear of finding #13.
