@@ -52,6 +52,10 @@ namespace DirectUI
         _Check_return_ HRESULT StopCheckingForMouseDrag(
             _In_ xaml_input::IPointer* pPointer);
 
+        _Check_return_ HRESULT OwnerHasPointerCapture(
+            _In_ UINT pointerId,
+            _Out_ bool* hasCapture);
+
         // Return true if we're tracking the mouse and newMousePosition is outside the drag
         // rectangle centered at m_lastMouseLeftButtonDownPosition (see IsOutsideDragRectangle).
         bool ShouldStartMouseDrag(
@@ -70,6 +74,9 @@ namespace DirectUI
         // m_lastMouseLeftButtonDownPosition (while the left button is held down).
         // "Far enough away" is defined via system metrics SM_CXDRAG and SM_CYDRAG.
         bool m_isCheckingForMouseDrag = false;
+
+        // Identifies the candidate while m_isLeftButtonPressed is true.
+        UINT m_mouseDragPointerId = 0;
 
         bool m_isHoldingCompleted = false;
 

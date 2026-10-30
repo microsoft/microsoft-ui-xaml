@@ -1,0 +1,261 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
+using System.Linq;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
+
+namespace MUXControlsTestApp
+{
+    [TopLevelTestPage(Name = "Automatic Drag")]
+    public sealed partial class AutomaticDragPage : TestPage
+    {
+        private int releaseCount;
+        private int hoverMoveCount;
+        private int dragCount;
+        private int dropCount;
+        private int copyCompletionCount;
+        private int childTouchReleaseCount;
+        private int childTouchPressCount;
+        private int mouseCaptureLostCount;
+        private int penCaptureLostCount;
+        private int captureLossActionCount;
+        private int penMoveCount;
+        private int penHoverCount;
+        private int penCanceledCount;
+        private int canceledPointCount;
+        private int dragOverCount;
+        private int childCaptureCount;
+        private int childCaptureLostCount;
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
+
+        public AutomaticDragPage()
+        {
+            InitializeComponent();
+            DragList.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
+                LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString()), true);
+            DragList.DragItemsStarting += (sender, args) =>
+            {
+                DragCount.Text = (++dragCount).ToString();
+                args.Cancel = true;
+            };
+            DragSource.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
+            {
+                LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString();
+                var properties = args.GetCurrentPoint(DragSource).Properties;
+                PressUpdateKind.Text = properties.PointerUpdateKind.ToString();
+                PressPrimaryDown.Text = properties.IsLeftButtonPressed.ToString();
+                PressPointerCaptured.Text = (DragSource.PointerCaptures?.Any(
+                    pointer => pointer.PointerId == args.Pointer.PointerId) == true).ToString();
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+                {
+                    MousePointerId.Text = args.Pointer.PointerId.ToString();
+                }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                {
+                    PenPressPointerId.Text = args.Pointer.PointerId.ToString();
+                }
+                if (ReleaseOnPress.IsChecked == true)
+                {
+                    DragSource.ReleasePointerCapture(args.Pointer);
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                {
+                    PenCanceledCount.Text = (++penCanceledCount).ToString();
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+                {
+                    MouseCaptureLostCount.Text = (++mouseCaptureLostCount).ToString();
+                    if (DisableOnCaptureLost.IsChecked == true)
+                    {
+                        CaptureLossActionCount.Text = (++captureLossActionCount).ToString();
+                        DragSource.CanDrag = false;
+                        Draggable.IsChecked = false;
+                        if (ReenableOnCaptureLost.IsChecked == true)
+                        {
+                            DragSource.CanDrag = true;
+                            Draggable.IsChecked = true;
+                        }
+                    }
+                }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                {
+                    PenCaptureLostCount.Text = (++penCaptureLostCount).ToString();
+                }
+            }), true);
+            TouchChild.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    HandleChildTouch(sender, args);
+                    ChildTouchPressCount.Text = (++childTouchPressCount).ToString();
+                }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen && CaptureChildPointer.IsChecked == true)
+                {
+                    args.Handled = true;
+                }
+                if (CaptureChildPointer.IsChecked == true &&
+                    args.Pointer.PointerDeviceType != PointerDeviceType.Mouse &&
+                    TouchChild.CapturePointer(args.Pointer))
+                {
+                    ChildCaptureCount.Text = (++childCaptureCount).ToString();
+                }
+            }), true);
+            TouchChild.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
+                {
+                    ChildCaptureLostCount.Text = (++childCaptureLostCount).ToString();
+                    args.Handled = HandleChildCaptureLoss.IsChecked == true;
+                }
+            }), true);
+            TouchChild.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    HandleChildTouch(sender, args);
+                    ChildTouchReleaseCount.Text = (++childTouchReleaseCount).ToString();
+                }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen && CaptureChildPointer.IsChecked == true)
+                {
+                    args.Handled = true;
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.GetCurrentPoint(DragSource).Properties.IsCanceled)
+                {
+                    CanceledPointCount.Text = (++canceledPointCount).ToString();
+                }
+                ReleaseCount.Text = (++releaseCount).ToString();
+                if (HandleRelease.IsChecked == true)
+                {
+                    args.Handled = true;
+                    DragSource.ReleasePointerCapture(args.Pointer);
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((sender, args) =>
+            {
+                var point = args.GetCurrentPoint(DragSource);
+                if (point.Properties.IsCanceled)
+                {
+                    CanceledPointCount.Text = (++canceledPointCount).ToString();
+                }
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                {
+                    PenMoveCount.Text = (++penMoveCount).ToString();
+                    PenMovePointerId.Text = args.Pointer.PointerId.ToString();
+                }
+                // Count both cross-device legacy guards and native same-pen hover cases.
+                if (!point.IsInContact && !point.Properties.IsLeftButtonPressed)
+                {
+                    HoverMoveCount.Text = (++hoverMoveCount).ToString();
+                    if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                    {
+                        PenHoverCount.Text = (++penHoverCount).ToString();
+                        PenHoverPointerId.Text = args.Pointer.PointerId.ToString();
+                    }
+                }
+            }), true);
+            DragSource.DragStarting += (sender, args) =>
+            {
+                DragCount.Text = (++dragCount).ToString();
+                args.Data.SetText("AutomaticDragSource");
+                args.AllowedOperations = DataPackageOperation.Copy;
+                args.Cancel = CancelDrag.IsChecked == true;
+            };
+            DragSource.DropCompleted += (sender, args) =>
+            {
+                CompletionResult.Text = args.DropResult.ToString();
+                if (args.DropResult == DataPackageOperation.Copy)
+                {
+                    CopyCompletionCount.Text = (++copyCompletionCount).ToString();
+                }
+            };
+        }
+
+        private void HandleChildTouch(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                ChildTouchPointerId.Text = args.Pointer.PointerId.ToString();
+                args.Handled = true;
+            }
+        }
+
+        private void Draggable_Click(object sender, RoutedEventArgs args)
+        {
+            DragSource.CanDrag = Draggable.IsChecked == true;
+        }
+
+        private void ToggleDragDuringPress_Click(object sender, RoutedEventArgs args)
+        {
+            DragSource.CanDrag = false;
+            DragSource.CanDrag = true;
+        }
+
+        private void UseListView_Changed(object sender, RoutedEventArgs args)
+        {
+            if (DragSource == null || DragList == null || ListMode == null) { return; }
+            DragSource.Visibility = UseListView.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+            DragList.Visibility = UseListView.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            ListMode.Text = DragList.Visibility.ToString();
+        }
+
+        private static int CountCaptures(DependencyObject element)
+        {
+            int count = (element as UIElement)?.PointerCaptures?.Count ?? 0;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); ++i)
+            {
+                count += CountCaptures(VisualTreeHelper.GetChild(element, i));
+            }
+            return count;
+        }
+
+        private void DropTarget_DragOver(object sender, DragEventArgs args)
+        {
+            DragOverCount.Text = (++dragOverCount).ToString();
+            args.AcceptedOperation = DataPackageOperation.Copy;
+            args.Handled = true;
+        }
+
+        private async void DropTarget_Drop(object sender, DragEventArgs args)
+        {
+            var deferral = args.GetDeferral();
+            try
+            {
+                DroppedText.Text = await args.DataView.GetTextAsync();
+                DropCount.Text = (++dropCount).ToString();
+                args.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        }
+
+        private void Snapshot_Click(object sender, RoutedEventArgs args)
+        {
+            CaptureCount.Text = (DragSource.PointerCaptures?.Count ?? 0).ToString();
+            MouseCaptureCount.Text = (DragSource.PointerCaptures?.Count(
+                pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse) ?? 0).ToString();
+            MouseDragThreshold.Text = (2 * GetSystemMetrics(68 /* SM_CXDRAG */)).ToString(CultureInfo.InvariantCulture);
+            RasterizationScale.Text = XamlRoot.RasterizationScale.ToString(CultureInfo.InvariantCulture);
+            ListCaptureCount.Text = CountCaptures(DragList).ToString();
+        }
+    }
+}

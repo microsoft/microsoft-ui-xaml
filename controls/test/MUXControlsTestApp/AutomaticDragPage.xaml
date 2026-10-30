@@ -1,0 +1,95 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.AutomaticDragPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp">
+    <StackPanel Margin="24" Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <CheckBox x:Name="HandleRelease" Content="Handle release and release capture" IsChecked="True"/>
+            <CheckBox x:Name="CancelDrag" Content="Cancel drag start" IsChecked="True"/>
+            <CheckBox x:Name="Draggable" Content="CanDrag" IsChecked="True" Click="Draggable_Click"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <CheckBox x:Name="DisableOnCaptureLost" Content="Disable drag on capture loss"/>
+            <CheckBox x:Name="ReenableOnCaptureLost" Content="Reenable drag in the same callback"/>
+            <CheckBox x:Name="ReleaseOnPress" Content="Release capture on press"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <CheckBox x:Name="CaptureChildPointer" Content="Child captures pointer"/>
+            <CheckBox x:Name="HandleChildCaptureLoss" Content="Handle child capture loss" IsChecked="True"/>
+            <Button x:Name="ToggleDragDuringPress" Content="Disable and reenable drag" Click="ToggleDragDuringPress_Click"/>
+            <CheckBox x:Name="UseListView" Content="ListView source" Checked="UseListView_Changed" Unchecked="UseListView_Changed"/>
+        </StackPanel>
+        <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="240"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="DragHandle" Text="Drag this plain Border"
+                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <Border x:Name="TouchChild" Grid.Column="1" Background="LightPink">
+                    <TextBlock x:Name="TouchHandle" Text="Child handles touch"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </Border>
+            </Grid>
+        </Border>
+        <!-- Sibling of DragSource: collapsing DragSource must not hide the ListView. -->
+        <ListView x:Name="DragList" CanDragItems="True" CanReorderItems="True" AllowDrop="True"
+                  Height="80" Visibility="Collapsed">
+            <ListViewItem x:Name="ListDragItem" AutomationProperties.AutomationId="ListDragItem" Content="ListView drag source"/>
+            <ListViewItem Content="Second item"/>
+        </ListView>
+        <Border x:Name="DropTarget" AllowDrop="True" Background="LightGreen" Height="120"
+                DragOver="DropTarget_DragOver" Drop="DropTarget_Drop">
+            <TextBlock x:Name="DropHandle" Text="Drop here"
+                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        </Border>
+        <StackPanel Orientation="Horizontal" Spacing="24">
+            <StackPanel>
+                <TextBlock x:Name="LastPointerDevice" Text="None"/>
+                <TextBlock x:Name="ReleaseCount" Text="0"/>
+                <TextBlock x:Name="HoverMoveCount" Text="0"/>
+                <TextBlock x:Name="PenMoveCount" Text="0"/>
+                <TextBlock x:Name="PenMovePointerId" Text="0"/>
+                <TextBlock x:Name="PenPressPointerId" Text="0"/>
+                <TextBlock x:Name="PenHoverCount" Text="0"/>
+                <TextBlock x:Name="PenHoverPointerId" Text="0"/>
+                <TextBlock x:Name="PenCanceledCount" Text="0"/>
+                <TextBlock x:Name="CanceledPointCount" Text="0"/>
+                <TextBlock x:Name="MouseDragThreshold" Text="0"/>
+                <TextBlock x:Name="RasterizationScale" Text="1"/>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock x:Name="DragCount" Text="0"/>
+                <TextBlock x:Name="DropCount" Text="0"/>
+                <TextBlock x:Name="DragOverCount" Text="0"/>
+                <TextBlock x:Name="CopyCompletionCount" Text="0"/>
+                <TextBlock x:Name="MousePointerId" Text="0"/>
+                <TextBlock x:Name="MouseCaptureCount" Text="0"/>
+                <TextBlock x:Name="MouseCaptureLostCount" Text="0"/>
+                <TextBlock x:Name="CaptureLossActionCount" Text="0"/>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock x:Name="DroppedText" Text="None"/>
+                <TextBlock x:Name="CompletionResult" Text="None"/>
+                <TextBlock x:Name="CaptureCount" Text="0"/>
+                <TextBlock x:Name="ChildTouchPointerId" Text="0"/>
+                <TextBlock x:Name="ChildTouchPressCount" Text="0"/>
+                <TextBlock x:Name="ChildCaptureCount" Text="0"/>
+                <TextBlock x:Name="ChildCaptureLostCount" Text="0"/>
+                <TextBlock x:Name="ListCaptureCount" Text="0"/>
+                <TextBlock x:Name="ListMode" Text="Collapsed"/>
+                <TextBlock x:Name="ChildTouchReleaseCount" Text="0"/>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock x:Name="PressUpdateKind" Text="None"/>
+                <TextBlock x:Name="PressPrimaryDown" Text="False"/>
+                <TextBlock x:Name="PressPointerCaptured" Text="False"/>
+                <TextBlock x:Name="PenCaptureLostCount" Text="0"/>
+            </StackPanel>
+        </StackPanel>
+        <Button x:Name="Snapshot" Content="Read capture state" Click="Snapshot_Click"/>
+    </StackPanel>
+</local:TestPage>
