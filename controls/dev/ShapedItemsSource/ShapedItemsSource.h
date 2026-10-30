@@ -219,7 +219,8 @@ private:
     bool TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void AbandonIncrementalCommit() noexcept;
     bool TryReshapeStaleSortedFlatProjection();
-    // False when an unobserved or pending edit may have changed which items pass the filter.
+    // False when an unobserved or pending edit may have changed which items pass the filter, or a
+    // failed rebuild left the retained state behind the source.
     bool IsFilterMembershipCurrent() const;
     bool IsFlatProjectionSorted() const;
     bool IsFlatRowInSortOrderWithNeighbours(uint32_t index) const;

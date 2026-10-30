@@ -1007,6 +1007,13 @@ bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
 
 bool ShapedItemsSource::IsFilterMembershipCurrent() const
 {
+    // A failed rebuild kept the previous shaping state, which no longer describes the source. Checked
+    // first: it applies to a sort-only projection too.
+    if (m_validatedSourceStamp == ~uint64_t{ 0 })
+    {
+        return false;
+    }
+
     if (!m_pipeline.HasFilter())
     {
         return true;
