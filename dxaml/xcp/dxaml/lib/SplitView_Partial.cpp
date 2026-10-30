@@ -96,6 +96,7 @@ SplitView::OnApplyTemplate()
         IFC_RETURN(m_displayModeStateChangedEventHandler.DetachEventHandler(m_tpDisplayModeStates.Get()));
         m_tpDisplayModeStates.Clear();
     }
+    MovePendingPaneStateChangesToFallback();
     m_pendingPaneStateChanges.clear();
     m_receivedPaneStateChanges.clear();
 
@@ -491,6 +492,17 @@ _Check_return_ HRESULT SplitView::OnPropertyChanged2(_In_ const PropertyChangedP
         // change DisplayMode, request a light dismiss, or change IsPaneOpen again.
         IFC_RETURN(BeginPaneRequest(!!args.m_pNewValue->AsBool(), &paneRequest));
     }
+    auto endPaneRequest = wil::scope_exit([&]()
+    {
+        if (isPaneOpenChange)
+        {
+            const auto inProgress = std::find(m_inProgressPaneRequestIds.begin(), m_inProgressPaneRequestIds.end(), paneRequest.id);
+            if (inProgress != m_inProgressPaneRequestIds.end())
+            {
+                m_inProgressPaneRequestIds.erase(inProgress);
+            }
+        }
+    });
     auto abandonPaneRequest = wil::scope_exit([&]()
     {
         if (isPaneOpenChange)
@@ -592,8 +604,27 @@ SplitView::BeginPaneRequest(bool isOpen, _Out_ PaneRequest* request)
     {
         m_fallbackPaneStateChanges.push_back({ request->id, isOpen, false });
     }
+    m_inProgressPaneRequestIds.push_back(request->id);
 
     return S_OK;
+}
+
+void
+SplitView::MovePendingPaneStateChangesToFallback()
+{
+    // A template change during a request's callbacks (for example from PaneOpening) drops
+    // the group that would have completed it. Hand the request to the ordered fallback,
+    // which publishes it when the request finishes, as it would without DisplayModeStates.
+    for (const auto& pending : m_pendingPaneStateChanges)
+    {
+        if (std::find(m_inProgressPaneRequestIds.begin(), m_inProgressPaneRequestIds.end(), pending.requestId) == m_inProgressPaneRequestIds.end())
+        {
+            continue;
+        }
+        const auto position = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
+            [&pending](const auto& change) { return change.requestId > pending.requestId; });
+        m_fallbackPaneStateChanges.insert(position, { pending.requestId, pending.isPaneOpen, false });
+    }
 }
 
 _Check_return_ HRESULT
@@ -617,14 +648,12 @@ SplitView::AbandonPaneRequest(const PaneRequest& request)
         }
     }
 
-    if (request.usesFallback)
+    // The request may also have been moved here by a template change.
+    const auto abandoned = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
+        [&request](const auto& change) { return change.requestId == request.id; });
+    if (abandoned != m_fallbackPaneStateChanges.end())
     {
-        const auto abandoned = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
-            [&request](const auto& change) { return change.requestId == request.id; });
-        if (abandoned != m_fallbackPaneStateChanges.end())
-        {
-            m_fallbackPaneStateChanges.erase(abandoned);
-        }
+        m_fallbackPaneStateChanges.erase(abandoned);
         // Newer requests that finished behind this one can publish now.
         IFC_RETURN(PublishFallbackPaneStateChanges());
     }
@@ -686,14 +715,13 @@ SplitView::OnIsPaneOpenChanged(bool isOpen, PaneRequest& request)
         IFC_RETURN(TeardownOuterDismissLayer());
     }
 
-    if (request.usesFallback)
+    // Without DisplayModeStates (from the start, or since a template change during this
+    // request's callbacks), the request publishes its completion here, in request order.
+    const auto completed = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
+        [&request](const auto& change) { return change.requestId == request.id; });
+    if (completed != m_fallbackPaneStateChanges.end())
     {
-        const auto completed = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
-            [&request](const auto& change) { return change.requestId == request.id; });
-        if (completed != m_fallbackPaneStateChanges.end())
-        {
-            completed->isComplete = true;
-        }
+        completed->isComplete = true;
         IFC_RETURN(PublishFallbackPaneStateChanges());
     }
 

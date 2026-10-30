@@ -141,6 +141,7 @@ namespace DirectUI
 
         // Without DisplayModeStates, each request publishes its completion when it finishes;
         // these keep the completions in request order when a callback makes a newer request.
+        // A template change also moves the requests whose group went away here.
         struct FallbackPaneStateChange
         {
             uint64_t requestId;
@@ -148,5 +149,10 @@ namespace DirectUI
             bool isComplete;
         };
         std::deque<FallbackPaneStateChange> m_fallbackPaneStateChanges;
+
+        // Requests whose OnPropertyChanged2 is still running (they nest through callbacks).
+        std::vector<uint64_t> m_inProgressPaneRequestIds;
+
+        void MovePendingPaneStateChangesToFallback();
     };
 }
