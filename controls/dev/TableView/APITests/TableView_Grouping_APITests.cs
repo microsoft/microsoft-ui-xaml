@@ -282,11 +282,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the default group header sets its key and count text without {Binding}, and keeps it current.")]
-        public void VerifyDefaultGroupHeaderTextDoesNotDependOnBinding()
+        [TestProperty("Description", "Verifies TableViewGroupInfo describes its own properties to {Binding} through ICustomPropertyProvider.")]
+        public void VerifyGroupInfoProvidesCustomProperties()
         {
-            // GH #12352: in a trimmed app {Binding} cannot resolve TableViewGroupInfo, so binding-driven
-            // default text renders blank.
+            // GH #12352: a trimmed app's metadata can't describe TableViewGroupInfo, so {Binding} relies on this.
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfo(tableView, 0);
+                var provider = (object)info as ICustomPropertyProvider;
+                Verify.IsNotNull(provider, "TableViewGroupInfo must implement ICustomPropertyProvider.");
+                if (provider == null)
+                {
+                    return;
+                }
+
+                Verify.AreEqual(info.KeyText, provider.GetStringRepresentation(), "The string representation is the key text.");
+                Verify.IsNull(provider.GetCustomProperty("NoSuchProperty"), "An unknown name has no property.");
+
+                var keyText = provider.GetCustomProperty("KeyText");
+                Verify.IsNotNull(keyText, "KeyText must be resolvable by name.");
+                Verify.IsTrue(keyText.CanRead && !keyText.CanWrite, "KeyText is read-only.");
+                Verify.AreEqual(info.KeyText, keyText.GetValue(info) as string, "KeyText must read the key text.");
+
+                var countText = provider.GetCustomProperty("ItemCountText");
+                Verify.IsNotNull(countText, "ItemCountText must be resolvable by name.");
+                Verify.AreEqual(info.ItemCountText, countText.GetValue(info) as string, "ItemCountText must read the count text.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the default group header shows each group's key and count text and follows an in-place count change.")]
+        public void VerifyDefaultGroupHeaderShowsGroupKeyAndCountText()
+        {
             TableView tableView = null;
             ObservableCollection<ShapedPerson> items = null;
 
@@ -303,23 +340,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var expected = new[] { ("Designer", 2), ("Engineer", 3), ("Architect", 1) };
-                for (var i = 0; i < expected.Length; i++)
+                var keys = new[] { "Designer", "Engineer", "Architect" };
+                for (var i = 0; i < keys.Length; i++)
                 {
-                    var header = GetGroupHeader(tableView, i);
-                    var presenter = FindVisualChildrenByType<ContentPresenter>(header).First();
-                    var textBlocks = FindVisualChildrenByType<TextBlock>(presenter).ToList();
-                    Verify.AreEqual(2, textBlocks.Count, "The default content shows a key and a count.");
-                    foreach (var textBlock in textBlocks)
-                    {
-                        Verify.IsNull(textBlock.GetBindingExpression(TextBlock.TextProperty),
-                            "Default group header text must not come from {Binding}.");
-                    }
-
-                    var info = GetGroupInfo(tableView, i);
-                    Verify.AreEqual(expected[i].Item1, textBlocks[0].Text, $"Group {i} must show its key.");
-                    Verify.AreEqual(info.ItemCountText, textBlocks[1].Text, $"Group {i} must show its count.");
-                    Verify.IsTrue(textBlocks[1].Text.Contains(expected[i].Item2.ToString()), $"Group {i} count text must carry the count.");
+                    VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, i), keys[i], $"group {i}");
                 }
 
                 items.Add(new ShapedPerson("Nadia", "Designer", "Studio"));
@@ -329,11 +353,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var text = HeaderText(tableView, 0);
-                Log.Comment($"Designer header after an add: '{text}'.");
-                Verify.IsTrue(text.StartsWith("Designer") && text.Contains("3"),
-                    $"The default header must follow an in-place count change, was '{text}'.");
+                Verify.AreEqual(3, GetGroupInfo(tableView, 0).ItemCount, "Precondition: the Designer group grew in place.");
+                VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "Designer", "after an in-place count change");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a copy of the default group header template keeps its own binding converter.")]
+        public void VerifyCopiedDefaultGroupHeaderTemplateKeepsItsConverter()
+        {
+            const string converterKey = "TableViewTestGroupKeyBracketConverter";
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Application.Current.Resources[converterKey] = new GroupKeyBracketConverter();
+
+                // Same root and element names as the built-in template, as a copy-and-edit restyle would have.
+                var template = (DataTemplate)XamlReader.Load(
+                    $@"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                           <StackPanel x:Name=""TableViewDefaultGroupHeaderContentRoot"" Orientation=""Horizontal"">
+                               <TextBlock x:Name=""{DefaultGroupHeaderKeyTextName}""
+                                          Text=""{{Binding KeyText, Mode=OneWay, Converter={{StaticResource {converterKey}}}}}"" />
+                               <TextBlock x:Name=""{DefaultGroupHeaderCountTextName}"" Text=""{{Binding ItemCountText, Mode=OneWay}}"" />
+                           </StackPanel>
+                       </DataTemplate>");
+
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var source = TableViewSource.From(items);
+                source.GroupBy(o => Person(o).Role);
+                tableView = CreateGroupedTable(source);
+                tableView.GroupHeaderTemplate = template;
+                LoadContent(tableView);
+            });
+
+            try
+            {
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "[Designer]", "copied template");
+                    items.Add(new ShapedPerson("Nadia", "Designer", "Studio"));
+                });
+
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                    VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "[Designer]", "copied template after an in-place count change"));
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.Resources.Remove(converterKey));
+            }
         }
 
         [TestMethod]
@@ -435,6 +509,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(text.StartsWith("A:"), "The app template must be gone.");
                 Verify.IsTrue(text.Contains("Designer"),
                     $"Clearing the override must revert to the Style's default content (TableView.idl:381-383), was '{text}'.");
+
+                VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "Designer", "after clearing the template");
+                VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 1), "Engineer", "after clearing the template");
             });
         }
 
@@ -1410,6 +1487,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return string.Concat(FindVisualChildrenByType<TextBlock>(presenter).Select(textBlock => textBlock.Text));
         }
 
+        internal const string DefaultGroupHeaderKeyTextName = "TableViewGroupHeaderKeyText";
+        internal const string DefaultGroupHeaderCountTextName = "TableViewGroupHeaderItemCountText";
+
+        // Checks the key and count TextBlocks of the default content (or a copy of it) by name.
+        internal static void VerifyDefaultGroupHeaderText(TableViewGroupHeader header, string expectedKeyText, string context)
+        {
+            Verify.IsNotNull(header, $"The header must be realized ({context}).");
+            var info = header?.Content as TableViewGroupInfo;
+            Verify.IsNotNull(info, $"The header's Content must be its TableViewGroupInfo ({context}).");
+            if (info == null)
+            {
+                return;
+            }
+
+            var presenter = FindVisualChildrenByType<ContentPresenter>(header).FirstOrDefault();
+            var textBlocks = presenter == null ? new List<TextBlock>() : FindVisualChildrenByType<TextBlock>(presenter).ToList();
+            var key = textBlocks.FirstOrDefault(textBlock => textBlock.Name == DefaultGroupHeaderKeyTextName);
+            var count = textBlocks.FirstOrDefault(textBlock => textBlock.Name == DefaultGroupHeaderCountTextName);
+            Verify.IsNotNull(key, $"The key TextBlock must be found by name ({context}).");
+            Verify.IsNotNull(count, $"The count TextBlock must be found by name ({context}).");
+
+            Verify.AreEqual(expectedKeyText, key?.Text, $"The header must show its group's key ({context}).");
+            Verify.IsFalse(string.IsNullOrEmpty(info.ItemCountText), $"Precondition: the group has count text ({context}).");
+            Verify.AreEqual(info.ItemCountText, count?.Text, $"The header must show its group's count text ({context}).");
+        }
+
         // A marker the test can recognize, plus a binding that proves Content is the group info.
         internal static DataTemplate CreateMarkerTemplate(string marker) => (DataTemplate)XamlReader.Load(
             $@"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
@@ -1418,5 +1521,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                        <TextBlock Text=""{{Binding KeyText}}"" />
                    </StackPanel>
                </DataTemplate>");
+    }
+
+    internal sealed class GroupKeyBracketConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language) => $"[{value}]";
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
     }
 }

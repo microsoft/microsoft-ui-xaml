@@ -1156,7 +1156,6 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     if (existing)
     {
         winrt::get_self<TableViewGroupInfo>(existing)->UpdateInternal(groupKey, itemCount, level, keyText);
-        headerImpl->UpdateDefaultContentTextInternal();
     }
     else
     {

@@ -37,21 +37,13 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
 {
-    auto desired = MeasureBand(availableSize);
+    auto const desired = MeasureBand(availableSize);
 
-    // The base measure realizes the content template, so a new content root (first realization,
-    // or a template change) is picked up here.
-    if (auto const root = ContentTemplateRoot(); root != m_inspectedContentRoot.get())
+    // The base measure realizes the content template, so a header created disabled, or given a new
+    // content template while disabled, is handled here.
+    if (!IsEnabled() && ContentTemplateRoot() != m_inspectedContentRoot.get())
     {
-        TrackDefaultContent(root);
-        if (!IsEnabled())
-        {
-            UpdateDefaultCountOpacity();
-        }
-        if (UpdateDefaultContentText())
-        {
-            desired = MeasureBand(availableSize);
-        }
+        UpdateDefaultCountOpacity();
     }
     return desired;
 }
@@ -150,14 +142,14 @@ void TableViewGroupHeader::UpdateDefaultCountOpacity()
         return;
     }
 
-    TrackDefaultContent(ContentTemplateRoot());
+    TrackDefaultCount(ContentTemplateRoot());
     if (auto const count = m_defaultCount.get())
     {
         count.Opacity(1.0);
     }
 }
 
-void TableViewGroupHeader::TrackDefaultContent(winrt::UIElement const& root)
+void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
 {
     if (root == m_inspectedContentRoot.get())
     {
@@ -169,42 +161,14 @@ void TableViewGroupHeader::TrackDefaultContent(winrt::UIElement const& root)
         previous.ClearValue(winrt::UIElement::OpacityProperty());
         m_defaultCount.set(nullptr);
     }
-    m_defaultKey.set(nullptr);
     m_inspectedContentRoot = root ? winrt::make_weak(root) : nullptr;
 
-    // Only the built-in template is touched: an app template's same-named elements keep their values.
+    // Only the built-in template is touched: an app template's same-named element keeps its Opacity.
     auto const rootElement = root.try_as<winrt::FrameworkElement>();
     if (rootElement && rootElement.Name() == L"TableViewDefaultGroupHeaderContentRoot")
     {
-        m_defaultKey.set(rootElement.FindName(L"TableViewGroupHeaderKeyText").try_as<winrt::TextBlock>());
         m_defaultCount.set(rootElement.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>());
     }
-}
-
-// The built-in content sets its text from code: {Binding} cannot resolve TableViewGroupInfo when
-// the app is trimmed (GH #12352). Returns true when a text changed.
-bool TableViewGroupHeader::UpdateDefaultContentText()
-{
-    auto const key = m_defaultKey.get();
-    auto const count = m_defaultCount.get();
-    if (!key && !count)
-    {
-        return false;
-    }
-
-    auto const info = Content().try_as<winrt::TableViewGroupInfo>();
-    bool changed = false;
-    auto const apply = [&changed](winrt::TextBlock const& textBlock, winrt::hstring const& text)
-    {
-        if (textBlock && textBlock.Text() != text)
-        {
-            textBlock.Text(text);
-            changed = true;
-        }
-    };
-    apply(key, info ? info.KeyText() : winrt::hstring{});
-    apply(count, info ? info.ItemCountText() : winrt::hstring{});
-    return changed;
 }
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
@@ -239,7 +203,6 @@ void TableViewGroupHeader::OnContentChanged(winrt::IInspectable const& oldConten
     // PrepareGroupHeaderElement assigns the projection, then pushes expansion via the DPs. A
     // projection swapped in later must not be left reporting stale expansion, so seed it here.
     SyncExpansionToContent();
-    UpdateDefaultContentText();
 }
 
 void TableViewGroupHeader::SyncExpansionToContent()
