@@ -2303,7 +2303,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
     const wf::Rect windowToFill = m_windowState.GetVisibleWindow();
     const wf::Size infiniteBounds = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
     wf::Rect computedWindow = RectUtil::CreateEmptyRect();
-    wf::Rect headerBounds = {}; // needed for sticky headers
+    wf::Rect headerBounds; // needed for sticky headers
     bool needReEstimation = false;
 
     // there could have been a change in the collection since the original scrollitemintoview command
@@ -2332,7 +2332,12 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
         if (m_bUseStickyHeaders)
         {
             // with sticky headers, we need more: the item has to be below its group's header too
-            IFC(GetStickyHeaderHeightForItem(itemIndex, &headerBounds.Height));
+            INT32 indexOfGroup = 0;
+            ctl::ComPtr<IUIElement> spHeader;
+            IFC(m_cacheManager.GetGroupInformationFromItemIndex(itemIndex, &indexOfGroup, nullptr, nullptr));
+            INT validIndex = m_containerManager.GetValidHeaderIndexFromGroupIndex(indexOfGroup);
+            IFC(m_containerManager.GetHeaderAtValidIndex(validIndex, &spHeader));
+            headerBounds = GetBoundsFromElement(spHeader);
             deltaY = headerBounds.Height;
         }
 

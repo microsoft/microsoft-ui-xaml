@@ -189,31 +189,48 @@ CBringIntoViewHandler::EnsureFocusedElementBringIntoView(
     return S_OK;
 }
 
+// Bring the focus element into view.
+//
+// Note: Physical pixels are used to allow comparison against scrollviewer
+// and other elements in different parts of the visual tree.
 _Check_return_ HRESULT
-CBringIntoViewHandler::GetFocusedElementBoundingRect(
+CBringIntoViewHandler::BringFocusedElementIntoView(
     _In_ CUIElement* const rootElement,
     _In_ const float rootHeightInDips,
+    _In_ const float ihmHeightInDips,
+    _In_ const float ihmTopInDips,
+    _In_ const DirectUI::InputPaneState inputPaneState,
     _In_ const bool isIHMShowing,
     _In_ CUIElement* const focusedElement,
     _In_ CUIElement* const innerScroller,
-    _Out_ XRECTF_RB& rectFocusedElementGlobal,
-    _Out_ XRECTF& rectFocusedElement,
-    _In_ const bool addExtraPadding)
+    _In_ const bool forceIntoView,
+    _In_ const bool animateIfBringIntoView)
 {
     HRESULT hr  = S_OK;
     XFLOAT innerScrollerHeight = 0.0f;
     XFLOAT innerScrollerWidth = 0.0f;
     XFLOAT innermostHorizontalScrollableScrollerWidth = 0.0f;
     XFLOAT innermostVerticalScrollableScrollerHeight = 0.0f;
+    XRECTF rectFocusedElement = {0.0f, 0.0f, 0.0f, 0.0f};
+    XRECTF rectFocusedElementLocal = {0.0f, 0.0f, 0.0f, 0.0f};
     XSIZEF sizeViewportRatios = {0.0f, 0.0f};
     XRECTF_RB rectInnerScrollerGlobal = {0.0f, 0.0f, 0.0f, 0.0f};
+    XRECTF_RB rectFocusedElementGlobal = {0.0f, 0.0f, 0.0f, 0.0f};
+    CPopup* openedPopup = nullptr;
+    bool isFlyout = false;
+    bool isAppBar = false;
+    bool isContentDialog = false;
     XTHICKNESS focusVisualMarginInPhysicalPixels = { 0.0f, 0.0f, 0.0f, 0.0f };
     XTHICKNESS focusVisualMargin;
+    CFocusManager* focusManager = nullptr;
+    bool addExtraPadding = true;
 
-    rectFocusedElement = {};
-    rectFocusedElementGlobal = {};
     IFCPTR(focusedElement);
     IFCPTR(innerScroller);
+
+    // ListView asks for this when focus enters it onto an already fully visible item, so the item does not move.
+    focusManager = VisualTree::GetFocusManagerForElement(focusedElement);
+    addExtraPadding = !focusManager || !focusManager->IsBringingIntoViewWithoutPadding();
 
     // Get the global bounds in physical pixels to get the real width and height that contains the render
     // transform and DM zoom factor etc. In HIDPI, this will include  the DPI RenderTransform set
@@ -297,40 +314,6 @@ CBringIntoViewHandler::GetFocusedElementBoundingRect(
         focusVisualMarginInPhysicalPixels,
         addExtraPadding,
         &rectFocusedElement));
-
-Cleanup:
-    return hr;
-}
-
-// Physical pixels allow comparison against scrollers and elements elsewhere in the tree.
-_Check_return_ HRESULT
-CBringIntoViewHandler::BringFocusedElementIntoView(
-    _In_ CUIElement* const rootElement,
-    _In_ const float rootHeightInDips,
-    _In_ const float ihmHeightInDips,
-    _In_ const float ihmTopInDips,
-    _In_ const DirectUI::InputPaneState inputPaneState,
-    _In_ const bool isIHMShowing,
-    _In_ CUIElement* const focusedElement,
-    _In_ CUIElement* const innerScroller,
-    _In_ const bool forceIntoView,
-    _In_ const bool animateIfBringIntoView)
-{
-    HRESULT hr = S_OK;
-    XRECTF rectFocusedElement = {};
-    XRECTF rectFocusedElementLocal = {};
-    XRECTF_RB rectFocusedElementGlobal = {};
-    CPopup* openedPopup = nullptr;
-    bool isFlyout = false;
-    bool isAppBar = false;
-    bool isContentDialog = false;
-
-    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(focusedElement);
-    const bool addExtraPadding = !focusManager || !focusManager->IsBringingIntoViewWithoutPadding();
-
-    IFC(GetFocusedElementBoundingRect(
-        rootElement, rootHeightInDips, isIHMShowing, focusedElement, innerScroller,
-        rectFocusedElementGlobal, rectFocusedElement, addExtraPadding));
 
     if ((isIHMShowing || !rootElement->IsScroller()) && focusedElement->GetRootOfPopupSubTree())
     {
@@ -944,3 +927,4 @@ CBringIntoViewHandler::GetScrollerGlobalBounds(_In_ CUIElement* scroller, _Out_ 
 
     return S_OK;
 }
+

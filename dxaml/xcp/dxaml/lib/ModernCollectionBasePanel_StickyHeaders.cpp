@@ -559,6 +559,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GetVerticalViewportPadding(_Ou
     RRETURN(S_OK);
 }
 
+// Height of the sticky header that covers the top of the viewport above this item's group, or 0 without sticky headers.
+// headerAvailable is false when the group's header is not realized, in which case headerHeight is not known.
 _Check_return_ HRESULT ModernCollectionBasePanel::GetStickyHeaderHeightForItem(
     _In_ INT itemIndex,
     _Out_ FLOAT* headerHeight,

@@ -1,0 +1,60 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ListViewFocusEntryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp">
+    <StackPanel Spacing="8">
+        <TextBlock Text="Reset, select and position item 11, then Tab or Shift+Tab into the list. An item that is already fully visible must not move."
+                   TextWrapping="Wrap" MaxWidth="1000" HorizontalAlignment="Left" />
+        <StackPanel Orientation="Horizontal" Spacing="16">
+            <CheckBox x:Name="VerticalScrolling" Content="Vertical scrolling" />
+            <CheckBox x:Name="ResetWithoutFocus" Content="Reset without focusing an item" />
+            <CheckBox x:Name="FiveItems" Content="Five items" />
+            <ComboBox x:Name="CacheLength" Header="Cache length" SelectedIndex="0">
+                <ComboBoxItem>0</ComboBoxItem>
+                <ComboBoxItem>2</ComboBoxItem>
+            </ComboBox>
+            <ComboBox x:Name="FocusEntryPosition" Header="Item 11 position" SelectedIndex="0">
+                <ComboBoxItem>Leading</ComboBoxItem>
+                <ComboBoxItem>Trailing</ComboBoxItem>
+                <ComboBoxItem>Before</ComboBoxItem>
+                <ComboBoxItem>After</ComboBoxItem>
+                <ComboBoxItem>Partial</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="ResetFocusEntryList" Content="Reset" Click="ResetFocusEntryList_Click" />
+            <Button x:Name="PrepareFocusEntryBefore" Content="Select item 11, focus before list" Click="PrepareFocusEntry_Click" />
+            <Button x:Name="PrepareFocusEntryAfter" Content="Select item 11, focus after list" Click="PrepareFocusEntry_Click" />
+            <Button x:Name="DisableSelectedItemFocusBefore" Content="Disable selected item, focus before list" Click="DisableSelectedItem_Click" />
+            <Button x:Name="DisableSelectedItemFocusAfter" Content="Disable selected item, focus after list" Click="DisableSelectedItem_Click" />
+            <Button x:Name="FocusListFromCode" Content="Focus list from code" Click="FocusListFromCode_Click" />
+            <Button x:Name="BeforeListFocusTarget" Content="Before list" />
+        </StackPanel>
+        <ListView x:Name="FocusEntryList" Width="600" Height="150" HorizontalAlignment="Left"
+                  Padding="0" BorderThickness="0"
+                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                  ScrollViewer.HorizontalScrollMode="Auto"
+                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                  ScrollViewer.VerticalScrollMode="Disabled"
+                  ShowsScrollingPlaceholders="False">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid Orientation="Vertical" MaximumRowsOrColumns="1"
+                                   ItemWidth="200" ItemHeight="100" CacheLength="0" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+        <Button x:Name="AfterListFocusTarget" Content="After list" />
+        <TextBlock Text="Offset / offset changes / offset when an item got focus / offset history / selected index / focused index" />
+        <StackPanel Orientation="Horizontal" Spacing="16">
+            <TextBlock x:Name="FocusEntryOffset" Text="0" />
+            <TextBlock x:Name="FocusEntryChanges" Text="0" />
+            <TextBlock x:Name="FocusEntryOffsetAtFocus" Text="" />
+            <TextBlock x:Name="FocusEntryOffsetHistory" Text="" />
+            <TextBlock x:Name="FocusEntrySelectedIndex" Text="-1" />
+            <TextBlock x:Name="FocusEntryFocusedIndex" Text="-1" />
+        </StackPanel>
+    </StackPanel>
+</local:TestPage>

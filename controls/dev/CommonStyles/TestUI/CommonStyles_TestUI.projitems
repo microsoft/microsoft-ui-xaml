@@ -97,10 +97,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ListViewKeyboardScrollingPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)FlatItemsControlPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -114,6 +110,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewElementNameBindingPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewFocusEntryPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -252,9 +252,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ListViewPage.xaml.cs">
       <DependentUpon>ListViewPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ListViewKeyboardScrollingPage.xaml.cs">
-      <DependentUpon>ListViewKeyboardScrollingPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ListViewBasePage.xaml.cs">
       <DependentUpon>ListViewBasePage.xaml</DependentUpon>
     </Compile>
@@ -263,6 +260,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ListViewElementNameBindingPage.xaml.cs">
       <DependentUpon>ListViewElementNameBindingPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ListViewFocusEntryPage.xaml.cs">
+      <DependentUpon>ListViewFocusEntryPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)GroupedItemsControlPage.xaml.cs">
       <DependentUpon>GroupedItemsControlPage.xaml</DependentUpon>
