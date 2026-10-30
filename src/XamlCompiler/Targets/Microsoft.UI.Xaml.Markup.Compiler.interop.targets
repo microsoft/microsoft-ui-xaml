@@ -238,9 +238,25 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <Error Condition="!Exists('$(XamlCompilerNativeExePath)')" Text="UseNativeXamlCompiler is set, but the native XAML compiler was not found at '$(XamlCompilerNativeExePath)'." />
     </Target>
 
+    <!--
+        The native compiler links both GC modes and picks one from the DOTNET_gcServer variable of its process. XamlCompilerEnableServerGC
+        is empty for workstation GC (the default: on real apps it is as fast as Server GC, with ~35 fewer threads and ~100 MB less memory per
+        compiler process), 'true'/'false' to force a mode, or 'auto' for Server GC on machines with enough cores and memory (see
+        XamlCompilerGCPolicy). A DOTNET_gcServer variable that is already set in the environment is respected when XamlCompilerEnableServerGC is empty.
+    -->
+    <Target Name="_ResolveXamlCompilerGCMode" BeforeTargets="MarkupCompilePass1;MarkupCompilePass2;DesignTimeMarkupCompilationCT" Condition="'$(_UseNativeXamlCompiler)' == 'true'">
+        <GetXamlCompilerGCMode EnableServerGC="$(XamlCompilerEnableServerGC)">
+            <Output TaskParameter="EnvironmentVariable" PropertyName="_XamlCompilerGCEnvironmentVariable" />
+        </GetXamlCompilerGCMode>
+        <ItemGroup Condition="'$(_XamlCompilerGCEnvironmentVariable)' != ''">
+            <_XamlCompilerEnvironmentVariable Include="$(_XamlCompilerGCEnvironmentVariable)" />
+        </ItemGroup>
+    </Target>
+
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" />
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(XamlCompilerTaskPath)" />
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(XamlCompilerTaskPath)" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.GetXamlCompilerGCMode"             AssemblyFile="$(XamlCompilerJsonTaskPath)" />
 
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.InputSerializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.OutputDeserializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
@@ -526,7 +542,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -656,7 +672,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
                 DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -843,7 +859,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -943,7 +959,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
             GenXbfPath="$(GenXbfPath)"/>
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
                      JsonFilePath="$(XamlCompilerExeOutputJson)">

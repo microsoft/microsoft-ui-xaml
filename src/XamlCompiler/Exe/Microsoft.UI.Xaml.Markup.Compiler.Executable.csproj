@@ -38,6 +38,8 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
     <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
     <PublishAot>true</PublishAot>
+    <!-- Link both GC modes (the MSBuild task selects one through the 'DOTNET_gcServer' variable of the compiler process, see GetXamlCompilerGCMode) -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
     <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
     <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
     <!-- Only the runtime pack of the RID that is published is needed, not those of the other frameworks (ASP.NET Core, Windows Desktop) -->
