@@ -192,7 +192,36 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 }
             }
 
-            throw new FileNotFoundException("The mscorlib.dll of the .NET Framework 4 was not found in the Windows directory.");
+            // The in-box .NET Framework 4.x can be turned off as a Windows feature. A .NET Framework targeting pack
+            // (installed by Visual Studio or the .NET SDK) has a reference mscorlib, which is equally good as metadata.
+            string referenceAssemblies = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Reference Assemblies", "Microsoft", "Framework", ".NETFramework");
+            if (Directory.Exists(referenceAssemblies))
+            {
+                string bestPath = null;
+                Version bestVersion = null;
+                foreach (string versionDirectory in Directory.GetDirectories(referenceAssemblies, "v4.*"))
+                {
+                    string path = Path.Combine(versionDirectory, "mscorlib.dll");
+                    if (File.Exists(path) &&
+                        Version.TryParse(Path.GetFileName(versionDirectory).Substring(1), out Version version) &&
+                        (bestVersion == null || version > bestVersion))
+                    {
+                        bestPath = path;
+                        bestVersion = version;
+                    }
+                }
+
+                if (bestPath != null)
+                {
+                    return bestPath;
+                }
+            }
+
+            throw new FileNotFoundException(
+                "The mscorlib.dll of the .NET Framework 4 was not found in the Windows directory, " +
+                "nor in a .NET Framework 4.x targeting pack under 'Reference Assemblies'.");
         }
 #endif
 
