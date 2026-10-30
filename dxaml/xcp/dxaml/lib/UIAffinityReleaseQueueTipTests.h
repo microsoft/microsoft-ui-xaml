@@ -13,6 +13,9 @@ TIP_declare_test(UIAffinityReleaseQueueCleanupTest, 64884230)
 {
     TIP_set_data_version(1);
     TIP_set_metrics_enabled();
+    // The queue keeps only the test id and reopens the test when the drain finishes.
+    TIP_set_process_scope();
+    TIP_set_extended_lifetime();
 
     enum class reason
     {
@@ -72,31 +75,13 @@ TIP_declare_test(UIAffinityReleaseQueueCleanupTest, 64884230)
 
 namespace DirectUI
 {
-    // The test type is an alias and cannot be forward-declared; this holder keeps tip.h out of DXamlCore.h.
-    // It is allocated once per queue and reused through start() and reset().
-    struct ReleaseQueueCleanupTip
+    // Reopens a running sample and completes it; a failed HRESULT fails it.
+    inline UIAffinityReleaseQueueCleanupTest CompleteReleaseQueueCleanupTip(
+        GUID testId, uint64_t queuedAt, size_t released, HRESULT hr)
     {
-        UIAffinityReleaseQueueCleanupTest test;
-        uint64_t queuedAt{};
-
-        ~ReleaseQueueCleanupTip()
+        auto test = tip::open<UIAffinityReleaseQueueCleanupTest>(testId);
+        if (test)
         {
-            test.complete_and_ignore(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::cancelled));
-        }
-
-        void Start(uint64_t queuedAtParam)
-        {
-            queuedAt = queuedAtParam;
-            test.start();
-        }
-
-        // Completes a running sample; a failed HRESULT fails it.
-        void Complete(size_t released, HRESULT hr)
-        {
-            if (!test)
-            {
-                return;
-            }
             {
                 auto data = test.data();
                 data->SetMetrics(GetTickCount64() - queuedAt, released);
@@ -111,7 +96,7 @@ namespace DirectUI
                 test.set_flag(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::batch_released));
             }
             test.complete();
-            test.reset();
         }
-    };
+        return test;
+    }
 }

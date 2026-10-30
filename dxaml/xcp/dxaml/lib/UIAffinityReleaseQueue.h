@@ -12,7 +12,6 @@
 namespace DirectUI
 {
     class DXamlCore;
-    struct ReleaseQueueCleanupTip;
 
     //+------------------------------------------------------------------------------
     //
@@ -51,7 +50,7 @@ namespace DirectUI
         std::atomic<bool> m_hasUnreachableObjects{ false };
         uint64_t m_unreachableQueuedAt{};
         uint64_t m_finalQueuedAt{};
-        std::shared_ptr<ReleaseQueueCleanupTip> m_cleanupTip;
+        GUID m_cleanupTipId{};
 
         wil::critical_section m_CriticalSection;
         BOOLEAN m_bInCleanup = FALSE;

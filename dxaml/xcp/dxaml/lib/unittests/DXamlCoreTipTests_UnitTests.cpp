@@ -70,62 +70,41 @@ public:
 
     TEST_METHOD(CompletesWhenTheQueueDrains)
     {
-        DirectUI::ReleaseQueueCleanupTip tip;
-        tip.Start(GetTickCount64());
-        UIAffinityReleaseQueueCleanupTest result = tip.test;
-        VERIFY_IS_TRUE(static_cast<bool>(tip.test));
-        tip.Complete(3, S_OK);
-        VERIFY_IS_FALSE(static_cast<bool>(tip.test));
+        const GUID id = tip::start<UIAffinityReleaseQueueCleanupTest>().test_id();
+        VERIFY_IS_TRUE(id != GUID{});
+        auto result = DirectUI::CompleteReleaseQueueCleanupTip(id, GetTickCount64(), 3, S_OK);
         VERIFY_ARE_EQUAL(TestCompletionKind::Success, result.data()->state().completionKind);
         VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), result.data()->releaseCountBucket);
+        VERIFY_IS_FALSE(static_cast<bool>(tip::open<UIAffinityReleaseQueueCleanupTest>(id)));
     }
 
-    TEST_METHOD(CompletingWithoutTheDrainDoesNotSucceed)
+    TEST_METHOD(SampleOutlivesItsStartHandle)
     {
-        DirectUI::ReleaseQueueCleanupTip tip;
-        tip.Start(GetTickCount64());
-        UIAffinityReleaseQueueCleanupTest result = tip.test;
-        result.complete();
-        VERIFY_ARE_EQUAL(TestCompletionKind::Failure, result.data()->state().completionKind);
+        const GUID id = tip::start<UIAffinityReleaseQueueCleanupTest>().test_id();
+        auto running = tip::open<UIAffinityReleaseQueueCleanupTest>(id);
+        VERIFY_IS_TRUE(static_cast<bool>(running));
+        running.complete();
+        VERIFY_ARE_EQUAL(TestCompletionKind::Failure, running.data()->state().completionKind);
         VERIFY_ARE_EQUAL(
             static_cast<unsigned short>(UIAffinityReleaseQueueCleanupTest::reason::incomplete_batch),
-            result.data()->state().reason);
-    }
-
-    TEST_METHOD(DestroyingAnUnfinishedSampleIgnoresIt)
-    {
-        UIAffinityReleaseQueueCleanupTest result;
-        {
-            DirectUI::ReleaseQueueCleanupTip tip;
-            tip.Start(GetTickCount64());
-            result = tip.test;
-        }
-        VERIFY_ARE_EQUAL(TestCompletionKind::Ignored, result.data()->state().completionKind);
-        VERIFY_ARE_EQUAL(
-            static_cast<unsigned short>(UIAffinityReleaseQueueCleanupTest::reason::cancelled),
-            result.data()->state().reason);
+            running.data()->state().reason);
     }
 
     TEST_METHOD(CleanupErrorsFailWithTheOriginalHResult)
     {
-        DirectUI::ReleaseQueueCleanupTip tip;
-        tip.Start(GetTickCount64());
-        UIAffinityReleaseQueueCleanupTest result = tip.test;
-        tip.Complete(1, E_OUTOFMEMORY);
+        const GUID id = tip::start<UIAffinityReleaseQueueCleanupTest>().test_id();
+        auto result = DirectUI::CompleteReleaseQueueCleanupTip(id, GetTickCount64(), 1, E_OUTOFMEMORY);
         VERIFY_ARE_EQUAL(TestCompletionKind::Failure, result.data()->state().completionKind);
         VERIFY_ARE_EQUAL(E_OUTOFMEMORY, result.data()->failureHResult);
     }
 
     TEST_METHOD(DelayDoesNotTurnSuccessfulCleanupIntoFailure)
     {
-        DirectUI::ReleaseQueueCleanupTip tip;
-        tip.Start(GetTickCount64() - 1000);
-        UIAffinityReleaseQueueCleanupTest result = tip.test;
-        tip.Complete(1, S_OK);
+        const GUID id = tip::start<UIAffinityReleaseQueueCleanupTest>().test_id();
+        auto result = DirectUI::CompleteReleaseQueueCleanupTip(id, GetTickCount64() - 1000, 1, S_OK);
         VERIFY_ARE_EQUAL(TestCompletionKind::Success, result.data()->state().completionKind);
         VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), result.data()->delayBucket);
     }
-
     TEST_METHOD(MetricsUseBoundedBuckets)
     {
         using Data = UIAffinityReleaseQueueCleanupTest::tip_test_data;
