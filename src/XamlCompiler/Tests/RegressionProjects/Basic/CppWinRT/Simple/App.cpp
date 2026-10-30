@@ -7,8 +7,10 @@
 
 #include "pch.h"
 #include "windows.h"
-#include "winrt/Windows.ApplicationModel.Activation.h"
 #include "winrt/Microsoft.UI.Xaml.Navigation.h"
+#include <cstdio>
+#include <cstdlib>
+#include <string_view>
 
 #include "App.h"
 #include "MainPage.h"
@@ -16,7 +18,6 @@
 using namespace ::winrt::Simple::implementation;
 
 using namespace winrt;
-using namespace winrt::Windows::ApplicationModel::Activation;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -32,16 +33,16 @@ App::App()
 {
     InitializeComponent();
 
-#if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
-    UnhandledException([this](IInspectable const&, ::Microsoft::UI::Xaml::UnhandledExceptionEventArgs const& e)
+    UnhandledException([](IInspectable const&, ::Microsoft::UI::Xaml::UnhandledExceptionEventArgs const& e)
     {
+        std::fwprintf(stderr, L"Unhandled exception: %ls\n", e.Message().c_str());
+#if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
         if (IsDebuggerPresent())
         {
-            auto errorMessage = e.Message();
             __debugbreak();
         }
-    });
 #endif
+    });
 }
 
 /// <summary>
@@ -51,60 +52,37 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(winrt::Microsoft::UI::Xaml::LaunchActivatedEventArgs const& e)
 {
-    Frame rootFrame(nullptr);
-    auto content = Window::Current().Content();
-    if (content)
+    Frame rootFrame;
+    rootFrame.NavigationFailed({ this, &App::OnNavigationFailed });
+    m_window = Window();
+    m_window.Content(rootFrame);
+
+    if (__argc == 2 && std::wstring_view(__wargv[1]) == L"FindNameTest")
     {
-        rootFrame = content.try_as<Frame>();
+        m_window.Activate();
+        try
+        {
+            MainPage::ValidateStringNameLookup();
+        }
+        catch (hresult_error const& error)
+        {
+            std::fwprintf(stderr, L"Named string lookup test failed: %ls (0x%08X)\n",
+                error.message().c_str(), static_cast<uint32_t>(error.code()));
+            throw;
+        }
+        std::puts("Named string lookup tests passed.");
+        std::fflush(stdout);
+        Exit();
+        return;
     }
 
-    // Do not repeat app initialization when the Window already has content,
-    // just ensure that the window is active
-    if (rootFrame == nullptr)
+    auto navigationParameter = e.Arguments();
+    if (__argc == 2 && std::wstring_view(__wargv[1]) == L"IncrementalTest")
     {
-        // Create a Frame to act as the navigation context and associate it with
-        // a SuspensionManager key
-        rootFrame = Frame();
-
-        rootFrame.NavigationFailed({ this, &App::OnNavigationFailed });
-
-        if (e.UWPLaunchActivatedEventArgs().PreviousExecutionState() == ApplicationExecutionState::Terminated)
-        {
-            // Restore the saved session state only when appropriate, scheduling the
-            // final launch steps after the restore is complete
-
-        }
-
-        if (e.UWPLaunchActivatedEventArgs().PrelaunchActivated() == false)
-        {
-            if (rootFrame.Content() == nullptr)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                rootFrame.Navigate(xaml_typename<winrt::Simple::MainPage>(), winrt::box_value(e.Arguments()));
-            }
-            // Place the frame in the current Window
-            Window::Current().Content(rootFrame);
-            // Ensure the current window is active
-            Window::Current().Activate();
-        }
+        navigationParameter = L"IncrementalTest";
     }
-    else
-    {
-        if (e.UWPLaunchActivatedEventArgs().PrelaunchActivated() == false)
-        {
-            if (rootFrame.Content() == nullptr)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                rootFrame.Navigate(xaml_typename<winrt::Simple::MainPage>(), winrt::box_value(e.Arguments()));
-            }
-            // Ensure the current window is active
-            Window::Current().Activate();
-        }
-    }
+    rootFrame.Navigate(xaml_typename<winrt::Simple::MainPage>(), box_value(navigationParameter));
+    m_window.Activate();
 }
 
 /// <summary>
@@ -115,5 +93,6 @@ void App::OnLaunched(winrt::Microsoft::UI::Xaml::LaunchActivatedEventArgs const&
 void App::OnNavigationFailed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Navigation::NavigationFailedEventArgs const& e)
 {
     std::wstring message(L"Failed to load Page ");
+    std::fwprintf(stderr, L"Failed to load Page %ls\n", e.SourcePageType().Name.c_str());
     throw hresult_error(E_FAIL, message.append(e.SourcePageType().Name));
 }

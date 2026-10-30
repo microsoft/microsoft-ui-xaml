@@ -8,8 +8,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
+    <!-- Named strings cover resource and property-element connections, including empty defaults. -->
     <Page.Resources>
+        <x:String x:Name="NamedResourceString">Resource value</x:String>
+        <x:String x:Key="emptyString" x:Name="NamedEmptyString"></x:String>
         <!-- Primitive Type Property CodeGen -->
             <!-- Short Form -->
         <local:PropertyBag x:Name="propertyBagObject" StringProp="StringValue" IntProp="32" DoubleProp="22.22" BooleanProp="False"/>
@@ -30,6 +32,12 @@
         </local:PropertyBag>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{StaticResource CSharpSimpleMainGridWhiteColor}">
+        <TextBlock x:Name="NamedStringTextBlock">
+            <TextBlock.Text><x:String x:Name="NamedInlineString">Inline value</x:String></TextBlock.Text>
+        </TextBlock>
+        <TextBlock x:Name="EmptyStringTextBlock">
+            <TextBlock.Text><x:String x:Name="NamedEmptyInlineString"></x:String></TextBlock.Text>
+        </TextBlock>
         <!-- Element Name CodeGen -->
         <Button x:Name="Button1"/>
         <Button Name="Button2"/>

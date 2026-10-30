@@ -6,9 +6,11 @@
 #include <FileLoader.h>
 #include <TestCleanupWrapper.h>
 #include <DisableErrorReportingScopeGuard.h>
+#include <RuntimeEnabledFeatureOverride.h>
 #include "ControlTemplateIntegrationTests.h"
 #include <CustomControl.h>
 #include <ChildControl.h>
+#include <XDeferCustomControl.h>
 #include "CustomTypes.XamlTypeInfo.g.h"
 
 using namespace Platform;
@@ -235,6 +237,148 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_NULL(control->PublicGetTemplateChild(L"nonexistentName"), L"GetTemplateChild(\"nonExistentName\") should return null");
             VERIFY_IS_NULL(control->PublicGetTemplateChild(L"templateNamescopeTest"), L"GetTemplateChild(\"templateNamescopeTest\") should return null");
         });
+    }
+
+    void ControlTemplateIntegrationTests::CanFindNamedStringsAfterTemplateExpansion()
+    {
+        // TextBlock.Text retains only text, so each template namescope must keep its named
+        // CString wrappers alive. Verify lookup through both text and XBFv2 parsing paths.
+        TestCleanupWrapper cleanup;
+
+        for (const bool enforceXbfV2 : { false, true })
+        {
+            RuntimeEnabledFeatureOverride featureEnforceXbfV2Stream(
+                RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, enforceXbfV2);
+
+            RunOnUIThread([]()
+            {
+                auto ordinaryTextBlock = safe_cast<TextBlock^>(XamlReader::Load(
+                    L"<TextBlock xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L" xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L" <TextBlock.Text><x:String x:Name='namedString'>foobar</x:String></TextBlock.Text>"
+                    L"</TextBlock>"));
+
+                // Named-string lookup in an ordinary namescope must remain unchanged.
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"foobar"), safe_cast<Platform::String^>(ordinaryTextBlock->FindName(L"namedString")));
+
+                auto controlTemplate = safe_cast<ControlTemplate^>(XamlReader::Load(
+                    L"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L" xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='Control'>"
+                    L" <StackPanel x:Name='root'>"
+                    L"  <TextBlock x:Name='presenter'>"
+                    L"   <TextBlock.Text><x:String x:Name='namedString'>foobar</x:String></TextBlock.Text>"
+                    L"  </TextBlock>"
+                    L"  <TextBlock>"
+                    L"   <TextBlock.Text><x:String x:Name='emptyString'/></TextBlock.Text>"
+                    L"  </TextBlock>"
+                    L" </StackPanel>"
+                    L"</ControlTemplate>"));
+
+                auto first = ref new CustomControl;
+                auto second = ref new CustomControl;
+                first->Template = controlTemplate;
+                second->Template = controlTemplate;
+                first->ApplyTemplate();
+                second->ApplyTemplate();
+
+                auto firstRoot = safe_cast<StackPanel^>(first->PublicGetTemplateChild(L"root"));
+                auto secondRoot = safe_cast<StackPanel^>(second->PublicGetTemplateChild(L"root"));
+                auto firstPresenter = safe_cast<TextBlock^>(first->PublicGetTemplateChild(L"presenter"));
+                auto secondPresenter = safe_cast<TextBlock^>(second->PublicGetTemplateChild(L"presenter"));
+
+                // The template root and its descendants can resolve the string after parsing ends.
+                VERIFY_IS_NOT_NULL(firstRoot->FindName(L"namedString"));
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"foobar"), safe_cast<Platform::String^>(firstRoot->FindName(L"namedString")));
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"foobar"), safe_cast<Platform::String^>(firstPresenter->FindName(L"namedString")));
+
+                // An empty named string is a retained value, not a missing namescope entry.
+                VERIFY_IS_NOT_NULL(firstRoot->FindName(L"emptyString"));
+                VERIFY_ARE_EQUAL(0u, safe_cast<Platform::String^>(firstRoot->FindName(L"emptyString"))->Length());
+
+                firstPresenter->Text = L"changed";
+                secondPresenter->Text = L"another value";
+
+                // Changing the consuming properties preserves each instance's original named string.
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"foobar"), safe_cast<Platform::String^>(firstRoot->FindName(L"namedString")));
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"foobar"), safe_cast<Platform::String^>(secondRoot->FindName(L"namedString")));
+
+                first->Template = safe_cast<ControlTemplate^>(XamlReader::Load(
+                    L"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L" xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='Control'>"
+                    L" <TextBlock x:Name='replacement'>"
+                    L"  <TextBlock.Text><x:String x:Name='replacementString'>replacement</x:String></TextBlock.Text>"
+                    L" </TextBlock>"
+                    L"</ControlTemplate>"));
+                first->ApplyTemplate();
+
+                auto replacement = safe_cast<TextBlock^>(first->PublicGetTemplateChild(L"replacement"));
+
+                // Replacing one template drops its old names without disturbing the other instance.
+                VERIFY_IS_NULL(replacement->FindName(L"namedString"));
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"replacement"), safe_cast<Platform::String^>(replacement->FindName(L"replacementString")));
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"foobar"), safe_cast<Platform::String^>(secondRoot->FindName(L"namedString")));
+            });
+        }
+    }
+
+    void ControlTemplateIntegrationTests::GetTemplateChildIgnoresNamedStrings()
+    {
+        // GetTemplateChild must return null for strings rather than create DependencyObject peers.
+        // A resource-backed string stays alive independently of namescope retention, allowing
+        // this contract to be checked during OnApplyTemplate and after template expansion.
+        TestCleanupWrapper cleanup;
+
+        for (const bool enforceXbfV2 : { false, true })
+        {
+            RuntimeEnabledFeatureOverride featureEnforceXbfV2Stream(
+                RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, enforceXbfV2);
+
+            RunOnUIThread([]()
+            {
+                namespace xdefer = ::Tests::Native::External::Framework::XDefer;
+
+                auto controlTemplate = safe_cast<ControlTemplate^>(XamlReader::Load(
+                    L"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L" xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='Control'>"
+                    L" <TextBlock x:Name='presenter'>"
+                    L"  <TextBlock.Resources>"
+                    L"   <x:String x:Key='resource' x:Name='namedResource'>resource value</x:String>"
+                    L"  </TextBlock.Resources>"
+                    L"  <TextBlock.Text><x:String x:Name='namedString'>foobar</x:String></TextBlock.Text>"
+                    L" </TextBlock>"
+                    L"</ControlTemplate>"));
+
+                auto control = ref new xdefer::CustomControl;
+                bool onApplyTemplateInvoked = false;
+                auto resetCallback = wil::scope_exit([]()
+                {
+                    xdefer::s_onApplyTemplateCallback = nullptr;
+                });
+                xdefer::s_onApplyTemplateCallback = [&](xdefer::CustomControl^ sender)
+                {
+                    onApplyTemplateInvoked = true;
+                    auto presenter = safe_cast<TextBlock^>(sender->PublicGetTemplateChild(L"presenter"));
+
+                    // Normal template-child lookup works, and FindName can resolve the live resource string.
+                    VERIFY_IS_NOT_NULL(presenter);
+                    VERIFY_ARE_EQUAL(Platform::StringReference(L"resource value"), safe_cast<Platform::String^>(presenter->FindName(L"namedResource")));
+
+                    // Neither string entries nor missing names are dependency-object template children.
+                    VERIFY_IS_NULL(sender->PublicGetTemplateChild(L"namedResource"));
+                    VERIFY_IS_NULL(sender->PublicGetTemplateChild(L"namedString"));
+                    VERIFY_IS_NULL(sender->PublicGetTemplateChild(L"missing"));
+                };
+
+                control->Template = controlTemplate;
+                control->ApplyTemplate();
+
+                // After ApplyTemplate, the override has run and GetTemplateChild still excludes strings.
+                VERIFY_IS_TRUE(onApplyTemplateInvoked);
+                VERIFY_IS_NOT_NULL(control->PublicGetTemplateChild(L"presenter"));
+                VERIFY_IS_NULL(control->PublicGetTemplateChild(L"namedResource"));
+                VERIFY_IS_NULL(control->PublicGetTemplateChild(L"namedString"));
+            });
+        }
     }
 
     void ControlTemplateIntegrationTests::TargetTypeInXmlNamespacesTest()
