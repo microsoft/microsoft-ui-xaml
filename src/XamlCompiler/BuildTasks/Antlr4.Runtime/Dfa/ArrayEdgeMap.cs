@@ -34,10 +34,8 @@ using Antlr4.Runtime.Dfa;
 using Antlr4.Runtime.Sharpen;
 using Interlocked = System.Threading.Interlocked;
 
-#if NET45PLUS
+#if NET45PLUS || (!PORTABLE && !COMPACT)
 using Volatile = System.Threading.Volatile;
-#elif !PORTABLE && !COMPACT
-using Thread = System.Threading.Thread;
 #endif
 
 namespace Antlr4.Runtime.Dfa
@@ -60,10 +58,8 @@ namespace Antlr4.Runtime.Dfa
         {
             get
             {
-#if NET45PLUS
+#if NET45PLUS || (!PORTABLE && !COMPACT)
                 return Volatile.Read(ref size);
-#elif !PORTABLE && !COMPACT
-                return System.Threading.Volatile.Read(ref size);
 #else
                 return Interlocked.CompareExchange(ref size, 0, 0);
 #endif
