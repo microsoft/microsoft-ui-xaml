@@ -39,6 +39,7 @@
             <CheckBox x:Name="ProbeLayout" Content="Probe synchronous layout" />
             <CheckBox x:Name="ExtendedSelection" Content="Extended selection" />
             <CheckBox x:Name="ResetWithoutFocus" Content="Reset without focusing an item" />
+            <CheckBox x:Name="FiveItems" Content="Five items" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="8">
             <ComboBox x:Name="FocusEntryPosition" Header="Item 11 position for focus entry" SelectedIndex="0">
@@ -50,6 +51,10 @@
             </ComboBox>
             <Button x:Name="PrepareFocusEntryBefore" Content="Select item 11, focus before list" Click="PrepareFocusEntry_Click" VerticalAlignment="Bottom" />
             <Button x:Name="PrepareFocusEntryAfter" Content="Select item 11, focus after list" Click="PrepareFocusEntry_Click" VerticalAlignment="Bottom" />
+            <Button x:Name="DisableSelectedItemFocusBefore" Content="Disable selected item, focus before list" Click="DisableSelectedItem_Click" VerticalAlignment="Bottom" />
+            <Button x:Name="DisableSelectedItemFocusAfter" Content="Disable selected item, focus after list" Click="DisableSelectedItem_Click" VerticalAlignment="Bottom" />
+            <Button x:Name="FocusListFromCode" Content="Focus list from code" Click="FocusListFromCode_Click" VerticalAlignment="Bottom" />
+            <CheckBox x:Name="ScrollAwayOnSelectionChanged" Content="Scroll to the end in SelectionChanged" VerticalAlignment="Bottom" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="8">
             <Button x:Name="ResetKeyboardScrolling" Content="Reset keyboard scrolling" Click="ResetKeyboardScrolling_Click" />

@@ -1628,6 +1628,67 @@ _Check_return_ HRESULT ListViewBase::GetSelectedIndexForFocusEntry(
     return S_OK;
 }
 
+_Check_return_ HRESULT ListViewBase::GetTabEntryTargetIndex(
+    _In_ bool isBackward,
+    _Out_ INT* index)
+{
+    *index = -1;
+
+    // Only while the FocusManager is actually processing Tab or Shift+Tab, not e.g. for a programmatic Focus call.
+    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(GetHandle());
+    if (!focusManager ||
+        !(isBackward ? focusManager->IsMovingFocusToPreviousTabStop() : focusManager->IsMovingFocusToNextTabStop()))
+    {
+        return S_OK;
+    }
+
+    auto navigationMode = xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once;
+    IFC_RETURN(get_TabNavigation(&navigationMode));
+    if (navigationMode != xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once)
+    {
+        return S_OK;
+    }
+
+    bool isSelectionFollowingFocus = false;
+    INT selectedIndex = -1;
+    IFC_RETURN(GetSelectedIndexForFocusEntry(&isSelectionFollowingFocus, &selectedIndex));
+    if (!isSelectionFollowingFocus || selectedIndex < 0)
+    {
+        return S_OK;
+    }
+
+    // Same condition as OnGettingFocus, which only redirects to a focusable selected item.
+    ctl::ComPtr<IItemContainerMapping> itemMapping;
+    BOOLEAN isFocusable = FALSE;
+    IFC_RETURN(GetItemContainerMapping(&itemMapping));
+    IFC_RETURN(IsItemFocusable(itemMapping.Get(), selectedIndex, true /*unrealizedItemsAssumedFocusable*/, &isFocusable));
+    if (isFocusable)
+    {
+        *index = selectedIndex;
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::IsAlreadyScrolledForKeyboardFocus(
+    _In_ INT index,
+    _Out_ bool* isAlreadyScrolled)
+{
+    *isAlreadyScrolled = false;
+    if (index < 0 || index != m_indexScrolledForKeyboardFocus)
+    {
+        return S_OK;
+    }
+
+    // A SelectionChanged handler may have scrolled elsewhere or recycled the container since keyboard navigation scrolled it.
+    ctl::ComPtr<IDependencyObject> container;
+    IFC_RETURN(ContainerFromIndex(index, &container));
+    if (auto element = container.AsOrNull<IUIElement>())
+    {
+        IFC_RETURN(IsElementFullyVisibleInViewport(element.Cast<UIElement>(), index, isAlreadyScrolled));
+    }
+    return S_OK;
+}
+
 // Handles when a key is released on the ListViewBase.
 IFACEMETHODIMP ListViewBase::OnKeyUp(
     _In_ xaml_input::IKeyRoutedEventArgs* pArgs)
@@ -3377,6 +3438,8 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
     InputActivationBehavior inputActivationBehavior)
 {
     HRESULT hr = S_OK;
+    bool isAlreadyScrolledForKeyboardFocus = false;
+    BOOLEAN effectiveShouldScrollIntoView = FALSE;
 
     // Store the index of the last focused item so we can jump back to this item
     // if ListViewBase loses and regains focus
@@ -3385,9 +3448,9 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
         SetLastFocusedIndex(static_cast<UINT>(index));
     }
 
-    // The item was already scrolled into view with focus padding; skip the synchronous ScrollIntoView and its layout pass.
-    const BOOLEAN effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged &&
-        index != m_indexScrolledForKeyboardFocus;
+    // Skip the synchronous ScrollIntoView and its layout pass when keyboard navigation already scrolled the item into view.
+    IFC(IsAlreadyScrolledForKeyboardFocus(index, &isAlreadyScrolledForKeyboardFocus));
+    effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged && !isAlreadyScrolledForKeyboardFocus;
 
     // Focus the item by calling Selector.SetFocusedItem
     IFC(ListViewBaseGenerated::SetFocusedItem(index, effectiveShouldScrollIntoView, animateIfBringIntoView, focusNavigationDirection, inputActivationBehavior));
@@ -3414,6 +3477,8 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
 #endif
 
     HRESULT hr = S_OK;
+    bool isAlreadyScrolledForKeyboardFocus = false;
+    BOOLEAN effectiveShouldScrollIntoView = FALSE;
     ctl::ComPtr<IPanel> spItemsHostPanel;
     ctl::ComPtr<IModernCollectionBasePanel> spItemsHostPanelModernCollection;
 
@@ -3424,8 +3489,8 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
         SetLastFocusedIndex(static_cast<UINT>(index));
     }
 
-    BOOLEAN effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged &&
-        index != m_indexScrolledForKeyboardFocus;
+    IFC(IsAlreadyScrolledForKeyboardFocus(index, &isAlreadyScrolledForKeyboardFocus));
+    effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged && !isAlreadyScrolledForKeyboardFocus;
 
     // If i need to scroll intoview, check if the host panel
     // is in a state where we can force scroll into view.

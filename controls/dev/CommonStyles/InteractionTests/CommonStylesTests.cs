@@ -690,6 +690,103 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ListViewKeyboardFocusMovesWhenSelectionHandlerRecyclesTarget()
+        {
+            using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+            {
+                new CheckBox(FindElement.ById("ExtendedSelection")).Check();
+                new CheckBox(FindElement.ById("ScrollAwayOnSelectionChanged")).Check();
+                new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                Wait.ForIdle();
+
+                // Shift+Right extends the selection; the app's SelectionChanged handler then scrolls to the end,
+                // recycling the target's container before focus moves.
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Shift);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == "1");
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText(),
+                    "Keyboard focus must reach the new item even when a SelectionChanged handler recycled its container.");
+                Verify.AreEqual("2", new TextBlock(FindElement.ById("KeyboardScrollSelectedCount")).GetText());
+            }
+        }
+
+        [TestMethod]
+        public void ListViewTabEntryIgnoresUnfocusableSelectedItem()
+        {
+            foreach (bool fromAfterList in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+                {
+                    Log.Comment($"Unfocusable selected item: fromAfterList={fromAfterList}.");
+                    // Five items with a cache keep every container realized, so the disabled selected item is known to be unfocusable.
+                    new CheckBox(FindElement.ById("FiveItems")).Check();
+                    new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+
+                    // Select the last (Tab) or first (Shift+Tab) item, then use Ctrl+arrows to move only focus to item 2.
+                    if (!fromAfterList)
+                    {
+                        KeyboardHelper.PressKey(Key.End);
+                        Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                            new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText() == "4");
+                    }
+                    Key towardItem2 = fromAfterList ? Key.Right : Key.Left;
+                    KeyboardHelper.PressKey(towardItem2, ModifierKey.Control);
+                    KeyboardHelper.PressKey(towardItem2, ModifierKey.Control);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == "2");
+                    Verify.AreEqual(fromAfterList ? "0" : "4", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText());
+
+                    // Make the selected item unable to take focus and move focus out of the list.
+                    new Button(FindElement.ById(fromAfterList ? "DisableSelectedItemFocusAfter" : "DisableSelectedItemFocusBefore")).Invoke();
+                    Wait.ForIdle();
+                    Verify.AreEqual("-1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
+
+                    if (fromAfterList)
+                    {
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    }
+                    else
+                    {
+                        KeyboardHelper.PressKey(Key.Tab);
+                    }
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == "2");
+                    Verify.AreEqual("2", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText(),
+                        "Tab must enter the list at the last focused item when the selected item cannot take focus.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ListViewFocusFromCodeRestoresLastFocusedItem()
+        {
+            using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+            {
+                new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                Wait.ForIdle();
+
+                // Ctrl+Right moves focus without changing the selection.
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == "2");
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText());
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == "-1");
+
+                new Button(FindElement.ById("FocusListFromCode")).Invoke();
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() != "-1");
+                Verify.AreEqual("2", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText(),
+                    "Focusing the list from code must restore the last focused item, not the selected one.");
+            }
+        }
+
         // Selects item index 10, positions the viewport relative to it, then moves focus into the list with
         // Tab (from before the list) or Shift+Tab (from after it). Focus is redirected to the selected item.
         private void VerifyFocusEntry(bool vertical, bool fromAfterList, string position, bool neverFocused = false)

@@ -1146,11 +1146,10 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
             }
             else
             {
-                // Target the item that focus entry is redirected to (see OnGettingFocus), so no other item is
+                // Target the item that Tab focus entry is redirected to (see OnGettingFocus), so no other item is
                 // realized and scrolled into view first.
-                bool isSelectionFollowingFocus = false;
-                IFC(GetSelectedIndexForFocusEntry(&isSelectionFollowingFocus, &targetFocusedIndex));
-                if (!isSelectionFollowingFocus || targetFocusedIndex < 0)
+                IFC(GetTabEntryTargetIndex(isBackward, &targetFocusedIndex));
+                if (targetFocusedIndex < 0)
                 {
                     targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
                 }
@@ -2156,18 +2155,14 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                         }
                     }
 
-                    if (navigationMode == xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once)
+                    // Target the item that Tab focus entry is redirected to (see OnGettingFocus), so no other item is
+                    // scrolled into view first.
+                    int tabEntryTargetIndex = -1;
+                    IFC_RETURN(GetTabEntryTargetIndex(isBackward, &tabEntryTargetIndex));
+                    if (tabEntryTargetIndex >= 0)
                     {
-                        // Target the item that focus entry is redirected to (see OnGettingFocus), so no other item is
-                        // scrolled into view first.
-                        bool isSelectionFollowingFocus = false;
-                        int selectedIndex = -1;
-                        IFC_RETURN(GetSelectedIndexForFocusEntry(&isSelectionFollowingFocus, &selectedIndex));
-                        if (isSelectionFollowingFocus && selectedIndex >= 0)
-                        {
-                            isGroupHeader = false;
-                            newFocusIndex = selectedIndex;
-                        }
+                        isGroupHeader = false;
+                        newFocusIndex = tabEntryTargetIndex;
                     }
                 }
                 else

@@ -33,6 +33,8 @@ namespace MUXControlsTestApp
         private int _preparedContainers;
         private int _navigationKeyCount;
         private double? _resetDiagnosticsAtOffset;
+        private int _disabledIndex = -1;
+        private bool _scrollAwayOnSelectionChanged;
 
         private double CurrentOffset => VerticalScrolling.IsChecked == true ?
             _scrollViewer.VerticalOffset : _scrollViewer.HorizontalOffset;
@@ -59,6 +61,10 @@ namespace MUXControlsTestApp
             {
                 if (!args.InRecycleQueue && args.Phase == 0)
                 {
+                    if (args.ItemContainer is Control itemContainer)
+                    {
+                        itemContainer.IsEnabled = args.ItemIndex != _disabledIndex;
+                    }
                     _preparedContainers++;
                     KeyboardScrollPreparedContainers.Text = _preparedContainers.ToString(CultureInfo.InvariantCulture);
                     KeyboardScrollPreparedIndices.Text +=
@@ -72,6 +78,12 @@ namespace MUXControlsTestApp
                 KeyboardScrollSelectionChanges.Text = _selectionChanges.ToString(CultureInfo.InvariantCulture);
                 KeyboardScrollSelectedIndex.Text = KeyboardScrollingList.SelectedIndex.ToString(CultureInfo.InvariantCulture);
                 KeyboardScrollSelectedCount.Text = KeyboardScrollingList.SelectedItems.Count.ToString(CultureInfo.InvariantCulture);
+                if (_scrollAwayOnSelectionChanged)
+                {
+                    // Recycles the containers near the start of the list while keyboard navigation is still in progress.
+                    KeyboardScrollingList.ScrollIntoView(KeyboardScrollingList.Items[KeyboardScrollingList.Items.Count - 1]);
+                    KeyboardScrollingList.UpdateLayout();
+                }
             };
             KeyboardScrollingList.GettingFocus += (sender, args) =>
             {
@@ -248,6 +260,8 @@ namespace MUXControlsTestApp
             _redirectFocusChanges = false;
             _disableFocusScrollingDuringFocus = false;
             _resetDiagnosticsAtOffset = null;
+            _disabledIndex = -1;
+            _scrollAwayOnSelectionChanged = false;
             bool vertical = VerticalScrolling.IsChecked == true;
             KeyboardScrollingList.Width = vertical ? 200 : PartialViewport.IsChecked == true ? 550 : 600;
             KeyboardScrollingList.Height = vertical ? PartialViewport.IsChecked == true ? 250 : 300 : 150;
@@ -259,7 +273,7 @@ namespace MUXControlsTestApp
             ScrollViewer.SetVerticalScrollBarVisibility(KeyboardScrollingList, vertical ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Disabled);
             ((ItemsWrapGrid)KeyboardScrollingList.ItemsPanelRoot).Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
             ((ItemsWrapGrid)KeyboardScrollingList.ItemsPanelRoot).AreStickyGroupHeadersEnabled = DisableStickyHeaders.IsChecked != true;
-            var items = Enumerable.Range(1, 39).Select(value => value.ToString()).ToList();
+            var items = Enumerable.Range(1, FiveItems.IsChecked == true ? 5 : 39).Select(value => value.ToString()).ToList();
             KeyboardScrollingList.GroupStyle.Clear();
             if (GroupedItems.IsChecked == true)
             {
@@ -322,6 +336,7 @@ namespace MUXControlsTestApp
             _cancelFocusChanges = CancelFocusChanges.IsChecked == true;
             _redirectFocusChanges = RedirectFocusChanges.IsChecked == true;
             _disableFocusScrollingDuringFocus = DisableFocusScrollingDuringFocus.IsChecked == true;
+            _scrollAwayOnSelectionChanged = ScrollAwayOnSelectionChanged.IsChecked == true;
             _navigationKeyCount = 0;
             KeyboardScrollKeysProcessed.Text = "0";
         }
@@ -329,6 +344,25 @@ namespace MUXControlsTestApp
         private void PublicScrollIntoView_Click(object sender, RoutedEventArgs args)
         {
             KeyboardScrollingList.ScrollIntoView(KeyboardScrollingList.Items[10]);
+        }
+
+        // Makes the selected item unable to take focus, then moves focus next to the list (before it to Tab in,
+        // after it to Shift+Tab in). Selection and the last focused item are left untouched.
+        private void DisableSelectedItem_Click(object sender, RoutedEventArgs args)
+        {
+            Control anchor = sender == DisableSelectedItemFocusBefore ? RedirectFocusTarget : AfterListFocusTarget;
+            anchor.Focus(FocusState.Keyboard);
+
+            _disabledIndex = KeyboardScrollingList.SelectedIndex;
+            if (KeyboardScrollingList.ContainerFromIndex(_disabledIndex) is Control container)
+            {
+                container.IsEnabled = false;
+            }
+        }
+
+        private void FocusListFromCode_Click(object sender, RoutedEventArgs args)
+        {
+            KeyboardScrollingList.Focus(FocusState.Keyboard);
         }
 
         // Mirrors an app that selects an item and positions the viewport itself, before focus enters the list.

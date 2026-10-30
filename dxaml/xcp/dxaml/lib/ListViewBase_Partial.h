@@ -1098,6 +1098,17 @@ namespace DirectUI
                 _Out_ bool* isSelectionFollowingFocus,
                 _Out_ INT* selectedIndex);
 
+            // The item that Tab/Shift+Tab focus entry will be redirected to (the focusable selected item, see
+            // OnGettingFocus), or -1. Only set while the FocusManager processes Tab with TabNavigation Once.
+            _Check_return_ HRESULT GetTabEntryTargetIndex(
+                _In_ bool isBackward,
+                _Out_ INT* index);
+
+            // Whether keyboard navigation already scrolled this item into view and its container is still fully visible.
+            _Check_return_ HRESULT IsAlreadyScrolledForKeyboardFocus(
+                _In_ INT index,
+                _Out_ bool* isAlreadyScrolled);
+
             // Focus a ListViewBaseItem at the given index and optionally scroll it
             // into view.
             _Check_return_ HRESULT SetFocusedItem(
