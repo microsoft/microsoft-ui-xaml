@@ -384,14 +384,14 @@ public:
         winrt::DependencyObject const& oldFocusedElement,
         winrt::FocusNavigationDirection direction);
 
-    // Tab from another band lands on the last focused row while it is in view; otherwise a row or
-    // group header outside the viewport lands on the viewport edge row or group header instead.
-    // Returns true when focus was redirected.
+    // Tab from another band resumes the remembered entry target (FindRememberedEntryElementInternal);
+    // otherwise a row or group header outside the viewport lands on the viewport edge row or group
+    // header instead. Returns true when focus was redirected.
     bool TryRedirectBandEntryToViewport(
         winrt::UIElement const& target,
         winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
-    bool TryRedirectBandEntryTo(
-        winrt::UIElement const& element,
+    bool TryRedirectFocusEntryTo(
+        winrt::UIElement const& target,
         winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
 
     static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
@@ -411,7 +411,9 @@ public:
     void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
 
     winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
-    winrt::TableViewRow FindRememberedEntryRowInternal();
+    winrt::UIElement FindRememberedEntryElementInternal();
+    bool IsElementPartlyInBodyViewport(winrt::UIElement const& element) const;
+    void RememberGroupHeaderEntry(winrt::TableViewGroupHeader const& header);
 
     winrt::hstring GetContainerIdentityInternal(winrt::UIElement const& container)
     {
@@ -1536,6 +1538,10 @@ private:
     // Shared body/header visible-column cursor; stored as an index so it survives row recycling.
     int32_t m_currentCellColumn{ 0 };
     int32_t m_currentCellRow{ -1 };
+    // Body entry target besides m_currentCellRow: the remembered cell's column (-1 at row level),
+    // or the group entry of a focused group header (then m_currentCellRow is -1).
+    int32_t m_rememberedEntryColumn{ -1 };
+    tracker_ref<winrt::IInspectable> m_rememberedGroupEntry{ this };
 
     // Distinguishes column 0 from "no column chosen yet" so first header entry does not relocate.
     bool m_columnCursorEstablished{ false };

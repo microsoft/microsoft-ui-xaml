@@ -960,6 +960,15 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
+    // A remembered group header has no row to resolve to.
+    if (auto const header = ownerImpl->FindRememberedEntryElementInternal().try_as<winrt::TableViewGroupHeader>())
+    {
+        if (ownerImpl->TryRedirectFocusEntryTo(header, args))
+        {
+            return;
+        }
+    }
+
     auto entry = ownerImpl->ResolveFocusEntryTarget(*this, oldFocus, direction);
     if (!entry.Element || !entry.Row)
     {
