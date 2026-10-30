@@ -188,6 +188,118 @@ void PopupAutomationIntegrationTests::VerifyPopupPropertyEventToleratesReentrant
     TestServices::WindowHelper->WaitForIdle();
 }
 
+void PopupAutomationIntegrationTests::VerifyProviderCreatedWhileWindowedPopupClosingUsesPopupHost()
+{
+    xaml_controls::Button^ mainAnchor;
+    xaml_controls::Button^ popupAnchor;
+    xaml_controls::Button^ lateButton;
+    xaml_primitives::Popup^ popup = nullptr;
+    bool keepAlive = false;
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (keepAlive)
+        {
+            TestServices::WindowHelper->ReleaseKeepAlive(popup);
+        }
+        RunOnUIThread([&]() { if (popup) popup->IsOpen = false; });
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+    RunOnUIThread([&]()
+    {
+        auto root = ref new xaml_controls::Grid();
+        mainAnchor = ref new xaml_controls::Button();
+        mainAnchor->Content = L"Closing main anchor";
+        root->Children->Append(mainAnchor);
+        popupAnchor = ref new xaml_controls::Button();
+        popupAnchor->Content = L"Closing popup anchor";
+        lateButton = ref new xaml_controls::Button();
+        lateButton->Content = L"Created while closing";
+        auto content = ref new xaml_controls::StackPanel();
+        content->Children->Append(popupAnchor);
+        content->Children->Append(lateButton);
+        popup = ref new xaml_primitives::Popup();
+        popup->ShouldConstrainToRootBounds = false;
+        popup->Child = content;
+        root->Children->Append(popup);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    PopupHelper::OpenPopup(popup);
+    HWND popupWindow = nullptr;
+    RunOnUIThread([&]()
+    {
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+
+    // Independent clients keep the main and popup anchors' providers alive.
+    AutomationClient::UIAElementInfo mainInfo{};
+    mainInfo.m_Name = L"Closing main anchor";
+    AutomationClient::UIAElementInfo anchorInfo{};
+    anchorInfo.m_Name = L"Closing popup anchor";
+    std::shared_ptr<AutomationClient::AutomationClientManager> mainClient;
+    std::shared_ptr<AutomationClient::AutomationClientManager> anchorClient;
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        mainClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(mainInfo);
+        anchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, anchorInfo);
+    });
+
+    auto providerForPeer = [](xaml_automation_peers::AutomationPeer^ peer)
+    {
+        VERIFY_IS_NOT_NULL(peer);
+        wrl::ComPtr<IInspectable> inspectable(reinterpret_cast<IInspectable*>(peer));
+        wrl::ComPtr<IRawElementProviderFragment> provider;
+        LogThrow_IfFailed(inspectable.As(&provider));
+        return provider;
+    };
+    auto rootIdentity = [](IRawElementProviderFragment* provider)
+    {
+        wrl::ComPtr<IRawElementProviderFragmentRoot> root;
+        wrl::ComPtr<IUnknown> identity;
+        LogThrow_IfFailed(provider->get_FragmentRoot(&root));
+        LogThrow_IfFailed(root.As(&identity));
+        return identity;
+    };
+
+    // Keep the closed popup visible, as a close animation does, and create the
+    // item's first provider during that window.
+    TestServices::WindowHelper->RequestKeepAlive(popup);
+    keepAlive = true;
+    RunOnUIThread([&]() { popup->IsOpen = false; });
+    VERIFY_IS_TRUE(TestServices::WindowHelper->IsKeepingVisible(popup));
+
+    wrl::ComPtr<IRawElementProviderFragment> lateProvider;
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_FALSE(popup->IsOpen);
+        lateProvider = providerForPeer(xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(lateButton));
+        auto popupRoot = rootIdentity(providerForPeer(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(popupAnchor)).Get());
+        auto mainRoot = rootIdentity(providerForPeer(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(mainAnchor)).Get());
+        VERIFY_ARE_NOT_EQUAL(mainRoot, popupRoot);
+        VERIFY_ARE_EQUAL(popupRoot, rootIdentity(lateProvider.Get()),
+            L"A provider created while the popup is closing must use the visible popup host.");
+    });
+
+    TestServices::WindowHelper->ReleaseKeepAlive(popup);
+    keepAlive = false;
+    TestServices::WindowHelper->WaitForIdle();
+    PopupHelper::OpenPopup(popup);
+
+    RunOnUIThread([&]()
+    {
+        SAFEARRAY* runtimeId = nullptr;
+        LogThrow_IfFailed(lateProvider->GetRuntimeId(&runtimeId));
+        LogThrow_IfFailed(SafeArrayDestroy(runtimeId));
+        auto currentProvider = providerForPeer(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(lateButton));
+        VERIFY_ARE_EQUAL(lateProvider, currentProvider,
+            L"Reopening the same popup must keep the provider created while closing.");
+        popup->IsOpen = false;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+}
+
 void PopupAutomationIntegrationTests::VerifyComboBoxTemplateChildSharesDataPeerFragment()
 {
     VerifyComboBoxTemplateChildFragment(false);

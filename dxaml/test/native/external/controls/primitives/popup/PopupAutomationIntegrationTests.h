@@ -136,6 +136,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyProviderCreatedWhileWindowedPopupClosingUsesPopupHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a provider first created while a windowed popup is kept visible after closing uses the popup host and survives reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         void VerifyComboBoxTemplateChildFragment(bool createBeforeDataNavigation);
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline, Reinitialize };

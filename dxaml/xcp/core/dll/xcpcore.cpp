@@ -5977,12 +5977,27 @@ CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* e
         }
     }
 
+    // A windowed popup keeps its window and UIA host while it plays a close animation.
+    auto hasWindowedHost = [](CPopup* p) { return p && (p->IsOpen() || p->IsUnloading()) && p->IsWindowed(); };
     xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(element));
-    if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+    if (!hasWindowedHost(popup.get()))
     {
         popup = element->GetFirstAncestorPopup(true /* windowedPopupOnly */);
     }
-    if (popup && popup->IsOpen() && popup->IsWindowed())
+    if (!popup && !element->IsActive())
+    {
+        // Closing removes the child from the popup root; the popup remains its logical parent.
+        auto top = element;
+        while (auto parent = top->GetParentFollowPopups())
+        {
+            top = parent;
+        }
+        if (auto topElement = do_pointer_cast<CUIElement>(top))
+        {
+            popup = do_pointer_cast<CPopup>(topElement->GetLogicalParentNoRef());
+        }
+    }
+    if (hasWindowedHost(popup.get()))
     {
         if (!onlyGet)
         {
