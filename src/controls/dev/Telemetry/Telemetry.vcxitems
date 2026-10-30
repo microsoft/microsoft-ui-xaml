@@ -17,10 +17,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)microsofttelemetry.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TypeLogging.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TraceLogging.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkTelemetry.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)TypeLogging.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MuxcTraceLogging.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RuntimeProfiler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkTelemetry.cpp" />
   </ItemGroup>
 </Project>

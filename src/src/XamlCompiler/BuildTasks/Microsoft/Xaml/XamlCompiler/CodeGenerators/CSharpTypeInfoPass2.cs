@@ -710,7 +710,7 @@ this.Write("];\r\n");
              InternalTypeEntry entry = SchemaInfo.TypeTable[i];      
              if (entry.IsDeprecated)                                 
              {                                                       
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
              }                                                       
 this.Write("            _typeTable[");
@@ -725,7 +725,7 @@ this.Write(");\r\n");
 
              if (entry.IsDeprecated)                                 
              {                                                       
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
              }                                                       
          }                                                           
@@ -902,6 +902,13 @@ this.Write(";\r\n");
                          }                               
                          if (uentry.HasCreateFromStringMethod)
                          {
+                             // Suppress CS0618 when the CreateFromString type/method is [Obsolete]. Note: a hard-obsolete
+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.
+                             if (uentry.IsDeprecated)
+                             {
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
+
+                             }
                              if (uentry.TypeEntry.UnderlyingType.IsValueType)
                              {
 this.Write("                userType.CreateFromStringMethod = x => (global::System.Object)");
@@ -920,6 +927,11 @@ this.Write(this.ToStringHelper.ToStringWithCulture(uentry.CreateFromStringMethod
 this.Write(";\r\n");
 
                              }
+                             if (uentry.IsDeprecated)
+                             {
+this.Write("#pragma warning restore 0612, 0618\r\n");
+
+                             }
                          }
                          foreach(InternalXamlUserMemberInfo mem in uentry.Members)   
                          {                                                           
@@ -934,7 +946,7 @@ this.Write("\");\r\n");
                          {                               
                              if (uentry.IsDeprecated)    
                              {                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                              }                                            
                              foreach(string eValue in uentry.EnumValues)  
@@ -956,7 +968,7 @@ this.Write(");\r\n");
                              }                           
                              if (uentry.IsDeprecated)    
                              {                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                              }                           
                          }                               
@@ -998,7 +1010,7 @@ this.Write("            return xamlType;\r\n        }\r\n");
                  {                                                               
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private object ");
@@ -1013,7 +1025,7 @@ this.Write("(); }\r\n");
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }           
@@ -1027,7 +1039,7 @@ this.Write("#pragma warning restore 0618\r\n");
                  {                                                               
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private void ");
@@ -1043,7 +1055,7 @@ this.Write(").TypeHandle);\r\n");
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }           
@@ -1057,7 +1069,7 @@ this.Write("#pragma warning restore 0618\r\n");
                  {                                                               
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private void ");
@@ -1077,7 +1089,7 @@ this.Write(")item;\r\n            collection.Add(newItem);\r\n        }\r\n");
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }                       
@@ -1085,7 +1097,7 @@ this.Write("#pragma warning restore 0618\r\n");
                  {                       
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private void ");
@@ -1113,7 +1125,7 @@ this.Write(")item;\r\n            collection.Add(newKey, newItem);\r\n        }\
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }           
@@ -1237,7 +1249,7 @@ this.Write("            return xamlMember;\r\n        }\r\n");
                      continue;                       
                  if (entry.IsDeprecated)             
                  {                                   
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                  }                                   
                  if (entry.HasPublicGetter)          
@@ -1373,7 +1385,7 @@ this.Write("        }\r\n");
                 }    
                      if (entry.IsDeprecated) 
                      {                       
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                       
             }        

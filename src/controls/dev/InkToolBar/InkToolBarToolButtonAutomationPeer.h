@@ -7,12 +7,151 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarToolButtonAutomationPeer.g.h"
+#include "InkToolbarToolButton.h"
+#include "InkToolbarTrace.h"
+#include "ResourceAccessor.h"
+#include "InkToolbarToolButtonAutomationPeer.g.h"
 
-class InkToolBarToolButtonAutomationPeer :
-    public ReferenceTracker<InkToolBarToolButtonAutomationPeer, winrt::implementation::InkToolBarToolButtonAutomationPeerT>
+#include <string>
+
+class InkToolbarToolButtonAutomationPeer :
+    public ReferenceTracker<InkToolbarToolButtonAutomationPeer, winrt::implementation::InkToolbarToolButtonAutomationPeerT>
 {
 public:
-    InkToolBarToolButtonAutomationPeer(winrt::InkToolBarToolButton owner) {};
-};
+    InkToolbarToolButtonAutomationPeer(winrt::InkToolbarToolButton const& owner)
+        : ReferenceTracker(owner),
+          m_isBuiltInPen(owner.ToolKind() == winrt::InkToolbarTool::BallpointPen ||
+              owner.ToolKind() == winrt::InkToolbarTool::Pencil ||
+              owner.ToolKind() == winrt::InkToolbarTool::Highlighter)
+    {
+        if (m_isBuiltInPen)
+        {
+            try
+            {
+                m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarDropDownButtonControlTypeName);
+                m_colorPaletteHint = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarColorPaletteHelpText);
+            }
+            catch (winrt::hresult_error const& e)
+            {
+                InkToolbarLogHResult(e.code(), L"pen button accessibility resource lookup");
+            }
+        }
 
+        // Cache here (UI thread); a resource lookup from the GetNameCore UIA callback can fail-fast.
+        try { m_selectedStateName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarToolButtonSelectedStateName); }
+        catch (...) { m_selectedStateName = L"selected"; }
+    }
+
+    // IAutomationPeerOverrides
+    winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
+    {
+        if (patternInterface == winrt::PatternInterface::ExpandCollapse)
+        {
+            return *this;
+        }
+        return __super::GetPatternCore(patternInterface);
+    }
+
+    winrt::AutomationControlType GetAutomationControlTypeCore()
+    {
+        // A standard button role lets Narrator announce the expand/collapse pattern.
+        return m_isBuiltInPen ? winrt::AutomationControlType::Button : winrt::AutomationControlType::Custom;
+    }
+
+    hstring GetLocalizedControlTypeCore()
+    {
+        if (m_isBuiltInPen)
+        {
+            if (auto owner = GetImpl(); owner && owner->HasL3() && !m_dropDownControlType.empty())
+            {
+                return m_dropDownControlType;
+            }
+            return __super::GetLocalizedControlTypeCore();
+        }
+
+        // UWP overrides this because the Custom control type would make Narrator read out "custom";
+        // the actual value of IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME is "button" (per the UWP source).
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarToolButtonControlTypeName);
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return __super::GetLocalizedControlTypeCore();
+        }
+    }
+
+    hstring GetHelpTextCore()
+    {
+        auto helpText = __super::GetHelpTextCore();
+        if (m_isBuiltInPen && !m_colorPaletteHint.empty())
+        {
+            return helpText.empty() ? m_colorPaletteHint
+                : winrt::hstring{ std::wstring{ helpText.c_str() } + L", " + std::wstring{ m_colorPaletteHint.c_str() } };
+        }
+        return helpText;
+    }
+
+    hstring GetNameCore()
+    {
+        auto name = __super::GetNameCore();
+
+        // The button/custom control type does not make Narrator announce the checked tool, so fold
+        // "selected" into the active tool's name to guarantee the current tool is announced.
+        if (auto toggle = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleButton>())
+        {
+            if (auto checked = toggle.IsChecked(); checked && checked.Value() && !m_selectedStateName.empty())
+            {
+                name = name.empty() ? m_selectedStateName
+                                    : winrt::hstring{ std::wstring{ name.c_str() } + L", " + std::wstring{ m_selectedStateName.c_str() } };
+            }
+        }
+        return name;
+    }
+
+    // IExpandCollapseProvider
+    winrt::ExpandCollapseState ExpandCollapseState()
+    {
+        auto state = winrt::ExpandCollapseState::Collapsed;
+        if (auto owner = GetImpl())
+        {
+            if (owner->HasL3() && owner->IsL3Open())
+            {
+                state = winrt::ExpandCollapseState::Expanded;
+            }
+        }
+        return state;
+    }
+
+    void Expand()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->OpenL3();
+        }
+    }
+
+    void Collapse()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->CloseL3();
+        }
+    }
+
+private:
+    bool m_isBuiltInPen;
+    winrt::hstring m_dropDownControlType;
+    winrt::hstring m_colorPaletteHint;
+    winrt::hstring m_selectedStateName;
+
+    com_ptr<InkToolbarToolButton> GetImpl()
+    {
+        com_ptr<InkToolbarToolButton> impl;
+        if (auto button = Owner().try_as<winrt::InkToolbarToolButton>())
+        {
+            impl = winrt::get_self<InkToolbarToolButton>(button)->get_strong();
+        }
+        return impl;
+    }
+};

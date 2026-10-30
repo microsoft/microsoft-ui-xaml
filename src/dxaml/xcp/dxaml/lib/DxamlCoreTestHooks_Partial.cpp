@@ -226,7 +226,7 @@ IFACEMETHODIMP_(bool) DxamlCoreTestHooks::IsDragDropInProgress()
 
 // Returns the DComp device for the current thread. If there are multiple windows
 // this will return the device associated with the calling thread.
-IFACEMETHODIMP_(void) DxamlCoreTestHooks::GetDCompDevice(_Outptr_ IDCompositionDesktopDevice **ppDCompDevice) const
+IFACEMETHODIMP_(void) DxamlCoreTestHooks::GetDCompDevice(_Outptr_ IDCompositionDevice2 **ppDCompDevice) const
 {
     DXamlCore::GetCurrent()->GetDCompDevice(ppDCompDevice);
 }

@@ -39,7 +39,7 @@ public:
     _Check_return_ HRESULT ObtainSurfaceFactory(
         _In_ DCompTreeHost *pDCompTreeHost,
         _In_ IUnknown *pIUnk,
-        _In_ IDCompositionDesktopDevice *pDCompDevice,
+        _In_ IDCompositionDevice2 *pDCompDevice,
         _Outptr_ DCompSurfaceFactory **ppSurfaceFactory
         );
 

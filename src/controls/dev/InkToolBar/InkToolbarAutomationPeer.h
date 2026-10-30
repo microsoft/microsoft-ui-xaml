@@ -7,12 +7,16 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarAutomationPeer.g.h"
+#include "InkToolbarAutomationPeer.g.h"
 
-class InkToolBarAutomationPeer :
-    public ReferenceTracker<InkToolBarAutomationPeer, winrt::implementation::InkToolBarAutomationPeerT>
+class InkToolbarAutomationPeer :
+    public ReferenceTracker<InkToolbarAutomationPeer, winrt::implementation::InkToolbarAutomationPeerT>
 {
 public:
-    InkToolBarAutomationPeer(winrt::InkToolBar owner) {};
+    InkToolbarAutomationPeer(winrt::InkToolbar const& owner);
+
+    // IAutomationPeerOverrides
+    hstring GetClassNameCore();
+    winrt::AutomationControlType GetAutomationControlTypeCore();
 };
 

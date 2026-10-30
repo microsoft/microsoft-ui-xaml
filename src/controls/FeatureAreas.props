@@ -286,7 +286,7 @@
     <FeatureMapControlEnabled>true</FeatureMapControlEnabled>
     <FeatureSelectorBarEnabled>true</FeatureSelectorBarEnabled>
     <FeatureInkCanvasEnabled>true</FeatureInkCanvasEnabled>
-    <FeatureInkToolBarEnabled>false</FeatureInkToolBarEnabled>
+    <FeatureInkToolbarEnabled>true</FeatureInkToolbarEnabled>
     <FeatureSystemBackdropElementEnabled>true</FeatureSystemBackdropElementEnabled>
   </PropertyGroup>
   <PropertyGroup>

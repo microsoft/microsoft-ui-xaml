@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="InkToolbarBallpointPenButtonName" xml:space="preserve">
+    <value>Bolígraf</value>
+    <comment>Tooltip and accessible name for the InkToolbar ballpoint-pen tool button.</comment>
+  </data>
+  <data name="InkToolbarPencilButtonName" xml:space="preserve">
+    <value>Llapis</value>
+    <comment>Tooltip and accessible name for the InkToolbar pencil tool button.</comment>
+  </data>
+  <data name="InkToolbarHighlighterButtonName" xml:space="preserve">
+    <value>Marcador</value>
+    <comment>Tooltip and accessible name for the InkToolbar highlighter tool button.</comment>
+  </data>
+  <data name="InkToolbarEraserButtonName" xml:space="preserve">
+    <value>Esborrador</value>
+    <comment>Tooltip and accessible name for the InkToolbar eraser tool button.</comment>
+  </data>
+  <data name="InkToolbarStencilRulerName" xml:space="preserve">
+    <value>Regle</value>
+    <comment>Tooltip and accessible name for the InkToolbar stencil button when the ruler is selected.</comment>
+  </data>
+  <data name="InkToolbarStencilProtractorName" xml:space="preserve">
+    <value>Transportador</value>
+    <comment>Tooltip and accessible name for the InkToolbar stencil button when the protractor is selected.</comment>
+  </data>
+  <data name="InkToolbarToolButtonControlTypeName" xml:space="preserve">
+    <value>botó</value>
+    <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
+  </data>
+  <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
+    <value>Obriu-ho per triar un color de la paleta</value>
+    <comment>Accessible help for the ballpoint-pen, pencil and highlighter dropdowns.</comment>
+  </data>
+  <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
+    <value>Esborrador de traços</value>
+    <comment>Display label for the InkToolbar eraser flyout stroke-eraser item. UWP IDS_INKTOOLBAR_ERASERSTROKEERASER.</comment>
+  </data>
+  <data name="InkToolbarSmallEraserLabel" xml:space="preserve">
+    <value>Esborrador petit</value>
+    <comment>Display label for the InkToolbar eraser flyout small precision-eraser item. UWP IDS_INKTOOLBAR_ERASERSMALLERASER.</comment>
+  </data>
+  <data name="InkToolbarLargeEraserLabel" xml:space="preserve">
+    <value>Esborrador gran</value>
+    <comment>Display label for the InkToolbar eraser flyout large precision-eraser item. UWP IDS_INKTOOLBAR_ERASERLARGEERASER.</comment>
+  </data>
+  <data name="InkToolbarClearAllLabel" xml:space="preserve">
+    <value>Esborra totes les entrades manuscrites</value>
+    <comment>Display label for the InkToolbar eraser flyout clear-all item. UWP IDS_INKTOOLBAR_ERASERCLEARALL = "Erase all ink" (verified against Windows.UI.Xaml.InkControls.dll resource 6400).</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationColorsLabel" xml:space="preserve">
+    <value>Colors</value>
+    <comment>Heading above the color palette in the InkToolbar pen configuration flyout.</comment>
+  </data>
+  <data name="InkToolbarColorNameBlack" xml:space="preserve">
+    <value>Negre</value>
+    <comment>Name of the InkToolbar palette color #000000.</comment>
+  </data>
+  <data name="InkToolbarColorNameWhite" xml:space="preserve">
+    <value>Blanc</value>
+    <comment>Name of the InkToolbar palette color #FFFFFF.</comment>
+  </data>
+  <data name="InkToolbarColorNameGray" xml:space="preserve">
+    <value>Gris</value>
+    <comment>Name of the InkToolbar palette color #A7A9AC.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkGray" xml:space="preserve">
+    <value>Gris fosc</value>
+    <comment>Name of the InkToolbar palette color #808285.</comment>
+  </data>
+  <data name="InkToolbarColorNameMagenta" xml:space="preserve">
+    <value>Magenta</value>
+    <comment>Name of the InkToolbar palette color #B31564.</comment>
+  </data>
+  <data name="InkToolbarColorNameRed" xml:space="preserve">
+    <value>Vermell</value>
+    <comment>Name of the InkToolbar palette color #E61B1B.</comment>
+  </data>
+  <data name="InkToolbarColorNameOrange" xml:space="preserve">
+    <value>Taronja</value>
+    <comment>Name of the InkToolbar palette color #FFAA00.</comment>
+  </data>
+  <data name="InkToolbarColorNameYellow" xml:space="preserve">
+    <value>Groc</value>
+    <comment>Name of the InkToolbar palette color #FFE600.</comment>
+  </data>
+  <data name="InkToolbarColorNameGreen" xml:space="preserve">
+    <value>Verd</value>
+    <comment>Name of the InkToolbar palette color #26E600.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkGreen" xml:space="preserve">
+    <value>Verd fosc</value>
+    <comment>Name of the InkToolbar palette color #008055.</comment>
+  </data>
+  <data name="InkToolbarColorNameBlue" xml:space="preserve">
+    <value>Blau</value>
+    <comment>Name of the InkToolbar palette color #004DE6.</comment>
+  </data>
+  <data name="InkToolbarColorNameViolet" xml:space="preserve">
+    <value>Violeta</value>
+    <comment>Name of the InkToolbar palette color #6600CC.</comment>
+  </data>
+  <data name="InkToolbarColorNameBeige" xml:space="preserve">
+    <value>Beix</value>
+    <comment>Name of the InkToolbar palette color #F7D7C4.</comment>
+  </data>
+  <data name="InkToolbarColorNameLightBrown" xml:space="preserve">
+    <value>Marró clar</value>
+    <comment>Name of the InkToolbar palette color #BB9167.</comment>
+  </data>
+  <data name="InkToolbarColorNameBrown" xml:space="preserve">
+    <value>Marró</value>
+    <comment>Name of the InkToolbar palette color #8E562E.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkBrown" xml:space="preserve">
+    <value>Marró fosc</value>
+    <comment>Name of the InkToolbar palette color #613D30.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelYellow" xml:space="preserve">
+    <value>Groc pastel</value>
+    <comment>Name of the InkToolbar palette color #FFFF80.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelGreen" xml:space="preserve">
+    <value>Verd pastel</value>
+    <comment>Name of the InkToolbar palette color #80FF9E.</comment>
+  </data>
+  <data name="InkToolbarColorNameLightBlue" xml:space="preserve">
+    <value>Blau clar</value>
+    <comment>Name of the InkToolbar highlighter palette color #44C8F5.</comment>
+  </data>
+  <data name="InkToolbarColorNamePink" xml:space="preserve">
+    <value>Rosa</value>
+    <comment>Name of the InkToolbar highlighter palette color #EC008C.</comment>
+  </data>
+</root>

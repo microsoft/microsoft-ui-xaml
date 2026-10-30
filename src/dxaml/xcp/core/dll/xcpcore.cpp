@@ -100,6 +100,11 @@ using namespace DirectUI;
 #define WINAPPSDK_CHANGEID_62726703 62726703
 #endif
 
+// Bug 63805144: [2.x Servicing] Reset m_inputServices after text-core teardown to fix shutdown null deref (RCC: CCoreServices_InputServicesTeardownOrder)
+#ifndef WINAPPSDK_CHANGEID_63805144
+#define WINAPPSDK_CHANGEID_63805144 63805144
+#endif
+
 // The one and only global variable.  This is shared by all instances of core
 // objects in the process.
 
@@ -1110,15 +1115,29 @@ CCoreServices::~CCoreServices() noexcept
 
     // Take down the visual tree.
     VERIFYHR(ResetCoreWindowVisualTree());
-    m_inputServices = nullptr;
 
     // Clean this up before the rest of the core as its contents may have
     // the final reference to CDependencyObjects. These will not expect
     // the core to be fully shut down before them.
 
     // End of pre-cleanup
-    delete m_pTextCore;
-    m_pTextCore = NULL;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63805144>())
+    {
+        // Reset input services only AFTER the text-core teardown below, whose callbacks can re-enter input and deref a null CInputServices.
+        ASSERT(m_inputServices != nullptr);
+        delete m_pTextCore;
+        m_pTextCore = NULL;
+
+        m_inputServices = nullptr;
+    }
+    else
+    {
+        // Pre-fix ordering: reset input services before deleting the text core.
+        m_inputServices = nullptr;
+
+        delete m_pTextCore;
+        m_pTextCore = NULL;
+    }
 
     ReleaseInterface(m_pDeploymentTree);
     if (m_pAllSurfaceImageSources != NULL)
@@ -4484,10 +4503,10 @@ _Check_return_ HRESULT CCoreServices::Tick(
 
         FAIL_FAST_ASSERT(m_pNWWindowRenderTarget->GetDCompTreeHost() != nullptr);
 
-        // Wait for resource creation to complete and register the callback thread. Otherwise Xaml timelines can't add
-        // completed time events.
+        // Wait for resource creation to complete.
+        // $REVIEW: There are no more DComp animations, so we don't need to wait for D3D dependent resources
+        // for that reason - but more investigation is needed before this wait can be removed.
         IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
-        m_pNWWindowRenderTarget->GetDCompTreeHost()->RegisterDCompAnimationCompletedCallbackThread();
 
         HRESULT hrTick = m_pTimeManager->Tick(
             FALSE /* newTimelinesOnly */,
@@ -10322,7 +10341,7 @@ CCoreServices::SimulateDeviceLost(bool resetVisuals, bool resetDManip)
 //------------------------------------------------------------------------------
 void
 CCoreServices::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     ASSERT(m_pNWWindowRenderTarget != nullptr);

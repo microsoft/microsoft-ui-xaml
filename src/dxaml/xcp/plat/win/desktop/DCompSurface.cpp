@@ -162,7 +162,7 @@ DCompSurface::InitializeSurface(
     if (m_isVirtual)
     {
         ASSERT(m_requestAtlas);
-        IFCFAILFAST(pDCompTreeHost->GetCompositionHelper()->CreateVirtualSurface(
+        IFCFAILFAST(pDCompTreeHost->GetSurfaceFactory()->CreateVirtualSurface(
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             compositionSurfaceFormat,

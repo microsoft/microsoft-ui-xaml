@@ -19,7 +19,7 @@ class CAnimation;
 class CCoreServices;
 class RefreshAlignedClock;
 struct IFrameScheduler;
-struct IDCompositionDesktopDevice;
+struct IDCompositionDevice2;
 struct ICompositionAnimationController;
 class CTranslateTransform;
 class AnimationTelemetry;
@@ -118,7 +118,7 @@ public:
     _Check_return_ HRESULT Tick(
         bool newTimelinesOnly,
         bool processIATargets,
-        _In_opt_ IDCompositionDesktopDevice* pDCompDevice,
+        _In_opt_ IDCompositionDevice2* pDCompDevice,
         _In_opt_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
         _In_opt_ WUComp::ICompositor* wucCompositor,
         _In_ IFrameScheduler *pFrameScheduler,
