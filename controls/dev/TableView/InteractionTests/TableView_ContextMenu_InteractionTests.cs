@@ -49,7 +49,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a cell's text opens the column's CellContextFlyout for that row, focuses the cell and leaves selection alone.")]
         public void RightClickOnCellTextOpensCellMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -66,7 +66,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a cell's blank padding, away from its text, still opens the column's CellContextFlyout.")]
         public void RightClickOnCellPaddingOpensCellMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -82,7 +82,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a ContextFlyout set inside a cell template wins over the row's menu.")]
         public void RightClickOnTemplateCellOpensTemplateMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -101,7 +101,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a cell with no menu of its own opens the row's ContextFlyout, with focus on the clicked cell.")]
         public void RightClickOnPlainCellOpensRowMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -118,7 +118,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a row's blank space past the last column opens the row's ContextFlyout.")]
         public void RightClickOnBlankRowSpaceOpensRowMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -134,7 +134,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a column header opens the column's HeaderContextFlyout, with no row item.")]
         public void RightClickOnHeaderOpensHeaderMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -150,7 +150,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a header whose column has no HeaderContextFlyout falls back to the table's ContextFlyout.")]
         public void RightClickOnHeaderWithoutMenuOpensTableMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -166,7 +166,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on the empty area below the last row opens the table's ContextFlyout.")]
         public void RightClickBelowRowsOpensTableMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -187,7 +187,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Shift+F10 on a focused cell opens the column's CellContextFlyout for that row.")]
         public void ShiftF10OnCellOpensCellMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
@@ -203,7 +203,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Shift+F10 on a focused row (not a cell) opens the row's menu, not a column's cell menu.")]
         public void ShiftF10OnRowOpensRowMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (FocusRowAt(ContextMenuTable, 3) == null) { return; }
@@ -219,7 +219,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the Menu (Apps) key on a focused cell with no menu of its own opens the row's menu at that cell, still targeted at the row.")]
         public void MenuKeyOnPlainCellOpensRowMenuAtCell()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 3)) { return; }
@@ -243,7 +243,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies that under RTL the Menu (Apps) key on a focused cell with no menu of its own opens the row's menu at that cell, mirrored.")]
         public void MenuKeyOnPlainCellOpensRowMenuAtCellRightToLeft()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(MirrorContextMenuTableButton)) { return; }
@@ -268,7 +268,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Shift+F10 on a focused column header opens the column's HeaderContextFlyout.")]
         public void ShiftF10OnHeaderOpensHeaderMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
 
@@ -290,7 +290,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Escape closes a keyboard-opened cell menu and returns focus to the cell it was opened on.")]
         public void EscapeReturnsFocusToMenuTarget()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
@@ -313,7 +313,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu, and that the editor's own menu neither ends the edit while open nor when Escape closes it.")]
         public void RightClickOnEditorOpensNoTableViewMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -337,7 +337,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a command picked from the editor's own menu closes the menu without ending the edit, and Escape still cancels afterwards.")]
         public void EditorMenuCommandKeepsEdit()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -359,7 +359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies that after the editor's own menu closes, moving to another cell still commits the typed value.")]
         public void ClickAwayAfterEditorMenuCommitsEdit()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -391,7 +391,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on another row's cell while a cell is editing opens no menu: neither the cell's, the row's nor the table's.")]
         public void RightClickOnOtherRowWhileEditingOpensNoMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -409,7 +409,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a column header while a cell is editing opens no menu: neither the header's nor the table's.")]
         public void RightClickOnHeaderWhileEditingOpensNoMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!BeginEditOnNameCell(2)) { return; }
@@ -426,7 +426,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on the empty area below the rows while a cell is editing does not open the table's ContextFlyout.")]
         public void RightClickBelowRowsWhileEditingOpensNoMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -442,7 +442,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a group header while a cell is editing opens no menu.")]
         public void RightClickOnGroupHeaderWhileEditingOpensNoMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -466,7 +466,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a press-and-hold on a cell opens the column's CellContextFlyout for that row and leaves selection alone.")]
         public void PressAndHoldOnCellOpensCellMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
@@ -494,7 +494,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a right-click on a group header with no menu of its own opens the table's ContextFlyout, not a row menu.")]
         public void RightClickOnGroupHeaderOpensTableMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
@@ -513,7 +513,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Shift+F10 on a focused group header opens the table's ContextFlyout and keeps focus on the header.")]
         public void ShiftF10OnGroupHeaderOpensTableMenu()
         {
-            using (var setup = new TestSetupHelper(PageName))
+            using (var setup = new ContextMenuTestSetup())
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
@@ -534,6 +534,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #endregion
 
         #region Helpers
+
+        // These tests can leave focus in the TableView. Park it outside before GoBack to avoid the 25H2 teardown hang.
+        private sealed class ContextMenuTestSetup : IDisposable
+        {
+            private readonly TestSetupHelper _setup = new TestSetupHelper(PageName);
+
+            public void Dispose()
+            {
+                try
+                {
+                    MoveFocusOffTableBeforeTeardown();
+                }
+                finally
+                {
+                    _setup.Dispose();
+                }
+            }
+        }
 
         // Invokes one of the ContextMenu host's mode buttons and drops cached UIA elements, since it re-realizes the table.
         private static bool InvokeHostButton(string automationId)

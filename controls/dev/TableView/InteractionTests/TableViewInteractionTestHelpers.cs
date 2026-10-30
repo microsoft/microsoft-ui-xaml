@@ -595,15 +595,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // next TestSetupHelper restarts it.
         private static readonly TimeSpan s_appRestartThreshold = TimeSpan.FromMinutes(10);
 
+        // Every test navigates to a fresh TableViewPage, and the previous pages are not reclaimed promptly, so the
+        // XAML peer map grows with each test. On chk builds ReferenceTrackerManager::RunValidation walks that whole
+        // map every frame on the UI thread; after ~16 tests it starves the UIA calls of the next TestSetupHelper,
+        // which then block until the TAEF timeout. Restart by test count as well as by age to keep the map small.
+        private const int c_appRestartTestCount = 8;
+        private static int s_testsSinceRestart;
+        private static int s_lastAppProcessId;
+
         internal static void RestartAppIfLongRunning()
         {
             try
             {
                 var process = TestEnvironment.Application.Process;
-                if (process != null && !process.HasExited && DateTime.Now - process.StartTime > s_appRestartThreshold)
+                if (process == null || process.HasExited)
+                {
+                    return;
+                }
+
+                if (process.Id != s_lastAppProcessId)
+                {
+                    s_lastAppProcessId = process.Id;
+                    s_testsSinceRestart = 0;
+                }
+
+                s_testsSinceRestart++;
+
+                if (DateTime.Now - process.StartTime > s_appRestartThreshold)
                 {
                     Log.Comment("Test app has run for over {0} minutes; scheduling a restart before the AppWatcherThread limit.",
                         s_appRestartThreshold.TotalMinutes);
+                    TestEnvironment.ShouldRestartApplication = true;
+                }
+                else if (s_testsSinceRestart >= c_appRestartTestCount)
+                {
+                    Log.Comment("Test app has hosted {0} tests; scheduling a restart to release accumulated test pages.",
+                        s_testsSinceRestart);
                     TestEnvironment.ShouldRestartApplication = true;
                 }
             }
