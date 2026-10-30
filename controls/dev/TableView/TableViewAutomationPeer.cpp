@@ -88,8 +88,13 @@ namespace
         hstring GetNameCore()
         {
             const int32_t index = RequireIndex();
-            auto const rowPeer = RealizedRowPeer(index);
-            return rowPeer ? rowPeer.GetName() : ItemToName(m_item.Resolve());
+            if (auto const rowPeer = RealizedRowPeer(index))
+            {
+                return rowPeer.GetName();
+            }
+            // Read from the source: m_item may be a weak reference to a box nothing else keeps alive.
+            auto const tableImpl = winrt::get_self<TableView>(m_table.get());
+            return ItemToName(tableImpl->UnwrapEditingDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index)));
         }
 
         // Forwarded once the row is realized, so a client holding this peer sees the row.
