@@ -30,11 +30,12 @@
   <data name="SnapshotHistoryNotice.Text" xml:space="preserve"><value>Select a snapshot to inspect its trees. This list lasts for the profiler session; saved JSON files are retained.</value></data>
   <data name="SnapshotHistory.AutomationProperties.Name" xml:space="preserve"><value>Captured tree snapshots</value></data>
   <data name="SnapshotHistoryTitleFormat" xml:space="preserve"><value>{0} | PID {1}</value></data>
+  <data name="InitialSnapshotHistoryTitleFormat" xml:space="preserve"><value>Initial snapshot | {0} | PID {1}</value></data>
   <data name="SnapshotHistorySummaryFormat" xml:space="preserve"><value>{0:N0} XAML | {1:N0} Composition | {2:N0} links</value></data>
   <data name="SnapshotViewerTitleFormat" xml:space="preserve"><value>Snapshot viewer - {0}</value></data>
   <data name="SnapshotViewerHeading.Text" xml:space="preserve"><value>Snapshot viewer</value></data>
   <data name="SnapshotViewerIdentity.AutomationProperties.Name" xml:space="preserve"><value>Snapshot capture identity</value></data>
-  <data name="SnapshotViewerScope.Text" xml:space="preserve"><value>Realized XAML and public Composition trees only. Each root has its own capture interval. Addresses are snapshot metadata, not lifetime IDs. Composition details hide known default values; saved snapshots retain all values.</value></data>
+  <data name="SnapshotViewerScope.Text" xml:space="preserve"><value>Realized XAML and public Composition trees only. Each root has its own capture interval. Addresses are snapshot metadata, not lifetime IDs. Composition details hide known default values; saved snapshots retain all values. Double-click a XAML node to see its element's history in the Elements tab.</value></data>
   <data name="SnapshotViewerLoading.AutomationProperties.Name" xml:space="preserve"><value>Loading tree snapshot</value></data>
   <data name="SnapshotViewerError.Title" xml:space="preserve"><value>Snapshot viewer failed</value></data>
   <data name="SnapshotXamlHeading.Text" xml:space="preserve"><value>XAML visual tree</value></data>
@@ -55,10 +56,67 @@
   <data name="SnapshotMatches.AutomationProperties.Name" xml:space="preserve"><value>Direct snapshot node matches</value></data>
   <data name="SnapshotXamlDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected XAML node properties</value></data>
   <data name="SnapshotCompositionDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected Composition node properties</value></data>
-  <data name="SnapshotRootFormat" xml:space="preserve"><value>XamlRoot #{0} | thread {1}</value></data>
+  <data name="SnapshotRootFormat" xml:space="preserve"><value>XamlRoot ({0}) | thread {1}</value></data>
   <data name="SnapshotSelectNode" xml:space="preserve"><value>Select a node to inspect its direct object mappings.</value></data>
   <data name="SnapshotNoMapping" xml:space="preserve"><value>No direct mapping. No ancestor or geometry-based mapping is inferred.</value></data>
   <data name="SnapshotMatchesFormat" xml:space="preserve"><value>{0:N0} direct match(es). All matches are highlighted; choose a match to reveal it.</value></data>
+  <data name="SnapshotDiffChoose.Content" xml:space="preserve"><value>Compare snapshots...</value></data>
+  <data name="SnapshotDiffPickerNotice.Text" xml:space="preserve"><value>Choose two different captures from the same process instance (PID and creation time). Changes are shown from Before to After.</value></data>
+  <data name="SnapshotDiffBefore.Header" xml:space="preserve"><value>Before (baseline)</value></data>
+  <data name="SnapshotDiffBefore.AutomationProperties.Name" xml:space="preserve"><value>Before snapshot</value></data>
+  <data name="SnapshotDiffAfter.Header" xml:space="preserve"><value>After (comparison)</value></data>
+  <data name="SnapshotDiffAfter.AutomationProperties.Name" xml:space="preserve"><value>After snapshot</value></data>
+  <data name="SnapshotDiffCompare.Content" xml:space="preserve"><value>Compare</value></data>
+  <data name="SnapshotDiffTitle" xml:space="preserve"><value>Snapshot comparison</value></data>
+  <data name="SnapshotDiffHeading.Text" xml:space="preserve"><value>Snapshot comparison</value></data>
+  <data name="SnapshotDiffBeforeFormat" xml:space="preserve"><value>Before: {0} | {1}</value></data>
+  <data name="SnapshotDiffAfterFormat" xml:space="preserve"><value>After: {0} | {1}</value></data>
+  <data name="SnapshotDiffBeforeIdentity.AutomationProperties.Name" xml:space="preserve"><value>Before snapshot identity</value></data>
+  <data name="SnapshotDiffAfterIdentity.AutomationProperties.Name" xml:space="preserve"><value>After snapshot identity</value></data>
+  <data name="SnapshotDiffScope.Text" xml:space="preserve"><value>Best-effort matching by root, COM identity address, and type. Addresses may be reused; matches do not prove object lifetimes. Trees use After hierarchy with removed nodes retained at their old parents. Highlighted ancestors contain changed subtrees. Only captured properties are compared; visibility changes do not prove pixels became visible. Double-click a XAML node to see its element's history in the Elements tab.</value></data>
+  <data name="SnapshotDiffLoading.AutomationProperties.Name" xml:space="preserve"><value>Comparing tree snapshots</value></data>
+  <data name="SnapshotDiffError.Title" xml:space="preserve"><value>Snapshot comparison failed</value></data>
+  <data name="SnapshotDiffChangesOnly.Content" xml:space="preserve"><value>Show only changed subtrees</value></data>
+  <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No tree or captured property differences.</value></data>
+  <data name="SnapshotDiffSummaryFormat" xml:space="preserve"><value>{0:N0} added | {1:N0} removed | {2:N0} with property changes | {3:N0} moved | {4:N0} reordered</value></data>
+  <data name="SnapshotDiffXamlSummary.AutomationProperties.Name" xml:space="preserve"><value>XAML change counts</value></data>
+  <data name="SnapshotDiffCompositionSummary.AutomationProperties.Name" xml:space="preserve"><value>Composition change counts</value></data>
+  <data name="SnapshotDiffRootFormat" xml:space="preserve"><value>XamlRoot [{0}] | thread {1}</value></data>
+  <data name="SnapshotDiffAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="SnapshotDiffRemoved" xml:space="preserve"><value>Removed</value></data>
+  <data name="SnapshotDiffProperties" xml:space="preserve"><value>Properties changed</value></data>
+  <data name="SnapshotDiffMoved" xml:space="preserve"><value>Moved</value></data>
+  <data name="SnapshotDiffReordered" xml:space="preserve"><value>Reordered</value></data>
+  <data name="SnapshotDiffSubtree" xml:space="preserve"><value>Subtree changed</value></data>
+  <data name="SnapshotDiffUnchanged" xml:space="preserve"><value>Unchanged</value></data>
+  <data name="SnapshotDiffCorrelatedNode.AutomationProperties.Name" xml:space="preserve"><value>Correlated node</value></data>
+  <data name="SnapshotDiffCorrelatedNode.ToolTipService.ToolTip" xml:space="preserve"><value>Directly correlated node</value></data>
+  <data name="SnapshotDiffMatchBefore" xml:space="preserve"><value>Before</value></data>
+  <data name="SnapshotDiffMatchAfter" xml:space="preserve"><value>After</value></data>
+  <data name="SnapshotDiffMatchBoth" xml:space="preserve"><value>Before and After</value></data>
+  <data name="SnapshotDiffMatchFormat" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="SnapshotDiffMappingsFormat" xml:space="preserve"><value>{0:N0} direct match(es) across Before and After.</value></data>
+  <data name="SnapshotDiffMappingStatus.AutomationProperties.Name" xml:space="preserve"><value>Selected comparison node mappings</value></data>
+  <data name="SnapshotDiffMappingStatus.ToolTipService.ToolTip" xml:space="preserve"><value>Link icons mark correlated nodes. Unchanged matches and their ancestors are shown as context, including when only changed subtrees are selected.</value></data>
+  <data name="SnapshotDiffMatches.AutomationProperties.Name" xml:space="preserve"><value>Direct comparison node matches</value></data>
+  <data name="SnapshotDiffMatches.ToolTipService.ToolTip" xml:space="preserve"><value>Choose a direct match from Before, After, or both captures to reveal it in the other tree.</value></data>
+  <data name="SnapshotDiffSelectNode" xml:space="preserve"><value>Select an element in either tree to inspect its changed properties and before/after locations.</value></data>
+  <data name="SnapshotDiffSelectedFormat" xml:space="preserve"><value>{0}: [{1}] {2}</value></data>
+  <data name="SnapshotDiffKindXaml" xml:space="preserve"><value>XAML</value></data>
+  <data name="SnapshotDiffKindComposition" xml:space="preserve"><value>Composition</value></data>
+  <data name="SnapshotDiffSelection.AutomationProperties.Name" xml:space="preserve"><value>Selected snapshot differences</value></data>
+  <data name="SnapshotDiffNoPropertyChanges" xml:space="preserve"><value>No own property changes.</value></data>
+  <data name="SnapshotDiffBeforeLocationFormat" xml:space="preserve"><value>Before: {0}</value></data>
+  <data name="SnapshotDiffAfterLocationFormat" xml:space="preserve"><value>After: {0}</value></data>
+  <data name="SnapshotDiffBeforeLocation.AutomationProperties.Name" xml:space="preserve"><value>Before element location</value></data>
+  <data name="SnapshotDiffAfterLocation.AutomationProperties.Name" xml:space="preserve"><value>After element location</value></data>
+  <data name="SnapshotDiffLocationFormat" xml:space="preserve"><value>parent {0} | child index {1}</value></data>
+  <data name="SnapshotDiffTreeRoot" xml:space="preserve"><value>tree root</value></data>
+  <data name="SnapshotDiffAbsent" xml:space="preserve"><value>(not present)</value></data>
+  <data name="SnapshotDiffProperty.Text" xml:space="preserve"><value>Changed property</value></data>
+  <data name="SnapshotDiffBeforeValue.Text" xml:space="preserve"><value>Before</value></data>
+  <data name="SnapshotDiffAfterValue.Text" xml:space="preserve"><value>After</value></data>
+  <data name="SnapshotDiffPropertyValues.AutomationProperties.Name" xml:space="preserve"><value>Before and after property values</value></data>
   <data name="CancelConnection" xml:space="preserve"><value>Cancel</value></data>
   <data name="Error.Title" xml:space="preserve"><value>Operation failed</value></data>
   <data name="StateDisconnected" xml:space="preserve"><value>Disconnected</value></data>
@@ -71,7 +129,18 @@
   <data name="StateConnected" xml:space="preserve"><value>Connected: hello received</value></data>
   <data name="StateFailed" xml:space="preserve"><value>Connection failed</value></data>
   <data name="InvalidEndpoint" xml:space="preserve"><value>Select a whole diagnostics endpoint number between 1 and 65535.</value></data>
-  <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | Created {1} | Last TAP hello {2} | WinUI: {3}</value></data>
+  <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | WinUI from {1}</value></data>
+  <data name="IdentityDetailsFormat" xml:space="preserve"><value>Process started {0}&#10;Last TAP heartbeat {1}&#10;WinUI runtime {2}</value></data>
+  <data name="EtwFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | GPU memory {3:N0} | lost {4:N0} | dropped {5:N0}</value></data>
+  <data name="EtwDetailsFormat" xml:space="preserve"><value>{0}&#10;XAML: Microsoft-Windows-XAML, Microsoft-Windows-XAML-Diagnostics, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls events&#10;Profiler: Microsoft-Windows-XAML-Profiler events&#10;GPU memory: the kernel's GPU memory usage and budget events for the process (Microsoft-Windows-DxgKrnl)&#10;Lost: events ETW could not deliver&#10;Dropped: events the profiler discarded because its queue was full</value></data>
+  <data name="EtwFromProcessStart" xml:space="preserve"><value>ETW from process start</value></data>
+  <data name="EtwFromConnection" xml:space="preserve"><value>ETW from connection</value></data>
+  <data name="EtwCoverageProcessStart" xml:space="preserve"><value>Every event since the process started is included.</value></data>
+  <data name="EtwCoverageConnection" xml:space="preserve"><value>Events written before the profiler connected are not included.</value></data>
+  <data name="EtwUnavailable" xml:space="preserve"><value>ETW: {0}</value></data>
+  <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
+  <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>
+  <data name="RecordingDetailsFormat" xml:space="preserve"><value>{0}&#10;Limit {1:N0} MB: the oldest events are removed to stay within it.</value></data>
   <data name="ModeAutomation" xml:space="preserve"><value>Launch or attach mode</value></data>
   <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
   <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>
@@ -83,6 +152,8 @@
   <data name="DisconnectAutomation" xml:space="preserve"><value>Disconnect</value></data>
   <data name="StatusAutomation" xml:space="preserve"><value>Live connection status</value></data>
   <data name="IdentityAutomation" xml:space="preserve"><value>Connected target identity</value></data>
+  <data name="EtwAutomation" xml:space="preserve"><value>XAML ETW event counts</value></data>
+  <data name="RecordingAutomation" xml:space="preserve"><value>Session file</value></data>
   <data name="UtilizationHeading" xml:space="preserve"><value>CPU and GPU utilization</value></data>
   <data name="MemoryHeading" xml:space="preserve"><value>Process memory</value></data>
   <data name="UtilizationAutomation" xml:space="preserve"><value>CPU and GPU usage graph</value></data>
@@ -98,7 +169,7 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. This baseline does not record ETW, SQLite, or frames.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected; the Frames and Elements tabs show them.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
@@ -108,4 +179,77 @@
   <data name="SelectTarget" xml:space="preserve"><value>Select</value></data>
   <data name="LoadingTargets" xml:space="preserve"><value>Loading targets...</value></data>
   <data name="NoTargets" xml:space="preserve"><value>No matching targets.</value></data>
+  <data name="TargetSettings.AutomationProperties.Name" xml:space="preserve"><value>Target and launch settings</value></data>
+  <data name="TargetSettingsHeader" xml:space="preserve"><value>Target and launch settings</value></data>
+  <data name="TargetSummaryFormat" xml:space="preserve"><value>Target: {0} {1}</value></data>
+  <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
+  <data name="FramesTab.Header" xml:space="preserve"><value>Frames</value></data>
+  <data name="OpenSessionFile.Content" xml:space="preserve"><value>Open session file...</value></data>
+  <data name="FramesReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
+  <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, or open a saved session file.</value></data>
+  <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} frames</value></data>
+  <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} frames | older events were trimmed</value></data>
+  <data name="LaunchItemFormat" xml:space="preserve"><value>frame {0:N0} at {1:N1} ms</value></data>
+  <data name="LaunchFromProcessFormat" xml:space="preserve"><value>Drawn frames after the process started: {0}</value></data>
+  <data name="LaunchFromRecordingFormat" xml:space="preserve"><value>Drawn frames after the recording started: {0}</value></data>
+  <data name="FramesHeaderNumber.Text" xml:space="preserve"><value>Frame</value></data>
+  <data name="FramesHeaderDrawnAt.Text" xml:space="preserve"><value>Drawn at (ms)</value></data>
+  <data name="FramesHeaderDraw.Text" xml:space="preserve"><value>Draw (ms)</value></data>
+  <data name="FramesHeaderXaml.Text" xml:space="preserve"><value>XAML</value></data>
+  <data name="FramesHeaderComposition.Text" xml:space="preserve"><value>Composition</value></data>
+  <data name="FramesHeaderOther.Text" xml:space="preserve"><value>Other</value></data>
+  <data name="FrameList.AutomationProperties.Name" xml:space="preserve"><value>Frames</value></data>
+  <data name="FramesHeaderNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame number on the UI thread. * marks the latest frame, which may still be in progress.</value></data>
+  <data name="FramesHeaderDrawnAt.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the frame was drawn, from the start of the recording.</value></data>
+  <data name="FramesHeaderDraw.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How long the drawing tick took. A warning icon marks more than 16.7 ms.</value></data>
+  <data name="FramesHeaderXaml.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about XAML objects: the tree, templates, visual states and loading.</value></data>
+  <data name="FramesHeaderComposition.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about composition nodes, visuals and surfaces.</value></data>
+  <data name="FramesHeaderOther.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Everything else: layout, rendering and scheduling.</value></data>
+  <data name="SelectFramePrompt" xml:space="preserve"><value>Select a frame to see its events.</value></data>
+  <data name="SelectEventPrompt" xml:space="preserve"><value>Select an event to see its fields.</value></data>
+  <data name="FrameTitleFormat" xml:space="preserve"><value>Frame {0:N0} | thread {1} | {2} tick(s), the first at {3:N1} ms | drawn at {4:N1} ms | {5:N1} ms in ticks</value></data>
+  <data name="Buckets.AutomationProperties.Name" xml:space="preserve"><value>Event group</value></data>
+  <data name="BucketAll.Text" xml:space="preserve"><value>All</value></data>
+  <data name="BucketXaml.Text" xml:space="preserve"><value>XAML</value></data>
+  <data name="BucketComposition.Text" xml:space="preserve"><value>Composition</value></data>
+  <data name="BucketOther.Text" xml:space="preserve"><value>Other</value></data>
+  <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>Filter by name, text, or value (42 or 0x1A2B)</value></data>
+  <data name="FilterBox.AutomationProperties.Name" xml:space="preserve"><value>Filter the frame's events</value></data>
+  <data name="EventList.AutomationProperties.Name" xml:space="preserve"><value>Events of the selected frame</value></data>
+  <data name="PreviousEvents.Content" xml:space="preserve"><value>Previous</value></data>
+  <data name="NextEvents.Content" xml:space="preserve"><value>Next</value></data>
+  <data name="PositionNoEvents" xml:space="preserve"><value>No events</value></data>
+  <data name="PositionNoMatches" xml:space="preserve"><value>No matching events</value></data>
+  <data name="PositionFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0}</value></data>
+  <data name="PositionFilteredFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0} matching</value></data>
+  <data name="EventDetails.AutomationProperties.Name" xml:space="preserve"><value>Fields of the selected event</value></data>
+  <data name="ElementLinksHeader.Text" xml:space="preserve"><value>Show the history of:</value></data>
+  <data name="ElementsTab.Header" xml:space="preserve"><value>Elements</value></data>
+  <data name="ElementsFileFormat" xml:space="preserve"><value>{0} | {1:N0} elements</value></data>
+  <data name="ElementsFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} elements | older events were trimmed</value></data>
+  <data name="ElementSearch.PlaceholderText" xml:space="preserve"><value>Search by type, name, or address</value></data>
+  <data name="ElementSearch.AutomationProperties.Name" xml:space="preserve"><value>Search the UI elements</value></data>
+  <data name="ElementsHeaderElement.Text" xml:space="preserve"><value>Element</value></data>
+  <data name="ElementsHeaderElement.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The element's type, and its name if it has one.</value></data>
+  <data name="ElementsHeaderAddress.Text" xml:space="preserve"><value>Address</value></data>
+  <data name="ElementsHeaderAddress.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Where the element is in memory. A later element can reuse the address.</value></data>
+  <data name="ElementsHeaderFirst.Text" xml:space="preserve"><value>First (ms)</value></data>
+  <data name="ElementsHeaderFirst.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When an event first mentioned the element, from the start of the recording.</value></data>
+  <data name="ElementsHeaderLast.Text" xml:space="preserve"><value>Last (ms)</value></data>
+  <data name="ElementsHeaderLast.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When an event last mentioned the element.</value></data>
+  <data name="ElementsHeaderEvents.Text" xml:space="preserve"><value>Events</value></data>
+  <data name="ElementsHeaderEvents.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How many events mention the element.</value></data>
+  <data name="ElementList.AutomationProperties.Name" xml:space="preserve"><value>UI elements</value></data>
+  <data name="ElementTypeNotSeen" xml:space="preserve"><value>type not seen</value></data>
+  <data name="SelectElementPrompt" xml:space="preserve"><value>Select an element to see its history.</value></data>
+  <data name="ElementTitleFormat" xml:space="preserve"><value>{0} | ID {1} | {2} | seen from {3:N1} ms to {4:N1} ms</value></data>
+  <data name="HistoryHeaderTime.Text" xml:space="preserve"><value>Time (ms)</value></data>
+  <data name="HistoryHeaderFrame.Text" xml:space="preserve"><value>Frame</value></data>
+  <data name="HistoryHeaderFrame.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame the event belongs to, or - for events outside a UI thread's frames.</value></data>
+  <data name="HistoryHeaderEvent.Text" xml:space="preserve"><value>Event</value></data>
+  <data name="HistoryList.AutomationProperties.Name" xml:space="preserve"><value>Events that mention the selected element</value></data>
+  <data name="ElementNotFound" xml:space="preserve"><value>The element has no events in this session file.</value></data>
+  <data name="SnapshotOtherProcessFormat" xml:space="preserve"><value>The snapshot is of process {0}, but this session file is of process {1}. Open that process's session file to see its elements.</value></data>
+  <data name="SnapshotElementNotFoundFormat" xml:space="preserve"><value>{0} isn't in this session file. The recording may have started after it was created, or its events were trimmed.</value></data>
+  <data name="SnapshotXamlTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its element's history in the Elements tab.</value></data>
 </root>

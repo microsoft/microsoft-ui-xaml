@@ -6,22 +6,47 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's XAML TraceLogging events from a TraceEvent source (an .etl file now, a live session
-// later). TraceLogging events carry their own field names and types; manifest events are not read.
+// Delivers one process's events from the XAML providers, and the kernel's GPU memory events for it, from a TraceEvent
+// source (an .etl file or a live session). TraceLogging events carry their own field names and types. Manifest events
+// are decoded with the manifest Windows registers for their provider: system XAML's for Microsoft-Windows-XAML and
+// Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for DxgKrnl. An event that manifest
+// does not describe is not delivered. WinUI's FrameInfo is the one shared event whose fields differ, so it is decoded
+// here.
 internal static class XamlEventSubscription
 {
     // WINEVENT_CHANNEL_TRACELOGGING (winmeta.h). Manifest events on the same providers use other channels.
     private const int TraceLoggingChannel = 11;
+
+    // Microsoft-Windows-DxgKrnl VidMmProcessBudgetChange and VidMmProcessUsageChange: a process's GPU memory budget
+    // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
+    private const int VidMmProcessBudgetChange = 366;
+    private const int VidMmProcessUsageChange = 367;
+
+    // Microsoft-Windows-XAML FrameInfo, version 0. WinUI writes one 4-byte Boolean, Value, which is whether the frame
+    // drew (TraceFrameInfo in xcpcore.cpp). System XAML's manifest describes four UInt32 fields instead.
+    private const int FrameInfo = 64;
 
     internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(sink);
 
-        // The dynamic parser also decodes manifest events when a manifest is registered, so filter by channel.
         source.Dynamic.All += data =>
         {
-            if ((int)data.Channel != TraceLoggingChannel || !XamlProviders.TryGet(data.ProviderGuid, out var provider))
+            if (data.ProviderGuid == XamlProviders.DxgKrnl)
+            {
+                // The System process writes some of a process's rows, such as those written when it exits, so the
+                // ProcessId field names the process, not the event header.
+                if ((int)data.ID is VidMmProcessBudgetChange or VidMmProcessUsageChange &&
+                    PayloadProcessId(data) is { } owner && (processId is null || owner == processId))
+                {
+                    sink(Capture(data, XamlProvider.DxgKrnl, owner));
+                }
+
+                return;
+            }
+
+            if (!XamlProviders.TryGet(data.ProviderGuid, out var provider))
             {
                 return;
             }
@@ -31,21 +56,47 @@ internal static class XamlEventSubscription
                 return;
             }
 
-            sink(Capture(data, provider));
+            sink(Capture(data, provider, data.ProcessID));
         };
     }
 
-    private static ProfilerEvent Capture(TraceEvent data, XamlProvider provider)
+    private static int? PayloadProcessId(TraceEvent data)
+    {
+        try
+        {
+            var index = data.PayloadIndex("ProcessId");
+            return index < 0 ? null : data.PayloadValue(index) switch
+            {
+                int value => value,
+                uint value => (int)value,
+                long value => (int)value,
+                ulong value => (int)value,
+                _ => null
+            };
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            return null;
+        }
+    }
+
+    private static ProfilerEvent Capture(TraceEvent data, XamlProvider provider, int processId)
     {
 #pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
         var timestampQpc = data.TimeStampQPC;
 #pragma warning restore CS0618
-        return new(timestampQpc, data.TimeStampRelativeMSec, data.ProcessID, data.ThreadID, provider, data.EventName,
-            (int)data.Opcode, CopyFields(data));
+        return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider,
+            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider));
     }
 
-    private static EventField[] CopyFields(TraceEvent data)
+    private static EventField[] CopyFields(TraceEvent data, XamlProvider provider)
     {
+        if (provider == XamlProvider.Xaml && (int)data.ID == FrameInfo && data.Version == 0 &&
+            data.EventDataLength == sizeof(int))
+        {
+            return [new("Value", BitConverter.ToInt32(data.EventData()) != 0)];
+        }
+
         var names = data.PayloadNames;
         var fields = new EventField[names.Length];
         for (var i = 0; i < names.Length; i++)

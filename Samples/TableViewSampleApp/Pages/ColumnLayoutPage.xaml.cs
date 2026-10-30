@@ -46,11 +46,13 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         TrackLifetime(ApplySelectedMode, () => SetActiveColumn(null));
     }
 
-    public ObservableCollection<Person> People { get; } = PersonData.Take(40);
-
     // <snippet>
+    public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
+
     // ---- Column factories ---------------------------------------------------------------
 
+    // <snippet>
     private static TableViewTextColumn Text(string header, string path, GridLength width) =>
         new()
         {
@@ -59,7 +61,9 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Width = width,
             CanUserSort = false,
         };
+    // </snippet>
 
+    // <snippet>
     // Template columns use the shared cells from Templates\PersonCellTemplates.xaml.
     private static TableViewTemplateColumn Templated(string header, string templateKey, GridLength width) =>
         new()
@@ -69,7 +73,9 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Width = width,
             CanUserSort = false,
         };
+    // </snippet>
 
+    // <snippet>
     private static TableViewTextColumn LockedRole(GridLength width)
     {
         var column = Text(LockedRoleHeader, nameof(Person.Role), width);
@@ -77,10 +83,17 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         column.CanUserResize = false;
         return column;
     }
+    // </snippet>
 
+    // <snippet>
     private static GridLength Auto() => new(1, GridUnitType.Auto);
+    // </snippet>
+    // <snippet>
     private static GridLength Star(double factor = 1) => new(factor, GridUnitType.Star);
+    // </snippet>
+    // <snippet>
     private static GridLength Px(double px) => new(px, GridUnitType.Pixel);
+    // </snippet>
 
     // ---- Width intent -------------------------------------------------------------------
 
@@ -93,7 +106,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         }
 
         ApplySelectedMode();
-        AnnounceModeDescription(); // snippet:skip
+        AnnounceModeDescription();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width intent -> {0}", SampleShaping.Label(WidthModeSelector)));
     }
 
@@ -103,6 +116,18 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         var previousHeader = _activeColumn?.Header?.ToString();
 
         SetActiveColumn(null);
+        BuildColumns(mode);
+        ModeDescription.Text = DescribeMode(mode);
+
+        PopulateColumnSelector(previousHeader);
+        ApplyCanUserResizeColumns();
+        RefreshReadouts();
+    }
+
+    // <snippet>
+    // Each width intent gets new columns: a column's Auto width is measured afresh only when the column is added.
+    private void BuildColumns(string mode)
+    {
         WidthsTable.Columns.Clear();
 
         switch (mode)
@@ -113,7 +138,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Templated("Department", "DepartmentChipTemplate", Auto()));
                 WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
-                ModeDescription.Text = "Auto: every column sizes to its header and the widest cell on screen, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.";
                 break;
 
             case "Star":
@@ -121,7 +145,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(LockedRole(Star(2)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(3)));
-                ModeDescription.Text = "Star: the columns share the table width by factor, so Email (3*) gets three times First name (1*). There is no empty band and no horizontal scrolling.";
                 break;
 
             case "Pixel":
@@ -133,7 +156,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
                 WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
-                ModeDescription.Text = "Pixel: every column has a fixed width, whatever its content. The total is wider than the table, so the body scrolls horizontally and the header stays in step with it.";
                 break;
 
             case "Mixed":
@@ -142,7 +164,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(2)));
                 WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Star(3)));
-                ModeDescription.Text = "Mixed: the Auto and Pixel columns are sized first, then the Star columns split what is left by factor.";
                 break;
 
             default:
@@ -152,15 +173,19 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
                 WidthsTable.Columns.Add(Templated("Join date", "JoinDatePickerTemplate", Px(200)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(140)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(220)));
-                ModeDescription.Text = "Playground: fixed Pixel widths you change with the sliders below. The Join date column holds a full date picker in 200 px, so it clips until Width passes about 310.";
                 break;
         }
-
-        PopulateColumnSelector(previousHeader);
-        ApplyCanUserResizeColumns();
-        RefreshReadouts();
     }
     // </snippet>
+
+    private static string DescribeMode(string mode) => mode switch
+    {
+        "Auto" => "Auto: every column sizes to its header and the widest realized cell, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.",
+        "Star" => "Star: the columns share the table width by factor, so Email (3*) gets three times First name (1*). There is no empty band and no horizontal scrolling.",
+        "Pixel" => "Pixel: every column has a fixed width, whatever its content. The total is wider than the table, so the body scrolls horizontally and the header stays in step with it.",
+        "Mixed" => "Mixed: the Auto and Pixel columns are sized first, then the Star columns split what is left by factor.",
+        _ => "Playground: fixed Pixel widths you change with the sliders below. The Join date column holds a full date picker in 200 px, so it clips until Width passes about 310.",
+    };
 
     // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's mode change only.
     private void AnnounceModeDescription() =>
@@ -206,7 +231,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         return null;
     }
 
-    // <snippet>
     private void SetActiveColumn(TableViewColumn? column)
     {
         if (_activeColumn is not null && _actualWidthToken >= 0)
@@ -236,6 +260,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         RefreshReadouts();
     }
 
+
     // Push the column's current values into the sliders without echoing back into the column.
     private void SeedSliders()
     {
@@ -259,12 +284,11 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         finally
         {
             _suppressSliderHandlers = false;
-            DescribePixels(MinWidthSlider, MinWidthSlider.Value); // snippet:skip
-            DescribePixels(WidthSlider, WidthSlider.Value); // snippet:skip
-            DescribePixels(MaxWidthSlider, MaxWidthSlider.Value); // snippet:skip
+            DescribePixels(MinWidthSlider, MinWidthSlider.Value);
+            DescribePixels(WidthSlider, WidthSlider.Value);
+            DescribePixels(MaxWidthSlider, MaxWidthSlider.Value);
         }
     }
-    // </snippet>
 
     private void OnMinWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
@@ -320,14 +344,18 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "CanUserResizeColumns -> {0}", WidthsTable.CanUserResizeColumns));
     }
 
+    // <snippet>
     private void ApplyCanUserResizeColumns() =>
         WidthsTable.CanUserResizeColumns = CanUserResizeColumnsToggle.IsOn;
+    // </snippet>
 
     // ---- Actions ------------------------------------------------------------------------
     //
     // Autosize is GridUnitType.Auto: the control sizes the column from its realized content.
 
+    // <snippet>
     private static void Autosize(TableViewColumn column) => column.Width = Auto();
+    // </snippet>
 
     private void OnAutosizeSelectedClick(object sender, RoutedEventArgs e)
     {
@@ -354,7 +382,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width of all {0:N0} columns -> Auto", WidthsTable.Columns.Count));
     }
 
-    // <snippet>
     private void OnClampSelectedClick(object sender, RoutedEventArgs e)
     {
         if (_activeColumn is not { } column)
@@ -369,7 +396,6 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         SetLastActionAfterLayout(() => string.Format(CultureInfo.CurrentCulture,
             "Width of {0} -> 80 px; MinWidth {1:N0} gives ActualWidth {2:N0}", column.Header, column.MinWidth, column.ActualWidth));
     }
-    // </snippet>
 
     private void OnResetWidthsClick(object sender, RoutedEventArgs e)
     {

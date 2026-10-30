@@ -9,15 +9,12 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
-using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
-using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Pages;
 
@@ -25,7 +22,7 @@ namespace TableViewSampleApp.Pages;
 /// Filtering: ONE live <see cref="TableViewSource"/> whose <c>Filter(predicate)</c> narrows the
 /// rows the control renders (and <c>ClearFilter()</c> restores them) without mutating the
 /// collection. Grouping is applied to that same source, so a filtered, grouped view is a single
-/// projection. The columns are built in code from the shared Person cell templates.
+/// projection.
 /// </summary>
 public sealed partial class FilterPage : SamplePageBase
 {
@@ -40,113 +37,71 @@ public sealed partial class FilterPage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
         InitializeComponent();
-        BuildColumns();
+        FilterTable.SelectionChanged += OnTableSelectionChanged; // snippet:skip
         ApplyFilter();
         // </snippet>
         InitializeSample(Status, Shaping.Attach(FilterTable, Source));
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(60);
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
-    // ---- Columns, built in code from the shared templates -------------------------------------
-
-    private void BuildColumns()
-    {
-        var resources = Application.Current.Resources;
-
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Photo",
-            CellTemplate = (DataTemplate)resources["AvatarTemplate"],
-            CanUserSort = false,
-            Width = Token("ColWidthAvatar"),
-            HeaderToolTip = "PersonPicture: the photo when the person has one, otherwise their initials.",
-        });
-        FilterTable.Columns.Add(new TableViewTextColumn
-        {
-            Header = "Name",
-            Binding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) },
-            Width = new GridLength(1, GridUnitType.Star),
-            MinWidth = (double)resources["ColMinWidthStar"],
-        });
-        // A template column sorts by SortMemberPath, the value behind the template.
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Department",
-            CellTemplate = (DataTemplate)resources["DepartmentChipTemplate"],
-            SortMemberPath = nameof(Person.Department),
-            Width = Token("ColWidthChip"),
-            HeaderToolTip = "Read-only chip. The query matches on it.",
-        });
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Role",
-            CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
-            SortMemberPath = nameof(Person.Role),
-            Width = Token("ColWidthLongName"),
-            HeaderToolTip = "Editable free text. The query matches on it, so retyping a role can push the row out of the filtered view.",
-        });
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Active",
-            CellTemplate = (DataTemplate)resources["ActiveCheckBoxTemplate"],
-            SortMemberPath = nameof(Person.IsActive),
-            Width = Token("ColWidthBoolean"),
-            HeaderToolTip = "Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view.",
-        });
-    }
-
-    // Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
-    private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
+    public TableViewSource Source { get; }
+    // </snippet>
 
     // ---- Filtering --------------------------------------------------------------------------
 
+    // <snippet>
     private string Query => SearchBox?.Text?.Trim() ?? string.Empty;
+    // </snippet>
 
+    // <snippet>
     private bool ActiveOnly => ActiveOnlyToggle?.IsOn == true;
+    // </snippet>
 
     private bool HasFilter => Query.Length > 0 || ActiveOnly;
 
+    // <snippet>
     private void OnSearchChanged(object sender, TextChangedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        // TextChanged is raised after the Text setter returns. When an action set the text, it
-        // has already applied the filter and reported it.
-        if (_programmaticQuery is not null && _programmaticQuery == SearchBox.Text)
-        {
-            _programmaticQuery = null;
-            return;
-        }
+        // TextChanged is raised after the Text setter returns. When an action set the text, it // snippet:skip
+        // has already applied the filter and reported it. // snippet:skip
+        if (_programmaticQuery is not null && _programmaticQuery == SearchBox.Text) // snippet:skip
+        { // snippet:skip
+            _programmaticQuery = null; // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyFilter();
         SetLastAction(Query.Length > 0
             ? string.Format(CultureInfo.CurrentCulture, "Filter(query \u201C{0}\u201D): {1}", Query, ShownSummary())
             : "Query cleared: " + ShownSummary());
     }
+    // </snippet>
 
+    // <snippet>
     private void OnActiveToggled(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded)
-        {
-            return;
-        }
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyFilter();
         SetLastAction((ActiveOnly ? "Active only -> On: " : "Active only -> Off: ") + ShownSummary());
     }
+    // </snippet>
 
-    /// <summary>
-    /// Hands the combined predicate to the one source, or clears it. The ItemsSource is never
-    /// reassigned, so selection, scroll offset and group state survive.
-    /// </summary>
+    // <snippet>
+    // ItemsSource is never reassigned, so selection, scroll offset and group state survive.
     private void ApplyFilter()
     {
         var query = Query;
@@ -162,7 +117,9 @@ public sealed partial class FilterPage : SamplePageBase
 
         RefreshReadouts();
     }
+    // </snippet>
 
+    // <snippet>
     private static bool Matches(Person person, string query, bool activeOnly)
     {
         if (activeOnly && !person.IsActive)
@@ -176,18 +133,22 @@ public sealed partial class FilterPage : SamplePageBase
             || Contains(person.Role, query)
             || Contains(person.Email, query);
     }
+    // </snippet>
 
+    // <snippet>
     private static bool Contains(string? value, string query) =>
         value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+    // </snippet>
 
-    /// <summary>
-    /// An in-cell edit changes the Person but does not re-run the predicate (or the group key
-    /// selector), so apply both again once the edit has settled.
-    /// </summary>
+    // An edit does not re-run the predicate or the group key selector; apply both once it settles.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not Person person || IsBulkUpdating || _refreshQueued
-            || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
+        if (IsBulkUpdating || _refreshQueued)
+        {
+            return;
+        }
+
+        if (sender is not Person person || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
         {
             return;
         }
@@ -206,7 +167,6 @@ public sealed partial class FilterPage : SamplePageBase
                 person.FullName));
         });
     }
-    // </snippet>
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {

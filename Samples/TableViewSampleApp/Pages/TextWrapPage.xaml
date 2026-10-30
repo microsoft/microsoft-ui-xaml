@@ -11,9 +11,8 @@
 
     <Page.Resources>
         <!-- snippet -->
-        <!-- The Bio cell. Wrapping, trimming and the line limit come from the page's static
-             WrapState, so every realized cell, including recycled ones, follows the rail. The
-             TextBlock carries the bio as its accessible name, so the cell has a value in UIA. -->
+        <!-- Wrapping, trimming and the line limit bind the page's static WrapState, so every realized cell,
+             recycled ones included, follows the rail. -->
         <DataTemplate x:Key="BioTemplate" x:DataType="models:Person">
             <TextBlock
                 Text="{x:Bind Bio, Mode=OneWay}"
@@ -47,10 +46,10 @@
                 IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
-                <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

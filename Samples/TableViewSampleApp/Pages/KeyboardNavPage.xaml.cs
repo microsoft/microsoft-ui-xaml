@@ -45,7 +45,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         Source = TableViewSource.From(People);
         InitializeComponent();
         PeopleTable.ItemsSource = Source;
-        ResetFixture(announce: false);
+        ResetFixture(announce: false); // snippet:skip
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackLifetime(
@@ -55,9 +55,13 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         TrackLifetime(StartListeningToFixture, StopListeningToFixture);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
+    // </snippet>
 
     private void StartListeningToFixture()
     {
@@ -89,7 +93,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // <snippet>
     // In-cell editors write the model; re-bucket when the grouped-on value changed, because
     // GroupBy takes a delegate and cannot follow PropertyChanged.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
@@ -111,7 +114,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
                 break;
         }
     }
-    // </snippet>
 
     // ---- Assessment fixture -----------------------------------------------------------------
 
@@ -165,7 +167,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             ?? FrameworkElementAutomationPeer.CreatePeerForElement(ExpectedObservationsText))
             ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
-    // <snippet>
     private void ConfigureColumns()
     {
         AssessmentTable.ClearSort();
@@ -221,9 +222,8 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             AutomationProperties.SetName(AssessmentTable, "Accessibility regression records");
         }
 
-        ExpectedObservationsText.Text = ExpectedObservations(Scenario); // snippet:skip
+        ExpectedObservationsText.Text = ExpectedObservations(Scenario);
     }
-    // </snippet>
 
     private static string ExpectedObservations(string scenario) =>
         scenario switch
@@ -277,7 +277,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnResetClick(object sender, RoutedEventArgs e) => ResetFixture(announce: true);
 
-    // <snippet>
     private void OnGroupingToggled(object sender, RoutedEventArgs e)
     {
         if (_updating || _fixtureSource is null || !CloseEditForSetup())
@@ -299,7 +298,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             ? "Fixture grouped by Department on the same TableViewSource."
             : "Fixture grouping cleared on the same TableViewSource.");
     }
-    // </snippet>
 
     private void OnEditingToggled(object sender, RoutedEventArgs e)
     {

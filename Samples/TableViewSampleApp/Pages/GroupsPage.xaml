@@ -11,10 +11,8 @@
 
     <Page.Resources>
         <!-- snippet -->
-        <!-- Left-aligned StackPanel, not a stretched Grid: the group-header ContentPresenter sizes
-             the header content to its desired width, so a Grid with a `*` first column collapsed
-             the count and the expansion chip to zero width. The count binds ItemCount (Int32)
-             rather than ItemCountText so it is always populated. -->
+        <!-- A StackPanel, not a Grid with a * column: the header content is sized to its desired width,
+             so a * column would collapse the count and the chip to zero. -->
         <DataTemplate x:Key="CustomGroupHeaderTemplate" x:DataType="tv:TableViewGroupInfo">
             <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6" VerticalAlignment="Center">
                 <TextBlock
@@ -60,7 +58,7 @@
         Description="TableViewSource.GroupBy(keySelector, groupIdentitySelector) groups one source in place: the key selector receives each row and the identity selector each group key. GroupHeaderTemplate replaces the header content, and ExpandAllGroups and CollapseAllGroups drive every group at once. The page starts grouped by Department: change a row's Department or Active value and it moves to its new group, because the page applies GroupBy again."
         Snippet="Groups"
         StretchExample="True"
-        TryIt="The table starts grouped by Department. Pick another department in a row's Department box and watch the row move to that group, then switch Group key to Active and clear a row's checkbox. Choose Collapse all, then expand one group from its header."
+        TryIt="The table starts grouped by Department. Pick another department in a row's Department box and watch the row move to that group, then switch Group key to Active and clear a row's checkbox. Choose Collapse all, then expand one group from its header. Press F2 on a Name to rename a person."
         WhatToLookFor="A row moves to its new group only because the page applies GroupBy again after the edit: the key selector is a delegate, so the control cannot watch the property. Group order follows the first row of each group, not the alphabet, so sorting a column reorders the groups; the Groups readout lists them in table order. Removing the last row of a group removes its header, and an empty source shows the EmptyTemplate.">
 
         <controls:SamplePresenter.Example>
@@ -71,16 +69,17 @@
                 AutomationProperties.Name="Grouped people"
                 ItemsSource="{x:Bind Source}"
                 SelectionMode="Single"
+                IsReadOnly="False"
                 EmptyTemplate="{StaticResource GroupsEmptyTemplate}"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-                <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
-                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
-                <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>
-                <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value."/>
-                <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" HeaderToolTip="Annual salary in whole currency units. Sorts by the number, not the text."/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
+                <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>
+                <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value."/>
+                <tv:TableViewTextColumn Header="Salary" Width="100" IsReadOnly="True" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" HeaderToolTip="Annual salary in whole currency units. Sorts by the number, not the text."/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -103,9 +102,25 @@
                     </ComboBox>
                 </controls:RailSection>
 
+                <controls:RailSection
+                    Header="First column"
+                    Description="The first column hosts the group indent and, under Hierarchy, the expander chevron. Compare an image column with a text column there.">
+                    <ComboBox
+                        x:Name="FirstColumnSelector"
+                        AutomationProperties.AutomationId="GroupsFirstColumnSelector"
+                        Header="First column"
+                        SelectedIndex="0"
+                        SelectionChanged="OnFirstColumnChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Photo" Tag="Photo"/>
+                        <ComboBoxItem Content="Text (Name)" Tag="Text"/>
+                    </ComboBox>
+                </controls:RailSection>
+
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Groups"
+                    ArrangesHierarchyColumn="False"
                     InitialMode="grouped"
                     Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>

@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
@@ -22,7 +23,7 @@ namespace TableViewSampleApp.Controls;
 [ContentProperty(Name = nameof(GroupKeys))]
 public sealed partial class ShapingOptions : UserControl
 {
-    private const string NoRelationReason = "These rows have no parent relation.";
+    private const string NoRelationReason = "These rows do not have one.";
 
     // ShapingModeSelector item order.
     private static readonly string[] Modes = { "flat", "grouped", "hierarchy", "groupedHierarchy" };
@@ -30,6 +31,10 @@ public sealed partial class ShapingOptions : UserControl
     private TableView? _table;
     private TableViewSource? _source;
 
+    private int _declarations;
+    private int _groupDeclaredAt = -1;
+    private int _sortDeclaredAt = -1;
+    private TableViewColumn? _sortColumn;
     private Func<object?, string, object> _groupKeyOf = (row, key) => SampleShaping.KeyOf(row as Person, key);
     private ParentRelation? _relation;
     private bool _parentDeclared;
@@ -124,6 +129,10 @@ public sealed partial class ShapingOptions : UserControl
     // Header of the column that hosts the chevron and indent in the Hierarchy modes.
     public string HierarchyColumnHeader { get; set; } = "Name";
 
+    // False when the page orders its own columns (a First column option): the Hierarchy modes then
+    // leave the column order and widths alone.
+    public bool ArrangesHierarchyColumn { get; set; } = true;
+
     public Func<Action, long>? TimeCall { get; set; }
 
     public TableView? Table => _table;
@@ -139,6 +148,10 @@ public sealed partial class ShapingOptions : UserControl
     public bool IsHierarchical => AppliedMode is "hierarchy" or "groupedHierarchy";
 
     public ParentRelation? Relation => _relation;
+
+    // TableViewSource applies its verbs in declaration order: a sort declared before GroupBy orders the
+    // groups; one declared after it only sorts within each group.
+    public bool SortOrdersGroups => _sortDeclaredAt >= 0 && _sortDeclaredAt < _groupDeclaredAt;
 
     public string AppliedText => ShapingText(AppliedMode, SelectedKeyLabel, _relation?.Label);
 
@@ -178,6 +191,9 @@ public sealed partial class ShapingOptions : UserControl
 
         if (!ReferenceEquals(source, _source))
         {
+            _groupDeclaredAt = -1;
+            _sortDeclaredAt = -1;
+            _sortColumn = null;
             _parentDeclared = false;
         }
 
@@ -195,6 +211,19 @@ public sealed partial class ShapingOptions : UserControl
 
         AppliedKey = DefaultKey;
         return this;
+    }
+
+    // Switches the parent relation. Under a Hierarchy mode ParentBy is declared again, which replaces
+    // the relation and resets row expansion.
+    public void SetRelation(ParentRelation relation)
+    {
+        _relation = relation;
+        UpdateHierarchyItems();
+        if (_parentDeclared)
+        {
+            _parentDeclared = false;
+            Apply(announce: false);
+        }
     }
 
     // Pages that reattach a new source re-apply the current mode with this.
@@ -250,25 +279,26 @@ public sealed partial class ShapingOptions : UserControl
         AppliedMode = mode;
         AppliedKey = key;
         _parentDeclared = IsHierarchicalMode(mode);
-        ArrangeHierarchyColumn(_parentDeclared);
+        if (ArrangesHierarchyColumn)
+        {
+            ArrangeHierarchyColumn(_parentDeclared);
+        }
+        _groupDeclaredAt = IsGrouped ? ++_declarations : -1;
 
         UpdateGating();
         var message = "Shaping -> " + AppliedText;
         ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(mode, key, SelectedKeyLabel, announce, elapsedMilliseconds, AppliedText, message));
     }
 
-    // <snippet Groups Sort CellEditing CellTemplating Density Filter GridLinesVisibility HeadersVisibility TextWrap Virtualization>
-    // Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-    // ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-    // keeps its subtree.
+    // Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
+    // so under both each root keeps its subtree.
     private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
     {
         if (relation is not null && IsHierarchicalMode(mode))
         {
-            // A second ParentBy replaces the relation and resets expansion, so declare it once.
             if (!hadParentBy)
             {
-                source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+                NestRows(source, relation);
             }
         }
         else if (hadParentBy)
@@ -278,14 +308,26 @@ public sealed partial class ShapingOptions : UserControl
 
         if (mode is "grouped" or "groupedHierarchy")
         {
-            // The key selector receives the ROW; the identity selector receives the KEY.
-            source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+            GroupRows(source, groupKeyOf);
         }
         else
         {
             source.ClearGroupBy();
         }
     }
+
+    // <snippet Hierarchy>
+    // ParentBy takes each row's key and its parent's key. A second ParentBy replaces the relation and
+    // resets expansion, so declare it once.
+    private static void NestRows(TableViewSource source, ParentRelation relation) =>
+        source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+    // </snippet>
+
+    // <snippet Groups>
+    // The key selector receives the ROW and the identity selector the KEY. GroupBy takes a delegate,
+    // so call it again after a row's grouped-on value changes.
+    private static void GroupRows(TableViewSource source, Func<object?, object> groupKeyOf) =>
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
     // </snippet>
 
     private static bool IsHierarchicalMode(string mode) => mode is "hierarchy" or "groupedHierarchy";
@@ -414,8 +456,51 @@ public sealed partial class ShapingOptions : UserControl
         return false;
     }
 
+    // Re-declaring the sort makes it a new declaration after GroupBy, so it would only sort within
+    // groups; GroupBy is applied again after it so the groups keep their order.
+    public bool OnSortRedeclared()
+    {
+        var sortOrderedGroups = SortOrdersGroups;
+        _sortDeclaredAt = ++_declarations;
+        if (sortOrderedGroups && IsGrouped)
+        {
+            Apply(announce: false);
+            return true;
+        }
+
+        return false;
+    }
+
+    // <snippet Groups Hierarchy>
     // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
     // the tree rows, so Grouped hierarchy calls both.
+    private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
+    {
+        if (grouped)
+        {
+            table.ExpandAllGroups();
+        }
+
+        if (hierarchical)
+        {
+            table.ExpandAllRows();
+        }
+    }
+
+    private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
+    {
+        if (grouped)
+        {
+            table.CollapseAllGroups();
+        }
+
+        if (hierarchical)
+        {
+            table.CollapseAllRows();
+        }
+    }
+    // </snippet>
+
     public void ExpandAll()
     {
         var table = _table;
@@ -423,14 +508,9 @@ public sealed partial class ShapingOptions : UserControl
         var hierarchical = IsHierarchical;
         var elapsedMilliseconds = Time(() =>
         {
-            if (grouped)
+            if (table is not null)
             {
-                table?.ExpandAllGroups();
-            }
-
-            if (hierarchical)
-            {
-                table?.ExpandAllRows();
+                ExpandEvery(table, grouped, hierarchical);
             }
         });
         ActionPerformed?.Invoke(this, new ShapingActionEventArgs(ShapingAction.ExpandedAll, elapsedMilliseconds, "Expanded all " + ExpandTargets(grouped, hierarchical)));
@@ -443,14 +523,9 @@ public sealed partial class ShapingOptions : UserControl
         var hierarchical = IsHierarchical;
         var elapsedMilliseconds = Time(() =>
         {
-            if (grouped)
+            if (table is not null)
             {
-                table?.CollapseAllGroups();
-            }
-
-            if (hierarchical)
-            {
-                table?.CollapseAllRows();
+                CollapseEvery(table, grouped, hierarchical);
             }
         });
         ActionPerformed?.Invoke(this, new ShapingActionEventArgs(ShapingAction.CollapsedAll, elapsedMilliseconds, "Collapsed all " + ExpandTargets(grouped, hierarchical)));
@@ -488,6 +563,18 @@ public sealed partial class ShapingOptions : UserControl
 
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
+        if (args.Column is null || args.Direction == SortDirection.None)
+        {
+            _sortDeclaredAt = -1;
+            _sortColumn = null;
+        }
+        else if (_sortDeclaredAt < 0 || !ReferenceEquals(args.Column, _sortColumn))
+        {
+            // The control replaces the previous column's axis, so this is a new declaration.
+            _sortDeclaredAt = ++_declarations;
+            _sortColumn = args.Column;
+        }
+
         SortStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -515,11 +602,14 @@ public sealed partial class ShapingOptions : UserControl
         HierarchyItem.IsEnabled = reason is null;
         GroupedHierarchyItem.IsEnabled = reason is null && IsGroupingAvailable;
         var groupedReason = reason ?? (IsGroupingAvailable ? null : "Grouping is not available on this page.");
-        AutomationProperties.SetHelpText(HierarchyItem, reason ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableViewSource.ParentBy).", _relation!.Label));
-        AutomationProperties.SetHelpText(GroupedHierarchyItem, groupedReason ?? string.Format(CultureInfo.CurrentCulture, "Groups the root rows by the group key; each root keeps its {0} subtree.", _relation!.Label));
+        var unavailable = reason is null ? null : "Hierarchy and Grouped hierarchy need a parent relation. " + reason;
+        AutomationProperties.SetHelpText(HierarchyItem, unavailable ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableViewSource.ParentBy).", _relation!.Label));
+        AutomationProperties.SetHelpText(GroupedHierarchyItem, unavailable ?? groupedReason ?? string.Format(CultureInfo.CurrentCulture, "Groups the root rows by the group key; each root keeps its {0} subtree.", _relation!.Label));
+        ToolTipService.SetToolTip(HierarchyItem, unavailable);
+        ToolTipService.SetToolTip(GroupedHierarchyItem, unavailable ?? groupedReason);
         CaptionText.Text = reason is null
             ? string.Format(CultureInfo.CurrentCulture, "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. The Hierarchy modes nest the rows by {0} in the {1} column, shown first; nested rows start collapsed.", _relation!.Label, HierarchyColumnHeader)
-            : "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. Hierarchy: " + reason;
+            : unavailable + " Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat.";
     }
 
     private void RevertModeSelection()

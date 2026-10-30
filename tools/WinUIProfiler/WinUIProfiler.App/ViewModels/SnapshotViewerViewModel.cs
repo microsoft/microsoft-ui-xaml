@@ -22,10 +22,11 @@ public sealed class SnapshotTreeNode
     public string? DiagnosticsHandle { get; }
     public JsonElement Properties { get; }
     public IReadOnlyList<SnapshotTreeNode> Children { get; internal set; } = [];
-    public string Label => $"#{Id} {Type[(Type.LastIndexOf('.') + 1)..]}" +
-        (string.IsNullOrEmpty(Name) ? "" : $" ({Name})") + $" [{VisualAddress ?? ObjectAddress}]";
+    public string Label => Type[(Type.LastIndexOf('.') + 1)..] +
+        (string.IsNullOrEmpty(Name) ? "" : $" ({Name})") + $" ({VisualAddress ?? ObjectAddress})";
     public string Details => JsonSerializer.Serialize(new
     {
+        id = Id,
         type = Type,
         name = Name,
         objectAddress = ObjectAddress,
@@ -35,10 +36,44 @@ public sealed class SnapshotTreeNode
     }, DetailOptions);
     public override string ToString() => Label;
 
-    private JsonElement DetailProperties => VisualAddress is null ? Properties :
+    private JsonElement DetailProperties =>
         JsonSerializer.SerializeToElement(Properties.EnumerateObject()
-            .Where(property => !IsDefaultCompositionProperty(property))
+            .Where(property => !(VisualAddress is null ?
+                IsDefaultXamlProperty(property) : IsDefaultCompositionProperty(property)))
             .ToDictionary(property => property.Name, property => property.Value));
+
+    private static bool IsDefaultXamlProperty(JsonProperty property) => property.Name switch
+    {
+        "opacity" => MatchesNumber(property.Value, 1),
+        "visibility" => MatchesString(property.Value, "Visible"),
+        "horizontalAlignment" or "verticalAlignment" => MatchesString(property.Value, "Stretch"),
+        "name" or "text" => MatchesString(property.Value, ""),
+        "background" => property.Value.ValueKind == JsonValueKind.Null,
+        "margin" => IsZeroObject(property.Value, ["left", "top", "right", "bottom"]),
+        "renderTransformOrigin" => IsZeroObject(property.Value, ["x", "y"]),
+        "renderTransform" => IsDefaultXamlTransform(property.Value),
+        _ => false
+    };
+
+    private static bool IsDefaultXamlTransform(JsonElement value) =>
+        value.ValueKind == JsonValueKind.Null ||
+        (value.ValueKind == JsonValueKind.Object &&
+            value.EnumerateObject().Count() == 2 &&
+            value.TryGetProperty("type", out var type) &&
+            MatchesString(type, "Microsoft.UI.Xaml.Media.MatrixTransform") &&
+            value.TryGetProperty("matrix", out var matrix) &&
+            MatchesNumbers(matrix, [1, 0, 0, 1, 0, 0]));
+
+    private static bool IsZeroObject(JsonElement value, ReadOnlySpan<string> names)
+    {
+        if (value.ValueKind != JsonValueKind.Object || value.EnumerateObject().Count() != names.Length) return false;
+        foreach (var name in names)
+            if (!value.TryGetProperty(name, out var component) || !MatchesNumber(component, 0)) return false;
+        return true;
+    }
+
+    private static bool MatchesString(JsonElement value, string expected) =>
+        value.ValueKind == JsonValueKind.String && value.GetString() == expected;
 
     private static bool IsDefaultCompositionProperty(JsonProperty property) => property.Name switch
     {

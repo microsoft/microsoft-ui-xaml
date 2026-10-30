@@ -33,4 +33,9 @@ private:
     double m_totalItemsPerLine{};
     winrt::Size m_specialElementDesiredSize{};
     static const int BufferSize = 100;
+
+    // Sentinel for slots that have not been measured yet. It cannot be 0.0, which is a size a line made up entirely of
+    // collapsed elements legitimately reports: such a slot would then be counted as a newly measured line on every
+    // re-arrange, inflating m_totalLinesMeasured while adding nothing to m_totalLineSize.
+    static constexpr double c_unmeasuredLineSize = -1.0;
 };

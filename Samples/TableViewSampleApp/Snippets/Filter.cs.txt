@@ -1,101 +1,26 @@
 Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
 InitializeComponent();
-BuildColumns();
 ApplyFilter();
 
-// …
+public ObservableCollection<Person> People { get; } = PersonData.Take(60);
 
-// ---- Columns, built in code from the shared templates -------------------------------------
-
-private void BuildColumns()
-{
-    var resources = Application.Current.Resources;
-
-    FilterTable.Columns.Add(new TableViewTemplateColumn
-    {
-        Header = "Photo",
-        CellTemplate = (DataTemplate)resources["AvatarTemplate"],
-        CanUserSort = false,
-        Width = Token("ColWidthAvatar"),
-        HeaderToolTip = "PersonPicture: the photo when the person has one, otherwise their initials.",
-    });
-    FilterTable.Columns.Add(new TableViewTextColumn
-    {
-        Header = "Name",
-        Binding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) },
-        Width = new GridLength(1, GridUnitType.Star),
-        MinWidth = (double)resources["ColMinWidthStar"],
-    });
-    // A template column sorts by SortMemberPath, the value behind the template.
-    FilterTable.Columns.Add(new TableViewTemplateColumn
-    {
-        Header = "Department",
-        CellTemplate = (DataTemplate)resources["DepartmentChipTemplate"],
-        SortMemberPath = nameof(Person.Department),
-        Width = Token("ColWidthChip"),
-        HeaderToolTip = "Read-only chip. The query matches on it.",
-    });
-    FilterTable.Columns.Add(new TableViewTemplateColumn
-    {
-        Header = "Role",
-        CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
-        SortMemberPath = nameof(Person.Role),
-        Width = Token("ColWidthLongName"),
-        HeaderToolTip = "Editable free text. The query matches on it, so retyping a role can push the row out of the filtered view.",
-    });
-    FilterTable.Columns.Add(new TableViewTemplateColumn
-    {
-        Header = "Active",
-        CellTemplate = (DataTemplate)resources["ActiveCheckBoxTemplate"],
-        SortMemberPath = nameof(Person.IsActive),
-        Width = Token("ColWidthBoolean"),
-        HeaderToolTip = "Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view.",
-    });
-}
-
-// Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
-private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
-
-// ---- Filtering --------------------------------------------------------------------------
+public TableViewSource Source { get; }
 
 private string Query => SearchBox?.Text?.Trim() ?? string.Empty;
 
 private bool ActiveOnly => ActiveOnlyToggle?.IsOn == true;
 
-private bool HasFilter => Query.Length > 0 || ActiveOnly;
-
 private void OnSearchChanged(object sender, TextChangedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
-    // TextChanged is raised after the Text setter returns. When an action set the text, it
-    // has already applied the filter and reported it.
-    if (_programmaticQuery is not null && _programmaticQuery == SearchBox.Text)
-    {
-        _programmaticQuery = null;
-        return;
-    }
-
     ApplyFilter();
 }
 
 private void OnActiveToggled(object sender, RoutedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     ApplyFilter();
 }
 
-/// <summary>
-/// Hands the combined predicate to the one source, or clears it. The ItemsSource is never
-/// reassigned, so selection, scroll offset and group state survive.
-/// </summary>
+// ItemsSource is never reassigned, so selection, scroll offset and group state survive.
 private void ApplyFilter()
 {
     var query = Query;
@@ -126,57 +51,3 @@ private static bool Matches(Person person, string query, bool activeOnly)
 
 private static bool Contains(string? value, string query) =>
     value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);
-
-/// <summary>
-/// An in-cell edit changes the Person but does not re-run the predicate (or the group key
-/// selector), so apply both again once the edit has settled.
-/// </summary>
-private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
-{
-    if (sender is not Person person || IsBulkUpdating || _refreshQueued
-        || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
-    {
-        return;
-    }
-
-    var property = e.PropertyName;
-    _refreshQueued = true;
-    EnqueueIfLoaded(() =>
-    {
-        _refreshQueued = false;
-        ReapplyIfGroupedOn(property);
-        ApplyFilter();
-    });
-}
-
-// …
-
-// From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
-{
-    if (relation is not null && IsHierarchicalMode(mode))
-    {
-        // A second ParentBy replaces the relation and resets expansion, so declare it once.
-        if (!hadParentBy)
-        {
-            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
-        }
-    }
-    else if (hadParentBy)
-    {
-        source.ClearParentBy();
-    }
-
-    if (mode is "grouped" or "groupedHierarchy")
-    {
-        // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
-    }
-    else
-    {
-        source.ClearGroupBy();
-    }
-}
