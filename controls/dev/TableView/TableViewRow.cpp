@@ -1068,6 +1068,7 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
 {
     auto const currentOwner = GetOwningTableView();
     m_cellsRebuiltForDataContext = false;
+    m_inRecyclePool = !rebuildCells;
     // Compare through the typed accessor so unchanged weak refs hit the no-op path.
     if (currentOwner == owner)
     {
@@ -1145,6 +1146,7 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     }
 
     const bool skipRebuild = std::exchange(m_cellsRebuiltForDataContext, false) && skipIfCellsCurrent;
+    m_inRecyclePool = false;
 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
         .try_as<winrt::TableViewRowAutomationPeer>();
@@ -1219,6 +1221,11 @@ void TableViewRow::OnDataContextChanged(
         return;
     }
     auto const dataItem = DataContext();
+    // The repeater nulls a recycled row's DataContext after ElementClearing; the next prepare rebuilds.
+    if (!dataItem && m_inRecyclePool)
+    {
+        return;
+    }
     const bool rebuilt = RebuildCells();
     m_cellsRebuiltForDataContext = rebuilt && dataItem && DataContext() == dataItem;
 }
