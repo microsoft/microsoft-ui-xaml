@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "ScrollViewer.g.h"
+#include "ScrollContentPresenter.g.h"
 #include "ListViewBase.g.h"
 #include "ListViewBaseItem.g.h"
 #include "GroupItem.g.h"
@@ -27,6 +28,7 @@
 #include "VisualTreeHelper.h"
 #include "FocusPressState.h"
 #include "ElementSoundPlayerService_Partial.h"
+#include "BringIntoViewHandler.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -1216,6 +1218,26 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
 
     if (newFocusedIndex != -1)
     {
+        bool canSynchronizeKeyboardFocusScroll = false;
+        if (!animateIfBringIntoView &&
+            (key == wsy::VirtualKey_Left || key == wsy::VirtualKey_Right ||
+             key == wsy::VirtualKey_Up || key == wsy::VirtualKey_Down ||
+             key == wsy::VirtualKey_PageUp || key == wsy::VirtualKey_PageDown ||
+             key == wsy::VirtualKey_Home || key == wsy::VirtualKey_End) &&
+            !XboxUtility::IsGamepadNavigationDirection(originalKey) &&
+            !XboxUtility::IsGamepadPageNavigationDirection(originalKey) &&
+            m_tpScrollViewer && !m_tpScrollViewer.Cast<ScrollViewer>()->IsInManipulation())
+        {
+            ctl::ComPtr<IPanel> itemsHost;
+            IFC_RETURN(get_ItemsHost(&itemsHost));
+            if (ctl::is<IModernCollectionBasePanel>(itemsHost))
+            {
+                BOOLEAN bringIntoViewOnFocusChange = FALSE;
+                IFC_RETURN(m_tpScrollViewer->get_BringIntoViewOnFocusChange(&bringIntoViewOnFocusChange));
+                canSynchronizeKeyboardFocusScroll = !!bringIntoViewOnFocusChange;
+            }
+        }
+
         // If a new item received focus, update the selection accordingly
         if (newFocusedType == xaml_controls::ElementType_ItemContainer)
         {
@@ -1237,6 +1259,44 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
             // keyboard navigation only moves focus)
             if (newFocusedIndex >= 0)
             {
+                const INT previousIndexScrolledForKeyboardFocus = m_indexScrolledForKeyboardFocus;
+                auto restoreIndexScrolledForKeyboardFocus = wil::scope_exit([&]()
+                {
+                    m_indexScrolledForKeyboardFocus = previousIndexScrolledForKeyboardFocus;
+                });
+
+                if (canSynchronizeKeyboardFocusScroll)
+                {
+                    // Scroll once, directly to where keyboard focus brings the item. The selection and focus updates
+                    // below then find it already in view, instead of first aligning it to the viewport edge.
+                    ctl::ComPtr<xaml::IDependencyObject> container;
+                    IFC_RETURN(ContainerFromIndex(newFocusedIndex, &container));
+                    BOOLEAN hasFocus = FALSE;
+                    if (auto item = container.AsOrNull<ISelectorItem>())
+                    {
+                        IFC_RETURN(item.Cast<SelectorItem>()->HasFocus(&hasFocus));
+                    }
+
+                    if (!hasFocus)
+                    {
+                        if (!container || key == wsy::VirtualKey_PageUp || key == wsy::VirtualKey_PageDown)
+                        {
+                            // Realize distant targets and finish the page window restoration started by paging.
+                            IFC_RETURN(Selector::ScrollIntoView(
+                                newFocusedIndex, FALSE /*isGroupItemIndex*/, FALSE /*isHeader*/, FALSE /*isFooter*/,
+                                FALSE /*isFromPublicAPI*/, TRUE /*ensureContainerRealized*/, FALSE /*animateIfBringIntoView*/,
+                                xaml_controls::ScrollIntoViewAlignment_Default));
+                            IFC_RETURN(ContainerFromIndex(newFocusedIndex, &container));
+                        }
+
+                        if (auto element = container.AsOrNull<IUIElement>())
+                        {
+                            IFC_RETURN(ScrollIntoViewWithFocusPadding(element.Cast<UIElement>(), newFocusedIndex));
+                            m_indexScrolledForKeyboardFocus = newFocusedIndex;
+                        }
+                    }
+                }
+
                 IFC_RETURN(GetKeyboardModifiers(&modifiers));
 
                 if (mode == xaml_controls::ListViewSelectionMode_Extended &&
@@ -1294,6 +1354,12 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
             IFC_RETURN(HeaderFromIndex(newFocusedIndex, &groupHeader));
             if (groupHeader)
             {
+                BOOLEAN alreadyFocused = FALSE;
+                IFC_RETURN(groupHeader.Cast<FrameworkElement>()->HasFocus(&alreadyFocused));
+                if (canSynchronizeKeyboardFocusScroll && !alreadyFocused)
+                {
+                    IFC_RETURN(ScrollIntoViewWithFocusPadding(groupHeader.Cast<UIElement>(), -1 /*itemIndex*/));
+                }
                 IFC_RETURN(DependencyObject::SetFocusedElement(groupHeader.Cast<DependencyObject>(), xaml::FocusState_Keyboard, animateIfBringIntoView, &isHandled));
                 if (isHandled && !wasGroupInitiallyFocused)
                 {
@@ -1316,6 +1382,185 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
         IFC_RETURN(pArgs->put_Handled(TRUE));
     }
 
+    return S_OK;
+}
+
+// Scrolls the list's own viewport once, directly to where keyboard focus brings the element: its bounds plus the
+// focus padding, clear of its group's sticky header. Callers do this before focus moves, so neither the list's
+// own ScrollIntoView nor the focus change scrolls again. MakeVisibleImpl is used directly because the
+// BringIntoViewRequested route is asynchronous and would leave a frame at the old offset.
+_Check_return_ HRESULT ListViewBase::ScrollIntoViewWithFocusPadding(
+    _In_ UIElement* element,
+    _In_ INT itemIndex)
+{
+    if (!m_tpScrollViewer || m_tpScrollViewer.Cast<ScrollViewer>()->IsInManipulation())
+    {
+        return S_OK;
+    }
+
+    BOOLEAN bringIntoViewOnFocusChange = FALSE;
+    IFC_RETURN(m_tpScrollViewer->get_BringIntoViewOnFocusChange(&bringIntoViewOnFocusChange));
+    ctl::ComPtr<IScrollInfo> scrollInfo;
+    IFC_RETURN(m_tpScrollViewer.Cast<ScrollViewer>()->get_ScrollInfo(&scrollInfo));
+    auto presenter = scrollInfo.AsOrNull<IScrollContentPresenter>();
+    if (!bringIntoViewOnFocusChange || !presenter)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IPanel> itemsHost;
+    FLOAT headerHeight = 0;
+    if (itemIndex >= 0)
+    {
+        IFC_RETURN(get_ItemsHost(&itemsHost));
+        if (auto panel = itemsHost.AsOrNull<IModernCollectionBasePanel>())
+        {
+            bool headerAvailable = false;
+            IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->GetStickyHeaderHeightForItem(
+                itemIndex, &headerHeight, &headerAvailable));
+            if (!headerAvailable)
+            {
+                // A pinned item can outlive its header after paging or a distant navigation.
+                IFC_RETURN(Selector::ScrollIntoView(
+                    itemIndex, FALSE /*isGroupItemIndex*/, FALSE /*isHeader*/, FALSE /*isFooter*/,
+                    FALSE /*isFromPublicAPI*/, TRUE /*ensureContainerRealized*/, FALSE /*animateIfBringIntoView*/,
+                    xaml_controls::ScrollIntoViewAlignment_Default));
+                IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->GetStickyHeaderHeightForItem(
+                    itemIndex, &headerHeight, &headerAvailable));
+                if (!headerAvailable)
+                {
+                    return S_OK;
+                }
+            }
+        }
+    }
+
+    auto coreElement = static_cast<CUIElement*>(element->GetHandle());    auto visualTree = VisualTree::GetContentRootForElement(coreElement)->GetVisualTreeNoRef();
+    CUIElement* rootElement = visualTree->GetRootScrollViewer();
+    if (!rootElement)
+    {
+        rootElement = visualTree->GetPublicRootVisual();
+    }
+    XRECTF_RB globalBounds = {};
+    XRECTF focusBounds = {};
+    XRECTF localFocusBounds = {};
+    IFC_RETURN(CBringIntoViewHandler::GetFocusedElementBoundingRect(
+        rootElement, rootElement->GetActualHeight(), false /*isIHMShowing*/,
+        coreElement, CBringIntoViewHandler::GetInnerScroller(coreElement),
+        globalBounds, focusBounds));
+    UIElement* scrollTarget = element;
+    XRECTF elementBoundsInPanel = {};
+    if (headerHeight > 0)
+    {
+        // Header heights are in panel coordinates, not the item's transformed coordinates.
+        scrollTarget = itemsHost.Cast<ModernCollectionBasePanel>();
+        IFC_RETURN(CBringIntoViewHandler::TransformGlobalToLocal(
+            static_cast<CUIElement*>(scrollTarget->GetHandle()),
+            {globalBounds.left, globalBounds.top,
+             globalBounds.right - globalBounds.left, globalBounds.bottom - globalBounds.top},
+            &elementBoundsInPanel));
+    }
+    IFC_RETURN(CBringIntoViewHandler::TransformGlobalToLocal(
+        static_cast<CUIElement*>(scrollTarget->GetHandle()), focusBounds, &localFocusBounds));
+    if (headerHeight > 0)
+    {
+        // Merge header clearance with focus padding, rather than scrolling twice.
+        const FLOAT top = std::min(localFocusBounds.Y, elementBoundsInPanel.Y - headerHeight);
+        localFocusBounds.Height += localFocusBounds.Y - top;
+        localFocusBounds.Y = top;
+    }
+
+    bool scrollRequested = false;
+    wf::Rect visibleBounds = {};
+    // Only update the local viewport. The focus change that follows still brings the element into view in ancestors.
+    IFC_RETURN(presenter.Cast<ScrollContentPresenter>()->MakeVisibleImpl(
+        scrollTarget,
+        {localFocusBounds.X, localFocusBounds.Y, localFocusBounds.Width, localFocusBounds.Height},
+        FALSE /*useAnimation*/, DoubleUtil::NaN, DoubleUtil::NaN, 0.0, 0.0,
+        &visibleBounds, nullptr, nullptr, &scrollRequested));
+    if (scrollRequested)
+    {
+        // Commit the new viewport so the focus change measures the element where it now is.
+        IFC_RETURN(UpdateLayout());
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::IsElementFullyVisibleInViewport(
+    _In_ UIElement* element,
+    _In_ INT itemIndex,
+    _Out_ bool* isFullyVisible)
+{
+    *isFullyVisible = false;
+    if (!m_tpScrollViewer)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IScrollInfo> scrollInfo;
+    IFC_RETURN(m_tpScrollViewer.Cast<ScrollViewer>()->get_ScrollInfo(&scrollInfo));
+    auto presenter = scrollInfo.AsOrNull<IScrollContentPresenter>();
+    if (!presenter)
+    {
+        return S_OK;
+    }
+
+    FLOAT headerHeight = 0;
+    if (itemIndex >= 0)
+    {
+        ctl::ComPtr<IPanel> itemsHost;
+        IFC_RETURN(get_ItemsHost(&itemsHost));
+        if (auto panel = itemsHost.AsOrNull<IModernCollectionBasePanel>())
+        {
+            bool headerAvailable = false;
+            IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->GetStickyHeaderHeightForItem(
+                itemIndex, &headerHeight, &headerAvailable));
+            if (!headerAvailable)
+            {
+                return S_OK;
+            }
+        }
+    }
+
+    wf::Size size = {};
+    IFC_RETURN(element->get_RenderSize(&size));
+    ctl::ComPtr<xaml_media::IGeneralTransform> transform;
+    IFC_RETURN(element->TransformToVisual(presenter.Cast<ScrollContentPresenter>(), &transform));
+    wf::Rect bounds = {};
+    IFC_RETURN(transform->TransformBounds({0, 0, size.Width, size.Height}, &bounds));
+
+    DOUBLE viewportWidth = 0;
+    DOUBLE viewportHeight = 0;
+    IFC_RETURN(presenter.Cast<ScrollContentPresenter>()->get_ActualWidth(&viewportWidth));
+    IFC_RETURN(presenter.Cast<ScrollContentPresenter>()->get_ActualHeight(&viewportHeight));
+
+    // Items under their group's sticky header are covered, so the header height is excluded from the viewport.
+    const FLOAT tolerance = 0.5f;
+    *isFullyVisible =
+        bounds.X >= -tolerance &&
+        bounds.Y >= headerHeight - tolerance &&
+        bounds.X + bounds.Width <= viewportWidth + tolerance &&
+        bounds.Y + bounds.Height <= viewportHeight + tolerance;
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::IsAlreadyScrolledForKeyboardFocus(
+    _In_ INT index,
+    _Out_ bool* isAlreadyScrolled)
+{
+    *isAlreadyScrolled = false;
+    if (index < 0 || index != m_indexScrolledForKeyboardFocus)
+    {
+        return S_OK;
+    }
+
+    // A SelectionChanged handler may have scrolled elsewhere or recycled the container since keyboard navigation scrolled it.
+    ctl::ComPtr<IDependencyObject> container;
+    IFC_RETURN(ContainerFromIndex(index, &container));
+    if (auto element = container.AsOrNull<IUIElement>())
+    {
+        IFC_RETURN(IsElementFullyVisibleInViewport(element.Cast<UIElement>(), index, isAlreadyScrolled));
+    }
     return S_OK;
 }
 
@@ -3068,6 +3313,8 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
     InputActivationBehavior inputActivationBehavior)
 {
     HRESULT hr = S_OK;
+    bool isAlreadyScrolledForKeyboardFocus = false;
+    BOOLEAN effectiveShouldScrollIntoView = FALSE;
 
     // Store the index of the last focused item so we can jump back to this item
     // if ListViewBase loses and regains focus
@@ -3076,7 +3323,9 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
         SetLastFocusedIndex(static_cast<UINT>(index));
     }
 
-    const BOOLEAN effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged;
+    // Skip the synchronous ScrollIntoView and its layout pass when keyboard navigation already scrolled the item into view.
+    IFC(IsAlreadyScrolledForKeyboardFocus(index, &isAlreadyScrolledForKeyboardFocus));
+    effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged && !isAlreadyScrolledForKeyboardFocus;
 
     // Focus the item by calling Selector.SetFocusedItem
     IFC(ListViewBaseGenerated::SetFocusedItem(index, effectiveShouldScrollIntoView, animateIfBringIntoView, focusNavigationDirection, inputActivationBehavior));
@@ -3103,6 +3352,8 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
 #endif
 
     HRESULT hr = S_OK;
+    bool isAlreadyScrolledForKeyboardFocus = false;
+    BOOLEAN effectiveShouldScrollIntoView = FALSE;
     ctl::ComPtr<IPanel> spItemsHostPanel;
     ctl::ComPtr<IModernCollectionBasePanel> spItemsHostPanelModernCollection;
 
@@ -3113,7 +3364,8 @@ _Check_return_ HRESULT ListViewBase::SetFocusedItem(
         SetLastFocusedIndex(static_cast<UINT>(index));
     }
 
-    BOOLEAN effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged;
+    IFC(IsAlreadyScrolledForKeyboardFocus(index, &isAlreadyScrolledForKeyboardFocus));
+    effectiveShouldScrollIntoView = shouldScrollIntoView && !m_isInOnSelectionModeChanged && !isAlreadyScrolledForKeyboardFocus;
 
     // If i need to scroll intoview, check if the host panel
     // is in a state where we can force scroll into view.
