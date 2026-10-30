@@ -100,6 +100,15 @@ private:
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
+    void HookAnimatedIconEvents(winrt::IInspectable const& oldIcon);
+    void OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnAnimatedIconLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void UpdateAnimatedIconState();
+    void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool syncWithHost = false);
+    bool IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon);
+    static bool IsTemplateDrivenAnimatedIconState(winrt::hstring const& stateString);
+    static winrt::hstring GetPropagatedAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
+    winrt::hstring MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, winrt::hstring const& current, bool isSelected);
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 
@@ -136,6 +145,9 @@ private:
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
+    PropertyChanged_revoker m_animatedIconStateChangedRevoker{};
+    PropertyChanged_revoker m_animatedIconSourceChangedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_animatedIconLoadedRevoker{};
 
     winrt::UIElement::PointerPressed_revoker m_presenterPointerPressedRevoker{};
     winrt::UIElement::PointerEntered_revoker m_presenterPointerEnteredRevoker{};
@@ -179,4 +191,8 @@ private:
     // NavigationView needs to force collapse top level items when the pane closes.
     // This bool is used to remember which items need to be restored to expanded state when the pane is opened again.
     bool m_restoreToExpandedState{ false };
+
+    // The AnimatedIcon state this item last wrote, so it only restores state it set itself when the Icon changes.
+    winrt::weak_ref<winrt::AnimatedIcon> m_lastWrittenAnimatedIcon{ nullptr };
+    winrt::hstring m_lastWrittenAnimatedIconState{};
 };
