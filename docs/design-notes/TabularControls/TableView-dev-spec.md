@@ -1,5 +1,3 @@
-
-**Double-click to fit.** A mouse double-click on a gripper (counted by the table from `PointerPressed`, handled events too) sets the column's `Width` in pixels to the widest of its header and realized cells measured unconstrained, clamped to `MinWidth`/`MaxWidth`, through the same `BeginDrag`/`TryDrag`/`EndDrag` path, so the gates, bounds and announcement match a drag.
 <!-- The purpose of this document is to describe the design and implementation of a new WinUI control.
      This document contains architectural and implementation details that do not appear in the functional spec. -->
 
@@ -160,6 +158,8 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 **Naming.** `DragOrientation` is the axis the drag is measured along, the opposite of the Windows Community Toolkit's `SizerBase.Orientation`, hence the distinct name. `OwnerName` qualifies the peer's name ("Price, Resize gripper") and is declared rather than read from `Tag`, which a host may already use.
 
 **Keyboard.** The column header is the keyboard target; the gripper is not a tab stop. `Alt+Left`/`Alt+Right` on a header call `TryKeyboardStep`, which owns direction, the RTL mirror, `KeyboardIncrement` (8) and the `Shift` multiplier (4×). `Alt` is the only resize modifier, as in WPF.
+
+**Double-click to fit.** A mouse double-click on a gripper (counted by the table from `PointerPressed`, handled events too) sets the column's `Width` in pixels to the widest of its header and realized cells measured unconstrained, clamped to `MinWidth`/`MaxWidth`, through the same `BeginDrag`/`TryDrag`/`EndDrag` path, so the gates, bounds and announcement match a drag.
 
 **Bounds.** `ResizeBoundsForColumn` applies three rules derived by measuring WPF `DataGrid`:
 
