@@ -2672,25 +2672,25 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
 
     if (!focusedCell)
     {
-        // Reset to row level only while focus is still on the row: after it left, the reset would
-        // leave the cell the menu restores focus to unfocusable.
         auto const root = XamlRoot();
         winrt::DependencyObject const rowObject = row;
-        if (!root || winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() != rowObject)
-        {
-            return;
-        }
+        const bool focusStillOnRow = root && winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() == rowObject;
 
-        // Focus is on the ROW container itself - the body's entry level. Record the row so a later
-        // re-entry comes back here, and make sure the two-level cursor agrees that no cell is
-        // current, including releasing whichever row was previously drilled in.
-        if (rowIndex >= 0)
+        // Focus went to the ROW container itself - the body's entry level. Record the row so a later
+        // re-entry, or a menu opened on the row, works on it.
+        if ((focusedElement == rowObject || focusStillOnRow) && rowIndex >= 0)
         {
             m_currentCellRow = rowIndex;
             winrt::IInspectable item{ nullptr };
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
-        SetCellCursorActiveInternal(false);
+
+        // Leave cell level (releasing whichever row was drilled in) only while focus is still on the
+        // row: after it left, the reset would leave the cell a menu restores focus to unfocusable.
+        if (focusStillOnRow)
+        {
+            SetCellCursorActiveInternal(false);
+        }
         return;
     }
 
