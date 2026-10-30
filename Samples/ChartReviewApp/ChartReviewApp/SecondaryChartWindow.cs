@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Charts;
@@ -18,6 +19,8 @@ namespace ChartsSample
 {
     internal sealed class SecondaryChartWindow
     {
+        internal const string OpenedAnnouncement =
+            "Secondary window updates on its own UI thread. To close it, close this window or select Toggle secondary UI thread in the main window again.";
         private readonly object _gate = new();
         private readonly Thread _thread;
         private readonly TaskCompletionSource<string> _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -98,6 +101,7 @@ namespace ChartsSample
                 // Pausing lets users read the chart (WCAG 2.2.2); the toggle also takes focus when the window opens.
                 var liveToggle = new ToggleButton { Content = "Live updates", IsChecked = true };
                 AutomationProperties.SetAutomationId(liveToggle, "SecondaryLiveUpdates");
+                AutomationProperties.SetHelpText(liveToggle, OpenedAnnouncement);
                 content.Children.Add(liveToggle);
                 content.Children.Add(chart);
                 content.Children.Add(data);
@@ -128,7 +132,18 @@ namespace ChartsSample
                     if (liveToggle.IsChecked == true) timer.Start(); else timer.Stop();
                 }
                 liveToggle.Click += OnLiveToggleClick;
-                liveToggle.Loaded += (_, _) => liveToggle.Focus(FocusState.Keyboard);
+                // Announce from this window once it has focus: Narrator drops a notification raised by the
+                // main window after focus has moved here. ImportantAll queues it after the focus announcement.
+                liveToggle.Loaded += (_, _) =>
+                {
+                    liveToggle.Focus(FocusState.Keyboard);
+                    dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                        FrameworkElementAutomationPeer.CreatePeerForElement(liveToggle)?.RaiseNotificationEvent(
+                            AutomationNotificationKind.Other,
+                            AutomationNotificationProcessing.ImportantAll,
+                            OpenedAnnouncement,
+                            "ChartsSecondaryWindowStatus"));
+                };
                 try
                 {
                     _stage = "activating the secondary window";

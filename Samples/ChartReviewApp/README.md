@@ -47,8 +47,11 @@ Test hooks, for automation rather than reviewers:
 | `--dump-descriptions=<path>` | Opens every scenario, writes each chart's name, role and full description, then exits |
 | `--window-size=<width>x<height>` | Window size in physical pixels, beyond the screen if needed, to check layouts for larger displays |
 | `--check-clipping=<path>` | Opens every page and lists single-line text that needs more width than it has, then exits |
+| `--dump-series-colors=<path>` | Rewrites `<path>` twice a second with the app-set series colors of the Line, Area and Bar charts and the current surface, to check contrast without a screen capture |
 
-If the app closes unexpectedly, the exception is written to `%TEMP%\ChartsReviewApp-crash.txt`.
+If the app closes unexpectedly, the exception is written to `%TEMP%\ChartsReviewApp-crash.txt`. If the Chart
+DLL or its `.pri` is missing next to the app, the app says which file is missing in that file and in a
+message box, then exits.
 
 ## Build information
 

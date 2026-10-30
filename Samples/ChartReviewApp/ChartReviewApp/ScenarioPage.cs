@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Charts;
+using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace ChartsSample
@@ -74,10 +75,16 @@ namespace ChartsSample
             AutomationProperties.SetAutomationId(_scenarioList, "ScenarioPicker");
             _scenarioList.DoubleTapped += (_, _) => OpenSelectedScenario();
             _scenarioList.SelectionChanged += (_, _) => UpdateOpenScenarioEnabled();
-            _scenarioList.KeyDown += (_, e) =>
+            // ListView marks Enter handled before a KeyDown subscription sees it, so listen with
+            // handledEventsToo, and open the item that has focus.
+            _scenarioList.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler((_, e) =>
             {
-                if (e.Key == Windows.System.VirtualKey.Enter) { OpenSelectedScenario(); e.Handled = true; }
-            };
+                if (e.Key != Windows.System.VirtualKey.Enter) return;
+                if (e.OriginalSource is ListViewItem container && _scenarioList.ItemFromContainer(container) is { } item)
+                    _scenarioList.SelectedItem = item;
+                OpenSelectedScenario();
+                e.Handled = true;
+            }), handledEventsToo: true);
             picker.Children.Add(_scenarioList);
             _scenarioOpenText = new TextBlock { Style = (Style)RootGrid.Resources["DescriptionStyle"] };
             picker.Children.Add(_scenarioOpenText);
@@ -103,7 +110,10 @@ namespace ChartsSample
             AutomationProperties.SetAutomationId(_scenarioIdText, "ScenarioId");
             workspace.Children.Add(_scenarioIdText);
 
-            _scenarioLivePanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Visibility = Visibility.Collapsed };
+            // Buttons on one row that stacks when it doesn't fit (large text, narrow window), and the status
+            // on its own wrapping line; horizontal scrolling is off, so nothing here may need more width.
+            _scenarioLivePanel = new StackPanel { Spacing = 8, Visibility = Visibility.Collapsed };
+            var liveButtons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             // A toggle with a fixed label: pressed means live updates are running.
             _scenarioPauseButton = new ToggleButton { Content = "Live updates" };
             AutomationProperties.SetAutomationId(_scenarioPauseButton, "ScenarioPauseResume");
@@ -115,13 +125,27 @@ namespace ChartsSample
             var reset = new Button { Content = "Reset" };
             AutomationProperties.SetAutomationId(reset, "ScenarioReset");
             reset.Click += (_, _) => { SetScenarioRunning(false, announce: false); _scenarioUpdates = 0; _scenarioReset?.Invoke(); AnnounceScenarioStatus(); };
-            _scenarioLiveStatus = new TextBlock { VerticalAlignment = VerticalAlignment.Center, Style = (Style)RootGrid.Resources["DescriptionStyle"] };
+            _scenarioLiveStatus = new TextBlock { TextWrapping = TextWrapping.Wrap, Style = (Style)RootGrid.Resources["DescriptionStyle"] };
             AutomationProperties.SetAutomationId(_scenarioLiveStatus, "ScenarioLiveStatus");
             AutomationProperties.SetLiveSetting(_scenarioLiveStatus, AutomationLiveSetting.Polite);
-            _scenarioLivePanel.Children.Add(_scenarioPauseButton);
-            _scenarioLivePanel.Children.Add(step);
-            _scenarioLivePanel.Children.Add(reset);
+            liveButtons.Children.Add(_scenarioPauseButton);
+            liveButtons.Children.Add(step);
+            liveButtons.Children.Add(reset);
+            _scenarioLivePanel.Children.Add(liveButtons);
             _scenarioLivePanel.Children.Add(_scenarioLiveStatus);
+            void ReflowLiveButtons()
+            {
+                double needed = liveButtons.Spacing * (liveButtons.Children.Count - 1);
+                foreach (var child in liveButtons.Children)
+                {
+                    child.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+                    needed += child.DesiredSize.Width;
+                }
+                var orientation = needed > _scenarioLivePanel.ActualWidth ? Orientation.Vertical : Orientation.Horizontal;
+                if (liveButtons.Orientation != orientation) liveButtons.Orientation = orientation;
+            }
+            _scenarioLivePanel.SizeChanged += (_, _) => ReflowLiveButtons();
+            foreach (var child in liveButtons.Children) ((FrameworkElement)child).SizeChanged += (_, _) => ReflowLiveButtons();
             workspace.Children.Add(_scenarioLivePanel);
 
             _scenarioHost = new StackPanel { Spacing = 12 };

@@ -25,17 +25,34 @@ namespace ChartsSample
         private static readonly Color OriginalAreaStroke = Color.FromArgb(0xFF, 0x30, 0x47, 0xB8);
         private static readonly Color OriginalBarFill = Color.FromArgb(0xFF, 0x0F, 0x6C, 0xBD);
         private static readonly Color OriginalBarStroke = Color.FromArgb(0xFF, 0x07, 0x3B, 0x66);
+        // Light-surface sample colors; each is at least 3:1 against the Light chart background (WCAG 1.4.11).
         private static readonly Color[] ExampleColors =
         {
             Color.FromArgb(0xFF, 0x0F, 0x6C, 0xBD),
             Color.FromArgb(0xFF, 0x00, 0x82, 0x72),
-            Color.FromArgb(0xFF, 0xFF, 0xB9, 0x00),
+            Color.FromArgb(0xFF, 0x9A, 0x6C, 0x00),
             Color.FromArgb(0xFF, 0x87, 0x64, 0xB8),
             Color.FromArgb(0xFF, 0xE3, 0x00, 0x8C),
             Color.FromArgb(0xFF, 0x69, 0x79, 0x7E),
             Color.FromArgb(0xFF, 0x10, 0x7C, 0x10),
             Color.FromArgb(0xFF, 0xD8, 0x3B, 0x01)
         };
+        // The same colors for a dark surface (Dark theme or a dark contrast theme), at least 3:1 against
+        // the Dark chart background, in the same order.
+        private static readonly Color[] DarkExampleColors =
+        {
+            Color.FromArgb(0xFF, 0x47, 0x9E, 0xF5),
+            Color.FromArgb(0xFF, 0x36, 0xC2, 0xB0),
+            Color.FromArgb(0xFF, 0xFF, 0xB9, 0x00),
+            Color.FromArgb(0xFF, 0xB5, 0x96, 0xE3),
+            Color.FromArgb(0xFF, 0xF5, 0x7A, 0xC2),
+            Color.FromArgb(0xFF, 0xA0, 0xAE, 0xB2),
+            Color.FromArgb(0xFF, 0x5C, 0xC4, 0x5C),
+            Color.FromArgb(0xFF, 0xF9, 0x8B, 0x5B)
+        };
+        // Light/dark pairs for every app-set series color, matched on RGB (alpha is kept).
+        private static readonly (Color Light, Color Dark)[] SurfaceColorPairs = BuildSurfaceColorPairs();
+        private bool _darkSurface;
         private static readonly double[] ProfitSeed = { 18, 27, 22, 41, 36, 52 };
         private static readonly double[] ExpensesSeed = { 31, 25, 29, 24, 32, 28 };
         private static readonly double[] AreaSeed = { 8, 18, 14, 29, 24, 37 };
@@ -112,6 +129,9 @@ namespace ChartsSample
             UpdatesButton.IsChecked = true;
             UpdateApplyTitleEnabled();
             MarkupChart.ActualThemeChanged += OnMarkupChartThemeChanged;
+            RootGrid.ActualThemeChanged += (_, _) => ApplySurfaceColors();
+            ApplySurfaceColors();
+            StartSeriesColorDumpIfRequested();
             _appWindow.Closing += OnAppWindowClosing;
             Closed += OnClosed;
         }
@@ -156,7 +176,7 @@ namespace ChartsSample
             }
 
             DtChartHostA.Child = CreateDateTimeChart(days, dailyValues, dailyTargets, _dtAxisA, "Daily value", "DailyDateChart");
-            DtDataTextA.Text = DateDataText(days, dailyValues, dailyTargets);
+            DtDataTextA.SetLines(DateDataLines(days, dailyValues, dailyTargets));
 
             var months = new ObservableCollection<DateTimeOffset>();
             var monthlyValues = new ObservableCollection<double>
@@ -173,7 +193,7 @@ namespace ChartsSample
             }
 
             DtChartHostB.Child = CreateDateTimeChart(months, monthlyValues, monthlyTargets, _dtAxisB, "Monthly value", "MonthlyDateChart");
-            DtDataTextB.Text = DateDataText(months, monthlyValues, monthlyTargets);
+            DtDataTextB.SetLines(DateDataLines(months, monthlyValues, monthlyTargets));
         }
 
         private static Chart CreateDateTimeChart(ObservableCollection<DateTimeOffset> dates,
@@ -197,15 +217,15 @@ namespace ChartsSample
             return chart;
         }
 
-        private static string DateDataText(ObservableCollection<DateTimeOffset> dates,
+        private static List<string> DateDataLines(ObservableCollection<DateTimeOffset> dates,
             ObservableCollection<double> values, ObservableCollection<double> targets)
         {
-            var text = new StringBuilder();
+            var lines = new List<string>(dates.Count);
             for (int i = 0; i < dates.Count; i++)
             {
-                text.AppendLine($"{dates[i]:yyyy-MM-dd}: actual {values[i]:0.##}, target {targets[i]:0.##}");
+                lines.Add($"{dates[i]:yyyy-MM-dd}: actual {values[i]:0.##}, target {targets[i]:0.##}");
             }
-            return text.ToString();
+            return lines;
         }
 
         private void OnUpdateTick(object sender, object e)
@@ -225,29 +245,28 @@ namespace ChartsSample
 
         private void UpdateDataText()
         {
-            var text = new StringBuilder();
+            var lines = new List<string>();
             foreach (var series in MarkupChart.Series)
             {
-                text.AppendLine(SeriesDataText(series));
+                lines.AddRange(SeriesDataLines(series));
             }
-            text.AppendLine("Code-created line:");
+            lines.Add("Code-created line:");
             for (int i = 0; i < _codeValues.Count; i++)
             {
-                text.AppendLine($"{_codeCategories[i]}: {_codeValues[i]:0}");
+                lines.Add($"{_codeCategories[i]}: {_codeValues[i]:0}");
             }
-            DataText.Text = text.ToString();
-            AreaDataText.Text = SeriesDataText(SelectedAreaSeries());
-            BarDataText.Text = SeriesDataText(SelectedBarSeries());
+            DataText.SetLines(lines);
+            AreaDataText.SetLines(SeriesDataLines(SelectedAreaSeries()));
+            BarDataText.SetLines(SeriesDataLines(SelectedBarSeries()));
         }
 
-        private string SeriesDataText(CartesianSeries series)
+        private List<string> SeriesDataLines(CartesianSeries series)
         {
             var values = _seriesValues[series];
-            var text = new StringBuilder();
-            text.AppendLine(series.Title + (series.IsVisible ? ":" : " (hidden):"));
+            var lines = new List<string>(values.Count + 1) { series.Title + (series.IsVisible ? ":" : " (hidden):") };
             for (int i = 0; i < values.Count; i++)
-                text.AppendLine($"{_months[i]}: {values[i]:0.##}");
-            return text.ToString().TrimEnd();
+                lines.Add($"{_months[i]}: {values[i]:0.##}");
+            return lines;
         }
 
         private void OnThemeChoiceChanged(object sender, SelectionChangedEventArgs e)
@@ -526,7 +545,7 @@ namespace ChartsSample
                 var series = new LineSeries
                 {
                     IsVisible = true, StrokeThickness = 3, StrokeDashStyle = StrokeDashStyle.Solid,
-                    Stroke = new SolidColorBrush(ExampleColors[(number - 1) % 6]),
+                    Stroke = new SolidColorBrush(ForSurface(ExampleColors[(number - 1) % 6])),
                     MarkerShape = MarkerShape.Circle, ShowDataMarkers = true, ShowDataLabels = false
                 };
                 AddExampleSeries(MarkupChart, PresentationSeriesComboBox, series, Month, ProfitSeed, number);
@@ -539,7 +558,7 @@ namespace ChartsSample
             int number = _nextAreaSeries;
             EditArea(() =>
             {
-                Color color = ExampleColors[(number - 1) % 6];
+                Color color = ForSurface(ExampleColors[(number - 1) % 6]);
                 Color fill = color;
                 fill.A = 0x60;
                 var series = new AreaSeries
@@ -558,7 +577,7 @@ namespace ChartsSample
             int number = _nextBarSeries;
             EditBar(() =>
             {
-                Color color = ExampleColors[(number - 1) % 6];
+                Color color = ForSurface(ExampleColors[(number - 1) % 6]);
                 var series = new BarSeries
                 {
                     IsVisible = true, StrokeThickness = 1.5, Stroke = new SolidColorBrush(color),
@@ -579,20 +598,92 @@ namespace ChartsSample
         private void OnBarRemoveSeriesClick(object sender, RoutedEventArgs e) =>
             RemoveSelectedSeries(BarMarkupChart, BarSeriesChoice, SyncBarOptions, BarStatusText);
 
-        private static Color SelectedExampleColor(ComboBox choice, Color original)
+        private Color SelectedExampleColor(ComboBox choice, Color original)
         {
             int index = choice.SelectedIndex;
-            if (index == 0) return original;
-            if (index > 0 && index <= ExampleColors.Length) return ExampleColors[index - 1];
+            if (index == 0) return ForSurface(original);
+            if (index > 0 && index <= ExampleColors.Length) return ForSurface(ExampleColors[index - 1]);
             throw new ArgumentException("Choose an available series color.");
         }
 
         private static int ExampleColorIndex(Brush brush, Color original)
         {
             if (brush is not SolidColorBrush solid) return -1;
-            if (solid.Color == original) return 0;
-            int index = Array.IndexOf(ExampleColors, solid.Color);
+            Color color = ToLightSurface(solid.Color);
+            if (color == original) return 0;
+            int index = Array.IndexOf(ExampleColors, color);
             return index < 0 ? -1 : index + 1;
+        }
+
+        private static (Color Light, Color Dark)[] BuildSurfaceColorPairs()
+        {
+            var pairs = new List<(Color, Color)>
+            {
+                (OriginalAreaStroke, Color.FromArgb(0xFF, 0x9A, 0xAE, 0xFF)),
+                (OriginalAreaFill, Color.FromArgb(0xFF, 0x8C, 0xA0, 0xF8)),
+                (OriginalBarStroke, Color.FromArgb(0xFF, 0xA9, 0xD3, 0xFF)),
+            };
+            for (int i = 0; i < ExampleColors.Length; i++) pairs.Add((ExampleColors[i], DarkExampleColors[i]));
+            return pairs.ToArray();
+        }
+
+        private static bool SameRgb(Color a, Color b) => a.R == b.R && a.G == b.G && a.B == b.B;
+
+        private static Color WithAlpha(Color color, byte alpha) => Color.FromArgb(alpha, color.R, color.G, color.B);
+
+        // The color an app-set series color takes on the current surface; colors the app didn't set pass through.
+        private Color ForSurface(Color color)
+        {
+            Color light = ToLightSurface(color);
+            if (!_darkSurface) return light;
+            foreach (var pair in SurfaceColorPairs)
+            {
+                if (SameRgb(pair.Light, light)) return WithAlpha(pair.Dark, color.A);
+            }
+            return color;
+        }
+
+        private static Color ToLightSurface(Color color)
+        {
+            foreach (var pair in SurfaceColorPairs)
+            {
+                if (SameRgb(pair.Dark, color)) return WithAlpha(pair.Light, color.A);
+            }
+            return color;
+        }
+
+        // Dark theme, or a contrast theme with a dark window color: the series colors switch to their dark
+        // variants, so every app-set series stays at least 3:1 against the chart background.
+        private bool IsDarkSurface()
+        {
+            try
+            {
+                if (_accessibility.HighContrast)
+                {
+                    var window = _uiSettings.UIElementColor(Windows.UI.ViewManagement.UIElementType.Window);
+                    return 0.2126 * window.R + 0.7152 * window.G + 0.0722 * window.B < 128;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return RootGrid.ActualTheme == ElementTheme.Dark;
+        }
+
+        private void ApplySurfaceColors()
+        {
+            bool dark = IsDarkSurface();
+            if (dark == _darkSurface) return;
+            _darkSurface = dark;
+            foreach (var chart in new[] { MarkupChart, AreaMarkupChart, BarMarkupChart })
+            {
+                foreach (var series in chart.Series)
+                {
+                    if (series.Stroke is SolidColorBrush stroke) series.Stroke = new SolidColorBrush(ForSurface(stroke.Color));
+                    if (series is AreaSeries area && area.Fill is SolidColorBrush areaFill) area.Fill = new SolidColorBrush(ForSurface(areaFill.Color));
+                    if (series is BarSeries bar && bar.Fill is SolidColorBrush barFill) bar.Fill = new SolidColorBrush(ForSurface(barFill.Color));
+                }
+            }
         }
 
         private static MarkerShape SelectedMarkerShape(ComboBox choice)
@@ -708,8 +799,8 @@ namespace ChartsSample
                 MarkupAreaSeries.Title = "Monthly area";
                 MarkupAreaSeries.XValues = AreaMonth;
                 MarkupAreaSeries.YValues = AreaValues;
-                MarkupAreaSeries.Fill = new SolidColorBrush(OriginalAreaFill);
-                MarkupAreaSeries.Stroke = new SolidColorBrush(OriginalAreaStroke);
+                MarkupAreaSeries.Fill = new SolidColorBrush(ForSurface(OriginalAreaFill));
+                MarkupAreaSeries.Stroke = new SolidColorBrush(ForSurface(OriginalAreaStroke));
                 MarkupAreaSeries.StrokeThickness = 2;
                 AreaMarkupChart.Data.Add(AreaMonth);
                 AreaMarkupChart.Data.Add(AreaValues);
@@ -765,8 +856,8 @@ namespace ChartsSample
                 MarkupBarSeries.Title = "Monthly bars";
                 MarkupBarSeries.XValues = BarMonth;
                 MarkupBarSeries.YValues = BarValues;
-                MarkupBarSeries.Fill = new SolidColorBrush(OriginalBarFill);
-                MarkupBarSeries.Stroke = new SolidColorBrush(OriginalBarStroke);
+                MarkupBarSeries.Fill = new SolidColorBrush(ForSurface(OriginalBarFill));
+                MarkupBarSeries.Stroke = new SolidColorBrush(ForSurface(OriginalBarStroke));
                 MarkupBarSeries.StrokeThickness = 1.5;
                 MarkupBarSeries.Orientation = BarOrientation.Horizontal;
                 ConnectBarAxes(MarkupBarSeries);
@@ -1124,16 +1215,54 @@ namespace ChartsSample
         {
             if (!_ready || _syncing || _closing || !MarkupChart.Series.Contains(ProfitSeries)) return;
             ApplyEdit(edit, sync, AxisStatusText, "Chart axes updated.",
-                "Invalid axis value. Use a minimum below the maximum and a positive spacing, or leave a field empty for Auto.",
+                $"Invalid axis value. Use a minimum below the maximum and a positive spacing that gives at most {MaxYAxisTicks} ticks, or leave a field empty for Auto.",
                 MarkupChart);
         }
         private static double? OptionalNumber(NumberBox box) => double.IsNaN(box.Value) ? null : box.Value;
+
+        // The Chart draws one tick per Spacing step with no upper limit, so a tiny spacing (0.0001 on a 0-60
+        // axis is 600,000 ticks) freezes the UI thread. The sample keeps the Y axis to a readable tick count.
+        private const int MaxYAxisTicks = 200;
+
+        private void CheckYAxisTicks(double? minimum, double? maximum, double? spacing)
+        {
+            if (spacing is not double step) return;
+            double dataMin = 0, dataMax = 0;
+            foreach (var series in MarkupChart.Series)
+            {
+                if (!_seriesValues.TryGetValue(series, out var values)) continue;
+                foreach (double value in values)
+                {
+                    dataMin = Math.Min(dataMin, value);
+                    dataMax = Math.Max(dataMax, value);
+                }
+            }
+            double low = minimum ?? dataMin;
+            double high = maximum ?? dataMax;
+            // Automatic bounds round outward, so allow for a range somewhat beyond the data.
+            double range = Math.Max(high - low, 1) * 1.25;
+            if (!(step > 0) || range / step > MaxYAxisTicks)
+                throw new ArgumentException("The Y spacing gives too many ticks.");
+        }
+
         private void OnLinearMinChanged(NumberBox sender, NumberBoxValueChangedEventArgs e) =>
-            EditAxis(() => _yAxis.Minimum = OptionalNumber(sender), () => sender.Value = _yAxis.Minimum ?? double.NaN);
+            EditAxis(() =>
+            {
+                CheckYAxisTicks(OptionalNumber(sender), _yAxis.Maximum, _yAxis.Spacing);
+                _yAxis.Minimum = OptionalNumber(sender);
+            }, () => sender.Value = _yAxis.Minimum ?? double.NaN);
         private void OnLinearMaxChanged(NumberBox sender, NumberBoxValueChangedEventArgs e) =>
-            EditAxis(() => _yAxis.Maximum = OptionalNumber(sender), () => sender.Value = _yAxis.Maximum ?? double.NaN);
+            EditAxis(() =>
+            {
+                CheckYAxisTicks(_yAxis.Minimum, OptionalNumber(sender), _yAxis.Spacing);
+                _yAxis.Maximum = OptionalNumber(sender);
+            }, () => sender.Value = _yAxis.Maximum ?? double.NaN);
         private void OnLinearSpacingChanged(NumberBox sender, NumberBoxValueChangedEventArgs e) =>
-            EditAxis(() => _yAxis.Spacing = OptionalNumber(sender), () => sender.Value = _yAxis.Spacing ?? double.NaN);
+            EditAxis(() =>
+            {
+                CheckYAxisTicks(_yAxis.Minimum, _yAxis.Maximum, OptionalNumber(sender));
+                _yAxis.Spacing = OptionalNumber(sender);
+            }, () => sender.Value = _yAxis.Spacing ?? double.NaN);
         private void OnSortKeyChanged(object sender, SelectionChangedEventArgs e) =>
             EditAxis(() => _xAxis.SortKey = (CategorySortKey)SortKeyBox.SelectedIndex, () => SortKeyBox.SelectedIndex = (int)_xAxis.SortKey);
         private void OnSortOrderChanged(object sender, SelectionChangedEventArgs e) =>
@@ -1273,7 +1402,9 @@ namespace ChartsSample
                 }
                 else
                 {
-                    AnnounceStatus(StatusText, "Secondary window updates on its own UI thread. Toggle again to close it.");
+                    // The secondary window announces this itself once it has focus (Narrator ignores a
+                    // notification from a window that is no longer in the foreground); show it here too.
+                    StatusText.Text = SecondaryChartWindow.OpenedAnnouncement;
                 }
             }
             finally

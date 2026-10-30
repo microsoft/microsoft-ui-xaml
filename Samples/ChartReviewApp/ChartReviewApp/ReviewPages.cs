@@ -25,11 +25,11 @@ namespace ChartsSample
     public sealed partial class MainWindow
     {
         internal const string ReviewAppName = "Charts Review App";
-        internal const string ReviewAppVersion = "1.5";
+        internal const string ReviewAppVersion = "1.8";
 
         private readonly AccessibilitySettings _accessibility = new();
         private readonly UISettings _uiSettings = new();
-        private TextBlock _environmentText;
+        private DataLines _environmentText;
 
         private static readonly string[] Week = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
         private static readonly string[] WorkWeek = { "Mon", "Tue", "Wed", "Thu", "Fri" };
@@ -394,11 +394,12 @@ namespace ChartsSample
                 "Quote the review build below in every bug, together with the page, the theme, the text size and the display scale."));
 
             AboutScenario.Children.Add(Heading("Build information", AutomationHeadingLevel.Level2));
-            var build = new TextBlock { IsTextSelectionEnabled = true, Text = BuildInfoText(info) };
+            var build = new DataLines();
+            build.SetLines(BuildInfoLines(info));
             AboutScenario.Children.Add(new Border { Style = (Style)RootGrid.Resources["CardStyle"], Child = build });
 
             AboutScenario.Children.Add(Heading("Environment", AutomationHeadingLevel.Level2));
-            _environmentText = new TextBlock { IsTextSelectionEnabled = true };
+            _environmentText = new DataLines();
             AboutScenario.Children.Add(new Border { Style = (Style)RootGrid.Resources["CardStyle"], Child = _environmentText });
 
             var copy = new Button { Content = "Copy build and environment" };
@@ -427,34 +428,38 @@ namespace ChartsSample
             }
         }
 
-        private static string BuildInfoText(Dictionary<string, string> info)
+        private static string BuildInfoText(Dictionary<string, string> info) =>
+            string.Join(Environment.NewLine, BuildInfoLines(info));
+
+        private static List<string> BuildInfoLines(Dictionary<string, string> info)
         {
             string Get(string key) => info.TryGetValue(key, out var value) ? value : "unknown";
-            var text = new StringBuilder();
-            text.AppendLine($"App: {BuildLabel} ({Get("ReviewBuild")})");
-            text.AppendLine($"Charts: {Get("ChartsSource")}");
-            text.AppendLine($"Charts DLL SHA-256 (first 12): {Get("ChartsDllSha")}, built {Get("ChartsBuilt")}");
-            text.AppendLine($"Loaded Charts DLL: {LoadedChartsPath()}");
-            text.AppendLine($"Windows App SDK: {Get("WinAppSdk")}");
-            text.Append($"App source: {Get("AppSource")}");
-            return text.ToString();
+            return new List<string>
+            {
+                $"App: {BuildLabel} ({Get("ReviewBuild")})",
+                $"Charts: {Get("ChartsSource")}",
+                $"Charts DLL SHA-256 (first 12): {Get("ChartsDllSha")}, built {Get("ChartsBuilt")}",
+                $"Loaded Charts DLL: {LoadedChartsPath()}",
+                $"Windows App SDK: {Get("WinAppSdk")}",
+                $"App source: {Get("AppSource")}",
+            };
         }
 
         private void UpdateEnvironmentText()
         {
-            if (_environmentText != null) _environmentText.Text = EnvironmentText();
+            _environmentText?.SetLines(EnvironmentLines());
         }
 
-        private string EnvironmentText()
+        private string EnvironmentText() => string.Join(Environment.NewLine, EnvironmentLines());
+
+        private List<string> EnvironmentLines() => new()
         {
-            var text = new StringBuilder();
-            text.AppendLine($"Windows: {Environment.OSVersion.Version}");
-            text.AppendLine($"App theme: {RootGrid.ActualTheme} (selector: {(ThemeChoice.SelectedItem as ComboBoxItem)?.Content})");
-            text.AppendLine($"Contrast theme: {(_accessibility.HighContrast ? "On, " + _accessibility.HighContrastScheme : "Off")}");
-            text.AppendLine($"Text size: {Math.Round(_uiSettings.TextScaleFactor * 100)}%");
-            text.Append($"Display scale: {(RootGrid.XamlRoot != null ? Math.Round(RootGrid.XamlRoot.RasterizationScale * 100) + "%" : "unknown")}");
-            return text.ToString();
-        }
+            $"Windows: {Environment.OSVersion.Version}",
+            $"App theme: {RootGrid.ActualTheme} (selector: {(ThemeChoice.SelectedItem as ComboBoxItem)?.Content})",
+            $"Contrast theme: {(_accessibility.HighContrast ? "On, " + _accessibility.HighContrastScheme : "Off")}",
+            $"Text size: {Math.Round(_uiSettings.TextScaleFactor * 100)}%",
+            $"Display scale: {(RootGrid.XamlRoot != null ? Math.Round(RootGrid.XamlRoot.RasterizationScale * 100) + "%" : "unknown")}",
+        };
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr GetModuleHandle(string name);

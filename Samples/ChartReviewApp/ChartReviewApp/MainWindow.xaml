@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:charts="using:Microsoft.UI.Xaml.Controls.Charts"
     xmlns:local="using:ChartsSample"
-    Title="Charts Review App 1.5">
+    Title="Charts Review App 1.8">
 
     <Grid x:Name="RootGrid">
         <Grid.Resources>
@@ -318,7 +318,7 @@
                                             <TextBlock x:Name="AreaStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
                                                        Text="Choose options for the area example." />
                                             <Expander x:Name="AreaDataExpander" Header="Monthly area data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                                <TextBlock x:Name="AreaDataText" IsTextSelectionEnabled="True" />
+                                                <local:DataLines x:Name="AreaDataText" />
                                             </Expander>
                                         </local:GroupPanel>
                                     </Border>
@@ -377,7 +377,7 @@
                                             <TextBlock x:Name="BarStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
                                                        Text="Choose options for the bar example." />
                                             <Expander x:Name="BarDataExpander" Header="Monthly bar data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                                <TextBlock x:Name="BarDataText" IsTextSelectionEnabled="True" />
+                                                <local:DataLines x:Name="BarDataText" />
                                             </Expander>
                                         </local:GroupPanel>
                                     </Border>
@@ -396,14 +396,14 @@
                                                     <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
                                                 </ComboBox>
                                                 <StackPanel Spacing="8">
-                                                    <TextBox x:Name="DtLabelFormatBoxA" Header="Label format" ToolTipService.ToolTip="DateTimeFormatter template, for example month day year." AutomationProperties.HelpText="DateTimeFormatter template, for example month day year." PlaceholderText="Default (shortdate)" />
+                                                    <TextBox x:Name="DtLabelFormatBoxA" Header="Label format" Description="DateTimeFormatter template, for example month day year." AutomationProperties.Name="Label format, DateTimeFormatter template, for example month day year" ToolTipService.ToolTip="DateTimeFormatter template, for example month day year." AutomationProperties.HelpText="DateTimeFormatter template, for example month day year." PlaceholderText="Default (shortdate)" />
                                                     <Button x:Name="ApplyDailyFormatButton" Content="Apply daily label format" Click="OnDtLabelFormatAApply" />
                                                 </StackPanel>
                                             </Grid>
                                             <TextBlock x:Name="DtWarningA" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite" />
                                             <TextBlock x:Name="DtFormatStatusA" AutomationProperties.LiveSetting="Polite" />
                                             <Expander Header="Daily data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                                <TextBlock x:Name="DtDataTextA" IsTextSelectionEnabled="True" />
+                                                <local:DataLines x:Name="DtDataTextA" />
                                             </Expander>
                                         </local:GroupPanel>
                                     </Border>
@@ -420,14 +420,14 @@
                                                     <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
                                                 </ComboBox>
                                                 <StackPanel Spacing="8">
-                                                    <TextBox x:Name="DtLabelFormatBoxB" Header="Label format" ToolTipService.ToolTip="DateTimeFormatter template, for example month year." AutomationProperties.HelpText="DateTimeFormatter template, for example month year." PlaceholderText="Default (shortdate)" />
+                                                    <TextBox x:Name="DtLabelFormatBoxB" Header="Label format" Description="DateTimeFormatter template, for example month year." AutomationProperties.Name="Label format, DateTimeFormatter template, for example month year" ToolTipService.ToolTip="DateTimeFormatter template, for example month year." AutomationProperties.HelpText="DateTimeFormatter template, for example month year." PlaceholderText="Default (shortdate)" />
                                                     <Button x:Name="ApplyMonthlyFormatButton" Content="Apply monthly label format" Click="OnDtLabelFormatBApply" />
                                                 </StackPanel>
                                             </Grid>
                                             <TextBlock x:Name="DtWarningB" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite" />
                                             <TextBlock x:Name="DtFormatStatusB" AutomationProperties.LiveSetting="Polite" />
                                             <Expander Header="Monthly data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                                <TextBlock x:Name="DtDataTextB" IsTextSelectionEnabled="True" />
+                                                <local:DataLines x:Name="DtDataTextB" />
                                             </Expander>
                                         </local:GroupPanel>
                                     </Border>
@@ -451,7 +451,7 @@
                                                 <Button x:Name="SecondaryButton" Content="Toggle secondary UI thread" Click="OnToggleSecondaryClick" />
                                             </StackPanel>
                                             <Expander x:Name="LiveDataExpander" Header="Current data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                                <TextBlock x:Name="DataText" IsTextSelectionEnabled="True" />
+                                                <local:DataLines x:Name="DataText" />
                                             </Expander>
                                         </local:GroupPanel>
                                     </Border>
