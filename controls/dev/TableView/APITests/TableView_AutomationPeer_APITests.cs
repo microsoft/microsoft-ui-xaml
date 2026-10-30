@@ -1325,6 +1325,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies SelectionItem calls on a row of a disabled table fail with UIA_E_ELEMENTNOTENABLED and leave the selection alone.")]
+        public void VerifyRowPeerSelectionItemFailsWhenTableIsDisabled()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selected = RequireSelectionItemProvider(tableView, 1);
+                var other = RequireSelectionItemProvider(tableView, 2);
+                if (selected == null || other == null)
+                {
+                    return;
+                }
+
+                selected.Select();
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => other.Select(), "Select() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => other.AddToSelection(), "AddToSelection() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selected.RemoveFromSelection(), "RemoveFromSelection() on a disabled table must fail.");
+                Verify.AreEqual(1, tableView.SelectedIndex, "Failed calls on a disabled table must leave the selection unchanged.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies RemoveFromSelection on a row that is not the current selection is a no-op.")]
         public void VerifyRowPeerRemoveFromSelectionOnlyClearsWhenItIsTheSelection()
         {

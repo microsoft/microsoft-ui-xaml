@@ -447,7 +447,7 @@
                     <controls:TableViewTemplateColumn Header="ControlsActive" Width="84">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
-                                <CheckBox IsChecked="True" MinWidth="0" HorizontalAlignment="Center" AutomationProperties.Name="CellActiveCheckBox" />
+                                <CheckBox IsChecked="True" MinWidth="0" HorizontalAlignment="Center" AutomationProperties.Name="CellActiveCheckBox" AutomationProperties.AutomationId="CellActiveCheckBox" />
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
                     </controls:TableViewTemplateColumn>
@@ -459,7 +459,8 @@
                                           Margin="6,2"
                                           VerticalAlignment="Center"
                                           HorizontalAlignment="Stretch"
-                                          AutomationProperties.Name="CellCityComboBox">
+                                          AutomationProperties.Name="CellCityComboBox"
+                                          AutomationProperties.AutomationId="CellCityComboBox">
                                     <x:String>Redmond</x:String>
                                     <x:String>Seattle</x:String>
                                 </ComboBox>
@@ -469,11 +470,17 @@
                     <controls:TableViewTemplateColumn Header="ControlsDetails" Width="96">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
-                                <Button Content="Details" Margin="6,2" HorizontalAlignment="Stretch" AutomationProperties.Name="CellDetailsButton" />
+                                <Button Content="Details" Margin="6,2" HorizontalAlignment="Stretch" AutomationProperties.Name="CellDetailsButton" AutomationProperties.AutomationId="CellDetailsButton" />
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
                     </controls:TableViewTemplateColumn>
                 </controls:TableView>
+                <Button Content="Toggle headers"
+                        Margin="0,310,0,0"
+                        VerticalAlignment="Top"
+                        AutomationProperties.Name="ToggleCellControlsHeadersButton"
+                        AutomationProperties.AutomationId="ToggleCellControlsHeadersButton"
+                        Click="OnToggleCellControlsHeadersClick" />
             </Grid>
 
         </Grid>

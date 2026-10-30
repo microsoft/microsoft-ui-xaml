@@ -391,8 +391,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         return;
                     }
 
-                    var band = (headerRow.Background as SolidColorBrush)?.Color ?? default(Color);
-                    var rule = (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default(Color);
+                    var bandBrush = headerRow.Background as SolidColorBrush;
+                    var ruleBrush = headerRow.BorderBrush as SolidColorBrush;
+                    Verify.IsNotNull(bandBrush, "PART_HeaderRow.Background must be a SolidColorBrush.");
+                    Verify.IsNotNull(ruleBrush, "PART_HeaderRow.BorderBrush must be a SolidColorBrush.");
+                    if (bandBrush == null || ruleBrush == null)
+                    {
+                        return;
+                    }
+
+                    var band = bandBrush.Color;
+                    var rule = ruleBrush.Color;
+                    // A null fill is transparent, not a test failure.
                     var tableFill = (tableView.Background as SolidColorBrush)?.Color ?? default(Color);
                     var rowFill = (row.Background as SolidColorBrush)?.Color ?? default(Color);
                     var rowLine = (row.BorderBrush as SolidColorBrush)?.Color ?? default(Color);

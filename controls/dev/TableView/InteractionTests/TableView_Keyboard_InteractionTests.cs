@@ -2465,6 +2465,68 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Row-level Down walks every row of a table whose cells host controls and stops on the last row, never focusing a cell control.")]
+        public void DownThroughRowsWithCellControlsStaysOnRowContainers()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                // One extra Down at the end: the last row is a boundary and must keep focus.
+                for (int step = 1; step <= CellControlsItemCount; step++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    int expectedRow = Math.Min(step, CellControlsItemCount - 1);
+                    UIObject focused = UIObject.Focused;
+                    string name = focused == null ? string.Empty : focused.Name;
+                    Log.Comment("Down #{0}: focus on {1} '{2}'.", step, focused == null ? "<none>" : focused.ControlType.ToString(), name);
+                    Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem,
+                        "Row-level Down must keep focus on a row container, not a cell control (step " + step + ").");
+                    Verify.IsTrue(global::System.Text.RegularExpressions.Regex.IsMatch(name, @"\b" + ScrollingName(expectedRow) + @"\b"),
+                        "Down #" + step + " must focus row " + expectedRow + ".");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With column headers hidden, row-level Up on the first row of a table whose cells host controls keeps focus on that row.")]
+        public void UpFromFirstRowWithCellControlsAndHiddenHeadersStaysOnRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                var toggleHeaders = FindElement.ById<Button>(ToggleCellControlsHeadersButton);
+                if (toggleHeaders == null) { Verify.Fail(ToggleCellControlsHeadersButton + " was not found."); return; }
+                toggleHeaders.InvokeAndWait();
+                Wait.ForIdle();
+
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Up from the first row with headers hidden landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus,
+                    "With no header band, Up from the first row must keep focus on that row, not move into a cell control.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
         public void BodyTabReentryReturnsToSameRecordAfterSort()
         {
