@@ -84,11 +84,19 @@ private:
     void OnPresenterPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnItemPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnItemPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnDragStarting(const winrt::UIElement& sender, const winrt::DragStartingEventArgs& args);
+    void OnIsEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void CancelItemOwnedInteraction();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args);
 
 
     void ResetTrackedPointerId();
+    void ReleaseCapturedPointer();
+    bool ItemHoldsCapturedPointer();
     bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateCompactPaneLength();
@@ -136,6 +144,7 @@ private:
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
+    PropertyChanged_revoker m_isEnabledPropertyChangedRevoker{};
 
     winrt::UIElement::PointerPressed_revoker m_presenterPointerPressedRevoker{};
     winrt::UIElement::PointerEntered_revoker m_presenterPointerEnteredRevoker{};
@@ -144,6 +153,9 @@ private:
     RoutedEventHandler_revoker m_presenterPointerExitedRevoker{};
     RoutedEventHandler_revoker m_presenterPointerCanceledRevoker{};
     RoutedEventHandler_revoker m_presenterPointerCaptureLostRevoker{};
+    RoutedEventHandler_revoker m_itemPointerReleasedRevoker{};
+    RoutedEventHandler_revoker m_itemPointerCanceledRevoker{};
+    RoutedEventHandler_revoker m_itemPointerCaptureLostRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
@@ -168,6 +180,8 @@ private:
 
     // Visual state tracking
     winrt::Pointer m_capturedPointer{ nullptr };
+    winrt::weak_ref<winrt::UIElement> m_captureOwner{ nullptr };
+    bool m_captureOwnerIsItem{ false };
     uint32_t m_trackedPointerId{ 0 };
     bool m_isPressed{ false };
     bool m_isPointerOver{ false };

@@ -90,6 +90,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
+        }
+
+        private static readonly TimeSpan s_appRestartThreshold = TimeSpan.FromMinutes(10);
+
+        // MUXTestInfra's AppWatcherThread fails the test host once one app instance has run for 15 minutes
+        // (Application.cs: "Test app process ran for an unexpectedly long time"). When every test in a long
+        // class passes, nothing restarts the app, so the test that straddles that mark fails with 0xE0434352.
+        // Same mitigation as TreeViewTests.RestartAppIfLongRunning.
+        private static void RestartAppIfLongRunning()
+        {
+            try
+            {
+                var process = TestEnvironment.Application.Process;
+                if (process != null && !process.HasExited && DateTime.Now - process.StartTime > s_appRestartThreshold)
+                {
+                    Log.Comment("Test app has run for over {0} minutes; scheduling a restart before the AppWatcherThread limit.",
+                        s_appRestartThreshold.TotalMinutes);
+                    TestEnvironment.ShouldRestartApplication = true;
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+            {
+                // The process could not be queried; leave the restart decision to the infra.
+            }
         }
 
         protected void SetNavViewWidth(ControlWidth width)
