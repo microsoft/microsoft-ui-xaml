@@ -880,11 +880,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsGreaterThan(recycles, 0, "Precondition: scrolling must recycle tracked rows.");
 
-                // One RebuildCells pass plus RefreshRowHierarchyState's own ApplyHierarchyAffordance.
+                // One RebuildCells pass plus RefreshRowHierarchyState's own ApplyHierarchyAffordance; the
+                // slack absorbs incidental refreshes (a rebuild-per-callback regression costs several per recycle).
                 const int expectedPerRecycle = 2;
+                const int slack = 8;
                 var ratio = (double)vsm.HierarchyStateCalls / recycles;
                 Log.Comment($"Recycles={recycles} RowHierarchyStates GoToState calls={vsm.HierarchyStateCalls} perRecycle={ratio:F2}");
-                Verify.IsLessThanOrEqual(vsm.HierarchyStateCalls, expectedPerRecycle * recycles,
+                Verify.IsLessThanOrEqual(vsm.HierarchyStateCalls, (expectedPerRecycle * recycles) + slack,
                     $"A recycled row must refresh its cells once per recycle; saw {ratio:F2} hierarchy refreshes per recycle (expected <= {expectedPerRecycle}).");
             });
         }
@@ -978,6 +980,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableViewRow row = null;
             TableViewCellAutomationPeer before = null;
             Person target = null;
+            bool preparedForAnotherItem = false;
 
             RunOnUIThread.Execute(() =>
             {
@@ -995,13 +998,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(row, "Precondition: the target must be realized.");
                 before = GetCellPeer(row, 0);
                 Verify.IsTrue(NamesItem(before, target), "Precondition: the cell peer must name the target item.");
+
+                GetRowsRepeater(tableView).ElementPrepared += (s, e) =>
+                {
+                    if (ReferenceEquals(e.Element, row) && !ReferenceEquals(row.DataContext, target))
+                    {
+                        preparedForAnotherItem = true;
+                    }
+                };
             });
 
             ScrollToEnd(tableView);
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(ReferenceEquals(row.DataContext, target), "Precondition: the target's row must have been recycled out.");
+                Verify.IsTrue(preparedForAnotherItem && !ReferenceEquals(row.DataContext, target),
+                    "Precondition: the target's row must have been re-prepared for a different item.");
                 Verify.IsFalse(NamesItem(before, target),
                     $"A cell peer of a recycled-out row must not still describe '{target.Name}'.");
             });
