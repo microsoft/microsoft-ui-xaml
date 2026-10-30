@@ -1125,6 +1125,27 @@ winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(const wi
     return nullptr;
 }
 
+bool NavigationView::IsContainerInMenuItemsTree(const winrt::NavigationViewItemBase& nvib)
+{
+    // Same walk as GetIndexPathForContainer: the container must end up under a root menu repeater, directly or through
+    // the flyout of a root menu item.
+    auto parent = winrt::VisualTreeHelper::GetParent(nvib);
+    while (parent)
+    {
+        if (IsRootItemsRepeater(parent))
+        {
+            return true;
+        }
+        if (IsRootGridOfFlyout(parent))
+        {
+            auto const owner = m_lastItemExpandedIntoFlyout.get();
+            return owner && IsRootItemsRepeater(GetParentItemsRepeaterForContainer(owner));
+        }
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+    return false;
+}
+
 winrt::NavigationViewItem NavigationView::GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib)
 {
     // TODO: This scenario does not find parent items when in a flyout, which causes problems if item if first loaded
@@ -2590,8 +2611,9 @@ void NavigationView::UpdateIsChildSelectedForPreparedContainer(const winrt::Navi
 {
     bool isChildSelected = false;
     auto const selectedIndex = m_selectionModel.SelectedIndex();
-    // Only a selection below the top level (block, index, child...) can make an item child-selected.
-    if (selectedIndex && selectedIndex.GetSize() > 2)
+    // Only a selection below the top level (block, index, child...) can make an item child-selected. Items nested under a
+    // NavigationViewItem in PaneFooter, PaneHeader, PaneCustomContent or Content aren't in the menu index space.
+    if (selectedIndex && selectedIndex.GetSize() > 2 && IsContainerInMenuItemsTree(nvi))
     {
         auto const ip = GetIndexPathForContainer(nvi);
         if (ip.GetSize() >= 2 && ip.GetSize() < selectedIndex.GetSize())
