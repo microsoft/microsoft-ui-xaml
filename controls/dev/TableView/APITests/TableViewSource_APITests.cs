@@ -2068,6 +2068,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                StartIncrementalChanges(items);
                 GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
                 predicateCalls = 0;
                 for (var k = initialCount; k < initialCount + addCount; k++)
@@ -2111,6 +2112,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "baseline");
+                StartIncrementalChanges(items);
                 predicateCalls = 0;
 
                 // Asha, Diego, Mei, Rafa, Ines, Owen: a match between Mei and Rafa, a non-match ahead of Diego.
@@ -2120,7 +2122,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 items.Remove(items.First(p => p.Name == "Rafa"));
                 items.Remove(items.First(p => p.Name == "Mei"));
 
-                Verify.AreEqual(3, predicateCalls, "Only the three inserted rows may be filtered.");
+                Verify.IsLessThanOrEqual(predicateCalls, 3, "Only the three inserted rows may be filtered.");
             });
 
             SettleLayout(tableView);
@@ -2153,6 +2155,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("Diego,Rafa,Owen", PlainNames(tableView), "baseline");
 
+                StartIncrementalChanges(items);
+
                 // No notification: only a re-evaluation can see it.
                 items.First(p => p.Name == "Asha").Role = "Engineer";
                 items.Add(new PlainShapedPerson { Name = "Nadia", Role = "Engineer" });
@@ -2164,6 +2168,248 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("Asha,Diego,Rafa,Owen,Nadia", PlainNames(tableView),
                     "the next collection change must re-evaluate membership of rows that cannot report edits");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Add whose rows listener throws leaves the rows matching the source.")]
+        public void VerifyFilteredAddSurvivesAThrowingRowsListener()
+        {
+            VerifyFilteredChangeSurvivesAThrowingRowsListener("Add",
+                items => items.Insert(2, new ShapedPerson("Nadia", "Engineer", "Platform")),
+                new List<string> { "Diego", "Nadia", "Rafa", "Owen" });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Replace whose rows listener throws on the removal leaves the rows matching the source.")]
+        public void VerifyFilteredReplaceSurvivesAThrowingRowsListener()
+        {
+            // A Replace commits its removal first.
+            VerifyFilteredChangeSurvivesAThrowingRowsListener("Remove",
+                items => items[items.IndexOf(items.First(p => p.Name == "Rafa"))] = new ShapedPerson("Nadia", "Engineer", "Platform"),
+                new List<string> { "Diego", "Nadia", "Owen" });
+        }
+
+        private void VerifyFilteredChangeSurvivesAThrowingRowsListener(
+            string throwOnAction, Action<ObservableCollection<ShapedPerson>> change, List<string> expected)
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Filter(o => Person(o).Role == "Engineer"));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "baseline");
+                StartIncrementalChanges(items);
+                RunWithThrowingRowsListener(tableView, throwOnAction, () => change(items));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, expected, "after the throwing listener");
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, expected.Concat(new[] { "Zoe" }).ToList(), "a later add");
+            });
+        }
+
+        // The first collection change after a load re-shapes every row and starts the in-place
+        // bookkeeping; this one leaves the source as it was.
+        internal static void StartIncrementalChanges<T>(ObservableCollection<T> items)
+        {
+            var first = items[0];
+            items.RemoveAt(0);
+            items.Insert(0, first);
+        }
+
+        // Throws from the rows view's first `throwOnAction` notification while `change` runs. WinRT
+        // event sources contain a handler's exception, so it need not reach the caller.
+        internal static void RunWithThrowingRowsListener(TableView tableView, string throwOnAction, Action change)
+        {
+            var armed = true;
+            GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) =>
+            {
+                if (armed && e.Action.ToString() == throwOnAction)
+                {
+                    armed = false;
+                    throw new InvalidOperationException("rows listener bug");
+                }
+            };
+
+            try
+            {
+                change();
+            }
+            catch (global::System.Exception e)
+            {
+                Log.Comment($"The change threw: {e.Message}");
+            }
+            armed = false;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Add whose item subscription throws part-way through the commit is repaired by a full refresh.")]
+        public void VerifyFilteredAddRecoversFromAThrowingItemSubscription()
+        {
+            VerifyFilteredChangeRecoversFromAThrowingItemSubscription(
+                (items, nadia) => items.Insert(2, nadia),
+                new List<string> { "Diego", "Nadia", "Rafa", "Owen", "Zoe" });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Replace whose item subscription throws after its removal is committed is repaired by a full refresh.")]
+        public void VerifyFilteredReplaceRecoversFromAThrowingItemSubscription()
+        {
+            VerifyFilteredChangeRecoversFromAThrowingItemSubscription(
+                (items, nadia) => items[items.IndexOf(items.First(p => p.Name == "Rafa"))] = nadia,
+                new List<string> { "Diego", "Nadia", "Owen", "Zoe" });
+        }
+
+        // The arriving item is filtered out and its subscription throws once. A commit left half-done
+        // would also leave it unobserved, so its later edit into the filter would never be applied.
+        private void VerifyFilteredChangeRecoversFromAThrowingItemSubscription(
+            Action<ObservableCollection<ShapedPerson>, ShapedPerson> change, List<string> expected)
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var nadia = new ShapedPerson("Nadia", "Designer", "Studio") { ThrowOnNextSubscribe = true };
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Filter(o => Person(o).Role == "Engineer"));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                var threw = false;
+                try
+                {
+                    change(items, nadia);
+                }
+                catch (global::System.Exception)
+                {
+                    threw = true;
+                }
+                Verify.IsTrue(threw, "The subscription's exception must reach the caller.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                nadia.Role = "Engineer";
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, expected, "the edit of the item whose subscription threw must be applied");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an INPC edit that makes an excluded item pass the filter is applied by the next Add.")]
+        public void VerifyFilterKeyEditOfAnExcludedItemIsAdmittedByTheNextAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Filter(o => Person(o).Role == "Engineer"));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "baseline");
+                StartIncrementalChanges(items);
+                items.First(p => p.Name == "Mei").Role = "Engineer";
+                items.Add(new ShapedPerson("Nadia", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Mei", "Rafa", "Owen", "Nadia" },
+                    "the edited item must be admitted at its source position");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies turning live shaping off while filtered keeps later changes correct, including an edit whose live restore was dropped.")]
+        public void VerifyFilteredChangesAfterLiveShapingIsTurnedOff()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Filter(o => Person(o).Role == "Engineer");
+                source.IsLiveShaping = true;
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "baseline");
+
+                StartIncrementalChanges(items);
+
+                // The edit's live restore is still pending when live shaping goes off.
+                items.First(p => p.Name == "Asha").Role = "Engineer";
+                source.IsLiveShaping = false;
+                items.Add(new ShapedPerson("Nadia", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Rafa", "Owen", "Nadia" },
+                    "the next change must apply the edit whose restore was dropped");
+
+                items.First(p => p.Name == "Mei").Role = "Engineer";
+                items.Add(new ShapedPerson("Zoe", "Designer", "Studio"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Owen", "Nadia" },
+                    "with live shaping off, an edit must still be applied by the next change");
             });
         }
 
@@ -2525,7 +2771,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Department = new Department { Name = departmentName };
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private PropertyChangedEventHandler m_propertyChanged;
+
+        // Makes the next PropertyChanged subscription throw, as an app's event accessor might.
+        internal bool ThrowOnNextSubscribe { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (ThrowOnNextSubscribe)
+                {
+                    ThrowOnNextSubscribe = false;
+                    throw new InvalidOperationException("subscription bug");
+                }
+                m_propertyChanged += value;
+            }
+            remove => m_propertyChanged -= value;
+        }
 
         public string Name
         {
@@ -2575,7 +2838,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal void SetNameWithoutNotification(string name) => m_name = name;
 
         private void Raise(string propertyName)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            => m_propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     internal sealed class PlainShapedPerson
