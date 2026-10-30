@@ -28,6 +28,9 @@ REM property if the project has a TargetPlatformIdentifier=UAP.
 REM This app is a single-project MSIX app, so it only emits its .msix when published.
 call :buildSamplesSolution %reporoot%\Samples\WinUICsDesktopSampleApp\WinUICsDesktopSampleApp.sln /m /t:Publish
 if ERRORLEVEL 1 goto:eof
+REM Backs the screenshots in specs\SelectionModel. Also a single-project MSIX app.
+call :buildSamplesSolution %reporoot%\Samples\SelectionModelSampleApp\SelectionModelSampleApp.sln /m /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\WinUICppDesktopSampleApp\WinUICppDesktopSampleApp.sln
 if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\WinUICppIsland2SampleApp\WinUICppIsland2SampleApp.sln
