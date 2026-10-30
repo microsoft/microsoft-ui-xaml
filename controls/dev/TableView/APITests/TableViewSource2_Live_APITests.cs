@@ -194,12 +194,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a property change raised off the UI thread is applied on the UI thread.")]
-        public void VerifyOffThreadPropertyChangeIsMarshalled()
+        [TestProperty("Description", "Verifies a managed item's off-thread PropertyChanged fails in the platform before it reaches the source, and leaves the source consistent.")]
+        public void VerifyOffThreadManagedPropertyChangeLeavesSourceConsistent()
         {
             var tableView = PlaceLiveFlat(out var source, out var rows);
             OnUI(tableView, () => source.Sort(LiveByScore, SortDirection.Ascending));
+            var events = RecordViewEvents(tableView);
 
+            // C# raises PropertyChanged through a Microsoft.UI.Xaml.Data.PropertyChangedEventArgs, which
+            // can only be created on a XAML thread, so an off-thread raise throws RPC_E_WRONG_THREAD in
+            // the setter before any subscriber runs. The source's off-thread marshalling is reachable
+            // only from items that raise agile args (Header-Changes drift #71).
             var a = rows[0];
             Exception caught = null;
             Task.Run(() =>
@@ -214,9 +219,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             }).Wait();
 
-            Verify.IsNull(caught, "An off-thread property change is posted, not rejected.");
+            Verify.IsNotNull(caught, "The platform rejects creating the event args off the XAML thread.");
+            Verify.AreEqual(unchecked((int)0x8001010E), caught.HResult, "RPC_E_WRONG_THREAD.");
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C A D", "A moved on the UI thread"));
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "A B C D", "the failed raise reached nothing"));
+            VerifyEvents(events, "", "no notification");
+
+            // Score already holds 35 (the setter stores before it raises), so raise a new value on the UI thread.
+            OnUI(tableView, () => a.Score = 36);
+            RunOnUIThread.Execute(() => VerifyShaped(tableView, "B C A D", "a later UI-thread change applies"));
+            VerifyEvents(events, "Remove@0,Add@2", "one row moves");
         }
 
         [TestMethod]
