@@ -473,7 +473,7 @@ trace, and the Frames and Elements tabs follow it as it grows.
   counts the process's events whose timestamp is earlier than the event before
   them as out of order. In the traces measured, there were none.
 - Timestamps in a trace count ticks of the recording machine's clock, whose
-  frequency can differ from this machine's, such as 19.2 MHz on many Arm64 PCs
+  frequency can differ from this machine's, such as 24 MHz on many Arm64 PCs
   and 10 MHz on many x64 PCs. Before reading the process's events, the app
   works out the trace's frequency from its first events and stores it in the
   session file, so their times are right from the first frame; `record` does
