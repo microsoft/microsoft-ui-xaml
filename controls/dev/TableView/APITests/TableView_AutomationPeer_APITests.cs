@@ -1275,12 +1275,87 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(2, tableView.SelectedIndex, "Select() on a row peer must make that row the control's selection.");
 
                 // UIA forbids Select() from meaning "toggle": a client calling it twice would clear the
-                // selection. The single-select AddToSelection == Select mapping follows in-box
-                // precedent (ListViewItemAutomationPeer behaves the same rather than failing).
+                // selection. AddToSelection on the row that is already the selection is a no-op.
                 provider.AddToSelection();
                 tableView.UpdateLayout();
                 Verify.AreEqual(2, tableView.SelectedIndex, "AddToSelection() on the already selected row must leave it selected, not toggle it off.");
                 Verify.IsTrue(provider.IsSelected, "The row must still report itself selected.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection in Single mode fails with UIA_E_INVALIDOPERATION when another row is selected, and leaves the selection alone (#12448).")]
+        public void VerifyRowPeerAddToSelectionFailsWhenAnotherRowIsSelectedInSingleMode()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = RequireSelectionItemProvider(tableView, 1);
+                var second = RequireSelectionItemProvider(tableView, 2);
+                if (first == null || second == null)
+                {
+                    return;
+                }
+
+                // Empty selection: AddToSelection selects the row.
+                first.AddToSelection();
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "AddToSelection() with nothing selected must select the row.");
+
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => second.AddToSelection(),
+                    "AddToSelection() on another row of a single-select table must fail.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "A failed AddToSelection() must leave the selection on the first row.");
+                Verify.IsFalse(second.IsSelected, "The second row must not become selected.");
+                Verify.AreEqual(0, selectionChangedCount, "A failed AddToSelection() must not raise SelectionChanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectionItem calls on a row of a disabled table fail with UIA_E_ELEMENTNOTENABLED and leave the selection alone.")]
+        public void VerifyRowPeerSelectionItemFailsWhenTableIsDisabled()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selected = RequireSelectionItemProvider(tableView, 1);
+                var other = RequireSelectionItemProvider(tableView, 2);
+                if (selected == null || other == null)
+                {
+                    return;
+                }
+
+                selected.Select();
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => other.Select(), "Select() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => other.AddToSelection(), "AddToSelection() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selected.RemoveFromSelection(), "RemoveFromSelection() on a disabled table must fail.");
+                Verify.AreEqual(1, tableView.SelectedIndex, "Failed calls on a disabled table must leave the selection unchanged.");
             });
         }
 

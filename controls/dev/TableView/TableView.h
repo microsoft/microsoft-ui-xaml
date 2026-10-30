@@ -350,7 +350,7 @@ public:
     // default, or that row's current cell once the user has drilled in with Right.
     bool FocusRow(int32_t index);
 
-    void HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
+    void HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
 
 
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
@@ -546,6 +546,9 @@ public:
     // Centralises the mode gate only. Modifier-aware routing (interacted vs focused, per
     // SelectorBase) is what Multiple/Extended will add on top.
     bool CanSelectRows();
+    // Shared by the table peer's CanSelectMultiple and the row peer's AddToSelection. Only None and
+    // Single exist, so always false; Multiple must derive it from SelectionMode.
+    bool CanSelectMultipleRows() const noexcept { return false; }
 
     // Shared by the pointer gesture, keyboard navigation and the row peer. No-op when off.
     // The one-arg form reads Ctrl live and toggles; automation passes toggle=false, because UIA

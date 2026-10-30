@@ -995,7 +995,8 @@ void TableView::OnKeyDownForNavigation(
 
     int32_t newRow = currentRow;
     bool consumeKey = true;
-    // Absolute/page keys are consumed at boundaries; Up/Down may escape the table.
+    // Absolute/page keys are consumed at boundaries; cell-level Up/Down may escape the table, and
+    // row-level Up/Down stop at the edges.
     bool absoluteRowNav = false;
     std::optional<double> alignRatio{};
 
@@ -1080,12 +1081,20 @@ void TableView::OnKeyDownForNavigation(
         {
             args.Handled(true);
         }
+
+        // Row-level Up/Down that could not move (a boundary or a disabled target row) is a no-op, as
+        // in WPF DataGrid; unhandled, the body scroller would focus a control inside this row's cells.
+        if (!args.Handled() && m_navKeyHandledEarly && !hasCellAnchor &&
+            (key == winrt::Windows::System::VirtualKey::Up || key == winrt::Windows::System::VirtualKey::Down))
+        {
+            args.Handled(true);
+        }
     }
 }
 
-// Rows forward Left/Right before PART_BodyScroller scrolls on them; the handledEventsToo KeyDown
-// then skips the key, since hierarchy Left/Right is not idempotent.
-void TableView::HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
+// Rows forward Left/Right (and row-level Up/Down) before PART_BodyScroller acts on them; the
+// handledEventsToo KeyDown then skips the key, since hierarchy Left/Right is not idempotent.
+void TableView::HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = true;
     OnKeyDownForNavigation(nullptr, args);

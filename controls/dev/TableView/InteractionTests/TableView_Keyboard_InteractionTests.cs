@@ -2425,6 +2425,141 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Row-level Up from the first row of a table whose cells host controls moves to the header band, not into a cell control (#12441).")]
+        public void UpFromFirstRowWithCellControlsMovesToHeaderNotIntoCellControl()
+        {
+            // PART_BodyScroller handles an unhandled Up by focusing a candidate inside the body, which for row 0
+            // can be a control in that row's own cells; that focus move hides the key from the TableView.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Precondition: row 1 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(table).Children[0].HasKeyboardFocus, "Precondition: Up from row 1 lands on row 0 at row level.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Row-level Up from the first row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                UIObject header = FindFocusedHeader(CellControlsTable);
+                Verify.IsNotNull(header, "Up from the first row must move focus to the header band, not into a cell control.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(table));
+                Verify.IsNotNull(bodyFocus, "Down from a header must return to the first row.");
+                if (bodyFocus != null)
+                {
+                    Verify.AreEqual(GetRowsHost(table).Children[0].RuntimeId, bodyFocus.RuntimeId, "Down from a header must land on the FIRST row.");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Down walks every row of a table whose cells host controls and stops on the last row, never focusing a cell control.")]
+        public void DownThroughRowsWithCellControlsStaysOnRowContainers()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                // One extra Down at the end: the last row is a boundary and must keep focus.
+                for (int step = 1; step <= CellControlsItemCount; step++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    int expectedRow = Math.Min(step, CellControlsItemCount - 1);
+                    UIObject focused = UIObject.Focused;
+                    string name = focused == null ? string.Empty : focused.Name;
+                    Log.Comment("Down #{0}: focus on {1} '{2}'.", step, focused == null ? "<none>" : focused.ControlType.ToString(), name);
+                    Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem,
+                        "Row-level Down must keep focus on a row container, not a cell control (step " + step + ").");
+                    Verify.IsTrue(global::System.Text.RegularExpressions.Regex.IsMatch(name, @"\b" + ScrollingName(expectedRow) + @"\b"),
+                        "Down #" + step + " must focus row " + expectedRow + ".");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With column headers hidden, row-level Up on the first row of a table whose cells host controls keeps focus on that row.")]
+        public void UpFromFirstRowWithCellControlsAndHiddenHeadersStaysOnRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                var toggleHeaders = FindElement.ById<Button>(ToggleCellControlsHeadersButton);
+                if (toggleHeaders == null) { Verify.Fail(ToggleCellControlsHeadersButton + " was not found."); return; }
+                toggleHeaders.InvokeAndWait();
+                Wait.ForIdle();
+
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Up from the first row with headers hidden landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus,
+                    "With no header band, Up from the first row must keep focus on that row, not move into a cell control.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Down onto a disabled row of a table whose cells host controls keeps focus on an enabled row container.")]
+        public void DownOntoDisabledRowWithCellControlsStaysOnRowContainer()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                var disable = FindElement.ById<Button>(DisableFocusedRowButton);
+                if (disable == null) { Verify.Fail(DisableFocusedRowButton + " was not found."); return; }
+                disable.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsFalse(GetRowsHost(FindElement.ById(CellControlsTable)).Children[1].IsEnabled, "Precondition: row 1 should be disabled.");
+
+                GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Down onto the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem && focused.IsEnabled,
+                    "Row-level Down onto a disabled row must keep focus on an enabled row container, not a cell control.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
         public void BodyTabReentryReturnsToSameRecordAfterSort()
         {

@@ -708,14 +708,30 @@ winrt::IRawElementProviderSimple TableViewRowAutomationPeer::SelectionContainer(
 
 void TableViewRowAutomationPeer::AddToSelection()
 {
-    // The container is single-select, so "add" can only mean "make this the selection". XAML's own
-    // single-select peers (ListViewItemAutomationPeer) behave the same way rather than failing.
-    // Multiple must add to the selection instead of replacing it.
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
+    // Deliberately follows the UIA SelectionItem spec and WPF DataGrid: a single-select container
+    // fails rather than replacing another row's selection (dxaml Selector/ItemsView replace).
+    // Adding the selected row, or into an empty selection, is fine.
+    if (auto const tableView = GetOwningTableView();
+        tableView && !winrt::get_self<TableView>(tableView)->CanSelectMultipleRows() &&
+        tableView.SelectedIndex() >= 0 && !IsSelected())
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
     Select();
 }
 
 void TableViewRowAutomationPeer::RemoveFromSelection()
 {
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
     if (auto const tableView = GetOwningTableView())
     {
         if (const int32_t index = GetRowIndex(); index >= 0)
@@ -729,6 +745,11 @@ void TableViewRowAutomationPeer::RemoveFromSelection()
 
 void TableViewRowAutomationPeer::Select()
 {
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
     if (auto const tableView = GetOwningTableView())
     {
         if (const int32_t index = GetRowIndex(); index >= 0)
