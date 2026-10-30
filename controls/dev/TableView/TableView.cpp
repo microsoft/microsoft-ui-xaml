@@ -3917,10 +3917,15 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
     {
         TableViewDetails::SuppressOwnedToolTip(weakHeaderCell.get());
     });
-    gripperVisual.PointerExited([weakHeaderCell](auto const&, auto const&)
+    // Exited alone can be missed (a gesture torn down, the header left from the gripper's edge).
+    auto const restoreHeaderToolTip = [weakHeaderCell](auto const&, auto const&)
     {
         TableViewDetails::RestoreOwnedToolTip(weakHeaderCell.get());
-    });
+    };
+    gripperVisual.PointerExited(restoreHeaderToolTip);
+    gripperVisual.PointerCanceled(restoreHeaderToolTip);
+    gripperVisual.PointerCaptureLost(restoreHeaderToolTip);
+    headerCell.PointerExited(restoreHeaderToolTip);
 
     // shared_ptr so the handler closures keep it alive, and so Escape can reach the live drag.
     auto state = std::make_shared<ColumnResizeDragState>();

@@ -9,7 +9,7 @@
 #include "TableViewGroupHeader.h"
 #include "TableViewCell.h"
 #include "TableViewColumnHeader.h"
-
+#include "TableViewToolTipHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -681,6 +681,11 @@ void TableView::RefreshResizeGripperAvailability()
             ? winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal() : nullptr;
         // The pin state is already updated, so the old value comes from the visibility being replaced.
         const bool couldResize = gripper.Visibility() == winrt::Visibility::Visible && IsColumnResizeAllowed(column);
+        if (visibility == winrt::Visibility::Collapsed)
+        {
+            // A collapsed gripper under the pointer raises no PointerExited.
+            TableViewDetails::RestoreOwnedToolTip(headerCell);
+        }
         gripper.Visibility(visibility);
 
         if (headerPeer)

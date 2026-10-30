@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -364,17 +363,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                // Opening the tooltip under a resting pointer reset the cursor to the arrow until the pointer moved.
+                // Opening the tooltip under a resting pointer reset the cursor to the arrow; the cursor itself is checked in the layout tests.
                 var bounds = nameHeader.BoundingRectangle;
                 var gripper = new Point(bounds.Left + bounds.Width - 3, bounds.Top + (bounds.Height / 2));
                 HoverPoint(gripper, "the Name header's resize gripper");
                 UIObject toolTip = FindOpenToolTip("while resting on the gripper");
-                IntPtr cursor = ReadCursorHandle();
-                IntPtr sizeWE = LoadCursor(IntPtr.Zero, new IntPtr(32644));
-                Log.Comment("Cursor 0x{0:X} (size west-east is 0x{1:X}).", cursor.ToInt64(), sizeWE.ToInt64());
 
                 Verify.IsNull(toolTip, "The header tooltip must not open while the pointer is on the resize gripper.");
-                Verify.AreEqual(sizeWE, cursor, "The cursor must stay the west-east size cursor while resting on the gripper.");
 
                 // Moving back onto the header content and re-entering restores the tooltip.
                 HoverPoint(new Point(bounds.Left + (bounds.Width / 3), gripper.Y), "the Name header's content");
@@ -385,28 +380,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(ReadToolTipText(contentToolTip).Contains("The person's name"), "The restored tooltip must carry the header's text.");
                 }
             }
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct CURSORINFO
-        {
-            public int cbSize;
-            public int flags;
-            public IntPtr hCursor;
-            public int ptX;
-            public int ptY;
-        }
-
-        [DllImport("user32.dll")]
-        private static extern bool GetCursorInfo(ref CURSORINFO pci);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
-
-        private static IntPtr ReadCursorHandle()
-        {
-            var info = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
-            return GetCursorInfo(ref info) ? info.hCursor : IntPtr.Zero;
         }
 
         // The screen point over a given column's cell in a given row: the column's x from its HEADER, the row's

@@ -317,8 +317,10 @@ namespace TableViewDetails
         }
     }
 
-    // An open tooltip resets the cursor of a resting pointer, so a header's tooltip is detached while
-    // the pointer is on its resize gripper. Detaching also closes it or cancels its pending open.
+    // Workaround: a tooltip opening under a resting pointer resets its ProtectedCursor to the arrow
+    // until the pointer moves. That is a framework bug; remove this pair once it is fixed there.
+    // Detached rather than disabled: a disabled ToolTip still opens (at zero opacity) and still
+    // resets the cursor. Detaching also closes it or cancels its pending open.
     inline void SuppressOwnedToolTip(const winrt::FrameworkElement& element)
     {
         if (auto const record = GetRecord(element); record && !record->IsSuppressed && IsOwnedToolTip(element, *record))
