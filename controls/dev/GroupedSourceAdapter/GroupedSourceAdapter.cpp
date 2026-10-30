@@ -95,6 +95,8 @@ void GroupedSourceAdapter::Rebuild()
         // Drop inner-group subscriptions before rebuilding; re-attach as we walk the (possibly new)
         // set of groups.
         UnsubscribeFromAllGroups();
+        m_groupHeaderSlotsValid = false;
+        m_groupHeaderSlots.clear();
 
         // Build into a local vector, then bulk-replace via a single Reset rather than firing N+1
         // VectorChanged events. ItemsRepeater treats one Reset as a wholesale rebuild; per-item Add
@@ -150,13 +152,15 @@ void GroupedSourceAdapter::Rebuild()
                 // An empty group is NOT dropped: group existence is source-owned (a bucket exists
                 // only if the app authored it — a Kanban column, an "Uncategorized" bucket, an empty
                 // drag target), so it must stay targetable.
-                auto items = ShapingHelpers::EnumerateInspectableItems(ShapingHelpers::GetGroupItemsObject(group));
+                auto const groupItems = ShapingHelpers::GetGroupItemsObject(group);
+                auto items = ShapingHelpers::EnumerateInspectableItems(groupItems);
                 const int32_t groupItemCount = static_cast<int32_t>(items.size());
                 const bool isExpanded = m_expansion.IsExpanded(intentKey);
 
                 // Collapsed groups still present a header (chrome stays targetable) but contribute no
                 // data rows. The header carries the resolved count and expansion state so chevron
                 // chrome and the automation peer read them without re-resolving against the adapter.
+                m_groupHeaderSlots.push_back({ group, groupItems, static_cast<uint32_t>(built.size()) });
                 built.push_back(winrt::make<::GroupedEntry>(group, groupItemCount, isExpanded));
 
                 if (isExpanded)
@@ -180,6 +184,7 @@ void GroupedSourceAdapter::Rebuild()
 
         // One Reset for the whole projection.
         m_entries.ReplaceAll(built);
+        m_groupHeaderSlotsValid = true;
 
         // resetGuard runs here, at the end of the loop body, publishing into runPending whether a
         // re-entrant request arrived while the guard was held.
@@ -270,6 +275,8 @@ void GroupedSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionModel:
             m_pendingRebuild = false;
         });
 
+        // The splice moves every later header.
+        m_groupHeaderSlotsValid = false;
         applied = TryApplyExpansionSplice(change.Keys.front(), change.IsExpanded);
     }
 
@@ -350,6 +357,135 @@ bool GroupedSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& intentK
     // The header for this key isn't materialized in the projection (mid-reshape); let Rebuild
     // reconcile from source.
     return false;
+}
+
+void GroupedSourceAdapter::OnGroupItemsChanged(
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    AssertRebuildOnUiThread();
+
+    if (m_rebuildInFlight)
+    {
+        m_pendingRebuild = true;
+        return;
+    }
+
+    bool runPending = false;
+    bool applied = false;
+    {
+        m_rebuildInFlight = true;
+        m_pendingRebuild = false;
+        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
+        {
+            m_rebuildInFlight = false;
+            runPending = m_pendingRebuild;
+            m_pendingRebuild = false;
+        });
+
+        applied = TryApplyGroupItemsSplice(items, args);
+    }
+
+    if (runPending || !applied)
+    {
+        Rebuild();
+    }
+}
+
+void GroupedSourceAdapter::EnsureGroupHeaderSlots()
+{
+    if (m_groupHeaderSlotsValid)
+    {
+        return;
+    }
+
+    m_groupHeaderSlots.clear();
+    const uint32_t count = m_entries.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (auto const entry = TryGetGroupedEntry(m_entries.GetAt(i)))
+        {
+            auto const group = entry->Group();
+            m_groupHeaderSlots.push_back({ group, ShapingHelpers::GetGroupItemsObject(group), i });
+        }
+    }
+    m_groupHeaderSlotsValid = true;
+}
+
+bool GroupedSourceAdapter::TryApplyGroupItemsSplice(
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    using winrt::Windows::Foundation::Collections::CollectionChange;
+
+    const auto change = args.CollectionChange();
+    if (!items || (change != CollectionChange::ItemInserted && change != CollectionChange::ItemRemoved))
+    {
+        return false;
+    }
+
+    EnsureGroupHeaderSlots();
+    size_t slotIndex = 0;
+    while (slotIndex < m_groupHeaderSlots.size() && m_groupHeaderSlots[slotIndex].Items != items)
+    {
+        ++slotIndex;
+    }
+    if (slotIndex == m_groupHeaderSlots.size())
+    {
+        return false;
+    }
+
+    auto const& slot = m_groupHeaderSlots[slotIndex];
+    const uint32_t headerIndex = slot.EntryIndex;
+    auto const entry = headerIndex < m_entries.Size() ? TryGetGroupedEntry(m_entries.GetAt(headerIndex)) : nullptr;
+    if (!entry || entry->Group() != slot.Group)
+    {
+        return false;
+    }
+
+    // The stored count must account for exactly this one change; anything else was missed.
+    const bool inserted = change == CollectionChange::ItemInserted;
+    const int32_t oldCount = entry->GroupItemCount();
+    const int32_t newCount = oldCount + (inserted ? 1 : -1);
+    const uint32_t index = args.Index();
+    if (newCount < 0 ||
+        static_cast<int32_t>(items.Size()) != newCount ||
+        static_cast<int64_t>(index) > (inserted ? oldCount : oldCount - 1))
+    {
+        return false;
+    }
+
+    const bool isExpanded = entry->IsExpanded();
+    const uint32_t rowIndex = headerIndex + 1 + index;
+    if (isExpanded && !inserted &&
+        (rowIndex >= m_entries.Size() || TryGetGroupedEntry(m_entries.GetAt(rowIndex))))
+    {
+        return false;
+    }
+
+    auto const group = slot.Group;
+    if (isExpanded)
+    {
+        for (size_t later = slotIndex + 1; later < m_groupHeaderSlots.size(); ++later)
+        {
+            m_groupHeaderSlots[later].EntryIndex += inserted ? 1 : static_cast<uint32_t>(-1);
+        }
+    }
+
+    // Re-minted, since GroupedEntry is immutable; one Replace refreshes the count chrome.
+    m_entries.SetAt(headerIndex, winrt::make<::GroupedEntry>(group, newCount, isExpanded));
+    if (isExpanded)
+    {
+        if (inserted)
+        {
+            m_entries.InsertAt(rowIndex, items.GetAt(index));
+        }
+        else
+        {
+            m_entries.RemoveAt(rowIndex);
+        }
+    }
+    return true;
 }
 
 winrt::IInspectable GroupedSourceAdapter::ResolveLiveGroupByIdentity(winrt::hstring const& groupKey) const
@@ -468,8 +604,8 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
     const auto items = ShapingHelpers::GetGroupItemsObject(group);
     sub.ItemsForRevocation = items;
 
-    // Any change inside a group is a full Rebuild — no fast path, so no weak_ref to the group is
-    // needed inside the callback (it captures only weak_from_this, never a strong back-ref).
+    // A single-row change inside a group is spliced, anything else is a full Rebuild. The callback
+    // captures only weak_from_this, never a strong back-ref; the sender identifies the group.
     if (auto incc = items.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
     {
         sub.CollectionToken = incc.CollectionChanged(
@@ -481,9 +617,11 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
     else if (auto obs = items.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
     {
         sub.Token = obs.VectorChanged(
-            [weakThis = weak_from_this()](auto&&, auto&&)
+            [weakThis = weak_from_this()](
+                winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& sender,
+                winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
             {
-                if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
+                if (auto strongThis = weakThis.lock()) { strongThis->OnGroupItemsChanged(sender, args); }
             });
     }
     else if (auto bobs = items.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())

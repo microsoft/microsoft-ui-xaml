@@ -97,8 +97,11 @@ the source publishes, so the same engine serves an app that never touches `Table
   non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
 - Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
   group-level aggregates/summaries. — *deferred*
-- Incremental (non-rebuild) maintenance of a grouped projection: a source change under grouping
-  currently rebuilds rather than splicing. Correct, but O(N) per change. — *deferred*
+- Incremental (non-rebuild) maintenance of a grouped projection: with no sort declared before
+  `GroupBy`, an `Add` appended to the source joins its group (at its sorted slot when sorted within
+  groups, or as a new last group) and a `Remove` leaves its group, each spliced into the rows without
+  a reset. Other changes, and any change after an item edit the projection has not seen, rebuild. —
+  **shipped** (append/remove) · inserts, moves and replaces under grouping *deferred*
 
 ### Editing
 - Opt-in cell editing (`IsReadOnly = false` on the control; per-column `IsReadOnly`). — **cell editing**
