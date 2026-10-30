@@ -1559,7 +1559,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a drag after the locked Star column stopped holding its share never takes width from, or gives width to, the locked column before the dragged one while the drag is in flight.")]
+        [TestProperty("Description", "Verifies a resize after the locked Star column stopped holding its share never moves the locked column before the resized one, during or after the resize, by pointer, keyboard or UI Automation.")]
         public void VerifyDragAfterLockedStarCapHoldsEarlierLockedColumn()
         {
             TableView tableView = null;
@@ -1577,31 +1577,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 DragLockedStarTableColumns(tableView);
                 tableView.Columns[3].MaxWidth = 50.0;
                 tableView.UpdateLayout();
-                VerifyLockedStarLayout(tableView, "before the drag");
+                VerifyLockedStarLayout(tableView, "before the resizes");
 
-                foreach (var delta in new[] { -20.0, 20.0 })
+                var gripper = RequireGripper(tableView, 2);
+                gripper.KeyboardIncrement = 20.0;
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[2])
+                    .GetPattern(global::Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Transform) as global::Microsoft.UI.Xaml.Automation.Provider.ITransformProvider;
+                var scale = tableView.XamlRoot.RasterizationScale;
+
+                foreach (var (input, delta) in new[] { ("pointer", -20.0), ("keyboard", 20.0), ("UI Automation", -20.0) })
                 {
                     var before = tableView.Columns.Select(c => c.ActualWidth).ToArray();
-                    var gripper = RequireGripper(tableView, 2);
-                    gripper.BeginDrag();
-                    gripper.TryDrag(delta);
+                    switch (input)
+                    {
+                        case "pointer":
+                            gripper.BeginDrag();
+                            gripper.TryDrag(delta);
+                            tableView.UpdateLayout();
+                            var during = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                            Log.Comment($"during={string.Join(", ", during)}.");
+                            VerifyNear(before[1], during[1], 0.5, "The drag must not move the locked column before the dragged one while it is in flight");
+                            gripper.EndDrag(false);
+                            break;
+                        case "keyboard":
+                            Verify.IsTrue(gripper.TryKeyboardStep(VirtualKey.Right), "The keyboard step must be acted on.");
+                            break;
+                        default:
+                            transform.Resize((before[2] + delta) * scale, 0.0);
+                            break;
+                    }
                     tableView.UpdateLayout();
 
-                    var during = tableView.Columns.Select(c => c.ActualWidth).ToArray();
-                    Log.Comment($"delta={delta}: before={string.Join(", ", before)}, during={string.Join(", ", during)}.");
-                    VerifyNear(before[2] + delta, during[2], 1.0, "The drag must take effect");
-                    VerifyNear(before[0], during[0], 0.5, "The drag must not move the column before the dragged one");
-                    VerifyNear(before[1], during[1], 0.5, "The drag must not move the locked column before the dragged one");
-                    // The last column is at its MaxWidth, so width the drag frees is left empty.
-                    VerifyNear(Math.Min(50.0, before[3] - delta), during[3], 1.0, "The column after the dragged one must give or take the width");
-
-                    gripper.EndDrag(false);
-                    tableView.UpdateLayout();
-                    VerifyLockedStarLayout(tableView, $"after releasing a {delta} drag");
+                    var after = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                    Log.Comment($"{input} {delta}: before={string.Join(", ", before)}, after={string.Join(", ", after)}.");
+                    VerifyNear(before[2] + delta, after[2], 1.0, $"The {input} resize must take effect");
+                    VerifyNear(before[0], after[0], 0.5, $"The {input} resize must not move the column before the resized one");
+                    VerifyNear(before[1], after[1], 0.5, $"The {input} resize must not move the locked column before the resized one, after it ends");
+                    // The last column is at most at its MaxWidth, so width a resize frees beyond that is left empty.
+                    var viewport = GetBodyViewportWidth(tableView);
+                    VerifyNear(Math.Min(50.0, viewport - after[0] - after[1] - after[2]), after[3], 1.0,
+                        $"The column after the {input} resize must give or take the width");
                 }
+
+                // Any other change to the inputs ends the hold, so the columns fill the viewport again.
+                tableView.Columns[3].MaxWidth = 60.0;
+                tableView.UpdateLayout();
+                VerifyLockedStarLayout(tableView, "after a MaxWidth change ends the hold");
             });
         }
-
         [TestMethod]
         [TestProperty("Description", "Verifies a drag clamped at its bound does not knock a locked Star column out of its held share through rounding.")]
         public void VerifyDragClampedAtBoundKeepsLockedStarShare()
