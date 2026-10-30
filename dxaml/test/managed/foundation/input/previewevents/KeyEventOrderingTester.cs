@@ -14,6 +14,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
+#if CSWINRT3_0
+using CharReceivedHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.CharacterReceivedRoutedEventArgs>;
+#else
+using CharReceivedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.CharacterReceivedRoutedEventArgs>;
+#endif
 using Microsoft.UI.Xaml.Markup;
 
 namespace Microsoft.UI.Xaml.Tests.Common
@@ -59,7 +64,7 @@ namespace Microsoft.UI.Xaml.Tests.Common
                 EventOrder.Append("[" + sourceAsFrameworkElement.Name + "KeyUp:" + e.OriginalKey.ToString() + GetHandled(e.Handled) + "]");
             });
 
-            FrameworkElementCharacterReceivedHandler = new TypedEventHandler<UIElement, CharacterReceivedRoutedEventArgs>((source, e) =>
+            FrameworkElementCharacterReceivedHandler = new CharReceivedHandler((source, e) =>
             {
                 FrameworkElement sourceAsFrameworkElement = (FrameworkElement)source;
                 EventOrder.Append("[" + sourceAsFrameworkElement.Name + "CharacterReceived:" + e.Character.ToString() + GetHandled(e.Handled) + "]");
@@ -144,7 +149,7 @@ namespace Microsoft.UI.Xaml.Tests.Common
         KeyEventHandler FrameworkElementPreviewKeyUpHandler;
         KeyEventHandler FrameworkElementKeyDownHandler;
         KeyEventHandler FrameworkElementKeyUpHandler;
-        TypedEventHandler<UIElement, CharacterReceivedRoutedEventArgs> FrameworkElementCharacterReceivedHandler;
+        CharReceivedHandler FrameworkElementCharacterReceivedHandler;
 
         public void Dispose()
         {

@@ -9,6 +9,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp;
 using Windows.ApplicationModel.DataTransfer;
+#if CSWINRT3_0
+using Windows.Foundation;
+#endif
 
 namespace TableViewSampleApp.Pages;
 

@@ -2222,7 +2222,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             AutoResetEvent linedFlowLayoutItemsInfoRequestedEvent = new AutoResetEvent(false);
             bool linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown = false;
 
+#if CSWINRT3_0
+            EventHandler<LinedFlowLayout, LinedFlowLayoutItemsInfoRequestedEventArgs> itemsInfoRequestedHandler = (sender, args) =>
+#else
             TypedEventHandler<LinedFlowLayout, LinedFlowLayoutItemsInfoRequestedEventArgs> itemsInfoRequestedHandler = (sender, args) =>
+#endif
             {
                 Log.Comment($"LinedFlowLayout.ItemsInfoRequested raised - ItemsRangeStartIndex={args.ItemsRangeStartIndex}, ItemsRangeRequestedLength={args.ItemsRangeRequestedLength}");
 

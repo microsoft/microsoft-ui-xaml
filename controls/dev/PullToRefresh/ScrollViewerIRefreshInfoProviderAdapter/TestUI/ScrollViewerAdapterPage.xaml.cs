@@ -41,7 +41,7 @@ namespace MUXControlsTestApp
             objects["sv"] = new WeakReference(sv);
             sv.Content = new Button();
             ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
-            adapter.Adapt(sv, new Size(1.0, 1.0));
+            adapter.Adapt(sv, new Size(1.0f, 1.0f));
             this.TestRoot.Children.Add(sv);
         }
 

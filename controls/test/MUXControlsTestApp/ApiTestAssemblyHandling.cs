@@ -30,6 +30,10 @@ namespace MUXControlsTestApp
         [TestProperty("UAP:Host", "PackagedCWA")]
         public static void AssemblyInitialize(TestContext testContext)
         {
+#if CSWINRT3_0
+            // TAEF's native host has no managed entry assembly for TypeMap discovery.
+            System.Reflection.Assembly.SetEntryAssembly(typeof(ApiTestAssemblyHandling).Assembly);
+#endif
             if (testContext.Properties.Contains("WaitForDebugger") || testContext.Properties.Contains("WaitForAppDebugger"))
             {
                 var processId = Windows.System.Diagnostics.ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;

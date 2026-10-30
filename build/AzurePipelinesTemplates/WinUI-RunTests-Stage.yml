@@ -2,11 +2,16 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
+  useCsWinRT3: false
+  stageName: RunTests
+  dependsOn: Build
+  testPayloadArtifactName: TestPayload
+  runArtifactNamespace: RunTestsStage
 
 stages:
-- stage: RunTests
-  displayName: Run Tests Stage
-  dependsOn: Build
+- stage: ${{ parameters.stageName }}
+  displayName: ${{ parameters.stageName }}
+  dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   jobs:
   - template: WinUI-CreateTestPayload-Job.yml
@@ -14,26 +19,30 @@ stages:
       runTestJobName: CreateTestPayload
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'DevTestSuite'
-      testPayloadArtifactName: 'TestPayload'
+      testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
+      useCsWinRT3: ${{ parameters.useCsWinRT3 }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunTests25H2
+      runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateTestPayload
       testOS: 'Win11-25H2'
-      testPayloadArtifactName: 'TestPayload'
+      testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
   - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTests23H2
+        runTestStageName: ${{ parameters.runArtifactNamespace }}
         dependsOn: CreateTestPayload
         testOS: 'Win11-23H2'
-        testPayloadArtifactName: 'TestPayload'
+        testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTestsRS5
+        runTestStageName: ${{ parameters.runArtifactNamespace }}
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
-        testPayloadArtifactName: 'TestPayload'
+        testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}

@@ -3,15 +3,20 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
 
   <PropertyGroup>
-    <TargetFramework>$(WindowsAppSdkTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</TargetPlatformMinVersion>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="!$(_IsCsWinRTv3)">
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
-      <HintPath>$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTLibPath)\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition="$(_IsCsWinRTv3)">
+    <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>

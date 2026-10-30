@@ -656,9 +656,9 @@ namespace MUXControlsTestApp
             var undoButtonOverflow16OverflowTextLabel = UndoButtonOverflow16.FindVisualChildByName("OverflowTextLabel");
             var redoButton16ContentViewbox = RedoButton16.FindVisualChildByName("ContentViewbox");
 
-            var undoButtonOverflow16ContentViewboxBounds = undoButtonOverflow16ContentViewbox.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, undoButtonOverflow16ContentViewbox.ActualWidth, undoButtonOverflow16ContentViewbox.ActualHeight));
-            var undoButtonOverflow16OverflowTextLabelBounds = undoButtonOverflow16OverflowTextLabel.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, undoButtonOverflow16ContentViewbox.ActualWidth, undoButtonOverflow16ContentViewbox.ActualHeight));
-            var redoButton16ContentViewboxBounds = redoButton16ContentViewbox.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, undoButtonOverflow16ContentViewbox.ActualWidth, undoButtonOverflow16ContentViewbox.ActualHeight));
+            var undoButtonOverflow16ContentViewboxBounds = undoButtonOverflow16ContentViewbox.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, (float)undoButtonOverflow16ContentViewbox.ActualWidth, (float)undoButtonOverflow16ContentViewbox.ActualHeight));
+            var undoButtonOverflow16OverflowTextLabelBounds = undoButtonOverflow16OverflowTextLabel.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, (float)undoButtonOverflow16ContentViewbox.ActualWidth, (float)undoButtonOverflow16ContentViewbox.ActualHeight));
+            var redoButton16ContentViewboxBounds = redoButton16ContentViewbox.TransformToVisual(null).TransformBounds(new Windows.Foundation.Rect(0, 0, (float)undoButtonOverflow16ContentViewbox.ActualWidth, (float)undoButtonOverflow16ContentViewbox.ActualHeight));
 
             ExtraInformationTextBox.Text = $"({undoButtonOverflow16ContentViewboxBounds.X}, {undoButtonOverflow16ContentViewboxBounds.Y}, {undoButtonOverflow16ContentViewboxBounds.Width}, {undoButtonOverflow16ContentViewboxBounds.Height}), ({undoButtonOverflow16OverflowTextLabelBounds.X}, {undoButtonOverflow16OverflowTextLabelBounds.Y}, {undoButtonOverflow16OverflowTextLabelBounds.Width}, {undoButtonOverflow16OverflowTextLabelBounds.Height}), ({redoButton16ContentViewboxBounds.X}, {redoButton16ContentViewboxBounds.Y}, {redoButton16ContentViewboxBounds.Width}, {redoButton16ContentViewboxBounds.Height})";
             RecordEvent("Undo with overflow visible");

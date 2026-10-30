@@ -7,6 +7,7 @@ parameters:
   pipelineKind: '' # can be: Nightly, CI, PR, BuildAndTest, TestLocalBuild, ValidateWindowsAppSDK
   testPayloadArtifactName: 'TestPayload'
   includeWinUIGallery: true
+  useCsWinRT3: false
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -63,6 +64,28 @@ jobs:
           normalizedConfiguration: 'fre'
 
   variables:
+    - ${{ if eq(parameters.useCsWinRT3, true) }}:
+      - name: dropSubfolder
+        value: drop_cswinrt3
+      - name: managedTestFilePattern
+        value: 'Test\*\Microsoft.UI.Xaml.Tests.Managed.*.dll'
+      - name: muxControlsTestFilePattern
+        value: 'Test\MUXControls.Test\MUXControls.Test.dll'
+      - name: scenarioTestTaefQuery
+        value: "@Name='Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.WinUICsDesktopSampleAppTests.*'"
+      - name: projectionPayloadAdditionalArguments
+        value: '-IsolateManagedTestProjections -SkipWinUIGallery'
+    - ${{ else }}:
+      - name: dropSubfolder
+        value: drop
+      - name: managedTestFilePattern
+        value: 'Test\Microsoft.UI.Xaml.Tests.Managed.*.dll'
+      - name: muxControlsTestFilePattern
+        value: 'Test\MUXControls.Test.dll'
+      - name: scenarioTestTaefQuery
+        value: $(taefQuery)
+      - name: projectionPayloadAdditionalArguments
+        value: ''
     - name: artifactsDir
       value: $(Build.ArtifactStagingDirectory)
     - name: testBinaryPath
@@ -71,14 +94,14 @@ jobs:
       value: ${{ parameters.testSuite }}.$(buildPlatform).$(normalizedConfiguration)
     - name: pipelineKind
       value: ${{ parameters.pipelineKind }}
-    - ${{ if eq(parameters.includeWinUIGallery, true) }}:
+    - ${{ if or(eq(parameters.includeWinUIGallery, true), eq(parameters.useCsWinRT3, true)) }}:
       - name: scenarioPayloadAdditionalArguments
         value: ''
     - ${{ else }}:
       - name: scenarioPayloadAdditionalArguments
         value: '-SkipWinUIGallery'
     - name: taefExePath
-      value: '$(artifactsDir)\drop\amd64fre\Taef\te.exe' # We need to override this to ensure that we don't try to run arm64 te.exe on this amd64 pipeline machine.
+      value: '$(artifactsDir)\$(dropSubfolder)\amd64fre\Taef\te.exe' # We need to override this to ensure that we don't try to run arm64 te.exe on this amd64 pipeline machine.
     - name: ob_outputDirectory
       value: '$(Build.SourcesDirectory)\out'
     - name: ob_artifactBaseName
@@ -167,7 +190,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: test\CreateTestPayload.ps1
-      arguments: -BinSourceRoot $(artifactsDir)\drop -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols $(scenarioPayloadAdditionalArguments) $(webView2RuntimeInstallerArgument)
+      arguments: -BinSourceRoot $(artifactsDir)\$(dropSubfolder) -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols $(scenarioPayloadAdditionalArguments) $(projectionPayloadAdditionalArguments) $(webView2RuntimeInstallerArgument)
 
   - task: CopyFiles@2
     displayName: MoveToOutputDirectory
@@ -178,7 +201,7 @@ jobs:
   - ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
     - template: WinUI-CreateHelixProjFile-Steps.yml
       parameters:
-        testFilePathPattern: 'Test\MUXControls.Test.dll'
+        testFilePathPattern: $(muxControlsTestFilePattern)
         outputProjFileName: 'RunTestsInHelix-MUXControlsInteractionTests.proj'
         testBinaryPath: $(testBinaryPath)
         taefQuery: $(taefQuery)
@@ -225,7 +248,7 @@ jobs:
 
     - template: WinUI-CreateHelixProjFile-Steps.yml
       parameters:
-        testFilePathPattern: 'Test\Microsoft.UI.Xaml.Tests.Managed.*.dll'
+        testFilePathPattern: $(managedTestFilePattern)
         outputProjFileName: 'RunTestsInHelix-MUXCoreManagedTests-WPF.proj'
         testBinaryPath: $(testBinaryPath)
         taefQuery: $(taefQuery)
@@ -246,10 +269,10 @@ jobs:
   - ${{ if eq(parameters.testSuite, 'ScenarioTestSuite') }}:
     - template: WinUI-CreateHelixProjFile-Steps.yml
       parameters:
-        testFilePathPattern: 'Test\MUXControls.Test.dll'
+        testFilePathPattern: $(muxControlsTestFilePattern)
         outputProjFileName: 'RunTestsInHelix-ScenarioTests.proj'
         testBinaryPath: $(testBinaryPath)
-        taefQuery: $(taefQuery)
+        taefQuery: $(scenarioTestTaefQuery)
         targetOsVersion: $(targetOsVersion)
         testSuite: 'ScenarioTestSuite'
         taefExePath: $(taefExePath)

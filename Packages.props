@@ -14,7 +14,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageReference Update="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
-    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+    <!-- .NET 10 consumers use CsWinRT 3.0; other target frameworks use CsWinRT 2.x. -->
+    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
+    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net10.0'))" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Update="Microsoft.TestPlatform.TestHost" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Update="Microsoft.Windows.SDK.BuildTools" Version="$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)" />

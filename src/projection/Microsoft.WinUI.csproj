@@ -5,7 +5,6 @@
   <Import Project="$(ProjectRoot)eng\winui-version.props" />
 
   <PropertyGroup>
-    <TargetFramework>$(WindowsAppSdkTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</TargetPlatformMinVersion>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
@@ -19,9 +18,15 @@
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="!$(_IsCsWinRTv3)">
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
-      <HintPath>$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTLibPath)\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition="$(_IsCsWinRTv3)">
+    <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
@@ -41,8 +46,20 @@
     <CsWinRTInputs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd" />
   </ItemGroup>
 
+  <!-- CsWinRT 3.0 generates reference projections rather than implementation assemblies.
+       Exclude the hand-written type forwarders. -->
+  <ItemGroup Condition="$(_IsCsWinRTv3)">
+    <Compile Remove="CoreWebView2TypeForwarders.cs" />
+    <Compile Remove="WindowsUITypeForwarders.cs" />
+  </ItemGroup>
+
   <!-- Add the generated cswinrt interop assembly to the nuget -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != ''">
     <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(CSWinRTInteropAssemblyPackageLocation)" />
+  </ItemGroup>
+
+  <!-- CsWinRT 3.0 reference projection: ref assembly goes in ref/<tfm>/ folder -->
+  <ItemGroup Condition="$(_IsCsWinRTv3)">
+    <PackageContent Include="$(OutDir)ref\$(TargetName).dll" PackageLocation="$(CSWinRTRefAssemblyPackageLocation)" />
   </ItemGroup>
 </Project>

@@ -35,6 +35,10 @@ parameters:
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
+- name: runCsWinRT3Tests
+  displayName: "Build and run the CsWinRT 3.0 test passes"
+  type: boolean
+  default: false
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
@@ -154,6 +158,7 @@ extends:
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: false
+          buildCsWinRT3Tests: ${{ parameters.runCsWinRT3Tests }}
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
@@ -183,3 +188,20 @@ extends:
         parameters:
           pipelineKind: GitHubPR
           dependsOn: Build
+
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runCsWinRT3Tests, true)) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+          useCsWinRT3: true
+          stageName: RunTests_CsWinRT3
+          testPayloadArtifactName: TestPayload_CsWinRT3
+          runArtifactNamespace: RunTestsStage_CsWinRT3
+      - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+        parameters:
+          pipelineKind: GitHubPR
+          dependsOn: Build
+          useCsWinRT3: true
+          stageName: RunScenarioTests_CsWinRT3
+          testPayloadArtifactName: ScenarioTestPayload_CsWinRT3
+          runArtifactNamespace: RunScenarioTestsStage_CsWinRT3

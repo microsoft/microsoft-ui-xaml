@@ -2912,7 +2912,7 @@ namespace MUXControlsTestApp
                                 AppendEventMessage("Invalid TargetRect format.");
                                 return;
                             }
-                            bringIntoViewOptions.TargetRect = new Rect(double.Parse(rectComponents[0]), double.Parse(rectComponents[1]), double.Parse(rectComponents[2]), double.Parse(rectComponents[3]));
+                            bringIntoViewOptions.TargetRect = new Rect(float.Parse(rectComponents[0]), float.Parse(rectComponents[1]), float.Parse(rectComponents[2]), float.Parse(rectComponents[3]));
                         }
 
                         bringIntoViewOptions.AnimationDesired = animationDesired;

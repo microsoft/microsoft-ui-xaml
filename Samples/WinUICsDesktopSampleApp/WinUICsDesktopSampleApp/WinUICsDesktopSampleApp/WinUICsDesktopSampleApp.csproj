@@ -22,10 +22,7 @@
       8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
       NU1605
     </NoWarn>
-
-    <CSWinRTIncludes>
-      AppTestAutomationHelpers
-    </CSWinRTIncludes>
+    <NoWarn Condition="'$(UseCsWinRT3)' == 'true'">$(NoWarn);CSWINRT3005</NoWarn>
 
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -70,6 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.csproj" />
     <ProjectReference Include="..\..\..\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj"/>
     <ProjectReference Include="..\..\WinUICsDesktopClassLibrary\WinUICsDesktopClassLibrary.csproj" />
   </ItemGroup>
@@ -87,4 +85,5 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
+  <Import Project="..\..\..\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.Consumer.targets" />
 </Project>

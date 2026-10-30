@@ -114,7 +114,7 @@ namespace MUXControlsTestApp.Samples
             var extentHeight = ((int)(context.ItemCount / 3) - 1) * (this.MinItemSize.Height + this.RowSpacing) + this.MinItemSize.Height;
 
             // Report a desired size for the layout
-            return new Size(this.MinItemSize.Width * 4 + this.ItemSpacing * 2, extentHeight);
+            return new Size((float)(this.MinItemSize.Width * 4 + this.ItemSpacing * 2), (float)extentHeight);
         }
 
         protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
@@ -142,7 +142,7 @@ namespace MUXControlsTestApp.Samples
             var boundsForRow = new Rect[3];
 
             var yoffset = rowIndex * (this.MinItemSize.Height + this.RowSpacing);
-            boundsForRow[0].Y = boundsForRow[1].Y = boundsForRow[2].Y = yoffset;
+            boundsForRow[0].Y = boundsForRow[1].Y = boundsForRow[2].Y = (float)yoffset;
             boundsForRow[0].Height = boundsForRow[1].Height = boundsForRow[2].Height = this.MinItemSize.Height;
 
             if (rowIndex % 2 == 0)
@@ -151,22 +151,22 @@ namespace MUXControlsTestApp.Samples
                 boundsForRow[0].X = 0;
                 boundsForRow[0].Width = this.MinItemSize.Width;
                 // Middle tile (narrow)
-                boundsForRow[1].X = boundsForRow[0].Right + this.ItemSpacing;
+                boundsForRow[1].X = (float)(boundsForRow[0].Right + this.ItemSpacing);
                 boundsForRow[1].Width = this.MinItemSize.Width;
                 // Right tile (wide)
-                boundsForRow[2].X = boundsForRow[1].Right + this.ItemSpacing;
-                boundsForRow[2].Width = this.MinItemSize.Width * 2 + this.ItemSpacing;
+                boundsForRow[2].X = (float)(boundsForRow[1].Right + this.ItemSpacing);
+                boundsForRow[2].Width = (float)(this.MinItemSize.Width * 2 + this.ItemSpacing);
             }
             else
             {
                 // Left tile (wide)
                 boundsForRow[0].X = 0;
-                boundsForRow[0].Width = (this.MinItemSize.Width * 2 + this.ItemSpacing);
+                boundsForRow[0].Width = (float)(this.MinItemSize.Width * 2 + this.ItemSpacing);
                 // Middle tile (narrow)
-                boundsForRow[1].X = boundsForRow[0].Right + this.ItemSpacing;
+                boundsForRow[1].X = (float)(boundsForRow[0].Right + this.ItemSpacing);
                 boundsForRow[1].Width = this.MinItemSize.Width;
                 // Right tile (narrow)
-                boundsForRow[2].X = boundsForRow[1].Right + this.ItemSpacing;
+                boundsForRow[2].X = (float)(boundsForRow[1].Right + this.ItemSpacing);
                 boundsForRow[2].Width = this.MinItemSize.Width;
             }
 

@@ -195,11 +195,11 @@ namespace MUXControlsTestApp
             else
             {
                 GeneralTransform t = Pane1Content.TransformToVisual(SimulatedWindow);
-                Rect bounds = new Rect(0, 0, Pane1Content.ActualWidth, Pane1Content.ActualHeight);
+                Rect bounds = new Rect(0, 0, (float)Pane1Content.ActualWidth, (float)Pane1Content.ActualHeight);
                 Rect rc1 = t.TransformBounds(bounds);
 
                 t = Pane2Content.TransformToVisual(SimulatedWindow);
-                bounds = new Rect(0, 0, Pane2Content.ActualWidth, Pane2Content.ActualHeight);
+                bounds = new Rect(0, 0, (float)Pane2Content.ActualWidth, (float)Pane2Content.ActualHeight);
                 Rect rc2 = t.TransformBounds(bounds);
 
                 int spacing = (int)((TwoPaneView.Mode == TwoPaneViewMode.Wide)

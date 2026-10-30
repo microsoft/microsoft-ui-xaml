@@ -45,10 +45,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var button = new Button { Content = "Button", VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Stretch };
                 var expectedButtonLayoutSlot = new Rect
                 {
-                    Width = width - borderThickness.Left - borderThickness.Right - padding.Left - padding.Right,
-                    Height = height - borderThickness.Top - borderThickness.Bottom - padding.Top - padding.Bottom,
-                    X = borderThickness.Left + padding.Left,
-                    Y = borderThickness.Top + padding.Top,
+                    Width = (float)(width - borderThickness.Left - borderThickness.Right - padding.Left - padding.Right),
+                    Height = (float)(height - borderThickness.Top - borderThickness.Bottom - padding.Top - padding.Bottom),
+                    X = (float)(borderThickness.Left + padding.Left),
+                    Y = (float)(borderThickness.Top + padding.Top),
                 };
                 panel.Children.Add(button);
 
@@ -86,17 +86,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var button2 = new Button { Content = "Button", Height = itemHeight, HorizontalAlignment = HorizontalAlignment.Stretch };
                 var expectedButton1LayoutSlot = new Rect
                 {
-                    Width = unpaddedWidth,
-                    Height = itemHeight,
-                    X = unpaddedX,
-                    Y = unpaddedY,
+                    Width = (float)unpaddedWidth,
+                    Height = (float)itemHeight,
+                    X = (float)unpaddedX,
+                    Y = (float)unpaddedY,
                 };
                 var expectedButton2LayoutSlot = new Rect
                 {
-                    Width = unpaddedWidth,
-                    Height = itemHeight,
-                    X = unpaddedX,
-                    Y = unpaddedY + itemHeight,
+                    Width = (float)unpaddedWidth,
+                    Height = (float)itemHeight,
+                    X = (float)unpaddedX,
+                    Y = (float)(unpaddedY + itemHeight),
                 };
                 panel.Children.Add(button1);
                 panel.Children.Add(button2);
@@ -205,7 +205,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 extentWidth = Math.Max(extentWidth, element.DesiredSize.Width);
             }
 
-            return new Size(extentWidth, extentHeight);
+            return new Size((float)extentWidth, (float)extentHeight);
         }
 
         protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
@@ -213,7 +213,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             double offset = 0.0;
             foreach (var element in context.Children)
             {
-                element.Arrange(new Rect(0, offset, element.DesiredSize.Width, element.DesiredSize.Height));
+                element.Arrange(new Rect(0, (float)offset, element.DesiredSize.Width, element.DesiredSize.Height));
                 offset += element.DesiredSize.Height;
             }
 

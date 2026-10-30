@@ -315,7 +315,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
             return false;
         }
 
-        var bounds = row.TransformToVisual(scroller).TransformBounds(new Rect(0, 0, row.ActualWidth, row.ActualHeight));
+        var bounds = row.TransformToVisual(scroller).TransformBounds(new Rect(0, 0, (float)row.ActualWidth, (float)row.ActualHeight));
         return bounds.Bottom > 0 && bounds.Top < scroller.ViewportHeight;
     }
 

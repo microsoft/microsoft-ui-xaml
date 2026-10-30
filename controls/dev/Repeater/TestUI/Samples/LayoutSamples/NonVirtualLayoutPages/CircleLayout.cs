@@ -18,7 +18,7 @@ namespace MUXControlsTestApp.Samples
             for(int i=0; i< context.ItemCount; i++)
             {
                 var container = context.GetOrCreateElementAt(i);
-                container.Measure(new Size(ItemSize, ItemSize));
+                container.Measure(new Size((float)ItemSize, (float)ItemSize));
             }
 
             return availableSize;
@@ -36,7 +36,7 @@ namespace MUXControlsTestApp.Samples
                 var container = context.GetOrCreateElementAt(i);
                 var x = Math.Sin(angle) * radius - ItemSize / 2.0 + finalSize.Width / 2.0;
                 var y = -Math.Cos(angle) * radius - ItemSize / 2.0 + finalSize.Height / 2.0;
-                container.Arrange(new Rect(x, y, ItemSize, ItemSize));
+                container.Arrange(new Rect((float)x, (float)y, (float)ItemSize, (float)ItemSize));
                 angle += angleIncrement;
             }
 

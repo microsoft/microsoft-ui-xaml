@@ -47,7 +47,10 @@ namespace MUXControlsTestApp
                 _ = WindowsAppRuntime_EnsureIsLoaded();
             }
 
+#if !CSWINRT3_0
+            // CsWinRT 3.0 initializes ComWrappers automatically.
             WinRT.ComWrappersSupport.InitializeComWrappers();
+#endif
             Microsoft.UI.Xaml.Application.Start((p) => {
                 var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);

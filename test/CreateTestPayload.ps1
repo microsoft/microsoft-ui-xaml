@@ -24,7 +24,11 @@ param(
 
     [switch]$Clean,
 
-    [switch]$Quiet
+    [switch]$Quiet,
+
+    # Keep CsWinRT 3.0 test modules in separate folders to avoid projection filename collisions.
+    # Populate missing shared dependencies without replacing module-owned outputs.
+    [switch]$IsolateManagedTestProjections
 )
 
 if (-not $Platform)
@@ -275,9 +279,17 @@ if ($Mode -eq "ScenarioTestSuite")
         Publish-Item "$binpath\Test\WinUIGalleryTestData.xml" "$outpath\Test\"
     }
 
-    Publish-Item "$binpath\Test\MUXControls.Test.dll" "$outpath\Test\"
-    Publish-Item "$binpath\Test\MUXTestInfra.dll" "$outpath\Test\"
-    Publish-Item "$binpath\Test\Microsoft.Windows.Apps.Test.*.dll" "$outpath\Test\"
+    if ($IsolateManagedTestProjections)
+    {
+        Publish-Item "$binpath\Test\MUXControls.Test\*" "$outpath\Test\MUXControls.Test\"
+        Publish-Item "$binpath\Test\Microsoft.Windows.Apps.Test.*.dll" "$outpath\Test\MUXControls.Test\"
+    }
+    else
+    {
+        Publish-Item "$binpath\Test\MUXControls.Test.dll" "$outpath\Test\"
+        Publish-Item "$binpath\Test\MUXTestInfra.dll" "$outpath\Test\"
+        Publish-Item "$binpath\Test\Microsoft.Windows.Apps.Test.*.dll" "$outpath\Test\"
+    }
 
     # TODO: Remove below check
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
@@ -293,6 +305,53 @@ if ($Mode -eq "ScenarioTestSuite")
     }
 
     Publish-Item "$repoRoot\Samples\TestAutomation\scripts\*" "$outpath"
+}
+
+# Each managed module owns its merged projection; replicate only shared dependencies.
+if ($IsolateManagedTestProjections -and $Mode -eq "DevTestSuite")
+{
+    $managedTestRoot = "$outpath\Test"
+    $managedTestFolders = @(Get-ChildItem -LiteralPath $managedTestRoot -Directory | Where-Object {
+        @(Get-ChildItem -LiteralPath $_.FullName -File | Where-Object {
+            $_.Name -like "Microsoft.UI.Xaml.Tests.Managed.*.dll" -or $_.Name -eq "MUXControls.Test.dll"
+        }).Count -gt 0
+    })
+    if ($managedTestFolders.Count -eq 0)
+    {
+        throw "No isolated managed test projections found under '$managedTestRoot'."
+    }
+
+    $sharedFiles = @(Get-ChildItem -LiteralPath $managedTestRoot -File | Where-Object {
+        ($_.Name -notlike "Microsoft.UI.Xaml.Tests.Managed.*.dll" -or $_.Name -eq "Microsoft.UI.Xaml.Tests.Managed.Common.dll") -and
+        $_.Name -ne "MUXControls.Test.dll" -and
+        $_.Name -notin @("WinRT.Projection.dll", "WinRT.Interop.dll", "WinRT.Component.dll", "WinRT.Sdk.Projection.dll", "WinRT.Sdk.Xaml.Projection.dll")
+    })
+    foreach ($folder in $managedTestFolders)
+    {
+        foreach ($sharedFile in $sharedFiles)
+        {
+            $destination = Join-Path $folder.FullName $sharedFile.Name
+            # Flat Test can contain stale CsWinRT 2.x dependencies; project-owned outputs take precedence.
+            if (!(Test-Path -LiteralPath $destination))
+            {
+                Copy-Item -LiteralPath $sharedFile.FullName -Destination $destination -ErrorAction Stop
+            }
+        }
+    }
+
+    $flatTests = @(Get-ChildItem -LiteralPath $managedTestRoot -File | Where-Object {
+        ($_.Name -like "Microsoft.UI.Xaml.Tests.Managed.*.dll" -and $_.Name -ne "Microsoft.UI.Xaml.Tests.Managed.Common.dll") -or
+        $_.Name -eq "MUXControls.Test.dll"
+    })
+    foreach ($test in $flatTests)
+    {
+        $isolatedCopies = @($managedTestFolders | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName $test.Name) })
+        if ($isolatedCopies.Count -ne 1)
+        {
+            throw "Expected one isolated copy of '$($test.Name)', found $($isolatedCopies.Count)."
+        }
+        Remove-Item -LiteralPath $test.FullName -Force
+    }
 }
 
 if ($Mode -eq "PGO")

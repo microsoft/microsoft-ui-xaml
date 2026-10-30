@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageDownload Include="Microsoft.FrameworkUdk" Version="[$(FrameworkUdkPackageVersion)]"/>
+    <PackageDownload Include="Microsoft.Taef" Version="[$(TaefCsWinRT3NugetPackageVersion)]" />
     <PackageReference Include="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)"/>
   </ItemGroup>
 

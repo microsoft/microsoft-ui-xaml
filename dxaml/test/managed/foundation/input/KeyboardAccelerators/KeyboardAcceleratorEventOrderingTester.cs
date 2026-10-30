@@ -14,6 +14,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
+#if CSWINRT3_0
+using KbAccelHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.ProcessKeyboardAcceleratorEventArgs>;
+#else
+using KbAccelHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.ProcessKeyboardAcceleratorEventArgs>;
+#endif
 using Microsoft.UI.Xaml.Markup;
 
 namespace Microsoft.UI.Xaml.Tests.Common
@@ -36,7 +41,7 @@ namespace Microsoft.UI.Xaml.Tests.Common
                 Log.Comment($"FrameworkElementKeyDownHandler:{msg}");
             });
 
-            FrameworkElementProcessKeyboardAcceleratorsHandler = new TypedEventHandler<UIElement, ProcessKeyboardAcceleratorEventArgs>((source, e) =>
+            FrameworkElementProcessKeyboardAcceleratorsHandler = new KbAccelHandler((source, e) =>
             {
                 FrameworkElement sourceAsFrameworkElement = (FrameworkElement)source;
                 var msg = "[" + sourceAsFrameworkElement.Name + "ProcessKeyboardAccelerators:" + e.Key.ToString() + ":"+ e.Modifiers.ToString() +  GetHandled(e.Handled) + "]";
@@ -82,7 +87,7 @@ namespace Microsoft.UI.Xaml.Tests.Common
         }
 
         KeyEventHandler FrameworkElementKeyDownHandler;
-        TypedEventHandler<UIElement, ProcessKeyboardAcceleratorEventArgs> FrameworkElementProcessKeyboardAcceleratorsHandler;
+        KbAccelHandler FrameworkElementProcessKeyboardAcceleratorsHandler;
 
         public void Dispose()
         {

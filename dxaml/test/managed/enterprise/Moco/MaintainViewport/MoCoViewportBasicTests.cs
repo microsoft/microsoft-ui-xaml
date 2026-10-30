@@ -1023,7 +1023,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
                 var isp = (ItemsStackPanel)list.ItemsPanelRoot;
                 var targetItemContainer = (FrameworkElement)list.ContainerFromItem(targetItem);
                 var changeViewOffset = targetItemContainer.TransformToVisual(isp).TransformPoint(new Point(0, 0)).Y;
-                changeViewOffset -= targetGroup.Items.Count * targetItemContainer.ActualHeight;
+                changeViewOffset -= (float)(targetGroup.Items.Count * targetItemContainer.ActualHeight);
                 list.FindElementOfTypeInSubtree<ScrollViewer>().ChangeView(null, changeViewOffset, null, disableAnimation: true);
 
                 Log.Comment("Tracking group header 15.");

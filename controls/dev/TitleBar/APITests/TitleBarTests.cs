@@ -333,13 +333,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 int paneToggleRequestedCount = 0;
                 object backSender = null;
                 object backArgs = "unset";
+#if CSWINRT3_0
+                EventHandler<TitleBar, object> backHandler = (sender, args) =>
+#else
                 TypedEventHandler<TitleBar, object> backHandler = (sender, args) =>
+#endif
                 {
                     backRequestedCount++;
                     backSender = sender;
                     backArgs = args;
                 };
+#if CSWINRT3_0
+                EventHandler<TitleBar, object> paneToggleHandler = (sender, args) => paneToggleRequestedCount++;
+#else
                 TypedEventHandler<TitleBar, object> paneToggleHandler = (sender, args) => paneToggleRequestedCount++;
+#endif
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -1273,7 +1281,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static RectInt32 GetExpectedRegion(FrameworkElement element)
         {
             Verify.IsTrue(element.ActualWidth > 0 && element.ActualHeight > 0, $"{element.GetType().Name} '{element.Name}' should have a laid-out size");
-            var bounds = element.TransformToVisual(null).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+            var bounds = element.TransformToVisual(null).TransformBounds(new Rect(0, 0, (float)element.ActualWidth, (float)element.ActualHeight));
             double scale = element.XamlRoot.RasterizationScale;
             return new RectInt32(
                 (int)(bounds.X * scale),
@@ -1393,7 +1401,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             private void WaitForActivationChange(Action action, bool expectActive)
             {
                 var changed = new AutoResetEvent(false);
+#if CSWINRT3_0
+                EventHandler<object, WindowActivatedEventArgs> handler = (sender, args) =>
+#else
                 TypedEventHandler<object, WindowActivatedEventArgs> handler = (sender, args) =>
+#endif
                 {
                     if ((args.WindowActivationState != WindowActivationState.Deactivated) == expectActive)
                     {

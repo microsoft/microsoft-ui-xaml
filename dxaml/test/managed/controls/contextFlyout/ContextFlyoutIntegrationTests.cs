@@ -594,8 +594,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
             UIExecutor.Execute(() =>
             {
                 Log.Comment($"Control actual size: {control.ActualWidth}, {control.ActualHeight}");
-                gesturePosition.X = (control.ActualWidth / 2.0 + padding) / scale;
-                gesturePosition.Y = (control.ActualHeight / 2.0 + padding) / scale;
+                gesturePosition.X = (float)((control.ActualWidth / 2.0 + padding) / scale);
+                gesturePosition.Y = (float)((control.ActualHeight / 2.0 + padding) / scale);
             });
 
             if (withMouse)
@@ -616,8 +616,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
             Log.Comment("Moving mouse over MenuFlyoutItem...");
             TestServices.InputHelper.MoveMouse(new Point(
-                    gesturePosition.X + contextMenuClickHorizontalOffset / scale + 1.0,
-                    gesturePosition.Y + contextMenuClickVerticalOffset / scale + 1.0));
+                    (float)(gesturePosition.X + contextMenuClickHorizontalOffset / scale + 1.0),
+                    (float)(gesturePosition.Y + contextMenuClickVerticalOffset / scale + 1.0)));
             TestServices.WindowHelper.WaitForIdle();
 
             Log.Comment("Left-clicking MenuFlyoutItem...");

@@ -140,9 +140,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Near the trailing edge of the cell, vertically centred - inside the wrapper, well clear
                 // of the text.
                 var probe = wrapper.TransformToVisual(null).TransformPoint(
-                    new Point(wrapper.ActualWidth - 8.0, wrapper.ActualHeight / 2.0));
+                    new Point((float)(wrapper.ActualWidth - 8.0), (float)(wrapper.ActualHeight / 2.0)));
 
-                var textBounds = text.TransformToVisual(null).TransformPoint(new Point(0.0, 0.0));
+                var textBounds = text.TransformToVisual(null).TransformPoint(new Point(0.0f, 0.0f));
                 Verify.IsGreaterThan(probe.X, textBounds.X + text.ActualWidth,
                     "Precondition: the probe point must lie outside the text element, or the test would pass without proving anything.");
 

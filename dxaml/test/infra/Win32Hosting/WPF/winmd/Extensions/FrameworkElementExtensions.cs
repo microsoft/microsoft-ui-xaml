@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using WPFMarkup = System.Windows.Markup;
 using WPFControls = System.Windows.Controls;
 using WPFSystem = System.Windows;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace System.Windows
 {

@@ -23,6 +23,7 @@
     <DefineConstants Condition="'$(TableViewSampleEnableVerificationLogs)' == 'true'">$(DefineConstants);TABLEVIEW_SAMPLE_VERIFY</DefineConstants>
     <!-- TableView is [MUX_PREVIEW] and surfaces as CS8305 ("for evaluation purposes only"). -->
     <NoWarn>$(NoWarn);CS8305</NoWarn>
+    <NoWarn Condition="'$(UseCsWinRT3)' == 'true'">$(NoWarn);CSWINRT3005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,7 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+#if !CSWINRT3_0
+// AsBuffer() extensions for CsWinRT 2.x.
 using System.Runtime.InteropServices.WindowsRuntime;
+#endif
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
@@ -220,4 +223,3 @@ namespace Microsoft.UI.Xaml.Tests.Common
         }
     }
 }
-

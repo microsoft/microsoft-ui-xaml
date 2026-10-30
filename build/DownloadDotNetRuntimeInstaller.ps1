@@ -30,6 +30,12 @@ if (([string]::IsNullOrEmpty($downloadurlx86)) -or ([string]::IsNullOrEmpty($dow
     # Find .NET runtime direct download links at https://dotnet.microsoft.com/en-us/download/dotnet
     switch($env:_DotNetMoniker)
     {
+        "net10.0"
+        {
+            $downloadurlx86 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.14/windowsdesktop-runtime-10.0.14-win-x86.exe"
+            $downloadurlx64 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.14/windowsdesktop-runtime-10.0.14-win-x64.exe"
+            $downloadurlarm64 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.14/windowsdesktop-runtime-10.0.14-win-arm64.exe"
+        }
         "net8.0"
         {
             $downloadurlx86 = "https://download.visualstudio.microsoft.com/download/pr/c629f243-5125-4751-a5ff-e78fa45646b1/85777e3e3f58f863d884fd4b8a1453f2/windowsdesktop-runtime-8.0.3-win-x86.exe"

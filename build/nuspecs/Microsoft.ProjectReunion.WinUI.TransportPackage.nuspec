@@ -34,6 +34,10 @@ Please note that the APIs contained in this package are subject to change before
         <dependency id="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="[$IXP_VERSION$]"/>
         <dependency id="Microsoft.Windows.CsWinRT" version="[$CSWINRT_VERSION$]"/>
       </group>
+      <group targetFramework="net10.0-windows10.0.26100.1">
+        <dependency id="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="[$IXP_VERSION$]"/>
+        <dependency id="Microsoft.Windows.CsWinRT" version="[$CSWINRT_V3_VERSION$]"/>
+      </group>
       <group>
         <!-- This reference captures the 'default version' of WinUI's CWV2 SDK dependency specified in the root packages.config.
              It will get propagated to Microsoft.WindowsAppSDK.nuspec as part of WindowsAppSDKAggregator build -->
@@ -55,6 +59,7 @@ Please note that the APIs contained in this package are subject to change before
     <file src="$PACKAGEROOT$\include\xamlom.winui*" target="include" />
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*\**" target="lib" />
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
+    <file src="$PACKAGEROOT$\ref\**\Microsoft.WinUI*" target="ref" />
     <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\uap10.0" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="lib\uap10.0" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="lib\uap10.0" />

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Solution-level ProjectDependencies create implicit metaproj references that call
+       GetTargetPathWithTargetPlatformMoniker without SetTargetFramework. This fails on
+       multi-targeted projects because the outer build doesn't have that target.
+
+       Use conditional Import (evaluated at parse time) so only the outer build gets the
+       no-op shim. Inner builds keep the real SDK target untouched. A Target element with
+       Condition would overwrite the SDK's target definition in inner builds too. -->
+  <Import Project="OuterBuild.targets" Condition="'$(TargetFramework)' == ''" />
+</Project>

@@ -30,7 +30,6 @@
   <!-- Binplace TAEF binaries -->
   <PropertyGroup>
     <TaefBinplaceDestination>$(BinplaceRootPath)\Taef</TaefBinplaceDestination>
-    <TaefPkgDirectory>$(NugetPackageDirectory)\Microsoft.Taef.$(TaefNugetPackageVersion)\</TaefPkgDirectory>
   </PropertyGroup>
   <ItemGroup>
     <BinplaceItem Include="$(TaefPkgDirectory)\build\Binaries\$(TaefPlatform)\*" Destination="$(TaefBinplaceDestination)" />

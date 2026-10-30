@@ -4,6 +4,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
   <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
   <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
+  <Import Project="$(MUXProjectRoot)\Samples\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.Consumer.targets" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -23,9 +24,9 @@
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <PublishAot>false</PublishAot>
     <EnableMsixTooling>true</EnableMsixTooling>
-    <CsWinRTIncludes>AppTestAutomationHelpers</CsWinRTIncludes>
-    <CsWinRTIncludes Condition="$(FeatureTableViewEnabled) == 'true'">$(CsWinRTIncludes);Microsoft.UI.Xaml.Controls.Tabular;Microsoft.UI.Xaml.Data.GroupedEntry;Microsoft.UI.Xaml.Data.IGroupedEntry</CsWinRTIncludes>
+    <CsWinRTIncludes Condition="'$(UseCsWinRT3)' != 'true' and '$(FeatureTableViewEnabled)' == 'true'">Microsoft.UI.Xaml.Controls.Tabular;Microsoft.UI.Xaml.Data.GroupedEntry;Microsoft.UI.Xaml.Data.IGroupedEntry</CsWinRTIncludes>
     <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
+    <CsWinRTWindowsMetadata Condition="'$(UseCsWinRT3)' == 'true'"></CsWinRTWindowsMetadata>
     <BinplaceOutputAssemblies>true</BinplaceOutputAssemblies>
     <WindowsAppSDKSelfContained Condition="'$(Platform)' == 'ARM64EC'">true</WindowsAppSDKSelfContained>
     <WindowsPackageType Condition="'$(Platform)' == 'ARM64EC'">None</WindowsPackageType>
@@ -149,6 +150,8 @@
          even though we don't use it for test execution. -->
     <PackageReference Include="Microsoft.TestPlatform.TestHost" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <!-- Match the app's private WinUI type identities in the shared projection. -->
+    <ProjectReference Include="$(MUXProjectRoot)\Samples\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.csproj" AdditionalProperties="IncludePrivateMetadata=true" />
     <PackageReference Include="Microsoft.Taef" />
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="DiffPlex">
@@ -171,6 +174,13 @@
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
+  <!-- The experimental Win2D package has net10 projections but no net10 build targets.
+       Supply the metadata its normal build targets contribute to projection and activation. -->
+  <ItemGroup Condition="'$(UseCsWinRT3)' == 'true'">
+    <CsWinRTInputs Include="$(PkgMicrosoft_Graphics_Win2D)\lib\uap10.0\Microsoft.Graphics.Canvas.winmd" />
+    <WindowsMetadataReference Include="$(PkgMicrosoft_Graphics_Win2D)\lib\uap10.0\Microsoft.Graphics.Canvas.winmd" Implementation="Microsoft.Graphics.Canvas.dll" />
+  </ItemGroup>
+
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -182,16 +192,29 @@
     <Content Include="$(XamlBuildOutputRoot)Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.dll" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(FeatureTableViewEnabled) == 'true'">
-    <CsWinRTInputs Include="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
-    <Reference Include="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')">
+  <!-- The merged WinUI projection references Tabular's metadata provider even before a TableView is created. -->
+  <ItemGroup Condition="'$(FeatureTableViewEnabled)' == 'true'">
+    <Content Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Controls.Tabular.dll">
+      <Link>Microsoft.UI.Xaml.Controls.Tabular.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Controls.Tabular.pri">
+      <Link>Microsoft.UI.Xaml.Controls.Tabular.pri</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- v3 consumes Tabular through the merged WinUI reference projection, not inline source generation. -->
+  <ItemGroup Condition="'$(UseCsWinRT3)' != 'true' and '$(FeatureTableViewEnabled)' == 'true'">
+    <CsWinRTInputs Include="$(XamlBuildOutputRoot)controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
+    <Reference Include="$(XamlBuildOutputRoot)controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')">
       <IsWinMDFile>true</IsWinMDFile>
     </Reference>
   </ItemGroup>
 
-  <Target Name="EnsureTabularWasBuilt" BeforeTargets="Build" Condition="$(FeatureTableViewEnabled) == 'true'">
-    <Error Text="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd does not exist. Build controls\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj before building MUXControlsTestApp with TableView tests."
-           Condition="!Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
+  <Target Name="EnsureTabularWasBuilt" BeforeTargets="Build" Condition="'$(UseCsWinRT3)' != 'true' and '$(FeatureTableViewEnabled)' == 'true'">
+    <Error Text="$(XamlBuildOutputRoot)controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd does not exist. Build controls\idl-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl.vcxproj before building MUXControlsTestApp with TableView tests."
+           Condition="!Exists('$(XamlBuildOutputRoot)controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
   </Target>
 
   <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
@@ -409,7 +432,11 @@
     <Copy SourceFiles="@(RuntimePackAsset)" DestinationFiles="@(RuntimePackAsset->'$(OutDir)localDotNet\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     <ItemGroup>
       <FileWrites Include="@(RuntimePackAsset->'$(OutDir)localDotNet\%(Filename)%(Extension)')" />
+      <!-- Keep the profile's marshalling assemblies in sync when switching projection flavors. -->
+      <_CsWinRTTestHostAssembly Include="$(OutDir)WinRT.*.dll;$(OutDir)Microsoft.WinUI.dll" />
+      <FileWrites Include="@(_CsWinRTTestHostAssembly->'$(OutDir)localDotNet\%(Filename)%(Extension)')" />
     </ItemGroup>
+    <Copy SourceFiles="@(_CsWinRTTestHostAssembly)" DestinationFolder="$(OutDir)localDotNet" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- API tests are run within the context of TE.ProcessHost.exe, whose SxS app manifest doesn't contain our types.

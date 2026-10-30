@@ -213,11 +213,11 @@ namespace MUXControlsTestApp.Utilities
                             string[] lengths = valueAsStr.Split(',');
                             if (lengths.Length < 2)
                             {
-                                double pt = System.Convert.ToDouble(lengths[0]);
+                                float pt = System.Convert.ToSingle(lengths[0]);
                                 return new Point(pt, pt);
                             }
                             else
-                                return new Point(System.Convert.ToDouble(lengths[0]), System.Convert.ToDouble(lengths[1]));
+                                return new Point(System.Convert.ToSingle(lengths[0]), System.Convert.ToSingle(lengths[1]));
                         }
                     }
                     else if (targetType == typeof(Size))
@@ -228,11 +228,11 @@ namespace MUXControlsTestApp.Utilities
                             string[] lengths = valueAsStr.Split(',');
                             if (lengths.Length < 2)
                             {
-                                double size = System.Convert.ToDouble(lengths[0]);
+                                float size = System.Convert.ToSingle(lengths[0]);
                                 return new Size(size, size);
                             }
                             else
-                                return new Size(System.Convert.ToDouble(lengths[0]), System.Convert.ToDouble(lengths[1]));
+                                return new Size(System.Convert.ToSingle(lengths[0]), System.Convert.ToSingle(lengths[1]));
                         }
                     }
                     else if (targetType == typeof(Thickness))

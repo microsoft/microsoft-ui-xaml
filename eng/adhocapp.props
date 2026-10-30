@@ -34,10 +34,12 @@
   <ItemGroup Condition="'$(EnsureProductBuild)'=='true'">
     <ProjectReference Include="$(ProjectRoot)src\projection\Microsoft.WinUI.csproj"
                       Condition="'$(UsingMicrosoftNETSdk)' == 'true' and '$(IncludePrivateMetadata)' != 'true'"
-                      ReferenceOutputAssembly="false" Private="false"/>
+                      ReferenceOutputAssembly="false" Private="false"
+                      SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <ProjectReference Include="$(ProjectRoot)src\projection\private\Microsoft.WinUI.csproj"
                       Condition="'$(UsingMicrosoftNETSdk)' == 'true' and '$(IncludePrivateMetadata)' == 'true'" 
-                      ReferenceOutputAssembly="false" Private="false" />
+                      ReferenceOutputAssembly="false" Private="false"
+                      SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <ProjectReference Include="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj"
                       Condition="'$(UsingMicrosoftNETSdk)' != 'true' and '$(MSBuildProjectExtension)'!='.wapproj'"
                       ReferenceOutputAssembly="false" Private="false" LinkLibraryDependencies="false"/>

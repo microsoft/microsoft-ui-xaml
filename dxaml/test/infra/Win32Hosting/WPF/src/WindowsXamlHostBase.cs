@@ -9,7 +9,6 @@ using Microsoft.Toolkit.Win32.UI.XamlHost;
 // I had to scope the namespace with variables names due to collisions
 using WUX = Microsoft.UI.Xaml;
 using VKEYS = Windows.System;
-using WinRT;
 // CHANGES END : CODE IS DIFFERENT FROM GITHUB VERSION
 namespace Microsoft.Toolkit.Wpf.UI.XamlHost
 {

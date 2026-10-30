@@ -25,7 +25,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 {

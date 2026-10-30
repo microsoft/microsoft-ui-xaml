@@ -13,7 +13,9 @@
         [global::System.STAThreadAttribute]
         static void Main(string[] args)
         {
+#if !CSWINRT3_0
             global::WinRT.ComWrappersSupport.InitializeComWrappers();
+#endif
             global::Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 var context = new global::Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(

@@ -16,6 +16,11 @@
     <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
+  <!-- Exclude UITestMethod usages until MSTest supports CsWinRT 3.0. -->
+  <PropertyGroup Condition="'$(UseCsWinRT3)' == 'true'">
+    <DefineConstants>$(DefineConstants);CSWINRT3</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Page Remove="UnitTestApp.xaml" />
     <ApplicationDefinition Include="UnitTestApp.xaml" />
@@ -33,6 +38,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Required to select the CsWinRT 3.0 XAML compiler code path. -->
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="MSTest.TestAdapter" />
@@ -43,11 +50,7 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <!-- 
-    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the Windows App SDK Nuget
-    package has not yet been restored.
-  -->
+  <!-- Enable single-project MSIX tooling before NuGet restore. -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
@@ -55,11 +58,7 @@
     <ProjectReference Include="..\WinUICsDesktopClassLibrary\WinUICsDesktopClassLibrary.csproj" />
   </ItemGroup>
 
-  <!-- 
-    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
-    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
-    the Windows App SDK Nuget package has not yet been restored.
-  -->
+  <!-- Enable the Package and Publish menu before NuGet restore. -->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>

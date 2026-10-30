@@ -282,10 +282,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+#if CSWINRT3_0
+        public event EventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged;
+        public event EventHandler<IRefreshInfoProvider, object> IsInteractingForRefreshChanged;
+        public event EventHandler<IRefreshInfoProvider, object> RefreshCompleted;
+        public event EventHandler<IRefreshInfoProvider, object> RefreshStarted;
+#else
         public event TypedEventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged;
         public event TypedEventHandler<IRefreshInfoProvider, object> IsInteractingForRefreshChanged;
         public event TypedEventHandler<IRefreshInfoProvider, object> RefreshCompleted;
         public event TypedEventHandler<IRefreshInfoProvider, object> RefreshStarted;
+#endif
 
         public void OnRefreshCompleted()
         {

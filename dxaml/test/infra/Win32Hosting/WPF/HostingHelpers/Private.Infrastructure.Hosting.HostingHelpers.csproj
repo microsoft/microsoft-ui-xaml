@@ -12,9 +12,22 @@
   <PropertyGroup>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
+
+    <!-- Let CsWinRT 3.0 resolve Windows metadata matching the target framework. -->
+    <CsWinRTWindowsMetadata Condition="'$(UseCsWinRT3)'=='true'"></CsWinRTWindowsMetadata>
     <CsWinRTComponent>true</CsWinRTComponent>
     <CsWinRTEnableLogging>true</CsWinRTEnableLogging>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Generate runtime projections for activation by native TAEF through WinRT.Host.
+         Exclude ARM64, where the required project references below are unavailable. -->
+    <CsWinRTBuildForNativeConsumer Condition="'$(UseCsWinRT3)'=='true' and '$(Platform)'!='ARM64'">true</CsWinRTBuildForNativeConsumer>
+
+    <!-- Root TypeMap discovery when WinRT.Host loads WinRT.Component.dll. -->
+    <CsWinRTEmitEntryPointInitializer Condition="'$(UseCsWinRT3)'=='true' and '$(Platform)'!='ARM64'">true</CsWinRTEmitEntryPointInitializer>
+
+    <!-- Use WebView2's WinRT projection; its desktop wrappers depend on an older WinRT.Runtime. -->
+    <WebView2UseWinRT Condition="'$(UseCsWinRT3)'=='true'">true</WebView2UseWinRT>
     <GeneratedFilesDir Condition="'$(GeneratedFilesDir)'==''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'Generated Files'))</GeneratedFilesDir>
 
     <DefineConstants Condition="'$(Platform)'=='ARM64'">_ARM64_</DefineConstants>
@@ -27,6 +40,40 @@
   <ItemGroup Condition="'$(Platform)'!='ARM64'" >
     <ProjectReference Include="..\netcore\Private.Infrastructure.Hosting.WPF.csproj" />
     <ProjectReference Include="..\..\..\client\cswinrt\Private.Infrastructure.CsWinRT.csproj" />
+  </ItemGroup>
+
+  <!-- Merged WinUI generation also needs the Resources reference projection,
+       which does not flow transitively from the WinUI project. -->
+  <ItemGroup Condition="'$(CsWinRTBuildForNativeConsumer)'=='true'">
+    <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Copy runtime projections beside HostingHelpers for native activation; ReferenceOutputAssembly=false
+       prevents transitive deployment. Do not use Exists guards: these files are generated during Build. -->
+  <ItemGroup Condition="'$(CsWinRTBuildForNativeConsumer)'=='true'">
+    <BinplaceItem Include="$(OutDir)WinRT.Projection.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(OutDir)WinRT.Component.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(OutDir)WinRT.Interop.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(OutDir)WinRT.Sdk.Projection.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <!-- Native activation also needs the WebView2 runtime forwarder. -->
+    <BinplaceItem Include="$(OutDir)Microsoft.Web.WebView2.Core.Projection.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <!-- Deploy Foundation's runtime projections from lib, not its compile-time references from ref. -->
+    <BinplaceItem Include="$(LiftedMRTLibPath)\$(TargetFramework)\*.Projection.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
   </ItemGroup>
 
   <!--Temporary workaround to address https://github.com/microsoft/CsWinRT/issues/1156 -->

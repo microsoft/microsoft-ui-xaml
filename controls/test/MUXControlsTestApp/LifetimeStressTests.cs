@@ -1849,7 +1849,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // Register handlers on every DesktopWindowImpl event source so add_* captures the owner weak
             // reference (UpdateWindowWeakReference) and OnMessage dispatches through populated CFTMEventSource
             // instances during activation/close.
+#if CSWINRT3_0
+            EventHandler<object, WindowActivatedEventArgs> activated = null;
+#else
             global::Windows.Foundation.TypedEventHandler<object, WindowActivatedEventArgs> activated = null;
+#endif
             activated = (s, e) =>
             {
                 // Reentrant churn during dispatch: add/remove a handler while a window message is being raised
@@ -1857,7 +1861,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var raisedWindow = s as Window;
                 if (raisedWindow != null)
                 {
+#if CSWINRT3_0
+                    EventHandler<object, WindowVisibilityChangedEventArgs> transient = (s2, e2) => { };
+#else
                     global::Windows.Foundation.TypedEventHandler<object, WindowVisibilityChangedEventArgs> transient = (s2, e2) => { };
+#endif
                     raisedWindow.VisibilityChanged += transient;
                     raisedWindow.VisibilityChanged -= transient;
                 }

@@ -17,7 +17,6 @@ using Common;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
@@ -629,12 +628,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 var cacheLength = repeater.VerticalCacheLength;
-                var expectedVisibleWindow = new Rect(0, 0, scrollPresenter.Width, scrollPresenter.Height);
+                var expectedVisibleWindow = new Rect(0, 0, (float)scrollPresenter.Width, (float)scrollPresenter.Height);
                 var expectedRealizationWindow = new Rect(
-                    -cacheLength / 2 * scrollPresenter.Width,
-                    -cacheLength / 2 * scrollPresenter.Height,
-                    (1 + cacheLength) * scrollPresenter.Width,
-                    (1 + cacheLength) * scrollPresenter.Height);
+                    (float)(-cacheLength / 2 * scrollPresenter.Width),
+                    (float)(-cacheLength / 2 * scrollPresenter.Height),
+                    (float)((1 + cacheLength) * scrollPresenter.Width),
+                    (float)((1 + cacheLength) * scrollPresenter.Height));
 
                 Log.Comment("Validate that the realization window reached full size. Measure passes: {0}, Arrange passes: {1}", measureRealizationRects.Count, arrangeRealizationRects.Count);
                 Log.Comment("expectedRealizationWindow: {0}, measureRealizationRects.Last(): {1}", expectedRealizationWindow, measureRealizationRects.Last());

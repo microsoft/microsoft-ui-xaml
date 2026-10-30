@@ -10,6 +10,7 @@ parameters:
   MUXFinalRelease: false
   runStaticAnalysis: true
   projectCaching: false
+  buildCsWinRT3Tests: false
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
   buildProductOnly: false
   # Forwarded to WinUI-BuildMUXProject-Steps.yml. When set, the product is downloaded from the
@@ -190,6 +191,7 @@ stages:
         pipelineKind: ${{ parameters.pipelineKind }}
         buildScenarioApps: ${{ parameters.buildScenarioApps }}
         signOutput: ${{ parameters.signOutput }}
+        buildCsWinRT3Tests: ${{ parameters.buildCsWinRT3Tests }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
         projectCaching: ${{ parameters.projectCaching }}

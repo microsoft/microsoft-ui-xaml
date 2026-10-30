@@ -17,13 +17,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+#if CSWINRT3_0
+using System.Runtime.InteropServices.Marshalling;
+#endif
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Globalization;
 using Windows.System;
 using Windows.UI;
 using Windows.ApplicationModel.DataTransfer;
+#if !CSWINRT3_0
+// As<T>() extensions for CsWinRT 2.x.
 using WinRT;
+#endif
 
 namespace MUXControlsTestApp
 {
@@ -79,7 +85,11 @@ namespace MUXControlsTestApp
         public static Task<CoreWebView2NavigationCompletedEventArgs> GetNavigationCompletedTask(this WebView2 wv2)
         {
             var tcs = new TaskCompletionSource<CoreWebView2NavigationCompletedEventArgs>();
+#if CSWINRT3_0
+            EventHandler<WebView2, CoreWebView2NavigationCompletedEventArgs> handler = null;
+#else
             TypedEventHandler<WebView2, CoreWebView2NavigationCompletedEventArgs> handler = null;
+#endif
 
             handler = (WebView2 sender, CoreWebView2NavigationCompletedEventArgs e) =>
             {
@@ -95,7 +105,11 @@ namespace MUXControlsTestApp
         public static Task<CoreWebView2NavigationStartingEventArgs> GetNavigationStartingTask(this WebView2 wv2)
         {
             var tcs = new TaskCompletionSource<CoreWebView2NavigationStartingEventArgs>();
+#if CSWINRT3_0
+            EventHandler<WebView2, CoreWebView2NavigationStartingEventArgs> handler = null;
+#else
             TypedEventHandler<WebView2, CoreWebView2NavigationStartingEventArgs> handler = null;
+#endif
 
             handler = (WebView2 sender, CoreWebView2NavigationStartingEventArgs e) =>
             {
@@ -111,7 +125,11 @@ namespace MUXControlsTestApp
         public static Task<CoreWebView2InitializedEventArgs> GetCoreWebView2InitializedTask(this WebView2 wv2)
         {
             var tcs = new TaskCompletionSource<CoreWebView2InitializedEventArgs>();
+#if CSWINRT3_0
+            EventHandler<WebView2, CoreWebView2InitializedEventArgs> handler = null;
+#else
             TypedEventHandler<WebView2, CoreWebView2InitializedEventArgs> handler = null;
+#endif
 
             handler = (WebView2 sender, CoreWebView2InitializedEventArgs e) =>
             {
@@ -132,6 +150,15 @@ namespace MUXControlsTestApp
 
     public sealed partial class WebView2BasicPage : TestPage
     {
+#if CSWINRT3_0
+        [ComImport]
+        [Guid("EECDBF0E-BAE9-4CB6-A68E-9598E1CB57BB")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IWindowNative
+        {
+            IntPtr WindowHandle { get; }
+        }
+#endif
         enum TestList
         {
             BasicRenderingTest,
@@ -1456,10 +1483,28 @@ namespace MUXControlsTestApp
 
                     case TestList.Focus_DisabledParentTest:
                         {
+#if CSWINRT3_0
+                            // Built-in COM interop performs QI for IWindowNative on the underlying window.
+                            IntPtr windowUnknown = Marshal.GetIUnknownForObject(App.CurrentWindow);
+                            IntPtr hostHwnd;
+                            try
+                            {
+                                hostHwnd = ((IWindowNative)Marshal.GetObjectForIUnknown(windowUnknown)).WindowHandle;
+                            }
+                            finally
+                            {
+                                Marshal.Release(windowUnknown);
+                            }
+#else
                             IntPtr hostHwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
+#endif
                             var tabStopButton1 = FindName("TabStopButton1") as Button;
                             bool parentDisabledAfterControllerCreation = false;
+#if CSWINRT3_0
+                            EventHandler<WebView2, CoreWebView2InitializedEventArgs> disableParentOnInitialized =
+#else
                             TypedEventHandler<WebView2, CoreWebView2InitializedEventArgs> disableParentOnInitialized =
+#endif
                                 (sender, args) =>
                                 {
                                     if (args.Exception == null)
@@ -1897,7 +1942,11 @@ namespace MUXControlsTestApp
                             Microsoft.UI.Input.InputCursor cursor = webviewWithCursor.WrappedProtectedCursor;
                             logger.Verify(cursor != null, "ProtectedCursor was null");
                             if (cursor == null) break;
+#if CSWINRT3_0
+                            Microsoft.UI.Input.InputSystemCursor cursorAsInputSystemCursor = (Microsoft.UI.Input.InputSystemCursor)cursor;
+#else
                             Microsoft.UI.Input.InputSystemCursor cursorAsInputSystemCursor = cursor.As<Microsoft.UI.Input.InputSystemCursor>();
+#endif
                             var actualCursorType = cursorAsInputSystemCursor.CursorShape;
                             var expectedCursorType = Microsoft.UI.Input.InputSystemCursorShape.Hand;
                             logger.Verify((expectedCursorType == actualCursorType),
@@ -2039,10 +2088,29 @@ namespace MUXControlsTestApp
                                 "Test {0}: Expected NotImplementedException but did not receive it.", selectedTest.ToString()));
 
                             // There is a interop we can use to access the method
+#if CSWINRT3_0
+                            var interop = (ICoreWebView2Interop)(object)core_wv2;
+#else
                             var interop = core_wv2.As<ICoreWebView2Interop>();
+#endif
                             try
                             {
+#if CSWINRT3_0
+                                unsafe
+                                {
+                                    var bridge = ComVariant.CreateRaw(VarEnum.VT_DISPATCH, Marshal.GetIDispatchForObject(new Bridge()));
+                                    try
+                                    {
+                                        interop.AddHostObjectToScript("bridge", &bridge);
+                                    }
+                                    finally
+                                    {
+                                        bridge.Dispose();
+                                    }
+                                }
+#else
                                 interop.AddHostObjectToScript("bridge", new Bridge());
+#endif
 
                                 // AddHostObjectToScript represents the host objects in JavaScript using JavaScript async proxies.
                                 // Accessing any member off of the proxy gives back a promise for another async proxy. You need to
@@ -2572,13 +2640,21 @@ namespace MUXControlsTestApp
         }
     }
 
+#if CSWINRT3_0
+    [GeneratedComInterface(Options = ComInterfaceOptions.ComObjectWrapper, StringMarshalling = StringMarshalling.Utf16)]
+#else
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+#endif
     [Guid("912b34a7-d10b-49c4-af18-7cb7e604e01a")]
-    public interface ICoreWebView2Interop
+    public partial interface ICoreWebView2Interop
     {
         // IDL: HRESULT AddHostObjectToScript([in] LPCWSTR name, [in] VARIANT* object);
+#if CSWINRT3_0
+        unsafe void AddHostObjectToScript(string name, ComVariant* obj);
+#else
         void AddHostObjectToScript([In] string name, [In] ref object obj);
+#endif
     }
 
     // Example classes from public documentation of CoreWebView2's AddHostObjectToScript

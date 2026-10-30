@@ -21,12 +21,16 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml;
 using Windows.Foundation;
+#if CSWINRT3_0
+using BivRequestedHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.BringIntoViewRequestedEventArgs>;
+#else
+using BivRequestedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.BringIntoViewRequestedEventArgs>;
+#endif
 using System.Threading;
 using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
-using System.Runtime.InteropServices.WindowsRuntime;
 
 
 namespace Microsoft.UI.Xaml.Tests.Controls.BringIntoViewTests
@@ -197,11 +201,11 @@ namespace Microsoft.UI.Xaml.Tests.Controls.BringIntoViewTests
                 root = new StackPanel();
                 root.Name = "root";
                 spOverride = new StackPanelWithOverride();
-                spOverride.AddHandler(UIElement.BringIntoViewRequestedEvent, new TypedEventHandler<UIElement, BringIntoViewRequestedEventArgs>(UIElementBringIntoViewRequestedHandler), true);
+                spOverride.AddHandler(UIElement.BringIntoViewRequestedEvent, new BivRequestedHandler(UIElementBringIntoViewRequestedHandler), true);
                 spOverride.eventOrder = eventOrder;
                 spOverride.Name = "spOverride";
                 buOverride = new ButtonWithOverride();
-                buOverride.AddHandler(UIElement.BringIntoViewRequestedEvent, new TypedEventHandler<UIElement, BringIntoViewRequestedEventArgs>(ControlBringIntoViewRequestedHandler), false);
+                buOverride.AddHandler(UIElement.BringIntoViewRequestedEvent, new BivRequestedHandler(ControlBringIntoViewRequestedHandler), false);
                 buOverride.eventOrder = eventOrder;
                 buOverride.Name = "buOverride";
                 buOverride.Width = 100;

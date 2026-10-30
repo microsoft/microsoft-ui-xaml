@@ -208,7 +208,7 @@ namespace Microsoft.UI.Xaml.Tests.Common
         private static UIElement GetInnerMostTarget(FrameworkElement target)
         {
             GeneralTransform transform = target.TransformToVisual(TestServices.WindowHelper.WindowContent);
-            Rect bounds = transform.TransformBounds(new Rect(0, 0, target.ActualWidth, target.ActualHeight));
+            Rect bounds = transform.TransformBounds(new Rect(0, 0, (float)target.ActualWidth, (float)target.ActualHeight));
             Point center = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
 
             WEX.Logging.Interop.Log.Comment("Bounds: " + bounds.ToString());

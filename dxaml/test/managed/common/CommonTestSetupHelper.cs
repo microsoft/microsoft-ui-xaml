@@ -24,7 +24,6 @@ namespace Microsoft.UI.Xaml.Tests.Common
         {
             if (!_isInitialized)
             {
-                global::WinRT.ComWrappersSupport.InitializeComWrappers();
                 ConfigureWin32Host();
                 _isInitialized = true;
             }

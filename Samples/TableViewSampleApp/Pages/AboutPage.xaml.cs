@@ -8,6 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 using TableViewSampleApp.Services;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
+#if CSWINRT3_0
+using Windows.Foundation;
+#endif
 
 namespace TableViewSampleApp.Pages;
 

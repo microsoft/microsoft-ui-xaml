@@ -56,8 +56,8 @@ namespace Microsoft.UI.Xaml.Tests.Common
 
                 // Start with the point at the specified fraction into the element, and then
                 // transform that to global coordinates.
-                point.X = width * fractionOfWidth;
-                point.Y = height * fractionOfHeight;
+                point.X = (float)(width * fractionOfWidth);
+                point.Y = (float)(height * fractionOfHeight);
 
                 GeneralTransform transform = element.TransformToVisual(null);
                 point = transform.TransformPoint(point);

@@ -24,6 +24,7 @@
     <ToolsPackageLocation>$(PackageOutputLocation)\tools</ToolsPackageLocation>
     <BuildTargetsPackageLocation>$(PackageOutputLocation)\build</BuildTargetsPackageLocation>
     <CSWinRTInteropAssemblyPackageLocation>$(PackageOutputLocation)\lib\$(WindowsAppSdkTargetFrameworkMoniker)</CSWinRTInteropAssemblyPackageLocation>
+    <CSWinRTRefAssemblyPackageLocation>$(PackageOutputLocation)\ref\$(WindowsAppSdkTargetFrameworkMoniker)</CSWinRTRefAssemblyPackageLocation>
     <IncludesPackageLocation>$(PackageOutputLocation)\include</IncludesPackageLocation>
   </PropertyGroup>
 </Project>

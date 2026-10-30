@@ -25,6 +25,13 @@
       or a .targets file.  With .NET 9, the package name changed to Microsoft.Windows.SDK.NET.Ref.Windows.  So we'll just remove
       any version we find before adding our explicitly versioned reference.
    -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0'))">
+    <DefineConstants>$(DefineConstants);CSWINRT3_0</DefineConstants>
+    <UsingCSWinRT3>true</UsingCSWinRT3>
+    <WindowsSdkPackageVersion>$(WindowsAppSdkWindowsSdkPackageVersion_v3)</WindowsSdkPackageVersion>
+    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride></MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
+    <XeWin10TargetVersion>$(TargetPlatformVersion)</XeWin10TargetVersion>
+  </PropertyGroup>
   <ItemGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!='' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))">
     <FrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref;Microsoft.Windows.SDK.NET.Ref.Windows" />
     <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"

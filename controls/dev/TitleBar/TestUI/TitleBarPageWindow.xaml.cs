@@ -115,8 +115,34 @@ namespace MUXControlsTestApp
             UpdateCaptionButtonDirection(TitleBarPageWindowGrid.FlowDirection);
         }
 
+#if CSWINRT3_0
+        // CsWinRT 3.0 does not surface the WinRT.Interop.WindowNative helper to consumers, so QI the window
+        // for IWindowNative via built-in COM interop to retrieve its HWND (mirrors the 2.x WindowNative helper).
+        [ComImport]
+        [Guid("EECDBF0E-BAE9-4CB6-A68E-9598E1CB57BB")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IWindowNative
+        {
+            IntPtr WindowHandle { get; }
+        }
+
+        private static nint GetWindowHandleForCurrentWindow(object target)
+        {
+            IntPtr unknown = Marshal.GetIUnknownForObject(target);
+            try
+            {
+                var windowNative = (IWindowNative)Marshal.GetObjectForIUnknown(unknown);
+                return windowNative.WindowHandle;
+            }
+            finally
+            {
+                Marshal.Release(unknown);
+            }
+        }
+#else
         private static nint GetWindowHandleForCurrentWindow(object target) =>
             WinRT.Interop.WindowNative.GetWindowHandle(target);
+#endif
 
         [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
         internal static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, nint newProc);

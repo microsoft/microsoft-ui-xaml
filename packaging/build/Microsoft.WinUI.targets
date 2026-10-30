@@ -16,6 +16,15 @@
 
     <!-- By default, disallow mixing Windows.UI.Xaml.* and Microsoft.UI.Xaml* unless explicitly opted-in -->
     <EnableUnsafeMixedMicrosoftWindowsUIXamlProjections Condition="'$(EnableUnsafeMixedMicrosoftWindowsUIXamlProjections)' == ''">false</EnableUnsafeMixedMicrosoftWindowsUIXamlProjections>
+
+    <!--
+    We need to account for the .NET TFM being used having '.1' as the revision number, which indicates
+    CsWinRT 3.0. So first we declare a private property to use throughout the target files,
+    to ensure we always use the right Windows SDK version with the revision number being normalized
+    to always be '.0'.
+    -->
+    <_NormalizedTargetPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' != ''">$(EffectiveTargetPlatformVersion)</_NormalizedTargetPlatformVersion>
+    <_NormalizedTargetPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</_NormalizedTargetPlatformVersion>
   </PropertyGroup>
 
   <Target Name="ValidateWinUIPlatform"
@@ -26,7 +35,7 @@
 
   <PropertyGroup>
     <!-- These are needed to pass the correct inputs to the compilexaml tasks -->
-    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(_NormalizedTargetPlatformVersion)</TargetPlatformMinVersion>
     <WindowsSdkPath Condition="'$(WindowsSdkPath)' == ''">$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSdkLocation("Windows", "10.0"))</WindowsSdkPath>
 
     <WinUITargetsDirectory Condition="'$(WinUITargetsDirectory)'==''">$(MSBuildThisFileDirectory)</WinUITargetsDirectory>

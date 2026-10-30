@@ -1,0 +1,18 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+
+  <!-- XAML compilation uses ReferencePath directly, ignoring the ReferenceAssembly redirect.
+       Replace the CsWinRT 3.0 forwarder with its reference projection, preserving CsWinRTInputs metadata.
+       ReferenceCopyLocalPaths remains unchanged so only the runtime forwarder is deployed. -->
+  <Target Name="_UseAppTestAutomationHelpersReferenceProjectionForCompile"
+          AfterTargets="ResolveReferences"
+          Condition="$(TargetFramework.StartsWith('net10.0'))">
+    <ItemGroup>
+      <_AppTestAutomationHelpersForwarder Include="@(ReferencePath)"
+          Condition="'%(FileName)%(Extension)' == 'AppTestAutomationHelpers.Projection.dll' and '%(ReferencePath.ReferenceAssembly)' != ''" />
+      <ReferencePath Remove="@(_AppTestAutomationHelpersForwarder)" />
+      <ReferencePath Include="@(_AppTestAutomationHelpersForwarder->'%(ReferenceAssembly)')" />
+    </ItemGroup>
+  </Target>
+
+</Project>

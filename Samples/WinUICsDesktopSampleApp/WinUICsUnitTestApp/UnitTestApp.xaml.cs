@@ -8,12 +8,13 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+#if !CSWINRT3
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
+#endif
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -35,7 +36,9 @@ namespace WinUICsUnitTestApp
             m_window = new UnitTestAppWindow();
             m_window.Activate();
 
+#if !CSWINRT3
             UITestMethodAttribute.DispatcherQueue = m_window.DispatcherQueue;
+#endif
 
             Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.Run(Environment.CommandLine);
         }

@@ -16,50 +16,38 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
   </ItemGroup>
 
+  <!-- CsWinRT 3.0 uses a reference projection here, separate from implementation code. -->
+  <PropertyGroup Condition="'$(UseCsWinRT3)'=='true'">
+    <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <ProjectReference Include="$(InfraTestPath)\client\idl\Private.Infrastructure.vcxproj" Project="{e076fa9c-3b19-431a-a566-3e771f962428}" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
     <ProjectReference Include="$(InfraTestPath)\Win32Hosting\idl\Private.Infrastructure.Hosting.vcxproj" Project="{3fd1b03c-df81-4bc7-8204-c48d16026cfb}" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
     <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
   </ItemGroup>
 
-  <Target Name="GenerateProjection" BeforeTargets="XamlPreCompile;CoreCompile">
-    <PropertyGroup>
-      <CsWinrtExe Condition="'$(CsWinrtExe)'==''">$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName).$(MicrosoftCsWinRTPackageVersion)\cswinrt.exe</CsWinrtExe>
-      <CsWinRTVerbosity>high</CsWinRTVerbosity>
-      <CsWinRTResponseFile>$(IntermediateOutputPath)cswinrt_platform.rsp</CsWinRTResponseFile>
-      <CsWinRTCommand>$(CsWinrtExe) %40"$(CsWinRTResponseFile)"</CsWinRTCommand>
-    </PropertyGroup>
-    <PropertyGroup>
-      <CsWinRTParams>
-        -verbose
-        -in $(TargetPlatformVersion)
-        -in "$(PrivateMergedWinMDDir)\Microsoft.UI.winmd"
-        -in "$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd"
-        -in "$(PrivateInfrastructureMergedWinMdPath)\Private.Infrastructure.winmd"
-        -in "$(InfraTestObjPath)\Win32Hosting\idl\Merged\Private.Infrastructure.Hosting.winmd"
-        -in "$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.winmd"
-        -in "$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.internal.winmd"
-        -in "$(WinUIDetailsLibPath)\MockDComp.winmd"
-        -out "$(GeneratedFilesDir.TrimEnd('\'))"
-        -exclude Microsoft
-        -exclude Windows
-        -include Private
-        -include MockDComp
-        -include Microsoft.Diagnostics
-      </CsWinRTParams>
-    </PropertyGroup>
-    <MakeDir Directories="$(GeneratedFilesDir)" Condition="!Exists('$(GeneratedFilesDir)')" />
-    <WriteLinesToFile File="$(CsWinRTResponseFile)" Lines="$(CsWinRTParams)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-    <Message Text="$(CsWinRTCommand)" Importance="$(CsWinRTVerbosity)" />
-    <Exec Command="$(CsWinRTCommand)" />
-    <ItemGroup>
-      <Compile Include="$(GeneratedFilesDir)\*.cs" Exclude="@(Compile)" />
-    </ItemGroup>
-  </Target>
+  <PropertyGroup>
+    <CSWinRTIncludes>
+      Private;
+      MockDComp;
+      Microsoft.Diagnostics;
+    </CSWinRTIncludes>
+  </PropertyGroup>
 
   <ItemGroup>
-    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTPackageVersion)\lib\$(_DotNetMoniker)\winrt.runtime.dll">
+    <CsWinRTInputs Include="$(PrivateMergedWinMDDir)\Microsoft.UI.winmd" />
+    <CsWinRTInputs Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd" />
+    <CsWinRTInputs Include="$(PrivateInfrastructureMergedWinMdPath)\Private.Infrastructure.winmd" />
+    <CsWinRTInputs Include="$(InfraTestObjPath)\Win32Hosting\idl\Merged\Private.Infrastructure.Hosting.winmd" />
+    <CsWinRTInputs Include="$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.winmd" />
+    <CsWinRTInputs Include="$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.internal.winmd" />
+    <CsWinRTInputs Include="$(WinUIDetailsLibPath)\MockDComp.winmd" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseCsWinRT3)'!='true'">
+    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTPackageVersion)\lib\net8.0\winrt.runtime.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
     <!--
@@ -73,4 +61,14 @@
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
   </ItemGroup>
+
+  <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
+    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTv3PackageVersion)\lib\net10.0\winrt.runtime.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(NugetPackageDirectory)\$(LiftedIXPPackageName)\$(IXPPackageVersion)\lib\$(WindowsAppSdkTargetFrameworkMoniker_v3)\Microsoft.InteractiveExperiences.Projection.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+
 </Project>

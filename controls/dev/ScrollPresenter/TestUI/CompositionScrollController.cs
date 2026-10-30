@@ -36,9 +36,15 @@ namespace MUXControlsTestApp.Utilities
         private double minOffset;
         private double maxOffset;
 
+#if CSWINRT3_0
+        public event EventHandler<IScrollControllerPanningInfo, String> LogMessage;
+        public event EventHandler<IScrollControllerPanningInfo, Object> Changed;
+        public event EventHandler<IScrollControllerPanningInfo, ScrollControllerPanRequestedEventArgs> PanRequested;
+#else
         public event TypedEventHandler<IScrollControllerPanningInfo, String> LogMessage;
         public event TypedEventHandler<IScrollControllerPanningInfo, Object> Changed;
         public event TypedEventHandler<IScrollControllerPanningInfo, ScrollControllerPanRequestedEventArgs> PanRequested;
+#endif
 
         internal bool IsAnimatingThumbOffset
         {
@@ -475,7 +481,11 @@ namespace MUXControlsTestApp.Utilities
 
     public sealed partial class CompositionScrollController : Control, IScrollController
     {
+#if CSWINRT3_0
+        public event EventHandler<CompositionScrollController, CompositionScrollControllerOffsetChangeCompletedEventArgs> OffsetChangeCompleted;
+#else
         public event TypedEventHandler<CompositionScrollController, CompositionScrollControllerOffsetChangeCompletedEventArgs> OffsetChangeCompleted;
+#endif
 
         public static bool s_IsDebugOutputEnabled = false;
 
@@ -896,13 +906,25 @@ namespace MUXControlsTestApp.Utilities
             private set;
         }
 
+#if CSWINRT3_0
+        public event EventHandler<CompositionScrollController, string> LogMessage;
+#else
         public event TypedEventHandler<CompositionScrollController, string> LogMessage;
+#endif
 
+#if CSWINRT3_0
+        public event EventHandler<IScrollController, Object> CanScrollChanged;
+        public event EventHandler<IScrollController, Object> IsScrollingWithMouseChanged;
+        public event EventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
+        public event EventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
+        public event EventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
+#else
         public event TypedEventHandler<IScrollController, Object> CanScrollChanged;
         public event TypedEventHandler<IScrollController, Object> IsScrollingWithMouseChanged;
         public event TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
         public event TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
         public event TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
+#endif
 
         public int ScrollTo(
             double offset, ScrollingAnimationMode animationMode)

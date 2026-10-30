@@ -48,13 +48,25 @@ namespace MUXControlsTestApp.Utilities
 
         private partial class UniScrollController : IScrollController
         {
+#if CSWINRT3_0
+            public event EventHandler<IScrollController, object> CanScrollChanged;
+            public event EventHandler<IScrollController, object> IsScrollingWithMouseChanged;
+            public event EventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
+            public event EventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
+            public event EventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
+#else
             public event TypedEventHandler<IScrollController, object> CanScrollChanged;
             public event TypedEventHandler<IScrollController, object> IsScrollingWithMouseChanged;
             public event TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
             public event TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
             public event TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
+#endif
 
+#if CSWINRT3_0
+            public event EventHandler<UniScrollController, UniScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
+#else
             public event TypedEventHandler<UniScrollController, UniScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
+#endif
 
             private CompositionScrollControllerPanningInfo panningInfo = null;
 
@@ -191,9 +203,9 @@ namespace MUXControlsTestApp.Utilities
                 }
 
                 if (Orientation == Orientation.Horizontal)
-                    Owner.OffsetTarget = new Point(offsetTarget, Owner.OffsetTarget.Y);
+                    Owner.OffsetTarget = new Point((float)offsetTarget, Owner.OffsetTarget.Y);
                 else
-                    Owner.OffsetTarget = new Point(Owner.OffsetTarget.X, offsetTarget);
+                    Owner.OffsetTarget = new Point(Owner.OffsetTarget.X, (float)offsetTarget);
 
                 bool updatePanningFrameworkElementLength =
                     MinOffset != minOffset ||
@@ -382,8 +394,13 @@ namespace MUXControlsTestApp.Utilities
         private bool isRailEnabled = true;
         private Point preManipulationThumbOffset;
 
+#if CSWINRT3_0
+        public event EventHandler<BiDirectionalScrollController, string> LogMessage;
+        public event EventHandler<BiDirectionalScrollController, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
+#else
         public event TypedEventHandler<BiDirectionalScrollController, string> LogMessage;
         public event TypedEventHandler<BiDirectionalScrollController, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
+#endif
 
         public BiDirectionalScrollController()
         {
@@ -445,7 +462,7 @@ namespace MUXControlsTestApp.Utilities
         public int ScrollTo(double horizontalOffset, double verticalOffset, ScrollingAnimationMode animationMode)
         {
             int viewChangeCorrelationId = RaiseScrollToRequested(
-                new Point(horizontalOffset, verticalOffset),
+                new Point((float)horizontalOffset, (float)verticalOffset),
                 animationMode, false /*hookupCompletion*/);
             lstViewChangeCorrelationIds.Add(viewChangeCorrelationId);
             return viewChangeCorrelationId;
@@ -454,7 +471,7 @@ namespace MUXControlsTestApp.Utilities
         public int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, ScrollingAnimationMode animationMode)
         {
             int viewChangeCorrelationId = RaiseScrollByRequested(
-                new Point(horizontalOffsetDelta, verticalOffsetDelta),
+                new Point((float)horizontalOffsetDelta, (float)verticalOffsetDelta),
                 animationMode, false /*hookupCompletion*/);
             lstViewChangeCorrelationIds.Add(viewChangeCorrelationId);
             return viewChangeCorrelationId;
@@ -835,7 +852,7 @@ namespace MUXControlsTestApp.Utilities
             targetThumbHorizontalOffset = Math.Min(targetThumbHorizontalOffset, maxThumbOffset.X);
             targetThumbVerticalOffset = Math.Min(targetThumbVerticalOffset, maxThumbOffset.Y);
 
-            Point targetThumbOffset = new Point(targetThumbHorizontalOffset, targetThumbVerticalOffset);
+            Point targetThumbOffset = new Point((float)targetThumbHorizontalOffset, (float)targetThumbVerticalOffset);
             Point targetScrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
             int viewChangeCorrelationId = RaiseScrollToRequested(targetScrollPresenterOffset, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
@@ -843,7 +860,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 operations.Add(
                     viewChangeCorrelationId,
-                    new OperationInfo(viewChangeCorrelationId, new Point(targetScrollPresenterOffset.X - HorizontalThumbOffset, targetScrollPresenterOffset.Y - VerticalThumbOffset), targetScrollPresenterOffset));
+                    new OperationInfo(viewChangeCorrelationId, new Point((float)(targetScrollPresenterOffset.X - HorizontalThumbOffset), (float)(targetScrollPresenterOffset.Y - VerticalThumbOffset)), targetScrollPresenterOffset));
             }
         }
 
@@ -851,7 +868,7 @@ namespace MUXControlsTestApp.Utilities
         {
             if (IsScrollingWithMouse)
             {
-                preManipulationThumbOffset = new Point(HorizontalThumbOffset, VerticalThumbOffset);
+                preManipulationThumbOffset = new Point((float)HorizontalThumbOffset, (float)VerticalThumbOffset);
             }
         }
 
@@ -905,17 +922,17 @@ namespace MUXControlsTestApp.Utilities
             if (Thumb != null)
             {
                 Size parentSize = new Size();
-                Size thumbSize = new Size(Thumb.ActualWidth, Thumb.ActualHeight);
+                Size thumbSize = new Size((float)Thumb.ActualWidth, (float)Thumb.ActualHeight);
                 FrameworkElement parent = Thumb.Parent as FrameworkElement;
                 if (parent != null)
                 {
-                    parentSize = new Size(parent.ActualWidth, parent.ActualHeight);
+                    parentSize = new Size((float)parent.ActualWidth, (float)parent.ActualHeight);
                 }
                 if (parentSize.Width != thumbSize.Width || parentSize.Height != thumbSize.Height)
                 {
                     scrollPresenterOffset = new Point(
-                        parentSize.Width == thumbSize.Width ? 0 : (thumbOffset.X * (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset) / (parentSize.Width - thumbSize.Width)),
-                        parentSize.Height == thumbSize.Height ? 0 : (thumbOffset.Y * (verticalScrollController.MaxOffset - verticalScrollController.MinOffset) / (parentSize.Height - thumbSize.Height)));
+                        (float)(parentSize.Width == thumbSize.Width ? 0 : (thumbOffset.X * (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset) / (parentSize.Width - thumbSize.Width))),
+                        (float)(parentSize.Height == thumbSize.Height ? 0 : (thumbOffset.Y * (verticalScrollController.MaxOffset - verticalScrollController.MinOffset) / (parentSize.Height - thumbSize.Height))));
                 }
             }
 
@@ -929,15 +946,15 @@ namespace MUXControlsTestApp.Utilities
             if (Thumb != null)
             {
                 Size parentSize = new Size();
-                Size thumbSize = new Size(Thumb.ActualWidth, Thumb.ActualHeight);
+                Size thumbSize = new Size((float)Thumb.ActualWidth, (float)Thumb.ActualHeight);
                 FrameworkElement parent = Thumb.Parent as FrameworkElement;
                 if (parent != null)
                 {
-                    parentSize = new Size(parent.ActualWidth, parent.ActualHeight);
+                    parentSize = new Size((float)parent.ActualWidth, (float)parent.ActualHeight);
                 }
                 maxThumbOffset = new Point(
-                    Math.Max(0.0, parentSize.Width - thumbSize.Width),
-                    Math.Max(0.0, parentSize.Height - thumbSize.Height));
+                    (float)Math.Max(0.0, parentSize.Width - thumbSize.Width),
+                    (float)Math.Max(0.0, parentSize.Height - thumbSize.Height));
             }
 
             return maxThumbOffset;

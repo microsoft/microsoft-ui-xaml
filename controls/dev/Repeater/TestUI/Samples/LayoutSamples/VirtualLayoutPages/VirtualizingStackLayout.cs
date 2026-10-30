@@ -222,9 +222,9 @@ namespace MUXControlsTestApp.Samples
 
                 var bounds = new Rect(
                     0,
-                    newAnchor ?
+                    (float)(newAnchor ?
                         (m_totalHeightForEstimation / m_numItemsUsedForEstimation) * startDataIndex :
-                        GetCachedBoundsForDataIndex(startDataIndex).Y,
+                        GetCachedBoundsForDataIndex(startDataIndex).Y),
                     availableSize.Width,
                     desiredSize.Height);
                 SetCachedBoundsForDataIndex(startDataIndex, bounds);
@@ -316,13 +316,13 @@ namespace MUXControlsTestApp.Samples
         {
             double averageHeight = m_totalHeightForEstimation / m_numItemsUsedForEstimation;
 
-            Rect extent = new Rect(0, 0, availableSize.Width, context.ItemCount * averageHeight);
+            Rect extent = new Rect(0, 0, availableSize.Width, (float)(context.ItemCount * averageHeight));
 
             if (context.ItemCount > 0 && m_realizedElementBounds.Count > 0)
             {
-                extent.Y = m_firstRealizedDataIndex == 0 ?
+                extent.Y = (float)(m_firstRealizedDataIndex == 0 ?
                                 m_realizedElementBounds[0].Y :
-                                m_realizedElementBounds[0].Y - (m_firstRealizedDataIndex - 1) * averageHeight;
+                                m_realizedElementBounds[0].Y - (m_firstRealizedDataIndex - 1) * averageHeight);
 
                 int lastRealizedIndex = m_firstRealizedDataIndex + m_realizedElementBounds.Count;
                 if (lastRealizedIndex == context.ItemCount - 1)
@@ -335,7 +335,7 @@ namespace MUXControlsTestApp.Samples
                     var lastBounds = m_realizedElementBounds[m_realizedElementBounds.Count - 1];
                     int lastRealizedDataIndex = m_firstRealizedDataIndex + m_realizedElementBounds.Count;
                     int numItemsAfterLastRealizedIndex = context.ItemCount - lastRealizedDataIndex;
-                    extent.Height = lastBounds.Bottom + numItemsAfterLastRealizedIndex * averageHeight - extent.Y;
+                    extent.Height = (float)(lastBounds.Bottom + numItemsAfterLastRealizedIndex * averageHeight - extent.Y);
                 }
             }
 

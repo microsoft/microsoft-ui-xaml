@@ -508,7 +508,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             List<Person> items = null;
+#if CSWINRT3_0
+            EventHandler<TableView, SelectionChangedEventArgs> throwingHandler = null;
+#else
             TypedEventHandler<TableView, SelectionChangedEventArgs> throwingHandler = null;
+#endif
             Exception caught = null;
             var handlerRan = 0;
 

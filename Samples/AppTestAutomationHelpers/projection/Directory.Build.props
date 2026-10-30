@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Set before the repository imports adhocapp.props. Samples use public WinUI by default;
+         private consumers set IncludePrivateMetadata on their ProjectReference to match type identities. -->
+    <AdHocApp>true</AdHocApp>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

@@ -33,7 +33,8 @@
     <LangVersion>$(CSLangVersion)</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" GeneratePathProperty="true" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" GeneratePathProperty="true" Condition="$(TargetFramework.StartsWith('net10.0'))" />
     <!--
       Hardcoding this value because we really don't need this PackageReference, we should just let the .NET SDK do it's thing and use that instead.
       https://microsoft.visualstudio.com/OS/_workitems/edit/29974729
@@ -45,7 +46,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Include="Axe.Windows" Version="1.1.7" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="Microsoft.Windows.SDK.cpp" Version="$(MicrosoftWindowsSDKCppNugetPackageVersion)" />
@@ -132,6 +133,88 @@
   <PropertyGroup>
     <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
   </PropertyGroup>
+
+  <!--
+    CsWinRT 3.0: like the dxaml managed TAEF test DLLs, MUXControls.Test must generate its OWN merged
+    WinRT.Projection. CsWinRTGenerateInteropAssembly generates the marshalling support and merged projection
+    required by this test module. Discovery also requires a TAEF loader that supports generic assembly attributes.
+
+    Because HostingHelpers also binplaces a WinRT.Projection.dll into the flat Test\ root, isolate MUXControls.Test
+    (and its identically named projection) into its own Test\MUXControls.Test\ subfolder so they do not collide -
+    the same model as the dxaml managed tests. The helix work-item patterns
+    (WinUI-CreateTestPayload-Job.yml) and payload closure replication (CreateTestPayload.ps1) point at this
+    subfolder for v3. v3-only; 2.x keeps the flat layout and the full implementation projection.
+  -->
+  <PropertyGroup Condition="'$(UseCsWinRT3)'=='true'">
+    <CsWinRTGenerateInteropAssembly>true</CsWinRTGenerateInteropAssembly>
+    <TargetDestination>$(TestBinplaceDestinationPath)\MUXControls.Test</TargetDestination>
+
+    <!--
+      CsWinRT 3.0: eng\sdkconfig.props pins CsWinRTWindowsMetadata to $(WindowsTargetPlatformVersion) (10.0.22621.0),
+      but the v3 build targets the 10.0.26100 SDK (TFM / TargetPlatformVersion / WindowsSdkPackageVersion are all
+      26100). CsWinRT only auto-resolves the matching Windows SDK metadata (CsWinRTResolveWindowsMetadata) when this
+      property is EMPTY; the stale 22621 pin blocks that, so the interop generator runs against 22621 metadata and
+      fails with CSWINRTINTEROPGEN0011 (marshalling the Resources delegate EventHandler<ResourceManager,
+      ResourceNotFoundEventArgs>). Clear it for v3 so the generator uses the matching 26100 metadata. v3-only,
+      mirroring the HostingHelpers native-consumer fix; 2.x keeps the 22621 pin it builds fine with.
+    -->
+    <CsWinRTWindowsMetadata></CsWinRTWindowsMetadata>
+
+    <!--
+      CsWinRT 3.0: MUXControls.Test is a native-style consumer of WinRT components (loaded by the native TAEF .NET
+      host, marshals WinRT objects). CsWinRTBuildForNativeConsumer=true emits the merged native-consumer projection.
+      CsWinRTComponent is intentionally NOT set (this is a consumer, not an authored component). We do NOT use
+      CsWinRT's CsWinRTEmitEntryPointInitializer: it only emits the SetEntryAssembly initializer into
+      WinRT.Component.dll (for TRUE native consumers loaded via WinRT.Host) and never runs in the managed-host case,
+      so CsWinRT3ModuleInitializer.cs carries our own [ModuleInitializer] SetEntryAssembly instead. See the matching
+      block in dxaml\test\managed\Microsoft.UI.Xaml.Build.Tests.Managed.props.
+    -->
+    <CsWinRTBuildForNativeConsumer>true</CsWinRTBuildForNativeConsumer>
+
+    <!--
+      CsWinRT 3.0 TypeMap workaround: build MUXControls.Test as an Exe (OutputType=Exe + CustomNativeMain=true) so
+      CsWinRT roots the generated TypeMap into its output assembly as the process ENTRY assembly (the Exe path).
+      For a Library, CsWinRT only emits the TypeMap-rooting entry-point initializer into WinRT.Component.dll, which
+      runs only for true native consumers (WinRT.Host) and never in the managed TAEF host, so the split TypeMap
+      entries have no root and marshalling fails. CustomNativeMain=true makes the .NET SDK emit a managed .dll
+      (TAEF still loads MUXControls.Test.dll as before; any stub .exe is discarded). An empty unused Main is still
+      required for the Exe build (CsWinRT3ModuleInitializer.cs, under CSWINRT3_0). v3-only; 2.x stays a Library
+      (OutputType=Library is set above).
+    -->
+    <OutputType>Exe</OutputType>
+    <CustomNativeMain>true</CustomNativeMain>
+    <!-- Microsoft.NET.Test.Sdk auto-generates an entry point (GenerateProgramFile) for Exe test projects, which
+         would collide with our empty Main above ("multiple entry points"). Use our own Main. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+
+  <!--
+    CsWinRT 3.0: unlike the dxaml managed tests / MUXControlsTestApp, MUXControls.Test does NOT project
+    Microsoft.UI.Xaml (its merged projection generator inputs contain no Microsoft.UI.Xaml winmd), so it must NOT
+    reference the Resources reference projection. Doing so dragged the Microsoft.Windows.ApplicationModel.Resources
+    delegate EventHandler<ResourceManager, ResourceNotFoundEventArgs> into this project's merged projection, and the
+    interop generator then failed to marshal that generic delegate instantiation with CSWINRTINTEROPGEN0011
+    (compounded by this project feeding a 22621 windows.winmd via the Microsoft.Windows.SDK.cpp package while the
+    rest of the v3 metadata is 26100). The Resources reference is only needed by projects that re-project
+    Microsoft.UI.Xaml (which references Resources types); MUXControls.Test does not, so it is intentionally omitted.
+  -->
+
+  <!--
+    CsWinRT 3.0: binplace the merged projection assemblies CsWinRTGenerateInteropAssembly produced (CsWinRT writes
+    them to $(OutDir)) into this DLL's subfolder ($(TargetDestination), set above), next to MUXControls.Test.dll.
+    Runs after AddBinplaceItems populates $(OutDir) and before Binplace copies, so the files exist when the glob
+    is evaluated. v3-only.
+  -->
+  <Target Name="BinplaceCsWinRT3MergedProjection"
+          AfterTargets="AddBinplaceItems"
+          BeforeTargets="Binplace"
+          Condition="'$(UseCsWinRT3)'=='true'">
+    <ItemGroup>
+      <BinplaceItem Include="$(OutDir)WinRT.*.dll">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <BinplaceItem Include="$(OutDir)MUXControls.Test.dll" />
     <BinplaceItem Include="$(OutDir)MUXTestInfra.dll" />

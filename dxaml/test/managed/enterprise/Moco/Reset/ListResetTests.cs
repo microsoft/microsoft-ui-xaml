@@ -12,6 +12,9 @@ using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using Windows.Foundation.Collections;
+#if CSWINRT3_0
+using Windows.Foundation;
+#endif
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
@@ -1947,8 +1950,8 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                 var firstGroupHeader = isp.Children[0];
                 var firstGroupContainer = isp.Children[1];
 
-                var firstGroupHeaderOffset = firstGroupHeader.TransformToVisual(isp).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0));
-                var firstGroupContainerOffset = firstGroupContainer.TransformToVisual(isp).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0));
+                var firstGroupHeaderOffset = firstGroupHeader.TransformToVisual(isp).TransformPoint(new global::Windows.Foundation.Point(0.0f, 0.0f));
+                var firstGroupContainerOffset = firstGroupContainer.TransformToVisual(isp).TransformPoint(new global::Windows.Foundation.Point(0.0f, 0.0f));
                 Verify.AreEqual(0.0, firstGroupHeaderOffset.X);
                 Verify.AreEqual(0.0, firstGroupHeaderOffset.Y);
                 Verify.AreEqual(0.0, firstGroupContainerOffset.X);
@@ -1957,7 +1960,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                 Log.Comment("Validate that the remaining containers are recycled.");
                 for(int i = 2; i < isp.Children.Count; ++i)
                 {
-                    var offset = isp.Children[i].TransformToVisual(isp).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0));
+                    var offset = isp.Children[i].TransformToVisual(isp).TransformPoint(new global::Windows.Foundation.Point(0.0f, 0.0f));
                     Verify.IsLessThanOrEqual(10000.0, -offset.X);
                     Verify.IsLessThanOrEqual(10000.0, -offset.Y);
                 }

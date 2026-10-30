@@ -16,6 +16,14 @@ using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using Microsoft.UI.Xaml.Markup;
 using System.Collections.Generic;
+#if CSWINRT3_0
+// CsWinRT 3.0 uses System.EventHandler<TSender, TResult>.
+using GettingFocusTypedHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.GettingFocusEventArgs>;
+using LosingFocusTypedHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.LosingFocusEventArgs>;
+#else
+using GettingFocusTypedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.GettingFocusEventArgs>;
+using LosingFocusTypedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.Input.LosingFocusEventArgs>;
+#endif
 
 namespace Microsoft.UI.Xaml.Tests.Common
 {
@@ -31,13 +39,13 @@ namespace Microsoft.UI.Xaml.Tests.Common
             this.EventOrder = eventOrder;
             this.ElementsToTest = elements;
 
-            FrameworkElementLosingFocusHandler = new TypedEventHandler<UIElement, LosingFocusEventArgs>((source, e) =>
+            FrameworkElementLosingFocusHandler = new LosingFocusTypedHandler((source, e) =>
             {
                 FrameworkElement sourceAsFrameworkElement = (FrameworkElement)source;
                 EventOrder.Append($"[{sourceAsFrameworkElement.Name}LosingFocus{CanceledToLoggedString(e.Cancel)}{HandledToLoggedString(e.Handled)}{CorrelationIDToLoggedString(e.CorrelationId)}]");
             });
 
-            FrameworkElementGettingFocusHandler = new TypedEventHandler<UIElement, GettingFocusEventArgs>((source, e) =>
+            FrameworkElementGettingFocusHandler = new GettingFocusTypedHandler((source, e) =>
             {
                 FrameworkElement sourceAsFrameworkElement = (FrameworkElement)source;
                 EventOrder.Append($"[{sourceAsFrameworkElement.Name}GettingFocus{CanceledToLoggedString(e.Cancel)}{HandledToLoggedString(e.Handled)}{CorrelationIDToLoggedString(e.CorrelationId)}]");
@@ -146,8 +154,8 @@ namespace Microsoft.UI.Xaml.Tests.Common
             element.GotFocus -= this.HyperlinkGotFocusHandler;
         }
 
-        TypedEventHandler<UIElement, GettingFocusEventArgs> FrameworkElementGettingFocusHandler;
-        TypedEventHandler<UIElement, LosingFocusEventArgs> FrameworkElementLosingFocusHandler;
+        GettingFocusTypedHandler FrameworkElementGettingFocusHandler;
+        LosingFocusTypedHandler FrameworkElementLosingFocusHandler;
 
         EventHandler<Microsoft.UI.Xaml.Input.GettingFocusEventArgs> FocusManagerGettingFocusHandler;
         EventHandler<Microsoft.UI.Xaml.Input.LosingFocusEventArgs> FocusManagerLosingFocusHandler;

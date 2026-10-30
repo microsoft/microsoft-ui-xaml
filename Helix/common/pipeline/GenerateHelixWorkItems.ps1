@@ -148,7 +148,6 @@ function Parse-TestInfo([string]$taefOutput)
     {
         [LineType]$lineType = (Get-LineType $rawLine)
 
-        # We don't need the whitespace around the line anymore, so we'll discard it to make things easier.
         [string]$line = $rawLine.Trim()
 
         if ($lineType -eq [LineType]::TestModule)
@@ -261,10 +260,10 @@ function Combine-TaefQuery([string]$baseQuery, [string]$newClause)
 }
 
 
-$testDllSubDir = [System.IO.Path]::GetDirectoryName($testFilePattern)
+$patternFileName = [System.IO.Path]::GetFileName($testFilePattern)
+$patternSubDir = [System.IO.Path]::GetDirectoryName($testFilePattern)
 
 $TaefSelectStatement = "/select:`"$TaefBaseQuery`""
-$TestFilePathPattern = "$($TestBinaryDirectoryPath)\$TestFilePattern"
 
 $runIgnoredTestsStr = if ($RunIgnoredTests) { "/runIgnoredTests" } else { "" }
 $taefParameters = "/taefParameters $TaefExtraParameters $runIgnoredTestsStr"
@@ -286,13 +285,36 @@ if($TaefExePath)
 }
 Write-Host "Using te.exe from $taefExePathToUse"
 
+# Expand wildcard directories for isolated test modules; TAEF reports only filenames,
+# so work items need each module's concrete directory.
+[System.Collections.Generic.List[object]]$searchSpecs = @()
+if ($patternSubDir -and ($patternSubDir.Contains('*') -or $patternSubDir.Contains('?')))
+{
+    $wildcardParent = [System.IO.Path]::GetDirectoryName($patternSubDir)
+    $wildcardLeaf = [System.IO.Path]::GetFileName($patternSubDir)
+    $wildcardParentFullPath = if ($wildcardParent) { Join-Path $TestBinaryDirectoryPath $wildcardParent } else { $TestBinaryDirectoryPath }
 
-$taefListPropertiesCommand = "$taefExePathToUse /listproperties $runIgnoredTestsStr $TaefSelectStatement $TestFilePathPattern".Replace("`"", "`"`"`"")
-
-Write-Host "Running TAEF command: $taefListPropertiesCommand"
-[string]$taefOutput = Invoke-Expression "$taefListPropertiesCommand" | Out-String
-
-[System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
+    if (Test-Path $wildcardParentFullPath)
+    {
+        foreach ($dir in (Get-ChildItem -Path $wildcardParentFullPath -Directory -Filter $wildcardLeaf))
+        {
+            # Skip non-test folders matched by the directory wildcard.
+            if (Get-ChildItem -Path $dir.FullName -Filter $patternFileName -File -ErrorAction SilentlyContinue | Select-Object -First 1)
+            {
+                $concreteSubDir = if ($wildcardParent) { Join-Path $wildcardParent $dir.Name } else { $dir.Name }
+                $searchSpecs.Add([pscustomobject]@{ SubDir = $concreteSubDir; FullPattern = (Join-Path (Join-Path $TestBinaryDirectoryPath $concreteSubDir) $patternFileName) })
+            }
+        }
+    }
+    else
+    {
+        Write-Host "Wildcard parent directory '$wildcardParentFullPath' does not exist; no work items will be generated."
+    }
+}
+else
+{
+    $searchSpecs.Add([pscustomobject]@{ SubDir = $patternSubDir; FullPattern = "$($TestBinaryDirectoryPath)\$testFilePattern" })
+}
 
 
 
@@ -302,6 +324,8 @@ $global:projFileContent = @"
 "@
 
 $global:workItemCount = 0
+# Retain discovery output for diagnostics when no work items are generated.
+$global:taefOutputs = New-Object System.Collections.Generic.List[string]
 
 function Add-HelixWorkItemToOutput
 {
@@ -335,18 +359,38 @@ function Add-HelixWorkItemToOutputImpl
 "@
 }
 
-foreach ($testModule in $testModules)
+foreach ($spec in $searchSpecs)
 {
-    $testFileName = [System.IO.Path]::GetFileName($testModule.Name)
-    if ($testDllSubDir)
+    $testDllSubDir = $spec.SubDir
+
+    $taefListPropertiesCommand = "$taefExePathToUse /listproperties $runIgnoredTestsStr $TaefSelectStatement $($spec.FullPattern)".Replace("`"", "`"`"`"")
+    Write-Host "Running TAEF command: $taefListPropertiesCommand"
+    [string]$taefOutput = Invoke-Expression "$taefListPropertiesCommand" | Out-String
+    $taefExitCode = $global:LASTEXITCODE
+    $global:taefOutputs.Add("---- $($spec.FullPattern) ----`n$taefOutput")
+    [System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
+    if ($taefExitCode -ne 0)
     {
-        $testFileName = Join-Path $testDllSubDir $testFileName
+        # Ignore no-match errors for individual wildcard folders, but propagate load failures.
+        if ($patternSubDir -and ($patternSubDir.Contains('*') -or $patternSubDir.Contains('?')) -and
+            $taefOutput -match '(?i)no tests (were )?(found|selected|matched)')
+        {
+            $global:LASTEXITCODE = 0
+            continue
+        }
+        Write-Error "TAEF enumeration failed for '$($spec.FullPattern)' (exit $taefExitCode):`n$taefOutput"
+        exit $taefExitCode
     }
 
-    # We can create a WorkItem per module or per test class
-    # We default to per-module
-    # If a module or any test class in the module defines HelixWorkItemCreation="CreateWorkItemPerTestClass" we 
-    # switch to per-testclass
+    foreach ($testModule in $testModules)
+    {
+        $testFileName = [System.IO.Path]::GetFileName($testModule.Name)
+        if ($testDllSubDir)
+        {
+            $testFileName = Join-Path $testDllSubDir $testFileName
+        }
+
+        # Default to module-level work items unless a module or class requests per-class items.
 
     $CreateWorkItemPerModule = $true
     if ($testModule.Properties["HelixWorkItemCreation"] -eq "CreateWorkItemPerTestClass")
@@ -456,6 +500,7 @@ foreach ($testModule in $testModules)
             }
         }
     }
+    }
 }
 
 $global:projFileContent += @"
@@ -477,6 +522,12 @@ Set-Content $OutputProjFile $global:projFileContent -NoNewline -Encoding UTF8
 if ($global:workItemCount -eq 0)
 {
     Write-Host "##[warning]No test work items were generated. All tests may have been filtered out by the TAEF query (e.g. MinOSVer > TargetOSVersion=$TargetOSVersion)."
+    Write-Host "----- te.exe /listproperties output (for diagnosis) -----"
+    foreach ($capturedOutput in $global:taefOutputs)
+    {
+        Write-Host $capturedOutput
+    }
+    Write-Host "---------------------------------------------------------"
 }
 else
 {

@@ -9,6 +9,10 @@ using WEX.Logging.Interop;
 using WEX.TestExecution;
 using Microsoft.UI.Xaml.Tests.Common;
 using System.Runtime.InteropServices;
+#if CSWINRT3_0
+// CsWinRT 3.0 async extensions.
+using Windows.Foundation;
+#endif
 
 namespace Windows.Graphics.Imaging
 {
@@ -70,4 +74,3 @@ namespace Windows.Graphics.Imaging
         }
     }
 }
-

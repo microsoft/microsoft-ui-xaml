@@ -27,6 +27,9 @@
     <PackageContent Include="build\cmake\*" PackageLocation="$(BuildTargetsPackageLocation)\cmake" />
     <PackageContent Include="$(LiftedMRTBuildPath)\*.targets" PackageLocation="$(BuildTargetsPackageLocation)" />
     <PackageContent Include="$(LiftedMRTLibPath)\net6.0-windows*\*.dll" PackageLocation="$(CSWinRTInteropAssemblyPackageLocation)" />
+    <PackageContent Include="$(LiftedMRTLibPath)\net10.0-windows*\*.dll" PackageLocation="$(PackageOutputLocation)\lib\$(WindowsAppSdkTargetFrameworkMoniker_v3)" />
+    <!-- Reference projections live in the Foundation package's top-level ref folder. -->
+    <PackageContent Include="$(LiftedMRTPackagePath)\ref\$(WindowsAppSdkTargetFrameworkMoniker_v3)\*.dll" PackageLocation="$(PackageOutputLocation)\ref\$(WindowsAppSdkTargetFrameworkMoniker_v3)" />
 
     <PackageContent Include="$(IntellisenseFolder)\Microsoft.WinUI.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
     <PackageContent Include="$(IntellisenseFolder)\Microsoft.UI.Text.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
@@ -72,8 +75,17 @@
         Value="$(LiftedExtensions)"/>
   </Target>
   
-  <Target Name="GenerateAppxFragmentFromAppxManifest" BeforeTargets="_CreateWinUIPackageLayout" DependsOnTargets="FillExtensions" Inputs="$(OutDir)AppxManifest.xml" Outputs="$(OutDir)package.appxfragment">
+  <Target Name="GenerateAppxFragmentFromAppxManifest" BeforeTargets="_CreateWinUIPackageLayout" DependsOnTargets="FillExtensions" Inputs="$(MSBuildAllProjects);$(OutDir)AppxManifest.xml" Outputs="$(OutDir)package.appxfragment">
+    <!-- FillExtensions can be skipped on incremental builds, so read its persisted output. -->
+    <ItemGroup>
+      <_AppxFragmentExtensions Remove="@(_AppxFragmentExtensions)" />
+    </ItemGroup>
+    <XmlPeek XmlInputPath="$(OutDir)AppxManifest.xml"
+        Query="/*[local-name()='Package']/*[local-name()='Extensions']/*">
+      <Output TaskParameter="Result" ItemName="_AppxFragmentExtensions" />
+    </XmlPeek>
     <PropertyGroup>
+      <LiftedExtensions>@(_AppxFragmentExtensions->'%(Identity)','&#x0d;&#x0a;')</LiftedExtensions>
       <AppxFragment>
         %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E
         %3CFragment xmlns=&quot;http://schemas.microsoft.com/appx/manifest/foundation/windows10&quot;%3E

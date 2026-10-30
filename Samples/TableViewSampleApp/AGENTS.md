@@ -67,7 +67,8 @@ shortly after launch. If a table appears with no header row, that is a different
 almost always **no declared columns**, not a missing dictionary.
 
 **`TableView` is `[MUX_PREVIEW]`.** C# usage raises `CS8305`, suppressed via `NoWarn` in the project
-file. XAML usage raises `WMC1501` once per page; those are deliberately left visible.
+file. CsWinRT 3.0 additionally raises `CSWINRT3005`, suppressed only for that build mode.
+XAML usage raises `WMC1501` once per page; those are deliberately left visible.
 
 ## Entry point
 

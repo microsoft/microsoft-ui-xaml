@@ -495,7 +495,7 @@ namespace MUXControlsTestApp
                         _bringIntoViewOptions = new BringIntoViewOptions()
                         {
                             AnimationDesired = false,
-                            TargetRect = new Windows.Foundation.Rect(0, 0, 1, _scrollView.ViewportHeight)
+                            TargetRect = new Windows.Foundation.Rect(0, 0, 1, (float)_scrollView.ViewportHeight)
                         };
                     }
 
@@ -736,7 +736,7 @@ namespace MUXControlsTestApp
             if (_bringIntoViewOptions != null)
             {
                 // Sizing the TargetRect in order to bring the target item to the top of the viewport.
-                _bringIntoViewOptions.TargetRect = new Windows.Foundation.Rect(0, 0, 1, _scrollView.ViewportHeight);
+                _bringIntoViewOptions.TargetRect = new Windows.Foundation.Rect(0, 0, 1, (float)_scrollView.ViewportHeight);
             }
         }
 

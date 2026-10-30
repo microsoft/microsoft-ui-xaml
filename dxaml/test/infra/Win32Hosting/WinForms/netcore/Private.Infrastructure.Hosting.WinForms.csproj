@@ -20,11 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
+    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net10.0'))" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <ProjectReference Include="..\..\..\client\cswinrt\Private.Infrastructure.CsWinRT.csproj" />
     <ProjectReference Include="..\..\..\Win32Hosting\src\Microsoft.Toolkit.Win32.UI.XamlHost.csproj" />
   </ItemGroup>

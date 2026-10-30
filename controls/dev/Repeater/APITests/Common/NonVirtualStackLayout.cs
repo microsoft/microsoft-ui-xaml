@@ -21,7 +21,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
                 extentWidth = Math.Max(extentWidth, element.DesiredSize.Width);
             }
 
-            return new Size(extentWidth, extentHeight);
+            return new Size((float)extentWidth, (float)extentHeight);
         }
 
         protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
@@ -29,7 +29,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
             double offset = 0.0;
             foreach (var element in context.Children)
             {
-                element.Arrange(new Rect(0, offset, element.DesiredSize.Width, element.DesiredSize.Height));
+                element.Arrange(new Rect(0, (float)offset, element.DesiredSize.Width, element.DesiredSize.Height));
                 offset += element.DesiredSize.Height;
             }
 

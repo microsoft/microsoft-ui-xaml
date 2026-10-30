@@ -31,7 +31,6 @@ using Xaml = Microsoft.UI.Xaml;
 
 using WPFControls = System.Windows.Controls;
 using WPFSystem = System.Windows;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 using Private.Infrastructure.Hosting.WPF;
 

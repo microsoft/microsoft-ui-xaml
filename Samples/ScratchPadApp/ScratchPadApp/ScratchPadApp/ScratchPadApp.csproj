@@ -15,10 +15,6 @@
       8305 <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
     </NoWarn>
 
-    <CSWinRTIncludes>
-      AppTestAutomationHelpers
-    </CSWinRTIncludes>
-
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
 
@@ -33,4 +29,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.csproj" />
+    <ProjectReference Include="..\..\..\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.Consumer.targets" />
 </Project>

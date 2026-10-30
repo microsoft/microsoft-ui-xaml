@@ -134,12 +134,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
                 new Size(maj, min);
         }
 
-        private double RoundForLayout(double value)
+        private float RoundForLayout(double value)
         {
             if (m_useLayoutRounding)
-                return global::System.Math.Floor((m_rawPixelsPerViewPixel * value) + 0.5) / m_rawPixelsPerViewPixel;
+                return (float)(global::System.Math.Floor((m_rawPixelsPerViewPixel * value) + 0.5) / m_rawPixelsPerViewPixel);
             else
-                return value;
+                return (float)value;
         }
     }
 }

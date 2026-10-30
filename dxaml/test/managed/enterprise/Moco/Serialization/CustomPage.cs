@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+#if CSWINRT3_0
+using Windows.Foundation;
+#endif
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;

@@ -5,7 +5,10 @@ using System;
 
 namespace MUXControlsTestApp
 {
-    public class TestDeclaration
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class TestDeclaration
     {
         public TestDeclaration()
         {

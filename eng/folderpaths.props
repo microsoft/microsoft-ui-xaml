@@ -155,6 +155,7 @@
   <PropertyGroup>
     <TaefPkgDirectory>$(NugetPackageDirectory)\Microsoft.Taef.$(TaefNugetPackageVersion)\</TaefPkgDirectory>
     <WinUITestResourcesPath>$(NugetPackageDirectory)\$(WinUITestResourcesPackageName).$(WinUITestResourcesPackageVersion)</WinUITestResourcesPath>
+    <TaefPkgDirectory Condition="Exists('$(NugetPackageDirectory)\Microsoft.Taef\$(TaefNugetPackageVersion)\build\Microsoft.Taef.targets')">$(NugetPackageDirectory)\Microsoft.Taef\$(TaefNugetPackageVersion)\</TaefPkgDirectory>
     <AbiWinRtPackageDirectory>$(NugetPackageDirectory)\Microsoft.Windows.AbiWinRT.$(AbiWinRtVersion)\</AbiWinRtPackageDirectory>
     <AbiWinRtExePath>$(AbiWinRtPackageDirectory)bin\abi.exe</AbiWinRtExePath>
   </PropertyGroup>

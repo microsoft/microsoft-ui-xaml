@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Tests.Common;
+#if CSWINRT3_0
+// CsWinRT 3.0 async extensions.
+using Windows.Foundation;
+#endif
 
 namespace Private.Infrastructure
 {
@@ -102,4 +106,3 @@ namespace Private.Infrastructure
         }
     }
 }
-

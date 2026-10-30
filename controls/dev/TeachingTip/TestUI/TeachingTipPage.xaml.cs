@@ -432,10 +432,10 @@ namespace MUXControlsTestApp
         }
         public void OnGetTargetBoundsButtonClicked(object sender, RoutedEventArgs args)
         {
-            var bounds = this.targetButton.TransformToVisual(null).TransformBounds(new Rect(0.0,
-                0.0,
-                this.targetButton.ActualWidth,
-                this.targetButton.ActualHeight));
+            var bounds = this.targetButton.TransformToVisual(null).TransformBounds(new Rect(0.0f,
+                0.0f,
+                (float)this.targetButton.ActualWidth,
+                (float)this.targetButton.ActualHeight));
             
             this.TargetXOffsetTextBlock.Text = bounds.X.ToString();
             this.TargetYOffsetTextBlock.Text = bounds.Y.ToString();
@@ -456,10 +456,10 @@ namespace MUXControlsTestApp
         public void OnUseTestWindowBoundsCheckBoxChecked(object sender, RoutedEventArgs args)
         {
             var tip = getTeachingTip();
-            Rect windowRect = new Rect(double.Parse(this.TestWindowBoundsXTextBox.Text),
-                                       double.Parse(this.TestWindowBoundsYTextBox.Text),
-                                       double.Parse(this.TestWindowBoundsWidthTextBox.Text),
-                                       double.Parse(this.TestWindowBoundsHeightTextBox.Text));
+            Rect windowRect = new Rect(float.Parse(this.TestWindowBoundsXTextBox.Text),
+                                       float.Parse(this.TestWindowBoundsYTextBox.Text),
+                                       float.Parse(this.TestWindowBoundsWidthTextBox.Text),
+                                       float.Parse(this.TestWindowBoundsHeightTextBox.Text));
             TeachingTipTestHooks.SetUseTestWindowBounds(tip, true);
             TeachingTipTestHooks.SetTestWindowBounds(tip, windowRect);
             if(testWindowBounds == null)
@@ -483,10 +483,10 @@ namespace MUXControlsTestApp
         public void OnUseTestSreenBoundsCheckBoxChecked(object sender, RoutedEventArgs args)
         {
             var tip = getTeachingTip();
-            Rect screenRect = new Rect(double.Parse(this.TestScreenBoundsXTextBox.Text),
-                                       double.Parse(this.TestScreenBoundsYTextBox.Text),
-                                       double.Parse(this.TestScreenBoundsWidthTextBox.Text),
-                                       double.Parse(this.TestScreenBoundsHeightTextBox.Text));
+            Rect screenRect = new Rect(float.Parse(this.TestScreenBoundsXTextBox.Text),
+                                       float.Parse(this.TestScreenBoundsYTextBox.Text),
+                                       float.Parse(this.TestScreenBoundsWidthTextBox.Text),
+                                       float.Parse(this.TestScreenBoundsHeightTextBox.Text));
             TeachingTipTestHooks.SetUseTestScreenBounds(tip, true);
             TeachingTipTestHooks.SetTestScreenBounds(tip, screenRect);
             if (testScreenBounds == null)

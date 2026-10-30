@@ -60,8 +60,8 @@ namespace MUXControlsTestApp.Samples
                 var parent = (FrameworkElement)VisualTreeHelper.GetParent(progress.Element);
                 var to = LayoutInformation.GetLayoutSlot((FrameworkElement)progress.Element);
                 var from = to;
-                from.X = (parent.ActualWidth - ((FrameworkElement)progress.Element).ActualWidth) / 2;
-                from.Y = (parent.ActualHeight - ((FrameworkElement)progress.Element).ActualHeight) / 2;
+                from.X = (float)((parent.ActualWidth - ((FrameworkElement)progress.Element).ActualWidth) / 2);
+                from.Y = (float)((parent.ActualHeight - ((FrameworkElement)progress.Element).ActualHeight) / 2);
 
                 var batch = compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
                 AnimateOffset(visual, compositor, from, to);
@@ -100,15 +100,15 @@ namespace MUXControlsTestApp.Samples
                 var compositor = outerVisual.Compositor;
 
                 var parent = (FrameworkElement)VisualTreeHelper.GetParent(progress.Element);
-                var center = new Point(parent.ActualWidth / 2, parent.ActualHeight / 2);
+                var center = new Point((float)(parent.ActualWidth / 2), (float)(parent.ActualHeight / 2));
                 var from = new Point((transition.OldBounds.Left + transition.OldBounds.Right) / 2 - center.X, -(transition.OldBounds.Top + transition.OldBounds.Bottom) / 2 + center.Y);
                 var to = new Point((transition.NewBounds.Left + transition.NewBounds.Right) / 2 - center.X, -(transition.NewBounds.Top + transition.NewBounds.Bottom) / 2 + center.Y);
                 var fromLength = Math.Sqrt(from.X * from.X + from.Y * from.Y);
                 var toLength = Math.Sqrt(to.X * to.X + to.Y * to.Y);
-                from.X /= fromLength;
-                from.Y /= fromLength;
-                to.X /= toLength;
-                to.Y /= toLength;
+                from.X = (float)(from.X / fromLength);
+                from.Y = (float)(from.Y / fromLength);
+                to.X = (float)(to.X / toLength);
+                to.Y = (float)(to.Y / toLength);
 
                 var angle = Math.Acos(Math.Min(1, to.X * from.X + to.Y * from.Y));
                 var sign = Math.Sign(to.X * from.Y - to.Y * from.X);

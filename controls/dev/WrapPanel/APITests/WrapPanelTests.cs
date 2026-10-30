@@ -43,8 +43,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var button = new Button { Content = "Button", Width = 100, Height = 50 };
                 var expectedButtonLayoutSlot = new Rect
                 {
-                    X = padding.Left, // 10
-                    Y = padding.Top,  // 20
+                    X = (float)padding.Left, // 10
+                    Y = (float)padding.Top,  // 20
                     Width = 100,
                     Height = 50
                 };
@@ -227,15 +227,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var expectedButton1LayoutSlot = new Rect
                 {
-                    X = padding.Left, // 5
-                    Y = padding.Top,  // 10
+                    X = (float)padding.Left, // 5
+                    Y = (float)padding.Top,  // 10
                     Width = 100,
                     Height = 50
                 };
                 var expectedButton2LayoutSlot = new Rect
                 {
-                    X = padding.Left + 100 + 8, // 5 + 100 + 8 = 113
-                    Y = padding.Top,             // 10
+                    X = (float)(padding.Left + 100 + 8), // 5 + 100 + 8 = 113
+                    Y = (float)padding.Top,             // 10
                     Width = 100,
                     Height = 50
                 };

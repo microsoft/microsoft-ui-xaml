@@ -9,7 +9,6 @@ using System.Windows;
 using Microsoft.Toolkit.Win32.UI.XamlHost;
 using WUX = Microsoft.UI.Xaml;
 using WF = Windows.Foundation;
-using WinRT;
 // CHANGES END : CODE IS DIFFERENT FROM GITHUB VERSION
 
 namespace Microsoft.Toolkit.Wpf.UI.XamlHost
@@ -125,10 +124,10 @@ namespace Microsoft.Toolkit.Wpf.UI.XamlHost
                 var transform = sibling1.TransformToVisual(sibling2);
                 var systemWindowsRect = transform.TransformBounds(
                     new Rect(0, 0, sibling1.ActualWidth, sibling1.ActualHeight));
-                origin.X = systemWindowsRect.X;
-                origin.Y = systemWindowsRect.Y;
-                origin.Width = systemWindowsRect.Width;
-                origin.Height = systemWindowsRect.Height;
+                origin.X = (float)systemWindowsRect.X;
+                origin.Y = (float)systemWindowsRect.Y;
+                origin.Width = (float)systemWindowsRect.Width;
+                origin.Height = (float)systemWindowsRect.Height;
             }
 
             return origin;

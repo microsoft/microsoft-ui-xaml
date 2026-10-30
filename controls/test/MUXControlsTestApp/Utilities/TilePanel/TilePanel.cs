@@ -82,8 +82,8 @@ namespace MUXControlsTestApp.Utilities
 
                 GetColumnAndRowCounts(availableSize, out columnCount, out rowCount);
 
-                result.Width = columnCount * TileWidth;
-                result.Height = rowCount * TileHeight;
+                result.Width = (float)(columnCount * TileWidth);
+                result.Height = (float)(rowCount * TileHeight);
             }
 
             return result;
@@ -135,10 +135,10 @@ namespace MUXControlsTestApp.Utilities
                         if (columnIndex * rowCount + rowIndex < TileCount)
                         {
                             Rect rectangleRect = new Rect(
-                                horizontalOffset + columnIndex * TileWidth,
-                                verticalOffset + rowIndex * TileHeight,
-                                TileWidth,
-                                TileHeight);
+                                (float)(horizontalOffset + columnIndex * TileWidth),
+                                (float)(verticalOffset + rowIndex * TileHeight),
+                                (float)TileWidth,
+                                (float)TileHeight);
                             Children[columnIndex * rowCount + rowIndex].Arrange(rectangleRect);
                         }
                         else

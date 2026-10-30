@@ -26,6 +26,16 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
+#if CSWINRT3_0
+using WpfUIElementDragStartingHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.DragStartingEventArgs>;
+#else
+using WpfUIElementDragStartingHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.DragStartingEventArgs>;
+#endif
+#if CSWINRT3_0
+using WpfUIElementDropCompletedHandler = System.EventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.DropCompletedEventArgs>;
+#else
+using WpfUIElementDropCompletedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, Microsoft.UI.Xaml.DropCompletedEventArgs>;
+#endif
 using System.Threading;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -34,7 +44,6 @@ using Xaml = Microsoft.UI.Xaml;
 
 using WPFControls = System.Windows.Controls;
 using WPFSystem = System.Windows;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows.Interop;
 
 using Private.Infrastructure.Hosting.WPF;
@@ -1380,7 +1389,7 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
                     pointerPressedEvent.Set();
                 };
 
-                global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, DragStartingEventArgs> dragStartingEventAction = (sender, args) =>
+                WpfUIElementDragStartingHandler dragStartingEventAction = (sender, args) =>
                 {
                     args.Data.SetText(dragSucceedText);
                     args.DragUI.SetContentFromDataPackage();
@@ -1390,7 +1399,7 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
                     args.Data.RequestedOperation = DataPackageOperation.Copy;
                 };
 
-                global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, DropCompletedEventArgs> dropCompletedEventAction = (sender, args) =>
+                WpfUIElementDropCompletedHandler dropCompletedEventAction = (sender, args) =>
                 {
                     WEX.Logging.Interop.Log.Comment("Drag completed on source element");
                     dropResult = args.DropResult;
@@ -1539,7 +1548,7 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
                     pointerPressedEvent.Set();
                 };
 
-                global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, DragStartingEventArgs> dragStartingEventAction = (sender, args) =>
+                WpfUIElementDragStartingHandler dragStartingEventAction = (sender, args) =>
                 {
                     args.Data.SetText(dragSucceedText);
                     args.DragUI.SetContentFromDataPackage();
@@ -1549,7 +1558,7 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
                     args.Data.RequestedOperation = DataPackageOperation.Copy;
                 };
 
-                global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.UIElement, DropCompletedEventArgs> dropCompletedEventAction = (sender, args) =>
+                WpfUIElementDropCompletedHandler dropCompletedEventAction = (sender, args) =>
                 {
                     WEX.Logging.Interop.Log.Comment("Drag completed on source element");
                     dropResult = args.DropResult;

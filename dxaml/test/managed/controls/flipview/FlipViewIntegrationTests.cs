@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Private.Infrastructure;
 using System;
+#if CSWINRT3_0
+using Windows.Foundation;
+#endif
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;

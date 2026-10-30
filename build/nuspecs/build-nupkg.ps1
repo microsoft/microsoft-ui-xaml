@@ -83,6 +83,7 @@ $BASE_COMPONENT_VERSION = ''
 $FOUNDATION_COMPONENT_VERSION = ''
 $IXP_COMPONENT_VERSION = ''
 $CsWinRT_Version = $VersionsPropsContent.SelectSingleNode('//MicrosoftCsWinRTPackageVersion').InnerText
+$CsWinRT_V3_Version = $VersionsPropsContent.SelectSingleNode('//MicrosoftCsWinRTv3PackageVersion').InnerText
 $WEBVIEW2_Version = $VersionsPropsContent.SelectSingleNode('//WebView2PackageVersion').InnerText
 
 # Component versions. versions.props pins wrap a ValueOrDefault; resolve to the pinned env var, else the literal fallback.
@@ -146,7 +147,7 @@ $OutputDir = (Resolve-Path -LiteralPath $OutputDir -ErrorAction Stop).Path
 
 # Pass NoWarn=NU5100 to silence warnings for all the native binaries being put
 # into the "runtime-framework\" folder rather than "lib\" or "runtime\".
-$CommonNugetArgs = "-properties `"PackageRoot=$PackageRoot``;Version=$version``;IXP_Version=$IXP_Version``;CsWinRT_Version=$CsWinRT_Version``;WEBVIEW2_Version=$WEBVIEW2_Version``;BASE_COMPONENT_VERSION=$BASE_COMPONENT_VERSION``;FOUNDATION_COMPONENT_VERSION=$FOUNDATION_COMPONENT_VERSION``;IXP_COMPONENT_VERSION=$IXP_COMPONENT_VERSION;NoWarn=NU5100`""
+$CommonNugetArgs = "-properties `"PackageRoot=$PackageRoot``;Version=$version``;IXP_Version=$IXP_Version``;CsWinRT_Version=$CsWinRT_Version``;CsWinRT_V3_Version=$CsWinRT_V3_Version``;WEBVIEW2_Version=$WEBVIEW2_Version``;BASE_COMPONENT_VERSION=$BASE_COMPONENT_VERSION``;FOUNDATION_COMPONENT_VERSION=$FOUNDATION_COMPONENT_VERSION``;IXP_COMPONENT_VERSION=$IXP_COMPONENT_VERSION;NoWarn=NU5100`""
 
 # Pack into a unique staging directory so unchanged content can be discarded
 # without touching the final archive or installed files and their timestamps

@@ -103,7 +103,7 @@
                       ('$(OutputType)'=='WinExe' and '$(EnableMsixTooling)'=='true'))">
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
     <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
-    <SDKReference Include="Microsoft.UniversalCRT.Debug, Version=$(TargetPlatformVersion)" Condition="'$(Configuration)' == 'Debug'" />
+    <SDKReference Include="Microsoft.UniversalCRT.Debug, Version=$(_NormalizedTargetPlatformVersion)" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
   <!-- The CreateWapProjPackageFiles task gets confused by MUI files with the same name but different sub-directory paths,

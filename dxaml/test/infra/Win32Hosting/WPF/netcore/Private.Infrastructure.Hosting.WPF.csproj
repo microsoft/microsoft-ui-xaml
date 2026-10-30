@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <ProjectReference Include="..\..\..\client\cswinrt\Private.Infrastructure.CsWinRT.csproj" />
     <ProjectReference Include="..\..\..\Win32Hosting\src\Microsoft.Toolkit.Win32.UI.XamlHost.csproj" />
   </ItemGroup>

@@ -9,6 +9,9 @@ using Microsoft.Web.WebView2.Core;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+#if CSWINRT3_0
+using Windows.Foundation;   // CsWinRT 3.0 async extensions
+#endif
 
 namespace MUXControlsTestApp
 {

@@ -27,7 +27,7 @@ namespace Microsoft.Toolkit.Wpf.UI.XamlHost
 
             if (IsXamlContentLoaded())
             {
-                _xamlSource.Content.Measure(new WF.Size(constraint.Width, constraint.Height));
+                _xamlSource.Content.Measure(new WF.Size((float)constraint.Width, (float)constraint.Height));
                 desiredSize.Width = _xamlSource.Content.DesiredSize.Width;
                 desiredSize.Height = _xamlSource.Content.DesiredSize.Height;
             }
@@ -50,7 +50,7 @@ namespace Microsoft.Toolkit.Wpf.UI.XamlHost
                 // Arrange is required to support HorizontalAlignment and VerticalAlignment properties
                 // set to 'Stretch'.  The UWP XAML content will be 0 in the stretch alignment direction
                 // until Arrange is called, and the UWP XAML content is expanded to fill the available space.
-                var finalRect = new WF.Rect(0, 0, finalSize.Width, finalSize.Height);
+                var finalRect = new WF.Rect(0, 0, (float)finalSize.Width, (float)finalSize.Height);
                 _xamlSource.Content.Arrange(finalRect);
             }
 

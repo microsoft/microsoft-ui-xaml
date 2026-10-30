@@ -2274,8 +2274,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var transform = element.TransformToVisual(ancestor);
 
             return Math.Max(
-                transform.TransformPoint(new Point(0.0, 0.0)).X,
-                transform.TransformPoint(new Point(extent, 0.0)).X);
+                transform.TransformPoint(new Point(0.0f, 0.0f)).X,
+                transform.TransformPoint(new Point((float)extent, 0.0f)).X);
         }
 
         internal static double GetVisualLeft(FrameworkElement element, FrameworkElement ancestor)

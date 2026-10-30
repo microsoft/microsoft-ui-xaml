@@ -1,0 +1,49 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+
+  <!-- Keep CsWinRT 3.0 reference projections separate from implementation code.
+       Both versions use this project so consumers share the same reference path. -->
+  <PropertyGroup>
+    <!-- Use the lowest common consumer TFM, including .NET 6 samples in the 2.x build. -->
+    <TargetFramework>$(WinUIProjectionConsumerTFM)</TargetFramework>
+    <TargetPlatformVersion Condition="!$(TargetFramework.StartsWith('net10.0'))">$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+    <RootNamespace>AppTestAutomationHelpers</RootNamespace>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &gt;= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <!-- Consumers deploy WinUI themselves; do not flow a second runtime copy from this library. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <!-- Select using the resolved TFM, after the early central properties have been evaluated. -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net10'))">
+    <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Strip the consumer's global private-metadata choice to avoid rebuilding the native component
+         as a second project instance into the same outputs. It defaults to private metadata locally. -->
+    <ProjectReference Include="..\AppTestAutomationHelpers.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" UndefineProperties="IncludePrivateMetadata">
+      <Name>AppTestAutomationHelpers</Name>
+    </ProjectReference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <CsWinRTIncludes>AppTestAutomationHelpers</CsWinRTIncludes>
+    <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CsWinRTInputs Include="$(ArtifactsObjDir)Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.winmd" />
+  </ItemGroup>
+
+</Project>

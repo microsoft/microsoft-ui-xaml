@@ -19,6 +19,10 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   displayName: "Quick build: x86chk only, skip scenario tests"
   type: boolean
   default: false
+- name: runCsWinRT3Tests
+  displayName: "Build and run the CsWinRT 3.0 test passes"
+  type: boolean
+  default: false
 
 variables:
 - template: AzurePipelinesTemplates\WinUI-Versions.yml
@@ -80,12 +84,11 @@ extends:
       parameters:
         ${{ if eq(parameters.QuickBuild, true) }}:
           pipelineKind: QuickPR
-        ${{ else }}:
-          pipelineKind: PR
-        ${{ if eq(parameters.QuickBuild, true) }}:
           buildScenarioApps: false
         ${{ else }}:
+          pipelineKind: PR
           buildScenarioApps: true
+          buildCsWinRT3Tests: ${{ parameters.runCsWinRT3Tests }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
@@ -124,6 +127,24 @@ extends:
           dependsOn: Build
           runArm64Tests: ${{ parameters.runArm64Tests }}
 
+    - ${{ if and(eq(parameters.runCsWinRT3Tests, true), eq(parameters.QuickBuild, false)) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+          useCsWinRT3: true
+          stageName: RunTests_CsWinRT3
+          testPayloadArtifactName: TestPayload_CsWinRT3
+          runArtifactNamespace: RunTestsStage_CsWinRT3
+      - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+          dependsOn: Build
+          runArm64Tests: ${{ parameters.runArm64Tests }}
+          useCsWinRT3: true
+          stageName: RunScenarioTests_CsWinRT3
+          testPayloadArtifactName: ScenarioTestPayload_CsWinRT3
+          runArtifactNamespace: RunScenarioTestsStage_CsWinRT3
+
     - template: AzurePipelinesTemplates\WinUI-AbandonLiftedIxpValidationPullRequest-Stage.yml
       parameters:
         ${{ if eq(parameters.QuickBuild, true) }}:
@@ -134,3 +155,6 @@ extends:
           - RunTests
           - RunScenarioTests
           - RunStaticTests
+          - ${{ if eq(parameters.runCsWinRT3Tests, true) }}:
+            - RunTests_CsWinRT3
+            - RunScenarioTests_CsWinRT3

@@ -198,6 +198,19 @@ excluding `Microsoft.UI.Xaml.Internal.dll` (which will not be OSS).
  
 ## Additional Info
 
+### Building with CsWinRT 3.0
+
+The managed WinUI projection builds for both `net6.0-windows10.0.17763.0` (CsWinRT 2.x)
+and `net10.0-windows10.0.26100.1` (CsWinRT 3.0). Tests and samples use CsWinRT 2.x by default.
+To build them with CsWinRT 3.0, pass `/p:UseCsWinRT3=true` to MSBuild, for example:
+
+```powershell
+.\initrun.ps1 msb /q controls\MUXControls.sln /restore /p:UseCsWinRT3=true
+```
+
+Preview dependencies must be available from the configured NuGet feed or placed in `packagestore`.
+Gallery and `UITestMethod` sample tests do not yet support CsWinRT 3.0.
+
 ### Initialize CMD or PowerShell with support for VS build tools
 
 At the CMD prompt, from the root of the repo, run (for an x64chk build):

@@ -38,7 +38,7 @@ namespace MUXControlsTestApp
 
         private void ScrollPresenterWithSimpleScrollControllersPageOnLoaded(object sender, RoutedEventArgs e)
         {
-            Rect rect = new Rect(0.0, 0.0, 300.0, 500.0);
+            Rect rect = new Rect(0.0f, 0.0f, 300.0f, 500.0f);
             RectangleGeometry rectGeo = new RectangleGeometry();
             rectGeo.Rect = rect;
             this.canvas.Clip = rectGeo;
@@ -567,11 +567,19 @@ namespace MUXControlsTestApp
         private List<int> lstScrollByCorrelationIds = new List<int>();
         private List<int> lstAddScrollVelocityCorrelationIds = new List<int>();
 
+#if CSWINRT3_0
+        public event EventHandler<IScrollController, object> CanScrollChanged;
+        public event EventHandler<IScrollController, object> IsScrollingWithMouseChanged;
+        public event EventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
+        public event EventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
+        public event EventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
+#else
         public event TypedEventHandler<IScrollController, object> CanScrollChanged;
         public event TypedEventHandler<IScrollController, object> IsScrollingWithMouseChanged;
         public event TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
         public event TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
         public event TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
+#endif
 
         public ScrollBarController(ScrollBar scrollBar, ListBox logList, bool isLogging)
         {

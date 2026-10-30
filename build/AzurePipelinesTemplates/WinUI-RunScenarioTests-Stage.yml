@@ -4,10 +4,19 @@ parameters:
   pipelineKind: ''
   dependsOn: ''
   runArm64Tests: true
+  # When true, this stage runs the scenario app tests against the CsWinRT 3.0 build instead of the 2.x build.
+  useCsWinRT3: false
+  stageName: RunScenarioTests
+  # Separate artifact names prevent collisions between CsWinRT 2.x and 3.0 stages.
+  testPayloadArtifactName: 'ScenarioTestPayload'
+  runArtifactNamespace: 'RunScenarioTestsStage'
 
 stages:
-- stage: RunScenarioTests
-  displayName: Run Scenario App Tests
+- stage: ${{ parameters.stageName }}
+  ${{ if eq(parameters.useCsWinRT3, true) }}:
+    displayName: Run Scenario App Tests (CsWinRT 3.0)
+  ${{ else }}:
+    displayName: Run Scenario App Tests
   dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   jobs:
@@ -16,7 +25,8 @@ stages:
       runTestJobName: CreateAppTestPayload
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'ScenarioTestSuite'
-      testPayloadArtifactName: 'ScenarioTestPayload'
+      testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
+      useCsWinRT3: ${{ parameters.useCsWinRT3 }}
       # Include WinUIGallery on GitHub PR validation.
       ${{ if eq(parameters.pipelineKind, 'GitHubPR') }}:
         includeWinUIGallery: true
@@ -24,56 +34,62 @@ stages:
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunAppTestsRS5
+      runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateAppTestPayload
       testSuite: ScenarioTestSuite
       buildPlatform: x86
       buildConfiguration: chk
       testOS: Win10-RS5
-      testPayloadArtifactName: 'ScenarioTestPayload'
+      testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunAppTests25H2
+      runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateAppTestPayload
       testSuite: ScenarioTestSuite
       buildPlatform: x64
       buildConfiguration: fre
       testOS: Win11-25H2
-      testPayloadArtifactName: 'ScenarioTestPayload'
+      testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunAppTests23H2
+      runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateAppTestPayload
       testSuite: ScenarioTestSuite
       buildPlatform: x64
       buildConfiguration: fre
       testOS: Win11-23H2
-      testPayloadArtifactName: 'ScenarioTestPayload'
+      testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
   - ${{ if in(parameters.pipelineKind, 'Nightly', 'Official' ) }}:
     - ${{ if eq(parameters.runArm64Tests, true ) }}:
       - template: WinUI-RunTestPassOnPipeline-Job.yml
         parameters:
           runTestJobName: RunAppTestsArm64_23h2
+          runTestStageName: ${{ parameters.runArtifactNamespace }}
           dependsOn: CreateAppTestPayload
           testSuite: ScenarioTestSuite
           buildPlatform: arm64
           buildConfiguration: fre
           testOS: Win11-23H2
-          testPayloadArtifactName: 'ScenarioTestPayload'
+          testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
       - template: WinUI-RunTestPassOnPipeline-Job.yml
         parameters:
           runTestJobName: RunAppTestsArm64ec_23h2
+          runTestStageName: ${{ parameters.runArtifactNamespace }}
           dependsOn: CreateAppTestPayload
           testSuite: ScenarioTestSuite
           buildPlatform: arm64ec
           buildConfiguration: fre
           testOS: Win11-23H2
-          testPayloadArtifactName: 'ScenarioTestPayload'
+          testPayloadArtifactName: ${{ parameters.testPayloadArtifactName }}
 
   - template: WinUI-RunScenarioUnitTests-Job.yml
     parameters:
+      useCsWinRT3: ${{ parameters.useCsWinRT3 }}
       ${{ if in(parameters.pipelineKind, 'PR', 'GitHubPR' ) }}:
         artifactNamePrefix: drop # In PR and GitHub PR builds, the scenario apps build in the main build job

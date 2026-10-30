@@ -86,7 +86,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
                 Verify.IsNotNull(bitmap, "bitmap");
                 using (var buffer = new LockedBufferBgra8(bitmap, BitmapBufferAccessMode.Read))
                 {
-                    var centerPoint = new Point(0.5, 0.5);
+                    var centerPoint = new Point(0.5f, 0.5f);
                     var centerColor = buffer.GetPixelColor(centerPoint);
                     // Testing the specific color is not 100% reliable as the H264 codec could render the
                     // color slightly different.

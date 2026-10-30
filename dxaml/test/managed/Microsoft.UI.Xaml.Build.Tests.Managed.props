@@ -14,6 +14,22 @@
     <TestCode>true</TestCode>
   </PropertyGroup>
 
+  <!-- Each CsWinRT 3.0 test module needs its own merged projection and output folder to avoid filename collisions.
+       Common is a shared dependency, not a test module; its WinRT usage is covered by the consuming test's projection. -->
+  <PropertyGroup Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
+    <CsWinRTGenerateInteropAssembly>true</CsWinRTGenerateInteropAssembly>
+    <TargetDestination>$(TestBinplaceDestinationPath)\$(MSBuildProjectName)</TargetDestination>
+
+    <!-- TAEF loads these DLLs directly, not through WinRT.Host; AssemblySetup sets the TypeMap entry assembly.
+         They consume WinRT types but do not author components, so do not enable CsWinRTComponent. -->
+    <CsWinRTBuildForNativeConsumer>true</CsWinRTBuildForNativeConsumer>
+
+    <!-- Exe roots the generated TypeMap; CustomNativeMain keeps the output loadable as a TAEF DLL.
+         AssemblySetup supplies the required but unused Main method. -->
+    <OutputType>Exe</OutputType>
+    <CustomNativeMain>true</CustomNativeMain>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(XamlSourcePath)\test\managed\common\AssemblySetup.cs" />
   </ItemGroup>
@@ -21,12 +37,50 @@
   <Import Project="taef.managed.props"/>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net10.0'))" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <ProjectReference Include="$(InfraTestPath)\client\cswinrt\Private.Infrastructure.CsWinRT.csproj" Private="False" />
     <ProjectReference Include="$(XamlSourcePath)\test\managed\common\Microsoft.UI.Xaml.Tests.Managed.Common.csproj" Private="False" />
   </ItemGroup>
+
+  <!-- Merged WinUI generation needs the Resources reference projection, which does not flow transitively. -->
+  <ItemGroup Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
+    <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Deploy generated projections and WinRT.Runtime beside each test DLL.
+       Evaluate the wildcard after AddBinplaceItems so generated files exist. -->
+  <Target Name="BinplaceCsWinRT3MergedProjection"
+          AfterTargets="AddBinplaceItems"
+          BeforeTargets="Binplace"
+          Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
+    <ItemGroup>
+      <BinplaceItem Include="$(OutDir)WinRT.*.dll">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <!-- Include the WebView2 runtime forwarder when present. -->
+      <BinplaceItem Include="$(OutDir)Microsoft.Web.WebView2.Core.Projection.dll" Condition="Exists('$(OutDir)Microsoft.Web.WebView2.Core.Projection.dll')">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <!-- Deploy Foundation's runtime projections from lib, not its compile-time references from ref. -->
+      <BinplaceItem Include="$(LiftedMRTLibPath)\$(TargetFramework)\*.Projection.dll">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <!-- Keep the test DLL and resources in the same folder. Omit .deps.json/.runtimeconfig.json:
+           TAEF uses directory probing, and .deps.json can cause duplicate assembly loads. -->
+      <BinplaceItem Include="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(OutDir)$(TargetName).pri" Condition="Exists('$(OutDir)$(TargetName).pri')">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+  </Target>
 </Project>

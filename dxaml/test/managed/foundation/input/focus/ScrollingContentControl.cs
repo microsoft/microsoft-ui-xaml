@@ -33,8 +33,8 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         protected override Size MeasureOverride(Size availableSize)
         {
             var measureSize = new Size(
-                _isHorizontallyScrollable ? double.PositiveInfinity : availableSize.Width,
-                _isVerticallyScrollable ? double.PositiveInfinity : availableSize.Height);
+                _isHorizontallyScrollable ? float.PositiveInfinity : availableSize.Width,
+                _isVerticallyScrollable ? float.PositiveInfinity : availableSize.Height);
             Presenter.Measure(measureSize);
             return Presenter.DesiredSize;
         }

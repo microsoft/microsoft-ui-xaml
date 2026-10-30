@@ -10,6 +10,7 @@
       8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
       NU1605
     </NoWarn>
+    <NoWarn Condition="'$(UseCsWinRT3)' == 'true'">$(NoWarn);CSWINRT3005</NoWarn>
     <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
   </PropertyGroup>
 

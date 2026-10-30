@@ -12,6 +12,11 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+#if CSWINRT3_0
+using LvbDragItemsCompletedHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs>;
+#else
+using LvbDragItemsCompletedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs>;
+#endif
 using Windows.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -447,7 +452,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     dragItemsStartingEvent.Set();
                 };
 
-            global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs> dragItemsCompletedEventAction =
+            LvbDragItemsCompletedHandler dragItemsCompletedEventAction =
                 (sender, args) =>
                 {
                     WEX.Logging.Interop.Log.Comment("Verifying event args in DragItemsCompleted handler.");
@@ -513,7 +518,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         private static UIElement GetInnerMostTarget(FrameworkElement target)
         {
             GeneralTransform transform = target.TransformToVisual(TestServices.WindowHelper.WindowContent);
-            Rect bounds = transform.TransformBounds(new Rect(0, 0, target.ActualWidth, target.ActualHeight));
+            Rect bounds = transform.TransformBounds(new Rect(0, 0, (float)target.ActualWidth, (float)target.ActualHeight));
             Point center = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
 
             WEX.Logging.Interop.Log.Comment("Bounds: " + bounds.ToString());
@@ -594,7 +599,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     }
                 };
 
-            global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs> completedEventAction =
+            LvbDragItemsCompletedHandler completedEventAction =
                 (sender, args) =>
                 {
                     if (args.Items == null)
@@ -714,7 +719,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     args.Cancel = true;
                 };
 
-            global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs> completedEventAction = delegate { dragCompletedEventFired = true; };
+            LvbDragItemsCompletedHandler completedEventAction = delegate { dragCompletedEventFired = true; };
             DragEventHandler dragEventAction = delegate { dragDropEventFired = true; };
             int indexOfItemToStartDrag = 1;
 
@@ -779,7 +784,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             var listLoaded = new AutoResetEvent(false);
             ObservableCollection<string> collection = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(x => "Item " + x));
 
-            global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs> completedEventAction = delegate { completedEvent.Set(); };
+            LvbDragItemsCompletedHandler completedEventAction = delegate { completedEvent.Set(); };
 
             UIExecutor.Execute(() =>
             {
@@ -832,7 +837,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             var completedEvent = new AutoResetEvent(false);
             ObservableCollection<string> collection = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(x => "Item " + x));
             var listLoaded = new AutoResetEvent(false);
-            global::Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs> completedEventAction = delegate { completedEvent.Set(); };
+            LvbDragItemsCompletedHandler completedEventAction = delegate { completedEvent.Set(); };
 
             UIExecutor.Execute(() =>
             {

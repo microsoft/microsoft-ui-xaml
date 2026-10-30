@@ -13,6 +13,9 @@ using Common;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+#if CSWINRT3_0
+using Windows.Foundation;   // CsWinRT 3.0 async extensions
+#endif
 
 namespace MUXControlsTestApp.Utilities
 {

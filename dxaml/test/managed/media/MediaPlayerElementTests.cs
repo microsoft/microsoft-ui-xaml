@@ -206,10 +206,10 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         {
             var rect = new global::Windows.Foundation.Rect()
             {
-                X = 0.25,
-                Y = 0.25,
-                Width = 0.75,
-                Height = 0.75,
+                X = 0.25f,
+                Y = 0.25f,
+                Width = 0.75f,
+                Height = 0.75f,
             };
 
             var tester = new MediaPlayerElementTester()
@@ -332,8 +332,8 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         {
             Size expectedSize = new Size
             {
-                Height = 480.0,
-                Width = 854.0,
+                Height = 480.0f,
+                Width = 854.0f,
             };
 
             var tester = new MediaPlayerElementTester()

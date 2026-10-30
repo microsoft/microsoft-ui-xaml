@@ -45,6 +45,7 @@ parameters:
   # Monobuild supplies repository-aware indexing before the first upload; standalone defaults are unchanged.
   indexSources: true
   prePublishSymbolsSteps: []
+  buildCsWinRT3Tests: false
   # When set (mono-build test pipeline only), download the WinUI product from the parent mono-build
   # instead of rebuilding it: for Release x86/x64/arm64 jobs, skip the Microsoft.UI.Xaml.sln product
   # build and lay the mono-build's Build-WinUI-<plat>-Release output into BuildOutput\bin so
@@ -467,30 +468,12 @@ steps:
               Write-Host "##vso[task.logissue type=warning;]No localized .mui files were found next to the WinUI binaries"
           }
 
-  # Cleanup before staging artifacts to free disk. Monobuild path keeps only .dotnet because
-  # _enableVsBuildTools=false there (VS is preinstalled on the OneBranch image), so the
-  # msbuildInstallDir / msbuildInstallLogsDir are not used.
-  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
-    - script: |
-        if exist .dotnet rmdir /s /q .dotnet
-      displayName: Remove .NET SDK install to free up disk space
-      continueOnError: true
-  - ${{ else }}:
-    - script: |
-        if exist ${{ parameters.msbuildInstallDir }} rmdir /s /q ${{ parameters.msbuildInstallDir }}
-        if exist ${{ parameters.msbuildInstallLogsDir }} rmdir /s /q ${{ parameters.msbuildInstallLogsDir }}
-        if exist .dotnet rmdir /s /q .dotnet
-      displayName: Remove VS build tools and .NET SDK installs to free up disk space
-
-  # Copy built binaries to the staging directory. Monobuild appends a per-platform suffix
-  # ('_$(buildOutput)$(normalizedConfiguration)') so PackWinUI can ingest x86/x64/arm64
-  # artifacts side by side. Standalone is single-platform per job and uses bare '\drop'.
+  # Preserve the CsWinRT 2.x payload before the second pass changes managed outputs.
   - task: CopyFiles@2
     displayName: 'Copy built binaries to artifact staging directory'
     condition: always()
     inputs:
       sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin
-      # Stage everything that was produced except symbols, which we publish to a different artifact
       contents: |
         **\*
         !**\*.pdb
@@ -611,6 +594,55 @@ steps:
           !**\*.pdb
         targetFolder: ${{ parameters.buildArtifactsDirectory }}\APIScanTarget
       continueOnError: true
+
+  # Run the second pass after staging shipping packaging and symbols.
+  - ${{ if and(eq(parameters.buildCsWinRT3Tests, true), eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml.sln
+        solutionPath: $(Build.SourcesDirectory)\dxaml
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=${{ parameters.winUIVersion }} /m ${{ parameters.additionalMSBuildOptions }} /p:PublishAot=$(publishAotValue) /p:UseCsWinRT3=true'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        runStaticAnalysis: false
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: MUXControls.sln
+        solutionPath: $(Build.SourcesDirectory)\controls
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true /p:WinUIVersion=${{ parameters.winUIVersion }} /m ${{ parameters.additionalMSBuildOptions }} /p:PublishAot=$(publishAotValue) /p:UseCsWinRT3=true'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        runStaticAnalysis: false
+    - ${{ if eq(parameters.buildScenarioApps, 'true') }}:
+      - template: WinUI-BuildSampleApp-Steps.yml
+        parameters:
+          displayName: WinUICsDesktopSampleApp_CsWinRT3
+          solution: Samples\WinUICsDesktopSampleApp\WinUICsDesktopSampleApp.sln
+          artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+          msBuildArgs: '/t:Publish /p:PublishAot=false'
+          additionalMsBuildArgs: '/p:UseCsWinRT3=true'
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: false
+      # Gallery remains disabled until its managed dependencies support CsWinRT 3.0.
+    - task: CopyFiles@2
+      displayName: 'Copy CsWinRT 3.0 binaries to drop_cswinrt3'
+      condition: succeeded()
+      inputs:
+        sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin
+        contents: |
+          **\*
+          !**\*.pdb
+        targetFolder: $(ob_outputDirectory)\drop_cswinrt3
+
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - script: |
+        if exist .dotnet rmdir /s /q .dotnet
+      displayName: Remove .NET SDK install to free up disk space
+      continueOnError: true
+  - ${{ else }}:
+    - script: |
+        if exist ${{ parameters.msbuildInstallDir }} rmdir /s /q ${{ parameters.msbuildInstallDir }}
+        if exist ${{ parameters.msbuildInstallLogsDir }} rmdir /s /q ${{ parameters.msbuildInstallLogsDir }}
+        if exist .dotnet rmdir /s /q .dotnet
+      displayName: Remove VS build tools and .NET SDK installs to free up disk space
 
   # ESRP signing — WinUI binaries. Routed through WinUI-EsrpCodeSigning-Wrapper.yml (same-repo relative
   # ref), which dispatches the shared signing template to @self (monobuild) or @WinAppSDK (standalone),

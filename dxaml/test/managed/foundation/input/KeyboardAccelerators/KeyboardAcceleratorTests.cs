@@ -28,7 +28,6 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Shapes;
 
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
 {

@@ -54,7 +54,7 @@ namespace MUXControlsTestApp
             DataTemplate dt = ButtonListRepeater.ItemTemplate as DataTemplate;
             Image img = VisualTreeHelper.GetChild(dt.LoadContent() as StackPanel, 0) as Image;
             img.Source = new BitmapImage(new Uri("ms-appx:/Assets/ingredient1.png"));
-            img.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            img.Measure(new Size(float.PositiveInfinity, float.PositiveInfinity));
             var numberOfPages = (int)Math.Ceiling(ButtonListScrollViewer.ExtentHeight / ButtonListScrollViewer.ViewportHeight);
             ButtonListRepeater.Height = ButtonListScrollViewer.ViewportHeight * numberOfPages + MinRowSpacing * (numberOfPages - 1); ;
         }

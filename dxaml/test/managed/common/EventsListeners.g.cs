@@ -9,6 +9,24 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+#if CSWINRT3_0
+// CsWinRT 3.0 uses System.EventHandler<TSender, TResult>.
+using EhFrameworkElementDataContextChanged = System.EventHandler<Microsoft.UI.Xaml.FrameworkElement, Microsoft.UI.Xaml.DataContextChangedEventArgs>;
+using EhListViewBaseContainerContentChanging = System.EventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs>;
+using EhObjectWindowActivated = System.EventHandler<System.Object, Microsoft.UI.Xaml.WindowActivatedEventArgs>;
+using EhObjectWindowEvent = System.EventHandler<System.Object, Microsoft.UI.Xaml.WindowEventArgs>;
+using EhObjectWindowSizeChanged = System.EventHandler<System.Object, Microsoft.UI.Xaml.WindowSizeChangedEventArgs>;
+using EhObjectWindowVisibilityChanged = System.EventHandler<System.Object, Microsoft.UI.Xaml.WindowVisibilityChangedEventArgs>;
+using EhSwapChainPanelObject = System.EventHandler<Microsoft.UI.Xaml.Controls.SwapChainPanel, System.Object>;
+#else
+using EhFrameworkElementDataContextChanged = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.FrameworkElement, Microsoft.UI.Xaml.DataContextChangedEventArgs>;
+using EhListViewBaseContainerContentChanging = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ListViewBase, Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs>;
+using EhObjectWindowActivated = Windows.Foundation.TypedEventHandler<System.Object, Microsoft.UI.Xaml.WindowActivatedEventArgs>;
+using EhObjectWindowEvent = Windows.Foundation.TypedEventHandler<System.Object, Microsoft.UI.Xaml.WindowEventArgs>;
+using EhObjectWindowSizeChanged = Windows.Foundation.TypedEventHandler<System.Object, Microsoft.UI.Xaml.WindowSizeChangedEventArgs>;
+using EhObjectWindowVisibilityChanged = Windows.Foundation.TypedEventHandler<System.Object, Microsoft.UI.Xaml.WindowVisibilityChangedEventArgs>;
+using EhSwapChainPanelObject = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.SwapChainPanel, System.Object>;
+#endif
 
 namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
 {
@@ -1016,13 +1034,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _DataContextChanged = new EventListener<FrameworkElement>(
                         (sender, action) =>
                         {
-                            TypedEventHandler<FrameworkElement, DataContextChangedEventArgs> handler = delegate { action(); };
+                            EhFrameworkElementDataContextChanged handler = delegate { action(); };
                             sender.DataContextChanged += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.DataContextChanged -= (TypedEventHandler<FrameworkElement, DataContextChangedEventArgs>) handler;
+                            sender.DataContextChanged -= (EhFrameworkElementDataContextChanged) handler;
                         }
                     );
                 }
@@ -1488,13 +1506,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _CompositionScaleChanged = new EventListener<SwapChainPanel>(
                         (sender, action) =>
                         {
-                            TypedEventHandler<SwapChainPanel, Object> handler = delegate { action(); };
+                            EhSwapChainPanelObject handler = delegate { action(); };
                             sender.CompositionScaleChanged += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.CompositionScaleChanged -= (TypedEventHandler<SwapChainPanel, Object>) handler;
+                            sender.CompositionScaleChanged -= (EhSwapChainPanelObject) handler;
                         }
                     );
                 }
@@ -1568,13 +1586,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _Activated = new EventListener<Window>(
                         (sender, action) =>
                         {
-                            global::Windows.Foundation.TypedEventHandler<object, WindowActivatedEventArgs> handler = delegate { action(); };
+                            EhObjectWindowActivated handler = delegate { action(); };
                             sender.Activated += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.Activated -= (global::Windows.Foundation.TypedEventHandler<object, WindowActivatedEventArgs>) handler;
+                            sender.Activated -= (EhObjectWindowActivated) handler;
                         }
                     );
                 }
@@ -1592,13 +1610,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _Closed = new EventListener<Window>(
                         (sender, action) =>
                         {
-                            global::Windows.Foundation.TypedEventHandler<object, WindowEventArgs> handler = delegate { action(); };
+                            EhObjectWindowEvent handler = delegate { action(); };
                             sender.Closed += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.Closed -= (global::Windows.Foundation.TypedEventHandler<object, WindowEventArgs>) handler;
+                            sender.Closed -= (EhObjectWindowEvent) handler;
                         }
                     );
                 }
@@ -1616,13 +1634,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _SizeChanged = new EventListener<Window>(
                         (sender, action) =>
                         {
-                            global::Windows.Foundation.TypedEventHandler<object, WindowSizeChangedEventArgs> handler = delegate { action(); };
+                            EhObjectWindowSizeChanged handler = delegate { action(); };
                             sender.SizeChanged += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.SizeChanged -= (global::Windows.Foundation.TypedEventHandler<object, WindowSizeChangedEventArgs>) handler;
+                            sender.SizeChanged -= (EhObjectWindowSizeChanged) handler;
                         }
                     );
                 }
@@ -1640,13 +1658,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _VisibilityChanged = new EventListener<Window>(
                         (sender, action) =>
                         {
-                            global::Windows.Foundation.TypedEventHandler<object, WindowVisibilityChangedEventArgs> handler = delegate { action(); };
+                            EhObjectWindowVisibilityChanged handler = delegate { action(); };
                             sender.VisibilityChanged += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.VisibilityChanged -= (global::Windows.Foundation.TypedEventHandler<object, WindowVisibilityChangedEventArgs>) handler;
+                            sender.VisibilityChanged -= (EhObjectWindowVisibilityChanged) handler;
                         }
                     );
                 }
@@ -2396,13 +2414,13 @@ namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
                     _ContainerContentChanging = new EventListener<ListViewBase>(
                         (sender, action) =>
                         {
-                            TypedEventHandler<ListViewBase, ContainerContentChangingEventArgs> handler = delegate { action(); };
+                            EhListViewBaseContainerContentChanging handler = delegate { action(); };
                             sender.ContainerContentChanging += handler;
                             return handler;
                         },
                         (sender, handler) =>
                         {
-                            sender.ContainerContentChanging -= (TypedEventHandler<ListViewBase, ContainerContentChangingEventArgs>) handler;
+                            sender.ContainerContentChanging -= (EhListViewBaseContainerContentChanging) handler;
                         }
                     );
                 }

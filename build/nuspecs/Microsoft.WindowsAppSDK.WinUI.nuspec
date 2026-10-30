@@ -47,6 +47,7 @@
     <file src="$PACKAGEROOT$\include\xamlom.winui*" target="include" />
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*\**" target="lib" />
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
+    <file src="$PACKAGEROOT$\ref\**\Microsoft.WinUI*" target="ref" />
     <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\native" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="metadata" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="metadata" />
@@ -56,6 +57,7 @@
     <file src="$PACKAGEROOT$\tools\**" target="tools" />
     <file src="$PACKAGEROOT$\build\cmake\**" target="build\cmake" />
     <file src="$PACKAGEROOT$\Intellisense\Microsoft.WinUI.xml" target="lib\net6.0-windows10.0.17763.0" />
+    <file src="$PACKAGEROOT$\Intellisense\Microsoft.WinUI.xml" target="ref\net10.0-windows10.0.26100.1" />
     <file src="$PACKAGEROOT$\Intellisense\Microsoft.UI.Text.xml" target="metadata" />
     <file src="$PACKAGEROOT$\Intellisense\Microsoft.UI.Xaml.xml" target="metadata" />
   </files>

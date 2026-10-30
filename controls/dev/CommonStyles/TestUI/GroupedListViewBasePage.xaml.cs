@@ -14,6 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+#if CSWINRT3_0
+using Windows.Foundation;   // CsWinRT 3.0 async extensions
+#endif
 
 namespace MUXControlsTestApp
 {

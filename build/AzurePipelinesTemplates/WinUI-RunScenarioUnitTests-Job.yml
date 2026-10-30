@@ -4,6 +4,8 @@ parameters:
   buildConfiguration: fre
   buildOutput: amd64
   artifactNamePrefix: drop_BuildScenarioApps
+  # Use test binaries from drop_cswinrt3 instead of drop.
+  useCsWinRT3: false
 
 jobs:
 - job: ScenarioAppUnitTests
@@ -16,7 +18,11 @@ jobs:
 
   variables:
     artifactName: ${{parameters.artifactNamePrefix}}_${{parameters.buildOutput}}${{parameters.buildConfiguration}}
-    testDir: $(Build.ArtifactStagingDirectory)\drop\${{parameters.buildOutput}}${{parameters.buildConfiguration}}\Samples\WinUICsUnitTestApp_Test
+    ${{ if eq(parameters.useCsWinRT3, true) }}:
+      dropSubfolder: 'drop_cswinrt3'
+    ${{ else }}:
+      dropSubfolder: 'drop'
+    testDir: $(Build.ArtifactStagingDirectory)\$(dropSubfolder)\${{parameters.buildOutput}}${{parameters.buildConfiguration}}\Samples\WinUICsUnitTestApp_Test
 
   steps:
   - template: WinUI-DownloadPipelineArtifacts-Steps.yml
@@ -49,7 +55,14 @@ jobs:
     inputs:
       testRunTitle: WinUICsUnitTestApp
       failOnMinTestsNotRun: true
-      minimumExpectedTests: '2'
+      # CsWinRT 3.0: the [UITestMethod] test (WinUICsUnitTestApp SampleTest2) is compiled out because the MSTest
+      # UITestMethod attribute is not built for CsWinRT 3.0 yet, leaving only the single [TestMethod] (SampleTest1).
+      # Lower the minimum to 1 for the v3 run so the stage still guards against zero tests executing. Restore to 2
+      # once UITestMethod is available for CsWinRT 3.0 and SampleTest2 is re-enabled.
+      ${{ if eq(parameters.useCsWinRT3, true) }}:
+        minimumExpectedTests: '1'
+      ${{ else }}:
+        minimumExpectedTests: '2'
       rerunFailedTests: true
       configuration: ${{parameters.buildConfiguration}}
       platform: ${{parameters.buildOutput}}

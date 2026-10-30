@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if CSWINRT3_0
+using Windows.Foundation;
+#endif
 using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;

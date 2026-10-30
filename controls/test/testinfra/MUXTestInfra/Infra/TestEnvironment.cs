@@ -188,8 +188,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             CertFileName = certFileName;
 
-            WinRT.ComWrappersSupport.InitializeComWrappers();
-
             if (!PlatformConfiguration.IsDevice(DeviceType.OneCore))
             {
                 // We need to make the process DPI aware so it properly handles scale factors other than 100%.

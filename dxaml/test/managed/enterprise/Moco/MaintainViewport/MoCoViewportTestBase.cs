@@ -618,8 +618,8 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
             ScrollViewer sv = list.FindElementOfTypeInSubtree<ScrollViewer>();
             Verify.IsNotNull(sv, "Unable to find ScrollViewer in the ListView/GridView");
 
-            pt.X = sv.HorizontalOffset;
-            pt.Y = sv.VerticalOffset;
+            pt.X = (float)sv.HorizontalOffset;
+            pt.Y = (float)sv.VerticalOffset;
 
             Log.Comment(string.Format("Current Offset: x={0}, y={1}", pt.X, pt.Y));
             return pt;

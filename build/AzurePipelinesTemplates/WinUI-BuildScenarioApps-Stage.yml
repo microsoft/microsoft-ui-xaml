@@ -7,6 +7,8 @@ parameters:
   buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
   MUXFinalRelease: false
   runStaticAnalysis: true
+  # Build CsWinRT 3.0 samples into a separate drop_cswinrt3 directory.
+  buildCsWinRT3Tests: false
 
 stages:
 - stage: BuildScenarioApps
@@ -124,10 +126,6 @@ stages:
           itemPattern: '**/WinUIComponentPackage/Microsoft.WindowsAppSDK*.nupkg'
           targetPath: '$(Build.SourcesDirectory)\PackageStore'
 
-    - template: WinUI-InstallWindowsAppSDK-Steps.yml
-      parameters:
-        outputPackageDir: '$(Build.SourcesDirectory)\packages'
-
     - powershell: |
         gci env:* | sort-object name
       displayName: Display build machine environment variable
@@ -168,6 +166,10 @@ stages:
         filePath: $(Build.SourcesDirectory)\build\DownloadDotNetCoreSdk.ps1
         arguments: "-version '$(_dotnetSdkVersion)' -quality '$(_dotnetSdkQuality)' -channel '$(_dotnetSdkChannel)'"
 
+    - template: WinUI-InstallWindowsAppSDK-Steps.yml
+      parameters:
+        outputPackageDir: '$(Build.SourcesDirectory)\packages'
+
     - powershell: |
         if ($env:LkgVcToolsName -eq $null)
         {
@@ -196,3 +198,45 @@ stages:
           **\*
           !**\*.pdb
         targetFolder: $(Build.ArtifactStagingDirectory)\drop
+
+    # Reuse the downloaded product for the CsWinRT 3.0 sample build.
+    - ${{ if eq(parameters.buildCsWinRT3Tests, true) }}:
+      - template: WinUI-BuildSampleApp-Steps.yml
+        parameters:
+          displayName: WinUICsDesktopSampleApp_CsWinRT3
+          solution: Samples\WinUICsDesktopSampleApp\WinUICsDesktopSampleApp.sln
+          artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+          msBuildArgs: '/t:Publish'
+          additionalMsBuildArgs: '/p:UseCsWinRT3=true'
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: false
+      # Gallery awaits CsWinRT 3.0-compatible CommunityToolkit and Win2D dependencies.
+      # Re-enable its matching scenario tests when enabling these builds.
+      - ${{ if false }}:
+        - template: WinUI-BuildSampleApp-Steps.yml
+          parameters:
+            displayName: WinUIGallery_CsWinRT3
+            solution: Samples\WinUIGallery\WinUIGallery.slnx
+            artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+            msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+            additionalMsBuildArgs: '/p:UseCsWinRT3=true'
+            MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+            runStaticAnalysis: false
+        - template: WinUI-BuildSampleApp-Steps.yml
+          parameters:
+            displayName: WinUIGalleryDotNet_CsWinRT3
+            solution: Samples\WinUIGallery\WinUIGallery\WinUIGallery.csproj
+            artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+            useDotNet: true
+            additionalMsBuildArgs: '/p:UseCsWinRT3=true'
+            MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+            runStaticAnalysis: false
+      - task: CopyFiles@2
+        displayName: 'Copy CsWinRT 3.0 binaries to drop_cswinrt3'
+        condition: succeeded()
+        inputs:
+          sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin
+          contents: |
+            **\*
+            !**\*.pdb
+          targetFolder: $(Build.ArtifactStagingDirectory)\drop_cswinrt3

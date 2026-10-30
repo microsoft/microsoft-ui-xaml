@@ -52,9 +52,11 @@
       <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\projection\Microsoft.WinUI.csproj">
+      <SetTargetFramework>TargetFramework=$(WinUIProjectionConsumerTFM)</SetTargetFramework>
       <Targets>GetTargetFrameworks;GetTargetPathWithTargetPlatformMoniker;GetNativeManifest;GetCopyToOutputDirectoryItems;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\projection\private\Microsoft.WinUI.csproj">
+      <SetTargetFramework>TargetFramework=$(WinUIProjectionConsumerTFM)</SetTargetFramework>
       <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
     </ProjectReference>
   </ItemGroup>

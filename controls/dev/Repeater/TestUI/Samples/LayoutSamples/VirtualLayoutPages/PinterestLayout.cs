@@ -48,13 +48,13 @@ namespace MUXControlsTestApp.Samples
             {
                 Debug.WriteLine("Measuring " + currentIndex);
                 var child = context.GetOrCreateElementAt(currentIndex);
-                child.Measure(new Size(Width, availableSize.Height));
+                child.Measure(new Size((float)Width, availableSize.Height));
 
                 if (currentIndex >= m_cachedBounds.Count)
                 {
                     // We do not have bounds for this index. Lay it out and cache it.
                     int columnIndex = GetIndexOfLowestColumn(m_columnOffsets, out nextOffset);
-                    m_cachedBounds.Add(new Rect(columnIndex * Width, nextOffset, Width, child.DesiredSize.Height));
+                    m_cachedBounds.Add(new Rect((float)(columnIndex * Width), (float)nextOffset, (float)Width, child.DesiredSize.Height));
                     m_columnOffsets[columnIndex] += child.DesiredSize.Height;
                 }
                 else
@@ -107,7 +107,7 @@ namespace MUXControlsTestApp.Samples
                 double nextOffset = 0.0;
                 int columnIndex = GetIndexOfLowestColumn(m_columnOffsets, out nextOffset);
                 var oldHeight = m_cachedBounds[index].Height;
-                m_cachedBounds[index] = new Rect(columnIndex * Width, nextOffset, Width, oldHeight);
+                m_cachedBounds[index] = new Rect((float)(columnIndex * Width), (float)nextOffset, (float)Width, oldHeight);
                 m_columnOffsets[columnIndex] += oldHeight;
             }
         }
@@ -168,7 +168,7 @@ namespace MUXControlsTestApp.Samples
                 }
             }
 
-            return new Size(availableSize.Width, largestColumnOffset);
+            return new Size(availableSize.Width, (float)largestColumnOffset);
         }
 
         int m_firstIndex = 0;

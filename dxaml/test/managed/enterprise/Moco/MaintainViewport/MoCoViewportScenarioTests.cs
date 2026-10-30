@@ -268,7 +268,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 
                     var container = (FrameworkElement)list.ContainerFromIndex(trackedElementIndex);
                     var transform = container.TransformToVisual(scrollViewer);
-                    var relativeBounds = transform.TransformBounds(new Rect(0, 0, container.ActualWidth, container.ActualHeight));
+                    var relativeBounds = transform.TransformBounds(new Rect(0, 0, (float)container.ActualWidth, (float)container.ActualHeight));
 
                     Verify.IsTrue(
                         (isHorizontal && Math.Round(relativeBounds.Right) == scrollViewer.ViewportWidth + smallOffsetToTrackedElement) ||

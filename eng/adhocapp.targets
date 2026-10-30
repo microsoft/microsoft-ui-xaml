@@ -1,19 +1,35 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project>
   
-  <!-- 
-    Replace the WinAppSDK nuget's Microsoft.WinUI.dll with private Microsoft.WinUI.dll 
-  -->
+  <!-- Replace the package's WinUI projection with the local private projection. -->
   <Target Name="ResolveLocalPrivateProjection"
           AfterTargets="ResolvePackageAssets;ResolveNuGetPackageAssets"
           BeforeTargets="_UpdateMuiFilesAfterNugetRestore"
           Condition="'$(IncludePrivateMetadata)' == 'true' and '$(MSBuildProjectExtension)'=='.csproj' and '$(UsingMicrosoftNETSdk)' == 'true'">
 
     <PropertyGroup>
-      <PrivateWinUIProjectionAssembly>$(ArtifactsObjDir)src\projection\private\Microsoft.WinUI.dll</PrivateWinUIProjectionAssembly>
-      <!-- Ensure ResolveAssemblyReferences does the right thing -->
-      <AdditionalExplicitAssemblyReferences>$(PrivateWinUIProjectionAssembly);$(AdditionalExplicitAssemblyReferences)</AdditionalExplicitAssemblyReferences>
+      <!-- Use the central consumer TFM; early evaluation can leave _IsCsWinRTv3 unset. -->
+      <_WinUIProjectionTFM>$(WinUIProjectionConsumerTFM)</_WinUIProjectionTFM>
+      <!-- Deploy the primary output: a runtime forwarder for CsWinRT 3.0, an implementation for 2.x. -->
+      <PrivateWinUIProjectionAssembly>$(ArtifactsObjDir)src\projection\private\$(_WinUIProjectionTFM)\Microsoft.WinUI.dll</PrivateWinUIProjectionAssembly>
+      <!-- Compile CsWinRT 3.0 against the generated reference projection in ref, not the runtime forwarder
+           or its empty C# TargetRefPath. CsWinRT 2.x uses the primary output for both purposes. -->
+      <_IsV3ProjectionConsumer Condition="$(_WinUIProjectionTFM.StartsWith('net10'))">true</_IsV3ProjectionConsumer>
+      <PrivateWinUIProjectionCompileAssembly>$(PrivateWinUIProjectionAssembly)</PrivateWinUIProjectionCompileAssembly>
+      <PrivateWinUIProjectionCompileAssembly Condition="'$(_IsV3ProjectionConsumer)' == 'true'">$(ArtifactsObjDir)src\projection\private\$(_WinUIProjectionTFM)\ref\Microsoft.WinUI.dll</PrivateWinUIProjectionCompileAssembly>
+      <AdditionalExplicitAssemblyReferences>$(PrivateWinUIProjectionCompileAssembly);$(AdditionalExplicitAssemblyReferences)</AdditionalExplicitAssemblyReferences>
     </PropertyGroup>
+
+    <!-- Generate the app's merged projection from product metadata so private and experimental types
+         match the compile-time projection. The mock package's public metadata omits those types. -->
+    <ItemGroup Condition="'$(_IsV3ProjectionConsumer)' == 'true' and '$(CsWinRTGenerateReferenceProjection)' != 'true'">
+      <CsWinRTInputs Remove="@(CsWinRTInputs)"
+                     Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd' and Exists('$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd')" />
+      <CsWinRTInputs Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd"
+                     Condition="Exists('$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd')" />
+      <CsWinRTInputs Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Private.winmd"
+                     Condition="Exists('$(PrivateMergedWinMDDir)\Microsoft.UI.Private.winmd')" />
+    </ItemGroup>
 
     <ItemGroup>
       <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)" Condition="'%(RuntimeCopyLocalItems.Filename)%(RuntimeCopyLocalItems.Extension)' == 'Microsoft.WinUI.dll'" />
@@ -26,8 +42,8 @@
         <CopyLocal>true</CopyLocal>
         <PathInPackage>lib\$(DotNetCoreTargetFrameworkMoniker)\Microsoft.WinUI.dll</PathInPackage>
       </RuntimeCopyLocalItems>
-      <ResolvedCompileFileDefinitions Include="$(PrivateWinUIProjectionAssembly)">
-        <HintPath>$(PrivateWinUIProjectionAssembly)</HintPath>
+      <ResolvedCompileFileDefinitions Include="$(PrivateWinUIProjectionCompileAssembly)">
+        <HintPath>$(PrivateWinUIProjectionCompileAssembly)</HintPath>
         <NuGetPackageVersion>Local Build Output</NuGetPackageVersion>
         <Private>false</Private>
         <NuGetPackageId>Microsoft.WinUI</NuGetPackageId>
@@ -38,10 +54,18 @@
 
   </Target>
 
-  <!--
-    If pointing to a local WinUI Details repo, use the binaries from there instead of the one in the NuGet.
-    This is done in the ResolveLocalBuildPackageAssets for managed projects.
-  -->
+  <!-- Remove the compile-only WinUI reference assembly after RAR marks it CopyLocal.
+       Only the runtime forwarder should be deployed as Microsoft.WinUI.dll. -->
+  <Target Name="RemovePrivateWinUIReferenceAssemblyFromCopyLocal"
+          AfterTargets="ResolveAssemblyReferences"
+          Condition="'$(IncludePrivateMetadata)' == 'true' and '$(MSBuildProjectExtension)'=='.csproj' and '$(UsingMicrosoftNETSdk)' == 'true' and $(WinUIProjectionConsumerTFM.StartsWith('net10'))">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+                               Condition="'%(Filename)%(Extension)' == 'Microsoft.WinUI.dll' and $([System.String]::Copy('%(FullPath)').Replace('/','\').Contains('\ref\'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Use local WinUI Details binaries for native projects; managed projects use ResolveLocalBuildPackageAssets. -->
   <ItemGroup Condition="'$(WinUIDetailsRepoLocation)' != '' and '$(MSBuildProjectExtension)'=='.vcxproj'">
     <ReferenceCopyLocalPaths Remove="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml.Internal.dll" />
     <ReferenceCopyLocalPaths Include="$(WinUIDetailsRepoLocation)\bin\$(WinUIDetailsArch)fre\Microsoft.UI.Xaml.Internal\Microsoft.UI.Xaml.Internal.dll" />
@@ -61,9 +85,7 @@
     </ItemGroup>
   </Target>
 
-  <!-- Opt-in legacy support for appxmanifest activatable class registrations, for tests/samples 
-  targeting UWP or RS5, neither of which support fusion manifest activatable class entries.
-  (This logic previously lived in Microsoft.WinUI.AppX.targets.) -->
+  <!-- UWP and RS5 tests/samples need AppX manifest registrations instead of fusion manifest entries. -->
   <PropertyGroup>
     <EnableMUXWinRTRegistrations Condition="'$(EnableMUXWinRTRegistrations)'=='' and '$(TargetPlatformIdentifier)'=='UAP'">true</EnableMUXWinRTRegistrations>
   </PropertyGroup>

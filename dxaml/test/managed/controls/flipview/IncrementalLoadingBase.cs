@@ -4,7 +4,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+#if CSWINRT3_0
+using WindowsRuntime.InteropServices;
+#else
 using System.Runtime.InteropServices.WindowsRuntime;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;

@@ -15,6 +15,9 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
+#if CSWINRT3_0
+using Windows.Foundation;   // CsWinRT 3.0 async extensions
+#endif
 
 namespace MUXControlsTestApp
 {

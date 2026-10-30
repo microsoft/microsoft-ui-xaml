@@ -13,20 +13,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+    <!-- This project does NOT use Central Package Versions (no Microsoft.Build.CentralPackageVersions Sdk),
+         so the version must be specified explicitly; a versionless reference floors to CsWinRT 0.1.0 and feeds
+         garbage to the .NET SDK's RunCsWinRTGenerator task. Select by TFM: net10 -> CsWinRT 3.0, else 2.x. -->
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net10.0'))" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Platform)' != 'ARM64'" >
     <BinplaceItem Include="$(MSBuildThisFileDirectory)WinRT.Host.runtimeconfig.json" /> 
-    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\WinRT.Host.dll" /> 
-    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\en-us\WinRT.Host.dll.mui" />
+    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(WinUIConsumerCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\WinRT.Host.dll" />
+    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(WinUIConsumerCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\en-us\WinRT.Host.dll.mui" />
     <!--
-      WinRT.Host.Shim.dll is only published under lib\net6.0 in Microsoft.Windows.CsWinRT (2.1.1 and 2.2.0
-      both ship lib\net6.0\WinRT.Host.Shim.dll; the lib\net8.0 folder only contains WinRT.Runtime.dll).
-      The .NET 6 assembly is forward-compatible with .NET 8 hosts, so it is the right binary to binplace
-      until CsWinRT publishes a net8.0 variant of WinRT.Host.Shim.dll. Do not change to net8.0.
+      WinRT.Host.Shim.dll lives in different folders across CsWinRT major versions:
+        - CsWinRT 2.x (e.g. 2.1.1/2.2.0): lib\net6.0\WinRT.Host.Shim.dll (the net6.0 assembly is
+          forward-compatible with the net8.0 host; lib\net8.0 only contains WinRT.Runtime.dll).
+        - CsWinRT 3.0: hosting\net10.0\WinRT.Host.Shim.dll.
+      Select the correct path based on whether we are building against the CsWinRT 3.0 projection.
     -->
-    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\lib\net6.0\WinRT.Host.Shim.dll" />
+    <BinplaceItem Condition="'$(UseCsWinRT3)'!='true'" Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(WinUIConsumerCsWinRTPackageVersion)\lib\net6.0\WinRT.Host.Shim.dll" />
+    <BinplaceItem Condition="'$(UseCsWinRT3)'=='true'" Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(WinUIConsumerCsWinRTPackageVersion)\hosting\net10.0\WinRT.Host.Shim.dll" />
   </ItemGroup>
 
   <Target Name="BinplaceNetCoreBins" AfterTargets="AddBinplaceItems" BeforeTargets="Binplace" Condition="'$(BuildingInsideVisualStudio)' != 'true'">

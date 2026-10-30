@@ -3,7 +3,12 @@
 
 using Common;
 using System;
+// IBuffer.ToArray() moved namespaces in CsWinRT 3.0.
+#if CSWINRT3_0
+using Windows.Storage.Streams;
+#else
 using System.Runtime.InteropServices.WindowsRuntime;
+#endif
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;

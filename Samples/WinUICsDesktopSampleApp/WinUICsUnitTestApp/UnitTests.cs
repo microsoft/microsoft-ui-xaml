@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#if !CSWINRT3
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,7 @@ namespace WinUICsUnitTestApp
         }
 
         // Use the UITestMethod attribute for tests that need to run on the UI thread.
+#if !CSWINRT3
         [UITestMethod]
         public void SampleTest2()
         {
@@ -27,5 +30,6 @@ namespace WinUICsUnitTestApp
 
             WinUICsDesktopClassLibrary.ButtonControl control = new WinUICsDesktopClassLibrary.ButtonControl();
         }
+#endif
     }
 }

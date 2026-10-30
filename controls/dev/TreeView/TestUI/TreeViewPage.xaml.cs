@@ -16,6 +16,9 @@ using Microsoft.UI.Private.Media;
 using System.Collections.ObjectModel;
 using MUXControlsTestApp.Utilities;
 using System.Threading.Tasks;
+#if CSWINRT3_0
+using Windows.Foundation;   // CsWinRT 3.0 async extensions
+#endif
 
 namespace MUXControlsTestApp
 {

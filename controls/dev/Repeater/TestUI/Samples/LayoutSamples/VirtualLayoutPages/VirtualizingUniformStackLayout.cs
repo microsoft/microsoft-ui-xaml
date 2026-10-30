@@ -26,7 +26,7 @@ namespace MUXControlsTestApp.Samples
             for (int currentIndex = firstRealizedIndex; currentIndex <= lastRealizedIndex; currentIndex++)
             {
                 var element = context.GetOrCreateElementAt(currentIndex);
-                element.Measure(new Size(ItemWidth, ItemHeight));
+                element.Measure(new Size((float)ItemWidth, (float)ItemHeight));
             }
 
             // Anchor 
@@ -34,10 +34,10 @@ namespace MUXControlsTestApp.Samples
             if (anchorIndex >= 0)
             {
                 var anchorElement = context.GetOrCreateElementAt(anchorIndex);
-                anchorElement.Measure(new Size(ItemWidth, ItemHeight));
+                anchorElement.Measure(new Size((float)ItemWidth, (float)ItemHeight));
             }
 
-            return new Size(ItemWidth, context.ItemCount * ItemHeight);
+            return new Size((float)ItemWidth, (float)(context.ItemCount * ItemHeight));
         }
 
         protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
@@ -52,7 +52,7 @@ namespace MUXControlsTestApp.Samples
             for (int currentIndex = firstRealizedIndex; currentIndex <= lastRealizedIndex; currentIndex++)
             {
                 var element = context.GetOrCreateElementAt(currentIndex);
-                var arrangeRect = new Rect(0, currentIndex * ItemHeight, ItemWidth, ItemHeight);
+                var arrangeRect = new Rect(0, (float)(currentIndex * ItemHeight), (float)ItemWidth, (float)ItemHeight);
                 element.Arrange(arrangeRect);
                 Debug.WriteLine("   Arrange:" + currentIndex + " :" + arrangeRect);
             }
@@ -62,7 +62,7 @@ namespace MUXControlsTestApp.Samples
             if (anchorIndex >= 0)
             {
                 var anchor = context.GetOrCreateElementAt(anchorIndex);
-                var arrangeRect = new Rect(0, anchorIndex * ItemHeight, ItemWidth, ItemHeight);
+                var arrangeRect = new Rect(0, (float)(anchorIndex * ItemHeight), (float)ItemWidth, (float)ItemHeight);
                 anchor.Arrange(arrangeRect);
                 Debug.WriteLine("   Arrange:" + anchorIndex + " :" + arrangeRect);
             }

@@ -2,7 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+// IBuffer.ToArray() moved namespaces in CsWinRT 3.0.
+#if CSWINRT3_0
+using Windows.Storage.Streams;
+#else
 using System.Runtime.InteropServices.WindowsRuntime;
+#endif
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -205,7 +210,7 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
-                    gradientBrush.Center = new Point(_random.NextDouble(), _random.NextDouble());
+                    gradientBrush.Center = new Point((float)_random.NextDouble(), (float)_random.NextDouble());
                 }
             }
         }

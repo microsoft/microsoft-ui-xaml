@@ -34,6 +34,19 @@ namespace Microsoft.UI.Xaml.Tests.Common
         [DllImport(PrivateInfraServerDll, PreserveSig = false)]
         private static extern void ConfigureResourcesPri(bool managed);
 
+#if CSWINRT3_0
+        public static void Main()
+        {
+        }
+
+        // Set the TypeMap entry assembly when TAEF loads this DLL.
+        [ModuleInitializer]
+        public static void SetEntryAssemblyForCsWinRT()
+        {
+            global::System.Reflection.Assembly.SetEntryAssembly(typeof(AssemblySetup).Assembly);
+        }
+#endif
+
         [AssemblyInitialize]
         [TestProperty("RunFixtureAs:Module", "ElevatedUserOrSystem")]
         [TestProperty("EnsureLoggedOnUser:UserCount", "1")]
