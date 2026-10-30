@@ -273,22 +273,6 @@ HRESULT WindowHelper::FlyoutBase_GetWindow(
     COM_END
 }
 
-HRESULT WindowHelper::Popup_ResetUIAWindowValidator(_In_ xaml_primitives::IPopup* popup)
-{
-    COM_START
-    {
-        RunOnUIThread([&]()
-        {
-            wrl::ComPtr<xaml_primitives::IPopup> popupReference(popup);
-            wrl::ComPtr<xaml::IDependencyObject> popupAsDO;
-            LogThrow_IfFailed(popupReference.As(&popupAsDO));
-            LogThrow_IfFailed(WindowHelper::GetTestHooks()->InvokeInternalCommand(
-                popupAsDO.Get(), XamlInternalCommand::Popup_ResetUIAWindowValidator, nullptr, nullptr));
-        });
-    }
-    COM_END
-}
-
 HRESULT WindowHelper::Popup_GetWindow(
     _In_ xaml_primitives::IPopup* pPopup, _Out_ UINT64* hwnd)
 {

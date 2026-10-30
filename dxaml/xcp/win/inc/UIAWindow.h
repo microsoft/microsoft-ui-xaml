@@ -26,8 +26,6 @@
 class CAutomationPeerCollection; // Forward declaration for ConvertToVariant(CAutomationPeerCollection, ...)
 class CAutomationPeerAnnotationCollection;
 
-namespace DirectUI { class DxamlCoreTestHooks; }
-
 DEFINE_GUID(GUID_PreventKeyboardDisplayOnProgrammaticFocus, 0xd48814c, 0x1e01, 0x49b1, 0x91, 0xe8, 0x61, 0xab, 0x2f, 0x24, 0x9f, 0x4f);
 
 struct UIAIdentifiers
@@ -486,8 +484,6 @@ protected:
     virtual HRESULT GetPropertyValueOverride(_In_ PROPERTYID propertyId, _Out_ VARIANT * pRetVal) = 0;
 
 private:
-    friend class DirectUI::DxamlCoreTestHooks;
-
     void FlushUiaBridgeEventTable();
     HRESULT GetAPForHwnd(HWND hwnd, CAutomationPeer* pAPRoot, CAutomationPeer** pHwndAP);
     _Check_return_ HRESULT GetPreventKeyboardDisplayOnProgrammaticFocusId();

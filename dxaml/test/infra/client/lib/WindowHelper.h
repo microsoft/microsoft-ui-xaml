@@ -70,7 +70,6 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(PrepareForPopupMenuWait)() override;
         IFACEMETHOD(WaitForPopupMenuCommandInvoked)(_In_ UINT32 timeoutMilliseconds, _Out_ BOOLEAN* pSuccess) override;
         IFACEMETHOD(Popup_SetWindowed)(_In_ xaml_primitives::IPopup* pPopup) override;
-        IFACEMETHOD(Popup_ResetUIAWindowValidator)(_In_ xaml_primitives::IPopup* popup) override;
         IFACEMETHOD(FlyoutBase_GetWindow)(_In_ xaml_primitives::IFlyoutBase* pFlyoutBase, _Out_ UINT64* hwnd);
         IFACEMETHOD(Popup_GetWindow)(_In_ xaml_primitives::IPopup* pPopup, _Out_ UINT64* hwnd);
         IFACEMETHOD(ToolTip_GetWindow)(_In_ xaml_controls::IToolTip* pToolTip, _Out_ UINT64* hwnd);

@@ -3051,25 +3051,6 @@ HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRe
         return E_FAIL;
     }
 
-    // Reconcile providers created before logical parenting was established. Closed
-    // popup content keeps its existing host so closing handlers can still raise events.
-    auto popup = do_pointer_cast<CPopup>(owner.get());
-    if (owner && owner->IsActive() && (!popup || popup->IsOpen()))
-    {
-        if (auto existing = static_cast<CUIAWrapper*>(pAP->GetUIAWrapper()))
-        {
-            if (existing->GetUIAWindowIfValid() != providerWindow.get())
-            {
-                pAP->InvalidateUIAWrapper();
-                existing->Invalidate();
-            }
-        }
-    }
-    if (!validator->IsValid() || !providerValidator->IsValid())
-    {
-        return E_FAIL;
-    }
-
     IFC_RETURN(CUIAWrapper::Create(
         providerWindow->m_uiaHostEnvironmentInfo,
         providerWindow->m_pHost,

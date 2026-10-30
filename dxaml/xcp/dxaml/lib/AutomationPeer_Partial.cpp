@@ -4,7 +4,6 @@
 #include "precomp.h"
 #include "AutomationCValue.h"
 #include "UiaWrapper.h"
-#include "UIAWindow.h"
 #include "AutomationPeer.g.h"
 #include "IRawElementProviderSimple.g.h"
 #include "ItemsControlAutomationPeer.g.h"
@@ -100,25 +99,28 @@ _Check_return_ HRESULT DirectUI::AutomationPeer::QueryInterfaceImpl(_In_ REFIID 
     // and XAML APs life time can be bound to CUIAWrapper TFS Id: 579423.
     if (InlineIsEqualGUID(iid, __uuidof(IRawElementProviderFragment)))
     {
-        auto peer = static_cast<CAutomationPeer*>(GetHandle());
-        xref_ptr<CUIAWrapper> wrapper;
+        IUIAWrapper *pObjectNoRef = nullptr;
         ctl::ComPtr<IRawElementProviderFragment> spRawProviderFrag;
 
-        auto core = DXamlCore::GetFromDependencyObject(this);
-        auto coreServices = core ? core->GetHandle() : nullptr;
-        auto window = coreServices ? coreServices->GetUIAWindowForAutomationPeerNoRef(peer) : nullptr;
-        if (window)
+        pObjectNoRef = (static_cast<CAutomationPeer*>(GetHandle()))->GetUIAWrapper();
+
+        if (pObjectNoRef == nullptr)
         {
-            IFC_RETURN(window->CreateProviderForAP(peer, wrapper.ReleaseAndGetAddressOf()));
-        }
-        else if (core)
-        {
-            IFC_RETURN(core->CreateProviderForAP(peer, wrapper.ReleaseAndGetAddressOf()));
+            DXamlCore* pCore = DXamlCore::GetFromDependencyObject(this);
+            if (pCore)
+            {
+                xref_ptr<CUIAWrapper> spUIAWrapper;
+                IFC_RETURN(pCore->CreateProviderForAP(static_cast<CAutomationPeer*>(GetHandle()), spUIAWrapper.ReleaseAndGetAddressOf()));
+                if (spUIAWrapper)
+                {
+                    IFC_NOTRACE_RETURN(spUIAWrapper->QueryInterface(__uuidof(IRawElementProviderFragment), &spRawProviderFrag));
+                }
+            }
         }
 
-        if (wrapper)
+        if (pObjectNoRef)
         {
-            IFC_NOTRACE_RETURN(wrapper->QueryInterface(__uuidof(IRawElementProviderFragment), &spRawProviderFrag));
+            IFC_NOTRACE_RETURN((static_cast<CUIAWrapper*>(pObjectNoRef))->QueryInterface(__uuidof(IRawElementProviderFragment), &spRawProviderFrag));
         }
 
         if (!spRawProviderFrag)
