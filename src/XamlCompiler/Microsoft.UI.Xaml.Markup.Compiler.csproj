@@ -71,8 +71,13 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
+    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt): not a runtime dependency -->
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
+    <AdditionalFiles Include="BuildTasks\NativeMethods.txt;BuildTasks\NativeMethods.json" />
     <Compile Include="BuildTasks\NativeMethods.NativeAot.cs" />
     <Compile Include="BuildTasks\Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
     <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />

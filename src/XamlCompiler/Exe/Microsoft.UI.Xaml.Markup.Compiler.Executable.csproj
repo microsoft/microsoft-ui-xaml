@@ -84,6 +84,7 @@
   </ItemGroup>
   <!-- Native AOT replacements for the built-in COM interop used to call GenXbf.dll and vcmeta.dll on the other target frameworks -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <AdditionalFiles Include="$(BuildTasksDir)NativeMethods.txt;$(BuildTasksDir)NativeMethods.json" />
     <Compile Include="$(BuildTasksDir)NativeMethods.NativeAot.cs" />
     <Compile Include="$(BuildTasksDir)Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
     <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />
@@ -515,7 +516,7 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net10.0' ">
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
-    <!-- Generates the Windows P/Invokes and COM interfaces (see NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
+    <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" Condition=" '$(TargetFramework)' == 'net10.0' " />
     <!-- Compile-time only: the legacy CAS code paths in System.Xaml that need it are never executed -->
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
