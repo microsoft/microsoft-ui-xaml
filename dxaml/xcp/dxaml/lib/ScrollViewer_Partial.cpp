@@ -38,6 +38,8 @@
 #include "GeneralTransform.g.h"
 #include "RootScale.h"
 #include <XamlOneCoreTransforms.h>
+#include <ErrorHandlerSettings.h>
+#include <strsafe.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -11055,11 +11057,37 @@ _Check_return_ HRESULT ScrollViewer::NotifyManipulatableElementChanged()
                 }
             }
 
+            auto coreContent = pManipulatableElementNoRef ? static_cast<CUIElement*>(pManipulatableElementNoRef->GetHandle()) : nullptr;
+            const bool traceCalendarContent = coreContent && coreContent->OfTypeByIndex<KnownTypeIndex::CalendarPanel>();
+            if (traceCalendarContent)
+            {
+                wchar_t message[512];
+                IFCFAILFAST(StringCchPrintfW(
+                    message, ARRAYSIZE(message),
+                    L"CalendarDecadeBoundaryProbe register-before frame=%u scrollViewer=%p content=%p "
+                    L"requires=%d manipulatable=%d peer=%p",
+                    coreContent->GetContext()->GetFrameNumber(), GetHandle(), coreContent,
+                    coreContent->RequiresCompositionNode(), coreContent->IsManipulatable(), coreContent->GetCompositionPeer()));
+                ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
+            }
+
             // Let the ManipulationHandler know about this manipulatable element change
             IFC(CoreImports::ManipulationHandler_NotifyManipulatableElementChanged(
                 m_hManipulationHandler,
                 static_cast<CUIElement*>(m_trManipulatableElement ? m_trManipulatableElement.Cast<UIElement>()->GetHandle() : NULL /*pOldManipulatableElement*/),
                 static_cast<CUIElement*>(pManipulatableElementNoRef ? pManipulatableElementNoRef->GetHandle() : NULL /*pNewManipulatableElement*/)));
+
+            if (traceCalendarContent)
+            {
+                wchar_t message[512];
+                IFCFAILFAST(StringCchPrintfW(
+                    message, ARRAYSIZE(message),
+                    L"CalendarDecadeBoundaryProbe register-after frame=%u scrollViewer=%p content=%p "
+                    L"requires=%d manipulatable=%d peer=%p",
+                    coreContent->GetContext()->GetFrameNumber(), GetHandle(), coreContent,
+                    coreContent->RequiresCompositionNode(), coreContent->IsManipulatable(), coreContent->GetCompositionPeer()));
+                ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
+            }
 
             SetPtrValue(m_trManipulatableElement, pManipulatableElementNoRef);
         }

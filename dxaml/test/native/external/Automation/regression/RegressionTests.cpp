@@ -303,11 +303,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             spAutomationFocusChangeHandler->AttachEventHandler();
         });
 
+        // TODO: Remove: This was a fix for https://task.ms/21141128
+        xaml_automation_peers::AutomationPeer^ ap; // need the peer to live longer than the RunOnUIThread lambda
         RunOnUIThread([&]()
         {
-            auto ap = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(customControl);
+            ap = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(customControl);
 
-            spAutomationFocusChangeHandler->focusChangedCallback = [&ap, &eventFired, &hasKeyboardFocus]()
+            spAutomationFocusChangeHandler->focusChangedCallback = [ap, &eventFired, &hasKeyboardFocus]()
             {
                 eventFired = true;
                 hasKeyboardFocus = ap->HasKeyboardFocus();

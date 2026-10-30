@@ -31,6 +31,8 @@
 #include <XamlOneCoreTransforms.h>
 #include <RootScale.h>
 #include "GraphicsTelemetry.h"
+#include <ErrorHandlerSettings.h>
+#include <strsafe.h>
 
 using namespace RuntimeFeatureBehavior;
 
@@ -734,6 +736,62 @@ HWWalk::RenderProperties(
     // change independently on the render thread and cause content to be visible again - not marshalling that
     // content over will cause glitches.
     const bool requiresCompositionNode = pUIElement->RequiresCompositionNode();
+    const bool traceCalendarElement = pUIElement->OfTypeByIndex<KnownTypeIndex::CalendarPanel>()
+        || pUIElement->OfTypeByIndex<KnownTypeIndex::CalendarViewItem>();
+    if (traceCalendarElement)
+    {
+        HWClip inheritedClip;
+        IFC_RETURN(parentRP.pTransformsAndClipsToCompNode->TransformToLocalSpace(&inheritedClip));
+        XRECTF inheritedRect;
+        inheritedClip.GetRectangularClip(&inheritedRect);
+        auto parentNode = myRP.pHWWalk->GetParentCompNode();
+
+        wchar_t message[1024];
+        IFCFAILFAST(StringCchPrintfW(
+            message, ARRAYSIZE(message),
+            L"CalendarDecadeBoundaryProbe render frame=%u element=%p type=%s name=%s "
+            L"requires=%d manipulatable=%d peer=%p parentNode=%p parentNodeElement=%p "
+            L"inheritedClip=(%g,%g,%g,%g) localClip=%p layoutClip=%d resetsClipStack=%d",
+            pUIElement->GetContext()->GetFrameNumber(),
+            pUIElement,
+            pUIElement->OfTypeByIndex<KnownTypeIndex::CalendarPanel>() ? L"CalendarPanel" : L"CalendarViewItem",
+            pUIElement->m_strName.IsNullOrEmpty() ? L"" : pUIElement->m_strName.GetBuffer(),
+            requiresCompositionNode, pUIElement->IsManipulatable(), pUIElement->GetCompositionPeer(),
+            parentNode, parentNode ? parentNode->GetUIElementPeer() : nullptr,
+            inheritedRect.X, inheritedRect.Y, inheritedRect.Width, inheritedRect.Height,
+            pUIElement->GetClip().get(), pUIElement->HasLayoutClip(), requiresCompositionNode));
+        ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
+
+        if (pUIElement->OfTypeByIndex<KnownTypeIndex::CalendarViewItem>() && pUIElement->GetCompositionPeer() == nullptr)
+        {
+            for (auto ancestor = pUIElement->GetParentInternal(false); ancestor != nullptr; ancestor = ancestor->GetParentInternal(false))
+            {
+                if (auto ancestorElement = do_pointer_cast<CUIElement>(ancestor))
+                {
+                    XRECTF clipRect;
+                    SetInfiniteClip(&clipRect);
+                    if (auto rectangleClip = do_pointer_cast<CRectangleGeometry>(ancestorElement->GetClip()))
+                    {
+                        clipRect = rectangleClip->m_rc;
+                    }
+                    IFCFAILFAST(StringCchPrintfW(
+                        message, ARRAYSIZE(message),
+                        L"CalendarDecadeBoundaryProbe ancestor frame=%u item=%p ancestor=%p type=%u name=%s "
+                        L"requires=%d manipulatable=%d peer=%p localClip=(%g,%g,%g,%g) layoutClip=%d",
+                        pUIElement->GetContext()->GetFrameNumber(), pUIElement, ancestorElement,
+                        static_cast<unsigned>(ancestorElement->GetTypeIndex()),
+                        ancestorElement->m_strName.IsNullOrEmpty() ? L"" : ancestorElement->m_strName.GetBuffer(),
+                        ancestorElement->RequiresCompositionNode(), ancestorElement->IsManipulatable(), ancestorElement->GetCompositionPeer(),
+                        clipRect.X, clipRect.Y, clipRect.Width, clipRect.Height, ancestorElement->HasLayoutClip()));
+                    ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
+                }
+                if (ancestor->OfTypeByIndex<KnownTypeIndex::CalendarView>())
+                {
+                    break;
+                }
+            }
+        }
+    }
     if (requiresCompositionNode)
     {
         // If this element's transform is being animated, it affects texture realization in the subgraph.
@@ -909,6 +967,17 @@ HWWalk::RenderProperties(
                 spRenderDataParent.ReleaseAndGetAddressOf(),
                 &hasRealizationTransformAboveCompNodeChanged
                 ));
+
+            if (traceCalendarElement)
+            {
+                wchar_t message[512];
+                IFCFAILFAST(StringCchPrintfW(
+                    message, ARRAYSIZE(message),
+                    L"CalendarDecadeBoundaryProbe peer frame=%u element=%p node=%p parentNode=%p parentNodeElement=%p",
+                    pUIElement->GetContext()->GetFrameNumber(), pUIElement, pElementCompNode.get(),
+                    pParentCompNodeNoRef, pParentCompNodeNoRef ? pParentCompNodeNoRef->GetUIElementPeer() : nullptr));
+                ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
+            }
 
             // Set the parent comp node for the subgraph to this element's comp node.
             myRP.pHWWalk->SetParentCompNode(pElementCompNode);
