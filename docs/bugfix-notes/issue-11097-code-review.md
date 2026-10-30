@@ -13,3 +13,17 @@ Commit under review: d26ac30a8 (round 1).
 | r1-skeptic-b | claude-sonnet-5.5 | No must-fix or should-fix. Nit: `dxaml\test\native\external\Automation\xamluiabridge\XamlTypeInfo.Impl.g.cpp` is a stale checked-in C++/CX copy with the old order. Nit: `docs\bugfix-notes` is a new directory. | Mentioned the xamluiabridge copy in "Not covered" and left it unchanged, since dxaml turns C5038 off (`dxaml\common.props:84`). Kept `docs\bugfix-notes`, since it's the bug-fixer flow's convention. |
 
 Result: notes-only changes. No code changes.
+
+## Round 2
+
+Commit under review: 73948de78.
+
+| Reviewer | Model | Findings | Disposition |
+|---|---|---|---|
+| r2-opus | claude-opus-5.5 | No must-fix or should-fix. Verified all citations. Nit: the ".cs is one long string literal, re-split" wording only fits the `XamlMember` hunk. The `XamlUserType` hunk is a plain line swap in a verbatim string. | Fixed the wording. |
+| r2-sol | gpt-6.1-sol | No issues. | None. |
+| r2-argon | gemini-4-argon | No issues. Verified every citation in the notes. | None. |
+| r2-skeptic-a | gpt-5.6-terra | No issues. | None. |
+| r2-skeptic-b | claude-sonnet-5.5 | Checked that the old `Simple` master lines 308 and 575 match the error lines in the issue, which backs up the red result. Should-fix: `docs\bugfix-notes` is a new directory. Nit: the red/green results are first-hand claims. Nit: the Tests section says the regression projects guard every template, but they only guard C++/WinRT. | Kept `docs\bugfix-notes`, since it's the flow's convention and is easy to drop before a PR. Kept the red/green claims; they come from runs recorded in Validation. Fixed the Tests wording. While fixing it, I found there's no C++/CX master either, so I said that in Tests and "Not covered". |
+
+Result: notes-only changes. No code changes.
