@@ -4,8 +4,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
     <AssemblyName>XamlCompiler</AssemblyName>
-    <TargetFrameworks>net472</TargetFrameworks>
-    <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <!-- Each target framework gets its own output and binplace folder, since they produce same-named files -->
+    <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
+    <TargetDestination>$(MarkupCompilerDestinationPath).Executable\$(TargetFramework)</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>$(NoWarn);0419;1570;1572;1573;1574;1591;3021;0618;0672;0436;0108;SYSLIB0003;SYSLIB0005;SYSLIB0012;SYSLIB0019;SYSLIB0021;CA2002;CA1060;CA1063;CA2229;CA1001;CA1033;CA1416;CA2101;CA2213;CA2231</NoWarn>
     <!-- USE_CLR_V4 is only for the LMR code -->
@@ -15,6 +17,19 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <WarningsAsErrors>false</WarningsAsErrors>
+  </PropertyGroup>
+  <!--
+    The net8.0 build is launched via the dotnet host running MSBuild (see Microsoft.UI.Xaml.Markup.Compiler.interop.targets),
+    so it is framework-dependent with no apphost, and rolls forward to whatever newer runtime that host has.
+  -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
+    <UseAppHost>false</UseAppHost>
+    <RollForward>Major</RollForward>
+    <!-- Don't require the latest .NET 8 patch (eng\sdkconfig.targets pins packs to it); any 8.0+ runtime is fine -->
+    <RuntimeFrameworkVersion>8.0.0</RuntimeFrameworkVersion>
+    <!-- Legacy formatter-serialization members in the shared System.Xaml/LMR/ANTLR sources; same suppressions as the net8.0 task build -->
+    <NoWarn>$(NoWarn);SYSLIB0050;SYSLIB0051;CA2235</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(BuildTasksDir)ConsoleLogger.cs" />
@@ -445,6 +460,11 @@
     <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="System.CodeDom" Version="8.0.0" />
+    <!-- Compile-time only: the legacy CAS code paths in System.Xaml that need it are never executed -->
+    <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj">
       <Project>{a1175d44-d47d-4d3e-a319-cefc7170d29c}</Project>
@@ -487,6 +507,19 @@
     <PackageContent Include="$(TargetDir)System.Threading.Tasks.Dataflow.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
     <PackageContent Include="$(TargetDir)System.Threading.Tasks.Extensions.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
     <PackageContent Include="NOTICE.txt" PackageLocation="$(ToolsPackageLocation)" />
+  </ItemGroup>
+  <!--
+    .NET (Core) build of the executable compiler, used by 'dotnet build'. Lives next to the in-proc net8.0 task, mirroring net472.
+    Microsoft.UI.Xaml.Markup.Compiler.IO/MSBuildInterop are already packaged into tools\net8.0 above.
+  -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
+    <PackageContent Include="$(OutDir)$(TargetName).deps.json" PackageLocation="$(ToolsPackageLocation)\net8.0" />
+    <PackageContent Include="$(OutDir)$(TargetName).runtimeconfig.json" PackageLocation="$(ToolsPackageLocation)\net8.0" />
+    <PackageContent Include="$(OutDir)Microsoft.Build.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
+    <PackageContent Include="$(OutDir)Microsoft.Build.Framework.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
+    <PackageContent Include="$(OutDir)Microsoft.Build.Utilities.Core.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
+    <PackageContent Include="$(OutDir)System.CodeDom.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
   </ItemGroup>
   <!-- Referencing a .NET Standard project includes a reference to System.Xaml, which conflicts with our private System.Xaml.  Remove the auto-included reference here -->
   <Target Name="RemoveSystemXamlReference" BeforeTargets="ResolveAssemblyReferences">
