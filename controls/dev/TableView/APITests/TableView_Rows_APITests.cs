@@ -303,7 +303,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies Tab from the header band returns to the last focused body row or cell (GH #12447).")]
+        [TestProperty("Description", "Verifies Tab from the header band returns to the last focused body row, or to the last focused cell's own column rather than the header band's column (GH #12447).")]
         [TestProperty("data:Level", "{Row, Cell}")]
         public void VerifyTabFromHeaderBandReturnsToLastFocusedRow()
         {
@@ -342,12 +342,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
+            // Header column 0, not the remembered cell's column 1, so the two are told apart.
             RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(GetHeaderCell(tableView, 1).Focus(FocusState.Keyboard), "Precondition: header cell 1 takes focus.");
+                Verify.IsTrue(GetHeaderCell(tableView, 0).Focus(FocusState.Keyboard), "Precondition: header cell 0 takes focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
                 Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
-                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the header band must move focus.");
-            });
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the header band must move focus."));
 
             SettleLayout(tableView);
 
@@ -362,7 +365,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"Focused {focused?.GetType().Name} in row {(focusedRow == null ? -1 : GetRowsRepeater(tableView).GetElementIndex((UIElement)focusedRow))}.");
                 object expected = cellLevel ? GetRowCell(remembered, 1) : remembered;
                 Verify.IsTrue(ReferenceEquals(expected, focused),
-                    "Tab from the header band must return to the last focused " + (cellLevel ? "cell." : "row."));
+                    "Tab from the header band must return to the last focused " + (cellLevel ? "cell (5, 1)." : "row."));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab from the header band lands on the group header that last had focus, not on an earlier focused row (GH #12447).")]
+        public void VerifyTabFromHeaderBandReturnsToLastFocusedGroupHeader()
+        {
+            TableView tableView = null;
+            TableViewRow row = null;
+            TableViewGroupHeader groupHeader = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // One row per group, so headers and rows alternate.
+                var source = TableViewSource.From(MakeManyItems(200));
+                source.GroupBy(o => ((Person)o).Role);
+                tableView = CreateTableViewWithColumns(source, height: 400, columns: new[]
+                {
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)),
+                });
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(new Button { Content = "After" });
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                row = GetRowsRepeater(tableView).TryGetElement(5) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: element 5 is a realized data row.");
+                Verify.IsTrue(row.Focus(FocusState.Keyboard), "Precondition: row 5 takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Up,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Up from row 5 must move focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                groupHeader = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewGroupHeader;
+                Verify.IsNotNull(groupHeader, "Precondition: Up from row 5 lands on its group header.");
+                Verify.IsTrue(GetHeaderCell(tableView, 0).Focus(FocusState.Keyboard), "Precondition: header cell 0 takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the header band must move focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as UIElement;
+                Log.Comment($"Focused {focused?.GetType().Name} at index {(focused == null ? -1 : GetRowsRepeater(tableView).GetElementIndex(focused))}.");
+                Verify.IsTrue(ReferenceEquals(groupHeader, focused),
+                    "Tab from the header band must return to the focused group header, not to row 5.");
             });
         }
 
