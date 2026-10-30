@@ -340,6 +340,13 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
     }
 }
 
+// Index paths are { menu block (main menu or footer), top-level index, child index, grandchild index, ... },
+// so a top-level item's path has exactly two entries.
+static bool IsTopLevelIndexPath(const winrt::IndexPath& ip)
+{
+    return ip.GetSize() == 2;
+}
+
 void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& selectedItem, winrt::IndexPath const& selectedIndex, bool closeFlyout)
 {
     // SelectOverflowItem is moving data in/out of overflow.
@@ -360,7 +367,8 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
             return;
         }
         // An equal index path can now refer to a different item, e.g. when the item was removed and its successor selected.
-        if (selectedIndex.GetSize() == 2 && m_topDataProvider.IndexOf(selectedItem) != selectedIndex.GetAt(1))
+        // Only a top-level item can be checked against the top-level data provider.
+        if (IsTopLevelIndexPath(selectedIndex) && m_topDataProvider.IndexOf(selectedItem) != selectedIndex.GetAt(1))
         {
             return;
         }
@@ -2585,6 +2593,18 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
     // next in menuitem children
     auto index = 2;
     bool reconcileWithCurrentSelection = false;
+    // IsChildSelected is public, so an app callback can select another container (e.g. C.IsSelected = true). That selection
+    // reaches NavigationView only through the SelectionModel, so don't let a suppression set by an outer internal update
+    // (UnselectPrevItem, UpdateSelectionModelSelectionForSelectedItem, ...) drop it: it must take ownership of the selection.
+    const auto setIsChildSelected = [this](const winrt::NavigationViewItem& nvi, bool value)
+    {
+        auto scopeGuard = gsl::finally([this, ignoreNextSelectionChange = m_shouldIgnoreNextSelectionChange]()
+        {
+            m_shouldIgnoreNextSelectionChange = ignoreNextSelectionChange;
+        });
+        m_shouldIgnoreNextSelectionChange = false;
+        nvi.IsChildSelected(value);
+    };
     while (container)
     {
         if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
@@ -2605,11 +2625,11 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
                         }
                     }
                 }
-                nvi.IsChildSelected(hasSelectedChild);
+                setIsChildSelected(nvi, hasSelectedChild);
             }
             else
             {
-                nvi.IsChildSelected(isChildSelected);
+                setIsChildSelected(nvi, isChildSelected);
                 if (generation != m_selectionChangeGeneration)
                 {
                     // A callback started a new selection. Don't abandon the rest of this chain: the new selection
