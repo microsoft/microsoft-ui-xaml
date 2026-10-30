@@ -97,6 +97,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewKeyboardScrollingPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)FlatItemsControlPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -247,6 +251,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ListViewPage.xaml.cs">
       <DependentUpon>ListViewPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ListViewKeyboardScrollingPage.xaml.cs">
+      <DependentUpon>ListViewKeyboardScrollingPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ListViewBasePage.xaml.cs">
       <DependentUpon>ListViewBasePage.xaml</DependentUpon>
