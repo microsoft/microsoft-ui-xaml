@@ -271,8 +271,17 @@ bool TableView::ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& c
     return ToggleSortDirection(column);
 }
 
+bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
+{
+    if (!column || column.SortDirection() == winrt::SortDirection::None)
+    {
+        return false;
+    }
+    return SortByColumnInternal(column, column.SortDirection(), true, true, true /* resort */);
+}
+
 bool TableView::SortByColumnInternal(
-    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort)
+    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort, bool resort)
 {
     // Only a clear may skip the sort-key check.
     requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
@@ -286,8 +295,8 @@ bool TableView::SortByColumnInternal(
         return false;
     }
 
-    // A direction the app only displayed has not ordered the rows yet.
-    if (m_sortedColumns.size() == 1 && !m_sortDisplaySetByApp)
+    // A direction the app only displayed has not ordered the rows yet; a resort re-ranks a new comparer.
+    if (m_sortedColumns.size() == 1 && !m_sortDisplaySetByApp && !resort)
     {
         if (auto sortedColumn = m_sortedColumns.front().get())
         {
@@ -308,9 +317,9 @@ bool TableView::SortByColumnInternal(
     // cannot close synchronously, replay this request once it does.
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        QueueReshapeBehindEdit([this, column, direction, measureTip, requireCanSort]()
+        QueueReshapeBehindEdit([this, column, direction, measureTip, requireCanSort, resort]()
         {
-            SortByColumnInternal(column, direction, measureTip, requireCanSort);
+            SortByColumnInternal(column, direction, measureTip, requireCanSort, resort);
         }, true);
         return false;
     }

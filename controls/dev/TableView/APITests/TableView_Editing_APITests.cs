@@ -953,7 +953,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation, raising Ending with the live editor, then Ended once, then any sort queued behind the edit.")]
+        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation, raising Ending(Cancel) with the live editor and then Ended(Cancel) once; a SortByColumn refused by the failing value raises no Sorting.")]
         [TestProperty("data:Queued", "{None, Sort}")]
         public void VerifyRecycleDuringLayoutRollsBackInvalidPendingValue()
         {
@@ -1016,9 +1016,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Sorting += (s, e) => log.Add("Sorting");
                 if (queued == "Sort")
                 {
-                    // The invalid pending value cannot be committed, so the sort waits for the edit to close.
-                    tableView.SortByColumn(tableView.Columns[1], SortDirection.Descending);
-                    Verify.IsTrue(tableView.IsEditing, "Precondition: the sort must not close the invalid edit.");
+                    // The sort's cancellable commit fails validation, so the sort is refused, not queued.
+                    Verify.IsFalse(tableView.SortByColumn(tableView.Columns[1], SortDirection.Descending), "A sort blocked by a failing edit must be refused.");
+                    Verify.IsTrue(tableView.IsEditing, "The failing value must keep the edit open.");
                 }
             });
 
@@ -1032,11 +1032,115 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(tableView.IsEditing, "Recycling the edited row must close the edit.");
 
                 var closing = log.SkipWhile(entry => !entry.StartsWith("Ending:Cancel", StringComparison.Ordinal)).ToList();
-                var expected = queued == "Sort"
-                    ? new[] { "Ending:Cancel:editor", "Ended:Cancel:IsEditing=False", "Sorting" }
-                    : new[] { "Ending:Cancel:editor", "Ended:Cancel:IsEditing=False" };
-                Verify.AreEqual(string.Join(",", expected), string.Join(",", closing),
-                    $"The forced close must raise Ending with the live editor, then Ended once{(queued == "Sort" ? ", then the queued Sorting" : string.Empty)}; log [{string.Join(", ", log)}].");
+                Verify.AreEqual("Ending:Cancel:editor,Ended:Cancel:IsEditing=False", string.Join(",", closing),
+                    $"{queued}: the forced close must raise Ending with the live editor, then Ended once; log [{string.Join(", ", log)}].");
+                Verify.IsFalse(log.Contains("Sorting"), $"{queued}: no Sorting may be raised.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection, $"{queued}: the refused sort must not light its column.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort queued behind an edit that a CellEditEnded handler reopened drains after that edit closes (by recycle or CommitEdit): Ended first, then Sorting, and a throwing Sorting handler does not crash.")]
+        [TestProperty("data:Close", "{Recycle, Commit}")]
+        public void VerifyQueuedSortBehindReopenedEditDrainsAfterEnded()
+        {
+            var close = ((string)TestContext.DataRow["Close"]).Trim();
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            var log = new List<string>();
+            var vetoNext = false;
+            var reopened = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var names = new string[200];
+                names[0] = "Asha";
+                for (int i = 1; i < names.Length; i++)
+                {
+                    names[i] = "Person " + i;
+                }
+                items = MakeEditableItems(names);
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                focusSink = LoadWithFocusSink(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            // Cell A holds a valid pending value, so the sort's commit of A succeeds.
+            OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoNext;
+                tableView.CellEditEnded += (s, e) =>
+                {
+                    log.Add($"Ended:{e.EditAction}:{((EditablePerson)e.Item).Name}");
+                    if (reopened)
+                    {
+                        return;
+                    }
+
+                    // Reopening an edit here queues the sort behind cell B.
+                    reopened = true;
+                    vetoNext = true;
+                    CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 0), "Bea");
+                };
+                tableView.Sorting += (s, e) =>
+                {
+                    log.Add("Sorting");
+                    throw new InvalidOperationException("Sorting handler fault");
+                };
+
+                tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reopened, "Precondition: CellEditEnded reopened an edit on cell B.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: cell B is being edited.");
+                Verify.IsFalse(log.Contains("Sorting"), "The sort must wait behind cell B's edit.");
+                if (close == "Recycle")
+                {
+                    // ItemsRepeater never recycles the row holding focus; the vetoed focus-loss commit keeps B open.
+                    focusSink.Focus(FocusState.Programmatic);
+                }
+            });
+
+            IdleSynchronizer.Wait();
+
+            if (close == "Recycle")
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(tableView.IsEditing, "Precondition: cell B is still being edited.");
+                    vetoNext = false;
+                });
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, 3000);
+            }
+            else
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    vetoNext = false;
+                    Verify.IsTrue(tableView.CommitEdit(), "Cell B commits.");
+                });
+            }
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, $"{close}: every edit must be closed.");
+                var endedB = log.FindIndex(entry => entry.StartsWith("Ended:", StringComparison.Ordinal) && entry != "Ended:Commit:Zed");
+                var sorting = log.IndexOf("Sorting");
+                Verify.AreEqual(1, log.Count(entry => entry == "Sorting"), $"{close}: the queued sort must raise Sorting once; log [{string.Join(", ", log)}].");
+                Verify.IsTrue(endedB >= 0 && endedB < sorting, $"{close}: Ended for cell B must come before Sorting; log [{string.Join(", ", log)}].");
+                Verify.AreEqual(close == "Commit" ? TableViewEditAction.Commit.ToString() : TableViewEditAction.Cancel.ToString(),
+                    log[endedB].Split(':')[1], $"{close}: cell B must close with the expected action.");
             });
         }
 

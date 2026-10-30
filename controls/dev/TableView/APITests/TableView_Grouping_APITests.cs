@@ -1643,6 +1643,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a GroupExpanding handler that swaps ItemsSource and then collapses and expands the same key on the new source leaves the new group expanded.")]
+        public void VerifyExpandGroupOnSwappedSourceFromGroupExpandingHandler()
+        {
+            TableView tableView = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var swapped = false;
+                tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    events.Add("E:" + e.GroupKey);
+                    if (swapped)
+                    {
+                        return;
+                    }
+
+                    swapped = true;
+                    tableView.ItemsSource = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                    tableView.UpdateLayout();
+                    // Same identity, new source: the re-entrancy guard for the old source must not drop these.
+                    tableView.CollapseGroup("Designer");
+                    tableView.ExpandGroup("Designer");
+                };
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("E:Designer,C:Designer,E:Designer", string.Join(",", events),
+                    "The new source's group must raise its own collapse and expand.");
+                VerifySequence(new[] { "#Designer", "Asha", "Ines", "#Engineer", "Diego", "Rafa", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false), "the new source's group must end expanded");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies ExpandAllGroups with a GroupExpanding handler that regroups raises no event for groups whose state never changes.")]
         public void VerifyBulkExpandWithRegroupingHandlerRaisesOnlyForChangedGroups()
         {
@@ -1678,8 +1730,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(events.Any(e => e != "E:Designer"), $"Only the collapsed group may raise an event; saw [{string.Join(", ", events)}].");
-                Verify.IsTrue(events.Count <= 1, "The changed group must raise at most one GroupExpanding.");
+                Verify.AreEqual("E:Designer", string.Join(",", events), "Only the collapsed group may raise an event, exactly once.");
                 Verify.IsTrue(GetProjectedLabels(tableView, includeCount: false).Contains("Asha"), "Every group must end expanded.");
             });
         }

@@ -449,11 +449,9 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None &&
         !winrt::get_self<TableView>(owner)->IsSortLitOnlyByAppInternal())
     {
-        auto const direction = SortDirection();
-        auto ownerImpl = winrt::get_self<TableView>(owner);
-        // Force a re-sort: SortByColumn no-ops when the column already carries this direction.
-        ownerImpl->SortByColumn(*this, winrt::SortDirection::None);
-        ownerImpl->SortByColumn(*this, direction);
+        // One request, no intermediate clear: a comparer that throws while ranking leaves the
+        // previous order and arrow in place.
+        winrt::get_self<TableView>(owner)->ResortColumnInternal(*this);
     }
 }
 

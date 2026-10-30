@@ -745,6 +745,8 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
                 catch (...)
                 {
                     strongThis->CancelPendingBringItemIntoView();
+                    TVDiag::LogRetailF(L"[TableView] A StartBringItemIntoView pending at Loaded failed (HRESULT 0x%08X).",
+                        static_cast<unsigned int>(winrt::to_hresult()));
                 }
             });
         }

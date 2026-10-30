@@ -394,7 +394,7 @@ PeopleTable.CollapseAllGroups();
 
 Expansion is remembered as intent about a **group identity**, not as state on a group object, so collapsing a group and then re-sorting, re-filtering or regrouping keeps that group collapsed — and a group that appears later inherits whatever `ExpandAllGroups`/`CollapseAllGroups` last established, rather than an intent nobody expressed about it.
 
-One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Use `IndexOf(item)` to get an item's index in that space. Headers themselves are never selectable — `Select(index)` on a header index is rejected, and keyboard selection-follows-focus leaves the selection alone while focus is on a header.
+One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Use `IndexOf(item)` to get an item's index in that space. Headers themselves are never selectable — `Select(index)` on a header index is a no-op that keeps the current selection, `IsSelected` on it is `false`, and keyboard selection-follows-focus leaves the selection alone while focus is on a header. `StartBringItemIntoView` does accept a header index and brings the band into view.
 
 ### Editing cells
 
@@ -496,7 +496,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
 | `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
-| `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open; set to `false` synchronously when the edit closes, before `CellEditEnded` is raised. Read-only dependency property (`IsEditingProperty`), so it can be bound `OneWay`. An external `SetValue` is reverted, so observers can see a transient change notification; do not bind it `TwoWay`. |
+| `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open; set to `false` synchronously when the edit closes, before `CellEditEnded` is raised. Read-only dependency property (`IsEditingProperty`), so it can be bound `OneWay`. An external `SetValue` is reverted rather than thrown: WinUI has no `DependencyPropertyKey` (WPF's `RegisterReadOnly`), so the control restores its own value in the property-changed callback. Observers can therefore see a transient change notification; do not bind it `TwoWay`. |
 | `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
 | `SelectedItem` | `Object` | `null` | The selected data item. **Read-only** — drive selection through `Select`/`Deselect`/`DeselectAll`. |
 | `SelectedIndex` | `Int32` | `-1` | The selected item's index in the displayed row projection; `-1` is "nothing selected". Under grouping, group headers occupy projection indexes but cannot be selected, so this value is not necessarily an index into `ItemsSource`. **Read-only.** |
@@ -540,13 +540,15 @@ Named to match `ItemsView`, which ships `Select` / `Deselect` / `IsSelected` ove
 
 All index members (`Select`, `Deselect`, `IsSelected`, `SelectedIndex`, `IndexOf`, `StartBringItemIntoView`) use **display-projection indexes**: group headers take slots and rows under a collapsed group or parent are absent. Indexes shift whenever a group or row is expanded or collapsed and whenever the data is sorted, filtered, regrouped or changed, so call `IndexOf` immediately before `Select` or `StartBringItemIntoView` instead of caching an index. Data-index APIs (for example `GetItemFromDisplayIndex`, or item-based overloads) are deferred.
 
+Group-header slots: `Select(headerIndex)` is a silent no-op that keeps the current selection (it neither selects the header nor clears); `IsSelected(headerIndex)` is always `false`, so `Deselect(headerIndex)` does nothing; `StartBringItemIntoView(headerIndex)` is valid and brings the group header band into view; `IndexOf` never returns a header slot (a `TableViewGroupInfo` or other header object returns `-1`). An out-of-range `Select` is also a no-op, while an out-of-range `StartBringItemIntoView` throws `E_INVALIDARG`.
+
 | Method | Returns | Description |
 |---|---|---|
 | `Select(Int32 index)` | `void` | Selects the item at `index`. A negative index clears the selection. |
 | `Deselect(Int32 index)` | `void` | Clears the selection only when `index` is the selected index, so a stale call cannot clobber a newer selection. |
 | `IsSelected(Int32 index)` | `Boolean` | Whether `index` is the selected index. |
 | `DeselectAll()` | `void` | Clears the selection. Works regardless of `SelectionMode`, so turning selection off can always be made to stick. |
-| `IndexOf(Object item)` | `Int32` | The item's index in the displayed projection (the same space as `Select` and `SelectedIndex`, where group headers take slots). `-1` for null, or when the item is not displayed (absent, filtered out, or under a collapsed group or parent). Value-typed items (boxed numbers, strings) match by value, reference items by identity; the first match wins for duplicates. Works before `Loaded`. |
+| `IndexOf(Object item)` | `Int32` | The item's index in the displayed projection (the same space as `Select` and `SelectedIndex`, where group headers take slots). `-1` for null, or when the item is not displayed (absent, filtered out, or under a collapsed group or parent). Value-typed items (boxed numbers, strings) match by value, reference items by identity; duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded`. |
 | `StartBringItemIntoView(Int32 index, BringIntoViewOptions options)` | `void` | Asynchronously realizes the row at `index`, lays it out, and brings its real bounds into view, accounting for the sticky header and frozen columns. Same shape as `ItemsView`. `options` may be null; an out-of-range index throws `E_INVALIDARG`. Safe before `Loaded`. A pending request is cancelled when `ItemsSource` changes or the table unloads. |
 
 ## TableView selection events
@@ -642,7 +644,7 @@ The realized group-header container: a templated `ContentControl` whose `Content
 | `IsExpanded` | `Boolean` DP (read-only) | Expansion state of this header. Written by the control; change it with `TableView.ExpandGroup`/`CollapseGroup`. |
 | `IsExpandable` | `Boolean` DP (read-only) | Whether this header can expand. |
 
-The header forwards activation to its owning `TableView`, which raises `GroupExpanding`/`GroupCollapsed`; the header itself raises no events. Both DPs revert an external `SetValue`, so observers can see a transient change notification; bind them `OneWay` only.
+The header forwards activation to its owning `TableView`, which raises `GroupExpanding`/`GroupCollapsed`; the header itself raises no events. Both DPs revert an external `SetValue` rather than throwing (WinUI has no `DependencyPropertyKey`), so observers can see a transient change notification; bind them `OneWay` only.
 
 Template parts. Code looks up `PART_ContentPresenter` and `PART_GridLineBorder`, and degrades without either. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
 

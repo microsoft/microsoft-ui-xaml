@@ -758,6 +758,8 @@ namespace ShapingHelpers
 
         // Always the box's own class name, never inferred from the vtable hint: a boxing vtable can be shared by
         // several enum types (CsWinRT, XAML), so only the getter, whose result is a value either way, is hinted.
+        // Caching the name per vtable (even confirmed once per pass) would merge equal values of two such types into
+        // one group identity, so identity keys pay one GetRuntimeClassName per enum key by design.
         if (includeTypeName)
         {
             try

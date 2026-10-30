@@ -51,22 +51,20 @@ namespace
             if (auto const source = std::exchange(m_source, nullptr))
             {
                 auto* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+                // Refused while re-entrant, before the deferral is consumed: end it on a later turn.
+                try
+                {
+                    sourceImpl->ThrowIfEndDeferRefreshReentrant();
+                }
+                catch (...)
+                {
+                    try { sourceImpl->EndDeferRefreshLater(); } catch (...) {}
+                    return;
+                }
+                // Past the check the deferral is consumed even if the reshape throws; never retried.
                 try
                 {
                     sourceImpl->EndDeferRefresh();
-                }
-                catch (winrt::hresult_error const& e)
-                {
-                    if (e.code() == E_ILLEGAL_METHOD_CALL)
-                    {
-                        // Refused while re-entrant and still open: end it on a later turn instead.
-                        try { sourceImpl->EndDeferRefreshLater(); } catch (...) {}
-                    }
-                    else
-                    {
-                        TVDiag::LogRetailF(L"[TableView] The reshape deferred across a group expansion threw (HRESULT 0x%08X).",
-                            static_cast<unsigned int>(e.code()));
-                    }
                 }
                 catch (...)
                 {
@@ -1135,14 +1133,17 @@ void TableView::CollapseGroup(winrt::IInspectable const& groupKey)
     SetGroupExpansionByKey(groupKey, false);
 }
 
+// Keyed with the metadata generation: the same identity in a source swapped in by the handler is
+// another group, and a request for it goes ahead.
 bool TableView::IsRaisingGroupExpanding(winrt::hstring const& identity) const
 {
-    return std::find(m_groupsRaisingExpanding.begin(), m_groupsRaisingExpanding.end(), identity) != m_groupsRaisingExpanding.end();
+    return std::find(m_groupsRaisingExpanding.begin(), m_groupsRaisingExpanding.end(),
+        std::make_pair(identity, m_rowMetadataGeneration)) != m_groupsRaisingExpanding.end();
 }
 
 void TableView::RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::IInspectable const& groupKey)
 {
-    m_groupsRaisingExpanding.push_back(identity);
+    m_groupsRaisingExpanding.emplace_back(identity, m_rowMetadataGeneration);
     auto const pop = wil::scope_exit([this]() noexcept { m_groupsRaisingExpanding.pop_back(); });
     RaiseGroupExpanding(groupKey);
 }

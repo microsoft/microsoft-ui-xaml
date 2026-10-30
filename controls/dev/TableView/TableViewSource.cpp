@@ -12,6 +12,7 @@
 #include "ShapingHelpers.h"
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
+#include "TVDiag.h"
 
 namespace
 {
@@ -36,12 +37,15 @@ namespace
     }
 
     // Ends one deferral of source on a later turn of queue. An end refused as re-entrant leaves the deferral open
-    // and is posted again; a failure of the reshape itself has already ended it, so it is not retried.
-    void PostEndDeferRefresh(winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue, winrt::TableViewSource const& source) noexcept
+    // and is posted again, a bounded number of times; a failure of the reshape itself has already ended it, so it is
+    // not retried.
+    constexpr uint32_t c_maxEndDeferRefreshRetries = 100;
+
+    void PostEndDeferRefresh(winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue, winrt::TableViewSource const& source, uint32_t attempt = 0) noexcept
     {
         try
         {
-            queue.TryEnqueue([queue, source]()
+            queue.TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Low, [queue, source, attempt]()
             {
                 auto const self = winrt::get_self<::TableViewSource>(source);
                 try
@@ -50,7 +54,14 @@ namespace
                 }
                 catch (...)
                 {
-                    PostEndDeferRefresh(queue, source);
+                    if (attempt + 1 < c_maxEndDeferRefreshRetries)
+                    {
+                        PostEndDeferRefresh(queue, source, attempt + 1);
+                    }
+                    else
+                    {
+                        TVDiag::LogRetailF(L"[TableViewSource] A refresh deferral could not be ended: every attempt ran inside an app delegate.");
+                    }
                     return;
                 }
                 try { self->EndDeferRefresh(); } catch (...) {}
@@ -394,8 +405,24 @@ void TableViewSource::EndDeferRefresh()
 
 void TableViewSource::EndDeferRefreshLater()
 {
+    auto queue = m_engine->OwnerQueue();
+    if (!queue)
+    {
+        if (!m_deferralQueue)
+        {
+            m_deferralQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        }
+        queue = m_deferralQueue;
+    }
+    if (!queue)
+    {
+        // Nothing to post to: best effort now.
+        m_engine->EndDeferRefresh();
+        return;
+    }
+
     winrt::TableViewSource const self = *this;
-    PostEndDeferRefresh(DeferralQueue(), self);
+    PostEndDeferRefresh(queue, self);
 }
 
 std::optional<winrt::hstring> TableViewSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key) const

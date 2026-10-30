@@ -90,8 +90,8 @@ public:
     // calls EndDeferRefresh.
     void BeginDeferRefresh();
     void EndDeferRefresh();
-    // Internal: ends one deferral on a later dispatcher turn, posting again while the end is refused
-    // as re-entrant. Throws E_ILLEGAL_METHOD_CALL only when there is no queue to post to.
+    // Internal: ends one deferral on a later (low-priority) dispatcher turn, posting again while the
+    // end is refused as re-entrant, up to a retry cap. With no queue to post to, ends it inline.
     void EndDeferRefreshLater();
     // Internal: the group identity key maps to under the current GroupBy, computed as bucketing
     // computes it (the groupIdentitySelector when given, else the value identity). nullopt without

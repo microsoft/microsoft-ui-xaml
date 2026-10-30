@@ -267,10 +267,11 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
     // SelectionModel indexes but does not look items up, so resolving a held item on reload still
     // needs this. Linear scan: it runs at most once per reload.
     auto const target = UnwrapEditingDataItem(item);
+    const bool isValue = static_cast<bool>(target.try_as<winrt::IPropertyValue>());
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
     {
-        if (IsDisplayedItemMatch(view.GetAt(index), target))
+        if (IsDisplayedItemMatch(view.GetAt(index), target, isValue))
         {
             return index;
         }
@@ -281,14 +282,14 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
 // Values by value (a fresh box each read), reference items by COM identity, not ABI-pointer
 // equality. Group headers are projection entries, never app items.
-bool TableView::IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target) const
+bool TableView::IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target, bool targetIsValue) const
 {
     auto const candidate = UnwrapEditingDataItem(row);
     if (!candidate || !target || TryGetGroupedEntry(candidate))
     {
         return false;
     }
-    return target.try_as<winrt::IPropertyValue>() ? SameGroupKey(candidate, target) : SameInspectableIdentity(candidate, target);
+    return targetIsValue ? SameGroupKey(candidate, target) : SameInspectableIdentity(candidate, target);
 }
 
 // ----- The single writer -----
@@ -987,15 +988,24 @@ int32_t TableView::IndexOf(winrt::IInspectable const& item)
     }
 
     auto const target = UnwrapEditingDataItem(item);
+    const bool isValue = static_cast<bool>(target.try_as<winrt::IPropertyValue>());
 
-    // The view's own lookup is authoritative for reference items. A boxed value can be a different
-    // box than the one in the source, so values, and a view that cannot look up, are scanned.
-    if (!target.try_as<winrt::IPropertyValue>())
+    // The view's own lookup answers for reference items when it finds the same object. A boxed value
+    // can be a different box than the one in the source, and the view may match by equality (two
+    // equal records), so anything else is scanned.
+    if (!isValue)
     {
         try
         {
             const int32_t index = view.IndexOf(target);
-            return index >= 0 && IsDisplayedItemMatch(view.GetAt(index), target) ? index : -1;
+            if (index < 0)
+            {
+                return -1;
+            }
+            if (IsDisplayedItemMatch(view.GetAt(index), target, false))
+            {
+                return index;
+            }
         }
         catch (...)
         {
@@ -1005,7 +1015,7 @@ int32_t TableView::IndexOf(winrt::IInspectable const& item)
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
     {
-        if (IsDisplayedItemMatch(view.GetAt(index), target))
+        if (IsDisplayedItemMatch(view.GetAt(index), target, isValue))
         {
             return index;
         }

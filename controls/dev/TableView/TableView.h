@@ -648,6 +648,8 @@ public:
     void OnColumnSortDirectionSetByApp(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     // The lit direction is the app's (set through SortDirection, or its own source sort), not one this table applied.
     bool IsSortLitOnlyByAppInternal() const { return IsSortLitOnlyByApp(); }
+    // Re-applies the column's current direction in one request (a new CustomSortComparer).
+    bool ResortColumnInternal(const winrt::TableViewColumn& column);
     void RaiseColumnSortStateAutomationChanged(const winrt::TableViewColumn& column, winrt::SortDirection oldDirection);
 
     // Republishes every realized header chevron from its column's SortDirection DP. A push rather
@@ -698,7 +700,7 @@ private:
     // Index of `item` in the ItemsSource, by identity; -1 when absent or the source is not set.
     // Still needed because SelectionModel indexes but does not look items up.
     int32_t IndexOfItem(winrt::IInspectable const& item) const;
-    bool IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target) const;
+    bool IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target, bool targetIsValue) const;
 
     // The selected item for an already-read index, so a caller that has one does not rebuild the
     // model's IndexPath just to resolve it again.
@@ -876,6 +878,8 @@ private:
     // posted raise is flushed before the next session's BeginningEdit and before queued reshapes.
     void RaiseCellEditEnded(winrt::IInspectable const& item, winrt::TableViewColumn const& column, winrt::TableViewEditAction action);
     void FlushPendingCellEditEnded();
+    // Posts the pending CellEditEnded and queued-reshape replay; false when nothing could be posted.
+    bool PostDeferredEditWork();
     struct PendingCellEditEnded
     {
         winrt::IInspectable Item{ nullptr };
@@ -1212,7 +1216,7 @@ private:
     void RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::IInspectable const& groupKey);
     bool IsRaisingGroupExpanding(winrt::hstring const& identity) const;
     // Identities whose GroupExpanding is being raised; a nested request for one of them is a no-op.
-    std::vector<winrt::hstring> m_groupsRaisingExpanding;
+    std::vector<std::pair<winrt::hstring, uint64_t>> m_groupsRaisingExpanding;
     void RaiseGroupCollapsed(winrt::IInspectable const& groupKey);
 
     void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
@@ -1275,7 +1279,8 @@ private:
     // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
     // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
-    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true);
+    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip,
+        bool requireCanSort = true, bool resort = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
     // The lit column describes the app's source sort, not one this table installed.
     bool IsSortLitOnlyByApp() const;
