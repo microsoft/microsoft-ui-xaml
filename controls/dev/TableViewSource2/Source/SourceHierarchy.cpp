@@ -214,14 +214,19 @@ namespace
 
             std::unordered_set<SourceRecord*> seen;
             SourceRecord* onCycle = start;
-            while (seen.insert(onCycle).second)
+            while (onCycle && seen.insert(onCycle).second)
             {
                 onCycle = onCycle->Parent;
             }
 
+            if (!onCycle)
+            {
+                return forcedTop;
+            }
+
             SourceRecord* breakAt = onCycle;
             bool breakAtPreferred = preferred.count(onCycle) != 0;
-            for (SourceRecord* member = onCycle->Parent; member != onCycle; member = member->Parent)
+            for (SourceRecord* member = onCycle->Parent; member && member != onCycle; member = member->Parent)
             {
                 bool const memberPreferred = preferred.count(member) != 0;
                 if ((memberPreferred && !breakAtPreferred) ||
