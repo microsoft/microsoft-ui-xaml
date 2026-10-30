@@ -82,8 +82,9 @@ public static class OfflineEtlSource
         }
     }
 
-    // The processes with XAML events, most events first, as the CLI's processes command lists them. Reads the whole
-    // trace without copying any event's fields.
+    // The processes with XAML events, most events first. Reads the whole trace without copying any event's fields.
+    // Duration is the trace's length from its header, or the time of its last event when that is later, as when the
+    // header has no end time because the recording was not stopped cleanly.
     public static TraceContents ListProcesses(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -119,17 +120,21 @@ public static class OfflineEtlSource
 
             tally.Count(provider, time);
         });
-        if (cancellationToken.CanBeCanceled)
+        var lastMilliseconds = 0.0;
+        source.AllEvents += data =>
         {
-            // Process clears a StopProcessing call made before it starts, so the token is checked as events are read.
-            source.AllEvents += _ =>
+            var time = data.TimeStampRelativeMSec;
+            if (time > lastMilliseconds)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    source.StopProcessing();
-                }
-            };
-        }
+                lastMilliseconds = time;
+            }
+
+            // Process clears a StopProcessing call made before it starts, so the token is checked as events are read.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                source.StopProcessing();
+            }
+        };
 
         source.Process();
         cancellationToken.ThrowIfCancellationRequested();
@@ -141,7 +146,10 @@ public static class OfflineEtlSource
                 tally.XamlEvents, tally.ProfilerEvents, tally.GpuMemoryEvents, tally.FirstMilliseconds, tally.LastMilliseconds))
             .OrderByDescending(process => process.Events)
             .ToList();
-        return new(processes, source.EventsLost, source.SessionDuration);
+        var header = source.SessionDuration.TotalMilliseconds;
+        var length = double.IsFinite(header) && header > 0 ? Math.Max(header, lastMilliseconds) : lastMilliseconds;
+        return new(processes, source.EventsLost,
+            length < TimeSpan.MaxValue.TotalMilliseconds ? TimeSpan.FromMilliseconds(length) : TimeSpan.MaxValue);
     }
 
     private static string? ExecutableName(ProcessTraceData data)

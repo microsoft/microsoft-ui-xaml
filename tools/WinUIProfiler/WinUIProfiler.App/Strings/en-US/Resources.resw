@@ -154,27 +154,28 @@
   <data name="TraceReading" xml:space="preserve"><value>The Frames and Elements tabs show the events as they are stored.</value></data>
   <data name="TraceStopping" xml:space="preserve"><value>Storing the events already read.</value></data>
   <data name="TraceFinished" xml:space="preserve"><value>Every event of the process in the trace is in the session file.</value></data>
-  <data name="TraceFinishedTrimmedFormat" xml:space="preserve"><value>The whole trace was read. The events before {0:F1} s were removed to keep the session file within its size limit.</value></data>
+  <data name="TraceFinishedTrimmedFormat" xml:space="preserve"><value>The whole trace was read. The process's events in the first {0:F1} s after its first event were removed to keep the session file within its size limit.</value></data>
   <data name="TraceStoppedFormat" xml:space="preserve"><value>Stopped at {0:P0} of the trace. The session file holds the process's events from the start of the trace to about that point.</value></data>
   <data name="TraceStopped" xml:space="preserve"><value>The session file holds the process's events from the start of the trace to about where reading stopped.</value></data>
-  <data name="TraceStoppedTrimmedFormat" xml:space="preserve"><value>Stopped at {0:P0} of the trace. The session file holds the process's events from {1:F1} s to about that point; older events were removed to keep it within its size limit.</value></data>
-  <data name="TraceStoppedTrimmed" xml:space="preserve"><value>The session file holds the process's events from {0:F1} s to about where reading stopped; older events were removed to keep it within its size limit.</value></data>
+  <data name="TraceStoppedTrimmedFormat" xml:space="preserve"><value>Stopped at {0:P0} of the trace. The session file holds the process's events from {1:F1} s after its first event to about that point; older events were removed to keep it within its size limit.</value></data>
+  <data name="TraceStoppedTrimmedNoProgressFormat" xml:space="preserve"><value>The session file holds the process's events from {0:F1} s after its first event to about where reading stopped; older events were removed to keep it within its size limit.</value></data>
   <data name="TraceFailedFormat" xml:space="preserve"><value>Reading ended at {0:P0} of the trace. The session file holds the events stored before the error.</value></data>
   <data name="TraceFailed" xml:space="preserve"><value>The session file holds the events stored before the error.</value></data>
+  <data name="TraceEndAnnouncementFormat" xml:space="preserve"><value>{0}. {1}</value></data>
   <data name="InvalidEndpoint" xml:space="preserve"><value>Select a whole diagnostics endpoint number between 1 and 65535.</value></data>
   <data name="IdentityFormat" xml:space="preserve"><value>PID {0} | WinUI from {1}</value></data>
   <data name="IdentityDetailsFormat" xml:space="preserve"><value>Process started {0}&#10;Last TAP heartbeat {1}&#10;WinUI runtime {2}</value></data>
   <data name="TraceIdentityFormat" xml:space="preserve"><value>{0} (PID {1}) | trace {2}</value></data>
   <data name="TraceUnnamedIdentityFormat" xml:space="preserve"><value>PID {0} | trace {1}</value></data>
   <data name="EtwFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | GPU memory {3:N0} | lost {4:N0} | dropped {5:N0}</value></data>
+  <data name="EtwOutOfOrderFormat" xml:space="preserve"><value>{0} | XAML {1:N0} | Profiler {2:N0} | GPU memory {3:N0} | lost {4:N0} | dropped {5:N0} | out of order {6:N0}</value></data>
   <data name="EtwDetailsFormat" xml:space="preserve"><value>{0}&#10;XAML: Microsoft-Windows-XAML, Microsoft-Windows-XAML-Diagnostics, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls events&#10;Profiler: Microsoft-Windows-XAML-Profiler events&#10;GPU memory: the kernel's GPU memory usage and budget events for the process (Microsoft-Windows-DxgKrnl)&#10;Lost: events ETW could not deliver&#10;Dropped: events the profiler discarded because its queue was full</value></data>
   <data name="EtwFromProcessStart" xml:space="preserve"><value>ETW from process start</value></data>
   <data name="EtwFromConnection" xml:space="preserve"><value>ETW from connection</value></data>
   <data name="EtwCoverageProcessStart" xml:space="preserve"><value>Every event since the process started is included.</value></data>
   <data name="EtwCoverageConnection" xml:space="preserve"><value>Events written before the profiler connected are not included.</value></data>
   <data name="EtwFromTrace" xml:space="preserve"><value>ETW from trace</value></data>
-  <data name="EtwCoverageTrace" xml:space="preserve"><value>Every event of the process in the trace is read, in the trace's order. Lost counts the events ETW lost while the trace was recorded, of any process. Events read from a trace are never dropped. Out of order counts the process's events whose timestamp is earlier than the event before them.</value></data>
-  <data name="TraceOutOfOrderFormat" xml:space="preserve"><value> | out of order {0:N0}</value></data>
+  <data name="EtwCoverageTrace" xml:space="preserve"><value>The process's events are read in the trace's order, all of them unless reading is stopped or fails. Lost counts the events ETW lost while the trace was recorded, of any process. Events read from a trace are never dropped. Out of order counts the process's events whose timestamp is earlier than the event before them.</value></data>
   <data name="EtwUnavailable" xml:space="preserve"><value>ETW: {0}</value></data>
   <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
   <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>

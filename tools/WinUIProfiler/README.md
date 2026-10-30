@@ -483,10 +483,12 @@ trace, and the Frames and Elements tabs follow it as it grows.
   ends the reading, as does closing the app: the events already read are
   stored, so the session file holds the process's events from the start of the
   trace to about where the reading stopped.
-- Events of other providers, such as the kernel's in a WPR trace, are skipped
-  without being decoded, in the CLI too. On the machine measured, listing the
-  processes of a 17.9-second WPR trace of the WinUI 3 Gallery took about a
-  second, and reading the app's 101,281 events less than two.
+- Most events of other providers, such as the kernel's in a WPR trace, are
+  skipped without being decoded, in the CLI too. The kernel's process events,
+  which name the processes in the list, and the graphics kernel's events, among
+  them the GPU memory events, are still decoded. On the machine measured,
+  listing the processes of a 17.9-second WPR trace of the WinUI 3 Gallery took
+  about a second, and reading the app's 101,281 events less than two.
 - A trace has no running process, so there are no live metrics or tree
   snapshots for it.
 

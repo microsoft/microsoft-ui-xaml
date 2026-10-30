@@ -39,6 +39,8 @@ public sealed record TraceReplayStatus(TraceReplayState State, long XamlEvents, 
 public sealed class TraceReplay : IAsyncDisposable
 {
     public const int BatchSize = 4_096;
+    // A process name read from the trace can be as long as any file name; the session file's name has to fit the rest.
+    private const int MaxNameLength = 64;
     private static readonly TimeSpan ChangedInterval = TimeSpan.FromMilliseconds(250);
 
     private readonly ETWTraceEventSource source;
@@ -74,10 +76,20 @@ public sealed class TraceReplay : IAsyncDisposable
         // Queues as many events as a live session's pipeline holds, so the reader runs through a launch's burst of events
         // while the processors catch up and doesn't wait for them. With 4 batches, a WinUI 3 Gallery launch took 12% longer.
         pipeline = EventPipeline.ForTrace([counter, writer], EventPipeline.DefaultCapacity / BatchSize);
-        source.AllEvents += OnAnyEvent;
-        XamlEventSubscription.Match(source, processId, OnEvent);
-        changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
-        new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
+        try
+        {
+            source.AllEvents += OnAnyEvent;
+            XamlEventSubscription.Match(source, processId, OnEvent);
+            changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
+            new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
+        }
+        catch
+        {
+            // Start closes the session file and the trace.
+            changed?.Dispose();
+            pipeline.Dispose();
+            throw;
+        }
     }
 
     // Raised every 250 ms while reading, and when the reading ends; may be raised on any thread.
@@ -136,7 +148,15 @@ public sealed class TraceReplay : IAsyncDisposable
         }
         catch
         {
-            writer?.Close("Opening the trace failed");
+            try
+            {
+                writer?.Close("Opening the trace failed");
+            }
+            catch (Exception error)
+            {
+                Trace.TraceError($"Closing the session file of a trace that could not be read failed: {error}");
+            }
+
             source.Dispose();
             throw;
         }
@@ -144,8 +164,14 @@ public sealed class TraceReplay : IAsyncDisposable
 
     private static string SessionPath(string directory, string name, int processId)
     {
+        var length = Math.Min(name.Length, MaxNameLength);
+        if (length < name.Length && char.IsHighSurrogate(name[length - 1]))
+        {
+            length--;
+        }
+
         var invalid = Path.GetInvalidFileNameChars();
-        var fileName = string.Concat(name.Select(character => Array.IndexOf(invalid, character) < 0 ? character : '_'));
+        var fileName = string.Concat(name[..length].Select(character => Array.IndexOf(invalid, character) < 0 ? character : '_'));
         var stem = Path.Combine(directory, $"{DateTime.Now:yyyyMMdd-HHmmss}-{fileName}-{processId}");
         var path = stem + ".sqlite";
         for (var number = 2; File.Exists(path); number++)

@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using WinUIProfiler.App.Services;
@@ -40,6 +41,8 @@ public sealed partial class MainWindow : Window
     private CancellationTokenSource? traceScan;
     private string? scannedTrace;
     private IReadOnlyList<TraceProcess> traceProcesses = [];
+    // Whether the last refresh showed the end of a trace reading, which is announced once.
+    private bool traceEndShown;
     private SavedTreeSnapshot? snapshot;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
     private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
@@ -270,6 +273,15 @@ public sealed partial class MainWindow : Window
             ConnectionStatus.Severity = model.State is "Failed" or "TraceFailed" ? InfoBarSeverity.Error :
                 model.State is "Connected" or "TraceFinished" ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
             AutomationProperties.SetItemStatus(ConnectionStatus, model.State);
+            // The status bar stays open, so screen readers aren't told when it changes.
+            var traceEnd = model.State is "TraceFinished" or "TraceStopped" or "TraceFailed";
+            if (traceEnd && !traceEndShown)
+            {
+                Announce(ConnectionStatus, string.IsNullOrEmpty(ConnectionStatus.Message) ? ConnectionStatus.Title
+                    : Format("TraceEndAnnouncementFormat", ConnectionStatus.Title, ConnectionStatus.Message), "TraceEnd");
+            }
+
+            traceEndShown = traceEnd;
             var reading = model.State is "TraceOpening" or "TraceReading" or "TraceStopping";
             TraceProgress.Visibility = reading ? Visibility.Visible : Visibility.Collapsed;
             TraceProgress.IsIndeterminate = reading && (model.State != "TraceReading" || trace?.Progress is null);
@@ -314,10 +326,12 @@ public sealed partial class MainWindow : Window
             if (trace is not null)
             {
                 // Nothing read from a trace is dropped: the reader waits while the pipeline is full.
-                var counts = Format("EtwFormat", Text("EtwFromTrace"), trace.XamlEvents, trace.ProfilerEvents,
-                    trace.GpuMemoryEvents, trace.LostEvents, 0);
                 SetLine(EtwSummary,
-                    trace.OutOfOrderEvents == 0 ? counts : counts + Format("TraceOutOfOrderFormat", trace.OutOfOrderEvents),
+                    trace.OutOfOrderEvents == 0
+                        ? Format("EtwFormat", Text("EtwFromTrace"), trace.XamlEvents, trace.ProfilerEvents,
+                            trace.GpuMemoryEvents, trace.LostEvents, 0)
+                        : Format("EtwOutOfOrderFormat", Text("EtwFromTrace"), trace.XamlEvents, trace.ProfilerEvents,
+                            trace.GpuMemoryEvents, trace.LostEvents, 0, trace.OutOfOrderEvents),
                     Format("EtwDetailsFormat", Text("EtwCoverageTrace")));
             }
             else if (model.EtwError is { } etwError)
@@ -435,6 +449,7 @@ public sealed partial class MainWindow : Window
             TraceProcessList.SelectedIndex = traceProcesses.Count == 1 ? 0 : -1;
             TraceScanStatus.Text = traceProcesses.Count == 0 ? Text("TraceScanEmpty") :
                 Format("TraceContentsFormat", traceProcesses.Count, contents.Duration.TotalSeconds, contents.EventsLost);
+            Announce(TraceScanStatus, TraceScanStatus.Text, "TraceScan");
         }
         catch (Exception) when (cancellation.IsCancellationRequested)
         {
@@ -443,6 +458,7 @@ public sealed partial class MainWindow : Window
         {
             Trace.TraceError(error.ToString());
             TraceScanStatus.Text = Format("TraceScanFailedFormat", ScanFailure(error));
+            Announce(TraceScanStatus, TraceScanStatus.Text, "TraceScan");
         }
         finally
         {
@@ -477,7 +493,16 @@ public sealed partial class MainWindow : Window
         Refresh();
     }
 
-    // trimmedBefore is set once the session file's size limit removed the events before that time.
+    // Screen readers aren't told when a text changes, so a result the user waits for is announced.
+    private static void Announce(UIElement element, string text, string activityId)
+    {
+        var peer = FrameworkElementAutomationPeer.FromElement(element) ?? FrameworkElementAutomationPeer.CreatePeerForElement(element);
+        peer?.RaiseNotificationEvent(AutomationNotificationKind.ActionCompleted, AutomationNotificationProcessing.ImportantMostRecent,
+            text, activityId);
+    }
+
+    // trimmedBefore is set once the session file's size limit removed the events before that time, in seconds after the
+    // process's first event, the Frames tab's clock.
     private string TraceMessage(TraceReplayStatus? status, double? trimmedBefore) => status switch
     {
         { State: TraceReplayState.Reading, Progress: { } read } => Format("TraceReadingFormat", read),
@@ -488,7 +513,7 @@ public sealed partial class MainWindow : Window
         { State: TraceReplayState.Stopped, Progress: { } read } => trimmedBefore is { } seconds
             ? Format("TraceStoppedTrimmedFormat", read, seconds) : Format("TraceStoppedFormat", read),
         { State: TraceReplayState.Stopped } => trimmedBefore is { } seconds
-            ? Format("TraceStoppedTrimmed", seconds) : Text("TraceStopped"),
+            ? Format("TraceStoppedTrimmedNoProgressFormat", seconds) : Text("TraceStopped"),
         { State: TraceReplayState.Failed, Progress: { } read } => Format("TraceFailedFormat", read),
         { State: TraceReplayState.Failed } => Text("TraceFailed"),
         // Opening, or opening failed; the error bar says why.

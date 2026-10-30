@@ -69,33 +69,46 @@ internal static class XamlEventSubscription
         };
     }
 
-    // The dynamic parser asks TDH to describe each type of event that no template handles, and TDH asks WMI about a
-    // classic event, such as the kernel's in a WPR trace: seconds the first time a process reads such a trace. A type
-    // TDH cannot describe is asked about again at each of its events. Handlers for such events run in the order they
-    // were registered, so this one, registered before the parser's, gives each type from another provider a template
-    // that does nothing, and the parser never sees it.
+    // The dynamic parser asks TDH to describe each type of event that no template handles, once per type, and TDH asks
+    // WMI about a classic event, such as the kernel's in a WPR trace: seconds the first time a process reads such a
+    // trace. Every later event of a type TDH described is then decoded and passed to Dynamic.All. Instead, this handler
+    // gives each type from another provider a template that does nothing, so the parser never sees it. It relies on how
+    // TraceEvent 3.2.8 (pinned in Directory.Packages.props) works; check these when updating it:
+    // - Handlers for unhandled events run in the order they were registered, so this one must be registered before
+    //   anything uses source.Dynamic, which registers the parser's.
+    // - A classic event's template is looked up by its task GUID and its ID plus opcode: the key of a template whose
+    //   provider is that GUID and whose ID is that sum.
+    // - AllEvents still sees the events of a template that does nothing; TraceReplay and ListProcesses count on it.
+    // If either of the first two changes, each type goes to TDH as it did without this handler.
     private static void IgnoreOtherProviders(TraceEventDispatcher source)
     {
         var services = (ITraceParserServices)source;
         var ignored = new HashSet<(Guid, ushort)>();
         services.RegisterUnhandledEvent(unknown =>
         {
-            var classic = unknown.IsClassicProvider;
-            var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
-            if (provider == XamlProviders.DxgKrnl || XamlProviders.TryGet(provider, out _))
+            // This runs inside ETW's callback, which an exception must not leave; returning false leaves the type to TDH.
+            try
+            {
+                var classic = unknown.IsClassicProvider;
+                var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
+                if (provider == XamlProviders.DxgKrnl || XamlProviders.TryGet(provider, out _))
+                {
+                    return false;
+                }
+
+                var id = (ushort)((int)unknown.ID + (classic ? (int)unknown.Opcode : 0));
+                if (id == (ushort)TraceEventID.Illegal || !ignored.Add((provider, id)))
+                {
+                    return false;
+                }
+
+                services.RegisterEventTemplate(new IgnoredEvent(provider, id));
+                return true;
+            }
+            catch (Exception)
             {
                 return false;
             }
-
-            // TraceEvent finds a classic event's template by its ID plus its opcode.
-            var id = (ushort)((int)unknown.ID + (classic ? (int)unknown.Opcode : 0));
-            if (id == (ushort)TraceEventID.Illegal || !ignored.Add((provider, id)))
-            {
-                return false;
-            }
-
-            services.RegisterEventTemplate(new IgnoredEvent(provider, id));
-            return true;
         });
     }
 
