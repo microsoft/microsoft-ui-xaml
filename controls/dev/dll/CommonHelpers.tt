@@ -67,7 +67,8 @@
             ret = ret.Concat(GetTypes(assemblyPath, referenceWinmds)).ToList();
         }
         
-        return ret;
+        // Sort to get a reproducible list.
+        return ret.OrderBy(t => t.FullName).ToList();
     }
 
     // Returns the types that should be included in the metadata provider for MUXC.
@@ -117,6 +118,7 @@
     {
         return
             type.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static)
+            .OrderBy(p => p.Name)  // Sort to get a reproducible list
             .ToList();
     }
 
@@ -124,6 +126,7 @@
     {
         return
             type.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance)
+            .OrderBy(p => p.Name)  // Sort to get a reproducible list
             .ToList();
     }
 
