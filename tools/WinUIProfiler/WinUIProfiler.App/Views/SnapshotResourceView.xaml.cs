@@ -31,7 +31,8 @@ public sealed partial class SnapshotResourceView : UserControl
         BeforeColumn.Width = DeltaColumn.Width = width;
         BeforeHeader.Visibility = DeltaHeader.Visibility = comparison ? Visibility.Visible : Visibility.Collapsed;
         AfterHeader.Text = Text(comparison ? "SnapshotResourceAfter" : "SnapshotResourceValue");
-        Status.Visibility = Scope.Visibility = comparison ? Visibility.Collapsed : Visibility.Visible;
+        Status.Visibility = Visibility.Visible;
+        Scope.Visibility = comparison ? Visibility.Collapsed : Visibility.Visible;
         Status.Text = comparison ? Format("SnapshotResourceStatusFormat", CaptureStatus(before), CaptureStatus(after))
             : CaptureStatus(after);
         AutomationProperties.SetItemStatus(Status, Status.Text);

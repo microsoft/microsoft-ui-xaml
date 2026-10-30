@@ -245,7 +245,8 @@ JsonSerializer.Serialize(new
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
             var etw = model.Etw;
-            EtwSummary.Visibility = model.EtwError is null ? Visibility.Collapsed : Visibility.Visible;
+            EtwSummary.Visibility = model.EtwError is not null || etw is { LostEvents: > 0 } or { DroppedEvents: > 0 }
+                ? Visibility.Visible : Visibility.Collapsed;
             if (model.EtwError is { } etwError)
             {
                 var message = Format("EtwUnavailable", etwError);
