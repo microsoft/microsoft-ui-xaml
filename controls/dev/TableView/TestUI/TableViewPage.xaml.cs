@@ -1371,7 +1371,7 @@ namespace MUXControlsTestApp
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
         private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
         {
-            NameColumn.CanResize = !NameColumn.CanResize;
+            NameColumn.CanUserResize = !NameColumn.CanUserResize;
         }
 
         // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.

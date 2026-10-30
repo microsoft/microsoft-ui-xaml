@@ -1706,6 +1706,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "After Left collapses the first group from its header, Up goes to the header row and Down never lands on a row of the collapsed group.")]
+        public void CollapsedGroupHeaderUpReachesHeaderRowAndDownSkipsHiddenRows()
+        {
+            VerifyCollapsedGroupHeaderVerticalKeys(singleGroupedRow: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With one group of one row, after Left collapses the group, Up goes to the header row and Down stays on the group header.")]
+        public void CollapsedSingleGroupHeaderUpReachesHeaderRow()
+        {
+            VerifyCollapsedGroupHeaderVerticalKeys(singleGroupedRow: true);
+        }
+
+        private static void VerifyCollapsedGroupHeaderVerticalKeys(bool singleGroupedRow)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null) { return; }
+
+                if (singleGroupedRow)
+                {
+                    var filter = FindElement.ById<Button>(SingleGroupedRowFilterButton);
+                    if (filter == null) { Verify.Fail(SingleGroupedRowFilterButton + " was not found."); return; }
+                    filter.InvokeAndWait();
+                    Wait.ForIdle();
+                }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null) { Verify.Fail("No group header peer was found in the grouped table."); return; }
+                if (!TabToFirstGroupHeader(tableView, rowsHost, groupHeader)) { Verify.Fail("Tab and Down never reached the first group header."); return; }
+
+                string groupName = groupHeader.Name;
+                string focusedGroup = string.Format("'{0}' [TableViewGroupHeader]", groupName);
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                Verify.AreEqual(ExpandCollapseState.Collapsed, new ExpandCollapseImplementation(GetFirstGroupHeader(rowsHost)).ExpandCollapseState, "Precondition: Left collapses the group.");
+                Verify.AreEqual(focusedGroup, DescribeFocused(), "Precondition: the group header keeps focus across its collapse.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Log.Comment("After Down: {0}.", DescribeFocused());
+                if (singleGroupedRow)
+                {
+                    Verify.AreEqual(focusedGroup, DescribeFocused(), "Down from the only, collapsed group header must stay on it.");
+                }
+                else
+                {
+                    string next = DescribeFocused();
+                    Verify.IsTrue(next.Contains("[TableViewGroupHeader]") && next != focusedGroup,
+                        "Down from a collapsed group header must land on the next group header, not a hidden row.");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                    Verify.AreEqual(focusedGroup, DescribeFocused(), "Up from the next group header must return to the collapsed group's header.");
+                }
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Log.Comment("After Up: {0}.", DescribeFocused());
+                VerifyFocusedHeader(GroupedTable, "GroupedName", "Up from the first group header must reach the header row, not a row of the collapsed group.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Verify.AreEqual(focusedGroup, DescribeFocused(), "Down from the header row must land on the collapsed group's header.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Enter and Space on a group header each raise exactly one GroupCollapsed/GroupExpanding carrying that group's key.")]
         public void GroupHeaderKeyboardToggleRaisesGroupEventsWithGroupKey()
         {
@@ -2299,7 +2369,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A CanUserSort=False header is still keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
+        [TestProperty("Description", "A header with nothing to do is skipped by Left/Right, does not take focus on click, and reports IsKeyboardFocusable=false.")]
+        public void NonActionableHeaderIsSkippedAndClickDoesNotFocusIt()
+        {
+            // With resizing off, ReadOnlyCity (CanUserSort=False, no tooltip, no menu) has nothing to do.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(CanUserResizeColumnsCheckBox, false)) { return; }
+
+                UIObject city = GetHeader(BasicTable, "ReadOnlyCity");
+                if (city == null) { Verify.Fail("The ReadOnlyCity header was not found."); return; }
+                Verify.IsFalse(city.IsKeyboardFocusable, "A non-actionable header must report IsKeyboardFocusable=false.");
+
+                UIObject age = GetHeader(BasicTable, "Age");
+                age.SetFocus();
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Precondition: the sortable Age header takes focus.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Score", "Right must skip the non-actionable ReadOnlyCity header.");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Left must skip it on the way back.");
+
+                ClickHeader(BasicTable, "ReadOnlyCity");
+                Wait.ForIdle();
+                Verify.IsFalse(GetHeader(BasicTable, "ReadOnlyCity").HasKeyboardFocus, "Clicking a non-actionable header must not focus it.");
+                VerifyFocusedHeader(BasicTable, "Age", "Focus must stay where it was.");
+
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A CanUserSort=False header that is still actionable (resizable) is keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
         public void NonSortableHeaderIsFocusableAndEnterDoesNotSort()
         {
             // TableView.idl:156-158 (CanUserSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the

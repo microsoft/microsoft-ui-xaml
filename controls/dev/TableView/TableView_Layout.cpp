@@ -637,9 +637,17 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
         auto const other = columns.GetAt(i);
         if (!other ||
             winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
-            other.Visibility() != winrt::Visibility::Visible ||
-            other.Width().GridUnitType != winrt::GridUnitType::Star ||
-            !other.CanUserResize())
+            other.Visibility() != winrt::Visibility::Visible)
+        {
+            continue;
+        }
+        if (CanUserResizeColumns() && !other.CanUserResize() &&
+            winrt::get_self<TableViewColumn>(other)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
+        {
+            holds.push_back({ winrt::make_weak(other), other.ActualWidth() });
+            continue;
+        }
+        if (other.Width().GridUnitType != winrt::GridUnitType::Star || !other.CanUserResize())
         {
             continue;
         }
@@ -729,7 +737,7 @@ size_t TableView::LockedColumnHoldsSignature()
                 mix(c.ReadLocalValue(winrt::TableViewColumn::MinWidthProperty()) != winrt::DependencyProperty::UnsetValue());
                 mix(std::hash<double>{}(c.MaxWidth()));
                 mix(static_cast<size_t>(c.Visibility()));
-                mix(c.CanResize());
+                mix(c.CanUserResize());
             }
         }
     }

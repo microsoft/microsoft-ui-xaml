@@ -336,9 +336,7 @@ winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector con
     }
 
     m_engine->ThrowIfReentrant();
-    m_engine->SetParent(
-        [keySelector](winrt::IInspectable const& item) { return keySelector(item); },
-        [parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
+    m_engine->SetParent(MakeKeySelector(keySelector), MakeKeySelector(parentKeySelector));
     return *this;
 }
 
@@ -598,7 +596,7 @@ winrt::TableViewSource TableViewSource::ReplaceSortsCore(winrt::hstring const& s
     {
         m_engine->ReplaceSorts(
             sortAxisToken,
-            [key](winrt::IInspectable const& item) { return key(item); },
+            MakeKeySelector(key),
             sortMemberPath,
             direction);
     });
@@ -614,7 +612,7 @@ winrt::TableViewSource TableViewSource::ThenSortCore(winrt::hstring const& sortA
     {
         m_engine->ThenSort(
             sortAxisToken,
-            [key](winrt::IInspectable const& item) { return key(item); },
+            MakeKeySelector(key),
             sortMemberPath,
             direction);
     });

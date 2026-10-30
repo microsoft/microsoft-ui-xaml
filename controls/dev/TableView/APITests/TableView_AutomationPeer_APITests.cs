@@ -2807,8 +2807,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
-                    "A column with CanSort but no sort key must not offer Invoke.");
+                Verify.IsNull(CreateColumnHeaderPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
+                    "A column with CanUserSort but no sort key must not offer Invoke.");
                 tableView.CanUserResizeColumns = false;
             });
 
@@ -2851,7 +2851,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserResizeColumns = false;
-                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
                 LoadContent(tableView);
             });
 
@@ -2875,7 +2875,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserResizeColumns = false;
-                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
                 tableView.Columns[0].HeaderContextFlyout = new MenuFlyout();
                 LoadContent(tableView);
             });
@@ -3178,11 +3178,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
                 var fixedColumn = MakeTextColumn("Name", width: new GridLength(120));
-                fixedColumn.CanSort = false;
+                fixedColumn.CanUserSort = false;
                 fixedColumn.MinWidth = 120;
                 fixedColumn.MaxWidth = 120;
                 var starColumn = MakeTextColumn("Role", width: new GridLength(1, GridUnitType.Star));
-                starColumn.CanSort = false;
+                starColumn.CanUserSort = false;
                 tableView.Columns.Add(fixedColumn);
                 tableView.Columns.Add(starColumn);
                 LoadContent(tableView);
@@ -3220,8 +3220,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserResizeColumns = false;
-                tableView.Columns[0].CanSort = false;
-                tableView.Columns[1].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
+                tableView.Columns[1].CanUserSort = false;
                 LoadContent(tableView);
             });
 

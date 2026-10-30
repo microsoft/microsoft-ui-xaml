@@ -49,56 +49,8 @@ public sealed partial class FilterPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    // ---- Columns, built in code from the shared templates -------------------------------------
-
-    private void BuildColumns()
-    {
-        var resources = Application.Current.Resources;
-
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Photo",
-            CellTemplate = (DataTemplate)resources["AvatarTemplate"],
-            CanUserSort = false,
-            Width = Token("ColWidthAvatar"),
-            HeaderToolTip = "PersonPicture: the photo when the person has one, otherwise their initials.",
-        });
-        FilterTable.Columns.Add(new TableViewTextColumn
-        {
-            Header = "Name",
-            Binding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) },
-            Width = new GridLength(1, GridUnitType.Star),
-            MinWidth = (double)resources["ColMinWidthStar"],
-        });
-        // A template column sorts by SortMemberPath, the value behind the template.
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Department",
-            CellTemplate = (DataTemplate)resources["DepartmentChipTemplate"],
-            SortMemberPath = nameof(Person.Department),
-            Width = Token("ColWidthChip"),
-            HeaderToolTip = "Read-only chip. The query matches on it.",
-        });
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Role",
-            CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
-            SortMemberPath = nameof(Person.Role),
-            Width = Token("ColWidthLongName"),
-            HeaderToolTip = "Editable free text. The query matches on it, so retyping a role can push the row out of the filtered view.",
-        });
-        FilterTable.Columns.Add(new TableViewTemplateColumn
-        {
-            Header = "Active",
-            CellTemplate = (DataTemplate)resources["ActiveCheckBoxTemplate"],
-            SortMemberPath = nameof(Person.IsActive),
-            Width = Token("ColWidthBoolean"),
-            HeaderToolTip = "Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view.",
-        });
-    }
-
-    // Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
-    private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
+    public TableViewSource Source { get; }
+    // </snippet>
 
     // ---- Filtering --------------------------------------------------------------------------
 

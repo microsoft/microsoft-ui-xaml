@@ -349,7 +349,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("KeyText", typeof(string), info.KeyText),
                 ("ItemCount", typeof(int), info.ItemCount),
                 ("ItemCountText", typeof(string), info.ItemCountText),
-                ("Level", typeof(int), info.Level),
                 ("IsExpandable", typeof(bool), info.IsExpandable),
                 ("IsExpanded", typeof(bool), info.IsExpanded),
             };

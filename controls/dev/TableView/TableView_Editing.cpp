@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -1325,15 +1325,15 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
     return !m_terminateReopenedEdit;
 }
 
-void TableView::QueueReshapeBehindEdit(std::function<void()> operation, bool skipWhileReplaying)
+void TableView::QueueReshapeBehindEdit(TableViewTip::Operation operation, std::function<void()> apply, bool skipWhileReplaying)
 {
     if (m_editState == EditState::Ending && !(skipWhileReplaying && m_isApplyingCoalescedEditReshape))
     {
-        QueueCoalescedEditReshape(std::move(operation));
+        QueueCoalescedEditReshape(operation, std::move(apply));
     }
     else if (m_terminateReopenedEdit)
     {
-        QueueReshapeAfterEditCloses(std::move(operation));
+        QueueReshapeAfterEditCloses(operation, std::move(apply));
     }
 }
 
@@ -1360,7 +1360,7 @@ void TableView::ClearCoalescedEditReshape()
 
 void TableView::QueueDeferredEditReshapeDrain()
 {
-    if (IsEditing() || m_editReshapeDrainQueued ||
+    if (IsEditInProgress() || m_editReshapeDrainQueued ||
         (m_reshapesAfterEditCloses.empty() && m_pendingEditReshapes.empty()))
     {
         return;
@@ -1373,7 +1373,7 @@ void TableView::QueueDeferredEditReshapeDrain()
             {
                 strongThis->m_editReshapeDrainQueued = false;
                 // While another table owns the source the queue waits for the next edit close.
-                if (!strongThis->IsEditing() && !strongThis->IsActiveSourceOwnedByOther())
+                if (!strongThis->IsEditInProgress() && !strongThis->IsActiveSourceOwnedByOther())
                 {
                     try
                     {
@@ -1393,7 +1393,7 @@ void TableView::QueueDeferredEditReshapeDrain()
 void TableView::FlushDeferredEditReshapes()
 {
     // Each pass pops at least one operation, so this terminates even if every one throws.
-    while (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !IsActiveSourceOwnedByOther() && !IsEditing() &&
+    while (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !IsActiveSourceOwnedByOther() && !IsEditInProgress() &&
         (!m_pendingEditReshapes.empty() || !m_reshapesAfterEditCloses.empty()))
     {
         try
@@ -1475,13 +1475,13 @@ void TableView::DrainCoalescedEditReshape()
             // handler that throws here (for example inside CommitEdit) is contained, not propagated.
             try
             {
-                operation();
+                operation.apply();
             }
             catch (...)
             {
                 const auto hr = winrt::to_hresult();
-                NoteRecoveredAppFault(TableViewTip::Operation::CommitEdit, TableViewTip::Stage::Editing,
-                    TableViewTip::AppFaultKind::Callback, hr);
+                m_failedEditReshapeOperation = operation.operation;
+                NoteDeferredEditReshapeFault();
                 TVDiag::LogRetailF(L"[TableView] A reshape queued behind a closed edit threw (HRESULT 0x%08X).",
                     static_cast<unsigned int>(hr));
             }

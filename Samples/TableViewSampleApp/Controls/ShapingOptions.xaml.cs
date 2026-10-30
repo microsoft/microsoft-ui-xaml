@@ -267,7 +267,10 @@ public sealed partial class ShapingOptions : UserControl
         AppliedMode = mode;
         AppliedKey = key;
         _parentDeclared = IsHierarchicalMode(mode);
-        ArrangeHierarchyColumn(_parentDeclared);
+        if (ArrangesHierarchyColumn)
+        {
+            ArrangeHierarchyColumn(_parentDeclared);
+        }
 
         UpdateGating();
         var message = "Shaping -> " + AppliedText;
@@ -440,6 +443,7 @@ public sealed partial class ShapingOptions : UserControl
         return false;
     }
 
+    // <snippet Groups Hierarchy>
     // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
     // the tree rows, so Grouped hierarchy calls both.
     private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)

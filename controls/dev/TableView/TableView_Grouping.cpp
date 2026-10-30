@@ -563,7 +563,9 @@ void TableView::ApplyGroupExpansionByIdentity(
     // termination rather than reshaping underneath it.
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        QueueReshapeBehindEdit([this, identity, desired, generation, axis, bulkGeneration, subtree]()
+        QueueReshapeBehindEdit(
+            axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+            [this, identity, desired, generation, axis, bulkGeneration, subtree]()
         {
             ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
         }, false);
@@ -690,6 +692,54 @@ void TableView::ApplyGroupExpansionByIdentity(
     if (changed && changingGroup && changingGroup->IsExpanded)
     {
         RaiseGroupCollapsed(changingGroup->Key);
+    }
+
+    if (changed && axis == BulkExpansionAxis::Rows && !subtree &&
+        generation == m_rowMetadataGeneration && provider == m_tableViewSourceRowMetadata &&
+        bulkGeneration == BulkExpansionGeneration(axis))
+    {
+        AnnounceRowExpansionChange(identity);
+    }
+}
+
+void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
+{
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification) ||
+        !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    {
+        return;
+    }
+
+    try
+    {
+        int32_t index = -1;
+        TableViewRowInfo info{};
+        if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) ||
+            !TryGetTableViewSourceRowInfo(index, info) ||
+            info.Kind != TableViewRowKind::Data || !info.IsExpandable)
+        {
+            return;
+        }
+
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            auto const announcement = ResourceAccessor::GetLocalizedStringResource(
+                info.IsExpanded ? SR_TableViewRowExpanded : SR_TableViewRowCollapsed);
+            if (!announcement.empty())
+            {
+                // Narrator does not voice the DataItem's ExpandCollapse change. Announce the
+                // completed request here, not during row preparation or bulk expansion.
+                peer.RaiseNotificationEvent(
+                    winrt::AutomationNotificationKind::ActionCompleted,
+                    winrt::AutomationNotificationProcessing::MostRecent,
+                    announcement,
+                    L"TableViewRowExpansionChanged");
+            }
+        }
+    }
+    catch (...)
+    {
+        // Narrator feedback is best-effort; announcement failures must not affect row expansion.
     }
 }
 
@@ -957,7 +1007,9 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        QueueReshapeBehindEdit([this, expand, axis]()
+        QueueReshapeBehindEdit(
+            axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+            [this, expand, axis]()
         {
             ApplyBulkExpansion(expand, axis);
         }, false);
@@ -1459,7 +1511,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     // are written before the projection changes, which is then synced once.
     headerImpl->SetExpansionStateInternal(isExpandable, isExpanded, false /* syncContent */, false /* useTransitions */);
 
-    if (existing)
+    if (sameGroup)
     {
         winrt::get_self<TableViewGroupInfo>(existing)->UpdateInternal(groupKey, itemCount, level, keyText);
     }

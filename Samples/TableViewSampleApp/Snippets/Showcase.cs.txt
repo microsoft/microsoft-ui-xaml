@@ -27,29 +27,3 @@ private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
     var show = checkBox.IsChecked == true;
     column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 }
-
-// …
-
-// The control sorts once, when the sort is applied. Re-declaring the same path on the source
-// re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
-// value changed moves to its new position.
-private void ResortIfSortedOn(params string[] propertyNames)
-{
-    var column = SampleShaping.ActiveSortColumn(PeopleTable);
-    if (column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
-    {
-        return;
-    }
-
-    _isResorting = true;
-    try
-    {
-        Source.Sort(column.SortMemberPath, column.SortDirection);
-    }
-    finally
-    {
-        _isResorting = false;
-    }
-
-    // Sort raises a Reset, and the control keeps the selection on the same item.
-}

@@ -1622,10 +1622,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a sort change while the sorted column is out of Columns stops its re-insert from restoring the sort.")]
         public void VerifyMovedColumnSortNotRestoredAfterInterveningChange()
         {
+            // CanUserSortColumns and CanUserSort gate user input only, so turning them off while the
+            // column is detached is not an intervening change.
             var cases = new (string Name, Action<TableView, TableViewColumn> Intervene, Action<TableView, TableViewColumn> Reinsert)[]
             {
-                ("CanUserSortColumns off", (t, c) => t.CanUserSortColumns = false, (t, c) => t.Columns.Insert(1, c)),
-                ("CanSort off while detached", (t, c) => c.CanSort = false, (t, c) => t.Columns.Insert(1, c)),
                 ("ClearSort", (t, c) => t.ClearSort(), (t, c) => t.Columns.Insert(1, c)),
                 ("another column sorted then cleared", (t, c) =>
                 {

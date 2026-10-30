@@ -317,7 +317,7 @@
                                                   Width="180"
                                                   MinWidth="60"
                                                   Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlCity" Width="220" CanSort="False" Binding="{Binding City}" />
+                    <controls:TableViewTextColumn Header="RtlCity" Width="220" CanUserSort="False" Binding="{Binding City}" />
                     <controls:TableViewTextColumn Header="RtlAge" Width="220" Binding="{Binding Age}" />
                 </controls:TableView>
             </Grid>

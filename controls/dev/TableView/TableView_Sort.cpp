@@ -185,6 +185,12 @@ winrt::TableViewSource TableView::ShapingSourceInternal() const
     return m_activeSource.get();
 }
 
+// Whether user input can sort this column: CanSortColumn does not check the CanUserSort gates.
+bool TableView::IsColumnUserSortableInternal(const winrt::TableViewColumn& column)
+{
+    return column && CanUserSortColumns() && column.CanUserSort() && CanSortColumn(column);
+}
+
 bool TableView::IsSortClearStillValid(bool explicitClear) const
 {
     return !m_sortedColumns.empty() || (explicitClear && HasClearableSourceSort());
@@ -284,6 +290,7 @@ bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
 bool TableView::SortByColumnInternal(
     const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort, bool resort)
 {
+    FlushDeferredEditReshapes();
     // Only a clear may skip the sort-key check.
     requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
     if (!CanSortColumnNow(column, requireCanSort))
@@ -318,7 +325,7 @@ bool TableView::SortByColumnInternal(
     // cannot close synchronously, replay this request once it does.
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        QueueReshapeBehindEdit([this, column, direction, measureTip, requireCanSort, resort]()
+        QueueReshapeBehindEdit(TableViewTip::Operation::Sort, [this, column, direction, measureTip, requireCanSort, resort]()
         {
             SortByColumnInternal(column, direction, measureTip, requireCanSort, resort);
         }, true);
@@ -398,7 +405,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        QueueReshapeBehindEdit([this, column]()
+        QueueReshapeBehindEdit(TableViewTip::Operation::Sort, [this, column]()
         {
             ToggleSortDirection(column);
         }, true);
@@ -446,16 +453,33 @@ bool TableView::IsSortLitOnlyByApp() const
     {
         return true;
     }
-    if (m_activeSourceReleased || !m_tableViewSourceSort.AxisToken.empty())
+    if (!m_tableViewSourceSort.AxisToken.empty())
     {
         return false;
     }
     auto const source = ShapingSourceInternal();
-    return source && winrt::get_self<::TableViewSource>(source)->HasItemSort();
+    if (!source)
+    {
+        return false;
+    }
+    auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    // Released but unowned (unloaded): the axes are still the app's.
+    if (m_activeSourceReleased && sourceImpl->IsOwnedByOther(*this))
+    {
+        return false;
+    }
+    // A column: axis is one a table installed, never the app's.
+    auto const axes = sourceImpl->ActiveSortAxisInfos();
+    return std::any_of(axes.begin(), axes.end(), [](auto const& axis)
+    {
+        return !std::wstring_view{ axis.AxisToken }.starts_with(L"column:");
+    });
 }
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
+    CancelPendingSortRestore();
+    FlushDeferredEditReshapes();
     if (!IsSortClearStillValid(explicitClear))
     {
         return false;
@@ -468,7 +492,7 @@ bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 
     if (!TryTerminateEditForControlInitiatedReshape())
     {
-        QueueReshapeBehindEdit([this, measureTip, explicitClear]()
+        QueueReshapeBehindEdit(TableViewTip::Operation::Sort, [this, measureTip, explicitClear]()
         {
             ClearSortInternal(measureTip, explicitClear);
         }, true);
@@ -633,6 +657,7 @@ void TableView::EndSortStateUpdate() noexcept
 // v1 is single-column sort, so applying a direction always clears every other column first.
 void TableView::ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
+    CancelPendingSortRestore();
     auto const update = BeginSortStateUpdate();
     auto const lit = SnapshotSortedColumns();
     m_sortedColumns.clear();
@@ -1276,6 +1301,7 @@ void TableView::ReconcileSortStateWithSource()
     // Silent, like ResetSortStateForNewItemsSource: the app already owns the ordering by the time
     // we get here, so there is nothing to cancel and no reshape of our own to perform. Sorted is
     // still raised so an app tracking sort state sees the chevrons move.
+    CancelPendingSortRestore();
     auto const update = BeginSortStateUpdate();
     auto const lit = SnapshotSortedColumns();
     m_sortedColumns.clear();
@@ -1366,8 +1392,8 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
     }
     m_sortedColumnPendingRemoval = nullptr;
 
-    // A sort applied since the removal replaced this one. A column that opted out while detached
-    // never told the table; one lit only by the app's source sort keeps it, as when attached.
+    // A sort applied since the removal replaced this one. A column that lost its sort key while
+    // detached never told the table; one lit only by the app's source sort keeps it, as when attached.
     if (!m_sortedColumns.empty() || (!CanSortColumn(column) && !IsSortLitOnlyByApp()))
     {
         return;

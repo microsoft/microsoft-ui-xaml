@@ -355,7 +355,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // <snippet>
     // Grouped by date, sort newest first: groups follow their first row, so they read Today, Yesterday, ...
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {

@@ -1620,7 +1620,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var gripper = RequireGripper(tableView, 2);
                 gripper.KeyboardIncrement = 20.0;
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[2])
+                var transform = CreateColumnHeaderPeer(tableView, tableView.Columns[2])
                     .GetPattern(global::Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Transform) as global::Microsoft.UI.Xaml.Automation.Provider.ITransformProvider;
                 var scale = tableView.XamlRoot.RasterizationScale;
 
@@ -1835,7 +1835,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("First", new GridLength(100.0, GridUnitType.Pixel)),
                     ("Locked", new GridLength(0.0, GridUnitType.Star)),
                     ("Last", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 tableView.Columns[2].MinWidth = 20.0;
                 LoadContent(tableView);
             });
@@ -1871,7 +1871,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Locked", new GridLength(2.0, GridUnitType.Star)),
                     ("Third", new GridLength(1.0, GridUnitType.Star)),
                     ("Fourth", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 tableView.Columns.Add(MakeTemplateColumn("A", CreateFixedWidthTemplate(80.0), GridLength.Auto));
                 LoadContent(tableView);
             });
@@ -1917,7 +1917,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Locked", new GridLength(2.0, GridUnitType.Star)),
                     ("Third", new GridLength(1.0, GridUnitType.Star)),
                     ("Fourth", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[0].CanResize = false;
+                tableView.Columns[0].CanUserResize = false;
                 tableView.Columns.Insert(0, MakeTemplateColumn("A1", CreateFixedWidthTemplate(200.0), GridLength.Auto));
                 tableView.Columns.Add(MakeTemplateColumn("A2", CreateFixedWidthTemplate(80.0), GridLength.Auto));
                 LoadContent(tableView);
@@ -1974,7 +1974,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Locked", new GridLength(2.0, GridUnitType.Star)),
                     ("Third", new GridLength(1.0, GridUnitType.Star)),
                     ("Fourth", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[0].CanResize = false;
+                tableView.Columns[0].CanUserResize = false;
                 tableView.Columns.Insert(0, MakeTemplateColumn("A1", CreateFixedWidthTemplate(200.0), GridLength.Auto));
                 tableView.Columns.Add(MakeTemplateColumn("A2", CreateFixedWidthTemplate(80.0), GridLength.Auto));
                 LoadContent(tableView);
@@ -2078,7 +2078,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 LatchLockedStarHold(tableView);
 
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                var transform = CreateColumnHeaderPeer(tableView, tableView.Columns[0])
                     .GetPattern(global::Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Transform) as global::Microsoft.UI.Xaml.Automation.Provider.ITransformProvider;
                 var first = tableView.Columns[0].ActualWidth;
 
@@ -2103,7 +2103,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 ("MinWidth", t => { t.Columns[3].MinWidth = 30.0; t.Columns[3].ClearValue(TableViewColumn.MinWidthProperty); }),
                 ("authored Width", t => { t.Columns[3].Width = new GridLength(1.0, GridUnitType.Star); t.Columns[3].Width = new GridLength(3.0, GridUnitType.Star); }),
-                ("CanResize", t => { t.Columns[2].CanResize = false; t.Columns[2].CanResize = true; }),
+                ("CanUserResize", t => { t.Columns[2].CanUserResize = false; t.Columns[2].CanUserResize = true; }),
                 ("Columns", t => { var c = t.Columns[3]; t.Columns.RemoveAt(3); t.Columns.Add(c); }),
                 ("held column", t => { var c = t.Columns[1]; t.Columns.RemoveAt(1); t.Columns.Insert(1, c); }),
                 ("CanUserResizeColumns", t => { t.CanUserResizeColumns = false; t.CanUserResizeColumns = true; }),
@@ -2246,7 +2246,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("Locked", new GridLength(2.0, GridUnitType.Star)),
                 ("Third", new GridLength(1.0, GridUnitType.Star)),
                 ("Last", new GridLength(3.0, GridUnitType.Star)));
-            tableView.Columns[1].CanResize = false;
+            tableView.Columns[1].CanUserResize = false;
             return tableView;
         }
 

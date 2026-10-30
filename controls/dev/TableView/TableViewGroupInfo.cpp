@@ -176,7 +176,6 @@ winrt::Microsoft::UI::Xaml::Data::ICustomProperty TableViewGroupInfo::GetCustomP
         { L"KeyText", &winrt::xaml_typename<winrt::hstring>, [](TableViewGroupInfo& info) { return winrt::box_value(info.KeyText()); } },
         { L"ItemCount", &winrt::xaml_typename<int32_t>, [](TableViewGroupInfo& info) { return winrt::box_value(info.ItemCount()); } },
         { L"ItemCountText", &winrt::xaml_typename<winrt::hstring>, [](TableViewGroupInfo& info) { return winrt::box_value(info.ItemCountText()); } },
-        { L"Level", &winrt::xaml_typename<int32_t>, [](TableViewGroupInfo& info) { return winrt::box_value(info.Level()); } },
         { L"IsExpandable", &winrt::xaml_typename<bool>, [](TableViewGroupInfo& info) { return winrt::box_value(info.IsExpandable()); } },
         { L"IsExpanded", &winrt::xaml_typename<bool>, [](TableViewGroupInfo& info) { return winrt::box_value(info.IsExpanded()); } },
     };

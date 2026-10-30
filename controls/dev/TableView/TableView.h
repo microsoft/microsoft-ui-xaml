@@ -930,7 +930,7 @@ private:
 
     // Set when terminating for a reshape closed the edit but a handler opened another.
     bool m_terminateReopenedEdit{ false };
-    void QueueReshapeBehindEdit(std::function<void()> operation, bool skipWhileReplaying);
+    void QueueReshapeBehindEdit(TableViewTip::Operation operation, std::function<void()> apply, bool skipWhileReplaying);
 
     void SetCurrentItem(winrt::IInspectable const& item);
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
@@ -1603,7 +1603,7 @@ private:
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
     // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
     // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
-    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // Visibility and CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
     // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
     void ClearLockedColumnHolds(bool invalidate);

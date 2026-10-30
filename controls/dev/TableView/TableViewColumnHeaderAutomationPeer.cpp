@@ -460,7 +460,7 @@ bool TableViewColumnHeaderAutomationPeer::IsTableViewOwned()
 bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 {
     auto const column = m_column.get();
-    if (!column || !column.CanUserSort() || !IsVisibleColumn(column))
+    if (!column || !IsVisibleColumn(column))
     {
         return false;
     }

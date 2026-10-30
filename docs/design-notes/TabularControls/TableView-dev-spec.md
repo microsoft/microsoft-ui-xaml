@@ -176,10 +176,10 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 
 A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanUserResize` changes; size changes apply on `DragCompleted`, not mid-drag.
 
-**Locked `*` columns.** A `*` column with `CanResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
+**Locked `*` columns.** A `*` column with `CanUserResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
 
 - **Start.** The first write of a resize (pointer, keyboard, UIA or double-click fit) holds every locked `*` column before the resized one at its `ActualWidth`, recording the `Auto` columns' total width and `LockedColumnHoldsSignature()`. Resizing an `Auto` column drops its width from the recorded `Auto` total, because it turns `Pixel`.
-- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
+- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanUserResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
 - **Cancel.** A canceled drag puts back the holds that were in place before its first write.
 
 ## Row virtualization and recycling
