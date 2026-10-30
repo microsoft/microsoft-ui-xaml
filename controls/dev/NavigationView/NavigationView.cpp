@@ -1176,7 +1176,11 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
         if (auto const nvi = m_lastItemExpandedIntoFlyout.get())
         {
             child = nvi;
-            parent = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
+            // The flyout's owner can be a footer item, so continue from the root repeater that actually hosts it.
+            auto const ownerRepeater = GetParentItemsRepeaterForContainer(nvi);
+            parent = ownerRepeater && (ownerRepeater == m_leftNavFooterMenuRepeater.get() || ownerRepeater == m_topNavFooterMenuRepeater.get()) ?
+                ownerRepeater :
+                (IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get());
         }
     }
 
@@ -1272,6 +1276,10 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
 
             SetNavigationViewItemRevokers(nvi);
+
+            // A new or recycled container (e.g. after a PaneDisplayMode switch re-sources the repeaters) doesn't know
+            // whether its item is an ancestor of the selected item, so recompute IsChildSelected from the selection model.
+            UpdateIsChildSelectedForPreparedContainer(nvi);
 
             auto item = MenuItemFromContainer(nvi);
 
@@ -1400,9 +1408,32 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 
     if (m_OrientationChangedPendingAnimation)
     {
-        m_OrientationChangedPendingAnimation = false;
-        AnimateSelectionChanged(SelectedItem());
+        // Layout can run before the new pane has realized the selected item's container, e.g. while the NavigationView is in a
+        // collapsed subtree. Keep the restore pending then; MeasureOverride hooks this handler again on the next measure.
+        if (FindLowestLevelContainerToDisplaySelectionIndicator() || NavigationViewItemOrSettingsContentFromData(SelectedItem()))
+        {
+            m_OrientationChangedPendingAnimation = false;
+            AnimateSelectionChangedToSelectedItem();
+        }
     }
+}
+
+void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldIndicator, const winrt::UIElement& newIndicator)
+{
+    // An item that shows the selection indicator got a new template, e.g. because its presenter style switched between the
+    // Left and Top pane styles after a PaneDisplayMode change. The new indicator starts hidden. If no pending PaneDisplayMode
+    // animation is going to pick it up, move the indicator state over now so the selected item doesn't lose its indicator.
+    if (!oldIndicator || oldIndicator == newIndicator || oldIndicator != m_activeIndicator.get() || m_OrientationChangedPendingAnimation)
+    {
+        return;
+    }
+
+    if (m_nextIndicator.get() == oldIndicator)
+    {
+        m_nextIndicator.set(newIndicator);
+    }
+    m_activeIndicator.set(newIndicator);
+    ResetElementAnimationProperties(newIndicator, 1.0f);
 }
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
@@ -2024,6 +2055,20 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
     }
 }
 
+void NavigationView::AnimateSelectionChangedToSelectedItem()
+{
+    // A selected child inside a collapsed parent shows its indicator on the parent.
+    auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
+    if (container && !container.IsSelected() && container.IsChildSelected())
+    {
+        AnimateSelectionChanged(container);
+    }
+    else
+    {
+        AnimateSelectionChanged(SelectedItem());
+    }
+}
+
 // Please clear the field m_lastSelectedItemPendingAnimationInTopNav when calling this method to prevent garbage value and incorrect animation
 // when the layout is invalidated as it's called in OnLayoutUpdated.
 void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem)
@@ -2531,6 +2576,34 @@ void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const
     if (nextIP && nextIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
+    }
+}
+
+void NavigationView::UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi)
+{
+    bool isChildSelected = false;
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
+    // Only a selection below the top level (block, index, child...) can make an item child-selected.
+    if (selectedIndex && selectedIndex.GetSize() > 2)
+    {
+        auto const ip = GetIndexPathForContainer(nvi);
+        if (ip.GetSize() >= 2 && ip.GetSize() < selectedIndex.GetSize())
+        {
+            isChildSelected = true;
+            for (int i = 0; i < ip.GetSize(); i++)
+            {
+                if (ip.GetAt(i) != selectedIndex.GetAt(i))
+                {
+                    isChildSelected = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (nvi.IsChildSelected() != isChildSelected)
+    {
+        nvi.IsChildSelected(isChildSelected);
     }
 }
 
@@ -4348,7 +4421,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
             // while the ItemsRepeater was still unloaded. Thus m_selectionModel still does not know about that selection.
             UpdateSelectionModelSelectionForSelectedItem(item);
         }
-        AnimateSelectionChanged(item);
+        AnimateSelectionChangedToSelectedItem();
     }
 }
 
@@ -4473,6 +4546,12 @@ void NavigationView::UpdatePaneDisplayMode()
     if (auto selectedItem = SelectedItem())
     {
         m_OrientationChangedPendingAnimation = true;
+
+        // OnLayoutUpdated plays the pending animation, but it's only hooked in MeasureOverride and unhooks itself after one call.
+        // A synchronous layout pass above (e.g. the footer repeater's UpdateLayout() when switching to a left mode) can already
+        // have raised LayoutUpdated before this flag was set. Hook it again so the indicator is restored after the next layout pass.
+        m_layoutUpdatedToken.revoke();
+        m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
     }
 }
 
@@ -5440,17 +5519,23 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
             const auto irIndex = inFooter ? index : m_topDataProvider.ConvertOriginalIndexToIndex(index);
 
         // Get the container of the first item
-        if (auto const container = ir.TryGetElement(irIndex))
+        if (ir)
         {
-            return container;
+            if (auto const container = ir.TryGetElement(irIndex))
+            {
+                return container;
+            }
         }
     }
     else
     {
-        if (auto container = inFooter ? m_leftNavFooterMenuRepeater.get().TryGetElement(index)
-            : m_leftNavRepeater.get().TryGetElement(index))
+        // A custom template may not have MenuItemsHost or FooterMenuItemsHost.
+        if (auto const ir = inFooter ? m_leftNavFooterMenuRepeater.get() : m_leftNavRepeater.get())
         {
-            return container.try_as<winrt::NavigationViewItemBase>();
+            if (auto container = ir.TryGetElement(index))
+            {
+                return container.try_as<winrt::NavigationViewItemBase>();
+            }
         }
     }
     return nullptr;
