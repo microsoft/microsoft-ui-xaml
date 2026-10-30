@@ -8,6 +8,7 @@
 #include "ResourceAccessor.h"
 
 #include <string>
+#include <winrt/Windows.UI.Xaml.Interop.h>
 
 namespace
 {
