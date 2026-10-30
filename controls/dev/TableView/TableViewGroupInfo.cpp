@@ -46,10 +46,10 @@ namespace
         public winrt::implements<GroupInfoProperty, winrt::Microsoft::UI::Xaml::Data::ICustomProperty>
     {
     public:
-        using Getter = winrt::IInspectable (*)(winrt::TableViewGroupInfo const&);
+        using Getter = winrt::IInspectable (*)(TableViewGroupInfo&);
 
-        GroupInfoProperty(wchar_t const* name, wchar_t const* typeName, winrt::TypeKind kind, Getter getter)
-            : m_name(name), m_type{ typeName, kind }, m_getter(getter)
+        GroupInfoProperty(wchar_t const* name, winrt::TypeName const& type, Getter getter)
+            : m_name(name), m_type(type), m_getter(getter)
         {
         }
 
@@ -60,7 +60,7 @@ namespace
 
         winrt::IInspectable GetValue(winrt::IInspectable const& target)
         {
-            return m_getter(target.as<winrt::TableViewGroupInfo>());
+            return m_getter(*winrt::get_self<TableViewGroupInfo>(target.as<winrt::TableViewGroupInfo>()));
         }
 
         void SetValue(winrt::IInspectable const&, winrt::IInspectable const&)
@@ -163,30 +163,27 @@ winrt::TypeName TableViewGroupInfo::Type()
 
 winrt::Microsoft::UI::Xaml::Data::ICustomProperty TableViewGroupInfo::GetCustomProperty(winrt::hstring const& name)
 {
-    using Info = winrt::TableViewGroupInfo;
-    constexpr auto primitive = winrt::TypeKind::Primitive;
     static const struct
     {
         wchar_t const* name;
-        wchar_t const* type;
-        winrt::TypeKind kind;
+        winrt::TypeName (*type)();
         GroupInfoProperty::Getter getter;
     } properties[] =
     {
-        { L"Key", L"Object", winrt::TypeKind::Metadata, [](Info const& info) { return info.Key(); } },
-        { L"KeyText", L"String", primitive, [](Info const& info) { return winrt::box_value(info.KeyText()); } },
-        { L"ItemCount", L"Int32", primitive, [](Info const& info) { return winrt::box_value(info.ItemCount()); } },
-        { L"ItemCountText", L"String", primitive, [](Info const& info) { return winrt::box_value(info.ItemCountText()); } },
-        { L"Level", L"Int32", primitive, [](Info const& info) { return winrt::box_value(info.Level()); } },
-        { L"IsExpandable", L"Boolean", primitive, [](Info const& info) { return winrt::box_value(info.IsExpandable()); } },
-        { L"IsExpanded", L"Boolean", primitive, [](Info const& info) { return winrt::box_value(info.IsExpanded()); } },
+        { L"Key", &winrt::xaml_typename<winrt::IInspectable>, [](TableViewGroupInfo& info) { return info.Key(); } },
+        { L"KeyText", &winrt::xaml_typename<winrt::hstring>, [](TableViewGroupInfo& info) { return winrt::box_value(info.KeyText()); } },
+        { L"ItemCount", &winrt::xaml_typename<int32_t>, [](TableViewGroupInfo& info) { return winrt::box_value(info.ItemCount()); } },
+        { L"ItemCountText", &winrt::xaml_typename<winrt::hstring>, [](TableViewGroupInfo& info) { return winrt::box_value(info.ItemCountText()); } },
+        { L"Level", &winrt::xaml_typename<int32_t>, [](TableViewGroupInfo& info) { return winrt::box_value(info.Level()); } },
+        { L"IsExpandable", &winrt::xaml_typename<bool>, [](TableViewGroupInfo& info) { return winrt::box_value(info.IsExpandable()); } },
+        { L"IsExpanded", &winrt::xaml_typename<bool>, [](TableViewGroupInfo& info) { return winrt::box_value(info.IsExpanded()); } },
     };
 
     for (auto const& property : properties)
     {
         if (name == property.name)
         {
-            return winrt::make<GroupInfoProperty>(property.name, property.type, property.kind, property.getter);
+            return winrt::make<GroupInfoProperty>(property.name, property.type(), property.getter);
         }
     }
     return nullptr;
@@ -198,6 +195,11 @@ winrt::Microsoft::UI::Xaml::Data::ICustomProperty TableViewGroupInfo::GetIndexed
 }
 
 winrt::hstring TableViewGroupInfo::GetStringRepresentation()
+{
+    return m_keyText;
+}
+
+winrt::hstring TableViewGroupInfo::ToString()
 {
     return m_keyText;
 }

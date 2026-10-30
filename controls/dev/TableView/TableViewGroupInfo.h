@@ -25,7 +25,7 @@
 bool SameGroupKey(winrt::IInspectable const& left, winrt::IInspectable const& right) noexcept;
 
 class TableViewGroupInfo :
-    public winrt::implementation::TableViewGroupInfoT<TableViewGroupInfo, winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider>
+    public winrt::implementation::TableViewGroupInfoT<TableViewGroupInfo, winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider, winrt::Windows::Foundation::IStringable>
 {
 public:
     TableViewGroupInfo(
@@ -54,6 +54,7 @@ public:
     winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetCustomProperty(winrt::hstring const& name);
     winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetIndexedProperty(winrt::hstring const& name, winrt::TypeName const& type);
     winrt::hstring GetStringRepresentation();
+    winrt::hstring ToString();
 
     // Internal: refresh identity/metadata in place, raising PropertyChanged only for what
     // actually changed. Expansion is NOT set here -- see SetExpansionInternal.
