@@ -46,6 +46,8 @@ static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
 static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
 static constexpr auto c_navViewBackButton = L"NavigationViewBackButton"sv;
+static constexpr auto c_backButtonHitTargetExpandedState = L"HitTargetExpanded"sv;
+static constexpr auto c_backButtonHitTargetDefaultState = L"HitTargetDefault"sv;
 static constexpr auto c_navViewBackButtonToolTip = L"NavigationViewBackButtonToolTip"sv;
 static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
@@ -131,6 +133,18 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_titleBarMetricsChangedRevoker.revoke();
     m_titleBarIsVisibleChangedRevoker.revoke();
     m_paneToggleButtonClickRevoker.revoke();
+
+    m_backButtonStyleChangedRevoker.revoke();
+    m_backButtonTemplateChangedRevoker.revoke();
+    m_backButtonWidthChangedRevoker.revoke();
+    m_backButtonMarginChangedRevoker.revoke();
+    m_backButtonHeightChangedRevoker.revoke();
+    m_backButtonMinWidthChangedRevoker.revoke();
+    m_backButtonMinHeightChangedRevoker.revoke();
+    m_backButtonContainerMarginChangedRevoker.revoke();
+    m_backButtonActualThemeChangedRevoker.revoke();
+    m_backButtonBackplate.set(nullptr);
+    m_backButtonHitTargetApplied = false;
 
     m_settingsItem.set(nullptr);
 
@@ -622,6 +636,19 @@ void NavigationView::OnApplyTemplate()
     {
         m_backButton.set(backButton);
         m_backButtonClickedRevoker = backButton.Click(winrt::auto_revoke, { this, &NavigationView::OnBackButtonClicked });
+        // These inputs determine the back button's hit target geometry (see UpdateBackButtonHitTarget).
+        m_backButtonStyleChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::StyleProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        m_backButtonTemplateChangedRevoker = RegisterPropertyChanged(backButton, winrt::Control::TemplateProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        m_backButtonWidthChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::WidthProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        m_backButtonMarginChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::MarginProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        m_backButtonHeightChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::HeightProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        m_backButtonMinWidthChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::MinWidthProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        m_backButtonMinHeightChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::MinHeightProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        if (const auto container = winrt::VisualTreeHelper::GetParent(backButton).try_as<winrt::FrameworkElement>())
+        {
+            m_backButtonContainerMarginChangedRevoker = RegisterPropertyChanged(container, winrt::FrameworkElement::MarginProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
+        }
+        m_backButtonActualThemeChangedRevoker = backButton.ActualThemeChanged(winrt::auto_revoke, { this, &NavigationView::OnBackButtonActualThemeChanged });
 
         winrt::hstring navigationName = ResourceAccessor::GetLocalizedStringResource(SR_NavigationBackButtonName);
         winrt::AutomationProperties::SetName(backButton, navigationName);
@@ -711,6 +738,7 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
     UpdatePaneLayout();
     UpdatePaneOverlayGroup();
+    UpdateBackButtonHitTarget();
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -1842,6 +1870,223 @@ void NavigationView::UpdatePaneButtonsWidths()
     {
         UpdatePaneToggleSize();
     }
+}
+
+namespace
+{
+    // The value the style chain (not a local value or binding) supplies for the property, or nullptr.
+    winrt::IInspectable GetStyleSetterValue(winrt::Style style, const winrt::DependencyProperty& property)
+    {
+        for (; style; style = style.BasedOn())
+        {
+            for (const auto& setterBase : style.Setters())
+            {
+                if (const auto setter = setterBase.try_as<winrt::Setter>())
+                {
+                    if (setter.Property() == property)
+                    {
+                        return setter.Value();
+                    }
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    // The value the button gets for the property without a local value. Literal style setters are read from the style,
+    // which doesn't depend on when the style's setters are applied. Setters such as {ThemeResource} don't expose a
+    // resolved value, so for those the local value is cleared and the effective value is read.
+    template <typename T>
+    T GetValueWithoutLocalValue(const winrt::Button& button, const winrt::DependencyProperty& property, T fallback)
+    {
+        if (const auto value = GetStyleSetterValue(button.Style(), property))
+        {
+            if (const auto typed = value.try_as<winrt::IReference<T>>())
+            {
+                return typed.Value();
+            }
+        }
+        button.ClearValue(property);
+        return winrt::unbox_value_or<T>(button.GetValue(property), fallback);
+    }
+
+    bool AreSameLength(double a, double b)
+    {
+        return a == b || (std::isnan(a) && std::isnan(b));
+    }
+
+    // The stock template's backplate (RootGrid), which is a child of its root HitTargetGrid.
+    winrt::FrameworkElement GetBackButtonBackplate(const winrt::Button& button)
+    {
+        if (winrt::VisualTreeHelper::GetChildrenCount(button) > 0)
+        {
+            const auto root = winrt::VisualTreeHelper::GetChild(button, 0);
+            const auto count = winrt::VisualTreeHelper::GetChildrenCount(root);
+            for (int32_t i = 0; i < count; i++)
+            {
+                if (const auto child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
+                {
+                    if (child.Name() == L"RootGrid")
+                    {
+                        return child;
+                    }
+                }
+            }
+        }
+        return nullptr;
+    }
+}
+
+// True if the back button has no local value for the property, or only the one NavigationView set for the hit target.
+// Anything else (an app's local value or binding) belongs to the app.
+bool NavigationView::IsBackButtonValueAvailable(const winrt::DependencyProperty& property)
+{
+    const auto localValue = m_backButton.get().ReadLocalValue(property);
+    if (localValue == winrt::DependencyProperty::UnsetValue())
+    {
+        return true;
+    }
+    if (!m_backButtonHitTargetApplied)
+    {
+        return false;
+    }
+    if (property == winrt::FrameworkElement::MarginProperty())
+    {
+        const auto margin = localValue.try_as<winrt::IReference<winrt::Thickness>>();
+        const auto owned = m_backButtonHitTargetMargin;
+        return margin && margin.Value().Left == owned.Left && margin.Value().Top == owned.Top && margin.Value().Right == owned.Right && margin.Value().Bottom == owned.Bottom;
+    }
+    const auto length = localValue.try_as<winrt::IReference<double>>();
+    const double owned = property == winrt::FrameworkElement::HeightProperty() ? m_backButtonHitTargetHeight : m_backButtonHitTargetMinWidth;
+    return length && AreSameLength(length.Value(), owned);
+}
+
+// Clears the values NavigationView set for the enlarged hit target, except those the app has replaced since.
+void NavigationView::ClearBackButtonHitTarget(const winrt::Button& backButton)
+{
+    winrt::VisualStateManager::GoToState(backButton, c_backButtonHitTargetDefaultState, false /*useTransitions*/);
+    if (m_backButtonHitTargetApplied)
+    {
+        for (const auto& property : { winrt::FrameworkElement::MarginProperty(), winrt::FrameworkElement::HeightProperty(), winrt::FrameworkElement::MinWidthProperty() })
+        {
+            if (IsBackButtonValueAvailable(property))
+            {
+                backButton.ClearValue(property);
+            }
+        }
+        if (const auto backplate = m_backButtonBackplate.get())
+        {
+            backplate.ClearValue(winrt::FrameworkElement::MarginProperty());
+        }
+        m_backButtonBackplate.set(nullptr);
+        m_backButtonHitTargetApplied = false;
+    }
+}
+
+// Lets the back button be clicked at the window corner (Fitts's law). If the button's template supports the
+// HitTargetExpanded visual state, the button grows left and up over its style's margin and its container's margin,
+// and the template's backplate gets that space as its margin so it stays where the style placed it. The right and bottom
+// edges stay at the backplate. Templates without the state (custom templates), and back buttons on which the app sets
+// Margin, Height or MinWidth itself, keep the style's geometry unchanged.
+void NavigationView::UpdateBackButtonHitTarget()
+{
+    const auto backButton = m_backButton.get();
+    if (!backButton || !m_appliedTemplate || m_isUpdatingBackButtonHitTarget)
+    {
+        return;
+    }
+    m_isUpdatingBackButtonHitTarget = true;
+    auto scopeGuard = gsl::finally([this]()
+    {
+        m_isUpdatingBackButtonHitTarget = false;
+    });
+
+    backButton.ApplyTemplate();
+    const bool appOwnsGeometry = !IsBackButtonValueAvailable(winrt::FrameworkElement::MarginProperty()) ||
+        !IsBackButtonValueAvailable(winrt::FrameworkElement::HeightProperty()) ||
+        !IsBackButtonValueAvailable(winrt::FrameworkElement::MinWidthProperty());
+    const auto backplate = GetBackButtonBackplate(backButton);
+    if (appOwnsGeometry || !backplate ||
+        !winrt::VisualStateManager::GoToState(backButton, c_backButtonHitTargetExpandedState, false /*useTransitions*/))
+    {
+        ClearBackButtonHitTarget(backButton);
+        return;
+    }
+
+    if (const auto previousBackplate = m_backButtonBackplate.get(); previousBackplate && previousBackplate != backplate)
+    {
+        previousBackplate.ClearValue(winrt::FrameworkElement::MarginProperty());
+    }
+
+    const auto styleMargin = GetValueWithoutLocalValue<winrt::Thickness>(backButton, winrt::FrameworkElement::MarginProperty(), winrt::Thickness{});
+    const auto styleHeight = GetValueWithoutLocalValue<double>(backButton, winrt::FrameworkElement::HeightProperty(), std::numeric_limits<double>::quiet_NaN());
+    const auto styleMinWidth = GetValueWithoutLocalValue<double>(backButton, winrt::FrameworkElement::MinWidthProperty(), 0.0);
+    winrt::Thickness containerMargin{};
+    if (const auto container = winrt::VisualTreeHelper::GetParent(backButton).try_as<winrt::FrameworkElement>())
+    {
+        containerMargin = container.Margin();
+    }
+
+    const double insetLeft = styleMargin.Left + containerMargin.Left;
+    const double insetTop = styleMargin.Top + containerMargin.Top;
+    const double width = backButton.Width();
+    // Before the hit target was enlarged, a MinWidth/MinHeight larger than Width/Height decided the backplate's size.
+    const double backplateMinWidth = std::isnan(width) ? styleMinWidth : std::max(width, styleMinWidth);
+    const double minHeight = backButton.MinHeight();
+
+    // App property-changed callbacks run synchronously while the reads above and the writes below change the button's
+    // values. A value the app sets meanwhile turns the enlargement off instead of being overwritten.
+    const winrt::DependencyProperty geometryProperties[] = { winrt::FrameworkElement::MarginProperty(), winrt::FrameworkElement::HeightProperty(), winrt::FrameworkElement::MinWidthProperty() };
+    for (const auto& property : geometryProperties)
+    {
+        if (!IsBackButtonValueAvailable(property))
+        {
+            ClearBackButtonHitTarget(backButton);
+            return;
+        }
+        backButton.ClearValue(property);
+    }
+
+    m_backButtonHitTargetMargin = winrt::ThicknessHelper::FromLengths(-containerMargin.Left, -containerMargin.Top, styleMargin.Right, styleMargin.Bottom);
+    m_backButtonHitTargetHeight = std::isnan(styleHeight) ? styleHeight : std::max(styleHeight, minHeight) + insetTop;
+    m_backButtonHitTargetMinWidth = backplateMinWidth + insetLeft;
+    m_backButtonHitTargetApplied = true;
+    const auto isUnset = [&backButton](const winrt::DependencyProperty& property)
+    {
+        return backButton.ReadLocalValue(property) == winrt::DependencyProperty::UnsetValue();
+    };
+    if (isUnset(winrt::FrameworkElement::MarginProperty()))
+    {
+        backButton.Margin(m_backButtonHitTargetMargin);
+    }
+    if (!std::isnan(m_backButtonHitTargetHeight) && isUnset(winrt::FrameworkElement::HeightProperty()))
+    {
+        backButton.Height(m_backButtonHitTargetHeight);
+    }
+    if (isUnset(winrt::FrameworkElement::MinWidthProperty()))
+    {
+        backButton.MinWidth(m_backButtonHitTargetMinWidth);
+    }
+    for (const auto& property : geometryProperties)
+    {
+        if (!IsBackButtonValueAvailable(property))
+        {
+            ClearBackButtonHitTarget(backButton);
+            return;
+        }
+    }
+    backplate.Margin(winrt::ThicknessHelper::FromLengths(insetLeft, insetTop, 0, 0));
+    m_backButtonBackplate.set(backplate);
+}
+
+void NavigationView::OnBackButtonPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+{
+    UpdateBackButtonHitTarget();
+}
+
+void NavigationView::OnBackButtonActualThemeChanged(const winrt::FrameworkElement& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    UpdateBackButtonHitTarget();
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)

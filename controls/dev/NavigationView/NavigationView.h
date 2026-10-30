@@ -238,6 +238,11 @@ private:
     void CreateAndHookEventsToSettings();
     void OnIsPaneOpenChanged();
     void UpdatePaneButtonsWidths();
+    void UpdateBackButtonHitTarget();
+    void OnBackButtonPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnBackButtonActualThemeChanged(const winrt::FrameworkElement& sender, const winrt::IInspectable& args);
+    bool IsBackButtonValueAvailable(const winrt::DependencyProperty& property);
+    void ClearBackButtonHitTarget(const winrt::Button& backButton);
     void UpdateHeaderVisibility();
     void UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode);
     void UpdatePaneToggleButtonVisibility();
@@ -417,6 +422,16 @@ private:
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
+    PropertyChanged_revoker m_backButtonStyleChangedRevoker{};
+    PropertyChanged_revoker m_backButtonTemplateChangedRevoker{};
+    PropertyChanged_revoker m_backButtonWidthChangedRevoker{};
+    PropertyChanged_revoker m_backButtonMarginChangedRevoker{};
+    PropertyChanged_revoker m_backButtonHeightChangedRevoker{};
+    PropertyChanged_revoker m_backButtonMinWidthChangedRevoker{};
+    PropertyChanged_revoker m_backButtonMinHeightChangedRevoker{};
+    PropertyChanged_revoker m_backButtonContainerMarginChangedRevoker{};
+    winrt::FrameworkElement::ActualThemeChanged_revoker m_backButtonActualThemeChangedRevoker{};
+    tracker_ref<winrt::FrameworkElement> m_backButtonBackplate{ this };
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
@@ -485,9 +500,15 @@ private:
     NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
+    // True while NavigationView has set the back button's local MinWidth/Height/Margin and its backplate's Margin for the enlarged hit target.
+    bool m_backButtonHitTargetApplied{ false };
+    bool m_isUpdatingBackButtonHitTarget{ false };
+    // The back button Margin/Height/MinWidth that NavigationView set while m_backButtonHitTargetApplied.
+    winrt::Thickness m_backButtonHitTargetMargin{};
+    double m_backButtonHitTargetHeight{ 0.0 };
+    double m_backButtonHitTargetMinWidth{ 0.0 };
     // Unlike m_appliedTemplate, this is never reset, so it tells first-time setup apart from re-templating.
     bool m_templateAppliedOnce{ false };
-
     // Identifies whenever a call is the result of OnApplyTemplate
     bool m_fromOnApplyTemplate{ false };
 
