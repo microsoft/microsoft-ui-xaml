@@ -1559,8 +1559,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies width freed by a drag after the locked Star column stopped holding its share goes to the Star columns after the dragged one.")]
-        public void VerifyDragAfterLockedStarCapGivesWidthToLaterStarColumns()
+        [TestProperty("Description", "Verifies a drag after the locked Star column stopped holding its share never takes width from, or gives width to, the locked column before the dragged one while the drag is in flight.")]
+        public void VerifyDragAfterLockedStarCapHoldsEarlierLockedColumn()
         {
             TableView tableView = null;
 
@@ -1577,25 +1577,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 DragLockedStarTableColumns(tableView);
                 tableView.Columns[3].MaxWidth = 50.0;
                 tableView.UpdateLayout();
+                VerifyLockedStarLayout(tableView, "before the drag");
 
-                var viewport = GetBodyViewportWidth(tableView);
-                var first = tableView.Columns[0].ActualWidth;
-                var lockedBefore = tableView.Columns[1].ActualWidth;
-                // Small enough that the locked column's authored share still does not fit afterwards.
-                var authoredShare = (viewport - 50.0) / 2.0;
-                var room = viewport - first - tableView.Columns[2].ActualWidth - tableView.Columns[3].MinWidth;
-                var delta = Math.Floor(Math.Min(30.0, (authoredShare - room) / 2.0));
-                Verify.IsGreaterThanOrEqual(delta, 5.0, $"The scenario needs room to drag inside the capped range (viewport {viewport}).");
+                foreach (var delta in new[] { -20.0, 20.0 })
+                {
+                    var before = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                    var gripper = RequireGripper(tableView, 2);
+                    gripper.BeginDrag();
+                    gripper.TryDrag(delta);
+                    tableView.UpdateLayout();
 
-                DragAndVerify(tableView, 2, -delta);
+                    var during = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                    Log.Comment($"delta={delta}: before={string.Join(", ", before)}, during={string.Join(", ", during)}.");
+                    VerifyNear(before[2] + delta, during[2], 1.0, "The drag must take effect");
+                    VerifyNear(before[0], during[0], 0.5, "The drag must not move the column before the dragged one");
+                    VerifyNear(before[1], during[1], 0.5, "The drag must not move the locked column before the dragged one");
+                    // The last column is at its MaxWidth, so width the drag frees is left empty.
+                    VerifyNear(Math.Min(50.0, before[3] - delta), during[3], 1.0, "The column after the dragged one must give or take the width");
 
-                VerifyLockedStarLayout(tableView, "after a drag that frees width");
-                VerifyNear(first, tableView.Columns[0].ActualWidth, 0.5, "A drag must not move the column before the dragged one");
-                VerifyNear(lockedBefore + delta, tableView.Columns[1].ActualWidth, 1.0,
-                    "With the last Star column at its MaxWidth, the freed width must go to the locked column");
+                    gripper.EndDrag(false);
+                    tableView.UpdateLayout();
+                    VerifyLockedStarLayout(tableView, $"after releasing a {delta} drag");
+                }
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a drag clamped at its bound does not knock a locked Star column out of its held share through rounding.")]
+        public void VerifyDragClampedAtBoundKeepsLockedStarShare()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                // Off the pixel grid, so the bound the drag clamps at and the room layout measures round differently.
+                tableView.Columns[3].MinWidth = 20.3;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var locked = tableView.Columns[1].ActualWidth;
+                var gripper = RequireGripper(tableView, 2);
+                gripper.BeginDrag();
+                gripper.TryDrag(1000.0);
+                gripper.EndDrag(false);
+                tableView.UpdateLayout();
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+                VerifyNear(locked, widths[1], 1.0, "A drag clamped at its bound must leave the locked column at its share");
+                Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, "The columns must fill the viewport.");
+            });
+        }
         [TestMethod]
         [TestProperty("Description", "Verifies a MaxWidth that does not bind leaves a resized table with a locked Star column unchanged.")]
         public void VerifyNonBindingMaxWidthKeepsLockedStarLayout()
