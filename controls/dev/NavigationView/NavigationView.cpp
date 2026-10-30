@@ -1456,9 +1456,11 @@ void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldInd
         return;
     }
 
-    if (m_nextIndicator.get() == oldIndicator)
+    // The running selection animation targets the old indicator's visual, so finish it first; otherwise the outgoing
+    // indicator keeps animating next to the replacement.
+    if (m_prevIndicator || m_nextIndicator)
     {
-        m_nextIndicator.set(newIndicator);
+        OnAnimationComplete(nullptr, nullptr);
     }
     m_activeIndicator.set(newIndicator);
     ResetElementAnimationProperties(newIndicator, 1.0f);
