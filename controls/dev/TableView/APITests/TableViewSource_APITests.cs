@@ -2172,6 +2172,152 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies adding rows one at a time to a grouped source keys only the added row and never resets the rows (#12472).")]
+        public void VerifyGroupedAddsKeyOnlyTheAddedRows()
+        {
+            const int initialCount = 30;
+            const int addCount = 30;
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var keyCalls = 0;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(Enumerable.Range(0, initialCount).Select(MakeGroupedPerson));
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => { keyCalls++; return Person(o).Role; }));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                keyCalls = 0;
+                for (var k = initialCount; k < initialCount + addCount; k++)
+                {
+                    items.Add(MakeGroupedPerson(k));
+                }
+
+                Log.Comment($"{addCount} adds over {initialCount} rows ran the group key {keyCalls} times.");
+                Verify.IsLessThanOrEqual(keyCalls, 2 * addCount,
+                    "Each add must key the added row only, not regroup every row (O(n) per add).");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGroupedData(tableView, items, p => true, rows => rows);
+                Verify.AreEqual(0, actions.Count(a => a == "Reset"), "A single-row add must not reset the rows.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies adds to a filtered, grouped source sorted within groups run the filter and group key only for the added rows and land in sorted position.")]
+        public void VerifyFilteredGroupedSortedAddsEvaluateOnlyTheAddedRows()
+        {
+            const int initialCount = 30;
+            const int addCount = 30;
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var calls = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(Enumerable.Range(0, initialCount).Select(MakeGroupedPerson));
+                var source = TableViewSource
+                    .From(items)
+                    .Filter(o => { calls++; return !Person(o).Name.EndsWith("5", StringComparison.Ordinal); })
+                    .GroupBy(o => { calls++; return Person(o).Role; })
+                    .Sort("Name", SortDirection.Descending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                calls = 0;
+                for (var k = initialCount; k < initialCount + addCount; k++)
+                {
+                    items.Add(MakeGroupedPerson(k));
+                }
+
+                Log.Comment($"{addCount} adds over {initialCount} rows ran the filter and group key {calls} times.");
+                Verify.IsLessThanOrEqual(calls, 3 * addCount,
+                    "Each add must filter and key the added row only, not reshape every row (O(n) per add).");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGroupedData(tableView, items, p => !p.Name.EndsWith("5", StringComparison.Ordinal),
+                    rows => rows.OrderByDescending(p => p.Name, StringComparer.Ordinal));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removals while grouped keep groups in first-appearance order and drop an emptied group.")]
+        public void VerifyGroupedRemovesKeepFirstAppearanceOrder()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Designer: Asha, Ines; Engineer: Diego, Rafa, Owen; Architect: Mei.
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Rafa is not his group's first row; Mei empties hers; Asha is the first Designer, so
+                // Designer now first appears after Engineer.
+                items.Remove(items.First(p => p.Name == "Rafa"));
+                items.Remove(items.First(p => p.Name == "Mei"));
+                items.Remove(items.First(p => p.Name == "Asha"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Engineer(2)", "Diego", "Owen", "#Designer(1)", "Ines" },
+                    "removals must leave the groups exactly as a regroup of the remaining rows would");
+            });
+        }
+
+        // 37 and 120 are coprime, so names are distinct and adds interleave the existing rows.
+        private static ShapedPerson MakeGroupedPerson(int k)
+            => new ShapedPerson($"N{(k * 37) % 120:D3}", new[] { "Designer", "Engineer", "Architect" }[k % 3], "Platform");
+
+        // Groups in first-appearance order of the kept rows, each group's rows ordered by `order`.
+        private static void VerifyGroupedData(
+            TableView tableView,
+            IEnumerable<ShapedPerson> source,
+            Func<ShapedPerson, bool> keep,
+            Func<IEnumerable<ShapedPerson>, IEnumerable<ShapedPerson>> order)
+        {
+            var kept = source.Where(keep).ToList();
+            var keys = kept.Select(p => p.Role).Distinct().ToList();
+            var expected = keys.SelectMany(key => order(kept.Where(p => p.Role == key))).Select(p => p.Name).ToList();
+            var projected = GetProjectedItems(tableView);
+            VerifySequence(expected, projected.OfType<ShapedPerson>().Select(p => p.Name).ToList(),
+                "every add must land in its group at its position");
+            Verify.AreEqual(keys.Count, projected.Count(o => !(o is ShapedPerson)), "one header per group");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a filtered Add whose rows listener throws leaves the rows matching the source.")]
         public void VerifyFilteredAddSurvivesAThrowingRowsListener()
         {
