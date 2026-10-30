@@ -1,0 +1,5 @@
+LoadLibraryEx
+GetProcAddress
+FreeLibrary
+ISequentialStream
+IStream

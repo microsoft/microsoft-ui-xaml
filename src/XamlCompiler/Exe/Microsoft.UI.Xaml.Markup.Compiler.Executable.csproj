@@ -38,6 +38,8 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
     <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
     <PublishAot>true</PublishAot>
+    <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
+    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
     <!-- Only the runtime pack of the RID that is published is needed, not those of the other frameworks (ASP.NET Core, Windows Desktop) -->
     <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
@@ -513,6 +515,8 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net10.0' ">
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
+    <!-- Generates the Windows P/Invokes and COM interfaces (see NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" Condition=" '$(TargetFramework)' == 'net10.0' " />
     <!-- Compile-time only: the legacy CAS code paths in System.Xaml that need it are never executed -->
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
   </ItemGroup>

@@ -145,6 +145,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\LmrAssemblyBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\LmrMethodBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\LmrReflection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ManifestResourceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\LmrTypeBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\LmrTypeNameResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\TrimAnnotationAttributes.cs" />

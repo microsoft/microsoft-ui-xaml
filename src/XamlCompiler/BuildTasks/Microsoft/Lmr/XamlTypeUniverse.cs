@@ -204,22 +204,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         {
             if (_xamlProxyAssembly == null)
             {
-                byte[] data;
-                using (Stream stream = typeof(XamlTypeUniverse).Assembly.GetManifestResourceStream(XamlProxyTypesResourceName))
-                {
-                    if (stream == null)
-                    {
-                        throw new FileNotFoundException(string.Format(CultureInfo.InvariantCulture,
-                            "The embedded resource '{0}' was not found in the XAML compiler.", XamlProxyTypesResourceName));
-                    }
-
-                    using (MemoryStream memory = new MemoryStream())
-                    {
-                        stream.CopyTo(memory);
-                        data = memory.ToArray();
-                    }
-                }
-
+                byte[] data = typeof(XamlTypeUniverse).Assembly.GetManifestResourceBytes(XamlProxyTypesResourceName);
                 Assembly asm = Loader.LoadAssemblyFromByteArray(data);
                 _asmNameCache[asm.GetName().FullName] = asm;
                 _xamlProxyAssembly = asm;
