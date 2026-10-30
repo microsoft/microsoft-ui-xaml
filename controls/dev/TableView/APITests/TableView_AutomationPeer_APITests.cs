@@ -249,6 +249,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Repeated GetSelection calls must hand back the same provider.");
 
                 ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+                // Realize is synchronous: a client re-queries the provider as soon as it returns.
+                Verify.IsNotNull(GetRowsRepeater(tableView).TryGetElement(target), "Realize must create the selected row before it returns.");
             });
 
             IdleSynchronizer.Wait();
@@ -263,7 +265,103 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     $"Realize must bring the row into view (top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}).");
                 Verify.IsNull(itemPeer.GetPattern(PatternInterface.VirtualizedItem),
                     "Once realized, the data-item peer must stop offering VirtualizedItem.");
+
+                // A client may keep the provider it was handed; it must now describe the realized row.
+                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+                var bounds = itemPeer.GetBoundingRectangle();
+                Verify.IsTrue(bounds.Width > 0 && bounds.Height > 0, $"The held peer must report the row's bounds (got {bounds}).");
+                Verify.IsFalse(itemPeer.IsOffscreen(), "The held peer must not report an on-screen row as off screen.");
+                Verify.AreEqual(rowPeer.GetName(), itemPeer.GetName(), "The held peer must report the row's name.");
+                Verify.AreSame(rowPeer.Navigate(AutomationNavigationDirection.Parent), itemPeer.Navigate(AutomationNavigationDirection.Parent),
+                    "The data-item peer must have the same parent as a realized row.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer for an unrealized selected row reports ElementNotAvailable once its item leaves the source.")]
+        public void VerifyGetSelectionDataItemPeerForRemovedItemIsNotAvailable()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(200));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsTrue(selectionItem.IsSelected, "Precondition: the data-item peer reports itself selected.");
+
+                items.RemoveAt(150);
+                tableView.UpdateLayout();
+
+                VerifyElementNotAvailable(() => _ = selectionItem.IsSelected, "IsSelected");
+                VerifyElementNotAvailable(() => _ = selectionItem.SelectionContainer, "SelectionContainer");
+                VerifyElementNotAvailable(() => selectionItem.RemoveFromSelection(), "RemoveFromSelection");
+                VerifyElementNotAvailable(() => _ = itemPeer.GetName(), "GetName");
+                Verify.IsNull(itemPeer.GetPattern(PatternInterface.SelectionItem), "A removed item must stop offering SelectionItem.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer follows the selected occurrence of an item that appears twice in the source.")]
+        public void VerifyGetSelectionDataItemPeerTracksSelectedDuplicate()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+            items[180] = items[150];
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the selected row must not be realized.");
+                RequireSelectionProvider(tableView).GetSelection();
+
+                // The same item, now selected at its other unrealized occurrence.
+                tableView.Select(180);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(180), "Precondition: the selected row must not be realized.");
+
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                Verify.IsTrue(((ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem)).IsSelected,
+                    "The peer for the selected occurrence must report itself selected.");
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+                Verify.IsNotNull(repeater.TryGetElement(180), "Realize must create the selected occurrence.");
+            });
+        }
+
+        private static void VerifyElementNotAvailable(Action action, string what)
+        {
+            int hr = 0;
+            try
+            {
+                action();
+            }
+            catch (global::System.Exception e)
+            {
+                hr = e.HResult;
+            }
+            Verify.AreEqual(unchecked((int)0x80040201), hr, $"{what} must fail with UIA_E_ELEMENTNOTAVAILABLE for a removed item.");
         }
 
         [TestMethod]
@@ -320,7 +418,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             .Select(i => new NamedPerson { Name = $"Person {i}", Role = $"Role {i}" })
             .ToList();
 
-        private static TableView CreateNamedPeopleTable(List<NamedPerson> items)
+        private static TableView CreateNamedPeopleTable(object items)
         {
             var tableView = CreateTableViewShell(items, 600, 300);
             tableView.Columns.Add(MakeTextColumn("Name"));
