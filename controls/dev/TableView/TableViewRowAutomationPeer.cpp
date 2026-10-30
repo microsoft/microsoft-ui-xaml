@@ -242,18 +242,14 @@ void TableViewRowAutomationPeer::Realize()
 void TableViewRowAutomationPeer::RealizeCore()
 {
     auto const tableView = m_lastOwningTable.get();
-    auto const row = RealizeRowAt(tableView, tableView ? GetTrackedItemIndex(tableView) : -1);
-    if (!IsTrackedRow(row, tableView))
-    {
-        ThrowElementNotAvailable();
-    }
-
-    // Arranged first, as the ItemsRepeater docs require: a just-created element has no position to bring into view.
-    row.UpdateLayout();
-    row.StartBringIntoView();
+    RealizeRowAt(tableView, tableView ? GetTrackedItemIndex(tableView) : -1,
+        [this, &tableView](winrt::TableViewRow const& row) { return IsTrackedRow(row, tableView); });
 }
 
-winrt::TableViewRow TableViewRowAutomationPeer::RealizeRowAt(winrt::TableView const& tableView, int32_t rowIndex)
+void TableViewRowAutomationPeer::RealizeRowAt(
+    winrt::TableView const& tableView,
+    int32_t rowIndex,
+    std::function<bool(winrt::TableViewRow const&)> const& isExpectedRow)
 {
     if (!tableView || rowIndex < 0)
     {
@@ -287,11 +283,26 @@ winrt::TableViewRow TableViewRowAutomationPeer::RealizeRowAt(winrt::TableView co
     }
 
     auto const row = element.try_as<winrt::TableViewRow>();
-    if (!row)
+    if (!row || !isExpectedRow(row))
     {
         ThrowElementNotAvailable();
     }
-    return row;
+
+    // Arranged first, as the ItemsRepeater docs require: a just-created element has no position to
+    // bring into view. Layout runs app code that can change the source or recycle the row.
+    try
+    {
+        row.UpdateLayout();
+    }
+    catch (winrt::hresult_error const&)
+    {
+        ThrowElementNotAvailable();
+    }
+    if (repeater.TryGetElement(rowIndex) != row || !isExpectedRow(row))
+    {
+        ThrowElementNotAvailable();
+    }
+    row.StartBringIntoView();
 }
 
 winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const

@@ -7,6 +7,7 @@
 #include "TableViewRowAutomationPeer.g.h"
 #include "TableViewAutomationHelpers.h"
 
+#include <functional>
 #include <vector>
 
 class TableViewRowAutomationPeer :
@@ -47,8 +48,12 @@ public:
 
     // IVirtualizedItemProvider — available only after the realized row has been recycled out.
     void Realize();
-    // Creates the row at rowIndex (UIA Realize only, never a read); throws ElementNotAvailable.
-    static winrt::TableViewRow RealizeRowAt(winrt::TableView const& tableView, int32_t rowIndex);
+    // Creates the row at rowIndex and brings it into view (UIA Realize only, never a read). Throws
+    // ElementNotAvailable when it cannot, or when the row is not the expected one.
+    static void RealizeRowAt(
+        winrt::TableView const& tableView,
+        int32_t rowIndex,
+        std::function<bool(winrt::TableViewRow const&)> const& isExpectedRow);
 
     // Single source of cell-peer identity for GetChildrenCore and Grid.GetItem; UIA compares
     // providers by identity.
