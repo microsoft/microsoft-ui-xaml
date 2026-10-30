@@ -153,7 +153,7 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
     }
     else
     {
-        const bool restorePending = m_liveShapingDirty;
+        const bool restorePending = m_liveShapingDirty || m_liveShapingChangeDropped->load();
         ClearLiveShapingSubscriptions();
 
         // Sort-key tracking owns staleness again. The projection is current (live shaping kept it
@@ -522,6 +522,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     // See the UI-thread contract on OnSourceCollectionChanged(): incremental InsertAt/RemoveAt/
     // SetAt below mutate the UI-affine projection directly, so they must run on the owning thread.
     ++m_sourceChangeStamp;
+    m_sourceChangesIncrementally = true;
 
     // Re-entrant during a full rebuild: the in-flight Refresh() re-materializes the live source
     // when it completes, but changes after its initial materialization still need one coalesced
@@ -615,8 +616,8 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 
 void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-    // Subscription DELTA from the args, here rather than per splice site, so every branch is
-    // covered at cost proportional to the change.
+    // Subscription DELTA from the args (only the changed items), here rather than per splice site,
+    // so every branch is covered.
     ApplyLiveShapingDelta(args);
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
@@ -630,8 +631,9 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
     }
 
     // SORTED and/or FILTERED flat projection: apply a single-item change in place (one predicate
-    // call, binary-search insert / tracked removal) instead of an O(n) rebuild per change; anything
-    // else falls back to Refresh.
+    // call, binary-search insert / tracked removal) instead of re-shaping every row. The splices
+    // are still linear in the row count, but run no app code per row. Anything else falls back to
+    // Refresh.
     //
     // Invariant: re-sorting and re-filtering are driven by collection notifications on this path.
     // An in-place mutation of a row's sort-key or filter-key field that raises only
@@ -1010,6 +1012,12 @@ bool ShapedItemsSource::IsFilterMembershipCurrent() const
         return true;
     }
 
+    // The unfiltered source is kept only once the source has changed incrementally.
+    if (m_shapingState.Source.size() != m_refreshSourceRowCount)
+    {
+        return false;
+    }
+
     if (IsLiveShapingEnabled())
     {
         return !m_liveShapingDirty && !m_liveShapingChangeDropped->load();
@@ -1218,8 +1226,8 @@ void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt
 }
 
 // Sorted and/or filtered, ungrouped flat projection only. Nothing is mutated until every
-// precondition passes, so a false return leaves all state untouched and the commit cannot fail
-// half-way.
+// precondition passes, so a false return leaves all state untouched. A commit that throws once
+// it has started mutating abandons the retained state instead (AbandonIncrementalCommit).
 bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
@@ -1248,6 +1256,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
 
     const uint32_t rowCount = m_rows.Size();
     const uint64_t generation = m_projectionGeneration;
+    bool committing = false;
 
     // Planning calls app code (predicates, sort keys, comparers), and committing a removal raises
     // m_rows listeners, either of which can rebuild the projection. Re-check before every raw
@@ -1418,6 +1427,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
             return false;
         }
 
+        committing = true;
         if (filtered)
         {
             source.erase(source.begin() + removal.SourceIndex);
@@ -1456,6 +1466,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
             return false;
         }
 
+        committing = true;
         if (filtered)
         {
             source.insert(source.begin() + insertion.SourceIndex, insertion.Item);
@@ -1590,12 +1601,27 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
     }
     catch (...)
     {
+        if (committing)
+        {
+            AbandonIncrementalCommit();
+            throw;
+        }
         if (!isPlanCurrent())
         {
             return false;
         }
         throw;
     }
+}
+
+void ShapedItemsSource::AbandonIncrementalCommit() noexcept
+{
+    // A listener or subscription threw part-way through an in-place commit (a Replace may hold its
+    // removal but not its insert), so the retained state can no longer be trusted to match m_rows.
+    InvalidateShapingState();
+    m_validatedSourceStamp = ~uint64_t{ 0 };
+    m_pendingRefresh = true;
+    PostPendingRefresh();
 }
 
 
@@ -1945,7 +1971,7 @@ void ShapedItemsSource::Refresh()
             std::vector<winrt::IInspectable> unfilteredRows;
             if (!m_parentKeySelector)
             {
-                if (!m_groupSelector && m_pipeline.HasFilter())
+                if (!m_groupSelector && m_pipeline.HasFilter() && m_sourceChangesIncrementally)
                 {
                     unfilteredRows = rows;
                 }
