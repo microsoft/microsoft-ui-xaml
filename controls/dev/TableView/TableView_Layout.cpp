@@ -383,8 +383,9 @@ void TableView::ResolveColumnWidths()
 
     if (std::any_of(starColumns.begin(), starColumns.end(), isLocked))
     {
-        // A locked Star column takes its share of the authored layout rather than of whatever a
-        // neighbor's resize left behind, so a drag cannot change its width.
+        // A locked Star column holds its share of the authored layout, so a neighbor's drag leaves it
+        // alone while that share still fits next to the other Star columns' MinWidth. Once it does not,
+        // it is divided with the other Star columns by factor and a drag elsewhere can move it.
         double authoredFixedTotal = 0.0;
         std::vector<winrt::TableViewColumn> authoredPool;
         for (auto const& c : columns)
@@ -425,7 +426,7 @@ void TableView::ResolveColumnWidths()
         std::vector<std::pair<winrt::TableViewColumn, double>> lockedShares;
         double lockedTotal = 0.0;
         DistributeStarWidths(
-            authoredPool,
+            std::move(authoredPool),
             std::max(0.0, layoutRound(viewport) - authoredFixedTotal),
             [&authoredOf](winrt::TableViewColumn const& c) { return std::max(0.0, authoredOf(c).Value); },
             layoutRound,
@@ -438,43 +439,43 @@ void TableView::ResolveColumnWidths()
                 }
             });
 
-        starColumns.erase(
-            std::remove_if(starColumns.begin(), starColumns.end(), isLocked), starColumns.end());
-
-        // The authored layout ignores what resizes already took, so cap the locked share at the room
-        // the current layout leaves; otherwise a Min/MaxWidth change elsewhere can overflow the viewport.
+        // The authored layout ignores what resizes already took, so the held share can exceed the room
+        // the current layout leaves (e.g. after a Min/MaxWidth change elsewhere).
         double room = layoutRound(viewport) - fixedTotal;
         for (auto const& c : starColumns)
         {
-            room -= MinWidthForStarFactor(c, std::max(0.0, c.Width().Value));
+            if (!isLocked(c))
+            {
+                room -= MinWidthForStarFactor(c, std::max(0.0, c.Width().Value));
+            }
         }
 
-        auto const resolveLocked = [&](winrt::TableViewColumn const& c, double width)
+        if (lockedTotal <= std::max(0.0, room))
         {
-            changed |= setResolvedActualWidth(c, width);
-            fixedTotal += c.ActualWidth();
-        };
-
-        if (lockedTotal > std::max(0.0, room))
-        {
-            std::vector<winrt::TableViewColumn> lockedPool;
-            for (auto const& share : lockedShares)
+            for (auto const& [c, width] : lockedShares)
             {
-                lockedPool.push_back(share.first);
+                changed |= setResolvedActualWidth(c, width);
+                fixedTotal += c.ActualWidth();
             }
-            DistributeStarWidths(
-                std::move(lockedPool),
-                std::max(0.0, room),
-                [&authoredOf](winrt::TableViewColumn const& c) { return std::max(0.0, authoredOf(c).Value); },
-                layoutRound,
-                resolveLocked);
+            starColumns.erase(
+                std::remove_if(starColumns.begin(), starColumns.end(), isLocked), starColumns.end());
         }
         else
         {
-            for (auto const& share : lockedShares)
-            {
-                resolveLocked(share.first, share.second);
-            }
+            // One pass with the other Star columns, so a Min/MaxWidth clamp hands its excess to them.
+            DistributeStarWidths(
+                std::move(starColumns),
+                std::max(0.0, layoutRound(viewport) - fixedTotal),
+                [&](winrt::TableViewColumn const& c)
+                {
+                    return std::max(0.0, isLocked(c) ? authoredOf(c).Value : c.Width().Value);
+                },
+                layoutRound,
+                [&](winrt::TableViewColumn const& c, double width)
+                {
+                    changed |= setResolvedActualWidth(c, width);
+                });
+            starColumns.clear();
         }
     }
 
@@ -482,7 +483,7 @@ void TableView::ResolveColumnWidths()
     // fixed columns (CGrid rounds availableSize before distribution); per-column Star widths are
     // then snapped in setResolvedActualWidth.
     DistributeStarWidths(
-        starColumns,
+        std::move(starColumns),
         std::max(0.0, layoutRound(viewport) - fixedTotal),
         [](winrt::TableViewColumn const& c) { return std::max(0.0, c.Width().Value); },
         layoutRound,
@@ -517,7 +518,7 @@ void TableView::RestoreColumnWidth(const winrt::TableViewColumn& column, const w
 // A resize takes space only from the columns after the dragged one (the WPF DataGrid contract).
 // Holding the earlier Star columns at the width they already render keeps them out of the
 // redistribution pass without changing what the user sees. A locked column is skipped: the
-// authored pass below already pins it, and freezing it would double-count it there.
+// authored pass sizes it (holding its share while that fits), and freezing it would double-count it there.
 void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen)
 {
     auto columns = Columns();
