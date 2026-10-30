@@ -664,7 +664,9 @@ void NavigationViewItem::OnAnimatedIconPropertyChanged(const winrt::DependencyOb
         m_lastWrittenAnimatedIconState = {};
     }
 
-    UpdateAnimatedIconState(animatedIcon);
+    // A Source that becomes selection-aware (e.g. a legacy icon re-sourced, or a Source supplied later) may still
+    // hold a pointer state the template no longer propagates, so take the host's state as on load.
+    UpdateAnimatedIconState(animatedIcon, args == winrt::AnimatedIcon::SourceProperty() /* syncWithHost */);
 }
 
 void NavigationViewItem::UpdateAnimatedIconState()
