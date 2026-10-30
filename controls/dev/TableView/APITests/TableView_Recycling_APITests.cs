@@ -828,6 +828,240 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
+    // Recycling cost: work done per recycled container, observed through public extensibility points.
+    [TestClass]
+    public class TableViewRecyclingCostTests : TableViewApiTestBase
+    {
+        private const int ScrollSteps = 6;
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled row refreshes its cell chrome once per recycle, not once per ElementClearing / DataContext change / ElementPrepared.")]
+        public void VerifyRowRecycleRefreshesCellsOnce()
+        {
+            TableView tableView = null;
+            CountingVisualStateManager vsm = null;
+            var trackedRows = new HashSet<TableViewRow>();
+            int recycles = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                vsm = new CountingVisualStateManager();
+                tableView = CreateScrollableTable(MakeManyItems(RecyclingSourceCount));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The rebuild's chrome pass ends in ApplyHierarchyAffordance, which always raises a
+                // RowHierarchyStates GoToState; a custom VSM on the template root counts those.
+                foreach (var row in GetRealizedRows(tableView))
+                {
+                    var root = VisualTreeHelper.GetChildrenCount(row) > 0 ? VisualTreeHelper.GetChild(row, 0) as FrameworkElement : null;
+                    Verify.IsNotNull(root, "Precondition: a realized row must have its template applied.");
+                    VisualStateManager.SetCustomVisualStateManager(root, vsm);
+                    trackedRows.Add(row);
+                }
+                Verify.IsGreaterThan(trackedRows.Count, 0, "Precondition: rows must realize.");
+
+                GetRowsRepeater(tableView).ElementPrepared += (s, e) =>
+                {
+                    if (e.Element is TableViewRow row && trackedRows.Contains(row))
+                    {
+                        ++recycles;
+                    }
+                };
+            });
+
+            ScrollInSteps(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(recycles, 0, "Precondition: scrolling must recycle tracked rows.");
+
+                // One RebuildCells pass plus RefreshRowHierarchyState's own ApplyHierarchyAffordance; the
+                // slack absorbs incidental refreshes (a rebuild-per-callback regression costs several per recycle).
+                const int expectedPerRecycle = 2;
+                const int slack = 8;
+                var ratio = (double)vsm.HierarchyStateCalls / recycles;
+                Log.Comment($"Recycles={recycles} RowHierarchyStates GoToState calls={vsm.HierarchyStateCalls} perRecycle={ratio:F2}");
+                Verify.IsLessThanOrEqual(vsm.HierarchyStateCalls, (expectedPerRecycle * recycles) + slack,
+                    $"A recycled row must refresh its cells once per recycle; saw {ratio:F2} hierarchy refreshes per recycle (expected <= {expectedPerRecycle}).");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies rows that were pooled while the columns were reordered show the new column order when they are recycled back in.")]
+        public void VerifyColumnReorderWhileRowsArePooledReachesRecycledRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(MakeManyItems(RecyclingSourceCount));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = tableView.Columns[0];
+                tableView.Columns.RemoveAt(0);
+                tableView.Columns.Add(first);
+            });
+
+            SettleLayout(tableView);
+            ScrollToStart(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = RealizedProjectedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "Rows must realize after scrolling back.");
+
+                foreach (var row in rows)
+                {
+                    var item = (Person)row.DataContext;
+                    Verify.IsTrue(GetRowCellColumns(row).SequenceEqual(tableView.Columns),
+                        $"'{item.Name}' must lay its cells out in the reordered column order.");
+                    Verify.AreEqual(item.Role, GetCellText(GetRowCell(row, 0)), $"'{item.Name}' must show Role first after the reorder.");
+                    Verify.AreEqual(item.Name, GetCellText(GetRowCell(row, 1)), $"'{item.Name}' must show Name second after the reorder.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies rows that were pooled while a column's Visibility toggled show the current visibility when they are recycled back in.")]
+        public void VerifyColumnVisibilityToggleWhileRowsArePooledReachesRecycledRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(MakeManyItems(RecyclingSourceCount));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            foreach (var visibility in new[] { Visibility.Collapsed, Visibility.Visible })
+            {
+                ScrollToEnd(tableView);
+                RunOnUIThread.Execute(() => tableView.Columns[1].Visibility = visibility);
+                SettleLayout(tableView);
+                ScrollToStart(tableView);
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var rows = RealizedProjectedRows(tableView);
+                    Verify.IsGreaterThan(rows.Count, 0, "Rows must realize after scrolling back.");
+
+                    foreach (var row in rows)
+                    {
+                        var item = (Person)row.DataContext;
+                        Verify.AreEqual(item.Name, GetCellText(GetRowCell(row, 0)), $"'{item.Name}' must show its own item.");
+                        Verify.AreEqual(visibility, GetRowCell(row, 1).Visibility,
+                            $"'{item.Name}' must carry the Role column's current visibility ({visibility}).");
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer acquired before its row was recycled no longer describes the outgoing item.")]
+        public void VerifyRecycledOutRowCellPeerDoesNotDescribeTheOldItem()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+            TableViewRow row = null;
+            TableViewCellAutomationPeer before = null;
+            Person target = null;
+            bool preparedForAnotherItem = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(RecyclingSourceCount);
+                target = items[1];
+                tableView = CreateScrollableTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                row = RealizedProjectedRows(tableView).FirstOrDefault(candidate => ReferenceEquals(candidate.DataContext, target));
+                Verify.IsNotNull(row, "Precondition: the target must be realized.");
+                before = GetCellPeer(row, 0);
+                Verify.IsTrue(NamesItem(before, target), "Precondition: the cell peer must name the target item.");
+
+                GetRowsRepeater(tableView).ElementPrepared += (s, e) =>
+                {
+                    if (ReferenceEquals(e.Element, row) && !ReferenceEquals(row.DataContext, target))
+                    {
+                        preparedForAnotherItem = true;
+                    }
+                };
+            });
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(preparedForAnotherItem && !ReferenceEquals(row.DataContext, target),
+                    "Precondition: the target's row must have been re-prepared for a different item.");
+                Verify.IsFalse(NamesItem(before, target),
+                    $"A cell peer of a recycled-out row must not still describe '{target.Name}'.");
+            });
+        }
+
+        private static bool NamesItem(TableViewCellAutomationPeer peer, Person item)
+        {
+            string name;
+            try
+            {
+                name = peer.GetName();
+            }
+            catch (global::System.Exception)
+            {
+                // ElementNotAvailable: the peer no longer describes anything.
+                return false;
+            }
+            return name != null &&
+                global::System.Text.RegularExpressions.Regex.IsMatch(name, $@"\b{(global::System.Text.RegularExpressions.Regex.Escape(item.Name))}\b");
+        }
+
+        private static void ScrollInSteps(TableView tableView)
+        {
+            var extent = 0.0;
+            RunOnUIThread.Execute(() => extent = GetBodyScroller(tableView).ScrollableHeight);
+            Verify.IsGreaterThan(extent, 1.0, "The fixture must overflow its viewport, or nothing is recycled.");
+
+            for (int step = 1; step <= ScrollSteps; ++step)
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, (extent - 1.0) * step / ScrollSteps);
+            }
+        }
+
+        private sealed class CountingVisualStateManager : VisualStateManager
+        {
+            public int HierarchyStateCalls { get; private set; }
+
+            protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
+            {
+                if (stateName == "RowHierarchical" || stateName == "RowNotHierarchical")
+                {
+                    ++HierarchyStateCalls;
+                }
+                return base.GoToStateCore(control, templateRoot, stateName, group, state, useTransitions);
+            }
+        }
+    }
+
     internal static class TableViewRecyclingTestHelpers
     {
         internal const int RecyclingSourceCount = 120;
