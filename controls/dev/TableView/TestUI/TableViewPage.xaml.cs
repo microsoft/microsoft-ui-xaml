@@ -1037,6 +1037,11 @@ namespace MUXControlsTestApp
         }
 
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
+        {
+            NameColumn.CanResize = !NameColumn.CanResize;
+        }
+
         private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
         {
             if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))

@@ -320,5 +320,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "A canceled drag must still apply the availability change it held back.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies unloading the table mid-drag cancels the resize and restores Width, and that a new drag works after the table is re-added.")]
+        public void VerifyUnloadMidDragRevertsWidthAndAllowsANewDrag()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = RequireGripper(tableView, 0);
+                gripper.BeginDrag();
+                gripper.TryDrag(40.0);
+                Verify.AreEqual(190.0, tableView.Columns[0].Width.Value, "Precondition: the drag must have written a width.");
+
+                Content = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(new GridLength(150.0, GridUnitType.Pixel), tableView.Columns[0].Width,
+                    "Unloading mid-drag must cancel the resize and restore the authored Width.");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = RequireGripper(tableView, 0);
+                Verify.IsFalse(gripper.IsDragging, "No drag may survive the unload.");
+
+                gripper.BeginDrag();
+                gripper.TryDrag(20.0);
+                gripper.EndDrag(false);
+
+                Verify.AreEqual(new GridLength(170.0, GridUnitType.Pixel), tableView.Columns[0].Width,
+                    "A new drag after re-adding the table must resize from the restored width.");
+            });
+        }
     }
 }

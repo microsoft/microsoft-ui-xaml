@@ -676,15 +676,74 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies two gripper clicks spaced beyond the system double-click time do not fit the column.")]
+        public void PointerSlowSecondClickOnGripperDoesNotFitColumn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                double before = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+                var point = GripperPoint(FindColumnHeader(tableView, "Name"));
+                int interval = (int)GetDoubleClickTime();
+
+                ClickPoint(point);
+                global::System.Threading.Thread.Sleep(interval + 300);
+                ClickPoint(point);
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width before={0}, after two slow clicks={1}; double-click time={2} ms.", before, after, interval);
+                Verify.IsTrue(Math.Abs(after - before) <= 1.0, "Two clicks further apart than the double-click time must not fit the column.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking where a CanResize=False column's gripper would be does not resize it.")]
+        public void PointerDoubleClickOnNonResizableColumnEdgeIsNoOp()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                var toggle = FindElement.ById<Button>(ToggleNameCanResizeButton);
+                if (tableView == null || toggle == null)
+                {
+                    Verify.Fail("BasicTableView and/or ToggleNameCanResizeButton were not found on the test page.");
+                    return;
+                }
+
+                toggle.InvokeAndWait();
+                Wait.ForIdle();
+
+                double before = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name (CanResize=False) width before={0}, after double-click={1}.", before, after);
+                Verify.IsTrue(Math.Abs(after - before) <= 1.0, "Double-clicking the edge of a column with CanResize=False must not resize it.");
+            }
+        }
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDoubleClickTime();
+
         // The 8-DIP gripper is right-aligned in the header cell; aim at its centre.
-        private static void DoubleClickColumnGripper(UIObject header)
+        private static Point GripperPoint(UIObject header)
         {
             var bounds = header.BoundingRectangle;
-            var point = new Point(
+            return new Point(
                 bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale()),
                 bounds.Top + (bounds.Height / 2));
+        }
 
-            DoubleClickPoint(point);
+        private static void DoubleClickColumnGripper(UIObject header)
+        {
+            DoubleClickPoint(GripperPoint(header));
         }
 
         #endregion
