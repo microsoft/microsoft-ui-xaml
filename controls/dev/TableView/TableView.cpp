@@ -2476,8 +2476,6 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
-    ++m_cellLayoutGeneration;
-
     InvalidateTableViewResourceCache(this);
 
     // Density changes require rebuilding headers and refreshing realized rows.
