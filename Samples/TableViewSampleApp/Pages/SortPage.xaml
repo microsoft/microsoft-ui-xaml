@@ -14,16 +14,21 @@
     <Page.Resources>
         <!-- Page-private: the templates are typed to LeagueTeam. Each editor carries a per-row accessible name. -->
 
-        <!-- Crest: initials from the club name, so the cell is never blank. Decorative. -->
+        <!-- Crest: initials from the club name, so the cell is never blank. Decorative: the Viewbox
+             keeps PersonPicture's own name out of the cell and row names (see AvatarTemplate). -->
         <DataTemplate x:Key="CrestTemplate" x:DataType="models:LeagueTeam">
-            <PersonPicture
+            <Viewbox
                 Width="28"
                 Height="28"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsTabStop="False"
-                DisplayName="{x:Bind Team, Mode=OneWay}"
-                AutomationProperties.AccessibilityView="Raw"/>
+                VerticalAlignment="Center">
+                <PersonPicture
+                    Width="28"
+                    Height="28"
+                    IsTabStop="False"
+                    DisplayName="{x:Bind Team, Mode=OneWay}"
+                    AutomationProperties.AccessibilityView="Raw"/>
+            </Viewbox>
         </DataTemplate>
 
         <!-- Country chip: read-only, sorts by the Country string like a text column. -->
