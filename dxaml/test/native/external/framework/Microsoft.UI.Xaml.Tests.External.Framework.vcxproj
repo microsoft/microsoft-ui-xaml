@@ -273,4 +273,5 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+  <Import Project="$(TestInProductionTargetsFile)" Condition="'$(TestInProductionIsReal)' == 'true'" />
 </Project>

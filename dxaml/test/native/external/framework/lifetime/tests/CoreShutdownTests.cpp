@@ -8,8 +8,12 @@
 #include <wil/result_macros.h>
 #include <SafeEventRegistration.h>
 #include <TestEvent.h>
-#include <TraceConsumerSession.h>
 #include <wrl.h>
+#if defined(MUX_TIP_REAL)
+#define wil_details_GetKernelBaseModuleHandle() GetModuleHandleW(L"kernelbase.dll")
+#include <tip/tip.h>
+#undef wil_details_GetKernelBaseModuleHandle
+#endif
 
 using namespace Platform;
 using namespace ::Windows::Foundation;
@@ -116,7 +120,7 @@ void CoreShutdownTests::OffThreadReleaseWakesIdleCleanup()
 void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
 {
 #if !defined(MUX_TIP_REAL)
-    Log::Result(TestResults::Skipped, L"The public TiP stub reports no results.");
+    Log::Result(TestResults::Skipped, L"The public TiP stub has no running tests to observe.");
 #else
     struct ReleaseState
     {
@@ -136,8 +140,8 @@ void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
     private:
         std::shared_ptr<ReleaseState> m_state;
     };
-    // Microsoft.Windows.Health.TestInProduction writes TestResult when a TiP test completes.
-    constexpr GUID tipProvider = { 0x50109fbd, 0x6d85, 0x5815, { 0x73, 0x1e, 0xc9, 0x07, 0xec, 0xa1, 0x60, 0x7b } };
+    // UIAffinityReleaseQueueCleanupTest is process-scoped, so its running sample can be opened by measure id.
+    constexpr unsigned int cleanupMeasure = 64884230;
 
     TestServices::WindowHelper->InitializeXaml();
     auto shutdownGuard = wil::scope_exit([]
@@ -160,23 +164,27 @@ void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
         states[0]->delayMs = 60;
     });
     TestServices::WindowHelper->WaitForIdle();
-
-    TraceConsumerSession session(tipProvider);
-    // The consumer needs an ID for a custom provider; TraceLogging events are still counted by name.
-    TraceConsumer::EnableTracingByEventId(0);
-    TraceConsumer::BeginCountingForCurrentProcess();
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(cleanupMeasure)));
 
     elements[0] = nullptr;
     elements[1] = nullptr;
     VERIFY_IS_TRUE(states[0]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
-    // Arrives while the first pass holds the queue, so it joins the running sample.
+    // The first pass is still releasing, so its sample is running.
+    GUID sampleId{};
+    {
+        auto running = tip::open_dynamic(cleanupMeasure);
+        VERIFY_IS_TRUE(static_cast<bool>(running));
+        sampleId = running.test_id();
+    }
+    // Arrives before the queue drains, so it joins the running sample.
     elements[2] = nullptr;
     VERIFY_IS_TRUE(states[1]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
     VERIFY_IS_TRUE(states[2]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
     TestServices::WindowHelper->WaitForIdle();
-    session.Stop();
 
-    TraceConsumer::VerifyEventTraced(L"TestResult", 1);
+    // The drain completed the sample and left none running.
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(sampleId, cleanupMeasure)));
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(cleanupMeasure)));
 #endif
 }
 
