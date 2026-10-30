@@ -1080,10 +1080,17 @@ void TableView::OnKeyDownForNavigation(
         {
             args.Handled(true);
         }
+        else if (m_navKeyHandledEarly && !hasCellAnchor &&
+            (key == winrt::Windows::System::VirtualKey::Up || key == winrt::Windows::System::VirtualKey::Down))
+        {
+            // Row-level Up/Down at a boundary is a no-op, as in WPF DataGrid; unhandled, the body
+            // scroller would focus a control inside this row's cells.
+            args.Handled(true);
+        }
     }
 }
 
-// Rows forward Left/Right (and row-level Up) before PART_BodyScroller acts on them; the
+// Rows forward Left/Right (and row-level Up/Down) before PART_BodyScroller acts on them; the
 // handledEventsToo KeyDown then skips the key, since hierarchy Left/Right is not idempotent.
 void TableView::HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
 {

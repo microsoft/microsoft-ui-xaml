@@ -820,11 +820,11 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         }
     }
 
-    // Row-level Up goes here too: PART_BodyScroller would otherwise focus a control in the first
-    // row's own cells instead of letting the table move to the header band.
+    // Row-level Up/Down go here too: PART_BodyScroller would otherwise focus a control in this row's
+    // own cells instead of letting the table move to the header band or stop at the boundary.
     if (!args.Handled() &&
         (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right ||
-            (args.Key() == winrt::VirtualKey::Up && IsRowItselfFocused())))
+            ((args.Key() == winrt::VirtualKey::Up || args.Key() == winrt::VirtualKey::Down) && IsRowItselfFocused())))
     {
         if (auto const owner = GetOwningTableView())
         {
