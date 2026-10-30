@@ -854,5 +854,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyTreeOnUI(tableView, "Ann1- Cat2+ Dee1", "A later child Add brings its enumerable-only subtree");
             RunOnUIThread.Execute(() => Verify.AreEqual(1, f.Children[f.Ann].HandlerCount, "The kept feed stays subscribed once."));
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a single-item child Replace is surgical: the view sees a targeted Remove and Add, not a Reset, unaffected rows keep their expansion, and the replaced row's subtree leaves with it (perf fix C, drift #75).")]
+        public void VerifyChildFeedReplaceIsSurgical()
+        {
+            var f = MakeChildrenFixture();
+            var source = FromOnUI(f.Roots);
+            var tableView = PlaceTreeSource(source, s => s.ChildrenBy(f.Selector));
+            ExpandAll(tableView);
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "start");
+            var events = RecordViewEventsWithCounts(tableView);
+
+            // A leaf replaced by a leaf.
+            var hal = new LiveRow { Id = 6, Name = "Hal" };
+            OnUI(tableView, () => f.Children[f.Ann][1] = hal);
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Hal2 Dee1", "Cat replaced by Hal; Ann and Bob stay expanded");
+            VerifyEvents(events, "Remove@3+1,Add@3+1", "a leaf Replace");
+
+            // A row with a subtree replaced by a row with its own children: Gil leaves with Bob,
+            // the new row arrives collapsed with Jo below it.
+            var jo = new LiveRow { Id = 7, Name = "Jo" };
+            var ivy = new LiveRow { Id = 8, Name = "Ivy" };
+            f.Children[ivy] = new CountingCollection<LiveRow>(new[] { jo });
+            OnUI(tableView, () => f.Children[f.Ann][0] = ivy);
+            VerifyTreeOnUI(tableView, "Ann1- Ivy2+ Hal2 Dee1", "Bob and Gil replaced by a collapsed Ivy");
+            VerifyEvents(events, "Remove@1+2,Add@1+1", "a subtree Replace");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, f.Children[f.Bob].HandlerCount, "The replaced row's feed is unsubscribed.");
+                Verify.AreEqual(1, f.Children[ivy].HandlerCount, "The new row's feed is subscribed once.");
+            });
+
+            ExpandAll(tableView);
+            VerifyTreeOnUI(tableView, "Ann1- Ivy2- Jo3 Hal2 Dee1", "The new subtree expands");
+            events.Clear();
+            OnUI(tableView, () => f.Children[ivy].Add(f.Gil));
+            VerifyTreeOnUI(tableView, "Ann1- Ivy2- Jo3 Gil3 Hal2 Dee1", "The new feed is live; Gil left with Bob, so it may return");
+            VerifyEvents(events, "Add@3+1", "an Add to the new feed");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a child Replace accepts an item from the leaving subtree and rejects a duplicate of a staying row with no change and no event (perf fix C, drift #75).")]
+        public void VerifyChildFeedReplaceValidatesAgainstLeavingSubtree()
+        {
+            var f = MakeChildrenFixture();
+            var source = FromOnUI(f.Roots);
+            var tableView = PlaceTreeSource(source, s => s.ChildrenBy(f.Selector));
+            ExpandAll(tableView);
+            var events = RecordViewEventsWithCounts(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyArgumentException(() => f.Children[f.Ann][1] = f.Dee, "more than once", "Dee is a staying root"));
+            SettleLayout(tableView);
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "A rejected Replace changes nothing");
+            VerifyEvents(events, "", "a rejected Replace raises nothing");
+
+            // Undo the divergence: the next notification re-reads once.
+            OnUI(tableView, () => f.Children[f.Ann][1] = f.Cat);
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2 Dee1", "Re-read after the app undid the duplicate");
+            VerifyEvents(events, "Reset", "recovery re-read");
+
+            // Gil leaves with Bob, so it may replace him.
+            OnUI(tableView, () => f.Children[f.Ann][0] = f.Gil);
+            VerifyTreeOnUI(tableView, "Ann1- Gil2 Cat2 Dee1", "Bob replaced by his own child");
+            VerifyEvents(events, "Remove@1+2,Add@1+1", "a Replace from the leaving subtree");
+        }
     }
 }

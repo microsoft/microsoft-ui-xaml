@@ -447,6 +447,16 @@ private:
         winrt::Windows::Foundation::IInspectable const& item);
     void RemoveChild(ISourceHierarchyHost& host, SourceRecord* owner, ChildFeed& feed, uint32_t index);
 
+    // One validated in-place child Replace at index (drift #75): validated against the leaving
+    // record and its subtree first, then RemoveChild + InsertChild, so the view sees a Remove and
+    // an Add at index. Returns InsertChild's error.
+    std::exception_ptr ReplaceChild(
+        ISourceHierarchyHost& host,
+        SourceRecordPtr const& owner,
+        ChildFeed& feed,
+        uint32_t index,
+        winrt::Windows::Foundation::IInspectable const& item);
+
     // Unsubscribes (safe_get), resets the accessor, releases the feed's records and their
     // subtrees through the host and destroys them. Teardown-safe.
     void DestroyChildFeed(ISourceHierarchyHost& host, SourceRecord const* owner) noexcept;

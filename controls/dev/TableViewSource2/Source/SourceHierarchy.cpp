@@ -1374,7 +1374,8 @@ void ChildCollectionsHierarchy::OnChildCollectionChanged(
     auto const size = static_cast<int32_t>(feed.Records.size());
     auto const oneOf = [](auto const& items) { return items && items.Size() == 1; };
 
-    // Drift #15: only a single Add or a single matching Remove applies positionally.
+    // Drift #15, amended by drift #75: a single Add, a single matching Remove, or a single
+    // matching in-place Replace applies positionally; anything else re-reads.
     bool isReset = true;
     switch (action)
     {
@@ -1382,7 +1383,9 @@ void ChildCollectionsHierarchy::OnChildCollectionChanged(
         isReset = !oneOf(newItems) || newIndex < 0 || newIndex > size;
         break;
     case Action::Remove:
-        if (oneOf(oldItems) && oldIndex >= 0 && oldIndex < size)
+    case Action::Replace:
+        if (oneOf(oldItems) && oldIndex >= 0 && oldIndex < size &&
+            (action == Action::Remove || (oneOf(newItems) && newIndex == oldIndex)))
         {
             auto const oldItem = oldItems.GetAt(0);
             isReset = !oldItem || SourceRecord::AddressOf(oldItem) != feed.Records[oldIndex]->Address;
@@ -1402,6 +1405,10 @@ void ChildCollectionsHierarchy::OnChildCollectionChanged(
     if (action == Action::Add)
     {
         error = InsertChild(host, owner, feed, static_cast<uint32_t>(newIndex), newItems.GetAt(0));
+    }
+    else if (action == Action::Replace)
+    {
+        error = ReplaceChild(host, owner, feed, static_cast<uint32_t>(oldIndex), newItems.GetAt(0));
     }
     else
     {
@@ -1452,8 +1459,12 @@ void ChildCollectionsHierarchy::OnChildVectorChanged(
         index = args.Index();
         isReset = index >= size;
         break;
+    case Change::ItemChanged:
+        // A replace in place (drift #75); the vector carries no old item to match.
+        index = args.Index();
+        isReset = index >= size || !feed.Accessor->TryGetAt(index, item);
+        break;
     default:
-        // ItemChanged (a replace) re-reads (drift #15).
         break;
     }
 
@@ -1466,6 +1477,10 @@ void ChildCollectionsHierarchy::OnChildVectorChanged(
     if (change == Change::ItemInserted)
     {
         error = InsertChild(host, owner, feed, index, item);
+    }
+    else if (change == Change::ItemChanged)
+    {
+        error = ReplaceChild(host, owner, feed, index, item);
     }
     else
     {
@@ -1520,6 +1535,32 @@ std::exception_ptr ChildCollectionsHierarchy::InsertChild(
 
     // The caller drains the owed re-read first, then rethrows.
     return error;
+}
+
+std::exception_ptr ChildCollectionsHierarchy::ReplaceChild(
+    ISourceHierarchyHost& host,
+    SourceRecordPtr const& owner,
+    ChildFeed& feed,
+    uint32_t index,
+    winrt::Windows::Foundation::IInspectable const& item)
+{
+    // As SourceTable::ReplaceAt (drift #16): validate the incoming item and its subtree against
+    // the leaving record and its leaving subtree first, so a rejection writes nothing; then a
+    // Remove and an Add (InsertChild validates again; the children selector may run twice).
+    std::vector<winrt::Windows::Foundation::IInspectable> incoming{ item };
+    try
+    {
+        CollectSubtreeItems(item, incoming);
+        host.ValidateIncoming(incoming, feed.Records[index].get());
+    }
+    catch (...)
+    {
+        host.RequestReset();
+        throw;
+    }
+
+    RemoveChild(host, owner.get(), feed, index);
+    return InsertChild(host, owner, feed, index, item);
 }
 
 void ChildCollectionsHierarchy::RemoveChild(ISourceHierarchyHost& host, SourceRecord* owner, ChildFeed& feed, uint32_t index)
