@@ -120,7 +120,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
         {
             using (FileStream jsonFileStream = new FileStream(inputJsonFile, FileMode.Open, FileAccess.Read))
             {
+#if NET10_0_OR_GREATER
+                return JsonSerializer.Deserialize(jsonFileStream, CompilerJsonContext.Default.CompilerInputs);
+#else
                 return JsonSerializer.Deserialize<CompilerInputs>(jsonFileStream);
+#endif
             }
         }
 
@@ -135,7 +139,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
 
             using (FileStream jsonFileStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
             {
+#if NET10_0_OR_GREATER
+                JsonSerializer.Serialize(jsonFileStream, co, CompilerJsonContext.Default.CompilerOutputs);
+#else
                 JsonSerializer.Serialize(jsonFileStream, co);
+#endif
             }
         }
     }

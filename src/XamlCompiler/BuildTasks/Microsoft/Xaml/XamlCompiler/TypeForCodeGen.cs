@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Xaml;
 using System.Linq;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
@@ -155,7 +156,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     return null;
                 }
             }
-            var invokeMethodInfo = multicastDelegate.GetMethod(KnownMembers.Invoke);
+            var invokeMethodInfo = multicastDelegate.GetMethodLmr(KnownMembers.Invoke);
             if (invokeMethodInfo == null)
             {
                 if (throwOnError)

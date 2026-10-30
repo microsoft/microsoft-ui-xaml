@@ -8,7 +8,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
     using System.Linq;
     using System.Runtime.InteropServices;
 
-    internal class StreamXbfOutput : StreamImpl, IXamlStream
+    internal partial class StreamXbfOutput : StreamImpl, IXamlStream
     {
         private string _filePath;
         private string _sourceXamlPath;

@@ -9,6 +9,10 @@
 //  Description: Specifies that the whitespace surrounding an element should be trimmed.
 //
 
+// Only used by the type converter lookup of TypeConverterHelper, which isn't compiled in the Native AOT build of the
+// XAML compiler (it needs runtime reflection, type loading and assembly loading, and the compiler doesn't use it).
+#if !NET10_0_OR_GREATER
+
 using System;
 using System.IO;
 using System.Reflection;
@@ -727,3 +731,4 @@ namespace System.Xaml
 #endregion Assembly Loading
     }
 }
+#endif // !NET10_0_OR_GREATER

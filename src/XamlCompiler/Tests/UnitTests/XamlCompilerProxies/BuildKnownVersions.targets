@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<!-- Shared by XamlCompilerProxies.csproj (net472) and Net10\XamlCompilerProxies.Net10.csproj -->
+<Project>
+  <Target Name="GenerateBuildKnownVersions" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <BuildKnownVersionsSource>$(IntermediateOutputPath)BuildKnownVersions.g.cs</BuildKnownVersionsSource>
+    </PropertyGroup>
+    <ItemGroup>
+      <_BuildKnownVersionsLine Include="// &lt;auto-generated /&gt;" />
+      <_BuildKnownVersionsLine Include="namespace Win8Xaml.CompilerProxies" />
+      <_BuildKnownVersionsLine Include="{" />
+      <_BuildKnownVersionsLine Include="    internal static class BuildKnownVersions" />
+      <_BuildKnownVersionsLine Include="    {" />
+      <_BuildKnownVersionsLine Include="        internal const string WindowsSdkTargetPlatformVersion = &quot;$(WindowsTargetPlatformVersion)&quot;%3B" />
+      <_BuildKnownVersionsLine Include="    }" />
+      <_BuildKnownVersionsLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(BuildKnownVersionsSource)"
+      Lines="@(_BuildKnownVersionsLine)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(BuildKnownVersionsSource)" />
+    </ItemGroup>
+  </Target>
+</Project>

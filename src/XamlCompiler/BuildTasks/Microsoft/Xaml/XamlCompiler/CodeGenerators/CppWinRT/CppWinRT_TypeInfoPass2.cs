@@ -98,7 +98,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
       } 
             this.Write("\r\n");
       if (ProjectInfo.GenerateIncrementalTypeInfo) { 
-          foreach(var entry in Model.TypeInfos.OrderBy(t => t.StandardName)) { 
+          foreach(var entry in Model.TypeInfos.OrderBy(t => t.StandardName, StringComparer.Ordinal)) { 
               IncludeTemplate<CppWinRT_MetadataDelegates>(entry, ProjectInfo.ClassToHeaderFileMap.ContainsKey(entry.StandardName));
           } 
       } else { 

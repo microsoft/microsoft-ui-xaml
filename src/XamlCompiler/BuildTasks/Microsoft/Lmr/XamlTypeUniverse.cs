@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             // our ResolveAssembly call, but can still be used to resolve types via the FindType method.
             while (_asmNameCache.TryGetValue(asmName, out loadedAsm))
             {
-                if (loadedAsm.Location.Equals(asm.Location))
+                if (loadedAsm.GetLocationLmr().Equals(asm.GetLocationLmr()))
                 {
                     return loadedAsm;
                 }
@@ -152,13 +152,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 }
                 else
                 {
-                    // In the C++ case there is no Reference Assembly Path
-                    // So use the .NetFramework mscorlib we are running on.
+                    // In the C++ case there is no Reference Assembly Path, so use the mscorlib of the .NET Framework that is
+                    // installed with Windows. It is only read as metadata, the same way the reference assemblies are in the managed case.
+                    // It must not be the runtime the compiler runs on: that has no mscorlib (.NET), or no file at all (Native AOT).
                     // In the managed case don't fall back on this because this mscorlib is not
                     // right for a managed app.
                     // It isn't exactly right in the C++ case either but the differences are mitigated.
+#if NET10_0_OR_GREATER
+                    path = GetNetFrameworkMscorlibPath();
+#else
                     Assembly runtimeAssembly = typeof(int).Assembly;
                     path = runtimeAssembly.Location;
+#endif
                 }
                 try
                 {
@@ -174,12 +179,50 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return base.GetSystemAssembly();
         }
 
+#if NET10_0_OR_GREATER
+        private static string GetNetFrameworkMscorlibPath()
+        {
+            string windowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            foreach (string frameworkDirectory in new[] { "Framework64", "Framework" })
+            {
+                string path = Path.Combine(windowsDirectory, "Microsoft.NET", frameworkDirectory, "v4.0.30319", "mscorlib.dll");
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            throw new FileNotFoundException("The mscorlib.dll of the .NET Framework 4 was not found in the Windows directory.");
+        }
+#endif
+
+        // The metadata-only assembly that has the types the XAML compiler uses to stand in for markup extensions that don't exist
+        // anywhere (see DirectUI\TypeProxyMetadata.cs). It is embedded in the compiler as a resource.
+        private const string XamlProxyTypesResourceName = "Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.dll";
+
         public Assembly GetXamlProxyAssembly()
         {
             if (_xamlProxyAssembly == null)
             {
-                string path = Assembly.GetCallingAssembly().Location;
-                _xamlProxyAssembly = LoadAssemblyFromFile(path);
+                byte[] data;
+                using (Stream stream = typeof(XamlTypeUniverse).Assembly.GetManifestResourceStream(XamlProxyTypesResourceName))
+                {
+                    if (stream == null)
+                    {
+                        throw new FileNotFoundException(string.Format(CultureInfo.InvariantCulture,
+                            "The embedded resource '{0}' was not found in the XAML compiler.", XamlProxyTypesResourceName));
+                    }
+
+                    using (MemoryStream memory = new MemoryStream())
+                    {
+                        stream.CopyTo(memory);
+                        data = memory.ToArray();
+                    }
+                }
+
+                Assembly asm = Loader.LoadAssemblyFromByteArray(data);
+                _asmNameCache[asm.GetName().FullName] = asm;
+                _xamlProxyAssembly = asm;
             }
             return _xamlProxyAssembly;
         }
@@ -189,12 +232,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             Type type;
             if (!_resolvedTypes.TryGetValue(typeName, out type))
             {
-                type = GetSystemAssembly().GetType(typeName);
+                type = GetSystemAssembly().GetTypeLmr(typeName);
                 if (type == null)
                 {
                     foreach (Assembly asm in Assemblies)
                     {
-                        type = asm.GetType(typeName);
+                        type = asm.GetTypeLmr(typeName);
                         if (type != null)
                         {
                             break;

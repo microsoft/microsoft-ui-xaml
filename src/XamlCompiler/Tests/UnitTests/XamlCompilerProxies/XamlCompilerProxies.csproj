@@ -93,28 +93,6 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  <PropertyGroup>
-    <BuildKnownVersionsSource>$(IntermediateOutputPath)BuildKnownVersions.g.cs</BuildKnownVersionsSource>
-  </PropertyGroup>
-  <Target Name="GenerateBuildKnownVersions" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <_BuildKnownVersionsLine Include="// &lt;auto-generated /&gt;" />
-      <_BuildKnownVersionsLine Include="namespace Win8Xaml.CompilerProxies" />
-      <_BuildKnownVersionsLine Include="{" />
-      <_BuildKnownVersionsLine Include="    internal static class BuildKnownVersions" />
-      <_BuildKnownVersionsLine Include="    {" />
-      <_BuildKnownVersionsLine Include="        internal const string WindowsSdkTargetPlatformVersion = &quot;$(WindowsTargetPlatformVersion)&quot;%3B" />
-      <_BuildKnownVersionsLine Include="    }" />
-      <_BuildKnownVersionsLine Include="}" />
-    </ItemGroup>
-    <WriteLinesToFile
-      File="$(BuildKnownVersionsSource)"
-      Lines="@(_BuildKnownVersionsLine)"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
-    <ItemGroup>
-      <Compile Include="$(BuildKnownVersionsSource)" />
-    </ItemGroup>
-  </Target>
+  <Import Project="BuildKnownVersions.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

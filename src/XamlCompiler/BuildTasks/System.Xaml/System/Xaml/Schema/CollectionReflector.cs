@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Xaml.MS.Impl;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace System.Xaml.Schema
 {
@@ -109,7 +110,7 @@ namespace System.Xaml.Schema
             Type genericICollection = GetGenericInterface(type, typeof(ICollection<>), out hasMoreThanOneICollection);
             if (genericICollection != null)
             {
-                addMethod = genericICollection.GetMethod(KnownStrings.Add);
+                addMethod = genericICollection.GetMethodLmr(KnownStrings.Add);
                 return true;
             }
             else
@@ -248,6 +249,10 @@ namespace System.Xaml.Schema
 
         internal static MethodInfo GetIsReadOnlyMethod(Type collectionType, Type itemType)
         {
+#if NET10_0_OR_GREATER
+            // Only used to add items to collection instances (XamlTypeInvoker), which the XAML compiler never does; this needs runtime code generation.
+            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("CollectionReflector.GetIsReadOnlyMethod");
+#else
             Type genericICollection = typeof(ICollection<>).MakeGenericType(itemType);
             if (genericICollection.IsAssignableFrom(collectionType))
             {
@@ -255,6 +260,7 @@ namespace System.Xaml.Schema
                 return isReadOnlyMethod;
             }
             return null;
+#endif
         }
 
         private static MethodInfo LookupEnumeratorMethod(Type type)
@@ -275,7 +281,7 @@ namespace System.Xaml.Schema
             {
                 return type;
             }
-            foreach (Type currentInterface in type.GetInterfaces())
+            foreach (Type currentInterface in type.GetInterfacesLmr())
             {
                 if (currentInterface.IsGenericType && currentInterface.GetGenericTypeDefinition() == interfaceType)
                 {
@@ -294,7 +300,7 @@ namespace System.Xaml.Schema
         private static MethodInfo GetAddMethod(Type type, int paramCount, out bool hasMoreThanOne)
         {
             MethodInfo result = null;
-            MemberInfo[] addMembers = type.GetMember(KnownStrings.Add, MemberTypes.Method, GetBindingFlags(type));
+            MemberInfo[] addMembers = type.GetMemberLmr(KnownStrings.Add, MemberTypes.Method, GetBindingFlags(type));
             if (addMembers != null)
             {
                 foreach (MemberInfo mi in addMembers)
@@ -336,7 +342,7 @@ namespace System.Xaml.Schema
 
         private static MethodInfo GetMethod(Type type, string name, Type[] argTypes)
         {
-            MethodInfo result = type.GetMethod(name, GetBindingFlags(type), null, argTypes, null);
+            MethodInfo result = type.GetMethodLmr(name, GetBindingFlags(type), null, argTypes, null);
             if (result != null && !TypeReflector.IsPublicOrInternal(result))
             {
                 result = null;
@@ -346,7 +352,7 @@ namespace System.Xaml.Schema
 
         private static MethodInfo GetPublicMethod(Type type, string name, int argCount)
         {
-            foreach (MemberInfo mi in type.GetMember(name, MemberTypes.Method, 
+            foreach (MemberInfo mi in type.GetMemberLmr(name, MemberTypes.Method, 
                 BindingFlags.Instance | BindingFlags.Public))
             {
                 MethodInfo method = (MethodInfo)mi;

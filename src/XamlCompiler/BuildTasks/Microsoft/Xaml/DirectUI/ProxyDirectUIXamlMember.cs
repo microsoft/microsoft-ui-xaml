@@ -116,7 +116,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
 
         protected override IReadOnlyDictionary<char, char> LookupMarkupExtensionBracketCharacters()
         {
-            if (DeclaringType.UnderlyingType.FullName == typeof(ProxyTypes.BindExtension).FullName && Name == "Path")
+            if (DeclaringType.UnderlyingType.FullName == ProxyTypeNames.BindExtension && Name == "Path")
             {
                 return new Dictionary<char, char>() { { '(', ')' }, { '[', ']' } };
             }

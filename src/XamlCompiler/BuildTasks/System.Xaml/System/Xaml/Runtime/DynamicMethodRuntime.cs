@@ -2,6 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// Reflection.Emit isn't supported by Native AOT, so this runtime (only used by PartialTrustTolerantRuntime, i.e. by
+// XamlObjectWriter, which the XAML compiler doesn't use) isn't compiled in the Native AOT build of the XAML compiler.
+#if !NET10_0_OR_GREATER
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -744,3 +748,4 @@ namespace MS.Internal.Xaml.Runtime
         }
     }
 }
+#endif // !NET10_0_OR_GREATER

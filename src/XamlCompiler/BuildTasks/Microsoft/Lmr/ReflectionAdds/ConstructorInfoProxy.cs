@@ -12,12 +12,13 @@ namespace System.Reflection.Adds
     using System.Reflection.Adds;
     using System.Diagnostics;
 
+    using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
     using System.Reflection;  
 
     /// <summary>
     /// Helper for proxy ConstructorInfo that forwards all calls.
     /// </summary>
-    internal abstract class ConstructorInfoProxy : ConstructorInfo
+    internal abstract class ConstructorInfoProxy : LmrConstructorInfoBase
     {
         ConstructorInfo m_cachedResolved;
 
@@ -77,9 +78,9 @@ namespace System.Reflection.Adds
             get { return GetResolvedConstructor().ContainsGenericParameters; }
         }
 
-        public override MethodBody GetMethodBody()
+        internal override MethodBody GetMethodBodyCore()
         {
-            return GetResolvedConstructor().GetMethodBody();
+            return GetResolvedConstructor().GetMethodBodyLmr();
         }
 
         public override System.Reflection.MethodImplAttributes GetMethodImplementationFlags()

@@ -4,7 +4,12 @@
     <SigningMethods Include="StrongName" />
   </ItemGroup>
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <!--
+      net10.0 isn't shipped (see the PackageContent items below): it is the in-proc, CoreCLR build of the same code the Native AOT
+      executable compiler (Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj, net10.0) runs, so the unit tests can exercise
+      the net10.0-only code paths (see Tests\UnitTests\Net10\XamlCompilerUnitTests.Net10.csproj).
+    -->
+    <TargetFrameworks>net472;net8.0;net10.0</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AssemblyName>Microsoft.UI.Xaml.Markup.Compiler</AssemblyName>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
@@ -51,11 +56,27 @@
     <PackageReference Include="Microsoft.Build" Version="15.8.166" />
     <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
     <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net10.0'">
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
+  </ItemGroup>
+  <!-- Same configuration as the net10.0 (Native AOT) build of the executable compiler, so this build runs the same code -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Not shared with the other target frameworks, which use the same output folder; also has the runtime dependencies -->
+    <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Include="BuildTasks\NativeMethods.NativeAot.cs" />
+    <Compile Include="BuildTasks\Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
+    <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />
+    <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeComClasses.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildTasks\AddDefaultXamlLinkMetadata.cs" />
@@ -497,7 +518,8 @@
     <!-- Arbitrarily using net472 to avoid double-writes of these TF-agnostic files -->
     <PackageContent Include="Targets\*" PackageLocation="$(BuildTargetsPackageLocation)" Condition=" '$(TargetFramework)' == 'net472' " />
 
-    <PackageContent Include="$(OutDir)$(AssemblyName).dll" PackageLocation="$(ToolsPackageLocation)\$(TargetFramework)" />
+    <!-- The net10.0 build is only used by the unit tests (the package has the Native AOT executable compiler under tools\net10.0) -->
+    <PackageContent Include="$(OutDir)$(AssemblyName).dll" PackageLocation="$(ToolsPackageLocation)\$(TargetFramework)" Condition=" '$(TargetFramework)' != 'net10.0' " />
     <PackageContent Include="$(OutDir)System.Reflection.Metadata.dll" PackageLocation="$(ToolsPackageLocation)\$(TargetFramework)" Condition=" '$(TargetFramework)' == 'net472' " />
   </ItemGroup>
   <ItemGroup>
@@ -516,7 +538,19 @@
       <Project>{1FBDE93D-5C21-4761-87D6-2504F772BF28}</Project>
       <Name>Microsoft.UI.Xaml.Markup.Compiler.IO</Name>
     </ProjectReference>
+    <!-- Never compiled against: it is embedded as a resource, see below -->
+    <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes\Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      GlobalPropertiesToRemove="TargetFramework"
+                      OutputItemType="XamlProxyTypesAssembly" />
   </ItemGroup>
+  <!-- The XAML compiler loads this metadata-only assembly at runtime to get the proxy types it uses for some markup extensions (see XamlTypeUniverse.GetXamlProxyAssembly) -->
+  <Target Name="EmbedXamlProxyTypes" AfterTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <EmbeddedResource Include="@(XamlProxyTypesAssembly)" LogicalName="Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.dll" />
+    </ItemGroup>
+  </Target>
   <!-- Referencing a .NET Standard project includes a reference to System.Xaml, which conflicts with our private System.Xaml.  Remove the auto-included reference here -->
   <Target Name="RemoveSystemXamlReference" BeforeTargets="ResolveAssemblyReferences">
     <ItemGroup>

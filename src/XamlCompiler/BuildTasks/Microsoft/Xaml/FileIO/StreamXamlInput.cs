@@ -5,7 +5,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
 {
     using System.IO;
 
-    internal class StreamXamlInput : StreamImpl, IXamlStream
+    internal partial class StreamXamlInput : StreamImpl, IXamlStream
     {
         public StreamXamlInput(string filePath)
         {

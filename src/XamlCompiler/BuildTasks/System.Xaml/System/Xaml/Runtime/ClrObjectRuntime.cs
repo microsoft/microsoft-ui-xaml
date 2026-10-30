@@ -110,6 +110,10 @@ namespace MS.Internal.Xaml.Runtime
 
         protected MethodInfo GetFactoryMethod(Type type, string methodName, object[] args, BindingFlags flags)
         {
+#if NET10_0_OR_GREATER
+            // The XAML compiler never writes or reads object graphs (XamlObjectWriter/XamlObjectReader), and this needs runtime reflection.
+            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ClrObjectRuntime.GetFactoryMethod");
+#else
             MethodInfo factory = null;
             if (args == null || args.Length == 0)
             {
@@ -129,6 +133,7 @@ namespace MS.Internal.Xaml.Runtime
                 factory = (MethodInfo)BindToMethod(flags, methods, args);
             }
             return factory;
+#endif
         }
 
         protected MethodBase BindToMethod(BindingFlags bindingFlags, MethodBase[] candidates, object[] args)
@@ -356,6 +361,10 @@ namespace MS.Internal.Xaml.Runtime
 
         public override IEnumerable<DictionaryEntry> GetDictionaryItems(object dictionary, XamlType dictionaryType)
         {
+#if NET10_0_OR_GREATER
+            // The XAML compiler never writes or reads object graphs (XamlObjectWriter/XamlObjectReader), and this needs runtime reflection.
+            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ClrObjectRuntime.GetDictionaryItems");
+#else
             IEnumerator enumerator = GetItems(dictionary, dictionaryType);
             try
             {
@@ -396,6 +405,7 @@ namespace MS.Internal.Xaml.Runtime
                 }
                 throw CreateException(SR.Get(SRID.GetItemsException, dictionaryType), ex);
             }
+#endif
         }
 
         public override int AttachedPropertyCount(object instance)

@@ -118,6 +118,10 @@ namespace System.Windows.Markup
             return converterType;
         }
 #endif
+#if !NET10_0_OR_GREATER
+        // The type converter lookup below is only used by the runtime half of System.Xaml (ValueSerializer, object writer
+        // and reader), which the XAML compiler doesn't use. It needs runtime reflection over arbitrary types (and
+        // System.ComponentModel), so it isn't compiled in the Native AOT build: see NativeAotUnsupported.
         internal static Type GetConverterType(Type type)
         {
             Debug.Assert(null != type, "Null passed for type to GetConverterType");
@@ -488,5 +492,6 @@ namespace System.Windows.Markup
             return typeConverter;
         }
 #endif
+#endif // !NET10_0_OR_GREATER
     }
 }

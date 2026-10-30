@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
                     var module = m_method.Module;
                     int token = MetadataTokens.GetToken(m_region.CatchType);
-                    var t = module.ResolveType(token, m_method.DeclaringType.GetGenericArguments(), m_method.GetGenericArguments());
+                    var t = module.ResolveTypeLmr(token, m_method.DeclaringType.GetGenericArguments(), m_method.GetGenericArguments());
                     return t;
                 }
             }
