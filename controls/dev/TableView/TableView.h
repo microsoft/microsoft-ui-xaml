@@ -132,6 +132,10 @@ struct ColumnResizeDragState
     bool didDelta{ false };
     // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
     std::vector<ColumnResizeFrozenColumn> frozen;
+    // The dragged column; layout holds locked Star columns before it while the drag is in flight.
+    winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+    // Set by layout when it held such a column, so the release re-resolves without the hold.
+    bool heldLockedColumn{ false };
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a

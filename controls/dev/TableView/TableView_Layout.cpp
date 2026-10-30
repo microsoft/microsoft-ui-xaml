@@ -385,7 +385,28 @@ void TableView::ResolveColumnWidths()
     {
         // A locked Star column holds its share of the authored layout, so a neighbor's drag leaves it
         // alone while that share still fits next to the other Star columns' MinWidth. Once it does not,
-        // it is divided with the other Star columns by factor and a drag elsewhere can move it.
+        // it is divided with the other Star columns by factor, so a later drag can move it; while a
+        // drag is in flight, a locked column before the dragged one still keeps its width.
+        uint32_t draggedIndex = 0;
+        auto const drag = m_activeColumnResizeDrag;
+        auto const draggedColumn = drag ? drag->column.get() : nullptr;
+        const bool dragInFlight = draggedColumn && columns.IndexOf(draggedColumn, draggedIndex);
+        auto const isHeld = [&](winrt::TableViewColumn const& c)
+        {
+            uint32_t index = 0;
+            return dragInFlight && isLocked(c) && columns.IndexOf(c, index) && index < draggedIndex;
+        };
+        for (auto const& c : starColumns)
+        {
+            if (isHeld(c))
+            {
+                fixedTotal += c.ActualWidth();
+                drag->heldLockedColumn = true;
+            }
+        }
+        starColumns.erase(
+            std::remove_if(starColumns.begin(), starColumns.end(), isHeld), starColumns.end());
+
         double authoredFixedTotal = 0.0;
         std::vector<winrt::TableViewColumn> authoredPool;
         for (auto const& c : columns)
@@ -432,7 +453,7 @@ void TableView::ResolveColumnWidths()
             layoutRound,
             [&](winrt::TableViewColumn const& c, double width)
             {
-                if (isLocked(c))
+                if (isLocked(c) && !isHeld(c))
                 {
                     lockedShares.emplace_back(c, width);
                     lockedTotal += width;
@@ -450,12 +471,18 @@ void TableView::ResolveColumnWidths()
             }
         }
 
-        if (lockedTotal <= std::max(0.0, room))
+        // Up to a device pixel of slack: a drag clamped at its bound reserves the locked column's
+        // rounded width, and rounding the viewport and a MinWidth can leave room that much short of it.
+        const double tolerance = 1.0 / std::max(layoutRoundFactor, 1.0);
+        if (lockedTotal <= std::max(0.0, room) + tolerance)
         {
-            for (auto const& [c, width] : lockedShares)
+            double excess = std::max(0.0, lockedTotal - std::max(0.0, room));
+            for (auto it = lockedShares.rbegin(); it != lockedShares.rend(); ++it)
             {
-                changed |= setResolvedActualWidth(c, width);
-                fixedTotal += c.ActualWidth();
+                const double width = std::max(0.0, it->second - excess);
+                excess -= it->second - width;
+                changed |= setResolvedActualWidth(it->first, width);
+                fixedTotal += it->first.ActualWidth();
             }
             starColumns.erase(
                 std::remove_if(starColumns.begin(), starColumns.end(), isLocked), starColumns.end());
@@ -463,6 +490,8 @@ void TableView::ResolveColumnWidths()
         else
         {
             // One pass with the other Star columns, so a Min/MaxWidth clamp hands its excess to them.
+            // This is plain Star sharing, which can give the locked column less than the room the
+            // held branch would: crossing the boundary moves it by that difference.
             DistributeStarWidths(
                 std::move(starColumns),
                 std::max(0.0, layoutRound(viewport) - fixedTotal),
@@ -517,8 +546,8 @@ void TableView::RestoreColumnWidth(const winrt::TableViewColumn& column, const w
 
 // A resize takes space only from the columns after the dragged one (the WPF DataGrid contract).
 // Holding the earlier Star columns at the width they already render keeps them out of the
-// redistribution pass without changing what the user sees. A locked column is skipped: the
-// authored pass sizes it (holding its share while that fits), and freezing it would double-count it there.
+// redistribution pass without changing what the user sees. A locked column is skipped: freezing
+// it would double-count it in the authored pass, so layout holds it for the drag instead.
 void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen)
 {
     auto columns = Columns();

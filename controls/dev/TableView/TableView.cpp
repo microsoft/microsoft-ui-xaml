@@ -3927,6 +3927,8 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         state->didWrite = false;
         state->didDelta = false;
         state->frozen.clear();
+        state->column = nullptr;
+        state->heldLockedColumn = false;
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -3960,6 +3962,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         if (strongThis)
         {
             state->gripper = winrt::make_weak(sender.try_as<winrt::ResizeGripper>());
+            state->column = weakColumn;
             strongThis->m_activeColumnResizeDrag = state;
         }
     });
@@ -3992,6 +3995,10 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
             strongThis->m_activeColumnResizeDrag.reset();
         }
         state->gripper = nullptr;
+        if (strongThis && std::exchange(state->heldLockedColumn, false))
+        {
+            strongThis->InvalidateMeasure();
+        }
 
         auto const col = weakColumn.get();
 
