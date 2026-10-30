@@ -110,6 +110,126 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateNonVirtualLayoutReplacesItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (bool useUIElements in new[] { false, true })
+                {
+                    foreach (int count in new[] { 1, 10 })
+                    {
+                        var items = new ObservableCollection<object>();
+                        for (int i = 0; i < count; i++)
+                        {
+                            items.Add(useUIElements ? (object)new TextBlock { Text = i.ToString() } : i);
+                        }
+
+                        var repeater = new ItemsRepeater
+                        {
+                            Layout = new NonVirtualStackLayout(),
+                            ItemsSource = items
+                        };
+                        Content = repeater;
+                        Content.UpdateLayout();
+
+                        foreach (int index in new[] { 0, count / 2, count - 1 }.Distinct())
+                        {
+                            var previousElements = Enumerable.Range(0, count).Select(repeater.TryGetElement).ToList();
+                            int clearedCount = 0;
+                            int preparedCount = 0;
+                            TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> clearing =
+                                (sender, args) => clearedCount++;
+                            TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> prepared =
+                                (sender, args) => preparedCount++;
+                            repeater.ElementClearing += clearing;
+                            repeater.ElementPrepared += prepared;
+
+                            items[index] = useUIElements
+                                ? (object)new TextBlock { Text = "1000" }
+                                : 1000;
+                            Content.UpdateLayout();
+
+                            Verify.AreEqual(1, clearedCount);
+                            Verify.AreEqual(1, preparedCount);
+                            for (int i = 0; i < count; i++)
+                            {
+                                var child = repeater.TryGetElement(i) as TextBlock;
+                                Verify.IsNotNull(child);
+                                Verify.AreEqual(i, repeater.GetElementIndex(child));
+                                if (i == index)
+                                {
+                                    Verify.AreEqual("1000", child.Text);
+                                    if (useUIElements)
+                                    {
+                                        Verify.AreSame(items[i], child);
+                                        Verify.AreEqual(-1, repeater.GetElementIndex(previousElements[i]));
+                                    }
+                                }
+                                else
+                                {
+                                    Verify.AreSame(previousElements[i], child);
+                                }
+                            }
+
+                            repeater.ElementClearing -= clearing;
+                            repeater.ElementPrepared -= prepared;
+                        }
+
+                        Content = null;
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ValidateNonVirtualLayoutReplacesItemRanges()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (int index in new[] { 0, 4, 9 })
+                {
+                    var items = new CustomItemsSource(Enumerable.Range(0, 10).ToList());
+                    var repeater = new ItemsRepeater
+                    {
+                        Layout = new NonVirtualStackLayout(),
+                        ItemsSource = items,
+                        ItemTemplate = (DataTemplate)XamlReader.Load(
+                            @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                                <TextBlock Text='{Binding}' Height='20'/>
+                            </DataTemplate>")
+                    };
+                    Content = repeater;
+                    Content.UpdateLayout();
+
+                    foreach (int newCount in new[] { 3, 1 })
+                    {
+                        int oldCount = newCount == 3 ? 1 : 3;
+                        var followingElement = index + oldCount < items.Inner.Count
+                            ? repeater.TryGetElement(index + oldCount)
+                            : null;
+                        items.Replace(index, oldCount, newCount, reset: false);
+                        Content.UpdateLayout();
+
+                        Verify.AreEqual(newCount == 3 ? 12 : 10, items.Inner.Count);
+                        for (int i = 0; i < items.Inner.Count; i++)
+                        {
+                            var child = repeater.TryGetElement(i) as TextBlock;
+                            Verify.IsNotNull(child);
+                            Verify.AreEqual(items.Inner[i].ToString(), child.Text);
+                            Verify.AreEqual(i, repeater.GetElementIndex(child));
+                        }
+                        if (followingElement != null)
+                        {
+                            Verify.AreSame(followingElement, repeater.TryGetElement(index + newCount));
+                        }
+                    }
+
+                    Content = null;
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyItemsRepeaterNullLayoutIsTreatedAsStackLayout()
         {
             // ItemsRepeater.Layout defaults to 'null'.
