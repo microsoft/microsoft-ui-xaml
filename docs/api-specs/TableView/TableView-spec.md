@@ -706,12 +706,12 @@ Methods:
 
 ### Resizing columns
 
-A column with a gripper (`TableView.CanUserResizeColumns` and the column's `CanResize` both `true`, and the column not pinned) can be resized by the user. Every gesture writes a `Pixel` `Width` clamped to `MinWidth`/`MaxWidth` and announces the new width; an `Auto` or `*` column becomes `Pixel`, as in File Explorer.
+A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. Every gesture writes a `Pixel` `Width` and announces the new width; an `Auto` or `*` column becomes `Pixel`, as in File Explorer. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
 
 | Gesture | Behaviour |
 |---|---|
 | Drag the gripper on a header's trailing edge | Resizes the column; <kbd>Esc</kbd>, a lost capture or unloading the table cancels the drag and restores the previous `Width`. |
-| Double-click the gripper (mouse only) | Fits the column to its header and the widest **realized** row cell, measured unconstrained. Rows that are not realized are not measured. |
+| Double-click the gripper (mouse only) | Fits the column to its header and the widest **realized** row cell, measured unconstrained, within the same bounds as a drag, so a column that can only shrink is not widened to fit. Rows that are not realized are not measured. |
 | <kbd>Alt</kbd> + <kbd>Left</kbd> / <kbd>Right</kbd> on a focused header | Narrows or widens the column by 8 DIPs (32 with <kbd>Shift</kbd>). |
 | UI Automation `Transform.Resize` | Same path as a drag; see [Automation peers](#automation-peers-tableviewrowcellcolumnheader). |
 
