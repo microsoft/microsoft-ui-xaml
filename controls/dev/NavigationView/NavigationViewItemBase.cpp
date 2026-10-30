@@ -33,6 +33,8 @@ void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedE
             SetNavigationViewParent(navigationView);
         }
     }
+  
+    OnNavigationViewItemBaseLoaded();
 }
 
 NavigationViewRepeaterPosition NavigationViewItemBase::Position() const

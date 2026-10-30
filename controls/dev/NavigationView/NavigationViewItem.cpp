@@ -70,6 +70,15 @@ void NavigationViewItem::OnNavigationViewItemBasePositionChanged()
     ReparentRepeater();
 }
 
+void NavigationViewItem::OnNavigationViewItemBaseLoaded()
+{
+    // IsEnabledChanged is not raised while the item is out of the live tree (e.g. inside a closed flyout).
+    if (m_appliedTemplate && IsEnabled() != m_isEnabledVisualState)
+    {
+        OnIsEnabledChanged(nullptr, nullptr);
+    }
+}
+
 void NavigationViewItem::OnApplyTemplate()
 {
     // Stop UpdateVisualState before template is applied. Otherwise the visuals may be unexpected
@@ -527,6 +536,7 @@ void NavigationViewItem::UpdateVisualStateForToolTip()
 void NavigationViewItem::UpdateVisualStateForPointer()
 {
     const auto isEnabled = IsEnabled();
+    m_isEnabledVisualState = isEnabled;
     const auto enabledStateValue = isEnabled ? c_enabled : c_disabled;
     // DisabledStates and CommonStates
     const auto selectedStateValue = [this, isEnabled, isSelected = IsSelected()]()

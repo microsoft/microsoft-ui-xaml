@@ -76,6 +76,7 @@ private:
     void OnNavigationViewItemBaseDepthChanged() override;
     void OnNavigationViewItemBaseIsSelectedChanged() override;
     void OnNavigationViewItemBasePositionChanged() override;
+    void OnNavigationViewItemBaseLoaded() override;
 
     void OnPresenterPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
@@ -171,6 +172,8 @@ private:
     uint32_t m_trackedPointerId{ 0 };
     bool m_isPressed{ false };
     bool m_isPointerOver{ false };
+    // IsEnabled value last pushed to the visual states.
+    bool m_isEnabledVisualState{ true };
 
     bool m_isRepeaterParentedToFlyout{ false };
     // used to bypass all Chevron visual state logic in order to keep it unloaded 
