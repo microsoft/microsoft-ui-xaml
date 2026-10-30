@@ -7,7 +7,7 @@ using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.App.ViewModels;
 
-// A snapshot node to show in the Objects tab: its process, when the snapshot was taken (QPC), and the addresses the
+// A snapshot node to show in the Objects tab: its process, when the capture of its root ended (QPC), and the addresses the
 // snapshot recorded for it. A XAML node's are its WinRT object's IUnknown and its XAML diagnostics handle; a composition
 // node's is its IVisual pointer.
 public sealed record SnapshotObject(ObjectKind Kind, uint ProcessId, long Qpc, string Description, IReadOnlyList<long> Addresses)
@@ -16,7 +16,8 @@ public sealed record SnapshotObject(ObjectKind Kind, uint ProcessId, long Qpc, s
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(node);
-        return new(ObjectKind.Element, document.ProcessId, document.EndQpc, ObjectRow.Describe(ObjectKind.Element, node.Type, node.Name),
+        return new(ObjectKind.Element, document.ProcessId, document.Roots.Single(root => root.Id == node.RootId).EndQpc,
+            ObjectRow.Describe(ObjectKind.Element, node.Type, node.Name),
             [.. new[] { node.ObjectAddress, node.DiagnosticsHandle }.OfType<string>().Select(Parse).Distinct()]);
     }
 
@@ -25,7 +26,7 @@ public sealed record SnapshotObject(ObjectKind Kind, uint ProcessId, long Qpc, s
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(node);
         ArgumentNullException.ThrowIfNull(node.VisualAddress);
-        return new(ObjectKind.Visual, document.ProcessId, document.EndQpc,
+        return new(ObjectKind.Visual, document.ProcessId, document.Roots.Single(root => root.Id == node.RootId).EndQpc,
             $"{ObjectRow.Describe(ObjectKind.Visual, node.Type, null)} ({node.VisualAddress})", [Parse(node.VisualAddress)]);
     }
 

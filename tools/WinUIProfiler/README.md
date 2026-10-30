@@ -314,7 +314,9 @@ visual surface events mention.
   new visual reused the pointer, so a new visual starts there. Visuals get their
   children before they are inserted, so the old visual's mentions since it left
   the tree move to the new one. Reuse by a visual of the same type and owner
-  can't be told apart.
+  can't be told apart. A hand-in or hand-off visual that its element's
+  re-created comp node inserts again also gets a new owner, so its history
+  splits there.
 - `WucVisualChildrenCleared` names only the parent, so each child it removes
   gets a mention through the parent's field (`child of ParentVisualId`).
 
@@ -402,6 +404,10 @@ A Composition node's address is its `IVisual` pointer, which the visual events
 carry too, so `SessionFile.FindSnapshotVisual` finds the visual at that
 address when the snapshot was taken. A visual inserted before the recording
 started and not mentioned since isn't found.
+
+Both lookups use the time the node's root finished being captured, not the end
+of the whole snapshot: a root's objects can be released while other roots are
+still being captured, and a new object can reuse the address.
 
 ### Recorded, from a trace file
 

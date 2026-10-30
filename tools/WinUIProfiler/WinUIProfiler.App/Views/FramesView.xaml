@@ -145,31 +145,34 @@
                                 <TextBlock x:Name="EventDetails" x:Uid="EventDetails" IsTextSelectionEnabled="True" TextWrapping="Wrap"
                                            Style="{ThemeResource CaptionTextBlockStyle}" />
                             </ScrollViewer>
-                            <!-- Outside the scrolling fields, so the links stay in view. -->
+                            <!-- Outside the scrolling fields, so the links stay in view. The links scroll in a bounded area, so
+                                 an event with many, such as a cleared parent's children, leaves room for the fields. -->
                             <StackPanel x:Name="ObjectLinksPanel" Grid.Row="1" Visibility="Collapsed">
                                 <TextBlock x:Uid="ObjectLinksHeader" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
-                                <ItemsControl x:Name="ObjectLinks">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:ObjectLink">
-                                            <Grid ColumnSpacing="6">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Border Style="{StaticResource ElementBadgeStyle}" Visibility="{x:Bind IsElement}">
-                                                    <TextBlock Text="{x:Bind KindText}" Style="{StaticResource ElementBadgeTextStyle}" />
-                                                </Border>
-                                                <Border Style="{StaticResource VisualBadgeStyle}" Visibility="{x:Bind IsVisual}">
-                                                    <TextBlock Text="{x:Bind KindText}" Style="{StaticResource VisualBadgeTextStyle}" />
-                                                </Border>
-                                                <HyperlinkButton Grid.Column="1" Tag="{x:Bind Mention}" Padding="0,2" Click="ObjectLink_Click"
-                                                                 AutomationProperties.Name="{x:Bind AccessibleName}">
-                                                    <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
-                                                </HyperlinkButton>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="ObjectLinks">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ObjectLink">
+                                                <Grid ColumnSpacing="6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Style="{StaticResource ElementBadgeStyle}" Visibility="{x:Bind IsElement}">
+                                                        <TextBlock Text="{x:Bind KindText}" Style="{StaticResource ElementBadgeTextStyle}" />
+                                                    </Border>
+                                                    <Border Style="{StaticResource VisualBadgeStyle}" Visibility="{x:Bind IsVisual}">
+                                                        <TextBlock Text="{x:Bind KindText}" Style="{StaticResource VisualBadgeTextStyle}" />
+                                                    </Border>
+                                                    <HyperlinkButton Grid.Column="1" Tag="{x:Bind Mention}" Padding="0,2" Click="ObjectLink_Click"
+                                                                     AutomationProperties.Name="{x:Bind AccessibleName}">
+                                                        <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                                    </HyperlinkButton>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
                             </StackPanel>
                         </Grid>
                     </Border>

@@ -23,7 +23,8 @@ namespace WinUIProfiler.Engine.Storage;
 // comp node, and the owner's CompPeerLinked label becomes its name. An insertion with a different type or owner than the
 // visual's last means a new visual reused the pointer, so a new visual starts there. Visuals get their children before
 // they are inserted, so as with elements the old visual's mentions since it left the tree (removed, or its parent's
-// children cleared) move to the new one. Reuse by a visual of the same type and owner can't be detected.
+// children cleared) move to the new one. Reuse by a visual of the same type and owner can't be detected. A hand-in or
+// hand-off visual that its element's re-created comp node inserts again also gets a new owner, so its history splits.
 internal sealed class ObjectIndex : IDisposable
 {
     // Mentions held in memory per address: a UI element is confirmed within a few, other objects never are. Later ones
@@ -98,7 +99,7 @@ internal sealed class ObjectIndex : IDisposable
     private readonly Dictionary<long, string> labels = [];
     // Visuals whose owner comp node was not linked yet when they were inserted, by owner; they get its label once it is.
     private readonly Dictionary<long, List<TrackedObject>> unlabeled = [];
-    private readonly Dictionary<string, string> strings = [];
+    private readonly Dictionary<string, string> typeNames = [];
     private long objectCount;
 
     internal ObjectIndex(SqliteConnection connection)
@@ -164,7 +165,7 @@ internal sealed class ObjectIndex : IDisposable
             }
             else if (fields[tree.Label].Value is string { Length: > 0 } label)
             {
-                Link(compNode, Intern(label));
+                Link(compNode, label);
             }
         }
 
@@ -329,12 +330,12 @@ internal sealed class ObjectIndex : IDisposable
         return roles;
     }
 
-    private string Intern(string text) => strings.TryGetValue(text, out var known) ? known : strings[text] = text;
+    private string InternType(string type) => typeNames.TryGetValue(type, out var known) ? known : typeNames[type] = type;
 
     // A visual's insertion: its parent visual (0 for a root), type and owner comp node.
     private void ObserveInsertion(long address, long parent, string? type, long owner, SqliteTransaction transaction)
     {
-        type = string.IsNullOrEmpty(type) ? null : Intern(type);
+        type = string.IsNullOrEmpty(type) ? null : InternType(type);
         var label = owner != 0 && labels.TryGetValue(owner, out var known) ? known : null;
         if (visuals.TryGetValue(address, out var visual) &&
             (visual.Type is not null && type is not null && visual.Type != type || visual.Owner != 0 && owner != 0 && visual.Owner != owner))
@@ -441,7 +442,7 @@ internal sealed class ObjectIndex : IDisposable
             return;
         }
 
-        type = Intern(type);
+        type = InternType(type);
         name = string.IsNullOrEmpty(name) ? null : name;
         if (elements.TryGetValue(address, out var element))
         {
