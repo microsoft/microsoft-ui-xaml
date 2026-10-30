@@ -179,8 +179,19 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(PathMaskSurfaceSizeAtFractionalScale)
+        TEST_METHOD_PROPERTY(L"Description", L"Compares rendered Path mask surfaces against masters at 175% scale.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(MaxTextureSize)
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(PathMaskOffsetWhenClampedToMaxTextureSize)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies nonzero Path mask offsets when width, height, or both exceed a fixed texture limit.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
     END_TEST_METHOD()
 
 private:
@@ -221,4 +232,3 @@ private:
 };
 
 } } } } } }
-

@@ -21,6 +21,7 @@ namespace DirectUI
         IFACEMETHOD(SimulateDeviceLostOnOffThreadImageUpload)() override;
         IFACEMETHOD(SimulateSwallowedDeviceLostOnStartup)() override;
         IFACEMETHOD_(void, SetDCompDeviceLeakDetectionEnabled)(bool enableLeakDetection) override;
+        IFACEMETHOD_(void, SetMaxTextureSizeOverride)(int maxTextureSize) override;
 
         IFACEMETHOD_(bool, IsDragDropInProgress)() override;
 
