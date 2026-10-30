@@ -325,6 +325,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after a click outside dismisses a row menu opened on another cell of the focused row, Tab out and back in returns to that cell (GH #12442).")]
+        public void ClickOutsideMenuThenTabBackInReturnsToMenuCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                RightClickRow(table, 4, ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                VerifyMenuOpened(RowMenu, ContextMenuName(4), CellFocus(4, ContextMenuAgeColumn));
+
+                // The read-only readout takes no focus, so the click only dismisses the menu.
+                ClickPoint(CentreOf(FindElement.ById(ContextMenuReadout)));
+                Verify.AreEqual("False", WaitForContextMenuField(OpenField, "False"), "A click outside must close the menu.");
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Precondition: dismissing the menu returns focus to row 4's Age cell.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Tab back into the body must return to row 4's Age cell.");
+            }
+        }
+
         #endregion
 
         #region Editing
