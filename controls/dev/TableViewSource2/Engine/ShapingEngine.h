@@ -312,7 +312,7 @@ private:
     // dropped; `arrivals`, and records with no cached place (a top-level record with no group
     // while grouped), are hidden; emptied groups are dropped. One Reset. Sets m_stale.
     // noexcept: an allocation failure fails fast rather than leaving freed records linked.
-    void     UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;
+    void UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;
 
     SourceTable const& m_source;
     ShapeDelegates& m_delegates;
