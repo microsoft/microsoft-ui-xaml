@@ -164,8 +164,6 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
-    ++m_cellLayoutGeneration;
-
     // Detach the old vector so replaced Columns do not leak subscriptions or owners.
     if (m_columnsVectorChangedToken.value)
     {
@@ -225,8 +223,6 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
-    ++m_cellLayoutGeneration;
-
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
     const auto index = args.Index();
@@ -365,8 +361,6 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
         return;
     }
 
-    ++m_cellLayoutGeneration;
-
     const auto visibility = column.Visibility();
 
     if (auto headerHost = m_headerHost.get())
@@ -486,8 +480,6 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         return;
     }
 
-    ++m_cellLayoutGeneration;
-
     // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.
     ForEachRealizedRow([](winrt::TableViewRow const& row)
     {
@@ -557,8 +549,6 @@ void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
     {
         return;
     }
-
-    ++m_cellLayoutGeneration;
 
     // Re-render headers to re-tag cells for the new frozen prefix; RebuildHeaders ends with
     // RefreshFrozenColumns, which re-pins the leading-frozen band on the header and realized rows.

@@ -330,8 +330,6 @@ public:
     // Pin rebuilt rows immediately when leading-frozen columns are active.
     void PinFrozenColumnsForRow(const winrt::TableViewRow& row);
 
-    uint64_t CellLayoutGenerationInternal() const noexcept { return m_cellLayoutGeneration; }
-
     // Requested by a cell panel (header/row) during measure when a realized cell's own measured width
     // changed (grow or shrink). Invalidates our measure synchronously so ResolveColumnWidths re-runs in
     // the same layout tick (no deferral -> no one-frame lag). Bridges the body ScrollViewer, which
@@ -806,8 +804,6 @@ private:
     // Bumped when a forced teardown closes an edit awaiting a deferral, so a late completion can
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
-
-    uint64_t m_cellLayoutGeneration{ 0 };
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
