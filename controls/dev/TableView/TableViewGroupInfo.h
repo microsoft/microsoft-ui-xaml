@@ -25,7 +25,7 @@
 bool SameGroupKey(winrt::IInspectable const& left, winrt::IInspectable const& right) noexcept;
 
 class TableViewGroupInfo :
-    public winrt::implementation::TableViewGroupInfoT<TableViewGroupInfo>
+    public winrt::implementation::TableViewGroupInfoT<TableViewGroupInfo, winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider>
 {
 public:
     TableViewGroupInfo(
@@ -46,6 +46,14 @@ public:
 
     winrt::event_token PropertyChanged(winrt::PropertyChangedEventHandler const& value);
     void PropertyChanged(winrt::event_token const& token);
+
+    // {Binding} resolves the properties here when the app's metadata can't describe this type, as
+    // in a trimmed or AOT app (GH #12352). [bindable] would add it to every C++ app's generated
+    // XamlTypeInfo, which then needs the Tabular projection header.
+    winrt::TypeName Type();
+    winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetCustomProperty(winrt::hstring const& name);
+    winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetIndexedProperty(winrt::hstring const& name, winrt::TypeName const& type);
+    winrt::hstring GetStringRepresentation();
 
     // Internal: refresh identity/metadata in place, raising PropertyChanged only for what
     // actually changed. Expansion is NOT set here -- see SetExpansionInternal.
