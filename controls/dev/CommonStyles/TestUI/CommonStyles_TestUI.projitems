@@ -113,6 +113,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewFocusEntryPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)GroupedItemsControlPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -256,6 +260,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ListViewElementNameBindingPage.xaml.cs">
       <DependentUpon>ListViewElementNameBindingPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ListViewFocusEntryPage.xaml.cs">
+      <DependentUpon>ListViewFocusEntryPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)GroupedItemsControlPage.xaml.cs">
       <DependentUpon>GroupedItemsControlPage.xaml</DependentUpon>

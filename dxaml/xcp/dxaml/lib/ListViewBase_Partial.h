@@ -566,6 +566,9 @@ namespace DirectUI
             // Which is the case on phone when the user is using the (phone) AppBar since the latter don't take focus.
             BOOLEAN m_isInOnSelectionModeChanged;
 
+            // Item that this list scrolled into view itself while focus is entering it, so it was not visible beforehand.
+            INT m_indexScrolledForFocusEntry = -1;
+
             ctl::EventPtr<UIElementGettingFocusEventCallback> m_gettingFocusHandler;
 
             // Helper for getting next focusable control outside of LVB.
@@ -1070,6 +1073,39 @@ namespace DirectUI
             _Check_return_ HRESULT FocusItem(
                 _In_ xaml::FocusState focusState,
                 _In_ ListViewBaseItem* pItem);
+
+            // Whether the element is fully inside the list's viewport, below its group's sticky header (if any).
+            _Check_return_ HRESULT IsElementFullyVisibleInViewport(
+                _In_ UIElement* element,
+                _In_ INT itemIndex,
+                _Out_ bool* isFullyVisible);
+
+            // Whether focus entering this list onto the given item container must leave it where it is: true when it
+            // is fully visible and this list did not just scroll it into view for this focus entry.
+            _Check_return_ HRESULT ShouldKeepFocusEntryTargetInPlace(
+                _In_ UIElement* container,
+                _In_ INT itemIndex,
+                _Out_ bool* keepInPlace);
+
+            // Asks the focus change in progress to bring focusTarget into view without the extra focus padding.
+            _Check_return_ HRESULT KeepFocusEntryTargetInPlace(
+                _In_ xaml::IDependencyObject* focusTarget);
+
+            // Applies KeepFocusEntryTargetInPlace when focus enters the list onto an item or group header without a redirect.
+            _Check_return_ HRESULT KeepNewFocusedElementInPlace(
+                _In_ xaml_input::IGettingFocusEventArgs* args);
+
+            // Whether focus entering the list is redirected to the selected item (SingleSelectionFollowsFocus in
+            // Single selection mode), and which item that is (-1 when nothing is selected).
+            _Check_return_ HRESULT GetSelectedIndexForFocusEntry(
+                _Out_ bool* isSelectionFollowingFocus,
+                _Out_ INT* selectedIndex);
+
+            // The item that Tab/Shift+Tab focus entry will be redirected to (the focusable selected item, see
+            // OnGettingFocus), or -1. Only set while the FocusManager processes Tab with TabNavigation Once.
+            _Check_return_ HRESULT GetTabEntryTargetIndex(
+                _In_ bool isBackward,
+                _Out_ INT* index);
 
             // Focus a ListViewBaseItem at the given index and optionally scroll it
             // into view.

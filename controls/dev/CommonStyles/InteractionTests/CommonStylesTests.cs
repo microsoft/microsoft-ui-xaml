@@ -388,5 +388,172 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             return true;
         }
+
+        // Keyboard focus entering a ListView (Tab, Shift+Tab) must not move an item that is already fully visible.
+        [TestMethod]
+        public void ListViewFocusEntryKeepsVisibleSelectedItemInPlace()
+        {
+            foreach (bool neverFocused in new[] { false, true })
+            foreach (bool vertical in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            foreach (string position in new[] { "Leading", "Trailing" })
+            {
+                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+            }
+        }
+
+        // Items that were not visible keep their existing behavior: they end with the usual focus padding.
+        [TestMethod]
+        public void ListViewFocusEntryStillPadsHiddenSelectedItem()
+        {
+            foreach (bool neverFocused in new[] { false, true })
+            foreach (bool vertical in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            foreach (string position in new[] { "Before", "After", "Partial" })
+            {
+                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+            }
+        }
+
+        [TestMethod]
+        public void ListViewTabEntryIgnoresUnfocusableSelectedItem()
+        {
+            foreach (bool fromAfterList in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+                {
+                    Log.Comment($"Unfocusable selected item: fromAfterList={fromAfterList}.");
+                    // Five items with a cache keep every container realized, so the disabled selected item is known to be unfocusable.
+                    new CheckBox(FindElement.ById("FiveItems")).Check();
+                    new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
+                    new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                    Wait.ForIdle();
+
+                    // Select the last (Tab) or first (Shift+Tab) item, then use Ctrl+arrows to move only focus to item 2.
+                    if (!fromAfterList)
+                    {
+                        KeyboardHelper.PressKey(Key.End);
+                        Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntrySelectedIndex") == "4");
+                    }
+                    Key towardItem2 = fromAfterList ? Key.Right : Key.Left;
+                    KeyboardHelper.PressKey(towardItem2, ModifierKey.Control);
+                    KeyboardHelper.PressKey(towardItem2, ModifierKey.Control);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                    Verify.AreEqual(fromAfterList ? "0" : "4", GetFocusEntryText("FocusEntrySelectedIndex"));
+
+                    // Make the selected item unable to take focus and move focus out of the list.
+                    new Button(FindElement.ById(fromAfterList ? "DisableSelectedItemFocusAfter" : "DisableSelectedItemFocusBefore")).Invoke();
+                    Wait.ForIdle();
+                    Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
+
+                    PressTabIntoList(fromAfterList);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                    Verify.AreEqual("2", GetFocusEntryText("FocusEntryFocusedIndex"),
+                        "Tab must enter the list at the last focused item when the selected item cannot take focus.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ListViewFocusFromCodeRestoresLastFocusedItem()
+        {
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+            {
+                new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                Wait.ForIdle();
+
+                // Ctrl+Right moves focus without changing the selection.
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                Verify.AreEqual("0", GetFocusEntryText("FocusEntrySelectedIndex"));
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "-1");
+
+                new Button(FindElement.ById("FocusListFromCode")).Invoke();
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") != "-1");
+                Verify.AreEqual("2", GetFocusEntryText("FocusEntryFocusedIndex"),
+                    "Focusing the list from code must restore the last focused item, not the selected one.");
+            }
+        }
+
+        // Selects item index 10, positions the viewport relative to it, then moves focus into the list with
+        // Tab (from before the list) or Shift+Tab (from after it). Focus is redirected to the selected item.
+        private void VerifyListViewFocusEntry(bool vertical, bool fromAfterList, string position, bool neverFocused)
+        {
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+            {
+                Log.Comment($"Focus entry: vertical={vertical}, fromAfterList={fromAfterList}, position={position}, neverFocused={neverFocused}.");
+                if (vertical)
+                {
+                    new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                }
+                if (neverFocused)
+                {
+                    new CheckBox(FindElement.ById("ResetWithoutFocus")).Check();
+                }
+                new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                Wait.ForIdle();
+                new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(position);
+                new Button(FindElement.ById(fromAfterList ? "PrepareFocusEntryAfter" : "PrepareFocusEntryBefore")).Invoke();
+                Wait.ForIdle();
+
+                int itemSize = vertical ? 100 : 200;
+                int viewportSize = 3 * itemSize;
+                bool itemVisible = position == "Leading" || position == "Trailing";
+                double initialOffset =
+                    position == "Leading" ? 10 * itemSize :
+                    position == "Trailing" ? 11 * itemSize - viewportSize :
+                    position == "Before" ? 0 :
+                    position == "After" ? 15 * itemSize :
+                    10.5 * itemSize;
+                double expectedOffset =
+                    itemVisible ? initialOffset :
+                    position == "Before" ? 11 * itemSize - viewportSize + 20 :
+                    10 * itemSize - 20;
+                string initialOffsetText = initialOffset.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    GetFocusEntryText("FocusEntryOffset") == initialOffsetText && GetFocusEntryText("FocusEntryChanges") == "0");
+                Verify.AreEqual(initialOffsetText, GetFocusEntryText("FocusEntryOffset"));
+                Verify.AreEqual("10", GetFocusEntryText("FocusEntrySelectedIndex"));
+                Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
+
+                PressTabIntoList(fromAfterList);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "10");
+                string expectedOffsetText = expectedOffset.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryOffset") == expectedOffsetText);
+                Wait.ForIdle();
+
+                string diagnostics =
+                    $"offset changes={GetFocusEntryText("FocusEntryChanges")}, offset history={GetFocusEntryText("FocusEntryOffsetHistory")}, " +
+                    $"offset at focus={GetFocusEntryText("FocusEntryOffsetAtFocus")}";
+                Verify.AreEqual("10", GetFocusEntryText("FocusEntryFocusedIndex"), "Focus entering the list must go to the selected item.");
+                Verify.AreEqual(expectedOffsetText, GetFocusEntryText("FocusEntryOffset"),
+                    $"Unexpected offset after focus entered the list; {diagnostics}.");
+                if (itemVisible)
+                {
+                    Verify.AreEqual("0", GetFocusEntryText("FocusEntryChanges"),
+                        $"Focus entering the list must not move an item that is already fully visible; {diagnostics}.");
+                }
+            }
+        }
+
+        private static void PressTabIntoList(bool backward)
+        {
+            if (backward)
+            {
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+            }
+            else
+            {
+                KeyboardHelper.PressKey(Key.Tab);
+            }
+        }
+
+        private static string GetFocusEntryText(string automationId)
+        {
+            return new TextBlock(FindElement.ById(automationId)).GetText();
+        }
     }
 }

@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "ScrollViewer.g.h"
+#include "ScrollContentPresenter.g.h"
 #include "ListViewBase.g.h"
 #include "ListViewBaseItem.g.h"
 #include "GroupItem.g.h"
@@ -1316,6 +1317,190 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
         IFC_RETURN(pArgs->put_Handled(TRUE));
     }
 
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::IsElementFullyVisibleInViewport(
+    _In_ UIElement* element,
+    _In_ INT itemIndex,
+    _Out_ bool* isFullyVisible)
+{
+    *isFullyVisible = false;
+    if (!m_tpScrollViewer)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IScrollInfo> scrollInfo;
+    IFC_RETURN(m_tpScrollViewer.Cast<ScrollViewer>()->get_ScrollInfo(&scrollInfo));
+    auto presenter = scrollInfo.AsOrNull<IScrollContentPresenter>();
+    if (!presenter)
+    {
+        return S_OK;
+    }
+
+    FLOAT headerHeight = 0;
+    if (itemIndex >= 0)
+    {
+        ctl::ComPtr<IPanel> itemsHost;
+        IFC_RETURN(get_ItemsHost(&itemsHost));
+        if (auto panel = itemsHost.AsOrNull<IModernCollectionBasePanel>())
+        {
+            bool headerAvailable = false;
+            IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->GetStickyHeaderHeightForItem(
+                itemIndex, &headerHeight, &headerAvailable));
+            if (!headerAvailable)
+            {
+                return S_OK;
+            }
+        }
+    }
+
+    wf::Size size = {};
+    IFC_RETURN(element->get_RenderSize(&size));
+    ctl::ComPtr<xaml_media::IGeneralTransform> transform;
+    IFC_RETURN(element->TransformToVisual(presenter.Cast<ScrollContentPresenter>(), &transform));
+    wf::Rect bounds = {};
+    IFC_RETURN(transform->TransformBounds({0, 0, size.Width, size.Height}, &bounds));
+
+    DOUBLE viewportWidth = 0;
+    DOUBLE viewportHeight = 0;
+    IFC_RETURN(presenter.Cast<ScrollContentPresenter>()->get_ActualWidth(&viewportWidth));
+    IFC_RETURN(presenter.Cast<ScrollContentPresenter>()->get_ActualHeight(&viewportHeight));
+
+    // Items under their group's sticky header are covered, so the header height is excluded from the viewport.
+    const FLOAT tolerance = 0.5f;
+    *isFullyVisible =
+        bounds.X >= -tolerance &&
+        bounds.Y >= headerHeight - tolerance &&
+        bounds.X + bounds.Width <= viewportWidth + tolerance &&
+        bounds.Y + bounds.Height <= viewportHeight + tolerance;
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::ShouldKeepFocusEntryTargetInPlace(
+    _In_ UIElement* container,
+    _In_ INT itemIndex,
+    _Out_ bool* keepInPlace)
+{
+    *keepInPlace = false;
+    if (itemIndex >= 0 && itemIndex == m_indexScrolledForFocusEntry)
+    {
+        // This list scrolled the item into view for this focus entry; the focus change still applies its padding.
+        return S_OK;
+    }
+    IFC_RETURN(IsElementFullyVisibleInViewport(container, itemIndex, keepInPlace));
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::KeepFocusEntryTargetInPlace(
+    _In_ IDependencyObject* focusTarget)
+{
+    auto coreTarget = static_cast<DependencyObject*>(focusTarget)->GetHandle();
+    if (auto focusManager = VisualTree::GetFocusManagerForElement(coreTarget))
+    {
+        focusManager->SetBringIntoViewWithoutPaddingTarget(coreTarget);
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::KeepNewFocusedElementInPlace(
+    _In_ xaml_input::IGettingFocusEventArgs* args)
+{
+    ctl::ComPtr<IDependencyObject> oldFocusedElement;
+    IFC_RETURN(args->get_OldFocusedElement(&oldFocusedElement));
+    BOOLEAN isAncestor = FALSE;
+    IFC_RETURN(IsAncestorOf(oldFocusedElement.Cast<DependencyObject>(), &isAncestor));
+    if (isAncestor)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IDependencyObject> newFocusedElement;
+    IFC_RETURN(args->get_NewFocusedElement(&newFocusedElement));
+    ElementType parentType = ElementType::Other;
+    ctl::ComPtr<IDependencyObject> container;
+    IFC_RETURN(IdentifyParentElement(newFocusedElement.Get(), &parentType, &container));
+    auto containerElement = container.AsOrNull<IUIElement>();
+    if (!containerElement ||
+        (parentType != ElementType::Item && parentType != ElementType::GroupHeader && parentType != ElementType::ItemOrGroupHeader))
+    {
+        return S_OK;
+    }
+
+    INT itemIndex = -1;
+    if (IsListViewBaseItem(ctl::iinspectable_cast(container.Get())))
+    {
+        IFC_RETURN(IndexFromContainer(container.Get(), &itemIndex));
+    }
+
+    bool keepInPlace = false;
+    IFC_RETURN(ShouldKeepFocusEntryTargetInPlace(containerElement.Cast<UIElement>(), itemIndex, &keepInPlace));
+    if (keepInPlace)
+    {
+        IFC_RETURN(KeepFocusEntryTargetInPlace(newFocusedElement.Get()));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::GetSelectedIndexForFocusEntry(
+    _Out_ bool* isSelectionFollowingFocus,
+    _Out_ INT* selectedIndex)
+{
+    *isSelectionFollowingFocus = false;
+    *selectedIndex = -1;
+
+    BOOLEAN singleSelectionFollowsFocus = FALSE;
+    IFC_RETURN(get_SingleSelectionFollowsFocus(&singleSelectionFollowsFocus));
+    auto selectionMode = xaml_controls::ListViewSelectionMode_None;
+    IFC_RETURN(get_SelectionMode(&selectionMode));
+
+    if (singleSelectionFollowsFocus && selectionMode == xaml_controls::ListViewSelectionMode_Single)
+    {
+        *isSelectionFollowingFocus = true;
+        IFC_RETURN(get_SelectedIndex(selectedIndex));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::GetTabEntryTargetIndex(
+    _In_ bool isBackward,
+    _Out_ INT* index)
+{
+    *index = -1;
+
+    // Only while the FocusManager is actually processing Tab or Shift+Tab, not e.g. for a programmatic Focus call.
+    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(GetHandle());
+    if (!focusManager ||
+        !(isBackward ? focusManager->IsMovingFocusToPreviousTabStop() : focusManager->IsMovingFocusToNextTabStop()))
+    {
+        return S_OK;
+    }
+
+    auto navigationMode = xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once;
+    IFC_RETURN(get_TabNavigation(&navigationMode));
+    if (navigationMode != xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once)
+    {
+        return S_OK;
+    }
+
+    bool isSelectionFollowingFocus = false;
+    INT selectedIndex = -1;
+    IFC_RETURN(GetSelectedIndexForFocusEntry(&isSelectionFollowingFocus, &selectedIndex));
+    if (!isSelectionFollowingFocus || selectedIndex < 0)
+    {
+        return S_OK;
+    }
+
+    // Same condition as OnGettingFocus, which only redirects to a focusable selected item.
+    ctl::ComPtr<IItemContainerMapping> itemMapping;
+    BOOLEAN isFocusable = FALSE;
+    IFC_RETURN(GetItemContainerMapping(&itemMapping));
+    IFC_RETURN(IsItemFocusable(itemMapping.Get(), selectedIndex, true /*unrealizedItemsAssumedFocusable*/, &isFocusable));
+    if (isFocusable)
+    {
+        *index = selectedIndex;
+    }
     return S_OK;
 }
 

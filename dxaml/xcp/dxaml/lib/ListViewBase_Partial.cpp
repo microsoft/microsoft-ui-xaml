@@ -1146,7 +1146,13 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
             }
             else
             {
-                targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
+                // Target the item that Tab focus entry is redirected to (see OnGettingFocus), so no other item is
+                // realized and scrolled into view first.
+                IFC(GetTabEntryTargetIndex(isBackward, &targetFocusedIndex));
+                if (targetFocusedIndex < 0)
+                {
+                    targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
+                }
             }
         }
     }
@@ -1163,6 +1169,17 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
         if (scrollIntoViewAndPrepareContainer)
         {
             ctl::ComPtr<IDependencyObject> itemContainerCandidate = spFirstFocusableResult;
+            bool isCandidateFullyVisible = false;
+
+            if (auto candidateElement = itemContainerCandidate.AsOrNull<IUIElement>())
+            {
+                IFC(IsElementFullyVisibleInViewport(candidateElement.Cast<UIElement>(), targetFocusedIndex, &isCandidateFullyVisible));
+            }
+            // A target this list scrolls into view now was not visible when focus started entering the list.
+            if (!isCandidateFullyVisible)
+            {
+                m_indexScrolledForFocusEntry = targetFocusedIndex;
+            }
 
             // Make sure the target index is realized and prepared so it can be declared focusable and tabbed into.
             // Since this method brings the target index into view, it is only invoked when the FocusManager is processing
@@ -2133,6 +2150,16 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                             newFocusIndex = (isGroupHeader ? m_firstAvailableGroupHeaderForFocus : m_firstAvailableItemForFocus);
                         }
                     }
+
+                    // Target the item that Tab focus entry is redirected to (see OnGettingFocus), so no other item is
+                    // scrolled into view first.
+                    int tabEntryTargetIndex = -1;
+                    IFC_RETURN(GetTabEntryTargetIndex(isBackward, &tabEntryTargetIndex));
+                    if (tabEntryTargetIndex >= 0)
+                    {
+                        isGroupHeader = false;
+                        newFocusIndex = tabEntryTargetIndex;
+                    }
                 }
                 else
                 {
@@ -2201,6 +2228,22 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
 
                 if (newFocusIndex >= 0 && newFocusIndex < (isGroupHeader ? groupCount : static_cast<int>(itemCount)))
                 {
+                    if (!isGroupHeader)
+                    {
+                        // A target this list scrolls into view now was not visible when focus started entering the list.
+                        bool isTargetFullyVisible = false;
+                        ctl::ComPtr<xaml::IDependencyObject> visibleContainer;
+                        IFC_RETURN(ContainerFromIndex(newFocusIndex, &visibleContainer));
+                        if (auto visibleElement = visibleContainer.AsOrNull<IUIElement>())
+                        {
+                            IFC_RETURN(IsElementFullyVisibleInViewport(visibleElement.Cast<UIElement>(), newFocusIndex, &isTargetFullyVisible));
+                        }
+                        if (!isTargetFullyVisible)
+                        {
+                            m_indexScrolledForFocusEntry = newFocusIndex;
+                        }
+                    }
+
                     IFC_RETURN(Selector::ScrollIntoView(
                         newFocusIndex,
                         isGroupHeader ? TRUE : FALSE /*isGroupItemIndex*/,
@@ -2892,30 +2935,22 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
             // or 'Cycle', do not give focus to the latest focused element.
             // The first or last focusable element is getting focus instead (either the header, 
             // a group header, an item, or the footer).
+            IFC_RETURN(KeepNewFocusedElementInPlace(args));
+            m_indexScrolledForFocusEntry = -1;
             return S_OK;
         }
     }
 
-    auto selectionMode = xaml_controls::ListViewSelectionMode_None;
-    IFC_RETURN(get_SelectionMode(&selectionMode));
-
     int focusIndex = -1;
+    bool isSelectionFollowingFocus = false;
 
     // If SingleSelectionFollowsFocus is true and we have a selected item, then re-direct
     // focus to the selected item if focus is coming from the outside, or is coming from the
     // header or footer, and is targeting an item or group header.
-    BOOLEAN singleSelectionFollowsFocus = FALSE;
-    IFC_RETURN(get_SingleSelectionFollowsFocus(&singleSelectionFollowsFocus));
-    if (singleSelectionFollowsFocus && selectionMode == xaml_controls::ListViewSelectionMode_Single)
-    {
-        int selectedIndex = -1;
-
-        IFC_RETURN(get_SelectedIndex(&selectedIndex));
-
-        focusIndex = selectedIndex;
-    }
-    else if (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
-             focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous)
+    IFC_RETURN(GetSelectedIndexForFocusEntry(&isSelectionFollowingFocus, &focusIndex));
+    if (!isSelectionFollowingFocus &&
+        (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
+         focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous))
     {
         focusIndex = GetLastFocusedIndex();
     }
@@ -2958,6 +2993,24 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
 
             if (isFocusable)
             {
+                // Decide before ScrollIntoView, which would align a partially visible item to the viewport edge.
+                bool keepInPlace = false;
+                if (isFocusComingFromOutside)
+                {
+                    ctl::ComPtr<IDependencyObject> visibleContainer;
+                    IFC_RETURN(ContainerFromIndex(focusIndex, &visibleContainer));
+                    if (auto visibleElement = visibleContainer.AsOrNull<IUIElement>())
+                    {
+                        IFC_RETURN(ShouldKeepFocusEntryTargetInPlace(visibleElement.Cast<UIElement>(), focusIndex, &keepInPlace));
+                    }
+                    if (!keepInPlace)
+                    {
+                        // Focus is redirected to the scrolled container below, which must not then be mistaken for one
+                        // that was already visible.
+                        m_indexScrolledForFocusEntry = focusIndex;
+                    }
+                }
+
                 // Make sure the focused index is clear so that when we scroll to the focused item
                 // and end up realizing items we won't try to set focus to any of them because setting
                 // focus on an element within a GettingFocus handler is not allowed and would return an
@@ -2983,17 +3036,31 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
 
                 // When isAncestor is True, focus is about to move to a child of focusIndexContainer. No need to alter this imminent focus change.
                 // In particular, setting focus to the container instead of its child would break the tab order when Shift-Tabbing into the ListViewBase.
+                BOOLEAN focusMoved = false;
                 if (!isAncestor)
                 {
-                    BOOLEAN focusMoved = false;
-
                     IFC_RETURN(static_cast<GettingFocusEventArgs*>(args)->TrySetNewFocusedElement(focusIndexContainer.Get(), &focusMoved));
                     IFC_RETURN(args->put_Handled(focusMoved));
                 }
+
+                // Focus entering the list must not move an item that was already fully visible.
+                if (keepInPlace)
+                {
+                    IFC_RETURN(KeepFocusEntryTargetInPlace(isAncestor ? newFocusedElement.Get() : focusIndexContainer.Get()));
+                }
+
+                // A redirect raises GettingFocus again for the container, which still needs to know it was scrolled.
+                if (!focusMoved)
+                {
+                    m_indexScrolledForFocusEntry = -1;
+                }
+                return S_OK;
             }
         }
     }
 
+    IFC_RETURN(KeepNewFocusedElementInPlace(args));
+    m_indexScrolledForFocusEntry = -1;
     return S_OK;
 }
 
