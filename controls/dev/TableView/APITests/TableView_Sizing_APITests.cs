@@ -1587,6 +1587,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 foreach (var (input, delta) in new[] { ("pointer", -20.0), ("keyboard", 20.0), ("UI Automation", -20.0) })
                 {
+                    // End any hold an earlier step latched, so each input has to latch its own.
+                    tableView.Columns[3].MaxWidth = 51.0;
+                    tableView.UpdateLayout();
+                    tableView.Columns[3].MaxWidth = 50.0;
+                    tableView.UpdateLayout();
+                    VerifyLockedStarLayout(tableView, $"before the {input} resize");
+
                     var before = tableView.Columns.Select(c => c.ActualWidth).ToArray();
                     switch (input)
                     {
@@ -1625,6 +1632,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyLockedStarLayout(tableView, "after a MaxWidth change ends the hold");
             });
         }
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing a held locked Star column ends its hold, so resizes while it is hidden cannot leave a stale hold that overflows the viewport when it returns.")]
+        public void VerifyCollapsingHeldLockedColumnEndsItsHold()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLockedStarTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                DragLockedStarTableColumns(tableView);
+                tableView.Columns[3].MaxWidth = 50.0;
+                tableView.UpdateLayout();
+                DragAndVerify(tableView, 2, -20.0);
+
+                tableView.Columns[1].Visibility = Visibility.Collapsed;
+                tableView.UpdateLayout();
+                DragAndVerify(tableView, 0, 100.0);
+                tableView.Columns[1].Visibility = Visibility.Visible;
+                tableView.UpdateLayout();
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"viewport={viewport}, widths={string.Join(", ", widths)}.");
+                Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, "The columns must fill the viewport without overflowing once the column returns.");
+            });
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a drag clamped at its bound does not knock a locked Star column out of its held share through rounding.")]
         public void VerifyDragClampedAtBoundKeepsLockedStarShare()
