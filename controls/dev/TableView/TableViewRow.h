@@ -299,6 +299,8 @@ private:
     // One-shot: set by the OnDataContextChanged rebuild, consumed by the next ElementPrepared and
     // cleared by any other rebuild or owner change.
     bool m_cellsRebuiltForDataContext{ false };
+    // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
+    bool m_inRecyclePool{ false };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
