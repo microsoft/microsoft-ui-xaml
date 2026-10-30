@@ -252,6 +252,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that opening the pane cannot clear a light dismiss requested from a TwoWay binding callback raised before IsPaneOpen handling.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesRaisePaneOpenedWhenPaneOpeningRemovesDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that PaneOpened is raised, in order, when a PaneOpening handler applies a template without DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterManyUndeliveredNotifications)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that more consecutive undelivered completions than the group remembers cannot block later pane completions.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()
