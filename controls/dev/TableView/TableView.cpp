@@ -4038,7 +4038,8 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         }
     });
 
-    // Click counting, not DoubleTapped: the gripper marks its presses handled, which suppresses the gesture.
+    // Counted from PointerPressed with handledEventsToo: the gripper marks its presses handled, so
+    // Tapped/DoubleTapped never reach the table.
     gripperVisual.AddHandler(
         winrt::UIElement::PointerPressedEvent(),
         winrt::box_value(winrt::PointerEventHandler(
@@ -4083,7 +4084,9 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
 
 double TableView::DoubleClickSlop(const winrt::UIElement& element)
 {
-    // SM_CXDOUBLECLK is in physical pixels, positions in DIPs; not cached, as both change at run time.
+    // SM_CXDOUBLECLK is in physical pixels and positions are in DIPs, so divide by the rasterization
+    // scale or the tolerance halves at 200%. Read per press: the metric and the scale both change at
+    // run time (mouse settings, moving between monitors), and GetSystemMetrics is a cheap cached read.
     const auto cx = static_cast<double>(::GetSystemMetrics(SM_CXDOUBLECLK));
     const auto cy = static_cast<double>(::GetSystemMetrics(SM_CYDOUBLECLK));
     const double physical = (std::max)((std::max)(cx, cy), 4.0) / 2.0;
@@ -4106,6 +4109,8 @@ double TableView::DoubleClickSlop(const winrt::UIElement& element)
 
 uint64_t TableView::DoubleClickIntervalMicroseconds()
 {
+    // PointerPoint.Timestamp is in microseconds, GetDoubleClickTime in milliseconds. Not cached, so a
+    // mouse control panel change applies immediately.
     return static_cast<uint64_t>(::GetDoubleClickTime()) * 1000ull;
 }
 
