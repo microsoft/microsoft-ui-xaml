@@ -1625,6 +1625,168 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        // Selection invariants: at most one item is IsSelected, and it is NavigationView.SelectedItem.
+        static void CheckSingleSelection(NavigationView navView, IEnumerable<NavigationViewItem> items, List<string> failures, string context)
+        {
+            var selected = new List<string>();
+            foreach (var item in items)
+            {
+                if (item.IsSelected)
+                {
+                    selected.Add(item.Content.ToString());
+                }
+            }
+            var selectedItem = navView.SelectedItem as NavigationViewItem;
+            var expected = selectedItem != null ? selectedItem.Content.ToString() : "";
+            if (selected.Count > 1 || string.Join(",", selected) != expected)
+            {
+                failures.Add($"{context}: IsSelected containers [{string.Join(",", selected)}] but SelectedItem is '{(navView.SelectedItem as NavigationViewItem)?.Content ?? navView.SelectedItem ?? "null"}'");
+            }
+        }
+
+        static bool IsDescendantOf(NavigationViewItem parent, object item)
+        {
+            foreach (var child in parent.MenuItems)
+            {
+                if (child == item || (child is NavigationViewItem childItem && IsDescendantOf(childItem, item)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        [TestMethod]
+        public void VerifyIsChildSelectedCallbackIsSelectedRedirectKeepsSingleSelection()
+        {
+            // Parent > (First, Sibling), Other, Target, fillers. First is selected. When Parent.IsChildSelected becomes false,
+            // the app selects Target through Target.IsSelected: a container selection that reaches NavigationView only through
+            // the SelectionModel, so a suppressed model notification leaves Target selected next to the outer selection.
+            // Target must have a prepared container (NavigationView ignores IsSelected on items it hasn't prepared, e.g. in the
+            // closed Top overflow, on main too), so in Top it is in the primary list and the fillers fill the overflow.
+            var failures = new List<string>();
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var trigger in new[] { "SelectedItemOther", "SelectedItemNull", "DeselectFirst", "SelectOtherContainer", "InvokeOther" })
+                {
+                    var context = $"{paneDisplayMode}/{trigger}";
+                    NavigationView navView = null;
+                    NavigationViewItem parentItem = null;
+                    NavigationViewItem firstItem = null;
+                    NavigationViewItem otherItem = null;
+                    NavigationViewItem targetItem = null;
+                    var allItems = new List<NavigationViewItem>();
+                    bool callbackFired = false;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment(context);
+                        firstItem = new NavigationViewItem { Content = "First" };
+                        parentItem = new NavigationViewItem { Content = "Parent" };
+                        parentItem.MenuItems.Add(firstItem);
+                        parentItem.MenuItems.Add(new NavigationViewItem { Content = "Sibling" });
+                        otherItem = new NavigationViewItem { Content = "Other" };
+                        targetItem = new NavigationViewItem { Content = "Target" };
+                        navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = paneDisplayMode == NavigationViewPaneDisplayMode.Top ? 600 : 1008, IsSettingsVisible = false };
+                        navView.MenuItems.Add(parentItem);
+                        navView.MenuItems.Add(otherItem);
+                        navView.MenuItems.Add(targetItem);
+                        for (int index = 0; index < 6; index++)
+                        {
+                            var filler = new NavigationViewItem { Content = $"Filler item {index}" };
+                            navView.MenuItems.Add(filler);
+                            allItems.Add(filler);
+                        }
+                        allItems.AddRange(new[] { parentItem, firstItem, (NavigationViewItem)parentItem.MenuItems[1], otherItem, targetItem });
+                        Content = navView;
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        // Expand first so First has a realized container (in Top it is shown in the parent's flyout).
+                        parentItem.IsExpanded = true;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        navView.SelectedItem = firstItem;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsTrue(parentItem.IsChildSelected, $"{context}: precondition Parent.IsChildSelected");
+                        if (paneDisplayMode == NavigationViewPaneDisplayMode.Top)
+                        {
+                            var overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                            Verify.AreEqual(Visibility.Visible, overflowButton.Visibility, $"{context}: precondition the fillers overflow");
+                            Verify.IsTrue(otherItem.IsLoaded && targetItem.IsLoaded, $"{context}: precondition Other and Target in the primary list");
+                        }
+
+                        parentItem.RegisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, (sender, property) =>
+                        {
+                            if (!parentItem.IsChildSelected && !callbackFired)
+                            {
+                                callbackFired = true;
+                                targetItem.IsSelected = true;
+                            }
+                        });
+
+                        switch (trigger)
+                        {
+                            case "SelectedItemOther": navView.SelectedItem = otherItem; break;
+                            case "SelectedItemNull": navView.SelectedItem = null; break;
+                            case "DeselectFirst": firstItem.IsSelected = false; break;
+                            case "SelectOtherContainer": otherItem.IsSelected = true; break;
+                            case "InvokeOther":
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(otherItem) as IInvokeProvider;
+                                Verify.IsNotNull(provider);
+                                provider.Invoke();
+                                break;
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"{context}: callback fired={callbackFired}, SelectedItem={(navView.SelectedItem as NavigationViewItem)?.Content ?? "null"}");
+                        if (!callbackFired)
+                        {
+                            failures.Add($"{context}: Parent's IsChildSelected=false callback never ran");
+                        }
+                        else if (navView.SelectedItem != targetItem)
+                        {
+                            failures.Add($"{context}: the callback's selection did not win; SelectedItem is '{(navView.SelectedItem as NavigationViewItem)?.Content ?? "null"}'");
+                        }
+                        CheckSingleSelection(navView, allItems, failures, context);
+                        if (parentItem.IsChildSelected != IsDescendantOf(parentItem, navView.SelectedItem))
+                        {
+                            failures.Add($"{context}: Parent.IsChildSelected={parentItem.IsChildSelected}");
+                        }
+
+                        // The SelectionModel must follow too: selecting First again must leave exactly First selected.
+                        navView.SelectedItem = firstItem;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        CheckSingleSelection(navView, allItems, failures, context + "/reselect First");
+                        Content = null;
+                    });
+                    IdleSynchronizer.Wait();
+                }
+            }
+
+            foreach (var failure in failures)
+            {
+                Log.Warning(failure);
+            }
+            Verify.AreEqual(0, failures.Count, "Selection invariant violations (see warnings)");
+        }
+
         [TestMethod]
         public void VerifyHierarchicalOverflowSelectionWhenFlyoutClosingAppendsItem()
         {
