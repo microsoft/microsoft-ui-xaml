@@ -535,6 +535,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the resize cursor shows and a resize drag works on a column straight after its first sort (GH #12436).")]
+        public void PointerResizeWorksAfterFirstSort()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found.", CursorTestColumn));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                InputHelper.LeftClick(header); // None -> Ascending
+                Wait.ForIdle();
+
+                header = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn);
+                var bounds = header.BoundingRectangle;
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int y = bounds.Top + (bounds.Height / 2);
+                InputHelper.MoveMouse(new Point(gripperX, y));
+                Wait.ForIdle();
+                if (!VerifyCursorBecomes(LoadCursor(IntPtr.Zero, IDC_SIZEWE), "After the first sort the gripper must show the west-east size cursor."))
+                {
+                    return;
+                }
+
+                DragColumnBoundary(header, 80);
+                Wait.ForIdle();
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn).BoundingRectangle.Width;
+                Log.Comment("Width before={0}, after={1}.", bounds.Width, widthAfter);
+                Verify.IsGreaterThan(widthAfter, bounds.Width + 20.0, "After the first sort a gripper drag must widen the column.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Escape during a pointer resize releases the gripper's mouse capture, so the pointer stops showing the resize cursor away from the gripper.")]
         public void PointerResizeEscapeReleasesCapture()
         {
