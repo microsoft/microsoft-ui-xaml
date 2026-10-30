@@ -126,6 +126,14 @@ CD3D11DeviceInstance::CD3D11DeviceInstance(bool isSharedDevice)
 //-------------------------------------------------------------------------
 CD3D11DeviceInstance::~CD3D11DeviceInstance()
 {
+    for (const auto& registration : m_adaptersChangedRegistrations)
+    {
+        if (registration.factory)
+        {
+            VERIFYHR(registration.factory->UnregisterAdaptersChangedEvent(registration.cookie));
+        }
+    }
+
     if (IsPerfOptInEnabled())
     {
         UnregisterDeviceRemovedEvent();
@@ -216,8 +224,8 @@ CD3D11DeviceInstance::EnsureResources()
                  wil::cs_leave_scope_exit guard2 = m_lock.lock();
 
                 // Devices are always created with the hardware adapter first with a fallback to warp.
-                // NOTE: We detect hardware adapter changes for refresh-rate purposes, but do _not_ recreate our devices
-                //       in direct response to those changes.
+                // Adapter-change notifications also use this enumeration and the stale-device check
+                // to retire a device whose adapter has been superseded.
                 IFC(EnsureDXGIAdapters());
 
                 hardwareAdapter = m_hardwareAdapter;
@@ -653,6 +661,7 @@ CD3D11DeviceInstance::EnsureDXGIAdapters()
     // our adapters.
     if (m_dxgiFactory != nullptr && m_dxgiFactory->IsCurrent())
     {
+        IFC_RETURN(UpdateAdaptersChangedRegistrations(m_dxgiFactory.Get()));
         return m_hardwareAdapter != nullptr || m_warpAdapter != nullptr ? S_OK : DXGI_ERROR_NOT_FOUND;
     }
 
@@ -660,10 +669,10 @@ CD3D11DeviceInstance::EnsureDXGIAdapters()
     ComPtr<IDXGIAdapter1> warpAdapterWithOutputs;
     ComPtr<IDXGIAdapter1> warpAdapterWithNoOutputs;
     ComPtr<IDXGIAdapter1> enumeratedAdapter;
+    ComPtr<IDXGIFactory1> factory;
 
     m_hardwareAdapter.Reset();
     m_warpAdapter.Reset();
-    m_dxgiFactory.Reset();
 
     // Get a current factory
     static HMODULE hDXGIModule = nullptr;
@@ -674,7 +683,9 @@ CD3D11DeviceInstance::EnsureDXGIAdapters()
         pfnCreateDXGIFactory1 = reinterpret_cast<CREATEDXGIFACTORY1FUNCTION>(GetProcAddress(hDXGIModule, "CreateDXGIFactory1"));
         IFCPTR(pfnCreateDXGIFactory1);
     }
-    IFC(pfnCreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(m_dxgiFactory.ReleaseAndGetAddressOf())));
+    IFC(pfnCreateDXGIFactory1(IID_PPV_ARGS(&factory)));
+    IFC(UpdateAdaptersChangedRegistrations(factory.Get()));
+    m_dxgiFactory = std::move(factory);
 
     // Find the best hardware and warp adapters available
     m_fIsWarpDevice = false;
@@ -755,6 +766,112 @@ CD3D11DeviceInstance::EnsureDXGIAdapters()
 
 Cleanup:
     return hr;
+}
+
+_Check_return_ HRESULT CD3D11DeviceInstance::RegisterAdaptersChangedEvent(_In_ HANDLE event)
+{
+    auto lock = m_lock.lock();
+    IFCEXPECT_RETURN(m_dxgiFactory != nullptr);
+
+    ComPtr<IDXGIFactory7> factory;
+    HRESULT hr = m_dxgiFactory.As(&factory);
+    if (hr == E_NOINTERFACE)
+    {
+        // Older DXGI implementations retain the existing IsCurrent polling path.
+        return S_FALSE;
+    }
+    IFC_RETURN(hr);
+
+    m_adaptersChangedRegistrations.push_back({ event, nullptr });
+    auto rollback = wil::scope_exit([&]() { m_adaptersChangedRegistrations.pop_back(); });
+    auto& registration = m_adaptersChangedRegistrations.back();
+    IFC_RETURN(factory->RegisterAdaptersChangedEvent(event, &registration.cookie));
+    registration.factory = factory;
+    rollback.release();
+
+    // Another UI thread may already have retired this instance, or the factory
+    // may have become stale before the listener was registered.
+    if (IsDeviceLost() || !m_dxgiFactory->IsCurrent())
+    {
+        IFCW32FAILFAST(SetEvent(event));
+    }
+    return S_OK;
+}
+
+void CD3D11DeviceInstance::UnregisterAdaptersChangedEvent(_In_ HANDLE event)
+{
+    auto lock = m_lock.lock();
+    auto registration = std::find_if(
+        m_adaptersChangedRegistrations.begin(),
+        m_adaptersChangedRegistrations.end(),
+        [event](const auto& value) { return value.event == event; });
+    if (registration != m_adaptersChangedRegistrations.end())
+    {
+        if (registration->factory)
+        {
+            VERIFYHR(registration->factory->UnregisterAdaptersChangedEvent(registration->cookie));
+        }
+        m_adaptersChangedRegistrations.erase(registration);
+    }
+}
+
+_Check_return_ HRESULT CD3D11DeviceInstance::UpdateAdaptersChangedRegistrations(_In_ IDXGIFactory1* dxgiFactory)
+{
+    if (m_adaptersChangedRegistrations.empty())
+    {
+        return S_OK;
+    }
+
+    ComPtr<IDXGIFactory7> factory;
+    HRESULT hr = dxgiFactory->QueryInterface(IID_PPV_ARGS(&factory));
+    if (hr != E_NOINTERFACE)
+    {
+        IFC_RETURN(hr);
+    }
+
+    for (auto& registration : m_adaptersChangedRegistrations)
+    {
+        if (registration.factory.Get() != factory.Get())
+        {
+            DWORD cookie = 0;
+            if (factory)
+            {
+                IFC_RETURN(factory->RegisterAdaptersChangedEvent(registration.event, &cookie));
+            }
+            auto rollback = wil::scope_exit([&]()
+            {
+                if (factory)
+                {
+                    VERIFYHR(factory->UnregisterAdaptersChangedEvent(cookie));
+                }
+            });
+
+            if (registration.factory)
+            {
+                IFC_RETURN(registration.factory->UnregisterAdaptersChangedEvent(registration.cookie));
+            }
+            registration.factory = factory;
+            registration.cookie = cookie;
+            rollback.release();
+        }
+
+        if (factory && !dxgiFactory->IsCurrent())
+        {
+            IFCW32FAILFAST(SetEvent(registration.event));
+        }
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT CD3D11DeviceInstance::CheckForAdapterChange()
+{
+    auto lock = m_lock.lock();
+    if (IsDeviceLost())
+    {
+        // Another UI thread may already have retired the shared device.
+        return DXGI_ERROR_DEVICE_REMOVED;
+    }
+    return EnsureDXGIAdapters();
 }
 
 //------------------------------------------------------------------------------

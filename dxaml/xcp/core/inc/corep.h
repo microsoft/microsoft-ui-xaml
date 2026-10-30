@@ -73,6 +73,7 @@ class CTransform;
 class CBrush;
 class CSolidColorBrush;
 class CCoreServices;
+struct AdaptersChangedListenerContext;
 class CMediaQueue;
 class CMediaQueueManager;
 class CDeployment;
@@ -1725,6 +1726,10 @@ public:
 
     _Check_return_ HRESULT EnsureDeviceLostListener();
     void ReleaseDeviceLostListener();
+    _Check_return_ HRESULT EnsureAdaptersChangedListener();
+    void ReleaseAdaptersChangedListener();
+    _Check_return_ HRESULT OnAdaptersChanged();
+    void ArmAdaptersChangedWait(HRESULT result);
     _Check_return_ HRESULT DetermineDeviceLost(_Out_opt_ bool *pIsDeviceLost);
     void HandleDeviceLost(_Inout_ HRESULT *pResult);
     _Check_return_ HRESULT RecoverFromDeviceLost();
@@ -2046,6 +2051,10 @@ private:
     wil::unique_handle          m_deviceLostEvent;
     wil::unique_threadpool_wait m_deviceLostWaiter;
     DWORD                       m_deviceLostEventCookie = 0;
+
+    wil::unique_handle          m_adaptersChangedEvent;
+    wil::unique_threadpool_wait m_adaptersChangedWaiter;
+    std::shared_ptr<AdaptersChangedListenerContext> m_adaptersChangedListenerContext;
 
     std::unordered_set<DeviceListener*>
                                 m_deviceListeners;
