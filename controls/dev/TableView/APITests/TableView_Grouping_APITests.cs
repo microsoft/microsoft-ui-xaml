@@ -307,16 +307,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 Verify.AreEqual(info.KeyText, provider.GetStringRepresentation(), "The string representation is the key text.");
+                Verify.AreEqual(info.KeyText, info.ToString(), "IStringable reports the key text too.");
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo", provider.Type?.FullName, "The provider's type is the runtime class.");
                 Verify.IsNull(provider.GetCustomProperty("NoSuchProperty"), "An unknown name has no property.");
+                Verify.IsNull(provider.GetIndexedProperty("KeyText", typeof(string)), "There are no indexed properties.");
 
-                var keyText = provider.GetCustomProperty("KeyText");
-                Verify.IsNotNull(keyText, "KeyText must be resolvable by name.");
-                Verify.IsTrue(keyText.CanRead && !keyText.CanWrite, "KeyText is read-only.");
-                Verify.AreEqual(info.KeyText, keyText.GetValue(info) as string, "KeyText must read the key text.");
+                var expected = new (string Name, Type Type, object Value)[]
+                {
+                    ("Key", typeof(object), info.Key),
+                    ("KeyText", typeof(string), info.KeyText),
+                    ("ItemCount", typeof(int), info.ItemCount),
+                    ("ItemCountText", typeof(string), info.ItemCountText),
+                    ("Level", typeof(int), info.Level),
+                    ("IsExpandable", typeof(bool), info.IsExpandable),
+                    ("IsExpanded", typeof(bool), info.IsExpanded),
+                };
+                foreach (var (name, type, value) in expected)
+                {
+                    var property = provider.GetCustomProperty(name);
+                    Verify.IsNotNull(property, $"{name} must be resolvable by name.");
+                    if (property == null)
+                    {
+                        continue;
+                    }
 
-                var countText = provider.GetCustomProperty("ItemCountText");
-                Verify.IsNotNull(countText, "ItemCountText must be resolvable by name.");
-                Verify.AreEqual(info.ItemCountText, countText.GetValue(info) as string, "ItemCountText must read the count text.");
+                    Verify.AreEqual(name, property.Name, $"{name}: Name.");
+                    Verify.IsTrue(property.CanRead, $"{name}: CanRead.");
+                    Verify.IsFalse(property.CanWrite, $"{name}: read-only.");
+                    Verify.AreEqual(type, property.Type, $"{name}: Type.");
+                    Verify.AreEqual(value, property.GetValue(info), $"{name}: GetValue must read the projected value.");
+                }
             });
         }
 
