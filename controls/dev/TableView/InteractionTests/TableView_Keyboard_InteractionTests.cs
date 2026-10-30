@@ -2527,6 +2527,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Row-level Down onto a disabled row of a table whose cells host controls keeps focus on an enabled row container.")]
+        public void DownOntoDisabledRowWithCellControlsStaysOnRowContainer()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                var disable = FindElement.ById<Button>(DisableFocusedRowButton);
+                if (disable == null) { Verify.Fail(DisableFocusedRowButton + " was not found."); return; }
+                disable.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsFalse(GetRowsHost(FindElement.ById(CellControlsTable)).Children[1].IsEnabled, "Precondition: row 1 should be disabled.");
+
+                GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Down onto the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem && focused.IsEnabled,
+                    "Row-level Down onto a disabled row must keep focus on an enabled row container, not a cell control.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
         public void BodyTabReentryReturnsToSameRecordAfterSort()
         {
