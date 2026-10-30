@@ -690,9 +690,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 if (underlyingType.BaseType != null)
                 {
                     // special case Runtime Class Wrappers whose BaseType is __ComObject as
-                    // this is a CLR injected type which essentially means the same as Object base type
+                    // this is a CLR injected type which essentially means the same as Object base type.
+                    // WindowsRuntime.WindowsRuntimeObject is the equivalent CsWinRT 3.0 projected-type base.
                     if (underlyingType.BaseType.FullName == "System.__ComObject" ||
-                        underlyingType.BaseType.FullName == "System.Runtime.InteropServices.WindowsRuntime.RuntimeClass")
+                        underlyingType.BaseType.FullName == "System.Runtime.InteropServices.WindowsRuntime.RuntimeClass" ||
+                        underlyingType.BaseType.FullName == "WindowsRuntime.WindowsRuntimeObject")
                     {
                         return this.SchemaContext.GetXamlType(this.DirectUISystem.Object);
                     }

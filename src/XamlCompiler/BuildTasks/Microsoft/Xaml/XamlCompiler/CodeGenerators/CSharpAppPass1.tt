@@ -36,7 +36,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
         internal static void XamlGeneratedMain()
 #endif
         {
-<#  if (ProjectInfo.UsingCSWinRT) { #>
+<#  if (ProjectInfo.UsingCSWinRT && !ProjectInfo.UsingCSWinRT3) { #>
             global::WinRT.ComWrappersSupport.InitializeComWrappers();
 <#  }#>
 <#  foreach (var change in ProjectInfo.EnabledXamlOptionalChanges) { #>

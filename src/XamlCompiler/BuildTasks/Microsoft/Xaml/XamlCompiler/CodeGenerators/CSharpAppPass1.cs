@@ -56,7 +56,7 @@ namespace ");
   } 
             this.Write("        static void Main(string[] args)\r\n#else\r\n        internal static void Xaml" +
                     "GeneratedMain()\r\n#endif\r\n        {\r\n");
-  if (ProjectInfo.UsingCSWinRT) { 
+  if (ProjectInfo.UsingCSWinRT && !ProjectInfo.UsingCSWinRT3) {
             this.Write("            global::WinRT.ComWrappersSupport.InitializeComWrappers();\r\n");
   }
   foreach (var change in ProjectInfo.EnabledXamlOptionalChanges) { 

@@ -66,7 +66,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             // instance, a nested type. That is, the former would say 'Foo+Bar', and not 'Foo.Bar'. This would
             // result in invalid generated code if XAML code is using eg. 'x:DataType' with a nested template type.
             // To address this, we just use 'ToStringWithCulture', which produces the valid C# type expression.
-            if (ProjectInfo.UsingCSWinRT)
+            if (ProjectInfo.UsingCSWinRT && !ProjectInfo.UsingCSWinRT3)
             {
                 return $"global::WinRT.CastExtensions.As<{ToStringWithCulture(type)}>({sourceName})";
             }
@@ -76,7 +76,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
         public string ObjectCast(string destinationType, string sourceName)
         {
-            if (ProjectInfo.UsingCSWinRT)
+            if (ProjectInfo.UsingCSWinRT && !ProjectInfo.UsingCSWinRT3)
             {
                 // We want to allow callers to pass either globally qualified type names, or normal
                 // type names. We never want to produce invalid code because of repeated globals.

@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -14,6 +14,10 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     <Import Project="ImportBefore\*"/>
 
     <PropertyGroup>
+        <_NormalizedTargetPlatformVersion Condition="'$(_NormalizedTargetPlatformVersion)' == '' and '$(EffectiveTargetPlatformVersion)' != ''">$(EffectiveTargetPlatformVersion)</_NormalizedTargetPlatformVersion>
+        <_NormalizedTargetPlatformVersion Condition="'$(_NormalizedTargetPlatformVersion)' == '' and '$(TargetPlatformVersion)' != '' and $([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">$([System.Version]::Parse('$(TargetPlatformVersion)').ToString(3)).0</_NormalizedTargetPlatformVersion>
+        <_NormalizedTargetPlatformVersion Condition="'$(_NormalizedTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</_NormalizedTargetPlatformVersion>
+        <UsingCSWinRT3 Condition="'$(UsingCSWinRT3)' == '' and '$(UsingMicrosoftNETSdk)' == 'true' and '$(TargetPlatformVersion)' != '' and $([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">true</UsingCSWinRT3>
         <XamlProjectName Condition=" '$(XamlProjectName)' == '' ">$(MSBuildProjectName)</XamlProjectName>
         <WindowsSdkPath Condition="'$(MSbuildRuntimeType)' != 'Core' And '$(WindowsSdkPath)'==''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\$(SDKIdentifier)\v$(SDKVersion)', 'InstallationFolder', null, RegistryView.Registry32, RegistryView.Default))</WindowsSdkPath>
 
@@ -34,7 +38,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             $(WindowsSdkPath)
         </XAMLFingerprintIgnorePaths>
 
-        <TPVFacadeWinmdPath>$(WindowsSdkPath)UnionMetadata\$(TargetPlatformVersion)\Facade\Windows.winmd</TPVFacadeWinmdPath>
+        <TPVFacadeWinmdPath>$(WindowsSdkPath)UnionMetadata\$(_NormalizedTargetPlatformVersion)\Facade\Windows.winmd</TPVFacadeWinmdPath>
         <!-- Favor a per-SDK Facade winmd. -->
         <FacadeWinmdPath Condition="'$(FacadeWinmdPath)' == '' AND Exists('$(TPVFacadeWinmdPath)')">$(TPVFacadeWinmdPath)</FacadeWinmdPath>
         <!-- If we can't find a per-SDK Facade winmd, use the one we used before. -->
@@ -61,15 +65,18 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- Keep the reflection provider disabled for WinUI 3.0's initial release -->
         <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
 
-        <!-- Type info reflection for CppWinRT isn't supported yet, always disable it.  Additionally, disable it for CX until the implementation stabilizes -->
+        <!-- Type info reflection for CppWinRT isn't supported yet, always disable it.
+             Additionally, disable it for CX until the implementation stabilizes -->
         <!-- This leaves type info reflection enabled for C# and VB -->
         <EnableTypeInfoReflection Condition="'$(XamlLanguage)' == 'CppWinRT' OR '$(XamlLanguage)' == 'C++'">false</EnableTypeInfoReflection>
 
-        <!-- By default, we only enable type info reflection for debug CoreCLR builds.  We should respect if a project wants to enable/disable it in other cases -->
+        <!-- By default, we only enable type info reflection for debug CoreCLR builds.
+             We should respect if a project wants to enable/disable it in other cases -->
         <EnableTypeInfoReflection Condition="'$(EnableTypeInfoReflection)' == '' AND '$(Configuration)' == 'Debug' AND '$(UseDotNetNativeToolChain)' != 'true'">true</EnableTypeInfoReflection>
         <EnableTypeInfoReflection Condition="'$(EnableTypeInfoReflection)' == ''">false</EnableTypeInfoReflection>
 
-        <!-- By default, XBindDiagnostics should not be generated on builds where E&C and Designer are likely not going to run -->
+        <!-- By default, XBindDiagnostics should not be generated on builds where
+             E&C and Designer are likely not going to run -->
         <EnableXBindDiagnostics Condition="'$(EnableXBindDiagnostics)' == '' and '$(DisableXbfLineInfo)' == 'false'">true</EnableXBindDiagnostics>
 
         <!-- If EnableDefaultValidationContextGeneration is set, respect that value. Otherwise, we always generate it-->
@@ -91,7 +98,9 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- If we couldn't determine whether we're building UWP or Win32, assume UWP. -->
         <EnableWin32Codegen  Condition="'$(EnableWin32Codegen)' == ''">false</EnableWin32Codegen>
 
-        <!-- Determine whether we're using CSWinRT.  This is based off whether the property UsingMicrosoftNETSdk is set, meaning we're using .NET 5 (and therefore CSWinRT) -->
+        <!-- Determine whether we're using CSWinRT.
+             This is based off whether the property UsingMicrosoftNETSdk is set,
+             meaning we're using .NET 5 (and therefore CSWinRT) -->
         <_UsingCSWinRT>$(UsingMicrosoftNETSdk)</_UsingCSWinRT>
 
         <!-- For CppWinRT projects, ensure the metadata provider is generated in the MUX namespace -->
@@ -101,17 +110,21 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <EnableBindingDiagnostics Condition="'$(EnableBindingDiagnostics)' == '' and ('$(IsAotCompatible)' == 'true' or '$(PublishAot)' == 'true')">true</EnableBindingDiagnostics>
 	</PropertyGroup>
 
-    <!-- Construct the FeatureControlFlags property based off of the values of EnableTypeInfoReflection, EnableXBindDiagnostics, EnableDefaultValidationContextGeneration, EnableWin32Codegen, EnableBindingDiagnostics, and UsingCSWinRT -->
+    <!-- Construct the FeatureControlFlags property based off of the values of
+         EnableTypeInfoReflection, EnableXBindDiagnostics, EnableDefaultValidationContextGeneration,
+         EnableWin32Codegen, EnableBindingDiagnostics, and UsingCSWinRT -->
     <ItemGroup>
       <XamlFeatureControlFlags Include="EnableTypeInfoReflection" Condition="'$(EnableTypeInfoReflection)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableXBindDiagnostics" Condition="'$(EnableXBindDiagnostics)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableDefaultValidationContextGeneration" Condition="'$(EnableDefaultValidationContextGeneration)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableWin32Codegen" Condition="'$(EnableWin32Codegen)' == 'true'" />
       <XamlFeatureControlFlags Include="UsingCSWinRT" Condition="'$(_UsingCSWinRT)' == 'true'" />
+      <XamlFeatureControlFlags Include="UsingCSWinRT3" Condition="'$(UsingCSWinRT3)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableBindingDiagnostics" Condition="'$(EnableBindingDiagnostics)' == 'true'" />
     </ItemGroup>
 
-    <!-- When using reflection for our metadata provider, we need to include the reflection helper DLL which is in the same folder as this targets file -->
+    <!-- When using reflection for our metadata provider, we need to include the reflection helper DLL
+         which is in the same folder as this targets file -->
     <Choose>
         <When Condition="'$(EnableTypeInfoReflection)' == 'true'">
             <ItemGroup>
@@ -272,6 +285,19 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </Prep_ComputeProcessXamlFilesDependsOn>
     </PropertyGroup>
 
+    <!-- SDK-managed only: run FindReferenceAssembliesForReferences before the passes so
+         @(ReferencePathWithRefAssemblies) (the %(ReferenceAssembly) redirect) is populated. -->
+    <PropertyGroup Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true'">
+        <MarkupCompilePass1DependsOn>
+            FindReferenceAssembliesForReferences;
+            $(MarkupCompilePass1DependsOn)
+        </MarkupCompilePass1DependsOn>
+        <MarkupCompilePass2DependsOn>
+            FindReferenceAssembliesForReferences;
+            $(MarkupCompilePass2DependsOn)
+        </MarkupCompilePass2DependsOn>
+    </PropertyGroup>
+
     <!-- If VCInstallPath properties aren't defined, we can get them from the tools install dir.
          If we *also* don't have the tools install dir, then we can at least attempt to get it from the
          VS install root, though that requires that we manually retrieve the version of MSVC. -->
@@ -331,7 +357,8 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <PriIndexName Condition="'$(AppxPackage)' == 'true'"></PriIndexName>
             <!-- Managed Dll's use the "safe" name of the project as the App Package Name -->
             <PriIndexName Condition="'$(AppxPackage)' != 'true' and '$(ManagedAssembly)' != 'false' and '$(OutputType)' != 'winmdobj'">$(TargetName)</PriIndexName>
-            <!-- Winmd library targets (managed or native) use the default root namespace of the project for the App package name -->
+            <!-- Winmd library targets (managed or native) use the default root namespace
+                 of the project for the App package name -->
             <PriIndexName Condition="'$(AppxPackage)' != 'true' and '$(ManagedAssembly)' != 'false' and '$(OutputType)' == 'winmdobj'">$(RootNamespace)</PriIndexName>
             <PriIndexName Condition="'$(AppxPackage)' != 'true' and '$(ManagedAssembly)' == 'false' and '$(RootNamespace)' != ''">$(RootNamespace)</PriIndexName>
             <!-- If RootNamespace is empty fall back to TargetName -->
@@ -367,6 +394,35 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </CoreCompileDependsOn>
     </PropertyGroup>
 
+    <!--
+      The SDK's XamlPreCompile pass compiles @(XamlIntermediateAssembly) (Pass2's LocalAssembly) with a hard-coded
+      References="@(ReferencePath)", so unlike the passes below we can't point it at our own reference list. Under
+      CsWinRT 3.0 @(ReferencePath) holds the projection forwarder rather than the real reference projection, so the
+      compile can't resolve the projected types. Temporarily swap @(ReferencePath) for @(ReferencePathWithRefAssemblies)
+      (the reference projections CoreCompile uses) around this pass and restore it afterward.
+      SDK-managed only; no-op for CsWinRT 2.x.
+    -->
+    <Target Name="_SwapInReferenceProjectionsForXamlPreCompile"
+            BeforeTargets="XamlPreCompile"
+            DependsOnTargets="FindReferenceAssembliesForReferences"
+            Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true' and ('@(Page)' != '' Or '@(ApplicationDefinition)' != '')">
+        <ItemGroup>
+            <_XamlPreCompileSavedReferencePath Include="@(ReferencePath)" />
+            <ReferencePath Remove="@(ReferencePath)" />
+            <ReferencePath Include="@(ReferencePathWithRefAssemblies)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_RestoreReferencePathAfterXamlPreCompile"
+            AfterTargets="XamlPreCompile"
+            Condition="'$(IsNativeLanguage)' != 'true' and '@(_XamlPreCompileSavedReferencePath)' != ''">
+        <ItemGroup>
+            <ReferencePath Remove="@(ReferencePath)" />
+            <ReferencePath Include="@(_XamlPreCompileSavedReferencePath)" />
+            <_XamlPreCompileSavedReferencePath Remove="@(_XamlPreCompileSavedReferencePath)" />
+        </ItemGroup>
+    </Target>
+
     <Target Name="DesignTimeMarkupCompilation">
         <!-- BuildingProject is used in Managed builds (always true in Native) -->
         <!-- DesignTimeBuild is used in Native builds (always false in Managed) -->
@@ -384,6 +440,19 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <ItemGroup>
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
+        <!-- SDK-managed: @(ReferencePathWithRefAssemblies) - the reference dlls, which under CsWinRT 3.0 are the reference
+             projections rather than the forwarder (the same set CoreCompile uses).
+             Native: winmds + facade only (managed CsWinRT dlls carry TypeMap assembly attributes
+             that pull in unresolvable .NET references).
+             Non-SDK managed: @(ReferencePath).
+             No-op for CsWinRT 2.x. -->
+        <ItemGroup>
+            <_XamlCompileReferenceAssemblies Remove="@(_XamlCompileReferenceAssemblies)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and '%(ReferencePath.WinMDFile)'=='true'" Include="@(ReferencePath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and Exists('$(FacadeWinmdPath)')" Include="$(FacadeWinmdPath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+        </ItemGroup>
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
                 Language="$(XamlLanguage)"
@@ -399,7 +468,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 OutputPath="$(XamlGeneratedOutputPath)"
                 OutputType="$(OutputType)"
                 ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-                ReferenceAssemblies="@(ReferencePath)"
+                ReferenceAssemblies="@(_XamlCompileReferenceAssemblies)"
                 ForceSharedStateShutdown="False"
                 ContinueOnError="True"
                 CompileMode="DesignTimeBuild"
@@ -453,7 +522,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             OutputPath="$(XamlGeneratedOutputPath)"
             OutputType="$(OutputType)"
             ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-            ReferenceAssemblies="@(ReferencePath)"
+            ReferenceAssemblies="@(_XamlCompileReferenceAssemblies)"
             ForceSharedStateShutdown="False"
             ContinueOnError="True"
             CompileMode="DesignTimeBuild"
@@ -515,6 +584,19 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <ItemGroup>
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
+        <!-- SDK-managed: @(ReferencePathWithRefAssemblies) - the reference dlls, which under CsWinRT 3.0 are the reference
+             projections rather than the forwarder (the same set CoreCompile uses).
+             Native: winmds + facade only (managed CsWinRT dlls carry TypeMap assembly attributes
+             that pull in unresolvable .NET references).
+             Non-SDK managed: @(ReferencePath).
+             No-op for CsWinRT 2.x. -->
+        <ItemGroup>
+            <_XamlCompileReferenceAssemblies Remove="@(_XamlCompileReferenceAssemblies)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and '%(ReferencePath.WinMDFile)'=='true'" Include="@(ReferencePath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and Exists('$(FacadeWinmdPath)')" Include="$(FacadeWinmdPath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+        </ItemGroup>
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
                 Language="$(XamlLanguage)"
@@ -530,7 +612,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 OutputPath="$(XamlGeneratedOutputPath)"
                 OutputType="$(OutputType)"
                 ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-                ReferenceAssemblies="@(ReferencePath)"
+                ReferenceAssemblies="@(_XamlCompileReferenceAssemblies)"
                 ForceSharedStateShutdown="False"
                 CompileMode="RealBuildPass1"
                 XAMLFingerprint="$(XAMLFingerprint)"
@@ -584,7 +666,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 OutputPath="$(XamlGeneratedOutputPath)"
                 OutputType="$(OutputType)"
                 ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-                ReferenceAssemblies="@(ReferencePath)"
+                ReferenceAssemblies="@(_XamlCompileReferenceAssemblies)"
                 ForceSharedStateShutdown="False"
                 CompileMode="RealBuildPass1"
                 XAMLFingerprint="$(XAMLFingerprint)"
@@ -674,10 +756,12 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <XamlReferencesToCompile Condition="'$(XamlLanguage)' == 'CppWinRT'"
                                      Remove="@(WinMDReferenceToCompile)"
                                      MatchOnMetadata="FileName;Extension" />
-            <!-- C++ provides a filtered Item that eliminates any Managed Assemblies on the ReferencePath (from SDKs for example) -->
+            <!-- C++ provides a filtered Item that eliminates any Managed Assemblies
+                 on the ReferencePath (from SDKs for example) -->
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'=='true'" Include="@(WinMDReferenceToCompile)" />
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
-            <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true'" Include="@(ReferencePath)" />
+            <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
+            <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
         </ItemGroup>
         <RemoveDuplicates Condition="'$(XamlLanguage)' == 'CppWinRT'" Inputs="@(XamlReferencesToCompile)">
             <Output TaskParameter="Filtered" ItemName="_DistinctXamlReferencesToCompile" />
@@ -850,12 +934,26 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     <Target Name="_OnXamlPreCompileError"
             DependsOnTargets="$(_OnXamlPrecompileErrorDependsOn)" >
 
+        <!-- SDK-managed: @(ReferencePathWithRefAssemblies) - the reference dlls, which under CsWinRT 3.0 are the reference
+             projections rather than the forwarder (the same set CoreCompile uses).
+             Native: winmds + facade only (managed CsWinRT dlls carry TypeMap assembly attributes
+             that pull in unresolvable .NET references).
+             Non-SDK managed: @(ReferencePath).
+             No-op for CsWinRT 2.x. -->
+        <ItemGroup>
+            <_XamlCompileReferenceAssemblies Remove="@(_XamlCompileReferenceAssemblies)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and '%(ReferencePath.WinMDFile)'=='true'" Include="@(ReferencePath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and Exists('$(FacadeWinmdPath)')" Include="$(FacadeWinmdPath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+        </ItemGroup>
+
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
                 ProjectPath="$(MSBuildProjectFullPath)"
                 Language="$(XamlLanguage)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
                 OutputPath="$(XamlGeneratedOutputPath)"
-                ReferenceAssemblies="@(ReferencePath)"
+                ReferenceAssemblies="@(_XamlCompileReferenceAssemblies)"
                 ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
                 XamlPages="@(Page)"
                 XamlApplications="@(ApplicationDefinition)"
@@ -879,7 +977,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             Language="$(XamlLanguage)"
             LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
             OutputPath="$(XamlGeneratedOutputPath)"
-            ReferenceAssemblies="@(ReferencePath)"
+            ReferenceAssemblies="@(_XamlCompileReferenceAssemblies)"
             ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
             XamlPages="@(Page)"
             XamlApplications="@(ApplicationDefinition)"
@@ -1136,7 +1234,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 <ResolvedFrom>ImplicitlyExpandTargetPlatform</ResolvedFrom>
                 <IsSystemReference>True</IsSystemReference>
             </_TargetPlatformWinMDs>
-            <_TargetPlatformWinMDs Condition="'$(TargetPlatformSdkRootOverride)' == ''" Include="$([Microsoft.Build.Utilities.ToolLocationHelper]::GetTargetPlatformReferences($(SDKIdentifier), $(SDKVersion), $(TargetPlatformIdentifier), $(TargetPlatformMinVersion), $(TargetPlatformVersion)))">
+            <_TargetPlatformWinMDs Condition="'$(TargetPlatformSdkRootOverride)' == ''" Include="$([Microsoft.Build.Utilities.ToolLocationHelper]::GetTargetPlatformReferences($(SDKIdentifier), $(SDKVersion), $(TargetPlatformIdentifier), $(TargetPlatformMinVersion), $(_NormalizedTargetPlatformVersion)))">
                 <WinMDFile>true</WinMDFile>
                 <CopyLocal>false</CopyLocal>
                 <ReferenceGrouping>$(TargetPlatformMoniker)</ReferenceGrouping>
@@ -1147,7 +1245,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </ItemGroup>
 
         <Warning Condition="'@(_TargetPlatformWinMDs)' == ''"
-          Text="Could not find target platform winmds for the SDK specified by [$(SDKIdentifier), $(SDKVersion), $(TargetPlatformIdentifier), $(TargetPlatformMinVersion), $(TargetPlatformVersion)]"/>
+          Text="Could not find target platform winmds for the SDK specified by [$(SDKIdentifier), $(SDKVersion), $(TargetPlatformIdentifier), $(TargetPlatformMinVersion), $(_NormalizedTargetPlatformVersion)]"/>
 
         <Message Importance="Low" Text="Including @(_TargetPlatformWinMDs)" />
 

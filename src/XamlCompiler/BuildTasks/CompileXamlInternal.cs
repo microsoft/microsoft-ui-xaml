@@ -174,6 +174,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool EnableDefaultValidationContextGeneration { get; private set; }
         public bool EnableWin32Codegen { get; private set; }
         public bool UsingCSWinRT { get; private set; }
+        public bool UsingCSWinRT3 { get; private set; }
         public bool EnableBindingDiagnostics { get; private set; }
 
         // Controls whether or not usage of features (platform API, x:Bind functionality,
@@ -328,6 +329,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             EnableDefaultValidationContextGeneration = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableDefaultValidationContextGeneration);
             EnableWin32Codegen = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableWin32Codegen);
             UsingCSWinRT = FeatureControlFlags.HasFlag(FeatureCtrlFlags.UsingCSWinRT);
+            UsingCSWinRT3 = FeatureControlFlags.HasFlag(FeatureCtrlFlags.UsingCSWinRT3);
             EnableBindingDiagnostics = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableBindingDiagnostics);
             IgnoreSpecifiedTargetPlatformMinVersion = IgnoreSpecifiedTargetPlatformMinVersion;
 
@@ -2018,6 +2020,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             projectInfo.IsWin32App = EnableWin32Codegen;
             projectInfo.UsingCSWinRT = UsingCSWinRT;
+            projectInfo.UsingCSWinRT3 = UsingCSWinRT3;
             projectInfo.PrecompiledHeaderFile = PrecompiledHeaderFile;
             projectInfo.EnabledXamlOptionalChanges = ParseCommaSeparatedList(EnabledXamlOptionalChanges);
             projectInfo.DisabledXamlOptionalChanges = ParseCommaSeparatedList(DisabledXamlOptionalChanges);

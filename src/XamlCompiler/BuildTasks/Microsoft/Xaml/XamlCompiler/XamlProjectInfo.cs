@@ -30,6 +30,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         EnableWin32Codegen = 0x08,
         UsingCSWinRT = 0x10,
         EnableBindingDiagnostics = 0x20,
+        UsingCSWinRT3 = 0x40,
     }
 
     internal class XamlProjectInfo
@@ -118,7 +119,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool IsWin32App { get; set; }
 
         public bool UsingCSWinRT { get; set; }
-        
+
+        public bool UsingCSWinRT3 { get; set; }
+
         public string PrecompiledHeaderFile { get; set; }
 
         public IList<string> EnabledXamlOptionalChanges { get; set; }
