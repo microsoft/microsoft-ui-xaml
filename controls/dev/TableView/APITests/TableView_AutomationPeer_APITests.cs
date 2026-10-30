@@ -42,8 +42,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     //     public for exactly this reason.
     //
     //   * Providers are opaque to a C# test. Anything typed IRawElementProviderSimple can only be
-    //     asserted for null / non-null / count / reference identity. No test in this repo prises one
-    //     open with raw UIA pattern ids, and these do not start.
+    //     asserted for null / non-null / count / reference identity, unless a test opens it through
+    //     a peer subclass's protected PeerFromProvider (the GetSelection tests). No test in this repo
+    //     prises one open with raw UIA pattern ids, and these do not start.
     //
     // NOT COVERED HERE, deliberately:
     //   * The Value pattern on cells - Category 10 owns the advertisement gate in full (four tests).
@@ -190,41 +191,159 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies GetSelection reports a row that was selected while it was never realized.")]
+        [TestProperty("Description", "Verifies GetSelection reports an off-screen selected row through a data-item peer, without realizing the row or moving the viewport.")]
         public void VerifyGetSelectionReportsUnrealizedSelectedRow()
         {
             TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            var items = MakeNamedPeople(200);
+            int target = -1;
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateAutomationTable(TableViewRowTestHelpers.MakeManyItems(200));
-                tableView.SelectionMode = TableViewSelectionMode.Single;
+                tableView = CreateNamedPeopleTable(items);
                 LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var repeater = GetRowsRepeater(tableView);
+                Verify.IsGreaterThan(scroller.VerticalOffset, 0.0, "Precondition: the body must have scrolled.");
+
+                target = Math.Min(RealizedRowIndices(tableView).Max() + 50, items.Count - 1);
+                tableView.Select(target);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(target), "Precondition: the selected row must not be realized.");
+
+                var offset = scroller.VerticalOffset;
+                var realized = string.Join(",", RealizedRowIndices(tableView));
+
+                // GH #12445: report the selected row, but a UIA read must not realize it: that would
+                // re-anchor the repeater on the row instead of the user's viewport.
+                var selected = RequireSelectionProvider(tableView).GetSelection();
+                tableView.UpdateLayout();
+
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length,
+                    "GetSelection must report the selected row even when it is not realized.");
+                Verify.AreEqual(offset, scroller.VerticalOffset, "GetSelection must not scroll.");
+                Verify.AreEqual(realized, string.Join(",", RealizedRowIndices(tableView)),
+                    "GetSelection must not change which rows are realized.");
+                Verify.IsNull(repeater.TryGetElement(target), "GetSelection must not realize the selected row.");
+
+                itemPeer = new ProviderPeerProbe().ToPeer(selected[0]);
+                Verify.IsNotNull(itemPeer, "The reported provider must resolve to a peer.");
+                Verify.AreEqual(items[target].Name, itemPeer.GetName(), "The data-item peer must be named from its item.");
+                Verify.AreEqual(AutomationControlType.DataItem, itemPeer.GetAutomationControlType(), "A row is a DataItem.");
+                Verify.IsTrue(itemPeer.IsOffscreen(), "An unrealized row is off screen.");
+                var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsNotNull(selectionItem, "The data-item peer must offer SelectionItem.");
+                Verify.IsTrue(selectionItem.IsSelected, "The data-item peer must report itself selected.");
+                Verify.IsNotNull(itemPeer.GetPattern(PatternInterface.VirtualizedItem) as IVirtualizedItemProvider,
+                    "An unrealized row must offer VirtualizedItem.");
+                Verify.AreSame(itemPeer, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "Repeated GetSelection calls must hand back the same provider.");
+
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                tableView.Select(150);
+                var scroller = GetBodyScroller(tableView);
+                var row = GetRowsRepeater(tableView).TryGetElement(target) as TableViewRow;
+                Verify.IsNotNull(row, "Realize must create the selected row.");
+                var top = row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    $"Realize must bring the row into view (top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}).");
+                Verify.IsNull(itemPeer.GetPattern(PatternInterface.VirtualizedItem),
+                    "Once realized, the data-item peer must stop offering VirtualizedItem.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies GetSelection reports a realized selected row through that row's own peer.")]
+        public void VerifyGetSelectionReturnsRealizedRowPeer()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var index = RealizedRowIndices(tableView).First();
+                tableView.Select(index);
                 tableView.UpdateLayout();
 
-                var repeater = GetRowsRepeater(tableView);
-                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the selected row must not be realized.");
+                var row = GetRowsRepeater(tableView).TryGetElement(index);
+                Verify.IsNotNull(row, "Precondition: the selected row must be realized.");
 
-                var selection = RequireTablePeer(tableView).GetPattern(PatternInterface.Selection) as ISelectionProvider;
-                if (selection == null)
-                {
-                    Verify.Fail("Selection must be advertised while SelectionMode is Single.");
-                    return;
-                }
-
-                // GH #12445: SelectedIndex reports the row, so the Selection pattern must too.
-                var selected = selection.GetSelection();
-                Verify.AreEqual(1, selected == null ? 0 : selected.Length,
-                    "GetSelection must report the selected row even when it was never realized.");
-                Verify.IsNotNull(repeater.TryGetElement(150), "The reported provider must belong to the selected row.");
+                var selected = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length, "GetSelection must report the selected row.");
+                Verify.AreSame(FrameworkElementAutomationPeer.CreatePeerForElement(row), new ProviderPeerProbe().ToPeer(selected[0]),
+                    "A realized selected row must be reported through its own row peer, as Grid.GetItem and tree navigation do.");
             });
+        }
+
+        // AutomationPeer.PeerFromProvider is protected; a peer subclass is the only way to open a provider here.
+        private sealed class ProviderPeerProbe : FrameworkElementAutomationPeer
+        {
+            public ProviderPeerProbe() : base(new Border()) { }
+
+            public AutomationPeer ToPeer(IRawElementProviderSimple provider) => PeerFromProvider(provider);
+        }
+
+        private sealed class NamedPerson
+        {
+            public string Name { get; set; }
+
+            public string Role { get; set; }
+
+            public override string ToString() => Name;
+        }
+
+        private static List<NamedPerson> MakeNamedPeople(int count) => Enumerable
+            .Range(0, count)
+            .Select(i => new NamedPerson { Name = $"Person {i}", Role = $"Role {i}" })
+            .ToList();
+
+        private static TableView CreateNamedPeopleTable(List<NamedPerson> items)
+        {
+            var tableView = CreateTableViewShell(items, 600, 300);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            tableView.Columns.Add(MakeTextColumn("Role"));
+            tableView.SelectionMode = TableViewSelectionMode.Single;
+            return tableView;
+        }
+
+        private static ISelectionProvider RequireSelectionProvider(TableView tableView)
+        {
+            var selection = RequireTablePeer(tableView).GetPattern(PatternInterface.Selection) as ISelectionProvider;
+            Verify.IsNotNull(selection, "Selection must be advertised while SelectionMode is Single.");
+            return selection;
+        }
+
+        private static List<int> RealizedRowIndices(TableView tableView)
+        {
+            var repeater = GetRowsRepeater(tableView);
+            return GetRealizedRows(tableView)
+                .Select(row => repeater.GetElementIndex(row))
+                .Where(index => index >= 0)
+                .OrderBy(index => index)
+                .ToList();
         }
 
         [TestMethod]
