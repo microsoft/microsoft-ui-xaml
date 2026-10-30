@@ -47,13 +47,13 @@ public sealed partial class MainWindow : Window
         model.PropertyChanged += Model_PropertyChanged;
         AppWindow.Closing += AppWindow_Closing;
         FramesPanel.Owner = AppWindow.Id;
-        ElementsPanel.Owner = AppWindow.Id;
+        ObjectsPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
-        ElementsPanel.Source = session;
-        FramesPanel.ElementRequested += (_, objectId) =>
+        ObjectsPanel.Source = session;
+        FramesPanel.ObjectRequested += (_, mention) =>
         {
-            Tabs.SelectedItem = ElementsTab;
-            ElementsPanel.ShowElement(objectId);
+            Tabs.SelectedItem = ObjectsTab;
+            ObjectsPanel.ShowObject(mention.ObjectId);
         };
         UpdateTargetSummary();
         Refresh();
@@ -423,7 +423,7 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 viewer = new(entry);
                 snapshotWindows.Add(entry.Saved.CaptureId, viewer);
                 viewer.Closed += (_, _) => snapshotWindows.Remove(entry.Saved.CaptureId);
-                viewer.ElementRequested += ShowSnapshotElement;
+                viewer.ObjectRequested += ShowSnapshotObject;
             }
             viewer.Activate();
         }
@@ -433,12 +433,12 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
         }
     }
 
-    // A snapshot window asked for a XAML node's element: show its history in the Elements tab.
-    private void ShowSnapshotElement(object? sender, SnapshotElement node)
+    // A snapshot window asked for a node's element or visual: show its history in the Objects tab.
+    private void ShowSnapshotObject(object? sender, SnapshotObject node)
     {
         if (closing) return;
-        Tabs.SelectedItem = ElementsTab;
-        ElementsPanel.ShowSnapshotElement(node);
+        Tabs.SelectedItem = ObjectsTab;
+        ObjectsPanel.ShowSnapshotObject(node);
         Activate();
     }
 
@@ -468,7 +468,7 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 viewer = new(before, after);
                 snapshotDiffWindows.Add(key, viewer);
                 viewer.Closed += (_, _) => snapshotDiffWindows.Remove(key);
-                viewer.ElementRequested += ShowSnapshotElement;
+                viewer.ObjectRequested += ShowSnapshotObject;
             }
             SnapshotDiffPicker.Hide();
             viewer.Activate();
