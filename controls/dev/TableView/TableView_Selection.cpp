@@ -1042,6 +1042,7 @@ void TableView::StartBringItemIntoView(int32_t index, winrt::BringIntoViewOption
     m_pendingBringIntoViewOptions = options;
     m_bringIntoViewIssued = false;
     m_bringIntoViewPassesLeft = s_bringIntoViewPasses;
+    m_bringIntoViewWaitsLeft = s_bringIntoViewWaits;
     ArmPendingBringIntoView();
     PostPendingBringIntoViewAttempt();
 }
@@ -1062,6 +1063,15 @@ void TableView::PostPendingBringIntoViewAttempt()
 
 void TableView::RunPendingBringIntoViewAttempt()
 {
+    // UpdateLayout inside an attempt raises LayoutUpdated synchronously; a nested attempt would
+    // consume the passes and cancel the request before the outer one issues the scroll.
+    if (m_bringIntoViewAttemptInProgress)
+    {
+        return;
+    }
+    m_bringIntoViewAttemptInProgress = true;
+    auto const reset = wil::scope_exit([this]() noexcept { m_bringIntoViewAttemptInProgress = false; });
+
     try
     {
         if (m_pendingBringIntoViewIndex < 0 || TryBringPendingItemIntoView())
@@ -1162,6 +1172,28 @@ bool TableView::TryBringPendingItemIntoView()
         return true;
     }
 
+    // Once issued, later layout passes verify the real position. Rows away from the realized range
+    // are placed from estimated heights, so the first scroll can land short; it is re-issued a
+    // bounded number of times, but only after the previous scroll has applied.
+    auto const scroller = m_bodyScroller.get();
+    if (m_bringIntoViewIssued)
+    {
+        auto const realized = repeater.TryGetElement(index).try_as<winrt::FrameworkElement>();
+        if (realized && repeater.GetElementIndex(realized) == index && IsBringIntoViewSatisfied(realized, requested))
+        {
+            return true;
+        }
+        const double offset = scroller ? scroller.VerticalOffset() : 0.0;
+        if (std::abs(offset - m_bringIntoViewIssueOffset) < 0.5 && m_bringIntoViewWaitsLeft-- > 0)
+        {
+            return false;
+        }
+        if (--m_bringIntoViewPassesLeft <= 0)
+        {
+            return true;
+        }
+    }
+
     // As ItemsView: realize, lay out so the element has its real position and size, then re-validate,
     // because the layout runs app code that can change the rows or recycle the element.
     auto element = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>();
@@ -1192,13 +1224,6 @@ bool TableView::TryBringPendingItemIntoView()
         {
             return true;
         }
-    }
-
-    // Rows away from the realized range are placed from estimated heights, so the first scroll can
-    // land short. Each later layout pass checks the real position and re-issues, a bounded number of times.
-    if (m_bringIntoViewIssued && (IsBringIntoViewSatisfied(element, requested) || --m_bringIntoViewPassesLeft <= 0))
-    {
-        return true;
     }
 
     // A copy, so the app's options object is never modified.
@@ -1237,6 +1262,8 @@ bool TableView::TryBringPendingItemIntoView()
         }
     }
 
+    m_bringIntoViewIssueOffset = scroller ? scroller.VerticalOffset() : 0.0;
+    m_bringIntoViewWaitsLeft = s_bringIntoViewWaits;
     element.StartBringIntoView(bring);
     m_bringIntoViewIssued = true;
     return false;

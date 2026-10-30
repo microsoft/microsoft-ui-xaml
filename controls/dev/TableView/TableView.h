@@ -720,8 +720,13 @@ private:
     void RunPendingBringIntoViewAttempt();
     bool IsBringIntoViewSatisfied(winrt::FrameworkElement const& element, winrt::BringIntoViewOptions const& options) const;
     static constexpr int32_t s_bringIntoViewPasses{ 3 };
+    // Layout passes to wait for an issued scroll to apply before re-issuing.
+    static constexpr int32_t s_bringIntoViewWaits{ 10 };
     bool m_bringIntoViewIssued{ false };
+    bool m_bringIntoViewAttemptInProgress{ false };
     int32_t m_bringIntoViewPassesLeft{ 0 };
+    int32_t m_bringIntoViewWaitsLeft{ 0 };
+    double m_bringIntoViewIssueOffset{ 0.0 };
     int32_t m_pendingBringIntoViewIndex{ -1 };
     winrt::BringIntoViewOptions m_pendingBringIntoViewOptions{ nullptr };
     winrt::event_token m_pendingBringIntoViewLayoutToken{};
