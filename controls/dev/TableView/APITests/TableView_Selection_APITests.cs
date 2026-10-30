@@ -416,7 +416,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(new List<string> { "alpha", "beta", "gamma" }, headers: new[] { "Value" }, bound: false);
-                numbers = CreateTableView(new List<int> { 10, 20, 30 }, headers: new[] { "Value" }, bound: false);
+                // Boxed into List<object>: CsWinRT cannot project List<int> as the IVectorView<object> TableView reads.
+                numbers = CreateTableView(new List<object> { 10, 20, 30 }, headers: new[] { "Value" }, bound: false);
 
                 Verify.AreEqual(1, tableView.IndexOf(new string("beta".ToCharArray())), "A string must match by value before Loaded.");
                 Verify.AreEqual(2, numbers.IndexOf(30), "A boxed number must match by value before Loaded.");

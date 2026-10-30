@@ -716,6 +716,12 @@ private:
     void CancelPendingBringItemIntoView();
     void RevokePendingBringIntoViewLayout();
     bool TryBringPendingItemIntoView();
+    void PostPendingBringIntoViewAttempt();
+    void RunPendingBringIntoViewAttempt();
+    bool IsBringIntoViewSatisfied(winrt::FrameworkElement const& element, winrt::BringIntoViewOptions const& options) const;
+    static constexpr int32_t s_bringIntoViewPasses{ 3 };
+    bool m_bringIntoViewIssued{ false };
+    int32_t m_bringIntoViewPassesLeft{ 0 };
     int32_t m_pendingBringIntoViewIndex{ -1 };
     winrt::BringIntoViewOptions m_pendingBringIntoViewOptions{ nullptr };
     winrt::event_token m_pendingBringIntoViewLayoutToken{};
@@ -870,7 +876,8 @@ private:
     bool m_insideLayoutPass{ false };
     uint32_t m_layoutCallbackDepth{ 0 };
 
-    // IsEditing is true from the editor opening until the edit closes (Editing and Ending).
+    // IsEditing is true from BeginningEdit until the edit closes (any state but None); a cancelled
+    // BeginningEdit reverts it to false.
     void SyncIsEditingProperty();
     void OnIsEditingPropertyChanged();
     bool m_isSettingIsEditing{ false };

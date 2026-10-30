@@ -1036,11 +1036,44 @@ void TableView::StartBringItemIntoView(int32_t index, winrt::BringIntoViewOption
         throw winrt::hresult_invalid_argument();
     }
 
+    // Always started on a later turn, as the name says: a source change made right after the call
+    // (in the same turn) cancels it instead of scrolling the new rows.
     m_pendingBringIntoViewIndex = index;
     m_pendingBringIntoViewOptions = options;
-    if (IsInLayoutCallback() || !TryBringPendingItemIntoView())
+    m_bringIntoViewIssued = false;
+    m_bringIntoViewPassesLeft = s_bringIntoViewPasses;
+    ArmPendingBringIntoView();
+    PostPendingBringIntoViewAttempt();
+}
+
+void TableView::PostPendingBringIntoViewAttempt()
+{
+    if (auto const queue = DispatcherQueue())
     {
-        ArmPendingBringIntoView();
+        queue.TryEnqueue([weakThis = get_weak()]()
+        {
+            if (auto const strongThis = weakThis.get(); strongThis && strongThis->m_pendingBringIntoViewIndex >= 0)
+            {
+                strongThis->RunPendingBringIntoViewAttempt();
+            }
+        });
+    }
+}
+
+void TableView::RunPendingBringIntoViewAttempt()
+{
+    try
+    {
+        if (m_pendingBringIntoViewIndex < 0 || TryBringPendingItemIntoView())
+        {
+            CancelPendingBringItemIntoView();
+        }
+    }
+    catch (...)
+    {
+        CancelPendingBringItemIntoView();
+        TVDiag::LogRetailF(L"[TableView] A pending StartBringItemIntoView failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
     }
 }
 
@@ -1051,24 +1084,13 @@ void TableView::ArmPendingBringIntoView()
         return;
     }
 
-    // LayoutUpdated is raised after the layout pass, so the repeater can realize the row here.
+    // LayoutUpdated is raised after the layout pass, so the repeater can realize the row here, and a
+    // row positioned from estimated heights is checked again once the scroll has applied.
     m_pendingBringIntoViewLayoutToken = LayoutUpdated([weakThis = get_weak()](auto const&, auto const&)
     {
         if (auto const strongThis = weakThis.get())
         {
-            try
-            {
-                if (strongThis->m_pendingBringIntoViewIndex < 0 || strongThis->TryBringPendingItemIntoView())
-                {
-                    strongThis->RevokePendingBringIntoViewLayout();
-                }
-            }
-            catch (...)
-            {
-                strongThis->CancelPendingBringItemIntoView();
-                TVDiag::LogRetailF(L"[TableView] A pending StartBringItemIntoView failed (HRESULT 0x%08X).",
-                    static_cast<unsigned int>(winrt::to_hresult()));
-            }
+            strongThis->RunPendingBringIntoViewAttempt();
         }
     });
 }
@@ -1077,6 +1099,7 @@ void TableView::CancelPendingBringItemIntoView()
 {
     m_pendingBringIntoViewIndex = -1;
     m_pendingBringIntoViewOptions = nullptr;
+    m_bringIntoViewIssued = false;
     RevokePendingBringIntoViewLayout();
 }
 
@@ -1089,17 +1112,50 @@ void TableView::RevokePendingBringIntoViewLayout()
     }
 }
 
+// Where the request asked for the row: fully inside the body viewport, and at the requested vertical
+// alignment unless the scroll extent cannot reach it.
+bool TableView::IsBringIntoViewSatisfied(winrt::FrameworkElement const& element, winrt::BringIntoViewOptions const& options) const
+{
+    if (!IsRowElementArranged(element) || !IsRowElementInViewport(element))
+    {
+        return false;
+    }
+    auto const scroller = m_bodyScroller.get();
+    const double ratio = options ? options.VerticalAlignmentRatio() : std::numeric_limits<double>::quiet_NaN();
+    if (!scroller || !std::isfinite(ratio))
+    {
+        return true;
+    }
+
+    const double offset = scroller.VerticalOffset();
+    if (offset <= 0.5 || offset >= scroller.ScrollableHeight() - 0.5)
+    {
+        return true;
+    }
+    try
+    {
+        const double top = element.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+        const double desired = ratio * (scroller.ViewportHeight() - element.ActualHeight()) - options.VerticalOffset();
+        return std::abs(top - desired) <= 1.0;
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return true;
+    }
+}
+
+// True when the request is finished (brought into view, verified, or no longer applicable).
 bool TableView::TryBringPendingItemIntoView()
 {
     auto const repeater = m_rowsRepeater.get();
     auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
-    if (!IsLoaded() || !repeater || !view)
+    if (!IsLoaded() || !repeater || !view || IsInLayoutCallback())
     {
         return false;
     }
 
-    const int32_t index = std::exchange(m_pendingBringIntoViewIndex, -1);
-    auto const requested = std::exchange(m_pendingBringIntoViewOptions, nullptr);
+    const int32_t index = m_pendingBringIntoViewIndex;
+    auto const requested = m_pendingBringIntoViewOptions;
     if (index < 0 || index >= view.Count())
     {
         // The rows changed underneath the request; there is nothing left to bring into view.
@@ -1114,6 +1170,11 @@ bool TableView::TryBringPendingItemIntoView()
         return true;
     }
     element.UpdateLayout();
+    if (m_pendingBringIntoViewIndex != index)
+    {
+        // Cancelled or replaced by the app code that layout ran.
+        return m_pendingBringIntoViewIndex < 0;
+    }
     if (repeater.ItemsSourceView() != view || index >= view.Count())
     {
         return true;
@@ -1133,6 +1194,13 @@ bool TableView::TryBringPendingItemIntoView()
         }
     }
 
+    // Rows away from the realized range are placed from estimated heights, so the first scroll can
+    // land short. Each later layout pass checks the real position and re-issues, a bounded number of times.
+    if (m_bringIntoViewIssued && (IsBringIntoViewSatisfied(element, requested) || --m_bringIntoViewPassesLeft <= 0))
+    {
+        return true;
+    }
+
     // A copy, so the app's options object is never modified.
     winrt::BringIntoViewOptions bring;
     if (requested)
@@ -1143,6 +1211,11 @@ bool TableView::TryBringPendingItemIntoView()
         bring.HorizontalOffset(requested.HorizontalOffset());
         bring.VerticalOffset(requested.VerticalOffset());
         bring.TargetRect(requested.TargetRect());
+    }
+    if (m_bringIntoViewIssued)
+    {
+        // The corrective pass is a nudge from a nearby position, never an animation.
+        bring.AnimationDesired(false);
     }
 
     // Without a target the full-width row would scroll the body horizontally to its leading edge
@@ -1165,5 +1238,6 @@ bool TableView::TryBringPendingItemIntoView()
     }
 
     element.StartBringIntoView(bring);
-    return true;
+    m_bringIntoViewIssued = true;
+    return false;
 }

@@ -729,7 +729,7 @@ void TableView::PostEditNotification(std::function<void()> notify)
 
 void TableView::SyncIsEditingProperty()
 {
-    const bool open = m_editState == EditState::Editing || m_editState == EditState::Ending;
+    const bool open = m_editState != EditState::None;
     if (IsEditing() != open)
     {
         m_isSettingIsEditing = true;
@@ -1156,8 +1156,9 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
 
     if (closed)
     {
-        // A forced close is reported as Cancel whatever it managed to write.
-        RaiseCellEditEnded(endedItem, endedColumn, honorCancel ? action : winrt::TableViewEditAction::Cancel);
+        // The same action CellEditEnding reported. A forced close commits a valid pending value and
+        // reports Cancel when nothing was written, it failed validation (rolled back), or the item left.
+        RaiseCellEditEnded(endedItem, endedColumn, action);
         DrainCoalescedEditReshape();
     }
     else
@@ -1405,7 +1406,20 @@ void TableView::DrainCoalescedEditReshape()
         m_pendingEditReshapes.pop_front();
         if (operation)
         {
-            operation();
+            // A replayed request's caller has already returned, so a Sorting or GroupExpanding
+            // handler that throws here (for example inside CommitEdit) is contained, not propagated.
+            try
+            {
+                operation();
+            }
+            catch (...)
+            {
+                const auto hr = winrt::to_hresult();
+                NoteRecoveredAppFault(TableViewTip::Operation::CommitEdit, TableViewTip::Stage::Editing,
+                    TableViewTip::AppFaultKind::Callback, hr);
+                TVDiag::LogRetailF(L"[TableView] A reshape queued behind a closed edit threw (HRESULT 0x%08X).",
+                    static_cast<unsigned int>(hr));
+            }
         }
     }
 }
@@ -1417,6 +1431,9 @@ void TableView::ResetPendingBeginEdit()
     m_editUneditedValue.set(nullptr);
     m_editState = EditState::None;
     m_abandonPendingBeginEdit = false;
+    // A cancelled or abandoned BeginEdit reverts the IsEditing it raised for BeginningEdit.
+    try { SyncIsEditingProperty(); }
+    catch (...) {}
 }
 
 bool TableView::BeginEdit()
@@ -1542,6 +1559,8 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
         // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
         // the checks below unwind rather than promoting to Editing over a recycled row.
+        // True before BeginningEdit is raised, so a handler (and anything it triggers) sees the edit.
+        SyncIsEditingProperty();
         const bool allowed = RaiseBeginningEdit(item, column, tip);
         if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
         {

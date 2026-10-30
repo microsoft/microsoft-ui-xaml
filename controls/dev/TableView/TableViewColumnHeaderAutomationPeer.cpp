@@ -401,14 +401,21 @@ bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
 
 void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
 {
+    // A collapsed column's header has no menu, whichever peer is asked: raising the request on the
+    // collapsed header element would bubble to the table and open its menu instead.
+    auto const column = m_column.get();
+    if (column && !IsVisibleColumn(column))
+    {
+        return;
+    }
+
     if (!IsTableViewOwned())
     {
         __super::ShowContextMenuCore();
         return;
     }
 
-    auto const column = m_column.get();
-    if (!column || !IsVisibleColumn(column))
+    if (!column)
     {
         return;
     }

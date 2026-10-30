@@ -726,30 +726,8 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     // A StartBringItemIntoView made before Loaded; posted so the rows have their first layout.
     if (m_pendingBringIntoViewIndex >= 0)
     {
-        if (auto const queue = DispatcherQueue())
-        {
-            queue.TryEnqueue([weakThis = get_weak()]()
-            {
-                auto const strongThis = weakThis.get();
-                if (!strongThis || strongThis->m_pendingBringIntoViewIndex < 0)
-                {
-                    return;
-                }
-                try
-                {
-                    if (strongThis->TryBringPendingItemIntoView())
-                    {
-                        strongThis->RevokePendingBringIntoViewLayout();
-                    }
-                }
-                catch (...)
-                {
-                    strongThis->CancelPendingBringItemIntoView();
-                    TVDiag::LogRetailF(L"[TableView] A StartBringItemIntoView pending at Loaded failed (HRESULT 0x%08X).",
-                        static_cast<unsigned int>(winrt::to_hresult()));
-                }
-            });
-        }
+        ArmPendingBringIntoView();
+        PostPendingBringIntoViewAttempt();
     }
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.

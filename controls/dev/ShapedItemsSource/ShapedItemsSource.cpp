@@ -240,6 +240,7 @@ void ShapedItemsSource::ApplyVerb(Declare&& declare)
 {
     ThrowIfReentrant();
     auto const snapshot = SaveDeclaration();
+    auto const sourceChangeStamp = m_sourceChangeStamp;
     bool reshaped = false;
     try
     {
@@ -248,9 +249,19 @@ void ShapedItemsSource::ApplyVerb(Declare&& declare)
     }
     catch (...)
     {
+        // A source change during the failed pass means it may have failed on data that is already fixed; the
+        // declaration stays for the replay of that change (as for invalid data arriving by a collection change).
         if (!reshaped)
         {
-            RestoreDeclaration(snapshot);
+            if (m_sourceChangeStamp == sourceChangeStamp)
+            {
+                RestoreDeclaration(snapshot);
+            }
+            else
+            {
+                // The projection still shows the previous shape; the next change rebuilds rather than diffs.
+                m_forceFullReshape = true;
+            }
         }
         throw;
     }
@@ -460,6 +471,7 @@ void ShapedItemsSource::EndDeferRefresh()
         return;
     }
 
+    auto const sourceChangeStamp = m_sourceChangeStamp;
     bool reshaped = false;
     try
     {
@@ -468,9 +480,17 @@ void ShapedItemsSource::EndDeferRefresh()
     }
     catch (...)
     {
+        // As in ApplyVerb: a source change during the failed pass keeps the declaration for its replay.
         if (snapshot && !reshaped)
         {
-            RestoreDeclaration(*snapshot);
+            if (m_sourceChangeStamp == sourceChangeStamp)
+            {
+                RestoreDeclaration(*snapshot);
+            }
+            else
+            {
+                m_forceFullReshape = true;
+            }
         }
         throw;
     }

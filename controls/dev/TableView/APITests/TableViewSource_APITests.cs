@@ -3040,7 +3040,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     switch (verb)
                     {
-                        case "Filter": source.Filter(o => Person(o).Role == "Engineer"); break;
+                        // Keeps the duplicated Asha, so the filtered rows still contain the same object twice.
+                        case "Filter": source.Filter(o => Person(o).Role != "Engineer"); break;
                         case "Sort": source.Sort("Name", SortDirection.Descending); break;
                         default: source.ThenSort("Name", SortDirection.Descending); break;
                     }
@@ -3135,6 +3136,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var resets = new List<string>();
             var resetsBeforeQueueAdvanced = -1;
             var resetsAtNextTurn = -1;
+            using var probeRan = new global::System.Threading.AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -3160,10 +3162,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 resetsBeforeQueueAdvanced = resets.Count;
-                tableView.DispatcherQueue.TryEnqueue(global::Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-                    () => resetsAtNextTurn = resets.Count);
+                tableView.DispatcherQueue.TryEnqueue(global::Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    resetsAtNextTurn = resets.Count;
+                    probeRan.Set();
+                });
             });
 
+            // The probe is Low priority, so Normal-priority test turns can run ahead of it; wait for it.
+            Verify.IsTrue(probeRan.WaitOne(global::System.TimeSpan.FromSeconds(10)), "The low-priority probe must run.");
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>

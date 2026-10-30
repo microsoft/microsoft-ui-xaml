@@ -953,7 +953,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation, raising Ending(Cancel) with the live editor and then Ended(Cancel) once; a SortByColumn refused by the failing value raises no Sorting.")]
+        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation, raising Ending with the live editor and then Ended once, both reporting what the close did; a SortByColumn refused by the failing value raises no Sorting.")]
         [TestProperty("data:Queued", "{None, Sort}")]
         public void VerifyRecycleDuringLayoutRollsBackInvalidPendingValue()
         {
@@ -1031,9 +1031,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Asha", items[0].Name, "Recycling the edited row must not leave a rejected value on the item.");
                 Verify.IsFalse(tableView.IsEditing, "Recycling the edited row must close the edit.");
 
-                var closing = log.SkipWhile(entry => !entry.StartsWith("Ending:Cancel", StringComparison.Ordinal)).ToList();
-                Verify.AreEqual("Ending:Cancel:editor,Ended:Cancel:IsEditing=False", string.Join(",", closing),
-                    $"{queued}: the forced close must raise Ending with the live editor, then Ended once; log [{string.Join(", ", log)}].");
+                if (queued == "Sort")
+                {
+                    // Ending and Ended report what the close did: the refused sort's commit attempt, then the
+                    // forced close re-committing the rolled-back valid value.
+                    Verify.AreEqual("Ending:Commit:editor,Ending:Commit:editor,Ended:Commit:IsEditing=False", string.Join(",", log),
+                        "Sort: the refused sort's attempt, then the forced close's Ending with the live editor, then Ended once.");
+                }
+                else
+                {
+                    var expectedClose = new[] { "Ending:Cancel:editor", "Ended:Cancel:IsEditing=False" };
+                    var closing = log.Skip(global::System.Math.Max(0, log.Count - expectedClose.Length));
+                    Verify.AreEqual(string.Join(",", expectedClose), string.Join(",", closing),
+                        $"{queued}: the forced close must raise Ending with the live editor, then Ended once; log [{string.Join(", ", log)}].");
+                }
                 Verify.IsFalse(log.Contains("Sorting"), $"{queued}: no Sorting may be raised.");
                 Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection, $"{queued}: the refused sort must not light its column.");
             });
@@ -1139,8 +1150,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var sorting = log.IndexOf("Sorting");
                 Verify.AreEqual(1, log.Count(entry => entry == "Sorting"), $"{close}: the queued sort must raise Sorting once; log [{string.Join(", ", log)}].");
                 Verify.IsTrue(endedB >= 0 && endedB < sorting, $"{close}: Ended for cell B must come before Sorting; log [{string.Join(", ", log)}].");
-                Verify.AreEqual(close == "Commit" ? TableViewEditAction.Commit.ToString() : TableViewEditAction.Cancel.ToString(),
-                    log[endedB].Split(':')[1], $"{close}: cell B must close with the expected action.");
+                // B holds a valid value and its item stays in the source, so either close writes it.
+                Verify.AreEqual(TableViewEditAction.Commit.ToString(), log[endedB].Split(':')[1], $"{close}: cell B's valid value must be committed.");
+                Verify.AreEqual("Bea", items[1].Name, $"{close}: cell B's value must reach the item.");
             });
         }
 
@@ -1682,7 +1694,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a forced close from a DP change sets IsEditing false synchronously and raises one CellEditEnded(Cancel) after the triggering call returns.")]
+        [TestProperty("Description", "Verifies a forced close from a DP change sets IsEditing false synchronously and raises one CellEditEnded, reporting what the close did, after the triggering call returns.")]
         [TestProperty("data:Trigger", "{ItemsSource, IsReadOnly}")]
         public void VerifyForcedCloseRaisesOneCellEditEndedOutsideTheCallback()
         {
@@ -1716,8 +1728,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(false, isEditingAfterTrigger, $"{trigger}: IsEditing must be false as soon as the forced close returns.");
-                Verify.AreEqual("Cancel:outside", string.Join(",", ended),
-                    $"{trigger}: exactly one CellEditEnded(Cancel), raised after the DP callback.");
+                // IsReadOnly keeps the item, so the valid pending value is written (Commit); a swapped
+                // ItemsSource drops it, so nothing is written (Cancel).
+                var expectedEnded = trigger == "IsReadOnly" ? "Commit:outside" : "Cancel:outside";
+                Verify.AreEqual(expectedEnded, string.Join(",", ended),
+                    $"{trigger}: exactly one CellEditEnded reporting what the close did, raised after the DP callback.");
                 Verify.AreEqual(nameof(TextBox), editorInEnding, $"{trigger}: CellEditEnding must still see the live editor.");
             });
         }

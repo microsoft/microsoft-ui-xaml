@@ -496,7 +496,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
 | `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
-| `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open; set to `false` synchronously when the edit closes, before `CellEditEnded` is raised. Read-only dependency property (`IsEditingProperty`), so it can be bound `OneWay`. An external `SetValue` is reverted rather than thrown: WinUI has no `DependencyPropertyKey` (WPF's `RegisterReadOnly`), so the control restores its own value in the property-changed callback. Observers can therefore see a transient change notification; do not bind it `TwoWay`. |
+| `IsEditing` | `Boolean` | `false` | `true` from the moment `BeginningEdit` is raised until the edit closes (a `BeginningEdit` handler already sees `true`); reverts to `false` if `BeginningEdit` is cancelled or the begin is abandoned; set to `false` synchronously when the edit closes, before `CellEditEnded` is raised. Read-only dependency property (`IsEditingProperty`), so it can be bound `OneWay`. An external `SetValue` is reverted rather than thrown: WinUI has no `DependencyPropertyKey` (WPF's `RegisterReadOnly`), so the control restores its own value in the property-changed callback. Observers can therefore see a transient change notification; do not bind it `TwoWay`. |
 | `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
 | `SelectedItem` | `Object` | `null` | The selected data item. **Read-only** — drive selection through `Select`/`Deselect`/`DeselectAll`. |
 | `SelectedIndex` | `Int32` | `-1` | The selected item's index in the displayed row projection; `-1` is "nothing selected". Under grouping, group headers occupy projection indexes but cannot be selected, so this value is not necessarily an index into `ItemsSource`. **Read-only.** |
@@ -524,13 +524,13 @@ The current cell is the navigation position and is deliberately independent of e
 
 | Event | Args | Description |
 |---|---|---|
-| `BeginningEdit` | `TableViewBeginningEditEventArgs` | Raised before an edit opens. Set `Cancel` to `true` to prevent it. |
+| `BeginningEdit` | `TableViewBeginningEditEventArgs` | Raised before an edit opens; `IsEditing` is already `true` during the handler. Set `Cancel` to `true` to prevent it (`IsEditing` then reverts to `false`). |
 | `CellEditEnding` | `TableViewCellEditEndingEventArgs` | Raised before a cell edit closes. Vetoable via `Cancel`; the handler must decide before returning. For user and programmatic commits it is synchronous and the value is not yet written; `EditingElement` is the live editor. A forced commit (during layout or because a property changed) writes first, and the event may be posted. |
-| `CellEditEnded` | `TableViewCellEditEndedEventArgs` | Raised exactly once per edit session after the edit has closed (`IsEditing` is `false`), after the value is written on commit. Not raised when `CellEditEnding` vetoed the close. Posted to a later turn when the close happens during layout or during a teardown forced by a property change (`ItemsSource`, `IsReadOnly`); a posted `CellEditEnded` is always raised before the next edit's `BeginningEdit`. |
+| `CellEditEnded` | `TableViewCellEditEndedEventArgs` | Raised exactly once per edit session after the edit has closed (`IsEditing` is `false`), after the value is written on commit. Its `EditAction` is always the same as the session's `CellEditEnding`. Not raised when `CellEditEnding` vetoed the close. Posted to a later turn when the close happens during layout or during a teardown forced by a property change (`ItemsSource`, `IsReadOnly`); a posted `CellEditEnded` is always raised before the next edit's `BeginningEdit`. |
 
 `CellEditEnding` is raised synchronously. The control reads `Cancel` immediately after the handler returns, so validation or save decisions must be complete before returning from the handler.
 
-When an open edit is forced closed because its item was removed, filtered out, or `ItemsSource` was replaced, `CellEditEnding` reports `Cancel` and the pending value is not written; `CellEditEnded` follows with `EditAction == Cancel`. If the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node), a valid pending value is committed.
+`CellEditEnding` and `CellEditEnded` always report the same `EditAction`, describing what the close actually did: `Commit` when the pending value was written and kept; `Cancel` when nothing was written, when the value failed validation and was rolled back, or when the item left the source. When an open edit is forced closed (for example by a sort, regroup, recycle or `ItemsSource` change), a valid pending value is committed while the item is still present, including when it is only under a collapsed group or node, and both events report `Commit`. If the item was removed or filtered out, nothing is written; if the value fails validation it is rolled back; both events then report `Cancel`.
 
 ## TableView selection methods
 
@@ -943,14 +943,14 @@ Why a TableView-specific enum rather than reusing `ItemsViewSelectionMode` or `L
 
 ### TableViewEditAction
 
-How an edit is being closed.
+What the close of an edit actually did. `CellEditEnding` and `CellEditEnded` always report the same value.
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Commit` | 0 | The edited value is being written to the source. |
-| `Cancel` | 1 | The edit is being cancelled and the editor is discarded. |
+| `Commit` | 0 | The pending value was written to the source and kept. |
+| `Cancel` | 1 | Nothing was written, or the value failed validation and was rolled back, or the item left the source. The editor is discarded. |
 
-A forced close of an edit whose item was removed, filtered out, or whose `ItemsSource` was replaced reports `Cancel` and does not write the pending value. If the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node), a valid pending value is committed.
+A forced close commits a valid pending value while the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node) and reports `Commit`. It reports `Cancel` when the item was removed or filtered out, or the value failed validation and was rolled back.
 
 ## Editing event args
 
