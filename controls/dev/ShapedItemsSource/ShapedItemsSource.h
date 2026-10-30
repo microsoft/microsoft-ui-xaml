@@ -171,8 +171,8 @@ public:
     // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
     // The source's rows before the filter (every node for a tree), without reading the source: a filtered
-    // projection rebuilds on every source change, so the count its last Refresh read is current, and without a
-    // filter Rows() holds every source row.
+    // projection either rebuilds on a source change or applies it to the count, and without a filter Rows()
+    // holds every source row.
     uint32_t SourceRowCount() const;
     std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
     std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
@@ -216,18 +216,25 @@ private:
     void OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     void ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
-    bool TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    bool TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     bool TryReshapeStaleSortedFlatProjection();
+    // False when an unobserved or pending edit may have changed which items pass the filter.
+    bool IsFilterMembershipCurrent() const;
     bool IsFlatProjectionSorted() const;
     bool IsFlatRowInSortOrderWithNeighbours(uint32_t index) const;
     void TrackFlatItemPropertyChanged(winrt::IInspectable const& item);
     void UntrackFlatItemPropertyChanged(winrt::IInspectable const& item);
     void ClearFlatItemPropertyChangedTracking();
     void RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows);
-    // Single owner for sort-key staleness: live shaping already subscribes to every item and
-    // re-shapes on any shaping-relevant edit, so the sort-key subscriptions would be a second
-    // handler per row observing the same change.
-    bool ShouldTrackSortKeyChanges() const { return HasActiveSort() && !IsLiveShapingEnabled(); }
+    // Single owner for sort-key and filter-membership staleness: live shaping already subscribes to
+    // every item and re-shapes on any shaping-relevant edit, so these subscriptions would be a
+    // second handler per item observing the same change.
+    bool ShouldTrackItemPropertyChanges() const { return (HasActiveSort() || m_pipeline.HasFilter()) && !IsLiveShapingEnabled(); }
+    // Under a filter every source item is observed, since an excluded item's edit can admit it.
+    std::vector<winrt::IInspectable> const& FlatItemsToTrack() const noexcept
+    {
+        return m_pipeline.HasFilter() ? m_shapingState.Source : m_shapingState.Items;
+    }
     void ClearSortDirtyRows();
     void OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName);
     void UpdateSortKeyPropertyFilter();
@@ -238,7 +245,8 @@ private:
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
-    void RebuildFlat(std::vector<winrt::IInspectable>& rows);
+    // `unfilteredRows` is the source before the filter; empty when no filter is set.
+    void RebuildFlat(std::vector<winrt::IInspectable>& rows, std::vector<winrt::IInspectable> unfilteredRows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
     void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
     // Both axes: buckets the roots, one adapter segment and one group per bucket.
@@ -400,9 +408,11 @@ private:
     // plus the shaped output. Holding FilteredSource is what makes an in-place re-sort produce
     // exactly what a full rebuild would -- a stable sort seeded from the previously sorted order
     // would break ties in the OLD sort's order instead of source order. Only valid while
-    // HasProjection is true. The sorted incremental path keeps it in lockstep with m_rows; every
-    // other non-Refresh mutation of m_rows clears it.
+    // HasProjection is true. The incremental path keeps it in lockstep with m_rows; every
+    // other non-Refresh mutation of m_rows clears it. Under a filter, Source holds the unfiltered
+    // source and m_sourceFilterMembership says which of its items are in FilteredSource.
     ShapingHelpers::ShapingState m_shapingState{};
+    std::vector<bool> m_sourceFilterMembership;
     ShapingHelpers::KeySelector m_groupSelector{ nullptr };
     RowIdentity::IdentitySelector m_groupIdentitySelector{ nullptr };
     ProjectionKind m_kind{ ProjectionKind::None };
@@ -415,8 +425,9 @@ private:
     // locate a removed row without an O(n) WinRT ABI scan.
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
-    // Sort-key changes raise no collection notification, so while sorted, INPC rows are observed
-    // and a change to a sort-key property marks the row dirty for the next collection change.
+    // Sort-key and filter-key changes raise no collection notification, so while sorted or filtered,
+    // INPC items are observed: a sort-key change marks the row dirty, and under a filter any change
+    // marks membership stale, for the next collection change.
     // Keyed by IUnknown address (stable across re-orders); holding Item keeps the address unique.
     struct FlatItemPropertyChangedSubscription
     {
@@ -425,7 +436,10 @@ private:
     };
     std::unordered_map<uintptr_t, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
     bool m_flatItemPropertyChangedTrackingActive{ false };
+    // Some tracked item cannot report its edits (no INPC, or one object on two source slots).
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
+    // A tracked item changed while filtered: the predicate may now disagree with the membership.
+    bool m_filterMembershipMayBeStale{ false };
     // First path segment of each active sort axis' SortMemberPath.
     std::unordered_set<winrt::hstring> m_sortKeyPropertyNames;
     // Some axis has no path (delegate key / comparer), so any property may affect the sort.
