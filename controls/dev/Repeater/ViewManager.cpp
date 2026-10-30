@@ -669,9 +669,7 @@ winrt::UIElement ViewManager::GetElementFromUniqueIdResetPool(int index)
             virtInfo->MoveOwnershipToLayoutFromUniqueIdResetPool();
             UpdateElementIndex(element, virtInfo, index);
 
-            // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            UpdateRealizedIndicesHeldByLayout(index);
         }
     }
 
@@ -708,9 +706,7 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
             element = elementInfo.PinnedElement();
             elementInfo.VirtualizationInfo()->MoveOwnershipToLayoutFromPinnedPool();
 
-            // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            UpdateRealizedIndicesHeldByLayout(index);
             break;
         }
     }
@@ -877,9 +873,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         m_phaser.PhaseElement(element, virtInfo);
     }
 
-    // Update realized indices
-    m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-    m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    UpdateRealizedIndicesHeldByLayout(index);
 
 #ifdef DBG
     if (VirtualizationInfo::GetLogItemIndex() == index)
@@ -1033,6 +1027,18 @@ void ViewManager::UpdateElementIndex(const winrt::UIElement& element, const winr
     {
         virtInfo->UpdateIndex(index);
         m_owner->OnElementIndexChanged(element, oldIndex, index);
+    }
+}
+
+void ViewManager::UpdateRealizedIndicesHeldByLayout(int index)
+{
+    // Widen only a known range. While it is unknown, other realized elements may still be held by
+    // layout, so starting a range at this one index would hide them from the next collection
+    // change; EnsureFirstLastRealizedIndices computes the full range when it is next needed.
+    if (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault)
+    {
+        m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
+        m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
     }
 }
 
