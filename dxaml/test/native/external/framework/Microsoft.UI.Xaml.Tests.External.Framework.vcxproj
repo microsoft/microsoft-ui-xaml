@@ -53,6 +53,11 @@
       </AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TestInProductionIsReal)' == 'true'">
+    <ClCompile>
+      <PreprocessorDefinitions>MUX_TIP_REAL=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="activation\abi_tests\ActivationABITests.h" />
     <ClInclude Include="settings\XamlOptionalChangesTests.h" />

@@ -8,6 +8,7 @@
 #include <wil/result_macros.h>
 #include <SafeEventRegistration.h>
 #include <TestEvent.h>
+#include <TraceConsumerSession.h>
 #include <wrl.h>
 
 using namespace Platform;
@@ -110,6 +111,73 @@ void CoreShutdownTests::OffThreadReleaseWakesIdleCleanup()
     {
         VERIFY_ARE_EQUAL(uiThreadId, state->threadId);
     }
+}
+
+void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
+{
+#if !defined(MUX_TIP_REAL)
+    Log::Result(TestResults::Skipped, L"The public TiP stub reports no results.");
+#else
+    struct ReleaseState
+    {
+        Event destroyed;
+        DWORD delayMs = 0;
+    };
+    class ReleaseSignal final : public WRL::RuntimeClass<IInspectable>
+    {
+        InspectableClass(L"LifetimeTests.TipReleaseSignal", BaseTrust);
+    public:
+        explicit ReleaseSignal(std::shared_ptr<ReleaseState> state) : m_state(std::move(state)) {}
+        ~ReleaseSignal()
+        {
+            m_state->destroyed.Set();
+            Sleep(m_state->delayMs);
+        }
+    private:
+        std::shared_ptr<ReleaseState> m_state;
+    };
+    // Microsoft.Windows.Health.TestInProduction writes TestResult when a TiP test completes.
+    constexpr GUID tipProvider = { 0x50109fbd, 0x6d85, 0x5815, { 0x73, 0x1e, 0xc9, 0x07, 0xec, 0xa1, 0x60, 0x7b } };
+
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+    std::shared_ptr<ReleaseState> states[3];
+    xaml_controls::Grid^ elements[3] = {};
+    // The first release outlasts the 40 ms cleanup budget, so the drain spans ticks.
+    RunOnUIThread([&]
+    {
+        TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        for (int i = 0; i < 3; ++i)
+        {
+            states[i] = std::make_shared<ReleaseState>();
+            elements[i] = ref new xaml_controls::Grid();
+            auto signal = WRL::Make<ReleaseSignal>(states[i]);
+            elements[i]->Tag = reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(signal.Get()));
+        }
+        states[0]->delayMs = 60;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    TraceConsumerSession session(tipProvider);
+    // The consumer needs an ID for a custom provider; TraceLogging events are still counted by name.
+    TraceConsumer::EnableTracingByEventId(0);
+    TraceConsumer::BeginCountingForCurrentProcess();
+
+    elements[0] = nullptr;
+    elements[1] = nullptr;
+    VERIFY_IS_TRUE(states[0]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    // Arrives while the first pass holds the queue, so it joins the running sample.
+    elements[2] = nullptr;
+    VERIFY_IS_TRUE(states[1]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    VERIFY_IS_TRUE(states[2]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    TestServices::WindowHelper->WaitForIdle();
+    session.Stop();
+
+    TraceConsumer::VerifyEventTraced(L"TestResult", 1);
+#endif
 }
 
 // Exposed an edge case in our peer cleanup

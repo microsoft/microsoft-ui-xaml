@@ -219,11 +219,6 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     *completed = FALSE;
     m_bInCleanup = TRUE;
 
-    if (bSync)
-    {
-        m_cleanupTip.reset();
-    }
-
     m_cDoCleanupAttempts++;
 
     std::vector<ObjectReleaseInfo>::const_iterator iter;
@@ -280,22 +275,14 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
         m_hasUnreachableObjects.store(false, std::memory_order_release);
     }
 
-    // Sample a fixed prefix, not later arrivals or an empty per-frame callback.
-    // Bound reporting to the first 64 eligible cleanup periods per queue.
-    if (!bSync && m_cleanupCount == 0 && !m_queuedObjectsForFinalRelease.empty() && m_cleanupTipSamples < 64)
+    // Sample from the first asynchronous pass until the queue drains, including a synchronous drain.
+    if (!bSync && m_cleanupCount == 0 && !m_queuedObjectsForFinalRelease.empty())
     {
-        auto coreServices = DXamlCore::GetCurrent()->GetHandle();
-        if (coreServices->GetInitializationType() != InitializationType::IslandsOnly
-            || coreServices->HasXamlIslandRoots())
+        if (!m_cleanupTip)
         {
-            ++m_cleanupTipSamples;
-            auto sample = std::make_shared<ReleaseQueueCleanupTip>(
-                m_finalQueuedAt, m_queuedObjectsForFinalRelease.size());
-            if (sample->test)
-            {
-                m_cleanupTip = std::move(sample);
-            }
+            m_cleanupTip = std::make_shared<ReleaseQueueCleanupTip>();
         }
+        m_cleanupTip->Start(m_finalQueuedAt);
     }
 
     // Process objects for final release.
@@ -328,11 +315,6 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
         // An implicit AddRef is done inside the tracker extension or, if none exists,
         // inside ComBase when the last reference is released.
         ctl::release_interface_inner(pItem);
-
-        if (m_cleanupTip && m_cleanupTip->RecordRelease())
-        {
-            m_cleanupTip.reset();
-        }
 
         // If we've spent too much time during this tick cleaning out this queue, and we haven't deferred this cleanup
         // too many times, defer until the next tick.
@@ -383,6 +365,10 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
 
     if( *completed )
     {
+        if (m_cleanupTip)
+        {
+            m_cleanupTip->Complete(m_cleanupCount, S_OK);
+        }
         m_cDoCleanupAttempts = 0;
         m_cleanupCount = 0;
 
@@ -403,8 +389,7 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
 Cleanup:
     if (FAILED(hr) && m_cleanupTip)
     {
-        m_cleanupTip->Fail(hr);
-        m_cleanupTip.reset();
+        m_cleanupTip->Complete(m_cleanupCount, hr);
     }
 
     // Resume dispatch — must happen on all paths (normal and error) to avoid

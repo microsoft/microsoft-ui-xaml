@@ -51,5 +51,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CleanupTipCompletesAcrossTicks)
+            TEST_METHOD_PROPERTY(L"Description", L"A cleanup that spans ticks and gains later arrivals reports one cleanup TiP result.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        END_TEST_METHOD()
     };
 } } } } } }

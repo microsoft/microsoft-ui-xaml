@@ -51,7 +51,6 @@ namespace DirectUI
         std::atomic<bool> m_hasUnreachableObjects{ false };
         uint64_t m_unreachableQueuedAt{};
         uint64_t m_finalQueuedAt{};
-        UINT m_cleanupTipSamples{};
         std::shared_ptr<ReleaseQueueCleanupTip> m_cleanupTip;
 
         wil::critical_section m_CriticalSection;

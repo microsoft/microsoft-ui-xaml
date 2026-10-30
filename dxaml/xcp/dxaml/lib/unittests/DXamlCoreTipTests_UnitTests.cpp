@@ -68,34 +68,37 @@ public:
         return true;
     }
 
-    TEST_METHOD(CompletesOnlyAfterTheSampledReleases)
+    TEST_METHOD(CompletesWhenTheQueueDrains)
     {
-        DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64(), 2);
-        VERIFY_IS_TRUE(sample.test.test_id() != GUID{});
-        VERIFY_IS_FALSE(sample.RecordRelease());
-        VERIFY_IS_TRUE(static_cast<bool>(sample.test));
-        VERIFY_IS_TRUE(sample.RecordRelease());
-        VERIFY_IS_FALSE(static_cast<bool>(sample.test));
-        VERIFY_ARE_EQUAL(TestCompletionKind::Success, sample.test.data()->state().completionKind);
+        DirectUI::ReleaseQueueCleanupTip tip;
+        tip.Start(GetTickCount64());
+        UIAffinityReleaseQueueCleanupTest result = tip.test;
+        VERIFY_IS_TRUE(static_cast<bool>(tip.test));
+        tip.Complete(3, S_OK);
+        VERIFY_IS_FALSE(static_cast<bool>(tip.test));
+        VERIFY_ARE_EQUAL(TestCompletionKind::Success, result.data()->state().completionKind);
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), result.data()->releaseCountBucket);
     }
 
-    TEST_METHOD(PostingOrStartingWithoutReleasesDoesNotSucceed)
+    TEST_METHOD(CompletingWithoutTheDrainDoesNotSucceed)
     {
-        DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64(), 1);
-        sample.test.complete();
-        VERIFY_ARE_EQUAL(TestCompletionKind::Failure, sample.test.data()->state().completionKind);
+        DirectUI::ReleaseQueueCleanupTip tip;
+        tip.Start(GetTickCount64());
+        UIAffinityReleaseQueueCleanupTest result = tip.test;
+        result.complete();
+        VERIFY_ARE_EQUAL(TestCompletionKind::Failure, result.data()->state().completionKind);
         VERIFY_ARE_EQUAL(
             static_cast<unsigned short>(UIAffinityReleaseQueueCleanupTest::reason::incomplete_batch),
-            sample.test.data()->state().reason);
+            result.data()->state().reason);
     }
 
-    TEST_METHOD(ShutdownIgnoresAnUnfinishedSample)
+    TEST_METHOD(DestroyingAnUnfinishedSampleIgnoresIt)
     {
         UIAffinityReleaseQueueCleanupTest result;
         {
-            DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64(), 2);
-            result = sample.test;
-            VERIFY_IS_FALSE(sample.RecordRelease());
+            DirectUI::ReleaseQueueCleanupTip tip;
+            tip.Start(GetTickCount64());
+            result = tip.test;
         }
         VERIFY_ARE_EQUAL(TestCompletionKind::Ignored, result.data()->state().completionKind);
         VERIFY_ARE_EQUAL(
@@ -105,39 +108,41 @@ public:
 
     TEST_METHOD(CleanupErrorsFailWithTheOriginalHResult)
     {
-        DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64(), 2);
-        VERIFY_IS_FALSE(sample.RecordRelease());
-        sample.Fail(E_OUTOFMEMORY);
-        VERIFY_ARE_EQUAL(TestCompletionKind::Failure, sample.test.data()->state().completionKind);
-        VERIFY_ARE_EQUAL(E_OUTOFMEMORY, sample.test.data()->failureHResult);
+        DirectUI::ReleaseQueueCleanupTip tip;
+        tip.Start(GetTickCount64());
+        UIAffinityReleaseQueueCleanupTest result = tip.test;
+        tip.Complete(1, E_OUTOFMEMORY);
+        VERIFY_ARE_EQUAL(TestCompletionKind::Failure, result.data()->state().completionKind);
+        VERIFY_ARE_EQUAL(E_OUTOFMEMORY, result.data()->failureHResult);
     }
 
     TEST_METHOD(DelayDoesNotTurnSuccessfulCleanupIntoFailure)
     {
-        DirectUI::ReleaseQueueCleanupTip sample(GetTickCount64() - 1000, 1);
-        VERIFY_IS_TRUE(sample.RecordRelease());
-        VERIFY_ARE_EQUAL(TestCompletionKind::Success, sample.test.data()->state().completionKind);
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), sample.test.data()->delayBucket);
+        DirectUI::ReleaseQueueCleanupTip tip;
+        tip.Start(GetTickCount64() - 1000);
+        UIAffinityReleaseQueueCleanupTest result = tip.test;
+        tip.Complete(1, S_OK);
+        VERIFY_ARE_EQUAL(TestCompletionKind::Success, result.data()->state().completionKind);
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), result.data()->delayBucket);
     }
 
     TEST_METHOD(MetricsUseBoundedBuckets)
     {
-        using DirectUI::ReleaseQueueCleanupTip;
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(0), ReleaseQueueCleanupTip::DelayBucket(15));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), ReleaseQueueCleanupTip::DelayBucket(16));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), ReleaseQueueCleanupTip::DelayBucket(99));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), ReleaseQueueCleanupTip::DelayBucket(100));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), ReleaseQueueCleanupTip::DelayBucket(999));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), ReleaseQueueCleanupTip::DelayBucket(1000));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(0), ReleaseQueueCleanupTip::CountBucket(1));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), ReleaseQueueCleanupTip::CountBucket(2));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), ReleaseQueueCleanupTip::CountBucket(16));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), ReleaseQueueCleanupTip::CountBucket(17));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), ReleaseQueueCleanupTip::CountBucket(256));
-        VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), ReleaseQueueCleanupTip::CountBucket(257));
+        using Data = UIAffinityReleaseQueueCleanupTest::tip_test_data;
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(0), Data::DelayBucket(15));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), Data::DelayBucket(16));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), Data::DelayBucket(99));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), Data::DelayBucket(100));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), Data::DelayBucket(999));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), Data::DelayBucket(1000));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(0), Data::CountBucket(1));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), Data::CountBucket(2));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(1), Data::CountBucket(16));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), Data::CountBucket(17));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(2), Data::CountBucket(256));
+        VERIFY_ARE_EQUAL(static_cast<uint8_t>(3), Data::CountBucket(257));
         VERIFY_ARE_EQUAL(64884230u, UIAffinityReleaseQueueCleanupTest::info().testCaseId);
     }
-
 private:
     tip::testhelpers::unique_tip_unittest_guard m_reportingGuard;
 };

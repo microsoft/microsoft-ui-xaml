@@ -166,8 +166,6 @@
     <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match('$(TIPPackagesConfigContents)', 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
     <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
     <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets</TestInProductionTargetsFile>
-    <TestInProductionProductionVersion>$(TestInProductionPackageVersion)</TestInProductionProductionVersion>
-    <TestInProductionProductionTargetsFile>$(TestInProductionTargetsFile)</TestInProductionProductionTargetsFile>
     <TestInProductionIsReal>false</TestInProductionIsReal>
     <TestInProductionIsReal Condition="'$(UseTestInProductionStub)' != 'true' and '$(TestInProductionPackageVersion)' != '' and Exists('$(TestInProductionTargetsFile)')">true</TestInProductionIsReal>
   </PropertyGroup>

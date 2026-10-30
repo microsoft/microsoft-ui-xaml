@@ -52,68 +52,66 @@ TIP_declare_test(UIAffinityReleaseQueueCleanupTest, 64884230)
             TIP_value(componentBuild), TIP_value(delayBucket), TIP_value(releaseCountBucket));
         return delayBucket;
     }
+
+    static uint8_t DelayBucket(uint64_t milliseconds)
+    {
+        return milliseconds < 16 ? 0 : milliseconds < 100 ? 1 : milliseconds < 1000 ? 2 : 3;
+    }
+
+    static uint8_t CountBucket(size_t count)
+    {
+        return count <= 1 ? 0 : count <= 16 ? 1 : count <= 256 ? 2 : 3;
+    }
+
+    void SetMetrics(uint64_t delayMilliseconds, size_t released)
+    {
+        delayBucket = DelayBucket(delayMilliseconds);
+        releaseCountBucket = CountBucket(released);
+    }
 };
 
 namespace DirectUI
 {
+    // The test type is an alias and cannot be forward-declared; this holder keeps tip.h out of DXamlCore.h.
+    // It is allocated once per queue and reused through start() and reset().
     struct ReleaseQueueCleanupTip
     {
         UIAffinityReleaseQueueCleanupTest test;
-
-        ReleaseQueueCleanupTip(uint64_t queuedAt, size_t count)
-            : m_queuedAt(queuedAt), m_count(count), m_remaining(count)
-        {
-            test.start();
-        }
-
-        ReleaseQueueCleanupTip(const ReleaseQueueCleanupTip&) = delete;
-        ReleaseQueueCleanupTip& operator=(const ReleaseQueueCleanupTip&) = delete;
+        uint64_t queuedAt{};
 
         ~ReleaseQueueCleanupTip()
         {
             test.complete_and_ignore(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::cancelled));
         }
 
-        bool RecordRelease()
+        void Start(uint64_t queuedAtParam)
         {
-            if (m_remaining != 0 && --m_remaining == 0)
+            queuedAt = queuedAtParam;
+            test.start();
+        }
+
+        // Completes a running sample; a failed HRESULT fails it.
+        void Complete(size_t released, HRESULT hr)
+        {
+            if (!test)
             {
-                RecordMetrics();
-                test.set_flag(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::batch_released));
-                test.complete();
-                return true;
+                return;
             }
-            return false;
-        }
-
-        void Fail(HRESULT hr)
-        {
-            RecordMetrics();
-            test.data()->failureHResult = hr;
-            test.set_flag(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::cleanup_failed));
+            {
+                auto data = test.data();
+                data->SetMetrics(GetTickCount64() - queuedAt, released);
+                data->failureHResult = hr;
+            }
+            if (FAILED(hr))
+            {
+                test.set_flag(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::cleanup_failed));
+            }
+            else
+            {
+                test.set_flag(TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::batch_released));
+            }
             test.complete();
+            test.reset();
         }
-
-        static uint8_t DelayBucket(uint64_t milliseconds)
-        {
-            return milliseconds < 16 ? 0 : milliseconds < 100 ? 1 : milliseconds < 1000 ? 2 : 3;
-        }
-
-        static uint8_t CountBucket(size_t count)
-        {
-            return count <= 1 ? 0 : count <= 16 ? 1 : count <= 256 ? 2 : 3;
-        }
-
-    private:
-        void RecordMetrics()
-        {
-            auto data = test.data();
-            data->delayBucket = DelayBucket(GetTickCount64() - m_queuedAt);
-            data->releaseCountBucket = CountBucket(m_count - m_remaining);
-        }
-
-        uint64_t m_queuedAt;
-        size_t m_count;
-        size_t m_remaining;
     };
 }
