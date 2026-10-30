@@ -53,6 +53,12 @@ parameters:
   # product (the mono-build publishes Release x86/x64/arm64 only).
   consumeProductFromBuildId: ''
   consumeProductFromPipeline: ''
+  # Mono-build component artifacts whose packages are staged when consuming the mono-build product.
+  consumeProductComponentArtifacts:
+  - Component-Base-Final
+  - Component-Foundation-Final
+  - Component-InteractiveExperiences-Final
+  - Component-WinUIDetails-Final
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
   IsMonobuild: false
   IsOfficial: false
@@ -142,22 +148,58 @@ steps:
   # projections). This must precede WinUI-InstallDependencies-Steps.yml: that template restores the
   # component packages at these versions, so pinning afterwards leaves the build looking for a version
   # that was never restored (W1007 on the Foundation transport winmd).
+  #
+  # A partial-rebuild mono-build only publishes the components it rebuilt; the rest stay in the
+  # build(s) it reused. It records the (already flattened) producer of every Component-*-Final
+  # artifact in its WasdkArtifactProvenance build property, so download each artifact from that
+  # build. Without the property (a full mono-build) every artifact comes from the consumed build.
   - ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: 'Consume product: download mono-build component packages'
+    - task: PowerShell@2
+      displayName: 'Consume product: resolve mono-build artifact sources'
       condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       inputs:
-        source: specific
-        runVersion: specific
-        project: $(System.TeamProjectId)
-        pipeline: ${{ parameters.consumeProductFromPipeline }}
-        pipelineId: ${{ parameters.consumeProductFromBuildId }}
-        patterns: |
-          Component-Base-Final/**/*.nupkg
-          Component-Foundation-Final/**/*.nupkg
-          Component-InteractiveExperiences-Final/**/*.nupkg
-          Component-WinUIDetails-Final/**/*.nupkg
-        targetPath: $(Build.ArtifactStagingDirectory)\MonobuildComponents
+        targetType: inline
+        script: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+          $consumed = '${{ parameters.consumeProductFromBuildId }}'
+          $artifacts = '${{ join(';', parameters.consumeProductComponentArtifacts) }};Component-WinUI-Final' -split ';'
+          $provenance = @{}
+          try {
+            $uri = '$(System.CollectionUri)'.TrimEnd('/') + "/$(System.TeamProjectId)/_apis/build/builds/$consumed/properties?api-version=7.1-preview.1"
+            $response = Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
+            if (($response.PSObject.Properties.Name -contains 'value') -and $response.value -and
+                ($response.value.PSObject.Properties.Name -contains 'WasdkArtifactProvenance')) {
+              $value = $response.value.WasdkArtifactProvenance
+              # Property values come back wrapped as { $type, $value }.
+              if ($value.PSObject.Properties.Name -contains '$value') { $value = $value.'$value' }
+              foreach ($p in ($value | ConvertFrom-Json).artifacts.PSObject.Properties) { $provenance[$p.Name] = [string]$p.Value }
+            }
+          }
+          catch {
+            Write-Host "##vso[task.logissue type=warning]Could not read the artifact provenance of build ${consumed}; downloading every artifact from it. $($_.Exception.Message)"
+          }
+          foreach ($artifact in $artifacts) {
+            $source = $consumed
+            if ($provenance.ContainsKey($artifact)) { $source = $provenance[$artifact] }
+            Write-Host ("{0,-40} -> build {1}" -f $artifact, $source)
+            Write-Host ("##vso[task.setvariable variable=MonobuildSourceBuildId_{0}]{1}" -f ($artifact -replace '[^A-Za-z0-9]', '_'), $source)
+          }
+    - ${{ each artifact in parameters.consumeProductComponentArtifacts }}:
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Consume product: download ${{ artifact }}'
+        condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+        inputs:
+          source: specific
+          runVersion: specific
+          project: $(System.TeamProjectId)
+          pipeline: ${{ parameters.consumeProductFromPipeline }}
+          pipelineId: $(MonobuildSourceBuildId_${{ replace(artifact, '-', '_') }})
+          artifactName: ${{ artifact }}
+          patterns: '**/*.nupkg'
+          targetPath: $(Build.ArtifactStagingDirectory)\MonobuildComponents\${{ artifact }}
     - task: PowerShell@2
       displayName: 'Consume product: stage component packages + pin version'
       condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
@@ -265,6 +307,7 @@ steps:
     # Download the mono-build's WinUI product into BuildOutput\bin for the consumed configs so the
     # MUXControls.sln test build + scenario apps below compile against it (eng\consumebinaries.targets
     # references $(ArtifactsBinDir)\Product). Only emitted when consuming; standalone is unaffected.
+    # The WinUI stage publishes these alongside Component-WinUI-Final, so they come from its producer.
     - ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
       - task: DownloadPipelineArtifact@2
         displayName: 'Consume product: download Build-WinUI-$(buildPlatform)-Release from mono-build'
@@ -274,7 +317,7 @@ steps:
           runVersion: specific
           project: $(System.TeamProjectId)
           pipeline: ${{ parameters.consumeProductFromPipeline }}
-          pipelineId: ${{ parameters.consumeProductFromBuildId }}
+          pipelineId: $(MonobuildSourceBuildId_Component_WinUI_Final)
           artifactName: Build-WinUI-$(buildPlatform)-Release
           targetPath: $(Build.ArtifactStagingDirectory)\MonobuildProduct
       - task: PowerShell@2
