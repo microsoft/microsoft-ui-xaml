@@ -53,6 +53,11 @@ still rebuilds live evidence independently.
 | Missing version but otherwise actionable reproduction | Ask for the version in the comment; do not add `needs-repro` for that alone. |
 | Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
 | Intake type and content assessment disagree | Preserve existing type labels and surface the discrepancy for human triage; do not fail otherwise valid routing. |
+| Supported BUG assessment, repository Type missing | Set the actual issue Type to `Bug`, not a `bug` label. Preserve an existing Type; feature intake or truncated context defers the update. |
+| Reported crash or regression in a trusted latest stable release | Assess WinUI project Priority as P0, even when a workaround is reported. |
+| Broken functionality without a mentioned workaround | Assess project Priority as P1; this does not assert that no workaround exists. |
+| Broken functionality with a reported possible workaround | Assess project Priority as P2, unless a P0 condition applies. |
+| Existing WinUI project Priority or archived item | Preserve it; fill only missing values on active items. |
 | Non-bug reproduction rating or incomplete repro without an actionable request | Reconcile applicability or defer the affected request/label; keep useful summary/routing and explain the review requirement. |
 | Strong evidence of a duplicate | Suggest up to five older issues in the canonical comment, for human confirmation. |
 | Subsequent author follow-up or title/body edit | Re-analyze and update the same bot-owned comment. |
@@ -60,7 +65,8 @@ still rebuilds live evidence independently.
 
 The workflow **never** creates labels, removes labels, applies
 `needs-author-feedback` or `duplicate`, closes an issue, submits a duplicate-close
-suggestion, changes assignees/milestones, or sets severity or priority. It leaves
+suggestion, changes assignees/milestones, or sets severity. Priority is restricted
+to the configured WinUI project policy below. It leaves
 `needs-triage` in place.
 
 Existing `needs-repro` labels remain until a maintainer confirms the new
@@ -278,6 +284,79 @@ unconfigured routes, and out-of-set duplicate suggestions still fail closed.
 
 ## Operation
 
+### Issue Type and WinUI project Priority
+
+The BUG assessment in the comment and the repository's issue Type are separate.
+On an eligible publishing run, a supported BUG assessment fills a missing Type
+with `Bug` using GitHub's issue API. It does not add a `bug` label, change an
+existing Type (including Task/Feature), or set a feature intake's Type to Bug.
+Truncated context defers this metadata update. Current Type participates in the
+input fingerprint, so a concurrent human Type edit invalidates stale output.
+
+The model supplies impact, a workaround boolean, a report-grounded rationale and,
+for latest-release regressions, an exact `repository@tag`. The publisher derives
+P0/P1/P2 deterministically using the precedence in the behavior table. A crash
+means a reported process crash/termination, not merely a caught exception or a
+hang. A latest-release regression requires evidence that behavior used to work
+and an affected release matching the trusted latest stable GitHub release from
+`microsoft/WindowsAppSDK` or `microsoft/microsoft-ui-xaml`; release metadata is
+fetched by trusted code and included in the fingerprint. Main-branch builds,
+unqualified "latest", and older regressions do not establish this P0 criterion.
+Broken behavior in those reports may still qualify for P1/P2.
+
+A workaround is a reported possible bypass of the same failure, not a suggested
+code fix or a failed/negated attempt. With no mentioned workaround, broken
+functionality defaults to P1. P0 takes precedence over P2. Feature/other
+assessments, conflicting existing Type, missing rationale and truncated context
+cannot authorize priority writes. Older artifacts without priority fields
+remain usable but cannot authorize priority. Partial/malformed fields fail closed.
+These checks validate structure and release membership, not semantic model
+accuracy; the prompt must distinguish actual failure evidence from keywords.
+
+The fixed target is [microsoft's WinUI project 1868](https://github.com/orgs/microsoft/projects/1868).
+The trusted publisher verifies its title is `WinUI`, discovers its existing
+single-select `Priority` field and exact `P0`, `P1`, `P2` option IDs, paginates issue
+project memberships (including archived items), adds a missing item, and fills
+only an empty Priority. It never creates fields/options or changes another
+project. Existing values, including options outside P0/P1/P2, and archived items
+are preserved. Priority does not depend on area confidence or reproduction
+completeness. The comment records an assessment, not a claim that the project
+write succeeded.
+
+**Required project setup:** configure the Actions secret
+`WINUI_TRIAGE_PROJECT_TOKEN` with an organization-approved credential granting
+read/write access to project 1868 and read access to this repository's issues.
+For a fine-grained PAT, use the `microsoft` resource owner, organization Projects
+read/write permission, and repository Issues read access; organization approval
+may be required. A classic PAT needs `project` plus access to this repository
+and any required organization SSO authorization. Scope it as narrowly as
+available, set expiry/rotation, and do not paste it in issues, logs, or source.
+The job-scoped `GITHUB_TOKEN` cannot write organization Projects.
+
+Only the separate trusted publisher receives that secret, via
+`TRIAGE_PROJECT_TOKEN`; the LLM, analysis and detection jobs do not receive it.
+No elevated repository issue credential is substituted: Bug Type, comment and
+label writes continue to use job-scoped `GITHUB_TOKEN` with `issues: write`.
+No project IDs/options or free-form mutations are accepted from the model.
+If the secret is absent, normal triage and Bug Type updates still work, while
+Priority is explicitly assessment-only with a workflow warning. If configured
+access/schema discovery fails, the publisher fails before any issue writes.
+Preview discovers the plan read-only and never mutates issue Type or Projects.
+
+Issue content/Type/releases are rechecked before writes, and project Priority is
+re-read after normal triage and again after inserting a missing project item.
+The publisher verifies the applied priority. GitHub does not offer a transaction
+across comments, labels, Type and project fields, nor an atomic "set only if
+empty" project mutation: a human edit in the final read/write interval remains
+a race. Failed/ambiguous mutations are not retried; inspect partial writes
+before manually rerunning. Existing values on a later run are preserved.
+
+This is not a bulk backfill and does not retroactively update existing comments
+or issues. Only normal eligible triage runs and explicit approved dispatches
+apply metadata; simply merging does not revisit old assessments.
+
+### Activation and dispatch
+
 **Automatic intake starts when the workflow merges to the default branch.**
 The approved mapping is picked up from the trusted workflow commit. There is
 no repository activation variable or post-merge mapping review process.
@@ -286,11 +365,12 @@ GitHub Actions and Copilot agentic workflow access must be permitted under the
 organization's policy, including the Copilot CLI policy **Allow use of Copilot
 CLI billed to the organization**. The generated analysis job requests
 `copilot-requests: write`; issue reads and writes use job-scoped `GITHUB_TOKEN`.
-Do not add a broad personal access token to make the analysis job work.
+Do not add a broad personal access token to make the analysis job work. The
+optional project credential above is limited to the separate publisher.
 
 An optional manual dispatch with an existing `issue_number` and `publish=false`
 (the manual default) runs analysis but only writes the validated comment and
-proposed label list to the Actions job summary. It does not disable or gate
+proposed label, Type and priority plan to the Actions job summary. It does not disable or gate
 automatic intake. Preview still consumes AI credits. A fork with the same label
 catalog can exercise `publish=true` without affecting real reporter issues; the
 workflow must be on the fork's default branch to receive automatic issue events.
@@ -304,8 +384,9 @@ a comment. It excludes pull requests, closed/locked issues, bot-authored issues,
 For an emergency stop, disable `AI Issue Triage` in Actions and cancel active
 runs. Re-enable that workflow in Actions to resume intake.
 
-The initial rollout does not modify project boards, internal mirroring, existing
-stale handling, or the maintainer's acceptance/closure process.
+Apart from the explicitly configured WinUI project item/Priority updates, this
+does not modify other project boards, internal mirroring, existing stale
+handling, or the maintainer's acceptance/closure process.
 
 ## Detection reports
 
@@ -363,15 +444,18 @@ authoritative.
   `issues: write` checks out the trusted workflow commit, rebuilds current
   evidence, and verifies the exact output schema, hash, labels, and candidate
   membership. It never trusts model-written evidence files.
-- The fingerprint includes title, body, author comments, and current labels.
+- The fingerprint includes title, body, author/repository follow-ups, current
+  labels, issue Type and trusted latest stable release metadata.
   The publisher checks it again immediately before commenting and before
   additive label writes. GitHub does not provide a transaction across these
-  operations; a concurrent edit can stop label publication after the comment
-  was written. A later run safely refreshes the single comment.
-- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added.
-  The current parent configuration permits at most five additions per run (one
+  operations; a concurrent edit can stop later metadata publication after the
+  comment was written. A later run safely refreshes the single comment.
+- Only allowlisted routing labels, `appModel-UWP`, `needs-triage`, and `needs-repro` can be added.
+  The current parent configuration permits at most six label additions per run (one
   area, its specific team, the optional parent, and the two workflow-state
-  labels). The publisher uses additive label writes, never replacement.
+  labels, plus UWP when applicable). The publisher uses additive label writes,
+  never replacement. Issue Type and project Priority are separate metadata
+  updates, restricted to the policy above.
 - Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
   issue authors: pre-activation is not a Microsoft organization-membership gate.
   Its repository-permission lookup only exempts `admin`, `maintain`, and `write`

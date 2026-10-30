@@ -38,6 +38,8 @@ MAX_PROMPT_BYTES = 2 * 1024 * 1024
 CONTEXT_MARKER = "[WINUI_TRIAGE_CONTEXT]"
 CONTEXT_START = "<untrusted-issue-evidence>"
 CONTEXT_END = "</untrusted-issue-evidence>"
+LATEST_RELEASE_REPOSITORIES = ("microsoft/WindowsAppSDK", "microsoft/microsoft-ui-xaml")
+PROJECT_NUMBER = 1868
 
 
 class TriageError(RuntimeError):
@@ -106,6 +108,12 @@ class GitHub:
 
     def write(self, method: str, suffix: str, payload: dict):
         return self.request(method, self.repo_path(suffix), payload)
+
+    def graphql(self, query: str, variables: dict) -> dict:
+        response = self.request("POST", "graphql", {"query": query, "variables": variables})
+        if response.get("errors") or not isinstance(response.get("data"), dict):
+            raise TriageError("GitHub Projects GraphQL request failed; no automatic retry")
+        return response["data"]
 
     def pages(self, suffix: str, max_pages: int = 10) -> list[dict]:
         result = []
@@ -221,11 +229,27 @@ def snapshot(client: GitHub, number: int) -> dict:
         and comment["user"].get("type") != "Bot"
         and comment.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"}
     ]
+    latest_releases = []
+    if eligible(issue):
+        for repository in LATEST_RELEASE_REPOSITORIES:
+            release = client.request("GET", f"repos/{repository}/releases/latest")
+            if (
+                release.get("draft") is not False or release.get("prerelease") is not False
+                or not isinstance(release.get("tag_name"), str) or not release["tag_name"]
+            ):
+                raise TriageError("Latest stable release metadata is invalid")
+            latest_releases.append({
+                "repository": repository, "tag": release["tag_name"],
+                "published_at": release["published_at"],
+            })
     content = {
         "number": number,
+        "node_id": issue["node_id"],
         "title": issue.get("title") or "",
         "body": issue.get("body") or "",
         "labels": sorted(label_names(issue)),
+        "issue_type": issue.get("type"),
+        "latest_releases": latest_releases,
         "author_comments": author_comments,
         "repository_comments": repository_comments,
     }
@@ -346,6 +370,8 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
         "number": number,
         "input_sha256": current["input_sha256"],
         "issue_kind": kind,
+        "existing_issue_type": (issue.get("type") or {}).get("name"),
+        "latest_releases": content["latest_releases"],
         "title": evidence_text(content["title"], 256),
         "body": evidence_text(content["body"], MAX_BODY),
         "author_followups": [
@@ -393,7 +419,10 @@ def validate(output: dict, evidence: dict) -> dict:
         "routing_rule", "routing_reason",
     }
     if (
-        not required <= set(item) <= required | {"missing_information_kind", "uwp_specific", "uwp_reason"}
+        not required <= set(item) <= required | {
+            "missing_information_kind", "uwp_specific", "uwp_reason",
+            "impact", "workaround", "priority_reason", "regression_release",
+        }
         or item["type"] != "publish_triage_summary"
     ):
         raise TriageError("Unexpected triage output schema or operation")
@@ -414,6 +443,44 @@ def validate(output: dict, evidence: dict) -> dict:
     }
     if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
         raise TriageError("Invalid content-based issue kind")
+    priority_fields = {"impact", "workaround", "priority_reason", "regression_release"}
+    result["priority"] = None
+    result["priority_reason"] = "None"
+    if priority_fields & set(item):
+        if not priority_fields <= set(item):
+            raise TriageError("Incomplete priority assessment")
+        impact = required_string(item, "impact", 40)
+        if impact not in ("CRASH", "LATEST_RELEASE_REGRESSION", "BROKEN_FUNCTIONALITY", "OTHER"):
+            raise TriageError("Invalid priority impact")
+        if type(item["workaround"]) is not bool:
+            raise TriageError("Invalid workaround assessment")
+        reason = required_string(item, "priority_reason", 400)
+        regression_release = required_string(item, "regression_release", 160)
+        bug_applies = (
+            result["issue_kind"] == "BUG" and evidence["issue_kind"] != "FEATURE"
+            and evidence.get("existing_issue_type") in (None, "Bug")
+        )
+        if impact != "OTHER":
+            if not bug_applies or evidence["context_truncated"] or reason == "None":
+                result["review_notes"].append(
+                    "Project priority needs a supported bug assessment and complete context; priority is deferred."
+                )
+            elif impact == "LATEST_RELEASE_REGRESSION" and regression_release not in {
+                release["repository"] + "@" + release["tag"] for release in evidence["latest_releases"]
+            }:
+                result["review_notes"].append(
+                    "The regression is not tied to supplied latest stable release metadata; priority is deferred."
+                )
+            else:
+                result["priority"] = (
+                    "P0" if impact in ("CRASH", "LATEST_RELEASE_REGRESSION")
+                    else "P2" if item["workaround"] else "P1"
+                )
+                result["priority_reason"] = reason
+    else:
+        result["normalization_notes"].append(
+            "The older output has no priority assessment; project priority is unchanged."
+        )
     if {"uwp_specific", "uwp_reason"} & set(item):
         if type(item.get("uwp_specific")) is not bool:
             raise TriageError("Invalid UWP-specific classification")
@@ -715,6 +782,14 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     else:
         reproduction = "\u26a0\ufe0f Needs maintainer review"
     lines.append("- **Reproduction:** " + reproduction)
+    if evidence.get("existing_issue_type"):
+        lines.append("- **Existing issue Type (preserved):** " + plain_text(evidence["existing_issue_type"]))
+    elif bug_type_applies(result, evidence):
+        lines.append("- **Issue Type plan:** Set the missing repository Type to `Bug`.")
+    if result["priority"]:
+        lines.append("- **WinUI project priority assessment:** `" + result["priority"] + "`. "
+                     + plain_text(result["priority_reason"])
+                     + " Existing project values take precedence; publication requires configured project access.")
     if result["add_uwp"]:
         lines.append("- **App model:** `appModel-UWP` (UWP-specific bug). "
                      + plain_text(result["uwp_reason"]))
@@ -798,17 +873,171 @@ def ensure_current(client: GitHub, evidence: dict) -> dict | None:
     return current
 
 
+def bug_type_applies(result: dict, evidence: dict) -> bool:
+    return (
+        result["issue_kind"] == "BUG" and evidence["issue_kind"] != "FEATURE"
+        and not evidence["context_truncated"]
+        and evidence.get("existing_issue_type") is None
+    )
+
+
+def project_priority_snapshot(client: GitHub, issue_id: str) -> dict:
+    data = client.graphql("""
+        query($number: Int!) {
+          organization(login: "microsoft") {
+            projectV2(number: $number) {
+              id title closed
+              fields(first: 100) {
+                pageInfo { hasNextPage }
+                nodes { ... on ProjectV2SingleSelectField { id name options { id name } } }
+              }
+            }
+          }
+        }
+    """, {"number": PROJECT_NUMBER})
+    project = (data.get("organization") or {}).get("projectV2")
+    if not project or project["title"] != "WinUI" or project["closed"]:
+        raise TriageError("Expected the open microsoft WinUI project 1868")
+    fields = project["fields"]
+    if fields["pageInfo"]["hasNextPage"]:
+        raise TriageError("Project field pagination requires manual configuration")
+    priority = [field for field in fields["nodes"] if field.get("name") == "Priority"]
+    if len(priority) != 1:
+        raise TriageError("WinUI project must have one single-select Priority field")
+    field = priority[0]
+    options = {name: [o["id"] for o in field["options"] if o["name"] == name] for name in ("P0", "P1", "P2")}
+    if any(len(ids) != 1 for ids in options.values()):
+        raise TriageError("WinUI Priority must have exact P0, P1 and P2 options")
+    items = []
+    cursor = None
+    for _ in range(10):
+        data = client.graphql("""
+            query($issue: ID!, $cursor: String) {
+              node(id: $issue) {
+                ... on Issue {
+                  id
+                  projectItems(first: 100, after: $cursor, includeArchived: true) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes {
+                      id isArchived project { id }
+                      fieldValueByName(name: "Priority") {
+                        __typename
+                        ... on ProjectV2ItemFieldSingleSelectValue { optionId name }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """, {"issue": issue_id, "cursor": cursor})
+        node = data.get("node")
+        if not node or node.get("id") != issue_id:
+            raise TriageError("Project query returned an unexpected issue")
+        connection = node["projectItems"]
+        items.extend(item for item in connection["nodes"] if item["project"]["id"] == project["id"])
+        if not connection["pageInfo"]["hasNextPage"]:
+            break
+        cursor = connection["pageInfo"]["endCursor"]
+        if not cursor:
+            raise TriageError("Invalid issue project pagination")
+    else:
+        raise TriageError("Issue project pagination limit reached")
+    if len(items) > 1:
+        raise TriageError("Multiple WinUI project items found; manual review required")
+    return {
+        "project_id": project["id"], "field_id": field["id"],
+        "options": {name: ids[0] for name, ids in options.items()},
+        "item": items[0] if items else None,
+    }
+
+
+def publish_metadata(client: GitHub, result: dict, evidence: dict, labels: list[str], project_client) -> None:
+    expected = dict(evidence["_snapshot"]["content"])
+    expected["labels"] = sorted(set(expected["labels"]) | set(labels))
+
+    def fresh():
+        current = snapshot(client, evidence["number"])
+        if not eligible(current["issue"]):
+            raise TriageError("Issue no longer eligible for metadata publication")
+        if current["content"] != expected:
+            raise TriageError("Issue changed before metadata publication; refusing stale output")
+        return current["issue"]
+
+    issue = fresh()
+    if bug_type_applies(result, evidence):
+        updated = client.write("PATCH", f"issues/{evidence['number']}", {"type": "Bug"})
+        if (updated.get("type") or {}).get("name") != "Bug":
+            raise TriageError("GitHub did not apply the Bug issue Type")
+        expected["issue_type"] = updated["type"]
+    if not result["priority"] or project_client is None:
+        return
+    fresh()
+    project = project_priority_snapshot(project_client, issue["node_id"])
+    item = project["item"]
+    if item and (item["isArchived"] or item["fieldValueByName"] is not None):
+        print("Existing or archived WinUI project priority is preserved")
+        return
+    if item is None:
+        data = project_client.graphql("""
+            mutation($project: ID!, $issue: ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
+                item { id }
+              }
+            }
+        """, {"project": project["project_id"], "issue": issue["node_id"]})
+        added_id = data["addProjectV2ItemById"]["item"]["id"]
+        fresh()
+        project = project_priority_snapshot(project_client, issue["node_id"])
+        item = project["item"]
+        if not item or item["id"] != added_id:
+            raise TriageError("Project item changed after insertion; refusing priority update")
+        if item["isArchived"] or item["fieldValueByName"] is not None:
+            print("A newly supplied human project value is preserved")
+            return
+    updated = project_client.graphql("""
+        mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+          updateProjectV2ItemFieldValue(input: {
+            projectId: $project, itemId: $item, fieldId: $field,
+            value: {singleSelectOptionId: $option}
+          }) { projectV2Item { id } }
+        }
+    """, {
+        "project": project["project_id"], "item": item["id"], "field": project["field_id"],
+        "option": project["options"][result["priority"]],
+    })
+    if updated["updateProjectV2ItemFieldValue"]["projectV2Item"]["id"] != item["id"]:
+        raise TriageError("Unexpected project priority mutation result")
+    verified = project_priority_snapshot(project_client, issue["node_id"])["item"]
+    if (
+        not verified or verified["id"] != item["id"]
+        or (verified["fieldValueByName"] or {}).get("optionId") != project["options"][result["priority"]]
+    ):
+        raise TriageError("WinUI project priority could not be verified; inspect before retrying")
+
+
 def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: bool) -> dict:
     for note in result["normalization_notes"] + result["review_notes"]:
         print("::warning::" + plain_text(note))
     body = render(result, evidence, mapping)
     labels = planned_labels(result, evidence, mapping)
-    plan = {"comment": body, "add_labels": labels, "published": False}
+    project_token = os.environ.get("TRIAGE_PROJECT_TOKEN", "")
+    project_client = GitHub(client.repository, project_token) if project_token and result["priority"] else None
+    plan = {
+        "comment": body, "add_labels": labels, "published": False,
+        "issue_type": "Bug" if bug_type_applies(result, evidence) else None,
+        "project_priority": result["priority"],
+        "project_priority_enabled": project_client is not None,
+    }
+    if result["priority"] and project_client is None:
+        print("::warning::WinUI project priority is assessment-only: TRIAGE_PROJECT_TOKEN is not configured.")
+    if project_client is not None:
+        project_priority_snapshot(project_client, evidence["_snapshot"]["issue"]["node_id"])
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as stream:
             stream.write(("## Publish plan\n\n" if write else "## Preview only - no issue writes\n\n"))
             stream.write(body + "\n\nLabels to add: " + ", ".join(labels) + "\n")
+            stream.write(f"\nIssue Type plan: {plan['issue_type']}; WinUI priority assessment: {plan['project_priority']}\n")
     if not write:
         print("Preview only: validated triage; no issue writes were made")
         return plan
@@ -821,8 +1050,12 @@ def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: 
         client.write("POST", f"issues/{number}/comments", {"body": body})
     elif comment["body"] != body:
         client.write("PATCH", f"issues/comments/{comment['id']}", {"body": body})
-    if labels and ensure_current(client, evidence) is not None:
+    if labels:
+        if ensure_current(client, evidence) is None:
+            return plan
         client.write("POST", f"issues/{number}/labels", {"labels": labels})
+    if plan["issue_type"] or (result["priority"] and project_client is not None):
+        publish_metadata(client, result, evidence, labels, project_client)
     plan["published"] = True
     return plan
 
