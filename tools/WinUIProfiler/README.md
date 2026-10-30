@@ -472,6 +472,13 @@ trace, and the Frames and Elements tabs follow it as it grows.
   in any order. The events keep the file's order; the connection panel
   counts the process's events whose timestamp is earlier than the event before
   them as out of order. In the traces measured, there were none.
+- Timestamps in a trace count ticks of the recording machine's clock, whose
+  frequency can differ from this machine's, such as 19.2 MHz on many Arm64 PCs
+  and 10 MHz on many x64 PCs. Before reading the process's events, the app
+  works out the trace's frequency from its first events and stores it in the
+  session file, so their times are right from the first frame; `record` does
+  the same. When it can't be worked out, as in a damaged or very short trace, it
+  is derived from the process's events once they span a second.
 - The connection panel shows how much of the trace has been read. **Stop**
   ends the reading, as does closing the app: the events already read are
   stored, so the session file holds the process's events from the start of the

@@ -121,13 +121,17 @@ public sealed class TraceReplay : IAsyncDisposable
             throw new FileNotFoundException("The .etl file was not found.", path);
         }
 
-        // Opened first, so a file that is not a trace leaves no session file.
+        // Readers of the session file time its events with the frequency it stores, or this machine's while it has none,
+        // so the trace's is stored before any event. It is read before the trace is opened for reading, so the file is
+        // never open twice at once.
+        var frequency = OfflineEtlSource.ReadQpcFrequency(path);
+        // Opened before the session file is created, so a file that is not a trace leaves no session file.
         var source = new ETWTraceEventSource(path);
         SessionWriter? writer = null;
         try
         {
             writer = SessionWriter.Create(SessionPath(sessionDirectory, processName ?? Path.GetFileNameWithoutExtension(path), processId),
-                new(processId, processName, null, null, null, SessionCoverage.Trace, path), limitBytes);
+                new(processId, processName, null, frequency, null, SessionCoverage.Trace, path), limitBytes);
             return new(path, processId, processName, source, writer);
         }
         catch

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using WinUIProfiler.Engine.Events;
@@ -23,6 +24,64 @@ public sealed record TraceContents(IReadOnlyList<TraceProcess> Processes, int Ev
 // Reads a recorded .etl through the same subscription a live session will use.
 public static class OfflineEtlSource
 {
+    private const int MaxFrequencyEvents = 100_000;
+
+    // The frequency of the clock that timed the trace's events, or null when it can't be worked out. TraceEvent converts
+    // timestamps with the frequency in the trace's header but doesn't expose it: an event's milliseconds are
+    // (timestamp - trace start) * 1000 / frequency, whatever clock the trace used. So the frequency is the ratio of the
+    // change in timestamp to the change in milliseconds between events at least a millisecond apart. TraceEvent learns
+    // the trace's start from its header event, so two ratios in a row must agree. Reads the first milliseconds of the
+    // trace without decoding any event.
+    public static long? ReadQpcFrequency(string path)
+    {
+        try
+        {
+            using var source = new ETWTraceEventSource(path);
+            (long Qpc, double Milliseconds)? previous = null;
+            double estimate = 0, frequency = 0;
+            var read = 0;
+            source.AllEvents += data =>
+            {
+                // TraceEvent times an event stamped before the trace started at its start, 0 ms.
+                var milliseconds = data.TimeStampRelativeMSec;
+                if (frequency == 0 && milliseconds > 0)
+                {
+#pragma warning disable CS0618 // The raw timestamp is what the frequency converts.
+                    var qpc = data.TimeStampQPC;
+#pragma warning restore CS0618
+                    if (previous is not { } last)
+                    {
+                        previous = (qpc, milliseconds);
+                    }
+                    else if (Math.Abs(milliseconds - last.Milliseconds) >= 1)
+                    {
+                        var ratio = Math.Round((qpc - last.Qpc) * 1000.0 / (milliseconds - last.Milliseconds));
+                        if (ratio > 0 && Math.Abs(ratio - estimate) <= ratio / 1_000_000)
+                        {
+                            frequency = ratio;
+                            source.StopProcessing();
+                        }
+
+                        estimate = ratio;
+                        previous = (qpc, milliseconds);
+                    }
+                }
+
+                if (++read == MaxFrequencyEvents)
+                {
+                    source.StopProcessing();
+                }
+            };
+            source.Process();
+            return frequency is > 0 and < long.MaxValue ? (long)frequency : null;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not read the clock frequency of '{path}': {error.Message}");
+            return null;
+        }
+    }
+
     // The processes with XAML events, most events first, as the CLI's processes command lists them. Reads the whole
     // trace without copying any event's fields.
     public static TraceContents ListProcesses(string path, CancellationToken cancellationToken = default)
