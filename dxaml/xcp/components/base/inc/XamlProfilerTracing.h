@@ -12,13 +12,11 @@ namespace XcpAllocation
 {
     struct AllocationSnapshot
     {
-        uint64_t allocCount; // Profiled allocation calls, including failed non-fail-fast calls; excludes reallocations.
-        uint64_t allocSize; // Cumulative requested bytes for those allocation calls; excludes reallocations.
-        int64_t allocatedMemory; // Nonnegative byte estimate used by the managed-runtime GC heuristic, independent of profiling.
-        uint64_t outstandingAllocCount; // Successful profiled allocations minus non-null profiled frees; transitions can cause underflow.
-        uint64_t outstandingAllocSize; // Net actual heap bytes (HeapSize), including realloc deltas; transitions can cause underflow.
-        bool allocationCountsAvailable; // Profiling was enabled when read; otherwise allocCount and allocSize are zero.
-        bool outstandingAllocationCountsAvailable; // Outstanding fields are populated; does not imply a complete live-heap baseline.
+        int64_t allocCount = -1; // Tracked allocation calls; -1 when unavailable.
+        int64_t allocSize = -1; // Cumulative requested bytes, excluding reallocations; -1 when unavailable.
+        int64_t allocatedMemory = -1; // Managed-runtime GC byte estimate, independent of profiling; -1 when unavailable.
+        int64_t outstandingAllocCount = -1; // Tracked successful allocations minus non-null frees; -1 when unavailable.
+        int64_t outstandingAllocSize = -1; // Net actual heap bytes, including realloc deltas; -1 when unavailable.
         bool memoryTrackingEnabled; // The independent managed-runtime GC allocation heuristic is enabled.
     };
 

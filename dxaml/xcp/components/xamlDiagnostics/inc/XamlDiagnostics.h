@@ -43,7 +43,7 @@ class
         wrl::RuntimeClassFlags<wrl::ClassicCom>,
         IXamlDiagnostics,
         IXamlDiagnostics2,
-        IXamlDiagnostics3,
+        IXamlDiagnosticsPrivate,
         // ChainInterfaces is a swell little helper that makes our lives better when dealing with COM
         // interfaces that derive from base interfaces. The class only implements the first one, so this
         // should always be the most derived, but will still be able to QI for the other classes in the list.
@@ -233,7 +233,7 @@ public:
         _Out_ unsigned int* pCount,
         _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) override;
 
-    // IXamlDiagnostics3 Interface
+    // IXamlDiagnosticsPrivate Interface
     IFACEMETHOD(GetResourceSnapShot)(
         _Out_ XamlResourceSnapshot* snapshot) override;
 

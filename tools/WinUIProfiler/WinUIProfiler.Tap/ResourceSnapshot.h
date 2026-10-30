@@ -4,6 +4,7 @@
 #include <wrl/client.h>
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 namespace WinUIProfiler::Tap::ResourceSnapshotAbi
 {
@@ -18,29 +19,33 @@ namespace WinUIProfiler::Tap::ResourceSnapshotAbi
 
     struct Snapshot
     {
-        uint64_t AllocCount;
-        uint64_t AllocSize;
+        int64_t AllocCount;
+        int64_t AllocSize;
         int64_t AllocatedMemory;
-        uint64_t OutstandingAllocCount;
-        uint64_t OutstandingAllocSize;
+        int64_t OutstandingAllocCount;
+        int64_t OutstandingAllocSize;
         Resource Resources[32];
     };
 #pragma pack(pop)
 
-    MIDL_INTERFACE("2b2681be-7a8a-43c5-889f-374ce8cab061")
-    Diagnostics3 : public IUnknown
+    MIDL_INTERFACE("e79e0da1-cf7f-4fa6-b557-fa0de39add1d")
+    DiagnosticsPrivate : public IUnknown
     {
         virtual HRESULT STDMETHODCALLTYPE GetResourceSnapShot(Snapshot* snapshot) = 0;
     };
 
     static_assert(sizeof(Resource) == 24 && offsetof(Resource, TotalCreated) == 0);
     static_assert(sizeof(Snapshot) == 808 && offsetof(Snapshot, Resources) == 40);
+    static_assert(std::is_same_v<decltype(Snapshot::AllocCount), int64_t> &&
+        std::is_same_v<decltype(Snapshot::AllocSize), int64_t> &&
+        std::is_same_v<decltype(Snapshot::OutstandingAllocCount), int64_t> &&
+        std::is_same_v<decltype(Snapshot::OutstandingAllocSize), int64_t>);
 
     inline HRESULT Read(IUnknown* diagnostics, Snapshot& snapshot) noexcept
     {
         snapshot = {};
         if (!diagnostics) return E_POINTER;
-        Microsoft::WRL::ComPtr<Diagnostics3> resources;
+        Microsoft::WRL::ComPtr<DiagnosticsPrivate> resources;
         const HRESULT status = diagnostics->QueryInterface(IID_PPV_ARGS(&resources));
         if (FAILED(status)) return status;
         return resources->GetResourceSnapShot(&snapshot);

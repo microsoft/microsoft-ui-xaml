@@ -22,11 +22,11 @@ public sealed record SnapshotResourceCapture(
     [property: JsonRequired] XamlResourceSnapshot? Values);
 
 public sealed record XamlResourceSnapshot(
-    [property: JsonRequired] ulong AllocCount,
-    [property: JsonRequired] ulong AllocSize,
+    [property: JsonRequired] long AllocCount,
+    [property: JsonRequired] long AllocSize,
     [property: JsonRequired] long AllocatedMemory,
-    [property: JsonRequired] ulong OutstandingAllocCount,
-    [property: JsonRequired] ulong OutstandingAllocSize,
+    [property: JsonRequired] long OutstandingAllocCount,
+    [property: JsonRequired] long OutstandingAllocSize,
     [property: JsonRequired] IReadOnlyList<GraphicsResourceSnapshot> Resources);
 
 public sealed record GraphicsResourceSnapshot(

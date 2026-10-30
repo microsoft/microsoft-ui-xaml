@@ -26,11 +26,11 @@ public sealed class SnapshotResourceComparison
         var current = after?.Values;
         var rows = new List<SnapshotResourceRow>
         {
-            new("AllocCount", null, false, old?.AllocCount, current?.AllocCount),
-            new("AllocSize", null, true, old?.AllocSize, current?.AllocSize),
-            new("AllocatedMemory", null, true, old?.AllocatedMemory, current?.AllocatedMemory),
-            new("OutstandingAllocCount", null, false, old?.OutstandingAllocCount, current?.OutstandingAllocCount),
-            new("OutstandingAllocSize", null, true, old?.OutstandingAllocSize, current?.OutstandingAllocSize)
+            new("AllocCount", null, false, Available(old?.AllocCount), Available(current?.AllocCount)),
+            new("AllocSize", null, true, Available(old?.AllocSize), Available(current?.AllocSize)),
+            new("AllocatedMemory", null, true, Available(old?.AllocatedMemory), Available(current?.AllocatedMemory)),
+            new("OutstandingAllocCount", null, false, Available(old?.OutstandingAllocCount), Available(current?.OutstandingAllocCount)),
+            new("OutstandingAllocSize", null, true, Available(old?.OutstandingAllocSize), Available(current?.OutstandingAllocSize))
         };
         var oldResources = old?.Resources.ToDictionary(resource => resource.Index) ?? [];
         var newResources = current?.Resources.ToDictionary(resource => resource.Index) ?? [];
@@ -46,6 +46,8 @@ public sealed class SnapshotResourceComparison
         HasChanges = before?.Status != after?.Status || before?.HResult != after?.HResult ||
             rows.Any(row => row.Before != row.After);
     }
+
+    private static decimal? Available(long? value) => value is -1 ? null : value;
 }
 
 public sealed class SnapshotNodeDiff(SnapshotTreeNode? before, SnapshotTreeNode? after,

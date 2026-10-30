@@ -56,6 +56,15 @@ std::atomic<size_t> g_deallocCount = 0;
 std::atomic<size_t> g_outstandingAllocCount = 0;
 std::atomic<size_t> g_outstandingAllocSize = 0;
 
+static bool IsAllocationStatsTrackingEnabled() noexcept
+{
+#if DBG
+    return true;
+#else
+    return XamlProfilerTracing::IsAllocationProfilingEnabled();
+#endif
+}
+
 static void RecordOutstandingAllocation(_In_ const void *pAddress)
 {
     const size_t cSize = XcpAllocation::OSMemoryGetBlockSize(pAddress);
@@ -81,17 +90,24 @@ size_t XcpAllocation::GetDeallocationCount()
 XcpAllocation::AllocationSnapshot XcpAllocation::GetAllocationSnapshot() noexcept
 {
     AllocationSnapshot snapshot{};
-    snapshot.allocationCountsAvailable = XamlProfilerTracing::IsAllocationProfilingEnabled();
-    snapshot.outstandingAllocationCountsAvailable = snapshot.allocationCountsAvailable;
-    if (snapshot.allocationCountsAvailable)
+    if (IsAllocationStatsTrackingEnabled())
     {
-        snapshot.allocCount = GetAllocationCount();
-        snapshot.allocSize = GetAllocationSize();
-        snapshot.outstandingAllocCount = g_outstandingAllocCount.load(std::memory_order_relaxed);
-        snapshot.outstandingAllocSize = g_outstandingAllocSize.load(std::memory_order_relaxed);
+        constexpr auto toSnapshotCounter = [](size_t value) noexcept -> int64_t
+        {
+            return value <= static_cast<uint64_t>(INT64_MAX)
+                ? static_cast<int64_t>(value)
+                : -1;
+        };
+        snapshot.allocCount = toSnapshotCounter(GetAllocationCount());
+        snapshot.allocSize = toSnapshotCounter(GetAllocationSize());
+        snapshot.outstandingAllocCount = toSnapshotCounter(g_outstandingAllocCount.load(std::memory_order_relaxed));
+        snapshot.outstandingAllocSize = toSnapshotCounter(g_outstandingAllocSize.load(std::memory_order_relaxed));
     }
     snapshot.memoryTrackingEnabled = g_memoryTrackingEnabled;
-    snapshot.allocatedMemory = InterlockedCompareExchange64(&g_allocatedMemory, 0, 0);
+    if (snapshot.memoryTrackingEnabled)
+    {
+        snapshot.allocatedMemory = InterlockedCompareExchange64(&g_allocatedMemory, 0, 0);
+    }
     return snapshot;
 }
 
@@ -141,15 +157,17 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
      void *pAddress = NULL;
 
     EnsureHeap();
-    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
+    const bool statsTrackingEnabled = IsAllocationStatsTrackingEnabled();
 
     pAddress = HeapAlloc(ghHeap, 0, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
-        if (profilerEnabled)
+        if (statsTrackingEnabled)
         {
             RecordOutstandingAllocation(pAddress);
+            g_allocCount.fetch_add(1, std::memory_order_relaxed);
+            g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
         }
     }
     else
@@ -157,12 +175,6 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
         // Terminate the process on OOM in a predictable way that gives us
         // clear Watson data.
         XAMLTerminateProcessOnMemoryExhaustion(cSize);
-    }
-
-    if (profilerEnabled)
-    {
-        g_allocCount.fetch_add(1, std::memory_order_relaxed);
-        g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
     }
 
     return pAddress;
@@ -173,15 +185,17 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
     void *pAddress = NULL;
 
     EnsureHeap();
-    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
+    const bool statsTrackingEnabled = IsAllocationStatsTrackingEnabled();
 
     pAddress = HeapAlloc(ghHeap, HEAP_ZERO_MEMORY, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
-        if (profilerEnabled)
+        if (statsTrackingEnabled)
         {
             RecordOutstandingAllocation(pAddress);
+            g_allocCount.fetch_add(1, std::memory_order_relaxed);
+            g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
         }
     }
     else
@@ -189,12 +203,6 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
         // Terminate the process on OOM in a predictable way that gives us
         // clear Watson data.
         XAMLTerminateProcessOnMemoryExhaustion(cSize);
-    }
-
-    if (profilerEnabled)
-    {
-        g_allocCount.fetch_add(1, std::memory_order_relaxed);
-        g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
     }
 
     return pAddress;
@@ -205,9 +213,9 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
     void* pAddress = NULL;
 
     EnsureHeap();
-    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
+    const bool statsTrackingEnabled = IsAllocationStatsTrackingEnabled();
 
-    if (profilerEnabled)
+    if (statsTrackingEnabled)
     {
         g_allocCount.fetch_add(1, std::memory_order_relaxed);
         g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
@@ -217,7 +225,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
-        if (profilerEnabled)
+        if (statsTrackingEnabled)
         {
             RecordOutstandingAllocation(pAddress);
         }
@@ -229,10 +237,10 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
 _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize)
 {
     EnsureHeap();
-    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
+    const bool statsTrackingEnabled = IsAllocationStatsTrackingEnabled();
 
     const bool trackMemory = g_memoryTrackingEnabled;
-    const bool needBlockSize = trackMemory || profilerEnabled;
+    const bool needBlockSize = trackMemory || statsTrackingEnabled;
 
     size_t cOldSize = 0;
     if (needBlockSize && pAddress)
@@ -260,7 +268,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         UpdateAllocatedMemory(static_cast<INT64>(cSize) - static_cast<INT64>(cOldSize));
     }
 
-    if (profilerEnabled && newAddress)
+    if (statsTrackingEnabled && newAddress)
     {
         const size_t cNewSize = XcpAllocation::OSMemoryGetBlockSize(newAddress);
         if (cNewSize >= cOldSize)
@@ -279,10 +287,10 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
 void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 {
     EnsureHeap();
-    const bool profilerEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
+    const bool statsTrackingEnabled = IsAllocationStatsTrackingEnabled();
 
     const bool trackMemory = g_memoryTrackingEnabled;
-    const bool needBlockSize = trackMemory || profilerEnabled;
+    const bool needBlockSize = trackMemory || statsTrackingEnabled;
 
     size_t cSize = 0;
     if (needBlockSize && pAddress)
@@ -298,7 +306,7 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 
     HeapFree(ghHeap, 0, pAddress);
 
-    if (profilerEnabled)
+    if (statsTrackingEnabled)
     {
         g_deallocCount.fetch_add(1, std::memory_order_relaxed);
         if (pAddress != nullptr)

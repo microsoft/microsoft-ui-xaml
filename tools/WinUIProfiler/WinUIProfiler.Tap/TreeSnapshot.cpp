@@ -717,7 +717,7 @@ namespace WinUIProfiler::Tap
             job->Check();
             const auto guid = SnapshotJson::CaptureIdText(captureId);
             if (guid.empty()) Fail(E_UNEXPECTED);
-            result.Json = "{\"schemaVersion\":3,\"captureId\":" + String(winrt::hstring(guid)) +
+            result.Json = "{\"schemaVersion\":4,\"captureId\":" + String(winrt::hstring(guid)) +
                 ",\"processId\":" + std::to_string(GetCurrentProcessId()) +
                 ",\"creationTimeFileTime\":" + std::to_string(actualCreation) +
                 ",\"qpcFrequency\":" + std::to_string(frequency.QuadPart) +
@@ -728,7 +728,7 @@ namespace WinUIProfiler::Tap
                 job->Correlations.Json + "],\"limitations\":["
                 "\"Public realized visual-tree scope only; unrealized and nonvisual logical objects are excluded.\","
                 "\"Each root is sampled on its owning UI thread over its recorded interval; roots are not globally atomic.\","
-                "\"XAML resources are sampled before tree enumeration, not atomically with the trees. Allocator counters cover enabled profiling only; transition-spanning allocations/frees can be unbalanced. AllocatedMemory is the independent GC heuristic, not process heap size. All-zero graphics resource slots are not measurements.\","
+                "\"XAML resources are sampled before tree enumeration, not atomically with the trees. Allocator counters are tracked in DBG builds or while profiling is enabled; -1 means unavailable. Transition-spanning allocations/frees can be unbalanced. AllocatedMemory is the independent GC heuristic, not process heap size. All-zero graphics resource slots are not measurements.\","
                 "\"Open popup children are separate visual subtrees, without fabricated logical parent links.\","
                 "\"GetElementVisual can materialize public handout visuals; no adorners or visual mutations are requested.\","
                 "\"Composition includes all descendants exposed by ContainerVisual.Children and public ancestors of handout visuals, not private compositor trees.\","

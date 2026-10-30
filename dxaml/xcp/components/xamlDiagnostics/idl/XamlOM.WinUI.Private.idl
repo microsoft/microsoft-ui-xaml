@@ -31,20 +31,20 @@ const UINT32 XamlResourceSnapshotGraphicsCapacity = 32;
 
 typedef struct XamlResourceSnapshot
 {
-    UINT64 AllocCount;
-    UINT64 AllocSize;
+    INT64 AllocCount;
+    INT64 AllocSize;
     INT64 AllocatedMemory;
-    UINT64 OutstandingAllocCount;
-    UINT64 OutstandingAllocSize;
+    INT64 OutstandingAllocCount;
+    INT64 OutstandingAllocSize;
     XamlGraphicsResourceCounterSnapshot Resources[XamlResourceSnapshotGraphicsCapacity];
 } XamlResourceSnapshot;
 
 [
     object,
-    uuid(2b2681be-7a8a-43c5-889f-374ce8cab061),
+    uuid(e79e0da1-cf7f-4fa6-b557-fa0de39add1d),
     pointer_default(unique)
 ]
-interface IXamlDiagnostics3 : IUnknown
+interface IXamlDiagnosticsPrivate : IUnknown
 {
     HRESULT GetResourceSnapShot([out] XamlResourceSnapshot* snapshot);
 };

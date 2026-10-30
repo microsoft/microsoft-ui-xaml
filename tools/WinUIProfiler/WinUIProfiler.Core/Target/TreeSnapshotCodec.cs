@@ -25,7 +25,7 @@ public static class TreeSnapshotCodec
         Check(bytes.Length is > 0 and <= TapProtocol.MaximumSnapshotBytes, "Snapshot size is invalid.");
         var value = JsonSerializer.Deserialize<TreeSnapshotDocument>(bytes.Span, Options)
             ?? throw new InvalidDataException("Snapshot document is null.");
-        Check(value.SchemaVersion is 1 or 2 or 3 && value.CaptureId != Guid.Empty && value.CaptureId == captureId,
+        Check(value.SchemaVersion is 1 or 2 or 3 or 4 && value.CaptureId != Guid.Empty && value.CaptureId == captureId,
             "Snapshot capture/schema identity disagrees with its request.");
         Check(target.CreationTimeFileTime.HasValue && value.ProcessId == target.ProcessId &&
             value.CreationTimeFileTime == target.CreationTimeFileTime, "Snapshot belongs to a different process instance.");
@@ -54,7 +54,11 @@ public static class TreeSnapshotCodec
             }, "Resource snapshot status/result is inconsistent.");
             if (resources.Values is { } metrics)
             {
-                Check(metrics.AllocatedMemory >= 0 && metrics.Resources is { Count: <= 32 },
+                var minimum = value.SchemaVersion >= 4 ? -1L : 0L;
+                Check(metrics.AllocCount >= minimum && metrics.AllocSize >= minimum &&
+                    metrics.OutstandingAllocCount >= minimum && metrics.OutstandingAllocSize >= minimum,
+                    "Allocator snapshot counters must be nonnegative or use the schema-4 unavailable sentinel.");
+                Check(metrics.AllocatedMemory >= minimum && metrics.Resources is { Count: <= 32 },
                     "Resource snapshot metrics/graphics counters are invalid.");
                 var indices = new HashSet<int>();
                 foreach (var resource in metrics.Resources!)

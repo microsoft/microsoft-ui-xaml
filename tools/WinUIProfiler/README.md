@@ -88,28 +88,36 @@ silently elevated.
 
 ## Tree snapshots
 
-Each capture also calls the target's private `IXamlDiagnostics3::GetResourceSnapShot`
+Each capture also calls the target's private `IXamlDiagnosticsPrivate::GetResourceSnapShot`
 once, before tree enumeration, and saves the result and its QPC interval in the
-snapshot JSON (schema 3, `resourceSnapshot`). The resource view currently shows
+snapshot JSON (schema 4, `resourceSnapshot`). The resource view currently shows
 the five allocator/GC metrics and any populated graphics counter slots, identified
 by their fixed array index rather than a generated string name. Comparison shows **Before**, **After**, and
 signed **Delta (After - Before)** values, in counts or bytes; resource-only changes
 are included even when the trees are unchanged. Deltas preserve the full 64-bit
-counter range, including decreases. A resource absent from either capture has
-an unavailable delta, not an assumed zero.
+counter range, including decreases. All five allocator/GC metrics use signed 64-bit
+values: `-1` means unavailable, while zero is a measured value. Unavailable metrics
+and resources absent from either capture have no delta, not an assumed zero.
 
 The private interface requires a target runtime containing resource diagnostics.
-Its IID changed with the smaller graphics-counter ABI so older runtimes fail
+Its IID changed with the signed allocator-counter contract so older runtimes fail
 the interface query safely instead of writing an incompatible snapshot layout.
 Missing support or a failed call preserves the tree capture and reports unavailable
 resources with the HRESULT. Schema-1 snapshots remain readable and report resources not
-recorded. Existing allocation-only schema-2 memory captures are normalized on read;
+recorded. Existing schema-3 resource captures and allocation-only schema-2 memory
+captures remain readable when their allocator values fit the signed 64-bit range;
+schema-2 captures are normalized on read. Larger legacy unsigned allocator values
+are rejected rather than wrapped. Graphics counters retain their unsigned 64-bit range;
 old named graphics entries without fixed-slot identities are rejected, not assigned
-invented identities. Allocator totals cover enabled profiling only, not the process heap.
-The first resource snapshot ensures the provider is registered; earlier allocations are missed,
-and allocation/free pairs across profiling transitions can be unbalanced.
-`AllocatedMemory` is the independent managed-runtime GC heuristic. Resource and
-tree intervals are not atomic. Graphics counters are still unimplemented;
+invented identities. Allocator totals cover DBG accounting or enabled profiling,
+not the process heap. The first resource snapshot ensures the provider is registered.
+DBG builds track allocator statistics even without a profiler listener. Other builds
+miss earlier allocations, and allocation/free pairs across profiling transitions can
+be unbalanced. Disabled or unrepresentable allocator metrics are returned as `-1`;
+retained internal totals are not presented as measured zeros when tracking stops.
+`AllocatedMemory` is the independent managed-runtime GC heuristic and returns `-1`
+when managed-memory tracking is disabled. Resource and tree intervals are not atomic.
+Graphics counters are still unimplemented;
 all-zero placeholder slots are omitted, not reported as measured zeros.
 
 As soon as a connection succeeds after the genuine TAP hello, the app
