@@ -165,6 +165,30 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
             m_shapeInputsMayBeStale = true;
             m_sortDirtyOverflow = HasActiveSort();
         }
+        else if (m_kind == ProjectionKind::Grouped && !m_parentKeySelector && m_rows && m_sourceChangesIncrementally)
+        {
+            // Grouping keeps no unfiltered copy; re-read the source, as the rebuild would. On
+            // failure tracking stays off, so the next change rebuilds.
+            try
+            {
+                std::vector<winrt::IInspectable> items;
+                if (m_pipeline.HasFilter())
+                {
+                    items = Materialize(m_source);
+                }
+                else
+                {
+                    items.resize(m_rows.Size(), nullptr);
+                    m_rows.GetMany(0, items);
+                }
+                RebuildFlatItemPropertyChangedTracking(items);
+                m_shapeInputsMayBeStale = restorePending;
+            }
+            catch (...)
+            {
+                ClearFlatItemPropertyChangedTracking();
+            }
+        }
     }
 }
 
@@ -1699,6 +1723,13 @@ bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::X
     }
 
     const bool inProjection = isAdd ? m_pipeline.PassesFilter(item) : isRow;
+    // A removed item that is no row yet passes the filter was reported as another object than the
+    // row's (a boxed value, an equal copy), so the row can't be found; rebuild.
+    if (!isAdd && !isRow && (!m_pipeline.HasFilter() || m_pipeline.PassesFilter(item)))
+    {
+        return false;
+    }
+
     winrt::IInspectable key{ nullptr };
     winrt::hstring groupIdentity;
     winrt::com_ptr<ShapedGroup> group;
@@ -1777,56 +1808,80 @@ bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::X
         return false;
     }
 
-    if (isAdd)
+    // From here on a throw (a rows or group listener, an item subscription) leaves the projection
+    // part-changed, and a listener can rebuild re-entrantly, after which the rebuild already holds
+    // this change and the rest of the commit would duplicate it.
+    auto const rebuiltByListener = [&]() { return generation != m_projectionGeneration; };
+    try
     {
-        ++m_refreshSourceRowCount;
-        if (m_flatItemPropertyChangedTrackingActive)
+        if (isAdd)
         {
-            TrackFlatItemPropertyChanged(item);
+            ++m_refreshSourceRowCount;
+            if (m_flatItemPropertyChangedTrackingActive)
+            {
+                TrackFlatItemPropertyChanged(item);
+            }
+            if (!inProjection)
+            {
+                return true;
+            }
+
+            m_groupedRowAddresses.insert(address);
+            m_rows.InsertAt(flatIndex, item);
+            if (rebuiltByListener())
+            {
+                return false;
+            }
+            if (group)
+            {
+                group->GroupItems().InsertAt(position, item);
+            }
+            else
+            {
+                auto const newGroup = AcquireCachedGroup({ key, groupIdentity, { item } });
+                newGroup->SetItems({ item });
+                m_groupSource.Append(newGroup.as<winrt::IInspectable>());
+            }
+            return true;
+        }
+
+        --m_refreshSourceRowCount;
+        UntrackFlatItemPropertyChanged(item);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(item, {});
         }
         if (!inProjection)
         {
             return true;
         }
-
-        m_groupedRowAddresses.insert(address);
-        m_rows.InsertAt(flatIndex, item);
-        if (group)
+        if (rebuiltByListener())
         {
-            group->GroupItems().InsertAt(position, item);
+            return false;
+        }
+
+        m_groupedRowAddresses.erase(address);
+        m_rows.RemoveAt(flatIndex);
+        if (rebuiltByListener())
+        {
+            return false;
+        }
+        if (groupSize == 1)
+        {
+            m_groupSource.RemoveAt(groupIndex);
+            m_groupCache.erase(groupIdentity);
         }
         else
         {
-            auto const newGroup = AcquireCachedGroup({ key, groupIdentity, { item } });
-            newGroup->SetItems({ item });
-            m_groupSource.Append(newGroup.as<winrt::IInspectable>());
+            group->GroupItems().RemoveAt(position);
         }
         return true;
     }
-
-    --m_refreshSourceRowCount;
-    UntrackFlatItemPropertyChanged(item);
-    if (m_rowsReleasedHook)
+    catch (...)
     {
-        m_rowsReleasedHook(item, {});
+        AbandonIncrementalCommit();
+        throw;
     }
-    if (!inProjection)
-    {
-        return true;
-    }
-
-    m_groupedRowAddresses.erase(address);
-    m_rows.RemoveAt(flatIndex);
-    if (groupSize == 1)
-    {
-        m_groupSource.RemoveAt(groupIndex);
-        m_groupCache.erase(groupIdentity);
-    }
-    else
-    {
-        group->GroupItems().RemoveAt(position);
-    }
-    return true;
 }
 
 bool ShapedItemsSource::HasActiveSort() const
@@ -2399,8 +2454,10 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows, s
     // projection that is no longer the one being shown. Item subscriptions survive the rebuild, so
     // only arriving items subscribe.
     auto trackedItems = std::move(m_flatItemPropertyChangedRevokers);
-    InvalidateShapingState();
-    m_flatItemPropertyChangedRevokers = std::move(trackedItems);
+    {
+        auto restoreTrackedItems = wil::scope_exit([&]() noexcept { m_flatItemPropertyChangedRevokers = std::move(trackedItems); });
+        InvalidateShapingState();
+    }
     // A grouped projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
     // Sorts requested before GroupBy establish the group order. Sorts requested after GroupBy

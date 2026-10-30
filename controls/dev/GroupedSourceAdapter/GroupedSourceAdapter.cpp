@@ -16,6 +16,15 @@
 
 #include "GroupContract.h"
 
+namespace
+{
+    // Canonical IUnknown: interface pointers to one object can differ.
+    void* CanonicalComIdentity(winrt::IInspectable const& object)
+    {
+        return object ? winrt::get_abi(object.as<winrt::Windows::Foundation::IUnknown>()) : nullptr;
+    }
+}
+
 GroupedSourceAdapter::GroupedSourceAdapter()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_GroupedSourceAdapter);
@@ -160,7 +169,7 @@ void GroupedSourceAdapter::Rebuild()
                 // Collapsed groups still present a header (chrome stays targetable) but contribute no
                 // data rows. The header carries the resolved count and expansion state so chevron
                 // chrome and the automation peer read them without re-resolving against the adapter.
-                m_groupHeaderSlots.push_back({ group, groupItems, static_cast<uint32_t>(built.size()) });
+                m_groupHeaderSlots.push_back({ group, groupItems, CanonicalComIdentity(groupItems), static_cast<uint32_t>(built.size()) });
                 built.push_back(winrt::make<::GroupedEntry>(group, groupItemCount, isExpanded));
 
                 if (isExpanded)
@@ -406,7 +415,8 @@ void GroupedSourceAdapter::EnsureGroupHeaderSlots()
         if (auto const entry = TryGetGroupedEntry(m_entries.GetAt(i)))
         {
             auto const group = entry->Group();
-            m_groupHeaderSlots.push_back({ group, ShapingHelpers::GetGroupItemsObject(group), i });
+            auto const groupItems = ShapingHelpers::GetGroupItemsObject(group);
+            m_groupHeaderSlots.push_back({ group, groupItems, CanonicalComIdentity(groupItems), i });
         }
     }
     m_groupHeaderSlotsValid = true;
@@ -425,10 +435,19 @@ bool GroupedSourceAdapter::TryApplyGroupItemsSplice(
     }
 
     EnsureGroupHeaderSlots();
-    size_t slotIndex = 0;
-    while (slotIndex < m_groupHeaderSlots.size() && m_groupHeaderSlots[slotIndex].Items != items)
+    // Two groups sharing one Items vector can't be told apart, so that rebuilds.
+    auto const itemsIdentity = CanonicalComIdentity(items);
+    size_t slotIndex = m_groupHeaderSlots.size();
+    for (size_t i = 0; i < m_groupHeaderSlots.size(); ++i)
     {
-        ++slotIndex;
+        if (m_groupHeaderSlots[i].ItemsIdentity == itemsIdentity)
+        {
+            if (slotIndex != m_groupHeaderSlots.size())
+            {
+                return false;
+            }
+            slotIndex = i;
+        }
     }
     if (slotIndex == m_groupHeaderSlots.size())
     {

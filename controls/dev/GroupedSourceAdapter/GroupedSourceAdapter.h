@@ -127,6 +127,8 @@ private:
     {
         winrt::IInspectable Group{ nullptr };
         winrt::IInspectable Items{ nullptr };
+        // Canonical IUnknown of Items, which keeps it alive.
+        void* ItemsIdentity{};
         uint32_t EntryIndex{};
     };
     std::vector<GroupHeaderSlot> m_groupHeaderSlots;

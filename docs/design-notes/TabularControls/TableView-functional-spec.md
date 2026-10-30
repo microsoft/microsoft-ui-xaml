@@ -99,9 +99,12 @@ the source publishes, so the same engine serves an app that never touches `Table
   group-level aggregates/summaries. — *deferred*
 - Incremental (non-rebuild) maintenance of a grouped projection: with no sort declared before
   `GroupBy`, an `Add` appended to the source joins its group (at its sorted slot when sorted within
-  groups, or as a new last group) and a `Remove` leaves its group, each spliced into the rows without
-  a reset. Other changes, and any change after an item edit the projection has not seen, rebuild. —
-  **shipped** (append/remove) · inserts, moves and replaces under grouping *deferred*
+  groups) and a `Remove` leaves its group without re-keying the other rows. When that group already
+  exists and stays non-empty, the row is spliced into the presented rows without a reset; an `Add`
+  that opens a new group, or a `Remove` of a group's last row, still re-publishes the grouped rows
+  (one reset). Other changes, and any change after an item edit the projection has not seen,
+  rebuild. — **shipped** (append/remove) · inserts, moves and replaces under grouping, and splicing
+  a whole group in or out, *deferred*
 
 ### Editing
 - Opt-in cell editing (`IsReadOnly = false` on the control; per-column `IsReadOnly`). — **cell editing**
