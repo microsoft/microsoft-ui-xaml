@@ -6,8 +6,8 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Storage;
 
-// The UI elements the events mention, and for each element the events that mention it. Runs on the session writer's
-// thread inside its transactions, so a mention is saved and trimmed together with its event.
+// The UI elements and composition visuals the events mention, and for each object the events that mention it. Runs on
+// the session writer's thread inside its transactions, so a mention is saved and trimmed together with its event.
 //
 // Only TraceLogging events on Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are read, and none of them
 // creates or destroys an object. Manifest events use the same field names for other objects too: BeginStoryboard's
@@ -20,33 +20,58 @@ namespace WinUIProfiler.Engine.Storage;
 // object, so a new element starts there. The new object's parent, peer and layout events can come before that, so
 // the old element's mentions since it (or its last child) left the tree move to the new one. Reuse by an object of the
 // same type can't be detected.
+//
+// The fields that hold a visual (ParentVisualId, ChildVisualId, VisualId) only ever hold an IVisual pointer, so a visual
+// is known from its first mention. Its insertion (WucVisualChildInserted, WucVisualRootSet) reports its type and owner
+// comp node, and the owner's CompPeerLinked label becomes its name. An insertion with a different type or owner than the
+// visual's last means a new visual reused the pointer, so a new visual starts there. Visuals get their children before
+// they are inserted, so as with elements the old visual's mentions since it left the tree (removed, or its parent's
+// children cleared) move to the new one. Reuse by a visual of the same type and owner can't be detected. A hand-in or
+// hand-off visual that its element's re-created comp node inserts again also gets a new owner, so its history splits.
 internal sealed class ObjectIndex : IDisposable
 {
     // Mentions held in memory per address: a UI element is confirmed within a few, other objects never are. Later ones
     // wait in the temporary table HeldMentions, so confirming an address still saves all of its mentions.
     private const int MaxHeldMentions = 8;
 
-    // Elements whose rows were all trimmed are remembered, so a later mention keeps their ID, type and name.
-    private const int MaxTrimmedElements = 100_000;
+    // Objects whose rows were all trimmed are remembered, so a later mention keeps their ID, type and name.
+    private const int MaxTrimmedObjects = 100_000;
 
     private enum Role : byte
     {
         UIElement,
-        Shared
+        Shared,
+        Visual
     }
 
-    // Where an event type mentions UI elements, and for DependencyObject_Enter where its type and name are.
-    private sealed record EventRoles((int Field, Role Role)[] Fields, int ObjectField, int TypeField, int NameField, bool LeavesTree);
+    // Where an event type mentions objects, and for DependencyObject_Enter where its type and name are.
+    private sealed record EventRoles((int Field, Role Role)[] Fields, int ObjectField, int TypeField, int NameField, bool LeavesTree,
+        TreeRoles Tree);
 
-    private sealed class Element(long id, long address, string? type, string? name)
+    // Where an event that changes the visual tree or a comp node's label has the fields that matter; -1 where it has none.
+    // Inserted is the inserted visual; Removed the removed one; Cleared the parent whose children were all removed.
+    private sealed record TreeRoles(int Inserted = -1, int Parent = -1, int Type = -1, int Owner = -1, int Removed = -1,
+        int Cleared = -1, int CompNode = -1, int Label = -1, bool Unlinks = false);
+
+    private static readonly TreeRoles NoTreeRoles = new();
+
+    private sealed class TrackedObject(long id, ObjectKind kind, long address, string? type, string? name)
     {
         public long Id { get; } = id;
+        public ObjectKind Kind { get; } = kind;
         public long Address { get; } = address;
         public string? Type { get; set; } = type;
         public string? Name { get; set; } = name;
         public long LastSequence { get; set; }
-        // The last ElementLeftTree that named it, as the element leaving or as a leaving child's parent; 0 if none.
+        // When it last left the tree: an element's last ElementLeftTree that named it, as the element leaving or as a
+        // leaving child's parent; a visual's removal since its last insertion. 0 if none.
         public long LeftSequence { get; set; }
+        // A visual's owner comp node, from its last insertion (kept after removal, to tell a reused pointer apart), and its
+        // parent visual while it is in the tree; 0 when unknown.
+        public long Owner { get; set; }
+        public long Parent { get; set; }
+        // True while it waits in ObjectIndex.unlabeled for its owner's label.
+        public bool AwaitingLabel { get; set; }
         // False once trimming deleted its row; the next mention writes it again.
         public bool Stored { get; set; }
     }
@@ -68,16 +93,25 @@ internal sealed class ObjectIndex : IDisposable
     private readonly SqliteCommand saveHeld;
     private readonly SqliteCommand deleteHeld;
     private readonly Dictionary<long, EventRoles> rolesByType = [];
-    private readonly Dictionary<long, Element> elements = [];
+    private readonly Dictionary<long, TrackedObject> elements = [];
     private readonly Dictionary<long, Held> held = [];
+    private readonly Dictionary<long, TrackedObject> visuals = [];
+    // The visuals in the tree under each parent visual's address, so clearing a parent's children knows them.
+    private readonly Dictionary<long, HashSet<long>> children = [];
+    // Each linked comp node's element label (x:Name, or the class name).
+    private readonly Dictionary<long, string> labels = [];
+    // Visuals whose owner comp node was not linked yet when they were inserted, by owner; they get its label once it is.
+    private readonly Dictionary<long, List<TrackedObject>> unlabeled = [];
     private readonly Dictionary<string, string> typeNames = [];
-    private long elementCount;
+    private long objectCount;
 
     internal ObjectIndex(SqliteConnection connection)
     {
         this.connection = connection;
-        insertObject = Sql.Prepare(connection, "INSERT INTO Objects (ObjectId, Address, Type, Name) VALUES ($id, $address, $type, $name)",
-            ("$id", SqliteType.Integer), ("$address", SqliteType.Integer), ("$type", SqliteType.Text), ("$name", SqliteType.Text));
+        insertObject = Sql.Prepare(connection, """
+            INSERT INTO Objects (ObjectId, Kind, Address, Type, Name) VALUES ($id, $kind, $address, $type, $name)
+            """, ("$id", SqliteType.Integer), ("$kind", SqliteType.Text), ("$address", SqliteType.Integer), ("$type", SqliteType.Text),
+            ("$name", SqliteType.Text));
         updateObject = Sql.Prepare(connection, "UPDATE Objects SET Type = $type, Name = $name WHERE ObjectId = $id",
             ("$id", SqliteType.Integer), ("$type", SqliteType.Text), ("$name", SqliteType.Text));
         insertMention = Sql.Prepare(connection, "INSERT INTO ObjectEvents (Seq, ObjectId, Field) VALUES ($seq, $object, $field)",
@@ -98,7 +132,7 @@ internal sealed class ObjectIndex : IDisposable
         deleteHeld = Sql.Prepare(connection, "DELETE FROM temp.HeldMentions WHERE Address = $address", ("$address", SqliteType.Integer));
     }
 
-    // Records the UI elements the event mentions. Call right after inserting the event, in the same transaction.
+    // Records the objects the event mentions. Call right after inserting the event, in the same transaction.
     internal void Add(long sequence, long typeId, ProfilerEvent profilerEvent, SqliteTransaction transaction)
     {
         var roles = RolesOf(typeId, profilerEvent);
@@ -120,6 +154,30 @@ internal sealed class ObjectIndex : IDisposable
                 transaction);
         }
 
+        var tree = roles.Tree;
+        if (tree.CompNode >= 0 && Address(fields[tree.CompNode].Value) is var compNode && compNode != 0)
+        {
+            if (tree.Unlinks)
+            {
+                // A comp node is unlinked when its element leaves; a later link at the address is a new comp node.
+                labels.Remove(compNode);
+                if (unlabeled.Remove(compNode, out var waiting))
+                {
+                    waiting.ForEach(visual => visual.AwaitingLabel = false);
+                }
+            }
+            else if (fields[tree.Label].Value is string { Length: > 0 } label)
+            {
+                Link(compNode, label);
+            }
+        }
+
+        if (tree.Inserted >= 0 && Address(fields[tree.Inserted].Value) is var inserted && inserted != 0)
+        {
+            ObserveInsertion(inserted, tree.Parent >= 0 ? Address(fields[tree.Parent].Value) : 0, fields[tree.Type].Value as string,
+                Address(fields[tree.Owner].Value), transaction);
+        }
+
         foreach (var (field, role) in roles.Fields)
         {
             var address = Address(fields[field].Value);
@@ -135,9 +193,30 @@ internal sealed class ObjectIndex : IDisposable
                 elements[address].LeftSequence = sequence;
             }
         }
+
+        if (tree.Removed >= 0 && Address(fields[tree.Removed].Value) is var removed && removed != 0)
+        {
+            // Recorded above, so the visual is known.
+            Leave(visuals[removed], sequence);
+        }
+
+        if (tree.Cleared >= 0 && Address(fields[tree.Cleared].Value) is var parent && parent != 0 &&
+            children.Remove(parent, out var cleared))
+        {
+            // The event names only the parent, so each child's history gets it through the parent's field.
+            foreach (var child in cleared)
+            {
+                if (visuals.TryGetValue(child, out var visual))
+                {
+                    Mention(sequence, visual, -1 - tree.Cleared);
+                    visual.LeftSequence = sequence;
+                    visual.Parent = 0;
+                }
+            }
+        }
     }
 
-    // Removes the mentions of trimmed events and the elements' rows left without any. Call in the trimming transaction.
+    // Removes the mentions of trimmed events and the objects' rows left without any. Call in the trimming transaction.
     internal void Trim(long cutoff, SqliteTransaction transaction)
     {
         Sql.Execute(connection, "DELETE FROM ObjectEvents WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
@@ -145,15 +224,20 @@ internal sealed class ObjectIndex : IDisposable
             DELETE FROM Objects
             WHERE NOT EXISTS (SELECT 1 FROM ObjectEvents WHERE ObjectEvents.ObjectId = Objects.ObjectId)
             """, transaction);
-        foreach (var element in elements.Values)
+        Forget(elements, cutoff);
+        foreach (var visual in Forget(visuals, cutoff))
         {
-            element.Stored &= element.LastSequence >= cutoff;
+            // Its children set stays: the visuals in it are still in the tree under the address.
+            Detach(visual);
         }
 
-        var trimmed = elements.Values.Where(element => !element.Stored).ToList();
-        foreach (var element in trimmed.OrderBy(element => element.LastSequence).Take(trimmed.Count - MaxTrimmedElements))
+        foreach (var (owner, waiting) in unlabeled)
         {
-            elements.Remove(element.Address);
+            waiting.RemoveAll(visual => !visuals.TryGetValue(visual.Address, out var current) || current != visual);
+            if (waiting.Count == 0)
+            {
+                unlabeled.Remove(owner);
+            }
         }
 
         Sql.Execute(connection, "DELETE FROM temp.HeldMentions WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
@@ -167,8 +251,27 @@ internal sealed class ObjectIndex : IDisposable
         }
     }
 
+    // Marks the objects whose rows were all trimmed, and forgets the oldest of them past MaxTrimmedObjects.
+    private static List<TrackedObject> Forget(Dictionary<long, TrackedObject> objects, long cutoff)
+    {
+        foreach (var tracked in objects.Values)
+        {
+            tracked.Stored &= tracked.LastSequence >= cutoff;
+        }
+
+        var trimmed = objects.Values.Where(tracked => !tracked.Stored).ToList();
+        var forgotten = trimmed.OrderBy(tracked => tracked.LastSequence).Take(trimmed.Count - MaxTrimmedObjects).ToList();
+        foreach (var tracked in forgotten)
+        {
+            objects.Remove(tracked.Address);
+        }
+
+        return forgotten;
+    }
+
     // Which fields hold a UI element's address, from the runtime call sites (uielement.cpp, ContentControl.cpp,
     // DXamlCore.cpp, depends.cpp, Popup.cpp) and checked on recorded sessions. Shared fields also hold other DependencyObjects.
+    // The visual fields are those of the WUC visual and visual surface events (XamlProfilerTracing.h).
     private static Role? RoleOf(string eventName, string fieldName) => fieldName switch
     {
         "ElementId" => eventName == "PeerAssociated" ? Role.Shared : Role.UIElement,
@@ -182,6 +285,7 @@ internal sealed class ObjectIndex : IDisposable
             // In other events it is a window, timer, clock or framework-layer object.
             _ => null
         },
+        "ParentVisualId" or "ChildVisualId" or "VisualId" => Role.Visual,
         _ => null
     };
 
@@ -214,10 +318,127 @@ internal sealed class ObjectIndex : IDisposable
 
         // Only the start form of DependencyObject_Enter carries the type and name.
         var entered = profilerEvent.Name == "DependencyObject_Enter" && Array.IndexOf(names, "Type") >= 0;
-        roles = new(fields.ToArray(), Array.IndexOf(names, "ObjectPointer"), entered ? Array.IndexOf(names, "Type") : -1,
-            entered ? Array.IndexOf(names, "Name") : -1, profilerEvent.Name == "ElementLeftTree");
+        int At(string name) => Array.IndexOf(names, name);
+        var tree = profilerEvent.Name switch
+        {
+            "WucVisualChildInserted" => new TreeRoles(Inserted: At("ChildVisualId"), Parent: At("ParentVisualId"), Type: At("VisualType"),
+                Owner: At("OwnerCompNodeId")),
+            "WucVisualRootSet" => new TreeRoles(Inserted: At("VisualId"), Type: At("VisualType"), Owner: At("OwnerCompNodeId")),
+            "WucVisualChildRemoved" => new TreeRoles(Removed: At("ChildVisualId"), Parent: At("ParentVisualId")),
+            "WucVisualChildrenCleared" => new TreeRoles(Cleared: At("ParentVisualId")),
+            "CompPeerLinked" => new TreeRoles(CompNode: At("CompNodeId"), Label: At("ElementLabel")),
+            "CompPeerUnlinked" => new TreeRoles(CompNode: At("CompNodeId"), Unlinks: true),
+            _ => NoTreeRoles
+        };
+        roles = new(fields.ToArray(), At("ObjectPointer"), entered ? At("Type") : -1, entered ? At("Name") : -1,
+            profilerEvent.Name == "ElementLeftTree", tree);
         rolesByType[typeId] = roles;
         return roles;
+    }
+
+    private string InternType(string type) => typeNames.TryGetValue(type, out var known) ? known : typeNames[type] = type;
+
+    // A visual's insertion: its parent visual (0 for a root), type and owner comp node.
+    private void ObserveInsertion(long address, long parent, string? type, long owner, SqliteTransaction transaction)
+    {
+        type = string.IsNullOrEmpty(type) ? null : InternType(type);
+        var label = owner != 0 && labels.TryGetValue(owner, out var known) ? known : null;
+        if (visuals.TryGetValue(address, out var visual) &&
+            (visual.Type is not null && type is not null && visual.Type != type || visual.Owner != 0 && owner != 0 && visual.Owner != owner))
+        {
+            // A new visual reused the pointer: the old one's history ends when it left the tree.
+            visuals.Remove(address);
+            Detach(visual);
+            visuals[address] = new(++objectCount, ObjectKind.Visual, address, type, label) { Owner = owner };
+            if (visual.LeftSequence > 0)
+            {
+                MoveToNewObject(visual, transaction);
+            }
+
+            visual = visuals[address];
+        }
+        else if (visual is not null)
+        {
+            visual.LeftSequence = 0;
+            if (type is not null && visual.Type != type || owner != 0 && visual.Owner != owner || label is not null && visual.Name != label)
+            {
+                visual.Type = type ?? visual.Type;
+                visual.Owner = owner != 0 ? owner : visual.Owner;
+                visual.Name = label ?? visual.Name;
+                Update(visual);
+            }
+        }
+        else
+        {
+            visuals[address] = visual = new(++objectCount, ObjectKind.Visual, address, type, label) { Owner = owner };
+        }
+
+        if (visual.Name is null && visual.Owner != 0 && !visual.AwaitingLabel)
+        {
+            (unlabeled.TryGetValue(visual.Owner, out var waiting) ? waiting : unlabeled[visual.Owner] = []).Add(visual);
+            visual.AwaitingLabel = true;
+        }
+
+        if (visual.Parent != parent)
+        {
+            Detach(visual);
+            if (parent != 0)
+            {
+                (children.TryGetValue(parent, out var set) ? set : children[parent] = []).Add(address);
+                visual.Parent = parent;
+            }
+        }
+    }
+
+    // A comp node was linked to its element. A comp node usually creates its visuals before that, so those get the label now.
+    private void Link(long compNode, string label)
+    {
+        labels[compNode] = label;
+        if (!unlabeled.Remove(compNode, out var waiting))
+        {
+            return;
+        }
+
+        foreach (var visual in waiting)
+        {
+            visual.AwaitingLabel = false;
+            if (visual.Name is null && visual.Owner == compNode && visuals.TryGetValue(visual.Address, out var current) && current == visual)
+            {
+                visual.Name = label;
+                Update(visual);
+            }
+        }
+    }
+
+    private void Leave(TrackedObject visual, long sequence)
+    {
+        visual.LeftSequence = sequence;
+        Detach(visual);
+    }
+
+    private void Detach(TrackedObject visual)
+    {
+        if (visual.Parent != 0 && children.TryGetValue(visual.Parent, out var set))
+        {
+            set.Remove(visual.Address);
+            if (set.Count == 0)
+            {
+                children.Remove(visual.Parent);
+            }
+        }
+
+        visual.Parent = 0;
+    }
+
+    private void Update(TrackedObject tracked)
+    {
+        if (tracked.Stored)
+        {
+            updateObject.Parameters["$id"].Value = tracked.Id;
+            updateObject.Parameters["$type"].Value = (object?)tracked.Type ?? DBNull.Value;
+            updateObject.Parameters["$name"].Value = (object?)tracked.Name ?? DBNull.Value;
+            updateObject.ExecuteNonQuery();
+        }
     }
 
     private void ObserveType(long address, string? type, string? name, SqliteTransaction transaction)
@@ -227,7 +448,7 @@ internal sealed class ObjectIndex : IDisposable
             return;
         }
 
-        type = typeNames.TryGetValue(type, out var known) ? known : typeNames[type] = type;
+        type = InternType(type);
         name = string.IsNullOrEmpty(name) ? null : name;
         if (elements.TryGetValue(address, out var element))
         {
@@ -248,13 +469,7 @@ internal sealed class ObjectIndex : IDisposable
             {
                 element.Type = type;
                 element.Name = name ?? element.Name;
-                if (element.Stored)
-                {
-                    updateObject.Parameters["$id"].Value = element.Id;
-                    updateObject.Parameters["$type"].Value = element.Type;
-                    updateObject.Parameters["$name"].Value = (object?)element.Name ?? DBNull.Value;
-                    updateObject.ExecuteNonQuery();
-                }
+                Update(element);
             }
 
             return;
@@ -283,9 +498,9 @@ internal sealed class ObjectIndex : IDisposable
         held[address] = new Held { Type = type, Name = name };
     }
 
-    // Takes the stored mentions after the element last left the tree from it and records them again for the new object
-    // at its address. Rare (a few per thousand elements), so they are read back rather than kept in memory.
-    private void MoveToNewObject(Element element, SqliteTransaction transaction)
+    // Takes the stored mentions after the object last left the tree from it and records them again for the new object at
+    // its address. Rare, so they are read back rather than kept in memory.
+    private void MoveToNewObject(TrackedObject tracked, SqliteTransaction transaction)
     {
         var moved = new List<(long Sequence, int Field, long TypeId)>();
         using (var select = connection.CreateCommand())
@@ -296,8 +511,8 @@ internal sealed class ObjectIndex : IDisposable
                 WHERE r.ObjectId = $id AND r.Seq > $left
                 ORDER BY r.Seq, r.Field
                 """;
-            select.Parameters.AddWithValue("$id", element.Id);
-            select.Parameters.AddWithValue("$left", element.LeftSequence);
+            select.Parameters.AddWithValue("$id", tracked.Id);
+            select.Parameters.AddWithValue("$left", tracked.LeftSequence);
             using var reader = select.ExecuteReader();
             while (reader.Read())
             {
@@ -311,19 +526,30 @@ internal sealed class ObjectIndex : IDisposable
         }
 
         Sql.Execute(connection, "DELETE FROM ObjectEvents WHERE ObjectId = $id AND Seq > $left", transaction,
-            ("$id", element.Id), ("$left", element.LeftSequence));
+            ("$id", tracked.Id), ("$left", tracked.LeftSequence));
         // Its leaving event may already be trimmed.
         Sql.Execute(connection, "DELETE FROM Objects WHERE ObjectId = $id AND NOT EXISTS (SELECT 1 FROM ObjectEvents WHERE ObjectId = $id)",
-            transaction, ("$id", element.Id));
+            transaction, ("$id", tracked.Id));
         foreach (var (sequence, field, typeId) in moved)
         {
-            Record(element.Address, sequence, field, Array.Find(rolesByType[typeId].Fields, item => item.Field == field).Role);
+            // A negative field is a cleared child's mention, which only visuals have.
+            Record(tracked.Address, sequence, field,
+                field < 0 ? Role.Visual : Array.Find(rolesByType[typeId].Fields, item => item.Field == field).Role);
         }
     }
 
     private void Record(long address, long sequence, int field, Role role)
     {
-        if (elements.TryGetValue(address, out var element))
+        if (role == Role.Visual)
+        {
+            if (!visuals.TryGetValue(address, out var visual))
+            {
+                visuals[address] = visual = new(++objectCount, ObjectKind.Visual, address, null, null);
+            }
+
+            Mention(sequence, visual, field);
+        }
+        else if (elements.TryGetValue(address, out var element))
         {
             Mention(sequence, element, field);
         }
@@ -340,7 +566,7 @@ internal sealed class ObjectIndex : IDisposable
     private void Confirm(long address, long sequence, int field)
     {
         held.Remove(address, out var entry);
-        var element = new Element(++elementCount, address, entry?.Type, entry?.Name);
+        var element = new TrackedObject(++objectCount, ObjectKind.Element, address, entry?.Type, entry?.Name);
         elements[address] = element;
         if (entry is not null)
         {
@@ -383,23 +609,24 @@ internal sealed class ObjectIndex : IDisposable
     }
 
     // Mentions arrive in Seq order.
-    private void Mention(long sequence, Element element, int field)
+    private void Mention(long sequence, TrackedObject tracked, int field)
     {
-        if (!element.Stored)
+        if (!tracked.Stored)
         {
-            insertObject.Parameters["$id"].Value = element.Id;
-            insertObject.Parameters["$address"].Value = element.Address;
-            insertObject.Parameters["$type"].Value = (object?)element.Type ?? DBNull.Value;
-            insertObject.Parameters["$name"].Value = (object?)element.Name ?? DBNull.Value;
+            insertObject.Parameters["$id"].Value = tracked.Id;
+            insertObject.Parameters["$kind"].Value = tracked.Kind.ToString();
+            insertObject.Parameters["$address"].Value = tracked.Address;
+            insertObject.Parameters["$type"].Value = (object?)tracked.Type ?? DBNull.Value;
+            insertObject.Parameters["$name"].Value = (object?)tracked.Name ?? DBNull.Value;
             insertObject.ExecuteNonQuery();
-            element.Stored = true;
+            tracked.Stored = true;
         }
 
         insertMention.Parameters["$seq"].Value = sequence;
-        insertMention.Parameters["$object"].Value = element.Id;
+        insertMention.Parameters["$object"].Value = tracked.Id;
         insertMention.Parameters["$field"].Value = field;
         insertMention.ExecuteNonQuery();
-        element.LastSequence = sequence;
+        tracked.LastSequence = sequence;
     }
 
     public void Dispose()
