@@ -274,6 +274,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(rowPeer.GetName(), itemPeer.GetName(), "The held peer must report the row's name.");
                 Verify.AreSame(rowPeer.Navigate(AutomationNavigationDirection.Parent), itemPeer.Navigate(AutomationNavigationDirection.Parent),
                     "The data-item peer must have the same parent as a realized row.");
+
+                // Walking the held peer's children must not take the row's cell peers away from the row.
+                var cells = rowPeer.GetChildren();
+                Verify.IsTrue(cells != null && cells.Count > 0, "The realized row must expose its cells.");
+                itemPeer.GetChildren();
+                Verify.AreSame(rowPeer, cells[0].Navigate(AutomationNavigationDirection.Parent),
+                    "A cell's parent must still be its row after the data-item peer's children were read.");
+
+                Verify.AreSame(rowPeer, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "A realized selected row must be reported through its own peer.");
+                scroller.ChangeView(null, 0.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(target), "Precondition: the selected row must be unrealized again.");
+                Verify.AreSame(itemPeer, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "An item that scrolls back out must be reported through the same data-item peer as before.");
             });
         }
 
