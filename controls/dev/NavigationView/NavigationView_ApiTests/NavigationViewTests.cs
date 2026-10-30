@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -3693,6 +3693,241 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifySelectionIndicatorIsNotRestoredWhenSelectionIsClearedAfterPaneDisplayModeChange()
+        {
+            // #9812 review: clearing SelectedItem before the pending PaneDisplayMode restore runs must not bring the pill back.
+            // The restore must not be based on the selection model (which can still hold the old child path) or stay pending.
+            var failures = new List<string>();
+            NavigationView navView = null;
+            NavigationViewItem parent = null;
+            NavigationViewItem child = null;
+            NavigationViewItem menu0 = null;
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 1200,
+                    Height = 460,
+                    Content = new Grid { Height = 600 }
+                };
+                menu0 = new NavigationViewItem { Content = "Menu 0", Icon = new SymbolIcon(Symbol.Library) };
+                navView.MenuItems.Add(menu0);
+                child = new NavigationViewItem { Content = "Child", Icon = new SymbolIcon(Symbol.Contact) };
+                parent = new NavigationViewItem { Content = "Parent", Icon = new SymbolIcon(Symbol.Contact) };
+                parent.MenuItems.Add(child);
+                navView.MenuItems.Add(parent);
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => parent.IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => navView.SelectedItem = child);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => parent.IsExpanded = false);
+            WaitForSelectionIndicatorAnimation();
+            CheckNoOtherSelectionIndicatorIsLit(navView, parent, "Left, collapsed parent of selected child", failures);
+
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.SelectedItem = child;
+                    parent.IsExpanded = false;
+                });
+                WaitForSelectionIndicatorAnimation();
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.PaneDisplayMode = mode;
+                    navView.SelectedItem = null;
+                });
+                WaitForSelectionIndicatorAnimation();
+                RunOnUIThread.Execute(() => Verify.IsNull(navView.SelectedItem));
+                CheckNoOtherSelectionIndicatorIsLit(navView, null, $"switched to {mode} and cleared the selection", failures);
+
+                // A restore left pending for the cleared selection would also stop a later re-templated selected item from
+                // getting its replacement indicator. Check synchronously, before a layout pass can consume the pending restore.
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.SelectedItem = menu0;
+                    var presenter = (Control)VisualTreeUtils.FindVisualChildByName(menu0, "NavigationViewItemPresenter");
+                    var template = presenter.Template;
+                    presenter.Template = null;
+                    presenter.Template = template;
+                    presenter.ApplyTemplate();
+                    var replacement = VisualTreeUtils.FindVisualChildByName(presenter, "SelectionIndicator");
+                    Log.Comment($"  {mode}: Menu 0 selected and re-templated, replacement indicator opacity={replacement?.Opacity}");
+                    if (!(replacement?.Opacity > 0))
+                    {
+                        failures.Add($"{mode}: after the cleared selection, the re-templated selected Menu 0 has no visible indicator (opacity={replacement?.Opacity})");
+                    }
+                });
+                WaitForSelectionIndicatorAnimation();
+            }
+
+            foreach (var failure in failures)
+            {
+                Log.Error(failure);
+            }
+
+            Verify.AreEqual(0, failures.Count, "No selection indicator should be shown after the selection is cleared");
+        }
+
+        [TestMethod]
+        public void VerifyIsChildSelectedIsNotSetOnChildrenOfPaneFooterItem()
+        {
+            // #9812 review: children of a NavigationViewItem placed directly in PaneFooter aren't part of the menu index space,
+            // so a selected menu child must not mark them IsChildSelected (collapsing one would then take the pill).
+            var failures = new List<string>();
+            NavigationView navView = null;
+            NavigationViewItem parent = null;
+            NavigationViewItem child = null;
+            NavigationViewItem paneFooterItem = null;
+            NavigationViewItem paneFooterChild0 = null;
+            NavigationViewItem paneFooterChild1 = null;
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 1200,
+                    Height = 600,
+                    Content = new Grid { Height = 600 }
+                };
+                navView.MenuItems.Add(new NavigationViewItem { Content = "Menu 0", Icon = new SymbolIcon(Symbol.Library) });
+                child = new NavigationViewItem { Content = "Child", Icon = new SymbolIcon(Symbol.Contact) };
+                parent = new NavigationViewItem { Content = "Parent", Icon = new SymbolIcon(Symbol.Contact) };
+                parent.MenuItems.Add(child);
+                navView.MenuItems.Add(parent);
+
+                // Same local index (1) as Parent, so a local index path of [1] looks like an ancestor of the selection [main, 1, 0].
+                paneFooterChild0 = new NavigationViewItem { Content = "PaneFooter child 0", Icon = new SymbolIcon(Symbol.Contact) };
+                paneFooterChild1 = new NavigationViewItem { Content = "PaneFooter child 1", Icon = new SymbolIcon(Symbol.Contact) };
+                paneFooterChild1.MenuItems.Add(new NavigationViewItem { Content = "PaneFooter grandchild" });
+                paneFooterItem = new NavigationViewItem { Content = "PaneFooter item", Icon = new SymbolIcon(Symbol.Contact) };
+                navView.PaneFooter = paneFooterItem;
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => parent.IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => navView.SelectedItem = child);
+            WaitForSelectionIndicatorAnimation();
+
+            // Children added after the PaneFooter item has loaded: its child repeater then reports to the NavigationView.
+            RunOnUIThread.Execute(() =>
+            {
+                paneFooterItem.MenuItems.Add(paneFooterChild0);
+                paneFooterItem.MenuItems.Add(paneFooterChild1);
+                paneFooterItem.IsExpanded = true;
+            });
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => paneFooterChild1.IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var item in new[] { paneFooterChild0, paneFooterChild1 })
+                {
+                    Log.Comment($"  PaneFooter expanded: {item.Content} IsChildSelected={item.IsChildSelected}, in tree={VisualTreeHelper.GetParent(item) != null}");
+                    if (item.IsChildSelected)
+                    {
+                        failures.Add($"PaneFooter expanded: {item.Content} has IsChildSelected=True, but the selected item is in the menu");
+                    }
+                }
+            });
+
+            RunOnUIThread.Execute(() => paneFooterChild1.IsExpanded = false);
+            WaitForSelectionIndicatorAnimation();
+            CheckOnlyThisItemShowsSelectionIndicator(child, new[] { parent, child, paneFooterItem, paneFooterChild0, paneFooterChild1 }, "PaneFooter child collapsed", failures);
+
+            foreach (var failure in failures)
+            {
+                Log.Error(failure);
+            }
+
+            Verify.AreEqual(0, failures.Count, "Children of a PaneFooter item must not be treated as ancestors of a selected menu item");
+        }
+
+        [TestMethod]
+        public void VerifyRetemplatingSelectedItemDuringSelectionAnimationCompletesTheOutgoingIndicator()
+        {
+            // #9812 review: when the newly selected item's presenter is re-templated while the selection animation is running,
+            // the outgoing indicator must finish (hidden) instead of animating on next to the replacement indicator.
+            NavigationView navView = null;
+            var items = new List<NavigationViewItem>();
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 1200,
+                    Height = 460,
+                    Content = new Grid { Height = 600 }
+                };
+                for (int i = 0; i < 3; i++)
+                {
+                    var item = new NavigationViewItem { Content = $"Menu {i}", Icon = new SymbolIcon(Symbol.Library) };
+                    navView.MenuItems.Add(item);
+                    items.Add(item);
+                }
+                navView.SelectedItem = items[0];
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            WaitForSelectionIndicatorAnimation();
+
+            bool animationStarted = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var outgoing = VisualTreeUtils.FindVisualChildByName(items[0], "SelectionIndicator");
+                navView.SelectedItem = items[1];
+                // With animations on, both indicators stay visible while the selection animation runs.
+                animationStarted = outgoing.Opacity > 0;
+                Log.Comment($"After selecting Menu 1: outgoing indicator opacity={outgoing.Opacity}");
+                if (!animationStarted)
+                {
+                    Log.Warning("Selection animation didn't start (animations disabled?), so the in-flight case can't be checked");
+                    return;
+                }
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(items[1], "NavigationViewItemPresenter");
+                var template = presenter.Template;
+                presenter.Template = null;
+                presenter.Template = template;
+                presenter.ApplyTemplate();
+
+                var replacement = VisualTreeUtils.FindVisualChildByName(presenter, "SelectionIndicator");
+                Log.Comment($"After re-templating Menu 1: outgoing opacity={outgoing.Opacity}, replacement opacity={replacement?.Opacity}");
+                Verify.AreEqual(0.0, outgoing.Opacity, "The outgoing indicator should be completed (hidden) when the selected item's indicator is replaced");
+                Verify.AreEqual(1.0, replacement.Opacity, "The replacement indicator should be shown");
+            });
+
+            WaitForSelectionIndicatorAnimation();
+            var failures = new List<string>();
+            CheckOnlyThisItemShowsSelectionIndicator(items[1], items.ToArray(), "after the animation", failures);
+            foreach (var failure in failures)
+            {
+                Log.Error(failure);
+            }
+            Verify.AreEqual(0, failures.Count, "Only the selected item should show the selection indicator");
+        }
+
         private static void CheckCollapsedDataBoundParent(NavigationView navView, List<object> topLevelItems, object parentItem, object childItem, string step, List<string> failures, bool checkPill = true)
         {
             if (checkPill)
@@ -3721,7 +3956,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var parentContainer = parentItem as NavigationViewItem ?? navView.ContainerFromMenuItem(parentItem) as NavigationViewItem;
+                var parentContainer = parentItem == null ? null : parentItem as NavigationViewItem ?? navView.ContainerFromMenuItem(parentItem) as NavigationViewItem;
                 var pending = new Stack<DependencyObject>();
                 pending.Push(navView);
                 while (pending.Count > 0)
