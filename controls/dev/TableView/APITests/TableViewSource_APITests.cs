@@ -2412,6 +2412,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "with live shaping off, an edit must still be applied by the next change");
             });
         }
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Remove after a Replace whose rebuild failed (one object on two rows) is not applied against the stale sorted projection.")]
+        public void VerifySortedRemoveAfterAFailedRebuildMatchesTheSource()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+
+                var diego = items.First(p => p.Name == "Diego");
+                var threw = false;
+                try
+                {
+                    items[items.IndexOf(items.First(p => p.Name == "Owen"))] = diego;
+                }
+                catch (global::System.Exception)
+                {
+                    threw = true;
+                }
+                Verify.IsTrue(threw, "A rebuild with one object on two rows must throw.");
+
+                // Removing the first Diego leaves a valid source that still holds the second one.
+                items.RemoveAt(items.IndexOf(diego));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Rafa" },
+                    "the remove must rebuild from the source, not edit the projection the failed rebuild left");
+            });
+        }
 
         private static string PlainNames(TableView tableView)
             => string.Join(",", GetProjectedItems(tableView).Select(o => ((PlainShapedPerson)o).Name));
