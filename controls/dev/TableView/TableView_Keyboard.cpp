@@ -2648,7 +2648,7 @@ void TableView::SetCellCursorActiveInternal(bool active)
     m_cellCursorActive = active;
 }
 
-void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
+void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::DependencyObject const& focusedElement)
 {
     if (!row)
     {
@@ -2664,22 +2664,19 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
     const int32_t rowIndex = repeater.GetElementIndex(row);
 
-    winrt::DependencyObject focused{ nullptr };
-    winrt::UIElement focusedCell{ nullptr };
-    if (auto const root = XamlRoot())
-    {
-        focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
-        if (focused)
-        {
-            focusedCell = rowImpl->FindOwnCellInternal(focused, false /* requireExact */);
-        }
-    }
+    // GotFocus is asynchronous, so live focus may already have moved on (into a context menu, say);
+    // the element that got focus says which cell to record.
+    winrt::UIElement const focusedCell = focusedElement
+        ? rowImpl->FindOwnCellInternal(focusedElement, false /* requireExact */)
+        : nullptr;
 
     if (!focusedCell)
     {
-        // GotFocus is asynchronous: focus may already have left the row (into a context menu, say).
-        // Resetting to row level then would leave the cell the menu restores focus to unfocusable.
-        if (focused != row.as<winrt::DependencyObject>())
+        // Reset to row level only while focus is still on the row: after it left, the reset would
+        // leave the cell the menu restores focus to unfocusable.
+        auto const root = XamlRoot();
+        winrt::DependencyObject const rowObject = row;
+        if (!root || winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() != rowObject)
         {
             return;
         }
