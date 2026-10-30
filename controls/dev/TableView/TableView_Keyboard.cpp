@@ -2525,6 +2525,54 @@ bool TableView::TryRedirectFocusEntryTo(
     return false;
 }
 
+// Tab from outside the table that XAML aims at a group header (no header band, or a cache header
+// on Shift+Tab) follows the same entry policy as a row target does in TableViewRow.
+bool TableView::TryRedirectOutsideEntryAtGroupHeader(
+    winrt::TableViewGroupHeader const& target,
+    winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+{
+    auto const direction = args.Direction();
+    auto const oldFocus = args.OldFocusedElement();
+    winrt::DependencyObject const selfObject = *this;
+    if ((direction != winrt::FocusNavigationDirection::Next && direction != winrt::FocusNavigationDirection::Previous) ||
+        HasRedirectedFocusEntry(args.CorrelationId()) ||
+        oldFocus == selfObject || (oldFocus && SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */)))
+    {
+        return false;
+    }
+
+    auto entryTarget = FindRememberedEntryElementInternal();
+    if (auto const row = entryTarget.try_as<winrt::TableViewRow>())
+    {
+        // Through ResolveFocusEntryTarget, so a remembered cell is resumed at cell level.
+        auto const entry = ResolveFocusEntryTarget(row, oldFocus, direction);
+        if (!entry.Row || !entry.Element)
+        {
+            return false;
+        }
+        auto const rowImpl = winrt::get_self<TableViewRow>(entry.Row);
+        const bool wasCellLevel = rowImpl->IsCellLevelInternal();
+        rowImpl->SetCellLevelInternal(entry.CellLevel);
+        if (IsEntryRedirectTargetFocusable(entry.Element, selfObject) && args.TrySetNewFocusedElement(entry.Element))
+        {
+            NoteFocusEntryRedirect(args.CorrelationId());
+            return true;
+        }
+        rowImpl->SetCellLevelInternal(wasCellLevel);
+        return false;
+    }
+
+    if (!entryTarget)
+    {
+        entryTarget = FindViewportEdgeElementInternal(direction == winrt::FocusNavigationDirection::Previous, true /* includeGroupHeaders */);
+    }
+    if (!entryTarget || SameInspectableIdentity(entryTarget, target))
+    {
+        return false;
+    }
+    return TryRedirectFocusEntryTo(entryTarget, args);
+}
+
 // A refused target can be substituted by one that lands back on a row and re-enters the redirect.
 bool TableView::IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
 {

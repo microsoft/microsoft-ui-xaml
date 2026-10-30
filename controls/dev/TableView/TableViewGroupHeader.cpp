@@ -15,7 +15,8 @@ TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
 
-    // Tab from another band must not land on a cache group header outside the viewport.
+    // Tab into the body must not land on a cache group header outside the viewport, nor skip the
+    // remembered entry target.
     m_gettingFocusRevoker = GettingFocus(
         winrt::auto_revoke,
         [weakThis = get_weak()](winrt::UIElement const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
@@ -24,7 +25,11 @@ TableViewGroupHeader::TableViewGroupHeader()
             {
                 if (auto const owner = strongThis->GetOwningTableView())
                 {
-                    winrt::get_self<TableView>(owner)->TryRedirectBandEntryToViewport(*strongThis, args);
+                    auto const ownerImpl = winrt::get_self<TableView>(owner);
+                    if (!ownerImpl->TryRedirectBandEntryToViewport(*strongThis, args))
+                    {
+                        ownerImpl->TryRedirectOutsideEntryAtGroupHeader(*strongThis, args);
+                    }
                 }
             }
         });

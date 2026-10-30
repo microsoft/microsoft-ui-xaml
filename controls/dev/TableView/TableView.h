@@ -393,6 +393,9 @@ public:
     bool TryRedirectFocusEntryTo(
         winrt::UIElement const& target,
         winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
+    bool TryRedirectOutsideEntryAtGroupHeader(
+        winrt::TableViewGroupHeader const& target,
+        winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
 
     static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
     winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const;
