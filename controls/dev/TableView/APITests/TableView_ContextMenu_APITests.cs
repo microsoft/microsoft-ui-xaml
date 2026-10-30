@@ -541,6 +541,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "A row-level menu request records its row as the current row even though the menu has taken focus by the time the row's GotFocus runs (GH #12442).")]
+        public void RowRequestRecordsRowAsCurrentWhileMenuHasFocus()
+        {
+            Button after = null;
+            var f = LoadFixture(configure: x =>
+            {
+                after = new Button { Content = "After" };
+                x.Root.Child = null;
+                var panel = new StackPanel();
+                panel.Children.Add(x.Table);
+                panel.Children.Add(after);
+                x.Root.Child = panel;
+            });
+            FocusRow(f, 1);
+
+            RequestOnRow(f, 4);
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), f.P(4), "UIA on row 4's peer");
+
+            // A menu command that moves focus out of the table, so closing the menu does not refocus row 4.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(after.Focus(FocusState.Keyboard), "Precondition: the button takes focus.");
+                f.Recorder.HideAll();
+                f.Recorder.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(after, FocusManager.GetFocusedElement(f.Table.XamlRoot), "Precondition: focus stays on the button.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Previous,
+                    new FindNextElementOptions { SearchRoot = f.Table.XamlRoot.Content }), "Shift+Tab from the button must move focus.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreSame(RowOf(f, 4), FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                $"Shift+Tab back in must return to row 4, the row the menu was opened on; was {Describe(FocusManager.GetFocusedElement(f.Table.XamlRoot) as DependencyObject)}."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "A row menu opened from a cell request focuses that cell and leaves the selection unchanged.")]
         public void RowMenuFromCellRequestFocusesCell()
         {
