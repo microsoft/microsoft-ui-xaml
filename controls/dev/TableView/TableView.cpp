@@ -551,18 +551,7 @@ TableView::~TableView()
     }
 
     // Unloaded may not have run; release ThemeSettings and drop the Destroying subscription.
-    // A throw from a destructor during XAML shutdown would terminate, so contain it.
-    try
-    {
-        ReleaseThemeSettings();
-    }
-    catch (...)
-    {
-        wchar_t message[96];
-        swprintf_s(message, L"TableView: ReleaseThemeSettings failed in destructor (0x%08X).\n",
-            static_cast<unsigned int>(winrt::to_hresult()));
-        OutputDebugStringW(message);
-    }
+    ReleaseThemeSettings();
 }
 
 TableView::TableView()
@@ -3774,7 +3763,7 @@ void TableView::OnTableViewUnloaded()
     ReleaseThemeSettings();
 }
 
-void TableView::ReleaseThemeSettings()
+void TableView::ReleaseThemeSettings() noexcept
 {
     if (auto appWindow = std::exchange(m_appWindow, nullptr))
     {
@@ -3787,7 +3776,7 @@ void TableView::ReleaseThemeSettings()
         }
     }
 
-    // Release can surface a teardown failure; keep it off the noexcept path.
+    // Release can surface a teardown failure; contain it so this stays noexcept.
     // Release before revoke() so a dead object's stale weak_ref makes it a no-op.
     if (auto const themeSettings = static_cast<::IUnknown*>(winrt::detach_abi(m_themeSettings)))
     {

@@ -1396,7 +1396,7 @@ private:
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
-    void ReleaseThemeSettings();
+    void ReleaseThemeSettings() noexcept;
     bool m_rowsSourceDrained{ false };
     // Unloaded released ownership of m_activeSource; Loaded reclaims it.
     bool m_activeSourceReleased{ false };
