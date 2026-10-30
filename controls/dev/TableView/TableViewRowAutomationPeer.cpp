@@ -242,7 +242,15 @@ void TableViewRowAutomationPeer::Realize()
 void TableViewRowAutomationPeer::RealizeCore()
 {
     auto const tableView = m_lastOwningTable.get();
-    const auto rowIndex = tableView ? GetTrackedItemIndex(tableView) : -1;
+    RealizeRowAt(tableView, tableView ? GetTrackedItemIndex(tableView) : -1,
+        [this, &tableView](winrt::TableViewRow const& row) { return IsTrackedRow(row, tableView); });
+}
+
+void TableViewRowAutomationPeer::RealizeRowAt(
+    winrt::TableView const& tableView,
+    int32_t rowIndex,
+    std::function<bool(winrt::TableViewRow const&)> const& isExpectedRow)
+{
     if (!tableView || rowIndex < 0)
     {
         ThrowElementNotAvailable();
@@ -274,22 +282,27 @@ void TableViewRowAutomationPeer::RealizeCore()
         ThrowElementNotAvailable();
     }
 
-    if (auto const row = element.try_as<winrt::TableViewRow>())
-    {
-        if (!IsTrackedRow(row, tableView))
-        {
-            ThrowElementNotAvailable();
-        }
-    }
-    else
+    auto const row = element.try_as<winrt::TableViewRow>();
+    if (!row || !isExpectedRow(row))
     {
         ThrowElementNotAvailable();
     }
 
-    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    // Arranged first, as the ItemsRepeater docs require: a just-created element has no position to
+    // bring into view. Layout runs app code that can change the source or recycle the row.
+    try
     {
-        frameworkElement.StartBringIntoView();
+        row.UpdateLayout();
     }
+    catch (winrt::hresult_error const&)
+    {
+        ThrowElementNotAvailable();
+    }
+    if (repeater.TryGetElement(rowIndex) != row || !isExpectedRow(row))
+    {
+        ThrowElementNotAvailable();
+    }
+    row.StartBringIntoView();
 }
 
 winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const

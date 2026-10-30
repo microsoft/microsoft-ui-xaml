@@ -81,6 +81,11 @@ private:
 
     void RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType);
     com_ptr<TableView> GetImpl();
+    winrt::AutomationPeer GetOrCreateSelectedItemPeer(TableView& table, winrt::IInspectable const& item, int32_t index, bool create);
 
     std::vector<ColumnHeaderPeerCacheEntry> m_columnHeaderPeerCache;
+    // Container-free peers for selected rows that are not realized, so repeated GetSelection
+    // calls hand a client the same provider. Each peer tracks its item weakly, or only its index when
+    // the source boxes values (no stable identity).
+    std::vector<tracker_ref<winrt::AutomationPeer>> m_selectedItemPeerCache;
 };
