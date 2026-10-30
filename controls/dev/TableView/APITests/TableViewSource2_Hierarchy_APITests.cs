@@ -807,5 +807,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Eli3 Cat2 Dee1", "Re-read shows the source, including Eli");
             VerifyEvents(events, "Reset", "recovery re-read");
         }
+
+        private static IEnumerable<LiveRow> EnumerableOnly(params LiveRow[] rows)
+        {
+            foreach (var row in rows)
+            {
+                yield return row;
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ChildrenBy enumerates observable, list and enumerable-only child collections, rejects an unsupported one, and stays correct across Refresh and a child Reset (perf fix B: one-shot enumeration without a tracked accessor).")]
+        public void VerifyChildrenByEnumeratesEveryCollectionKind()
+        {
+            var f = MakeChildrenFixture();
+            var hal = new LiveRow { Id = 6, Name = "Hal" };
+            var bobChildren = new List<LiveRow> { f.Gil };
+            var catChildren = EnumerableOnly(hal);
+            Func<object, object> children = o =>
+                o == f.Ann ? f.Children[f.Ann] :
+                o == f.Bob ? bobChildren :
+                o == f.Cat ? catChildren :
+                null;
+            var source = FromOnUI(f.Roots);
+            var tableView = PlaceTreeSource(source, null);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyArgumentException(
+                    () => source.ChildrenBy(new TableViewChildrenSelector2(o => o == f.Dee ? new object() : children(o))),
+                    "supported collection",
+                    "A child collection with no supported interface");
+                VerifyTree(tableView, "Ann Dee", "A rejected ChildrenBy keeps the flat projection");
+            });
+
+            OnUI(tableView, () => source.ChildrenBy(new TableViewChildrenSelector2(o => children(o))));
+            ExpandAll(tableView);
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2- Hal3 Dee1", "Observable, list and enumerable-only children");
+
+            OnUI(tableView, () => source.Refresh());
+            VerifyTreeOnUI(tableView, "Ann1- Bob2- Gil3 Cat2- Hal3 Dee1", "Refresh re-enumerates every kind");
+
+            OnUI(tableView, () => f.Children[f.Ann].Clear());
+            VerifyTreeOnUI(tableView, "Ann1 Dee1", "A child Reset drops the subtrees");
+            OnUI(tableView, () => f.Children[f.Ann].Add(f.Cat));
+            VerifyTreeOnUI(tableView, "Ann1- Cat2+ Dee1", "A later child Add brings its enumerable-only subtree");
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, f.Children[f.Ann].HandlerCount, "The kept feed stays subscribed once."));
+        }
     }
 }

@@ -29,12 +29,75 @@ namespace
         winrt::copy_from_abi(value, winrt::get_abi(slot));
         return value;
     }
+
+    // The indexed read itself, with no bounds check. Enumerate() has already established the
+    // range and would otherwise pay a Size() call per item to re-derive it.
+    Inspectable GetAtUnchecked(CollectionAccessor2::ReadKind kind, Inspectable const& read, uint32_t index)
+    {
+        switch (kind)
+        {
+        case CollectionAccessor2::ReadKind::Vector:
+            return FromSlot<wfc::IVector<Inspectable>>(read).GetAt(index);
+        case CollectionAccessor2::ReadKind::VectorView:
+            return FromSlot<wfc::IVectorView<Inspectable>>(read).GetAt(index);
+        case CollectionAccessor2::ReadKind::BindableVector:
+            return FromSlot<interop::IBindableVector>(read).GetAt(index);
+        default:
+            throw winrt::hresult_out_of_bounds();
+        }
+    }
+
+    uint32_t CountOf(CollectionAccessor2::ReadKind kind, Inspectable const& read)
+    {
+        switch (kind)
+        {
+        case CollectionAccessor2::ReadKind::Vector:
+            return FromSlot<wfc::IVector<Inspectable>>(read).Size();
+        case CollectionAccessor2::ReadKind::VectorView:
+            return FromSlot<wfc::IVectorView<Inspectable>>(read).Size();
+        case CollectionAccessor2::ReadKind::BindableVector:
+            return FromSlot<interop::IBindableVector>(read).Size();
+        default:
+            return 0;
+        }
+    }
 }
 
 CollectionAccessor2::CollectionAccessor2(ITrackerHandleManager const* owner)
     : m_read(owner)
     , m_observe(owner)
 {
+}
+
+CollectionAccessor2::ReadKind CollectionAccessor2::ResolveRead(Inspectable const& source, Inspectable& read)
+{
+    // Read precedence (v1): IVector > IVectorView > IBindableVector > IIterable > IBindableIterable.
+    if (auto const vector = source.try_as<wfc::IVector<Inspectable>>())
+    {
+        read = ToSlot(vector);
+        return ReadKind::Vector;
+    }
+    if (auto const view = source.try_as<wfc::IVectorView<Inspectable>>())
+    {
+        read = ToSlot(view);
+        return ReadKind::VectorView;
+    }
+    if (auto const bindableVector = source.try_as<interop::IBindableVector>())
+    {
+        read = ToSlot(bindableVector);
+        return ReadKind::BindableVector;
+    }
+    if (auto const iterable = source.try_as<wfc::IIterable<Inspectable>>())
+    {
+        read = ToSlot(iterable);
+        return ReadKind::Iterable;
+    }
+    if (auto const bindableIterable = source.try_as<interop::IBindableIterable>())
+    {
+        read = ToSlot(bindableIterable);
+        return ReadKind::BindableIterable;
+    }
+    return ReadKind::None;
 }
 
 CollectionAccessor2::CollectionAccessor2(ITrackerHandleManager const* owner, Inspectable const& source)
@@ -45,31 +108,11 @@ CollectionAccessor2::CollectionAccessor2(ITrackerHandleManager const* owner, Ins
         return;
     }
 
-    // Read precedence (v1): IVector > IVectorView > IBindableVector > IIterable > IBindableIterable.
-    if (auto const vector = source.try_as<wfc::IVector<Inspectable>>())
+    Inspectable read{ nullptr };
+    m_readKind = ResolveRead(source, read);
+    if (read)
     {
-        m_read.set(ToSlot(vector));
-        m_readKind = ReadKind::Vector;
-    }
-    else if (auto const view = source.try_as<wfc::IVectorView<Inspectable>>())
-    {
-        m_read.set(ToSlot(view));
-        m_readKind = ReadKind::VectorView;
-    }
-    else if (auto const bindableVector = source.try_as<interop::IBindableVector>())
-    {
-        m_read.set(ToSlot(bindableVector));
-        m_readKind = ReadKind::BindableVector;
-    }
-    else if (auto const iterable = source.try_as<wfc::IIterable<Inspectable>>())
-    {
-        m_read.set(ToSlot(iterable));
-        m_readKind = ReadKind::Iterable;
-    }
-    else if (auto const bindableIterable = source.try_as<interop::IBindableIterable>())
-    {
-        m_read.set(ToSlot(bindableIterable));
-        m_readKind = ReadKind::BindableIterable;
+        m_read.set(read);
     }
 
     // Observe precedence (v1): INotifyCollectionChanged > IObservableVector > IBindableObservableVector.
@@ -97,17 +140,7 @@ bool CollectionAccessor2::IsIndexable() const noexcept
 
 uint32_t CollectionAccessor2::Count() const
 {
-    switch (m_readKind)
-    {
-    case ReadKind::Vector:
-        return FromSlot<wfc::IVector<Inspectable>>(m_read.get()).Size();
-    case ReadKind::VectorView:
-        return FromSlot<wfc::IVectorView<Inspectable>>(m_read.get()).Size();
-    case ReadKind::BindableVector:
-        return FromSlot<interop::IBindableVector>(m_read.get()).Size();
-    default:
-        return 0;
-    }
+    return CountOf(m_readKind, IsIndexable() ? m_read.get() : nullptr);
 }
 
 bool CollectionAccessor2::TryGetAt(uint32_t index, Inspectable& item) const
@@ -117,41 +150,38 @@ bool CollectionAccessor2::TryGetAt(uint32_t index, Inspectable& item) const
         return false;
     }
 
-    item = GetAtUnchecked(index);
+    item = GetAtUnchecked(m_readKind, m_read.get(), index);
     return true;
-}
-
-Inspectable CollectionAccessor2::GetAtUnchecked(uint32_t index) const
-{
-    switch (m_readKind)
-    {
-    case ReadKind::Vector:
-        return FromSlot<wfc::IVector<Inspectable>>(m_read.get()).GetAt(index);
-    case ReadKind::VectorView:
-        return FromSlot<wfc::IVectorView<Inspectable>>(m_read.get()).GetAt(index);
-    case ReadKind::BindableVector:
-        return FromSlot<interop::IBindableVector>(m_read.get()).GetAt(index);
-    default:
-        throw winrt::hresult_out_of_bounds();
-    }
 }
 
 std::vector<Inspectable> CollectionAccessor2::Enumerate(bool throwIfUnsupported) const
 {
+    return EnumerateResolved(m_readKind, m_readKind == ReadKind::None ? nullptr : m_read.get(), throwIfUnsupported);
+}
+
+std::vector<Inspectable> CollectionAccessor2::Enumerate(Inspectable const& source, bool throwIfUnsupported)
+{
+    Inspectable read{ nullptr };
+    auto const kind = source ? ResolveRead(source, read) : ReadKind::None;
+    return EnumerateResolved(kind, read, throwIfUnsupported);
+}
+
+std::vector<Inspectable> CollectionAccessor2::EnumerateResolved(ReadKind kind, Inspectable const& read, bool throwIfUnsupported)
+{
     std::vector<Inspectable> items;
 
-    switch (m_readKind)
+    switch (kind)
     {
     case ReadKind::Vector:
     case ReadKind::VectorView:
     case ReadKind::BindableVector:
     {
         // Indexable sources are walked positionally, as v1 does.
-        uint32_t const count = Count();
+        uint32_t const count = CountOf(kind, read);
         items.reserve(count);
         for (uint32_t i = 0; i < count; ++i)
         {
-            items.push_back(GetAtUnchecked(i));
+            items.push_back(GetAtUnchecked(kind, read, i));
         }
         break;
     }
@@ -159,7 +189,7 @@ std::vector<Inspectable> CollectionAccessor2::Enumerate(bool throwIfUnsupported)
     case ReadKind::Iterable:
         try
         {
-            for (auto const& item : FromSlot<wfc::IIterable<Inspectable>>(m_read.get()))
+            for (auto const& item : FromSlot<wfc::IIterable<Inspectable>>(read))
             {
                 items.push_back(item);
             }
@@ -175,7 +205,7 @@ std::vector<Inspectable> CollectionAccessor2::Enumerate(bool throwIfUnsupported)
             }
 
             items.clear();
-            auto const bindable = m_read.get().try_as<interop::IBindableIterable>();
+            auto const bindable = read.try_as<interop::IBindableIterable>();
             if (!bindable)
             {
                 throw;
@@ -189,7 +219,7 @@ std::vector<Inspectable> CollectionAccessor2::Enumerate(bool throwIfUnsupported)
         break;
 
     case ReadKind::BindableIterable:
-        for (auto iterator = FromSlot<interop::IBindableIterable>(m_read.get()).First(); iterator.HasCurrent(); iterator.MoveNext())
+        for (auto iterator = FromSlot<interop::IBindableIterable>(read).First(); iterator.HasCurrent(); iterator.MoveNext())
         {
             items.push_back(iterator.Current());
         }

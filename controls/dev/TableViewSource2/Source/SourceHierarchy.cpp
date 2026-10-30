@@ -883,7 +883,6 @@ namespace
 ChildCollectionsHierarchy::ChildCollectionsHierarchy(
     ITrackerHandleManager const* owner,
     winrt::TableViewChildrenSelector2 const& childrenSelector)
-    : m_trackerOwner(owner)
 {
     m_childrenSelector.emplace(owner, childrenSelector);
 }
@@ -916,7 +915,7 @@ void ChildCollectionsHierarchy::Prepare(
                 return;
             }
 
-            auto const children = CollectionAccessor2{ host.TrackerOwner(), collection }.Enumerate(true /* throwIfUnsupported */);
+            auto const children = CollectionAccessor2::Enumerate(collection, true /* throwIfUnsupported */);
             m_staged[index].ChildCollection = collection;
             m_staged[index].ChildCount = static_cast<uint32_t>(children.size());
             for (auto const& child : children)
@@ -1148,7 +1147,7 @@ void ChildCollectionsHierarchy::CollectSubtreeItems(
                 return;
             }
 
-            children = CollectionAccessor2{ m_trackerOwner, collection }.Enumerate(true /* throwIfUnsupported */);
+            children = CollectionAccessor2::Enumerate(collection, true /* throwIfUnsupported */);
         }
         catch (...)
         {
@@ -1188,7 +1187,7 @@ void ChildCollectionsHierarchy::BuildChildFeed(
             return;
         }
 
-        children = CollectionAccessor2{ host.TrackerOwner(), collection }.Enumerate(true /* throwIfUnsupported */);
+        children = CollectionAccessor2::Enumerate(collection, true /* throwIfUnsupported */);
     }
     catch (...)
     {

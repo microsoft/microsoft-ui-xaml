@@ -84,6 +84,13 @@ public:
     bool TryGetAt(uint32_t index, winrt::Windows::Foundation::IInspectable& item) const;
     std::vector<winrt::Windows::Foundation::IInspectable> Enumerate(bool throwIfUnsupported = false) const;
 
+    // One-shot enumeration with no accessor: same read precedence, CLR retry and errors as the
+    // member Enumerate(), but holds nothing, so it registers no tracker handles. For callers that
+    // read a collection once and do not keep or observe it.
+    static std::vector<winrt::Windows::Foundation::IInspectable> Enumerate(
+        winrt::Windows::Foundation::IInspectable const& source,
+        bool throwIfUnsupported);
+
     // The resolved notification interface, typed, so a subscriber binds to it without re-probing.
     // Each returns m_observe cast back to its interface when GetObserveKind() matches, and null
     // otherwise; the caller switches on GetObserveKind(). Pass useSafeGet = true on teardown paths
@@ -93,9 +100,16 @@ public:
     winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector AsBindableObservableVector(bool useSafeGet = false) const;
 
 private:
-    // The indexed read itself, with no bounds check. Enumerate() has already established the
-    // range and would otherwise pay a Size() call per item to re-derive it.
-    winrt::Windows::Foundation::IInspectable GetAtUnchecked(uint32_t index) const;
+    // Resolves the read interface by precedence; read receives the try_as result for the kind.
+    static ReadKind ResolveRead(
+        winrt::Windows::Foundation::IInspectable const& source,
+        winrt::Windows::Foundation::IInspectable& read);
+
+    // Shared body of both Enumerate() forms, over an already resolved read interface.
+    static std::vector<winrt::Windows::Foundation::IInspectable> EnumerateResolved(
+        ReadKind kind,
+        winrt::Windows::Foundation::IInspectable const& read,
+        bool throwIfUnsupported);
 
     // The resolved read interface pointer (the try_as result for m_readKind, not the source's
     // IInspectable). Null when ReadKind::None. Independent of m_observe: a source can be read

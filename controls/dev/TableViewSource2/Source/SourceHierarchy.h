@@ -458,9 +458,6 @@ private:
     // App delegate, tracked. Optional so Release() can destroy it while the tracker owner is alive.
     std::optional<tracker_ref<winrt::TableViewChildrenSelector2>> m_childrenSelector;
 
-    // The tracker owner, for the accessor CollectIncoming() (const, no host) enumerates through.
-    ITrackerHandleManager const* m_trackerOwner{ nullptr };
-
     // One feed per record with a non-null child collection.
     std::unordered_map<SourceRecord const*, std::unique_ptr<ChildFeed>> m_childFeeds;
 
