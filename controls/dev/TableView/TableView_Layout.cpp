@@ -202,6 +202,13 @@ void TableView::ResetColumnDesiredWidths()
 // first; Star columns then split the viewport width left over between them.
 void TableView::ResolveColumnWidths()
 {
+    // Before any early return: a change that this pass doesn't size (a held column collapsed, say)
+    // must still end the holds, or restoring it later would match the signature again.
+    if (!m_lockedColumnHolds.empty() && LockedColumnHoldsSignature() != m_lockedColumnHoldsSignature)
+    {
+        m_lockedColumnHolds.clear();
+    }
+
     auto columns = Columns();
     if (!columns)
     {
@@ -388,10 +395,6 @@ void TableView::ResolveColumnWidths()
         // it is divided with the other Star columns by factor. Either way, a resize of a later column
         // never moves it: FreezeColumnsBeforeResize holds it at the width it rendered until an input
         // other than a user resize changes.
-        if (!m_lockedColumnHolds.empty() && LockedColumnHoldsSignature() != m_lockedColumnHoldsSignature)
-        {
-            m_lockedColumnHolds.clear();
-        }
         auto const heldWidth = [this](winrt::TableViewColumn const& c) -> std::optional<double>
         {
             for (auto const& hold : m_lockedColumnHolds)
