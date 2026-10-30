@@ -242,7 +242,19 @@ void TableViewRowAutomationPeer::Realize()
 void TableViewRowAutomationPeer::RealizeCore()
 {
     auto const tableView = m_lastOwningTable.get();
-    const auto rowIndex = tableView ? GetTrackedItemIndex(tableView) : -1;
+    auto const row = RealizeRowAt(tableView, tableView ? GetTrackedItemIndex(tableView) : -1);
+    if (!IsTrackedRow(row, tableView))
+    {
+        ThrowElementNotAvailable();
+    }
+
+    // Arranged first, as the ItemsRepeater docs require: a just-created element has no position to bring into view.
+    row.UpdateLayout();
+    row.StartBringIntoView();
+}
+
+winrt::TableViewRow TableViewRowAutomationPeer::RealizeRowAt(winrt::TableView const& tableView, int32_t rowIndex)
+{
     if (!tableView || rowIndex < 0)
     {
         ThrowElementNotAvailable();
@@ -274,22 +286,12 @@ void TableViewRowAutomationPeer::RealizeCore()
         ThrowElementNotAvailable();
     }
 
-    if (auto const row = element.try_as<winrt::TableViewRow>())
-    {
-        if (!IsTrackedRow(row, tableView))
-        {
-            ThrowElementNotAvailable();
-        }
-    }
-    else
+    auto const row = element.try_as<winrt::TableViewRow>();
+    if (!row)
     {
         ThrowElementNotAvailable();
     }
-
-    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
-    {
-        frameworkElement.StartBringIntoView();
-    }
+    return row;
 }
 
 winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const

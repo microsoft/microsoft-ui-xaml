@@ -47,6 +47,8 @@ public:
 
     // IVirtualizedItemProvider — available only after the realized row has been recycled out.
     void Realize();
+    // Creates the row at rowIndex (UIA Realize only, never a read); throws ElementNotAvailable.
+    static winrt::TableViewRow RealizeRowAt(winrt::TableView const& tableView, int32_t rowIndex);
 
     // Single source of cell-peer identity for GetChildrenCore and Grid.GetItem; UIA compares
     // providers by identity.
