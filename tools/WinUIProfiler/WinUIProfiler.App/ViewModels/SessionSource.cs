@@ -3,7 +3,7 @@
 
 namespace WinUIProfiler.App.ViewModels;
 
-// The session file the Frames and Elements tabs show: the connection's recording, or a file the user opened, which stays
+// The session file the Frames and Objects tabs show: the connection's recording, or a file the user opened, which stays
 // until the next connection's recording.
 public sealed class SessionSource
 {

@@ -51,8 +51,8 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file. The Frames tab shows its frames and
-the Elements tab its UI elements.
+GPU memory events for it, to a session file. The Frames tab shows its frames,
+and the Objects tab its UI elements and composition visuals.
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
@@ -116,8 +116,9 @@ session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
 No recording database, heap capture or MUX changes are required.
 
-Double-clicking a XAML node, in a snapshot's viewer or in a comparison, shows
-that element's history in the main window's Elements tab (see below).
+Double-clicking a node, in a snapshot's viewer or in a comparison, shows its
+history in the main window's Objects tab: a XAML node's element, or a
+Composition node's visual (see below).
 
 XAML properties include margin, horizontal/vertical alignment, layout slot,
 transformed bounds relative to the visual parent, render transform and origin,
@@ -248,8 +249,8 @@ so events are still only dropped at the queue.
 | `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
 | `EventTypes` | One row per provider, event name, opcode and field layout: the field names and their .NET types, such as `Int64,Int32,String,Boolean` |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
-| `Objects` | One row per UI element the events mention: address, type and `x:Name` (see below) |
-| `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the element's address. An event can mention several elements, such as `ChildAdded`'s parent and child |
+| `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
+| `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
 | `Frames` | One row per frame on a UI thread: thread, frame number, ticks, and their timing (see below) |
 | `FrameEvents` | One row per UI-thread event: `Seq`, its `FrameId`, and its bucket: `Xaml`, `Composition` or `Other` |
 
@@ -294,8 +295,28 @@ mentions it.
   Reuse by an object of the same type can't be told apart.
 - The type is the nearest built-in type: a `TabViewItem` shows as
   `ListViewItem`, and an app's own control as its built-in base class.
-- Other objects (brushes, transforms, composition nodes, visuals, surfaces)
-  are not indexed; they can still be found in `Events`.
+- Other objects (brushes, transforms, composition nodes, surfaces) are not
+  indexed; they can still be found in `Events`.
+
+### Visuals
+
+The same index records the composition visuals (`IVisual`) the WUC visual and
+visual surface events mention.
+
+- `ParentVisualId`, `ChildVisualId` and `VisualId` only ever hold an `IVisual`
+  pointer, so a visual is known from its first mention.
+- Its insertion (`WucVisualChildInserted`, `WucVisualRootSet`) gives its type
+  and owner comp node. The owner's `CompPeerLinked` label (the element's
+  `x:Name`, or its class name) becomes the visual's name. A comp node usually
+  creates its visuals before it is linked, so the label is added when the link
+  comes. Visuals inserted with owner 0, mostly leaf visuals, have no name.
+- An insertion with a different type or owner than the visual's last means a
+  new visual reused the pointer, so a new visual starts there. Visuals get their
+  children before they are inserted, so the old visual's mentions since it left
+  the tree move to the new one. Reuse by a visual of the same type and owner
+  can't be told apart.
+- `WucVisualChildrenCleared` names only the parent, so each child it removes
+  gets a mention through the parent's field (`child of ParentVisualId`).
 
 ### Frames
 
@@ -330,7 +351,7 @@ The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
 file once a second while connected: only the frames that changed since the last
 read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
 the tab reads the file again. **Open session file...** shows a saved file
-instead, in this tab and the Elements tab, until the next connection.
+instead, in this tab and the Objects tab, until the next connection.
 
 - Each frame shows when it was drawn (the end of its drawing tick), how long
   the drawing tick took (the bar is full at 50 ms; a warning icon marks more
@@ -341,22 +362,32 @@ instead, in this tab and the Elements tab, until the next connection.
 - Selecting a frame shows its events, 100 per page, all or one bucket. The
   filter keeps events whose name or a string field contains the text; a number
   (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the
-  selected event mentions UI elements, its details link to each one's history
-  in the Elements tab.
+  selected event mentions UI elements or visuals, its details link to each
+  one's history in the Objects tab. Each link has the same Element or Visual
+  badge as the Objects tab.
 - For a launch recorded from process start, the tab gives when the first ten
   drawn frames of the first UI thread ended, from the process's creation;
   otherwise from the start of the recording. A trimmed file no longer has them.
 
-### Elements tab
+### Objects tab
 
-The Elements tab (`Views\ElementsView.xaml`) lists the UI elements of the same
-session file, in the order they were first seen, with their type and name,
+The Objects tab (`Views\ObjectsView.xaml`) lists the UI elements and
+composition visuals of the same session file, in the order they were first
+seen, with their kind, type and name (a visual's is its owner element's label),
 address, when an event first and last mentioned them, and how many events do.
-The search box keeps elements whose type, name or address contains the text.
-Selecting an element shows its history: the events that mention it, 100 per
-page, each with the frame it belongs to. While connected, the tab reads the
-file once a second while it is shown, keeping the list's scroll position and
-selection.
+The kind list shows all objects, only elements or only visuals; the search box
+keeps the objects whose type, name or address contains the text. Selecting one
+shows its history: the events that mention it, 100 per page, each with the
+frame it belongs to. While connected, the tab reads the file once a second
+while it is shown, keeping the list's scroll position and selection. Session
+files written before visuals were indexed show all their objects as elements.
+
+Each row starts with an Element or Visual badge, and element rows have a light
+blue background, visual rows a light amber one (darker shades in the dark
+theme; the brushes are in `App.xaml`). The background gives way to the list's
+own hover and selection colors, and high contrast uses the system colors, so
+the badge is what always shows the kind. Opening an object from a frame's
+event or a snapshot resets the kind list to all objects.
 
 Snapshots don't record the runtime's element addresses, only each XAML
 object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
@@ -366,6 +397,11 @@ both an element's address and its WinRT object's, so
 at that address when the snapshot was taken. That needs the recording to have
 seen the element being created or added to the tree: a session attached to a
 running app finds only the elements added since.
+
+A Composition node's address is its `IVisual` pointer, which the visual events
+carry too, so `SessionFile.FindSnapshotVisual` finds the visual at that
+address when the snapshot was taken. A visual inserted before the recording
+started and not mentioned since isn't found.
 
 ### Recorded, from a trace file
 
@@ -391,8 +427,8 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
-& $cli objects session.sqlite --type Button    # UI elements, with first/last seen and event counts
-& $cli timeline session.sqlite --object <id>   # the events that mention one element, with their frames (or --address 0x...)
+& $cli objects session.sqlite --type Button    # UI elements and visuals (--kind element|visual), with first/last seen and event counts
+& $cli timeline session.sqlite --object <id>   # the events that mention one object, with their frames (or --address 0x...)
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
 & $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```

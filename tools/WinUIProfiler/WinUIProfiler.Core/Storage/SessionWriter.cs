@@ -30,8 +30,8 @@ public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? 
 // from that many seconds after the recording started.
 public sealed record RecordingStatus(string Path, long StoredEvents, long FileBytes, long LimitBytes, double? CompleteFromSeconds);
 
-// Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the UI element
-// index (ObjectIndex) and the frame index (FrameIndex) in the same transactions. Process waits while the writer is
+// Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the object index
+// (ObjectIndex) and the frame index (FrameIndex) in the same transactions. Process waits while the writer is
 // behind, so the ETW reader's queue stays the only place events are dropped.
 public sealed class SessionWriter : IEventProcessor, IDisposable
 {
@@ -45,7 +45,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private const int TrimFraction = 20;
 
     // Space an event takes besides its payload: its other columns, B-tree cell overhead, and its rows in the frame and
-    // UI element indexes.
+    // object indexes.
     private const int RowOverheadBytes = 100;
 
     private readonly BlockingCollection<(long Sequence, ProfilerEvent Event)> queue = new(16_384);

@@ -41,7 +41,7 @@ public sealed partial class SnapshotViewerWindow : Window
     private bool closed;
     public SnapshotHistoryEntry Entry { get; }
     public SnapshotViewerData? Data { get; private set; }
-    public event EventHandler<SnapshotElement>? ElementRequested;
+    public event EventHandler<SnapshotObject>? ObjectRequested;
 
     public SnapshotViewerWindow(SnapshotHistoryEntry entry)
     {
@@ -126,12 +126,20 @@ public sealed partial class SnapshotViewerWindow : Window
     private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args) =>
         Populate(args.Node, sender == XamlTree ? SnapshotTreeKind.Xaml : SnapshotTreeKind.Composition);
 
-    // Double-clicking a XAML node asks the main window to show its element's history in the Elements tab.
+    // Double-clicking a node asks the main window to show the history of its element (a XAML node) or its visual (a
+    // composition node) in the Objects tab.
     private void XamlTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
     {
         if (Data is null || SnapshotTreeExpansion.NodeAt(XamlTree, args.OriginalSource)?.Content is not SnapshotTreeLabel { Node: { } node }) return;
         args.Handled = true;
-        ElementRequested?.Invoke(this, SnapshotElement.From(Data.Document, node));
+        ObjectRequested?.Invoke(this, SnapshotObject.FromXaml(Data.Document, node));
+    }
+
+    private void CompositionTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
+    {
+        if (Data is null || SnapshotTreeExpansion.NodeAt(CompositionTree, args.OriginalSource)?.Content is not SnapshotTreeLabel { Node: { } node }) return;
+        args.Handled = true;
+        ObjectRequested?.Invoke(this, SnapshotObject.FromComposition(Data.Document, node));
     }
 
     private async void ExpandAll_Click(object sender, RoutedEventArgs args) =>

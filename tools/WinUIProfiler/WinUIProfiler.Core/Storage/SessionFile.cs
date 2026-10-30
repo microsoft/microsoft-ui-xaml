@@ -13,15 +13,24 @@ namespace WinUIProfiler.Engine.Storage;
 // when it was created earlier (attach), null when unknown (a recorded trace).
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
-    long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Frames,
+    long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,
     double? ProcessStartMilliseconds);
 
-// A UI element and when its stored events were first and last, in milliseconds from the start of the recording.
-public sealed record SessionObject(long ObjectId, long Address, string? Type, string? Name, long Events,
+// The kinds of objects the session file indexes (SessionSchema's Objects.Kind).
+public enum ObjectKind
+{
+    Element,
+    Visual
+}
+
+// A UI element or composition visual and when its stored events were first and last, in milliseconds from the start of the
+// recording. A visual's name is its owner element's label.
+public sealed record SessionObject(long ObjectId, ObjectKind Kind, long Address, string? Type, string? Name, long Events,
     double FirstMilliseconds, double LastMilliseconds);
 
-// A UI element an event mentions: the field that holds its address, and the element's type and name when known.
-public sealed record ElementMention(long ObjectId, string Field, string? Type, string? Name);
+// An object an event mentions: the field that holds its address, and the object's type and name when known. For a visual
+// whose parent's children were cleared, the field is "child of" the parent's field.
+public sealed record ObjectMention(long ObjectId, ObjectKind Kind, string Field, string? Type, string? Name);
 
 // A frame on a UI thread and its stored events by bucket (timing as in SessionSchema). Drawn is false for each thread's
 // latest frame, which may still be in progress. Times are milliseconds from the start of the recording; null when no
@@ -47,36 +56,40 @@ public static class SessionFile
             (profilerEvent, _) => sink(profilerEvent), cancellationToken);
     }
 
-    // The UI elements with stored events, in the order they were first seen; all, or the one with an ID or address.
-    public static IReadOnlyList<SessionObject> ReadObjects(string path, long? objectId = null, long? address = null)
+    // The objects with stored events, in the order they were first seen: all, those of one kind, or the one with an ID or
+    // address.
+    public static IReadOnlyList<SessionObject> ReadObjects(string path, ObjectKind? kind = null, long? objectId = null, long? address = null)
     {
         using var connection = Open(path);
         using var transaction = connection.BeginTransaction(deferred: true);
         var (_, frequency, startQpc) = ReadSession(connection, transaction);
         var start = startQpc.GetValueOrDefault();
-        using var command = Command(connection, transaction, """
+        var kindColumn = KindColumn(connection, transaction);
+        using var command = Command(connection, transaction, $"""
             WITH Spans AS (
-                SELECT o.ObjectId, o.Address, o.Type, o.Name, COUNT(DISTINCT r.Seq) AS Events, MIN(r.Seq) AS FirstSeq,
-                    MAX(r.Seq) AS LastSeq
+                SELECT o.ObjectId, {kindColumn} AS Kind, o.Address, o.Type, o.Name, COUNT(DISTINCT r.Seq) AS Events,
+                    MIN(r.Seq) AS FirstSeq, MAX(r.Seq) AS LastSeq
                 FROM Objects o JOIN ObjectEvents r ON r.ObjectId = o.ObjectId
-                WHERE ($id IS NULL OR o.ObjectId = $id) AND ($address IS NULL OR o.Address = $address)
+                WHERE ($kind IS NULL OR {kindColumn} = $kind) AND ($id IS NULL OR o.ObjectId = $id)
+                    AND ($address IS NULL OR o.Address = $address)
                 GROUP BY o.ObjectId)
-            SELECT s.ObjectId, s.Address, s.Type, s.Name, s.Events, f.Qpc, l.Qpc
+            SELECT s.ObjectId, s.Kind, s.Address, s.Type, s.Name, s.Events, f.Qpc, l.Qpc
             FROM Spans s JOIN Events f ON f.Seq = s.FirstSeq JOIN Events l ON l.Seq = s.LastSeq
             ORDER BY s.FirstSeq, s.ObjectId
-            """, ("$id", objectId), ("$address", address));
+            """, ("$kind", kind?.ToString()), ("$id", objectId), ("$address", address));
         using var reader = command.ExecuteReader();
         var objects = new List<SessionObject>();
         while (reader.Read())
         {
-            objects.Add(new(reader.GetInt64(0), reader.GetInt64(1), NullableString(reader, 2), NullableString(reader, 3),
-                reader.GetInt64(4), (reader.GetInt64(5) - start) * 1000.0 / frequency, (reader.GetInt64(6) - start) * 1000.0 / frequency));
+            objects.Add(new(reader.GetInt64(0), Enum.Parse<ObjectKind>(reader.GetString(1)), reader.GetInt64(2), NullableString(reader, 3),
+                NullableString(reader, 4), reader.GetInt64(5), (reader.GetInt64(6) - start) * 1000.0 / frequency,
+                (reader.GetInt64(7) - start) * 1000.0 / frequency));
         }
 
         return objects;
     }
 
-    // Delivers a page of the events that mention one element (count -1 for all) in Seq order, with the fields that hold
+    // Delivers a page of the events that mention one object (count -1 for all) in Seq order, with the fields that hold
     // its address and the number of the frame the event belongs to, if any.
     public static long ReadTimeline(string path, long objectId, int offset, int count,
         Action<ProfilerEvent, IReadOnlyList<string>, long?> sink, CancellationToken cancellationToken = default)
@@ -95,12 +108,12 @@ public static class SessionFile
             """, [("$id", objectId), ("$count", count), ("$offset", offset)],
             (profilerEvent, reader) => sink(profilerEvent,
                 [.. reader.GetString(4).Split(',').Select(field => int.Parse(field, CultureInfo.InvariantCulture)).Order()
-                    .Select(field => profilerEvent.Fields[field].Name)],
+                    .Select(field => FieldName(profilerEvent, field))],
                 reader.IsDBNull(5) ? null : reader.GetInt64(5)),
             cancellationToken);
     }
 
-    // How many events mention one element.
+    // How many events mention one object.
     public static long CountTimeline(string path, long objectId)
     {
         using var connection = Open(path);
@@ -181,13 +194,30 @@ public static class SessionFile
             return null;
         }
 
-        using var objects = Command(connection, transaction, """
+        return ObjectAt(connection, transaction, ObjectKind.Element, elementAddress, qpc);
+    }
+
+    // The visual a composition snapshot node was when the snapshot was taken. The snapshot records the visual's IVisual
+    // pointer, the same address the visual events carry. Null when no stored event mentions it, for example when the
+    // recording started after the visual was inserted.
+    public static long? FindSnapshotVisual(string path, long address, long qpc)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        return ObjectAt(connection, transaction, ObjectKind.Visual, address, qpc);
+    }
+
+    // The object of a kind at an address at a QPC time: of those stored there, the last first seen at or before that
+    // time, or else the first.
+    private static long? ObjectAt(SqliteConnection connection, SqliteTransaction transaction, ObjectKind kind, long address, long qpc)
+    {
+        using var objects = Command(connection, transaction, $"""
             SELECT o.ObjectId, MIN(e.Qpc)
             FROM Objects o JOIN ObjectEvents r ON r.ObjectId = o.ObjectId JOIN Events e ON e.Seq = r.Seq
-            WHERE o.Address = $address
+            WHERE o.Address = $address AND {KindColumn(connection, transaction)} = $kind
             GROUP BY o.ObjectId
             ORDER BY MIN(r.Seq)
-            """, ("$address", elementAddress));
+            """, ("$address", address), ("$kind", kind.ToString()));
         using var rows = objects.ExecuteReader();
         long? found = null;
         while (rows.Read())
@@ -256,16 +286,16 @@ public static class SessionFile
         return (frames, last.ExecuteScalar() is long seq ? seq : null);
     }
 
-    // Delivers a frame's events in Seq order with each event's bucket and the UI elements it mentions: optionally one
+    // Delivers a frame's events in Seq order with each event's bucket and the objects it mentions: optionally one
     // bucket's, those matching a filter (see FrameEventsQuery), and a page of them (count -1 for all).
     public static long ReadFrameEvents(string path, long frameId, string? bucket, string? filter, int offset, int count,
-        Action<ProfilerEvent, string, IReadOnlyList<ElementMention>> sink, CancellationToken cancellationToken = default)
+        Action<ProfilerEvent, string, IReadOnlyList<ObjectMention>> sink, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sink);
         var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
-        return ReadEvents(path, $"""
+        return ReadEvents(path, (connection, transaction) => $"""
             SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, r.Bucket,
-                (SELECT json_group_array(json_array(m.ObjectId, m.Field, o.Type, o.Name))
+                (SELECT json_group_array(json_array(m.ObjectId, m.Field, o.Type, o.Name, {KindColumn(connection, transaction)}))
                 FROM ObjectEvents m JOIN Objects o ON o.ObjectId = m.ObjectId
                 WHERE m.Seq = r.Seq)
             {where}
@@ -311,7 +341,12 @@ public static class SessionFile
     // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and then any others, which the sink reads from the
     // reader along with each event.
     private static long ReadEvents(string path, string query, (string Name, object? Value)[] parameters,
-        Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken)
+        Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken) =>
+        ReadEvents(path, (_, _) => query, parameters, sink, cancellationToken);
+
+    // The same, with a query that depends on the file's columns (KindColumn).
+    private static long ReadEvents(string path, Func<SqliteConnection, SqliteTransaction, string> query,
+        (string Name, object? Value)[] parameters, Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken)
     {
         using var connection = Open(path);
         // One read transaction, so a file still being written is read as one consistent snapshot: every stored event's
@@ -338,7 +373,7 @@ public static class SessionFile
         }
 
         long delivered = 0;
-        using (var command = Command(connection, transaction, query, parameters))
+        using (var command = Command(connection, transaction, query(connection, transaction), parameters))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -356,8 +391,8 @@ public static class SessionFile
         return delivered;
     }
 
-    // The [ObjectId, Field, Type, Name] arrays of ReadFrameEvents' mentions column.
-    private static IReadOnlyList<ElementMention> Mentions(ProfilerEvent profilerEvent, string json)
+    // The [ObjectId, Field, Type, Name, Kind] arrays of ReadFrameEvents' mentions column.
+    private static IReadOnlyList<ObjectMention> Mentions(ProfilerEvent profilerEvent, string json)
     {
         if (json == "[]")
         {
@@ -366,9 +401,20 @@ public static class SessionFile
 
         static string? Text(JsonElement value) => value.ValueKind == JsonValueKind.Null ? null : value.GetString();
         using var document = JsonDocument.Parse(json);
-        return [.. document.RootElement.EnumerateArray().Select(mention => new ElementMention(mention[0].GetInt64(),
-            profilerEvent.Fields[mention[1].GetInt32()].Name, Text(mention[2]), Text(mention[3])))];
+        return [.. document.RootElement.EnumerateArray().Select(mention => new ObjectMention(mention[0].GetInt64(),
+            Enum.Parse<ObjectKind>(mention[4].GetString()!), FieldName(profilerEvent, mention[1].GetInt32()), Text(mention[2]),
+            Text(mention[3])))];
     }
+
+    // The name of the field a mention is in (ObjectEvents.Field): -1 - i for a child whose parent is in field i.
+    private static string FieldName(ProfilerEvent profilerEvent, int field) =>
+        field >= 0 ? profilerEvent.Fields[field].Name : $"child of {profilerEvent.Fields[-1 - field].Name}";
+
+    // Files written before visuals were indexed have no Objects.Kind; all their objects are UI elements. For queries that
+    // name the Objects table o.
+    private static string KindColumn(SqliteConnection connection, SqliteTransaction? transaction) =>
+        Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('Objects') WHERE name = 'Kind'", transaction) > 0
+            ? "o.Kind" : "'Element'";
 
     private static SqliteCommand Command(SqliteConnection connection, SqliteTransaction? transaction, string text,
         params (string Name, object? Value)[] parameters)
@@ -425,11 +471,12 @@ public static class SessionFile
         // Files written before StartedQpc was added are otherwise the same; without it the process start is unknown.
         var startedQpc = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('SessionInfo') WHERE name = 'StartedQpc'",
             transaction) > 0 ? "StartedQpc" : "NULL";
+        var kind = KindColumn(connection, transaction);
         command.CommandText = $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
-                (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects), (SELECT COUNT(*) FROM Frames),
-                ProcessCreatedUtc, {startedQpc}
+                (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Element'),
+                (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, {startedQpc}, (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Visual')
             FROM SessionInfo
             """;
         using var reader = command.ExecuteReader();
@@ -449,7 +496,8 @@ public static class SessionFile
             Enum.Parse<SessionCoverage>(reader.GetString(4)), startedUtc,
             reader.IsDBNull(6) ? null : ParseUtc(reader.GetString(6)), NullableString(reader, 7),
             reader.GetInt64(14), reader.IsDBNull(8) ? null : reader.GetInt64(8), reader.IsDBNull(9) ? null : reader.GetInt32(9),
-            reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(16), processStart);
+            reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(19),
+            reader.GetInt64(16), processStart);
         return (info, frequency, startQpc);
     }
 

@@ -43,15 +43,16 @@ internal static class SessionSchema
             ThreadId INTEGER NOT NULL,
             TypeId INTEGER NOT NULL REFERENCES EventTypes (TypeId),
             Payload TEXT NOT NULL);    -- JSON array of the field values
-        CREATE TABLE Objects (         -- UI elements the events mention (ObjectIndex)
+        CREATE TABLE Objects (         -- UI elements and composition visuals the events mention (ObjectIndex)
             ObjectId INTEGER PRIMARY KEY,
-            Address INTEGER NOT NULL,
-            Type TEXT,                 -- from DependencyObject_Enter, once seen
-            Name TEXT);                -- x:Name, when set
-        CREATE TABLE ObjectEvents (    -- one row per mention: an event field that holds an element's address
+            Kind TEXT NOT NULL,        -- Element or Visual (ObjectKind)
+            Address INTEGER NOT NULL,  -- a visual's is its IVisual pointer
+            Type TEXT,                 -- an element's from DependencyObject_Enter, a visual's from its insertion, once seen
+            Name TEXT);                -- an element's x:Name, when set; a visual's owner element's label, when known
+        CREATE TABLE ObjectEvents (    -- one row per mention: an event field that holds an object's address
             Seq INTEGER NOT NULL REFERENCES Events (Seq),
             ObjectId INTEGER NOT NULL REFERENCES Objects (ObjectId),
-            Field INTEGER NOT NULL,    -- index of the field in the event
+            Field INTEGER NOT NULL,    -- index of the field in the event; -1 - i when field i holds its parent (cleared children)
             PRIMARY KEY (Seq, ObjectId, Field)) WITHOUT ROWID;
         CREATE INDEX ObjectTimeline ON ObjectEvents (ObjectId, Seq);
         CREATE TABLE Frames (          -- drawn frames per UI thread (FrameIndex)

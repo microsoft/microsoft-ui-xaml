@@ -8,7 +8,7 @@ using WinUIProfiler.Engine.Storage;
 namespace WinUIProfiler.App.ViewModels;
 
 // An event of the selected frame in the Frames tab.
-public sealed class FrameEventRow(ProfilerEvent profilerEvent, string bucket, IReadOnlyList<ElementMention> mentions)
+public sealed class FrameEventRow(ProfilerEvent profilerEvent, string bucket, IReadOnlyList<ObjectMention> mentions)
 {
     public string Time { get; } = profilerEvent.RelativeMilliseconds.ToString("N3", CultureInfo.CurrentCulture);
     public string Thread { get; } = profilerEvent.ThreadId.ToString(CultureInfo.CurrentCulture);
@@ -16,8 +16,8 @@ public sealed class FrameEventRow(ProfilerEvent profilerEvent, string bucket, IR
     public string Bucket { get; } = bucket;
     public string Fields { get; } = EventFormat.Fields(profilerEvent);
 
-    // The UI elements the event mentions, which the details pane links to.
-    public IReadOnlyList<ElementLink> Elements { get; } = [.. mentions.Select(mention => new ElementLink(mention))];
+    // The UI elements and visuals the event mentions, which the details pane links to.
+    public IReadOnlyList<ObjectLink> Objects { get; } = [.. mentions.Select(mention => new ObjectLink(mention))];
 
     // One field per line, for the details pane.
     public string Details => $"{profilerEvent.Name} | {Bucket} | {Time} ms | thread {Thread}\n" + EventFormat.Lines(profilerEvent);
