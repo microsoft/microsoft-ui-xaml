@@ -88,6 +88,7 @@ namespace
         hstring GetNameCore()
         {
             const int32_t index = RequireIndex();
+            // A realized row composes its name from its cells, so it can differ from ItemToName.
             if (auto const rowPeer = RealizedRowPeer(index))
             {
                 return rowPeer.GetName();

@@ -370,6 +370,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer of a scrolled-out selected row from a source that boxes values keeps its name after a garbage collection.")]
+        public void VerifyGetSelectionDataItemPeerForBoxedValuesKeepsNameAfterCollection()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(new BoxingIntList(200), 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Value", "."));
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(2);
+                tableView.UpdateLayout();
+                GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(2), "Precondition: the selected row must have scrolled out of realization.");
+                var view = GetRowsRepeater(tableView).ItemsSourceView;
+                Log.Comment($"The source hands out the same object on re-read: {ReferenceEquals(view.GetAt(2), view.GetAt(2))}.");
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+            });
+
+            // The box the peer was created for is referenced by nothing else.
+            for (int i = 0; i < 2; ++i)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("2", itemPeer.GetName(), "The data-item peer must keep its name after the boxed item is collected.");
+                Verify.IsTrue(((ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem)).IsSelected,
+                    "The data-item peer must still report itself selected.");
+            });
+        }
+
+        // A non-generic list that hands out a new box on every read, so its items have no stable identity.
+        private sealed class BoxingIntList : global::System.Collections.IList
+        {
+            private readonly int[] _values;
+
+            public BoxingIntList(int count) { _values = Enumerable.Range(0, count).ToArray(); }
+
+            public object this[int index] { get => (object)_values[index]; set => throw new global::System.NotSupportedException(); }
+            public bool IsFixedSize => true;
+            public bool IsReadOnly => true;
+            public int Count => _values.Length;
+            public bool IsSynchronized => false;
+            public object SyncRoot => this;
+            public int Add(object value) => throw new global::System.NotSupportedException();
+            public void Clear() => throw new global::System.NotSupportedException();
+            public bool Contains(object value) => IndexOf(value) >= 0;
+            public int IndexOf(object value) => value is int i ? global::System.Array.IndexOf(_values, i) : -1;
+            public void Insert(int index, object value) => throw new global::System.NotSupportedException();
+            public void Remove(object value) => throw new global::System.NotSupportedException();
+            public void RemoveAt(int index) => throw new global::System.NotSupportedException();
+            public void CopyTo(global::System.Array array, int index) => _values.CopyTo(array, index);
+            public global::System.Collections.IEnumerator GetEnumerator() => _values.GetEnumerator();
+        }
+
         private static void VerifyElementNotAvailable(Action action, string what)
         {
             int hr = 0;
