@@ -61,7 +61,8 @@
                     <TreeView x:Name="XamlTree" x:Uid="SnapshotXamlTree" Grid.Row="2"
                               SelectionMode="Single" CanDragItems="False" CanReorderItems="False"
                               ItemTemplate="{StaticResource SnapshotTreeTemplate}"
-                              Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged" />
+                              Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged"
+                              DoubleTapped="XamlTree_DoubleTapped" />
                 </Grid>
                 <Grid Grid.Column="1" RowSpacing="8">
                     <Grid.RowDefinitions>
@@ -77,7 +78,8 @@
                     <TreeView x:Name="CompositionTree" x:Uid="SnapshotCompositionTree" Grid.Row="2"
                               SelectionMode="Single" CanDragItems="False" CanReorderItems="False"
                               ItemTemplate="{StaticResource SnapshotTreeTemplate}"
-                              Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged" />
+                              Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged"
+                              DoubleTapped="CompositionTree_DoubleTapped" />
                 </Grid>
             </Grid>
             <Grid Grid.Row="1" ColumnSpacing="12">

@@ -73,7 +73,7 @@ public:
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
-    void TopNavigationViewItemContentChanged();
+    void TopNavigationViewItemContentChanged(bool forceInvalidateWidthCache = false);
 
     void CoerceToGreaterThanZero(double& value);
 

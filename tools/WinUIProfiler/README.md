@@ -51,8 +51,9 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file.
-There is no object or frame view, heap capture or instrumented-product
+GPU memory events for it, to a session file. The Frames tab shows its frames,
+and the Objects tab its UI elements and composition visuals.
+There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
 
@@ -105,13 +106,49 @@ reuses its open viewer; different snapshots can be compared in separate windows.
 Tree labels include the XAML object's COM identity address or the Composition
 visual's IVisual interface address. Each tree has Expand all and Collapse all
 buttons; expanding includes descendants that have not yet been realized.
-Composition node details hide known default-valued properties. Non-default
-values, unknown properties and property errors remain visible; XAML details and
-the complete saved snapshot JSON are unchanged.
+XAML and Composition node details hide known default-valued properties, including
+the XAML identity render-transform matrix. Non-default values, unknown properties,
+computed XAML geometry and property errors remain visible. Theme-dependent brush
+colors are not assumed to be defaults. The complete saved snapshot JSON and
+comparisons retain all captured values, including changes back to defaults.
 History remains available across disconnect/reconnect for the current profiler
 session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
 No recording database, heap capture or MUX changes are required.
+
+Double-clicking a node, in a snapshot's viewer or in a comparison, shows its
+history in the main window's Objects tab: a XAML node's element, or a
+Composition node's visual (see below).
+
+XAML properties include margin, horizontal/vertical alignment, layout slot,
+transformed bounds relative to the visual parent, render transform and origin,
+and backgrounds on controls, panels and borders. Parentless bounds use the visual
+root; bounds do not account for clipping or prove on-screen visibility.
+TextBlocks also include text and foreground. Brushes include type/opacity and,
+for solid brushes, `#AARRGGBB` color; other brush content is not captured.
+Standard render transforms include their numeric properties; transform groups
+include their combined `[m11, m12, m21, m22, offsetX, offsetY]` matrix.
+Text over 4,096 UTF-16 code units is recorded as an explicit property error, not
+silently truncated. This is a fixed SDK-property list, not arbitrary app getters,
+all dependency properties, bindings or resources. New properties appear in both
+the viewer and comparison; existing saved snapshots are not modified.
+
+Select **Compare snapshots...** in history to choose **Before** and **After**
+captures from the same process instance (PID and creation time). The comparison
+highlights additions, removals, reparenting, sibling reordering, changed properties,
+and affected ancestor subtrees in both trees. Select a node for before/after values
+and parent locations; turn off **Show only changed subtrees** for unchanged context.
+Selecting either tree also reveals its directly mapped counterparts in the other
+tree. The match picker identifies mappings from Before, After, or both captures.
+Unchanged matches and their ancestors remain visible while the changes-only filter
+is enabled; link icons distinguish these correlations from actual changes.
+The merged view uses the After hierarchy, retaining removed nodes at their old
+parents. Matching is best-effort by UI thread, XamlRoot address, canonical COM
+identity address and type, never capture-local node IDs. Address reuse cannot be
+distinguished from a surviving object; cross-root moves appear as removals/additions.
+All captured properties are compared, including default values, with semantic JSON
+equality. Insertions/removals alone do not mark surviving siblings as reordered.
+Visibility-property changes are shown, not inferred rendered visibility.
 
 Root discovery uses public `IVisualTreeService` callbacks on the target's UI
 threads; traversal uses `VisualTreeHelper`, `ElementCompositionPreview` and
@@ -123,33 +160,66 @@ errors and scope limitations are included in the JSON rather than fabricated val
 
 ## XAML events
 
-`WinUIProfiler.Core` reads the XAML TraceLogging events of one process, and the
-kernel's GPU memory events for it, live or from a recorded `.etl` file. Each
-event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`). TraceLogging events
-carry their own field names and types, so no manifest is needed. Manifest events
-on the XAML providers are skipped. The GPU memory events are manifest events,
-decoded with the manifest installed with Windows.
+`WinUIProfiler.Core` reads all the events of the XAML providers for one process,
+and the kernel's GPU memory events for it, live or from a recorded `.etl` file.
+Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 
 | Provider | GUID | Events read |
 | --- | --- | --- |
-| Microsoft-Windows-XAML | `531a35ab-63ce-4bcf-aa98-f88c7a89e455` | Frames (`CoreServices_Frame`), objects entering the tree (`DependencyObject_Enter`), and layout, focus and other operations with element IDs |
+| Microsoft-Windows-XAML | `531a35ab-63ce-4bcf-aa98-f88c7a89e455` | Manifest events for frames, layout, parsing, resources, rendering, input and other runtime work. TraceLogging events for frames (`CoreServices_Frame`), objects entering the tree (`DependencyObject_Enter`), and layout, focus and other operations with element IDs |
+| Microsoft-Windows-XAML-Diagnostics | `59e7a714-73a4-4147-b47e-0957048c75c4` | Elements created (with their XAML file), added to and removed from the tree, property changes, measure and arrange overrides, invalidation, bindings, resources, animations and input |
 | Microsoft-Windows-XAML-Profiler | `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d` | Tree, composition and graphics events |
+| Microsoft.UI.Xaml | `2dc72f6e-e4d1-5f58-3245-09a4243799dd` | The runtime's telemetry events, such as the first UI thread frame (`FirstUiThreadFrameEnd`), D3D device sharing and loss, XAML islands, GC durations and fail-fasts |
+| Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
-Events with element IDs and all Microsoft-Windows-XAML-Profiler events are only
-in builds with `XamlProfilerEnabled`. The GPU memory events come from Windows,
-whatever the build. They carry the values `IDXGIAdapter3::QueryVideoMemoryInfo`
-returns, which earlier builds also reported in the profiler's `GpuMemorySnapshot`
-event. The kernel writes them when the usage or budget changes, and
-writes the current values when the process opens a GPU adapter and when a
-session requests capture state. The System process writes some of them, such as
-those written when the process exits, which bring the usage down to 0. So they
-are matched to the process by their `ProcessId` field, which becomes the
-event's process ID.
+The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
+events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
+from Windows, whatever the build. They carry the values
+`IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
+reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
+when the usage or budget changes, and writes the current values when the
+process opens a GPU adapter and when a session requests capture state. The
+System process writes some of them, such as those written when the process
+exits, which bring the usage down to 0. So they are matched to the process by
+their `ProcessId` field, which becomes the event's process ID.
 
-Microsoft-Windows-XAML is enabled with keyword `0x100000`. No manifest event
-uses that keyword, so ETW drops them at the source and only TraceLogging events
-are delivered.
+The XAML providers are enabled with every keyword at level 5 (Verbose). That
+includes the telemetry events, which have keyword bits, and the TraceLogging
+events the runtime writes only while the matching manifest event is enabled,
+such as the start of each `FrameworkElement_ApplyTemplate`, which carries the
+element's class and name. Not included are Microsoft-Windows-XAML's 16 events
+at its own levels above Verbose, written for every API call and for every
+object or property the parser sets, such as `ApiFunctionCallStart` and
+`CreateInstanceBegin`.
+
+TraceLogging events carry their own field names and types. Manifest events are
+decoded with the manifest Windows registers for their provider. WinUI does not
+register one: its Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics
+events share their IDs and fields with system XAML's (`Windows.UI.Xaml.dll`), so
+they are decoded with system XAML's manifest. One event differs: WinUI's
+`FrameInfo` (event 64, named `Frame`) has one field, `Value`, which is whether
+the frame drew, so `Ingestion\XamlEventSubscription.cs` decodes it. An event
+the registered manifest does not describe, such as one WinUI added that the
+installed Windows does not have, is not delivered. The GPU memory events are
+decoded with the kernel's manifest. `ProfilerEvent.TraceLogging` tells
+TraceLogging events from manifest events: the same field name can hold
+different objects in the two.
+
+While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML
+source position of the objects it parses, which `ElementCreatedWithSource`
+carries (and, in builds with `XamlProfilerEnabled`, `ElementEnteredTree`), and
+keeps setters and resource references for XAML diagnostics. That costs the
+target some memory and CPU time, as in any trace that enables the provider.
+Only XAML parsed while the provider is enabled has positions: a launch has them
+from the start, an attach only for XAML parsed after it. Compiled XAML without
+line information, as in the Store's WinUI 3 Gallery, has `LineNumber` and
+`ColumnNumber` 0.
+
+Launching the WinUI 3 Gallery from the app and recording for about 11 seconds
+wrote 116,000 to 138,000 events, 70 to 75 percent from Microsoft-Windows-XAML
+and nearly all the rest from Microsoft-Windows-XAML-Diagnostics: a 6 to 7 MB
+session file, with no events lost or dropped.
 
 Reading ETW needs an elevated process, or membership in the local Performance
 Log Users group.
@@ -182,16 +252,16 @@ launch starts at connection when activation returns a packaged app that was
 already running, when the app declares no executable, or when the launched
 process runs a different executable than its manifest declares.
 
-Events go through a queue of 65,536 events to one processing thread that runs
+Events go through a queue of 131,072 events to one processing thread that runs
 the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
 the events 1, 2, 3... Today the processors count events
 (`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
 
-The connection panel shows the count per provider, events lost by ETW, and
-events dropped because the queue was full. When the queue is full, new events
-are dropped and counted rather than stopping the session. The session stops
-when the connection ends; the last counts stay visible. If the session cannot
-start, the panel shows why and the metrics keep working.
+The connection panel shows the event counts, events lost by ETW, and events
+dropped because the queue was full. When the queue is full, new events are
+dropped and counted rather than stopping the session. The session stops when
+the connection ends; the last counts stay visible. If the session cannot start,
+the panel shows why and the metrics keep working.
 
 An ETW session outlives a profiler that crashes or is killed, and keeps the
 providers enabled in the processes it filters on. Sessions are named
@@ -209,9 +279,13 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler |
-| `EventTypes` | One row per provider, event name, opcode and field layout: the field names and their .NET types, such as `Int64,Int32,String,Boolean` |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
+| `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
+| `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
+| `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
+| `Frames` | One row per frame on a UI thread: thread, frame number, ticks, and their timing (see below) |
+| `FrameEvents` | One row per UI-thread event: `Seq`, its `FrameId`, and its bucket: `Xaml`, `Composition` or `Other` |
 
 JSON has no Infinity or NaN, so those values are stored as the strings
 `"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
@@ -233,20 +307,167 @@ timestamp order, but ETW does not guarantee that across processors, and two
 events can have the same timestamp: to order events by time, sort by `Qpc`,
 then `Seq`.
 
+### UI elements
+
+While saving events, the writer also indexes the UI elements they mention
+(`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
+mentions with their events. Only the TraceLogging events of
+Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, and
+none of them creates or destroys an object, so an element's lifetime in the
+file is from the first to the last of them that mentions it. Manifest events
+use the same field names for other objects too: `BeginStoryboard`'s
+`ElementId` is the storyboard, and the `ParentId` of
+Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
+
+- An address is a UI element once it appears in a field that only ever holds a
+  `CUIElement*` (listed in `ObjectIndex.RoleOf`).
+- `DependencyObject_Enter`, `PeerAssociated` and `ContentChanged`'s content
+  also carry other objects, so their mentions of an address are kept back until
+  the address is known to be a UI element, then saved with it. The type and
+  `x:Name` come from `DependencyObject_Enter`.
+- The runtime reuses freed addresses. When `DependencyObject_Enter` reports a
+  different type at a known address, a new element starts there. The new
+  object's peer, parent and layout events can come first, so the old element's
+  mentions since it (or its last child) left the tree move to the new one.
+  Reuse by an object of the same type can't be told apart.
+- The type is the nearest built-in type: a `TabViewItem` shows as
+  `ListViewItem`, and an app's own control as its built-in base class.
+- Other objects (brushes, transforms, composition nodes, surfaces) are not
+  indexed; they can still be found in `Events`.
+
+### Visuals
+
+The same index records the composition visuals (`IVisual`) the WUC visual and
+visual surface events mention.
+
+- `ParentVisualId`, `ChildVisualId` and `VisualId` only ever hold an `IVisual`
+  pointer, so a visual is known from its first mention.
+- Its insertion (`WucVisualChildInserted`, `WucVisualRootSet`) gives its type
+  and owner comp node. The owner's `CompPeerLinked` label (the element's
+  `x:Name`, or its class name) becomes the visual's name. A comp node usually
+  creates its visuals before it is linked, so the label is added when the link
+  comes. Visuals inserted with owner 0, mostly leaf visuals, have no name.
+- An insertion with a different type or owner than the visual's last means a
+  new visual reused the pointer, so a new visual starts there. Visuals get their
+  children before they are inserted, so the old visual's mentions since it left
+  the tree move to the new one. Reuse by a visual of the same type and owner
+  can't be told apart. A hand-in or hand-off visual that its element's
+  re-created comp node inserts again also gets a new owner, so its history
+  splits there.
+- `WucVisualChildrenCleared` names only the parent, so each child it removes
+  gets a mention through the parent's field (`child of ParentVisualId`).
+
+### Frames
+
+The writer also records which frame each UI-thread event belongs to
+(`Storage\FrameIndex.cs`), in the same transaction.
+
+- `CoreServices_Frame` marks the start and end of every UI-thread tick with the
+  core's frame counter, which only advances when a tick submits composition
+  commands. A tick with nothing to submit keeps the number, so a frame is
+  usually one tick, sometimes a few short ticks that drew nothing and then the
+  one that drew. Frames are per UI thread.
+- Events that carry `FrameNumber` (`DependencyObject_Enter`, `ApplyTemplate`,
+  `GoToStateOptimized`, ...) belong to that frame. Other events between a
+  tick's start and stop belong to that tick's frame; events between ticks
+  belong to the next frame, the one that renders them. So do a thread's events
+  before its first frame number, such as the rest of a tick in progress when
+  the recording started.
+- Events on threads that never report a frame number (the render and image
+  decode threads) are not attributed, nor are a UI thread's last events if no
+  frame number follows them.
+- `StartQpc` to `EndQpc` spans all of a frame's ticks, including idle time
+  between them; `LastTickStartQpc` to `EndQpc` is the tick that drew;
+  `TickTimeQpc` is the time spent in its ticks. A thread's latest frame may not
+  have drawn yet.
+- Buckets: `Xaml` for the tree, `DependencyObject_Enter`, templates, visual
+  states and loading; `Composition` for composition node, WUC visual and
+  surface events; `Other` for everything else (layout, rendering, scheduling).
+  They go by the TraceLogging events' names, so manifest events about the same
+  work, such as `ApplyTemplate/Start` or Microsoft-Windows-XAML-Diagnostics'
+  `ElementAdded`, are `Other`.
+
+### Frames tab
+
+The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
+file once a second while connected: only the frames that changed since the last
+read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
+the tab reads the file again. **Open session file...** shows a saved file
+instead, in this tab and the Objects tab, until the next connection.
+
+- Each frame shows when it was drawn (the end of its drawing tick), how long
+  the drawing tick took (the bar is full at 50 ms; a warning icon marks more
+  than 16.7 ms) and its events per bucket. `*` marks a thread's latest frame.
+  Ticks that draw nothing keep the frame number, so after an idle period a
+  frame's first tick can be long before it was drawn; the frame's title shows
+  both.
+- Selecting a frame shows its events, 100 per page, all or one bucket. The
+  filter keeps events whose name or a string field contains the text; a number
+  (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the
+  selected event mentions UI elements or visuals, its details link to each
+  one's history in the Objects tab. Each link has the same Element or Visual
+  badge as the Objects tab.
+- For a launch recorded from process start, the tab gives when the first ten
+  drawn frames of the first UI thread ended, from the process's creation;
+  otherwise from the start of the recording. A trimmed file no longer has them.
+
+### Objects tab
+
+The Objects tab (`Views\ObjectsView.xaml`) lists the UI elements and
+composition visuals of the same session file, in the order they were first
+seen, with their kind, type and name (a visual's is its owner element's label),
+address, when an event first and last mentioned them, and how many events do.
+The kind list shows all objects, only elements or only visuals; the search box
+keeps the objects whose type, name or address contains the text. Selecting one
+shows its history: the events that mention it, 100 per page, each with the
+frame it belongs to. While connected, the tab reads the file once a second
+while it is shown, keeping the list's scroll position and selection. Session
+files written before visuals were indexed show all their objects as elements.
+
+Each row starts with an Element or Visual badge, and element rows have a light
+blue background, visual rows a light amber one (darker shades in the dark
+theme; the brushes are in `App.xaml`). The background gives way to the list's
+own hover and selection colors, and high contrast uses the system colors, so
+the badge is what always shows the kind. Opening an object from a frame's
+event or a snapshot resets the kind list to all objects.
+
+Snapshots don't record the runtime's element addresses, only each XAML
+object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
+`PeerAssociated`, `ElementEnteredTree`, `ChildAdded` and `ChildInserted` carry
+both an element's address and its WinRT object's, so
+`SessionFile.FindSnapshotElement` maps a snapshot node to the element that was
+at that address when the snapshot was taken. That needs the recording to have
+seen the element being created or added to the tree: a session attached to a
+running app finds only the elements added since.
+
+A Composition node's address is its `IVisual` pointer, which the visual events
+carry too, so `SessionFile.FindSnapshotVisual` finds the visual at that
+address when the snapshot was taken. A visual inserted before the recording
+started and not mentioned since isn't found.
+
+Both lookups use the time the node's root finished being captured, not the end
+of the whole snapshot: a root's objects can be released while other roots are
+still being captured, and a new object can reuse the address.
+
 ### Recorded, from a trace file
 
 To record a trace, use `logman`. Start it before the app: the kernel writes the
 app's starting GPU memory values when the app opens a GPU adapter, and after
-that only changes. Then inspect the trace with `WinUIProfiler.Cli`, which
-reads the file through `Ingestion\OfflineEtlSource.cs`. The CLI reads session
-files the same way, and `record` writes a session file from a trace. Run from
-this directory:
+that only changes. `logman` enables the providers in every process, so other
+XAML processes, such as explorer, write to the trace too; the larger buffers
+(`-bs`, `-nb`) keep ETW from losing events. Then inspect the trace with
+`WinUIProfiler.Cli`, which reads the file through `Ingestion\OfflineEtlSource.cs`.
+The CLI reads session files the same way, and `record` writes a session file
+from a trace. Run from this directory:
 
 ```powershell
-'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0x100000 5',
+'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0xFFFFFFFFFFFFFFFF 5',
+'{59E7A714-73A4-4147-B47E-0957048C75C4} 0xFFFFFFFFFFFFFFFF 5',
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
+'{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
+'{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
 '{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5' | Set-Content providers.txt
-logman create trace XamlTrace -o xaml.etl -pf providers.txt -ets
+logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
 # ... use the target app ...
 logman stop XamlTrace -ets
 
@@ -257,6 +478,10 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
+& $cli objects session.sqlite --type Button    # UI elements and visuals (--kind element|visual), with first/last seen and event counts
+& $cli timeline session.sqlite --object <id>   # the events that mention one object, with their frames (or --address 0x...)
+& $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
+& $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
 
 ## Limitations

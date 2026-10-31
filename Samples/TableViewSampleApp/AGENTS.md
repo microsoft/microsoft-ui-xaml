@@ -101,6 +101,18 @@ and `Options` with `x:Bind`; do not reintroduce split-binary/CsWinRT manual cont
 workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"`, which names
 `X.xaml.txt` and `X.cs.txt`) must correspond to files under `Snippets\*.txt`;
 `tools\Update-Snippets.ps1 -Check` validates those declarations (see Snippets below).
+The Source code expander shows them as XAML and C# tabs (`SampleSourceTabs`: `SampleSourceXamlTab`,
+`SampleSourceCSharpTab`, hidden when the page has no C# snippet) over one `CodeBlock`, which colours
+the code with the built-in `CodeHighlighter` and theme brushes (`Light`, `Dark`, `HighContrast`).
+Expanded, the code area takes about half of the presenter's height (`ApplyStretchSizing`) and scrolls
+inside it; the example keeps the rest. The full-screen toggle (`SampleSourceFullScreenButton`) hides the
+presenter's title, description, example and rail so the code fills the page content area; Esc, the
+toggle or collapsing the expander restores them, and leaving the page resets it.
+At the right end of the title row (wrapped under the title when the row is too narrow), the Source
+drop-down (`SampleSourceLinksButton`, the GitHub mark) opens a flyout with "Sample page
+source code" (XAML and C# of `Pages\<Snippet>Page.xaml(.cs)` on GitHub, main branch) and then "Control
+source code" (`controls\dev\TableView` and the API spec). It is built from `Snippet`, so it appears on
+every sample page and not on Home, About or Settings, and opens links with `Launcher.LaunchUriAsync`.
 
 `BuildInfo` is generated to `$(IntermediateOutputPath)\BuildInfo.g.cs` and included from there.
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
@@ -146,13 +158,46 @@ automation peer unless the AutomationId should change too.
 
 ## Snippets
 
-The Source expander snippets (`Snippets\*.txt`) are generated from `<!-- snippet -->` /
+The Source code snippets (`Snippets\*.txt`) are generated from `<!-- snippet -->` /
 `// <snippet>` regions by `tools\Update-Snippets.ps1` (`-Tags Sort,Groups` limits it to some pages)
 and checked in. A named region (`// <snippet Groups Sort>`) in a shared or data file is appended to
 those pages' snippets; a snippet whose first line is `// snippet:manual` opts out. Keep each region
-readable on its own (declare, or take as parameters, the values it uses); narration
-(`SetLastAction`, `RefreshReadouts`) is elided.
+readable on its own (declare, or take as parameters, the values it uses).
 
+A snippet shows only the code an app has to write to get the page's feature, as the WinUI Gallery
+samples do, and it is the page's real code: get there by choosing the region boundaries (split a
+method so the essential part is its own small method) and keeping the page source clean, not by
+having the tool rewrite it. Ask "what is the minimal code for what this page teaches?": sample-only
+helpers (`ShapingOptions`/`Shaping` plumbing, `SampleShaping` pickers, `EnqueueIfLoaded`, readouts,
+visual-tree walks, timers, scroll workarounds, test fixtures) and demo actions that are not the
+feature stay outside the regions. A tiny snippet is fine.
+
+- XAML: only the TableView, its columns and the templates and resources it uses. Regions inside
+  `SamplePresenter.Options` (the rail) are ignored, so option controls never appear; keep other
+  page chrome (headings, focus sentinels, side lists) outside the regions. Write column widths as
+  literals (the `ColWidth*` tokens in `App.xaml` are for columns built in code), give the
+  `TableView` start tag one attribute per line, and subscribe readout-only handlers in code
+  rather than in the snippet's XAML. When the event is what the page teaches (`SelectionChanged`
+  on Selection, `Sorted` on Sort), subscribe it in the XAML and keep the handler in the snippet,
+  with its readout lines marked `// snippet:skip`.
+- C#: the data setup and the TableView calls, including the calls the rail's controls make, as
+  small handlers. Keep page plumbing (readouts, pickers, button enabling, guards for controls not
+  created yet) outside the regions, or mark the line `// snippet:skip`. A non-obvious app
+  requirement gets a one-line comment next to the call, for example on `CommitEdit`:
+  `// Buttons that call these need AllowFocusOnInteraction="False", ...`.
+- Comments inside a region: one or two lines on the non-obvious why; no `// ----` banners or
+  `///` blocks.
+
+The tool rewrites only what a page cannot avoid, and nothing else:
+
+- XAML: `AutomationProperties.AutomationId` is removed (pages keep it for the UIA scripts); the
+  page-layout attributes of a region's top-level elements are removed (`Grid.Row`, `Grid.Column`,
+  `Grid.RowSpan`, `Grid.ColumnSpan`, `Margin`, `MinHeight`, `MaxHeight`, `HorizontalAlignment`,
+  `VerticalAlignment`); a `HeaderToolTip` or `ToolTipService.ToolTip` whose literal value is a
+  sentence is removed, because it narrates the sample page to its user.
+- C#: whole `SetLastAction*(...)` and `RefreshReadouts();` statements are elided, and a block left
+  empty shows `// …`.
+- Regions are dedented and joined with a blank line.
 After editing a region, run `powershell -File tools\Update-Snippets.ps1` and commit the result. The
 build's `_CheckTableViewSnippets` target runs it with `-Check` only when a source, snippet or the
 tool changed, never in design-time builds; a stale or missing snippet is a warning (`TVSNIP001`)

@@ -396,6 +396,19 @@ void CPopup::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp)
     if (cleanupDComp)
     {
         ReleaseDCompResourcesForWindowedPopup();
+
+        // The old compositor closes the ContentIsland. Keep the bridge/HWND, but reconnect a new island when rendering resumes.
+        if (m_contentIsland)
+        {
+            if (m_automationProviderRequestedToken.value != 0)
+            {
+                IFCFAILFAST(m_contentIsland->remove_AutomationProviderRequested(m_automationProviderRequestedToken));
+                m_automationProviderRequestedToken = {};
+            }
+
+            m_inputSiteAdapter.reset();
+            m_contentIsland.Reset();
+        }
     }
 }
 
@@ -2457,11 +2470,23 @@ void CPopup::EnsureUIAWindow()
         ASSERT(island);
         uiaInfo = UIAHostEnvironmentInfo(island);
 
+        xref_ptr<CUIAHostWindow> uiaWindow;
         IFCFAILFAST(CUIAHostWindow::Create(
             uiaInfo,
             core->GetHostSite(),
             this,
-            m_spUIAWindow.ReleaseAndGetAddressOf()));
+            uiaWindow.ReleaseAndGetAddressOf()));
+
+        // Initializing the UIA window can pump messages. Don't adopt it if the windowed popup's resources were
+        // released meanwhile, or if a reentrant request already created a UIA window.
+        if (m_spUIAWindow || (!m_desktopPopupSiteBridge && !m_popupWindowBridge))
+        {
+            uiaWindow->Deinit();
+        }
+        else
+        {
+            m_spUIAWindow = std::move(uiaWindow);
+        }
     }
 }
 

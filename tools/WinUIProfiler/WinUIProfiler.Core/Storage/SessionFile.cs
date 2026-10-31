@@ -3,14 +3,41 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Storage;
 
+// ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording; negative
+// when it was created earlier (attach), null when unknown (a recorded trace).
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
-    long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes);
+    long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,
+    double? ProcessStartMilliseconds);
+
+// The kinds of objects the session file indexes (SessionSchema's Objects.Kind).
+public enum ObjectKind
+{
+    Element,
+    Visual
+}
+
+// A UI element or composition visual and when its stored events were first and last, in milliseconds from the start of the
+// recording. A visual's name is its owner element's label.
+public sealed record SessionObject(long ObjectId, ObjectKind Kind, long Address, string? Type, string? Name, long Events,
+    double FirstMilliseconds, double LastMilliseconds);
+
+// An object an event mentions: the field that holds its address, and the object's type and name when known. For a visual
+// whose parent's children were cleared, the field is "child of" the parent's field.
+public sealed record ObjectMention(long ObjectId, ObjectKind Kind, string Field, string? Type, string? Name);
+
+// A frame on a UI thread and its stored events by bucket (timing as in SessionSchema). Drawn is false for each thread's
+// latest frame, which may still be in progress. Times are milliseconds from the start of the recording; null when no
+// tick with this number is stored.
+public sealed record SessionFrame(long FrameId, int ThreadId, long FrameNumber, int Ticks, bool Drawn, double? StartMilliseconds,
+    double? LastTickStartMilliseconds, double? EndMilliseconds, double TickMilliseconds, long Events, long Xaml, long Composition,
+    long Other);
 
 // Reads a session file written by SessionWriter, also while it is still being written.
 public static class SessionFile
@@ -25,16 +52,314 @@ public static class SessionFile
     public static long Read(string path, Action<ProfilerEvent> sink, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sink);
+        return ReadEvents(path, "SELECT Qpc, ThreadId, TypeId, Payload FROM Events ORDER BY Seq", [],
+            (profilerEvent, _) => sink(profilerEvent), cancellationToken);
+    }
+
+    // The objects with stored events, in the order they were first seen: all, those of one kind, or the one with an ID or
+    // address.
+    public static IReadOnlyList<SessionObject> ReadObjects(string path, ObjectKind? kind = null, long? objectId = null, long? address = null)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        var (_, frequency, startQpc) = ReadSession(connection, transaction);
+        var start = startQpc.GetValueOrDefault();
+        var kindColumn = KindColumn(connection, transaction);
+        using var command = Command(connection, transaction, $"""
+            WITH Spans AS (
+                SELECT o.ObjectId, {kindColumn} AS Kind, o.Address, o.Type, o.Name, COUNT(DISTINCT r.Seq) AS Events,
+                    MIN(r.Seq) AS FirstSeq, MAX(r.Seq) AS LastSeq
+                FROM Objects o JOIN ObjectEvents r ON r.ObjectId = o.ObjectId
+                WHERE ($kind IS NULL OR {kindColumn} = $kind) AND ($id IS NULL OR o.ObjectId = $id)
+                    AND ($address IS NULL OR o.Address = $address)
+                GROUP BY o.ObjectId)
+            SELECT s.ObjectId, s.Kind, s.Address, s.Type, s.Name, s.Events, f.Qpc, l.Qpc
+            FROM Spans s JOIN Events f ON f.Seq = s.FirstSeq JOIN Events l ON l.Seq = s.LastSeq
+            ORDER BY s.FirstSeq, s.ObjectId
+            """, ("$kind", kind?.ToString()), ("$id", objectId), ("$address", address));
+        using var reader = command.ExecuteReader();
+        var objects = new List<SessionObject>();
+        while (reader.Read())
+        {
+            objects.Add(new(reader.GetInt64(0), Enum.Parse<ObjectKind>(reader.GetString(1)), reader.GetInt64(2), NullableString(reader, 3),
+                NullableString(reader, 4), reader.GetInt64(5), (reader.GetInt64(6) - start) * 1000.0 / frequency,
+                (reader.GetInt64(7) - start) * 1000.0 / frequency));
+        }
+
+        return objects;
+    }
+
+    // Delivers a page of the events that mention one object (count -1 for all) in Seq order, with the fields that hold
+    // its address and the number of the frame the event belongs to, if any.
+    public static long ReadTimeline(string path, long objectId, int offset, int count,
+        Action<ProfilerEvent, IReadOnlyList<string>, long?> sink, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sink);
+        return ReadEvents(path, """
+            SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, GROUP_CONCAT(r.Field), f.FrameNumber
+            FROM ObjectEvents r
+                JOIN Events e ON e.Seq = r.Seq
+                LEFT JOIN FrameEvents x ON x.Seq = r.Seq
+                LEFT JOIN Frames f ON f.FrameId = x.FrameId
+            WHERE r.ObjectId = $id
+            GROUP BY r.Seq
+            ORDER BY r.Seq
+            LIMIT $count OFFSET $offset
+            """, [("$id", objectId), ("$count", count), ("$offset", offset)],
+            (profilerEvent, reader) => sink(profilerEvent,
+                [.. reader.GetString(4).Split(',').Select(field => int.Parse(field, CultureInfo.InvariantCulture)).Order()
+                    .Select(field => FieldName(profilerEvent, field))],
+                reader.IsDBNull(5) ? null : reader.GetInt64(5)),
+            cancellationToken);
+    }
+
+    // How many events mention one object.
+    public static long CountTimeline(string path, long objectId)
+    {
+        using var connection = Open(path);
+        using var command = Command(connection, null, "SELECT COUNT(DISTINCT Seq) FROM ObjectEvents WHERE ObjectId = $id",
+            ("$id", objectId));
+        return (long)command.ExecuteScalar()!;
+    }
+
+    // The UI element a tree snapshot node was when the snapshot was taken, from the WinRT object addresses the snapshot
+    // recorded (its IUnknown and its XAML diagnostics handle). Events that carry both an element's address and its WinRT
+    // object's map one to the other: the latest at or before the snapshot's QPC time, or else the first after it. The
+    // element is then the one at that address at that time. Null when no stored event maps the addresses, for example when
+    // the recording started after the element was created.
+    public static long? FindSnapshotElement(string path, IReadOnlyCollection<long> addresses, long qpc)
+    {
+        ArgumentNullException.ThrowIfNull(addresses);
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        (string Event, string Element, string Peer)[] pairs =
+        [
+            ("PeerAssociated", "ElementId", "PeerHandle"), ("ElementEnteredTree", "ElementId", "PeerHandle"),
+            ("ChildAdded", "ChildId", "ChildPeerHandle"), ("ChildInserted", "ChildId", "ChildPeerHandle")
+        ];
+        var shapes = new List<(long TypeId, int Element, int Peer)>();
+        using (var command = Command(connection, transaction, "SELECT TypeId, Name, FieldNames FROM EventTypes"))
+        {
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var names = reader.GetString(2).Split(',');
+                foreach (var pair in pairs.Where(pair => pair.Event == reader.GetString(1)))
+                {
+                    var element = Array.IndexOf(names, pair.Element);
+                    var peer = Array.IndexOf(names, pair.Peer);
+                    if (element >= 0 && peer >= 0)
+                    {
+                        shapes.Add((reader.GetInt64(0), element, peer));
+                    }
+                }
+            }
+        }
+
+        if (shapes.Count == 0 || addresses.Count == 0)
+        {
+            return null;
+        }
+
+        string Field(Func<(long TypeId, int Element, int Peer), int> index) => "CASE TypeId " +
+            string.Join(" ", shapes.Select(shape => $"WHEN {shape.TypeId} THEN json_extract(Payload, '$[{index(shape)}]')")) + " END";
+        long? before = null;
+        long? after = null;
+        using (var command = Command(connection, transaction, $"""
+            SELECT Qpc, Element
+            FROM (SELECT Seq, Qpc, {Field(shape => shape.Element)} AS Element, {Field(shape => shape.Peer)} AS Peer
+                FROM Events
+                WHERE TypeId IN ({string.Join(", ", shapes.Select(shape => shape.TypeId))}))
+            WHERE Peer IN (SELECT value FROM json_each($addresses))
+            ORDER BY Seq
+            """, ("$addresses", $"[{string.Join(",", addresses.Select(address => address.ToString(CultureInfo.InvariantCulture)))}]")))
+        {
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                if (reader.GetInt64(0) <= qpc)
+                {
+                    before = reader.GetInt64(1);
+                }
+                else
+                {
+                    after = reader.GetInt64(1);
+                    break;
+                }
+            }
+        }
+
+        if ((before ?? after) is not { } elementAddress)
+        {
+            return null;
+        }
+
+        return ObjectAt(connection, transaction, ObjectKind.Element, elementAddress, qpc);
+    }
+
+    // The visual a composition snapshot node was when the snapshot was taken. The snapshot records the visual's IVisual
+    // pointer, the same address the visual events carry. Null when no stored event mentions it, for example when the
+    // recording started after the visual was inserted.
+    public static long? FindSnapshotVisual(string path, long address, long qpc)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        return ObjectAt(connection, transaction, ObjectKind.Visual, address, qpc);
+    }
+
+    // The object of a kind at an address at a QPC time: of those stored there, the last first seen at or before that
+    // time, or else the first.
+    private static long? ObjectAt(SqliteConnection connection, SqliteTransaction transaction, ObjectKind kind, long address, long qpc)
+    {
+        using var objects = Command(connection, transaction, $"""
+            SELECT o.ObjectId, MIN(e.Qpc)
+            FROM Objects o JOIN ObjectEvents r ON r.ObjectId = o.ObjectId JOIN Events e ON e.Seq = r.Seq
+            WHERE o.Address = $address AND {KindColumn(connection, transaction)} = $kind
+            GROUP BY o.ObjectId
+            ORDER BY MIN(r.Seq)
+            """, ("$address", address), ("$kind", kind.ToString()));
+        using var rows = objects.ExecuteReader();
+        long? found = null;
+        while (rows.Read())
+        {
+            if (found is null || rows.GetInt64(1) <= qpc)
+            {
+                found = rows.GetInt64(0);
+            }
+        }
+
+        return found;
+    }
+
+    // The frames with stored events, in the order they were first seen: all, or the one with an ID.
+    public static IReadOnlyList<SessionFrame> ReadFrames(string path, long? frameId = null) =>
+        QueryFrames(path, frameId, null).Frames;
+
+    // The frames that changed after a read that saw events up to a Seq (null for all frames), in the order they were
+    // first seen, and the Seq to pass next time. Trimming is not a change; it changes CompleteFromSeq instead.
+    public static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadChangedFrames(string path, long? afterSeq) =>
+        QueryFrames(path, null, afterSeq);
+
+    // A frame's ticks and events only change with an event attributed to it, and whether it drew changes when a later
+    // frame appears on its thread. So the frames that changed after a Seq are, on each thread with events after it, the
+    // frames from the one below the lowest of those on.
+    private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) QueryFrames(string path, long? frameId, long? afterSeq)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        var (_, frequency, startQpc) = ReadSession(connection, transaction);
+        var start = startQpc.GetValueOrDefault();
+        using var command = Command(connection, transaction, """
+            WITH Changed AS (
+                    SELECT f.ThreadId, MIN(f.FrameNumber) AS FrameNumber
+                    FROM FrameEvents r JOIN Frames f ON f.FrameId = r.FrameId
+                    WHERE r.Seq > $after
+                    GROUP BY f.ThreadId),
+                Since AS (
+                    SELECT c.ThreadId, COALESCE((SELECT MAX(p.FrameNumber) FROM Frames p
+                        WHERE p.ThreadId = c.ThreadId AND p.FrameNumber < c.FrameNumber), c.FrameNumber) AS FrameNumber
+                    FROM Changed c),
+                Latest AS (SELECT ThreadId, MAX(FrameNumber) AS FrameNumber FROM Frames GROUP BY ThreadId)
+            SELECT f.FrameId, f.ThreadId, f.FrameNumber, f.Ticks, f.StartQpc, f.LastTickStartQpc, f.EndQpc, f.TickTimeQpc,
+                f.FrameNumber < t.FrameNumber, COUNT(*), SUM(r.Bucket = 'Xaml'), SUM(r.Bucket = 'Composition'), SUM(r.Bucket = 'Other')
+            FROM Frames f
+                JOIN FrameEvents r ON r.FrameId = f.FrameId
+                JOIN Latest t ON t.ThreadId = f.ThreadId
+            WHERE ($id IS NULL OR f.FrameId = $id) AND ($after IS NULL OR f.FrameId IN (
+                SELECT p.FrameId FROM Frames p JOIN Since s ON s.ThreadId = p.ThreadId AND p.FrameNumber >= s.FrameNumber))
+            GROUP BY f.FrameId
+            ORDER BY f.FrameId
+            """, ("$id", frameId), ("$after", afterSeq));
+        var frames = new List<SessionFrame>();
+        using (var reader = command.ExecuteReader())
+        {
+            double? Milliseconds(int ordinal) => reader.IsDBNull(ordinal) ? null : (reader.GetInt64(ordinal) - start) * 1000.0 / frequency;
+            while (reader.Read())
+            {
+                frames.Add(new(reader.GetInt64(0), reader.GetInt32(1), reader.GetInt64(2), reader.GetInt32(3), reader.GetBoolean(8),
+                    Milliseconds(4), Milliseconds(5), Milliseconds(6), reader.GetInt64(7) * 1000.0 / frequency, reader.GetInt64(9),
+                    reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(12)));
+            }
+        }
+
+        using var last = Command(connection, transaction, "SELECT MAX(Seq) FROM FrameEvents");
+        return (frames, last.ExecuteScalar() is long seq ? seq : null);
+    }
+
+    // Delivers a frame's events in Seq order with each event's bucket and the objects it mentions: optionally one
+    // bucket's, those matching a filter (see FrameEventsQuery), and a page of them (count -1 for all).
+    public static long ReadFrameEvents(string path, long frameId, string? bucket, string? filter, int offset, int count,
+        Action<ProfilerEvent, string, IReadOnlyList<ObjectMention>> sink, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sink);
+        var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
+        return ReadEvents(path, (connection, transaction) => $"""
+            SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, r.Bucket,
+                (SELECT json_group_array(json_array(m.ObjectId, m.Field, o.Type, o.Name, {KindColumn(connection, transaction)}))
+                FROM ObjectEvents m JOIN Objects o ON o.ObjectId = m.ObjectId
+                WHERE m.Seq = r.Seq)
+            {where}
+            ORDER BY r.Seq
+            LIMIT $count OFFSET $offset
+            """, [.. parameters, ("$count", count), ("$offset", offset)],
+            (profilerEvent, reader) => sink(profilerEvent, reader.GetString(4), Mentions(profilerEvent, reader.GetString(5))),
+            cancellationToken);
+    }
+
+    // How many of a frame's events ReadFrameEvents would deliver without a page.
+    public static long CountFrameEvents(string path, long frameId, string? bucket, string? filter)
+    {
+        using var connection = Open(path);
+        var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
+        using var command = Command(connection, null, $"SELECT COUNT(*) {where}", parameters);
+        return (long)command.ExecuteScalar()!;
+    }
+
+    // A filter keeps the events whose name contains its text, case-insensitively. Text also matches string field values
+    // that contain it; a number (decimal, or hex with 0x) matches numeric fields with exactly that value instead.
+    private static (string Where, (string Name, object? Value)[] Parameters) FrameEventsQuery(long frameId, string? bucket,
+        string? filter)
+    {
+        filter = string.IsNullOrWhiteSpace(filter) ? null : filter.Trim();
+        long? number = filter is null ? null
+            : filter.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? ulong.TryParse(filter.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex)
+                    ? unchecked((long)hex) : null
+                : long.TryParse(filter, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
+        return ("""
+            FROM FrameEvents r JOIN Events e ON e.Seq = r.Seq JOIN EventTypes t ON t.TypeId = e.TypeId
+            WHERE r.FrameId = $id AND ($bucket IS NULL OR r.Bucket = $bucket)
+                AND ($like IS NULL OR t.Name LIKE $like ESCAPE '\' OR EXISTS (
+                    SELECT 1 FROM json_each(e.Payload) v
+                    WHERE ($number IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
+                        OR (v.type IN ('integer', 'real') AND v.value = $number)))
+            """, [("$id", frameId), ("$bucket", bucket),
+                ("$like", filter is null ? null : $"%{filter.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_")}%"),
+                ("$number", number)]);
+    }
+
+    // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and then any others, which the sink reads from the
+    // reader along with each event.
+    private static long ReadEvents(string path, string query, (string Name, object? Value)[] parameters,
+        Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken) =>
+        ReadEvents(path, (_, _) => query, parameters, sink, cancellationToken);
+
+    // The same, with a query that depends on the file's columns (KindColumn).
+    private static long ReadEvents(string path, Func<SqliteConnection, SqliteTransaction, string> query,
+        (string Name, object? Value)[] parameters, Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken)
+    {
         using var connection = Open(path);
         // One read transaction, so a file still being written is read as one consistent snapshot: every stored event's
         // type is among the types read.
         using var transaction = connection.BeginTransaction(deferred: true);
         var (info, frequency, startQpc) = ReadSession(connection, transaction);
-        var types = new Dictionary<long, (XamlProvider Provider, string Name, int Opcode, string[] Names, FieldType[] Types)>();
-        using (var command = connection.CreateCommand())
+        // Files written before TraceLogging was added hold only TraceLogging events, apart from DxgKrnl's manifest events.
+        var traceLogging = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('EventTypes') WHERE name = 'TraceLogging'",
+            transaction) > 0 ? "TraceLogging" : $"Provider <> '{XamlProvider.DxgKrnl}'";
+        var types = new Dictionary<long, (XamlProvider Provider, bool TraceLogging, string Name, int Opcode, string[] Names, FieldType[] Types)>();
+        using (var command = Command(connection, transaction,
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, {traceLogging} FROM EventTypes"))
         {
-            command.Transaction = transaction;
-            command.CommandText = "SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes FROM EventTypes";
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
@@ -46,16 +371,14 @@ public static class SessionFile
                     throw new InvalidDataException("An event type's field names and types do not match.");
                 }
 
-                types[reader.GetInt64(0)] = (Enum.Parse<XamlProvider>(reader.GetString(1)), reader.GetString(2), reader.GetInt32(3),
-                    names, fieldTypes);
+                types[reader.GetInt64(0)] = (Enum.Parse<XamlProvider>(reader.GetString(1)), reader.GetBoolean(6), reader.GetString(2),
+                    reader.GetInt32(3), names, fieldTypes);
             }
         }
 
         long delivered = 0;
-        using (var command = connection.CreateCommand())
+        using (var command = Command(connection, transaction, query(connection, transaction), parameters))
         {
-            command.Transaction = transaction;
-            command.CommandText = "SELECT Qpc, ThreadId, TypeId, Payload FROM Events ORDER BY Seq";
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
@@ -64,7 +387,8 @@ public static class SessionFile
                 startQpc ??= qpc;
                 var type = types[reader.GetInt64(2)];
                 sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, info.ProcessId, reader.GetInt32(1), type.Provider,
-                    type.Name, type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types)));
+                    type.TraceLogging, type.Name, type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types)),
+                    reader);
                 delivered++;
             }
         }
@@ -72,6 +396,44 @@ public static class SessionFile
         return delivered;
     }
 
+    // The [ObjectId, Field, Type, Name, Kind] arrays of ReadFrameEvents' mentions column.
+    private static IReadOnlyList<ObjectMention> Mentions(ProfilerEvent profilerEvent, string json)
+    {
+        if (json == "[]")
+        {
+            return [];
+        }
+
+        static string? Text(JsonElement value) => value.ValueKind == JsonValueKind.Null ? null : value.GetString();
+        using var document = JsonDocument.Parse(json);
+        return [.. document.RootElement.EnumerateArray().Select(mention => new ObjectMention(mention[0].GetInt64(),
+            Enum.Parse<ObjectKind>(mention[4].GetString()!), FieldName(profilerEvent, mention[1].GetInt32()), Text(mention[2]),
+            Text(mention[3])))];
+    }
+
+    // The name of the field a mention is in (ObjectEvents.Field): -1 - i for a child whose parent is in field i.
+    private static string FieldName(ProfilerEvent profilerEvent, int field) =>
+        field >= 0 ? profilerEvent.Fields[field].Name : $"child of {profilerEvent.Fields[-1 - field].Name}";
+
+    // Files written before visuals were indexed have no Objects.Kind; all their objects are UI elements. For queries that
+    // name the Objects table o.
+    private static string KindColumn(SqliteConnection connection, SqliteTransaction? transaction) =>
+        Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('Objects') WHERE name = 'Kind'", transaction) > 0
+            ? "o.Kind" : "'Element'";
+
+    private static SqliteCommand Command(SqliteConnection connection, SqliteTransaction? transaction, string text,
+        params (string Name, object? Value)[] parameters)
+    {
+        var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = text;
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value ?? DBNull.Value);
+        }
+
+        return command;
+    }
     private static SqliteConnection Open(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -111,10 +473,15 @@ public static class SessionFile
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = """
+        // Files written before StartedQpc was added are otherwise the same; without it the process start is unknown.
+        var startedQpc = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('SessionInfo') WHERE name = 'StartedQpc'",
+            transaction) > 0 ? "StartedQpc" : "NULL";
+        var kind = KindColumn(connection, transaction);
+        command.CommandText = $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
-                (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events)
+                (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Element'),
+                (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, {startedQpc}, (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Visual')
             FROM SessionInfo
             """;
         using var reader = command.ExecuteReader();
@@ -123,13 +490,20 @@ public static class SessionFile
             throw new InvalidDataException("The session file has no session record.");
         }
 
+        var frequency = reader.IsDBNull(12) ? Stopwatch.Frequency : reader.GetInt64(12);
+        long? startQpc = reader.IsDBNull(13) ? null : reader.GetInt64(13);
+        var startedUtc = ParseUtc(reader.GetString(5));
+        // StartedQpc was read with StartedUtc, so the process creation time maps onto the events' QPC clock.
+        double? processStart = startQpc is { } start && !reader.IsDBNull(17) && !reader.IsDBNull(18)
+            ? (reader.GetInt64(18) - start) * 1000.0 / frequency - (startedUtc - ParseUtc(reader.GetString(17))).TotalMilliseconds
+            : null;
         var info = new SessionFileInfo(reader.GetInt32(0), NullableString(reader, 1), reader.GetString(2), NullableString(reader, 3),
-            Enum.Parse<SessionCoverage>(reader.GetString(4)), ParseUtc(reader.GetString(5)),
+            Enum.Parse<SessionCoverage>(reader.GetString(4)), startedUtc,
             reader.IsDBNull(6) ? null : ParseUtc(reader.GetString(6)), NullableString(reader, 7),
             reader.GetInt64(14), reader.IsDBNull(8) ? null : reader.GetInt64(8), reader.IsDBNull(9) ? null : reader.GetInt32(9),
-            reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11));
-        var frequency = reader.IsDBNull(12) ? Stopwatch.Frequency : reader.GetInt64(12);
-        return (info, frequency, reader.IsDBNull(13) ? null : reader.GetInt64(13));
+            reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(19),
+            reader.GetInt64(16), processStart);
+        return (info, frequency, startQpc);
     }
 
     private static string? NullableString(SqliteDataReader reader, int ordinal) => reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);

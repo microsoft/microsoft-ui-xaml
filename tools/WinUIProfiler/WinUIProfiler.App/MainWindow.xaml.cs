@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +20,7 @@ namespace WinUIProfiler.App;
 public sealed partial class MainWindow : Window
 {
     private readonly LiveSessionViewModel model = new();
+    private readonly SessionSource session = new();
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
     private MetricHistory? renderedHistory;
     private long renderedSamples = -1;
@@ -28,20 +30,46 @@ public sealed partial class MainWindow : Window
     private volatile bool closing;
     private bool closeAllowed;
     private bool refreshing;
+    private bool? settingsFoldedFor;
     private bool initialSnapshotPending;
     private CancellationTokenSource? snapshotOperation;
     private SavedTreeSnapshot? snapshot;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
+    private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
     public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
     public MainWindow()
     {
         InitializeComponent();
         Title = Text("AppTitle");
         AppWindow.Resize(new SizeInt32(1280, 1050));
+        Root.Loaded += SizeToDisplay;
         SetNames();
         model.PropertyChanged += Model_PropertyChanged;
         AppWindow.Closing += AppWindow_Closing;
+        FramesPanel.Owner = AppWindow.Id;
+        ObjectsPanel.Owner = AppWindow.Id;
+        FramesPanel.Source = session;
+        ObjectsPanel.Source = session;
+        FramesPanel.ObjectRequested += (_, mention) =>
+        {
+            Tabs.SelectedItem = ObjectsTab;
+            ObjectsPanel.ShowObject(mention.ObjectId);
+        };
+        UpdateTargetSummary();
         Refresh();
+    }
+
+    // Resize takes physical pixels, so at the display's scaling the window is 1280 x 1050, within the work area.
+    private void SizeToDisplay(object sender, RoutedEventArgs args)
+    {
+        Root.Loaded -= SizeToDisplay;
+        var scale = Root.XamlRoot.RasterizationScale;
+        var area = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest).WorkArea;
+        var width = Math.Min((int)(1280 * scale), area.Width);
+        var height = Math.Min((int)(1050 * scale), area.Height);
+        var position = AppWindow.Position;
+        AppWindow.MoveAndResize(new RectInt32(Math.Clamp(position.X, area.X, area.X + area.Width - width),
+            Math.Clamp(position.Y, area.Y, area.Y + area.Height - height), width, height));
     }
 
     private async void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
@@ -62,6 +90,7 @@ public sealed partial class MainWindow : Window
         connectionGeneration++;
         model.PropertyChanged -= Model_PropertyChanged;
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
+        foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
         await model.DisconnectAsync();
         closeAllowed = true;
         Close();
@@ -150,6 +179,13 @@ public sealed partial class MainWindow : Window
         try
         {
             var idle = model.CanConnect && !initialSnapshotPending && snapshotOperation is null;
+            if (settingsFoldedFor != model.CanConnect)
+            {
+                // The settings can't change while connecting or connected, so they fold away to give the tabs room.
+                TargetSettings.IsExpanded = model.CanConnect;
+                settingsFoldedFor = model.CanConnect;
+            }
+
             foreach (var control in new Control[]
             {
                 Mode,
@@ -169,6 +205,7 @@ public sealed partial class MainWindow : Window
             DisconnectButton.Content = Text(model.IsBusy ? "CancelConnection" : "DisconnectLabel");
             SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy &&
                 !initialSnapshotPending && snapshotOperation is null;
+            CompareSnapshotsButton.IsEnabled = Snapshots.Count >= 2;
             SnapshotStatus.Text = snapshotOperation is not null ? Text("SnapshotCapturing") :
                 snapshot is null ? "" : Format("SnapshotSavedFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Path);
             AutomationProperties.SetItemStatus(SnapshotStatus, JsonSerializer.Serialize(new
@@ -232,6 +269,8 @@ JsonSerializer.Serialize(new
                         recording.LimitBytes / 1024 / 1024, recording.CompleteFromSeconds ?? 0),
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
             }
+
+            session.ShowRecording(recording?.Path, model.State == "Connected");
             var history = model.History;
             var samples = history?.TotalSamples ?? 0;
             if (!ReferenceEquals(history, renderedHistory) || samples != renderedSamples)
@@ -266,6 +305,18 @@ JsonSerializer.Serialize(new
         {
             selectedTarget = null;
         }
+
+        UpdateTargetSummary();
+    }
+
+    private void Arguments_TextChanged(object sender, TextChangedEventArgs args) => UpdateTargetSummary();
+
+    // The settings' header names the target, so it is still shown when they are folded away.
+    private void UpdateTargetSummary()
+    {
+        var target = TargetText.Text.Trim();
+        TargetSummary.Text = target.Length == 0 ? Text("TargetSettingsHeader")
+            : Format("TargetSummaryFormat", Path.GetFileName(target), ArgumentsText.Text.Trim());
     }
 
     private async void Connect_Click(object sender, RoutedEventArgs args)
@@ -372,7 +423,54 @@ Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicatio
                 viewer = new(entry);
                 snapshotWindows.Add(entry.Saved.CaptureId, viewer);
                 viewer.Closed += (_, _) => snapshotWindows.Remove(entry.Saved.CaptureId);
+                viewer.ObjectRequested += ShowSnapshotObject;
             }
+            viewer.Activate();
+        }
+        catch (Exception error)
+        {
+            model.ReportError(error);
+        }
+    }
+
+    // A snapshot window asked for a node's element or visual: show its history in the Objects tab.
+    private void ShowSnapshotObject(object? sender, SnapshotObject node)
+    {
+        if (closing) return;
+        Tabs.SelectedItem = ObjectsTab;
+        ObjectsPanel.ShowSnapshotObject(node);
+        Activate();
+    }
+
+    private void SnapshotDiffPicker_Opening(object sender, object args)
+    {
+        SnapshotDiffBefore.SelectedIndex = Snapshots.Count >= 2 ? 1 : -1;
+        SnapshotDiffAfter.SelectedIndex = Snapshots.Count > 0 ? 0 : -1;
+    }
+
+    private void SnapshotDiffSelection_Changed(object sender, SelectionChangedEventArgs args)
+    {
+        if (CompareSelectedSnapshots is null) return;
+        CompareSelectedSnapshots.IsEnabled = SnapshotDiffBefore.SelectedItem is SnapshotHistoryEntry before &&
+            SnapshotDiffAfter.SelectedItem is SnapshotHistoryEntry after && before.CaptureId != after.CaptureId &&
+            SnapshotDiffData.CanCompare(before, after);
+    }
+
+    private void CompareSnapshots_Click(object sender, RoutedEventArgs args)
+    {
+        if (closing || SnapshotDiffBefore.SelectedItem is not SnapshotHistoryEntry before ||
+            SnapshotDiffAfter.SelectedItem is not SnapshotHistoryEntry after) return;
+        try
+        {
+            var key = (before.Saved.CaptureId, after.Saved.CaptureId);
+            if (!snapshotDiffWindows.TryGetValue(key, out var viewer))
+            {
+                viewer = new(before, after);
+                snapshotDiffWindows.Add(key, viewer);
+                viewer.Closed += (_, _) => snapshotDiffWindows.Remove(key);
+                viewer.ObjectRequested += ShowSnapshotObject;
+            }
+            SnapshotDiffPicker.Hide();
             viewer.Activate();
         }
         catch (Exception error)
