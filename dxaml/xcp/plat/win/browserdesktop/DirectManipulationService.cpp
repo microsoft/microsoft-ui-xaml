@@ -202,7 +202,7 @@ CDirectManipulationService::EnsureDirectManipulationManager(
             IFC_RETURN(m_pDMCompositor->SetUpdateManager(m_pDMUpdateManager));
         }
 
-        m_pDMHelper.Initialize(m_pDMCompositor, m_pDMManager);
+        IFC_RETURN(m_pDMHelper.Initialize(m_pDMCompositor, m_pDMManager));
     }
 
     return S_OK;
@@ -3029,11 +3029,14 @@ CDirectManipulationService::ResetCompositor()
 
     if (m_pDMCompositor != nullptr)
     {
+        // The helper caches the compositor, so recreate it with the replacement.
+        m_pDMHelper.Uninitialize();
         m_sharedState->ReleaseSharedDCompManipulationCompositor(m_pDMCompositor);
         ReleaseInterface(m_pDMFrameInfoProvider);
         IFC(m_sharedState->GetSharedDCompManipulationCompositor(&m_pDMCompositor));
         IFC(EnsureFrameInfoProvider());
         IFC(m_pDMCompositor->SetUpdateManager(m_pDMUpdateManager));
+        IFC(m_pDMHelper.Initialize(m_pDMCompositor, m_pDMManager));
     }
 
 Cleanup:
@@ -3257,7 +3260,7 @@ CDirectManipulationService::CreateSharedContentTransformForContent(
     xref_ptr<IUnknown> spSharedTransform;
     IFC(static_cast<CCOMObjectWrapper*>(pContent)->GetCOMObjectNoRef()->QueryInterface(IID_PPV_ARGS(spDMContent.ReleaseAndGetAddressOf())));
     
-    GetDirectManipulationHelper()->CreateSharedContentTransformForContent(compositor, spDMContent, spSharedTransform.ReleaseAndGetAddressOf());
+    IFC(GetDirectManipulationHelper()->CreateSharedContentTransformForContent(compositor, spDMContent, spSharedTransform.ReleaseAndGetAddressOf()));
 
     *ppSharedTransform = spSharedTransform.detach();
 

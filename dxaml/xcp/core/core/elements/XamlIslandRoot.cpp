@@ -73,21 +73,10 @@ void CXamlIslandRoot::DisconnectUIA()
 //  3. Composition
 void CXamlIslandRoot::Dispose()
 {
-    if (m_contentRoot)
-    {
-        const auto visualTree = m_contentRoot->GetVisualTreeNoRef();
-        if (visualTree)
-        {
-            if (auto rootScale = visualTree->GetRootScale())
-            {
-                rootScale->SetContentIsland(nullptr);
-            }
-        }
-    }
+    // UIA providers survive ContentIsland replacement, but must disconnect before final teardown.
+    DisconnectUIA();
 
-    m_rootVisual = nullptr;
-
-    UnsubscribeToInputEvents();
+    IGNOREHR(ReleaseContentIslandResources());
 
     if (m_contentRoot)
     {
@@ -95,20 +84,34 @@ void CXamlIslandRoot::Dispose()
         m_contentRoot = nullptr;
     }
 
-    DisconnectUIA();
-
     // Let CCoreServices evaluate visibility again, in case this was the last visible content and it was just closed.
     m_isVisible = false;
-    CCoreServices* coreServices = GetContext();
-    IFCFAILFAST(coreServices->OnVisibilityChanged(false /* isStartingUp */, false /* freezeDWMSnapshotIfHidden */));
+    IFCFAILFAST(GetContext()->OnVisibilityChanged(false /* isStartingUp */, false /* freezeDWMSnapshotIfHidden */));
 
+    m_contentBridgeDW = nullptr;
+}
+
+_Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIslandResources()
+{
+    m_rootVisual = nullptr;
+
+    UnsubscribeToInputEvents();
+
+    CCoreServices* coreServices = GetContext();
     // Clear out the IslandInputSite set on InputServices to facilitate a clean shutdown of DManip.
     if (nullptr != m_islandInputSite)
     {
         CInputServices* inputServices = coreServices->GetInputServices();
         inputServices->UnregisterIslandInputSite(m_islandInputSite.Get());
+        m_islandInputSite.Reset();
     }
 
+    if (m_contentRoot)
+    {
+        // Release the m_xamlFocusController
+        IFC_RETURN(m_contentRoot->GetFocusManagerNoRef()->GetFocusObserverNoRef()->Init(
+            static_cast<xaml_hosting::IFocusController*>(nullptr)));
+    }
     m_xamlFocusController = nullptr;
 
     if (m_dragDropManager && m_dropTargetRequestedToken.value != 0)
@@ -145,7 +148,38 @@ void CXamlIslandRoot::Dispose()
         m_topLevelHost = nullptr;
     }
 
-    m_contentBridgeDW = nullptr;
+    ClearLastPointerPointForReplay();
+    m_hasCapture = false;
+    m_isNonClientPointerDown = false;
+
+    if (m_contentRoot)
+    {
+        IFC_RETURN(m_contentRoot->SetContentIsland(nullptr));
+    }
+
+    return S_OK;
+}
+
+// Used in tests when disposing of all Composition resources, including the ContentIsland, which is created with a visual
+_Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIsland()
+{
+    IFC_RETURN(FxCallbacks::XamlIslandRoot_ReleaseContentIsland(this));
+    return ReleaseContentIslandResources();
+}
+
+// Rebuild after disposing of the ContentIsland from an earlier call to ReleaseContentIsland()
+_Check_return_ HRESULT CXamlIslandRoot::RebuildContentIsland()
+{
+    ASSERT(GetContentIsland() == nullptr);
+
+    IFC_RETURN(InitializeContentIsland());
+
+    if (m_inputNonClientPointerSource)
+    {
+        SubscribeToInputNonClientPointerSourceEvents();
+    }
+
+    return FxCallbacks::XamlIslandRoot_RebuildContentIsland(this);
 }
 
 _Check_return_ HRESULT CXamlIslandRoot::Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* /*contentBridge*/)
@@ -186,6 +220,11 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeCommon()
 {
     IFC_RETURN(SetRequiresComposition(CompositionRequirement::RootElement, IndependentAnimationType::None));
 
+    return InitializeContentIsland();
+}
+
+_Check_return_ HRESULT CXamlIslandRoot::InitializeContentIsland()
+{
     auto core = GetContext();
 
     WindowsGraphicsDeviceManager* graphicsDeviceManager = core->GetBrowserHost()->GetGraphicsDeviceManager();

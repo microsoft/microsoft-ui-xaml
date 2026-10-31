@@ -189,6 +189,19 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 _Check_return_ HRESULT
 DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
 {
+    // shouldDeferClosingInteropCompositor is true when WindowsGraphicsDeviceManager::CleanupCachedDeviceResources
+    // performs DComp cleanup. Islands need to do extra cleanup in this scenario.
+    if (shouldDeferClosingInteropCompositor)
+    {
+        // Unhook island-owned input and events while the old compositor is still usable.
+        // Keep the registered XAML roots so recovery can create new ContentIslands for them.
+        for (auto& islandData : m_islandRenderData)
+        {
+            IFC_RETURN(islandData.first->ReleaseContentIsland());
+            islandData.second = XamlIslandRenderData();
+        }
+    }
+
     if (m_systemBackdropBrush != nullptr)
     {
         CCoreServices* coreServicesNoRef = GetCoreServicesNoRef();
@@ -487,11 +500,9 @@ DCompTreeHost::EnsureDCompDevice() noexcept
     LoadMockDevice();
     #endif
 
-    // The static factory can survive device loss. No need to create it again.
-    if (m_easingFunctionStatics == nullptr)
-    {
-        m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
-    }
+    // MockDComp injection and removal reset the process-wide factory cache. Refresh this
+    // per-host reference when recreating the compositor so it follows the active composition engine.
+    m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
 
     IFC_RETURN(m_pCompositionHelper.Initialize(this));
 
@@ -626,6 +637,19 @@ void DCompTreeHost::ReleaseGraphicsResources()
 
     m_compositionGraphicsDevice.Reset();
     m_wucBrushManager.ReleaseGraphicsDevice();
+}
+
+_Check_return_ HRESULT DCompTreeHost::RebuildXamlIslandResources()
+{
+    for (auto& islandData : m_islandRenderData)
+    {
+        if (islandData.first->GetContentIsland() == nullptr)
+        {
+            IFC_RETURN(islandData.first->RebuildContentIsland());
+        }
+    }
+
+    return S_OK;
 }
 
 _Check_return_

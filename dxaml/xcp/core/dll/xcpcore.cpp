@@ -9007,6 +9007,8 @@ CCoreServices::BuildDeviceRelatedResources()
 
     IFC_RETURN(GetBrowserHost()->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
 
+    IFC_RETURN(m_pNWWindowRenderTarget->GetDCompTreeHost()->RebuildXamlIslandResources());
+
     m_deviceLost = DeviceLostState::None;
 
     // We reset the device lost state above to allow us to release the new resources if the recovery process hits

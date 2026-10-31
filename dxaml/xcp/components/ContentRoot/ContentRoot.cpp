@@ -181,12 +181,15 @@ _Check_return_ HRESULT CContentRoot::ResetCompositionContent()
     return S_OK;
 }
 
-_Check_return_ HRESULT CContentRoot::SetContentIsland(_In_ ixp::IContentIsland* compositionContent)
+_Check_return_ HRESULT CContentRoot::SetContentIsland(_In_opt_ ixp::IContentIsland* compositionContent)
 {
     // ContentRoot is re-used through the life time of an application. Hence, CompositionContent can be set multiple time.
     // ResetCompositionContent will make sure to remove handlers and reset previous CompositionContent.
     IFC_RETURN(ResetCompositionContent());
-    IFC_RETURN(RegisterCompositionContent(compositionContent));
+    if (compositionContent)
+    {
+        IFC_RETURN(RegisterCompositionContent(compositionContent));
+    }
 
     if (const auto rootScale = RootScale::GetRootScaleForContentRoot(this)) // Check that we still have an active tree
     {

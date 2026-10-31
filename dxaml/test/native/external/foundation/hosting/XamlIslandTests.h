@@ -129,6 +129,7 @@ public:
     TEST_METHOD(ReinitializeXamlIslandOnUIThread_CustomApplication_KeepApplicationAlive)
 
     TEST_METHOD(IslandSystemBackdrop)
+    TEST_METHOD(IslandSystemBackdropBeforeContent)
 
     TEST_METHOD(IslandWithMuxcDoesntPoisonThread)
 

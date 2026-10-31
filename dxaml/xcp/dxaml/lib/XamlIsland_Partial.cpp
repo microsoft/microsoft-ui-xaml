@@ -82,6 +82,11 @@ _Check_return_ HRESULT XamlIsland::Initialize()
         interop->SignalRootMutation(ctl::iinspectable_cast(this), VisualMutationType::Add);
     }
 
+    return InitializeContentIsland();
+}
+
+_Check_return_ HRESULT XamlIsland::InitializeContentIsland()
+{
     // Configure the XamlIsland will take focus when requested
     // Get a FocusControllerStatics and get current FocusController for ContentIsland
     ctl::ComPtr<ixp::IInputFocusController> inputFocusController;
@@ -226,6 +231,19 @@ _Check_return_ HRESULT XamlIsland::Initialize()
     return S_OK;
 }
 
+_Check_return_ HRESULT XamlIsland::UpdateContentIsland(bool initialize)
+{
+    if (!initialize)
+    {
+        IFC_RETURN(UpdateSystemBackdrop(false));
+        ReleaseContentIslandResources();
+        return S_OK;
+    }
+
+    IFC_RETURN(InitializeContentIsland());
+    return UpdateSystemBackdrop(true);
+}
+
 _Check_return_ HRESULT XamlIsland::get_ContentImpl(_Outptr_ xaml::IUIElement** ppValue)
 {
     *ppValue = nullptr;
@@ -339,24 +357,33 @@ _Check_return_ HRESULT XamlIsland::put_SystemBackdropImpl(_In_opt_ xaml::Media::
     // back-to-back on the same SystemBackdrop.
     if (m_systemBackdrop.Get() != iSystemBackdrop)
     {
-        if (m_systemBackdrop.Get() != nullptr)
-        {
-            ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
-            IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-            IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
-        }
+        IFC_RETURN(UpdateSystemBackdrop(false));
 
         m_systemBackdrop = iSystemBackdrop;
-        if (iSystemBackdrop != nullptr)
-        {
-            ctl::ComPtr<xaml::IUIElement> content;
-            IFC_RETURN(get_ContentImpl(&content));
-            ctl::ComPtr<xaml::IXamlRoot> xamlRoot;
-            IFC_RETURN(content->get_XamlRoot(&xamlRoot));
+        IFC_RETURN(UpdateSystemBackdrop(true));
+    }
 
-            ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
-            IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlIsland::UpdateSystemBackdrop(bool connected)
+{
+    if (m_systemBackdrop)
+    {
+        ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
+        IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
+        if (connected)
+        {
+            // Directly get the XamlRoot, creating it if necessary, so this works even if
+            // no Content has yet been set on this XamlIsland.
+            ctl::ComPtr<IInspectable> root = m_pXamlIslandCore->GetContentRootNoRef()->GetOrCreateXamlRootNoRef();
+            ctl::ComPtr<xaml::IXamlRoot> xamlRoot;
+            IFC_RETURN(root.As(&xamlRoot));
             IFC_RETURN(systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get()));
+        }
+        else
+        {
+            IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
         }
     }
 
@@ -389,41 +416,11 @@ IFACEMETHODIMP XamlIsland::Close()
 
     if (m_systemBackdrop.Get() != nullptr)
     {
-        ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
-        IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-        IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
-        systemBackdrop = nullptr;
+        IFC_RETURN(UpdateSystemBackdrop(false));
         m_systemBackdrop = nullptr;
     }
 
-    if (m_inputFocusController2 != nullptr)
-    {
-        m_inputFocusController2->remove_NavigateFocusRequested(m_focusNavigationRequestedToken);
-        m_inputFocusController2 = nullptr;
-        m_focusNavigationRequestedToken.value = 0;
-    }
-
-    // http://task.ms/48681310: Once velocity key 45720437 has been flipped on, we will no longer
-    // have to set the InputSite on connection and this can be removed.
-    if (m_islandConnectedToken.value != 0)
-    {
-        wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-        IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
-
-        IFCFAILFAST(contentIslandExperimental->remove_Connected(m_islandConnectedToken));
-        m_islandConnectedToken.value = 0;
-    }
-
-    if (m_islandDisconnectedToken.value != 0)
-    {
-        wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-        IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
-
-        IFCFAILFAST(contentIslandExperimental->remove_Disconnected(m_islandDisconnectedToken));
-        m_islandDisconnectedToken.value = 0;
-    }
+    ReleaseContentIslandResources();
 
     if (m_spXamlIsland.Get() != nullptr)
     {
@@ -465,6 +462,34 @@ IFACEMETHODIMP XamlIsland::Close()
     }
 
     return S_OK;
+}
+
+void XamlIsland::ReleaseContentIslandResources()
+{
+    if (m_inputFocusController2 != nullptr)
+    {
+        m_inputFocusController2->remove_NavigateFocusRequested(m_focusNavigationRequestedToken);
+        m_inputFocusController2 = nullptr;
+        m_focusNavigationRequestedToken.value = 0;
+    }
+
+    if (m_islandConnectedToken.value != 0 || m_islandDisconnectedToken.value != 0)
+    {
+        wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
+
+        if (m_islandConnectedToken.value != 0)
+        {
+            IFCFAILFAST(contentIslandExperimental->remove_Connected(m_islandConnectedToken));
+            m_islandConnectedToken.value = 0;
+        }
+        if (m_islandDisconnectedToken.value != 0)
+        {
+            IFCFAILFAST(contentIslandExperimental->remove_Disconnected(m_islandDisconnectedToken));
+            m_islandDisconnectedToken.value = 0;
+        }
+    }
 }
 
 void XamlIsland::PrepareToClose()
