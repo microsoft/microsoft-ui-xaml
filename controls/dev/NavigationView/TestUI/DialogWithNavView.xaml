@@ -13,13 +13,31 @@
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     SecondaryButtonClick="ContentDialog_SecondaryButtonClick">
 
-    <Grid>
+    <StackPanel Spacing="8">
+        <Button x:Name="DialogBeforeNavigation" Content="Before navigation"/>
         <muxcontrols:NavigationView x:Name="navigationView"
-                        PaneDisplayMode="LeftCompact">
+                        AutomationProperties.AutomationId="DialogNavigationView"
+                        PaneDisplayMode="LeftCompact"
+                        IsBackButtonVisible="Collapsed"
+                        Height="300">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem Content="Home" 
-                                    Icon="Home"/>
+                <muxcontrols:NavigationViewItem x:Name="DialogHome" Content="Home" Icon="Home"/>
+                <muxcontrols:NavigationViewItem x:Name="DialogParent" Content="Parent" Icon="Folder">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem x:Name="DialogLeaf" Content="Child"/>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem x:Name="DialogAction" Content="Action" Icon="Add" SelectsOnInvoked="False"/>
             </muxcontrols:NavigationView.MenuItems>
+            <StackPanel Margin="8" Spacing="4">
+                <CheckBox x:Name="DialogPaneOpen" Content="Pane open"
+                          IsChecked="{Binding IsPaneOpen, ElementName=navigationView, Mode=TwoWay}"/>
+                <CheckBox x:Name="CancelDialogPaneClosing" Content="Cancel pane closing"/>
+                <CheckBox x:Name="KeepDialogOpen" Content="Keep dialog open"/>
+                <TextBlock x:Name="DialogPaneClosingCount" Text="0"/>
+                <TextBlock x:Name="DialogClosingCount" Text="0"/>
+                <Button x:Name="ResetDialogFocusCounts" Content="Reset counts" Click="ResetDialogFocusCounts_Click"/>
+            </StackPanel>
         </muxcontrols:NavigationView>
-    </Grid>
+    </StackPanel>
 </ContentDialog>

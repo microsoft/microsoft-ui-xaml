@@ -610,6 +610,13 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
     [webhosthidden]
+    interface ISplitViewPrivate 
+    {
+        Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.SplitView,Object> PaneFocusOperationCompletedCallback;
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [webhosthidden]
     interface ISubMenuOwner 
     {
         Boolean IsSubMenuOpen{ get; };
