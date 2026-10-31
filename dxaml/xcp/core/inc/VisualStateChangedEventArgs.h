@@ -20,6 +20,9 @@ public:
 
     _Check_return_ HRESULT CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer) override;
 
+    uint64_t GetCurrentStateChangedSequence() const { return m_currentStateChangedSequence; }
+    void SetCurrentStateChangedSequence(uint64_t sequence) { m_currentStateChangedSequence = sequence; }
+
     // OldState property.
     _Check_return_ HRESULT get_OldState(_Outptr_result_maybenull_ CVisualState** ppValue)
     {
@@ -60,6 +63,6 @@ private:
     xref_ptr<CVisualState> m_spOldState;
     xref_ptr<CVisualState> m_spNewState;
     xref_ptr<CControl> m_spControl;
+    uint64_t m_currentStateChangedSequence{ 0 };
 
 };
-
