@@ -8,6 +8,8 @@
 
 #include "UIAHostEnvironmentInfo.h"
 #include <map>
+#include <memory>
+#include <vector>
 #include <fwd/windows.foundation.h>
 
 #ifndef UIA_TRACE
@@ -525,6 +527,9 @@ private:
     XUINT32 m_cAdviseNotificationEvent {0};
 
     IUIAWindowValidator* m_pUIAWindowValidator {nullptr};
+
+    // Non-owning membership; a retained provider must not keep its core alive.
+    std::weak_ptr<std::vector<CUIAWindow*>> m_uiaWindowRegistry;
 
     bool m_isEnabledMockUIAClientsListening {false};
     bool m_fInitialized {false};

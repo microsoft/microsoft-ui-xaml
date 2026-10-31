@@ -55,6 +55,7 @@
 #include "CommonBrowserHost.h"
 #include "WinBrowserHost.h"
 #include "UIAWindow.h"
+#include "UIAWrapper.h"
 #include <windows.applicationmodel.preview.holographic.h>
 #include <XamlSchemaContext.h>
 #include "ParserSettings.h"
@@ -5804,9 +5805,31 @@ CCoreServices::UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents eAutomatio
                 }
             }
         }
+
+        // A popup can close during a click handler, before its automation event is raised.
+        // Its UIA host and subscriptions remain valid until that host is deinitialized.
+        if (m_uiaWindowRegistry)
+        {
+            for (auto window : *m_uiaWindowRegistry)
+            {
+                if (S_OK == window->UIAClientsAreListening(eAutomationEvent))
+                {
+                    return S_OK;
+                }
+            }
+        }
     }
 
     return hr;
+}
+
+std::shared_ptr<std::vector<CUIAWindow*>> CCoreServices::GetUIAWindowRegistry()
+{
+    if (!m_uiaWindowRegistry)
+    {
+        m_uiaWindowRegistry = std::make_shared<std::vector<CUIAWindow*>>();
+    }
+    return m_uiaWindowRegistry;
 }
 
 //------------------------------------------------------------------------
@@ -5821,7 +5844,7 @@ _Check_return_ HRESULT
 CCoreServices::UIARaiseAutomationEvent(_In_ CAutomationPeer *pAP,
                                        _In_ UIAXcp::APAutomationEvents eAutomationEvent)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(pAP->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(pAP);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseAutomationEvent(pAP, eAutomationEvent), E_NOTIMPL);
@@ -5851,7 +5874,7 @@ CCoreServices::UIARaiseAutomationPropertyChangedEvent(_In_ CAutomationPeer *pAP,
                                                       _In_ const CValue& oldValue,
                                                       _In_ const CValue& newValue)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(pAP->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(pAP);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseAutomationPropertyChangedEvent(pAP, eAutomationProperty, oldValue, newValue), E_NOTIMPL);
@@ -5890,7 +5913,7 @@ CCoreServices::UIARaiseFocusChangedEventOnUIAWindow(_In_ CDependencyObject* send
 _Check_return_ HRESULT
 CCoreServices::UIARaiseTextEditTextChangedEvent(_In_ CAutomationPeer *pAP, _In_ UIAXcp::AutomationTextEditChangeType automationTextEditType, _In_ CValue *pChangedData)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(pAP->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(pAP);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseTextEditTextChangedEvent(pAP, automationTextEditType, pChangedData), E_NOTIMPL);
@@ -5905,12 +5928,74 @@ _Check_return_ HRESULT CCoreServices::UIARaiseNotificationEvent(
     xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(ap->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(ap);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseNotificationEvent(ap, notificationKind, notificationProcessing, displayString, activityId), E_NOTIMPL);
     }
     return S_OK;
+}
+
+CUIAWindow* CCoreServices::GetUIAWindowForAutomationPeerNoRef(_In_ CAutomationPeer* peer)
+{
+    // Popup-only clients may never create the main window's UIA host, and the
+    // element can leave its tree before raising an event. Reuse its valid provider host.
+    if (auto wrapper = static_cast<CUIAWrapper*>(peer->GetUIAWrapper()))
+    {
+        if (auto window = wrapper->GetUIAWindowIfValid())
+        {
+            return window;
+        }
+    }
+    if (auto owner = peer->GetElementOwnerNoRef())
+    {
+        return GetUIAWindowForElementNoRef(owner, true /* onlyGet */);
+    }
+    return GetUIAWindowForElementRootNoRef(peer->GetRootNoRef());
+}
+
+CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* element, bool onlyGet)
+{
+    // Data-item peers can expose template children across a popup boundary.
+    // Ignore a cached parent whose owner is no longer in the element's ancestry.
+    for (auto ancestor = element; ancestor && !ancestor->OfTypeByIndex<KnownTypeIndex::Popup>();
+         ancestor = ancestor->GetParentFollowPopups())
+    {
+        auto peer = ancestor->GetAutomationPeer();
+        if (peer && peer->HasParent())
+        {
+            auto parent = peer->GetAPParent();
+            if (parent && do_pointer_cast<CAutomationPeer>(parent->GetDONoRef()))
+            {
+                auto owner = parent->GetElementOwnerNoRef();
+                for (auto current = ancestor->GetParentFollowPopups(); current; current = current->GetParentFollowPopups())
+                {
+                    if (current == owner)
+                    {
+                        return GetUIAWindowForElementNoRef(owner, onlyGet);
+                    }
+                }
+            }
+        }
+    }
+
+    xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(element));
+    if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+    {
+        popup = element->GetFirstAncestorPopup(true /* windowedPopupOnly */);
+    }
+    if (popup && popup->IsOpen() && popup->IsWindowed())
+    {
+        if (!onlyGet)
+        {
+            popup->EnsureUIAWindow();
+        }
+        if (auto popupWindow = popup->GetUIAWindow())
+        {
+            return popupWindow;
+        }
+    }
+    return GetUIAWindowForElementRootNoRef(GetRootForElement(element));
 }
 
 CUIAWindow* CCoreServices::GetUIAWindowForElementRootNoRef(_In_ CDependencyObject* elementRoot)
@@ -10351,6 +10436,11 @@ HRESULT CCoreServices::ShutdownToIdle()
     {
         delete m_pAllVirtualSurfaceImageSources;
         m_pAllVirtualSurfaceImageSources = nullptr;
+    }
+
+    if (m_uiaWindowRegistry && m_uiaWindowRegistry->empty())
+    {
+        m_uiaWindowRegistry.reset();
     }
 
     SetDefaultNavigationTransition(nullptr);
