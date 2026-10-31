@@ -10,13 +10,10 @@
 #
 # Caller distinguishes via the IsMonobuild parameter (default false). When
 # IsMonobuild=true the template uses the monobuild-coherent version coming
-# from WindowsAppSDK-DetermineVersion-Steps.yml, restores from the staged
-# local feed + the standalone WinUI.Dependencies feed (so the BUILD compiles
-# against the same pinned upstream binaries as the standalone build —
-# mirrors Foundation's monobuild pattern, which does NOT inject monobuild-
-# coherent upstream versions at BUILD time; that injection happens at PACK
-# time in WinUI-CreateTransportNupkg-Steps.yml via the monobuildPinnedVersion
-# parameter), and skips the standalone-
+# from WindowsAppSDK-DetermineVersion-Steps.yml. The caller stages and pins upstream
+# component packages after cleanup through preDependencyRestoreSteps, before dependency
+# restore. WinUI-CreateTransportNupkg-Steps.yml also pins the package dependencies at
+# PACK time through monobuildPinnedVersion. The monobuild skips the standalone-
 # only mock-package / scenario-apps / ESRP steps (in the monobuild, WinUI binaries are signed
 # per-platform in the monorepo's WinUI-Build-Stage.yml).
 #
@@ -45,6 +42,8 @@ parameters:
   # Monobuild supplies repository-aware indexing before the first upload; standalone defaults are unchanged.
   indexSources: true
   prePublishSymbolsSteps: []
+  # Runs after initialization/cleanup and before any component dependency restore.
+  preDependencyRestoreSteps: []
   buildCsWinRT3Tests: false
   # When set (mono-build test pipeline only), download the WinUI product from the parent mono-build
   # instead of rebuilding it: for Release x86/x64/arm64 jobs, skip the Microsoft.UI.Xaml.sln product
@@ -142,11 +141,12 @@ steps:
   # later restore resolves the matching versions (stale versions => CS0012 in the generated CsWinRT
   # projections). This must precede WinUI-InstallDependencies-Steps.yml: that template restores the
   # component packages at these versions, so pinning afterwards leaves the build looking for a version
-  # that was never restored (W1007 on the Foundation transport winmd).
+  # that was never restored (W1007 on the Foundation transport winmd). Package staging
+  # applies to every test job, including Debug and ARM64EC, regardless of product reuse.
   - ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
     - task: DownloadPipelineArtifact@2
       displayName: 'Consume product: download mono-build component packages'
-      condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+      condition: succeeded()
       inputs:
         source: specific
         runVersion: specific
@@ -159,27 +159,24 @@ steps:
           Component-InteractiveExperiences-Final/**/*.nupkg
           Component-WinUIDetails-Final/**/*.nupkg
         targetPath: $(Build.ArtifactStagingDirectory)\MonobuildComponents
-    - task: PowerShell@2
-      displayName: 'Consume product: stage component packages + pin version'
-      condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download authoritative WinUI package version properties'
+      condition: succeeded()
       inputs:
-        targetType: inline
-        script: |
-          Set-StrictMode -Version 2.0
-          $ErrorActionPreference = 'Stop'
-          $src = "$(Build.ArtifactStagingDirectory)\MonobuildComponents"
-          $store = "$(Build.SourcesDirectory)\packagestore"
-          New-Item -ItemType Directory -Force -Path $store | Out-Null
-          $nupkgs = @(Get-ChildItem -Path $src -Recurse -Filter '*.nupkg' -File)
-          if ($nupkgs.Count -eq 0) { throw "No mono-build component .nupkg found under $src (expected Component-*-Final)." }
-          foreach ($p in $nupkgs) { Copy-Item -Path $p.FullName -Destination $store -Force }
-          Write-Host "Staged $($nupkgs.Count) mono-build component packages into $store"
-          $basePkg = Get-ChildItem -Path $store -Filter 'Microsoft.WindowsAppSDK.Base.*.nupkg' -File |
-              Where-Object { $_.BaseName -match '^Microsoft\.WindowsAppSDK\.Base\.\d' } | Select-Object -First 1
-          if (-not $basePkg) { throw "Microsoft.WindowsAppSDK.Base.<version>.nupkg not found in $store; cannot pin mono-build version." }
-          $version = $basePkg.BaseName -replace '^Microsoft\.WindowsAppSDK\.Base\.', ''
-          Write-Host "Pinning WindowsAppSDKVersionPinned to mono-build version: $version"
-          Write-Host "##vso[task.setvariable variable=WindowsAppSDKVersionPinned]$version"
+        source: specific
+        runVersion: specific
+        project: $(System.TeamProjectId)
+        pipeline: ${{ parameters.consumeProductFromPipeline }}
+        pipelineId: ${{ parameters.consumeProductFromBuildId }}
+        artifact: WinUIPackageVersionProps
+        targetPath: $(Build.ArtifactStagingDirectory)\MonobuildVersionProps
+    - template: /Build/WindowsAppSDK/AzurePipelinesTemplates/WinUI-StageDependencies-Steps.yml@WinAppSDK
+      parameters:
+        packageDirectory: '$(Build.ArtifactStagingDirectory)\MonobuildComponents'
+        versionPropsDirectory: '$(Build.ArtifactStagingDirectory)\MonobuildVersionProps'
+
+  - ${{ each step in parameters.preDependencyRestoreSteps }}:
+    - ${{ step }}
 
   - template: WinUI-InstallDependencies-Steps.yml
 
