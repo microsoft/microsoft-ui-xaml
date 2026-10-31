@@ -696,6 +696,7 @@ _Check_return_ HRESULT ErrorHelper::OriginateErrorUsingFormattedResourceID(
     HRESULT hr = S_OK;
     wrl_wrappers::HString strResourceString;
     size_t bufferSize = 0;
+    int messageLength = 0;
     WCHAR * pszBuffer = nullptr;
 
     IFC(DXamlCore::GetCurrent()->GetNonLocalizedErrorString(resourceStringFormatID, strResourceString.GetAddressOf()));
@@ -714,13 +715,14 @@ _Check_return_ HRESULT ErrorHelper::OriginateErrorUsingFormattedResourceID(
     IFCEXPECT(pszBuffer);
     if (param2 != nullptr)
     {
-        IFCEXPECT(swprintf_s(pszBuffer, bufferSize, strResourceString.GetRawBuffer(nullptr), strParam1.GetBuffer(), param2) >= 0);
+        messageLength = swprintf_s(pszBuffer, bufferSize, strResourceString.GetRawBuffer(nullptr), strParam1.GetBuffer(), param2);
     }
     else
     {
-        IFCEXPECT(swprintf_s(pszBuffer, bufferSize, strResourceString.GetRawBuffer(nullptr), strParam1.GetBuffer()) >= 0);
+        messageLength = swprintf_s(pszBuffer, bufferSize, strResourceString.GetRawBuffer(nullptr), strParam1.GetBuffer());
     }
-    IFC_NOTRACE(OriginateError(hrEncountered, bufferSize, pszBuffer));
+    IFCEXPECT(messageLength >= 0);
+    IFC_NOTRACE(OriginateError(hrEncountered, static_cast<XUINT32>(messageLength), pszBuffer));
 
 Cleanup:
     delete[] pszBuffer;
@@ -948,6 +950,5 @@ Cleanup:
 
     RRETURN(hr);
 }
-
 
 
