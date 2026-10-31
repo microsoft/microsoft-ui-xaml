@@ -30,7 +30,9 @@ To allow this, every NavigationViewItem is aware of its parent NavigationView.
 Explicit NavigationViewItem descendants keep a weak reference to their owning NavigationView
 even before their containers enter the visual tree. Initial IsSelected values and subsequent
 changes use the existing SelectionModel; an unrealized item's IndexPath is found in the item
-collections without expanding its ancestors or creating data-template containers. Items removed
+collections without expanding its ancestors or creating data-template containers. Preselected
+descendants are selected from the dispatcher queue rather than during collection notifications,
+because selecting can release SelectionModel nodes whose handlers are still pending. Items removed
 from those collections cannot change their former NavigationView's selection.
 
 Keyboard navigation and item invocation are both handled by the NavigationView.

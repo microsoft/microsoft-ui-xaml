@@ -998,7 +998,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 NavigationView navView = null;
                 NavigationViewItem parent = null;
                 NavigationViewItem child = null;
-                object selectedAtLoaded = null;
                 RunOnUIThread.Execute(() =>
                 {
                     navView = (NavigationView)XamlReader.Load(
@@ -1011,14 +1010,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     navView.PaneDisplayMode = mode;
                     parent = (NavigationViewItem)navView.MenuItems[0];
                     child = (NavigationViewItem)parent.MenuItems[0];
-                    navView.Loaded += (sender, args) => selectedAtLoaded = navView.SelectedItem;
                     Content = navView;
                 });
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(child, selectedAtLoaded);
                     Verify.AreEqual(child, navView.SelectedItem);
                     Verify.IsNull(VisualTreeHelper.GetParent(child));
                     Verify.IsTrue(parent.IsChildSelected);

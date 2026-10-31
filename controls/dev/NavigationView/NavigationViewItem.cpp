@@ -293,23 +293,17 @@ void NavigationViewItem::UpdateNavigationViewForChildren()
 
     if (auto const navigationView = GetNavigationView())
     {
-        if (navigationView.IsLoaded())
-        {
-            // Selecting during a collection notification can reset SelectionModel nodes whose handlers have not run yet.
-            DispatcherQueue().TryEnqueue(
-                winrt::DispatcherQueuePriority::Low,
-                winrt::DispatcherQueueHandler([weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)]()
+        // Selecting during a collection notification can reset SelectionModel nodes whose handlers have not run yet,
+        // including while the NavigationView is unloaded, so the scan always runs after the current notification.
+        DispatcherQueue().TryEnqueue(
+            winrt::DispatcherQueuePriority::Low,
+            winrt::DispatcherQueueHandler([weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)]()
+            {
+                if (auto const item = weakThis.get())
                 {
-                    if (auto const item = weakThis.get())
-                    {
-                        winrt::get_self<NavigationViewItem>(item)->SelectPreselectedChildren();
-                    }
-                }));
-        }
-        else
-        {
-            SelectPreselectedChildren();
-        }
+                    winrt::get_self<NavigationViewItem>(item)->SelectPreselectedChildren();
+                }
+            }));
         SetNavigationViewParentForItems(GetChildrenSource(), navigationView);
     }
 }
