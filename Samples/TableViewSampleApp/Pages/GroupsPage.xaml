@@ -74,7 +74,8 @@
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                <!-- Auto: when Photo is the first column, it widens to fit the indent and the expander chevron. -->
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="Auto" MinWidth="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
                 <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
                 <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>

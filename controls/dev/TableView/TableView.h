@@ -515,6 +515,9 @@ public:
     void QueueReshapeAfterEditCloses(std::function<void()> operation);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
+    void QueueDeferredEditReshapeDrain();
+    void FlushDeferredEditReshapes();
+    bool IsActiveSourceOwnedByOther() const;
 
     // ----- Editing input gestures (TableView_EditingInput.cpp) -----
     // The pointer gesture lives on TableViewRow: the row owns its cells, so it is the level that
@@ -809,6 +812,7 @@ private:
     // replay order matches arrival order.
     std::deque<std::function<void()>> m_pendingEditReshapes;
     std::deque<std::function<void()>> m_reshapesAfterEditCloses;
+    bool m_editReshapeDrainQueued{ false };
 
     // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
     // inside an EditEnding handler stays valid once the edit closes.
@@ -1226,6 +1230,15 @@ private:
     // re-enter the collection that is still mutating, so the reshape runs on the next turn.
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
+    // Removes `column` from the sort state; queues the clear when it was sorted.
+    void PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& column);
+    // IObservableVector has no Move, so RemoveAt + InsertAt of the same instance before the queued
+    // clear runs is a move: the column gets its sort back and the clear finds nothing to do.
+    void RestoreSortOfMovedColumn(const winrt::TableViewColumn& column);
+    // Any other change to the sort or to the columns while the column is out makes the restore stale.
+    void CancelPendingSortRestore() { m_sortedColumnPendingRemoval = nullptr; }
+    winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
+    winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected
