@@ -82,6 +82,42 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Image
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies BitmapImage can be the implicit content of Image.")]
+        public void BitmapImageAsImplicitSource()
+        {
+            UIExecutor.Execute(() =>
+            {
+                var image = (Microsoft.UI.Xaml.Controls.Image)XamlReader.Load(
+                    "<Image xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\">" +
+                    "<BitmapImage DecodePixelWidth=\"40\" DecodePixelHeight=\"40\" />" +
+                    "</Image>");
+
+                var source = (BitmapImage)image.Source;
+                Verify.IsNotNull(source);
+                Verify.AreEqual(40, source.DecodePixelWidth);
+                Verify.AreEqual(40, source.DecodePixelHeight);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SvgImageSource can be the implicit content of Image.")]
+        public void SvgImageSourceAsImplicitSource()
+        {
+            UIExecutor.Execute(() =>
+            {
+                var image = (Microsoft.UI.Xaml.Controls.Image)XamlReader.Load(
+                    "<Image xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\">" +
+                    "<SvgImageSource RasterizePixelWidth=\"40\" RasterizePixelHeight=\"40\" />" +
+                    "</Image>");
+
+                var source = (SvgImageSource)image.Source;
+                Verify.IsNotNull(source);
+                Verify.AreEqual(40.0, source.RasterizePixelWidth);
+                Verify.AreEqual(40.0, source.RasterizePixelHeight);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Known to cause issues with managed peer pegging of images in XAML.")]
         public void AppBarBitmapIcon()
         {
