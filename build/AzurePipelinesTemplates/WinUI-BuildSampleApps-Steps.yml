@@ -15,6 +15,7 @@ steps:
       $sourceName = "MUX-Dependencies"
       $newSourceUrl = "$(WinUILKGDependenciesFeedUri)"
       $isGitHub = $env:BUILD_REPOSITORY_PROVIDER -in @('GitHub', 'GitHubEnterprise')
+      $useInternalFeed = $env:ISINTERNALWINUIBUILD -eq 'true' -or -not $isGitHub
 
       if (Test-Path $nugetConfigPath) {
           [xml]$config = Get-Content $nugetConfigPath
@@ -25,7 +26,7 @@ steps:
 
           # Point the MUX-Dependencies source at the internal WinUI Dependencies feed.
           $existingSource = $packageSources | Where-Object { $_.key -eq $sourceName }
-          if ($existingSource -and -not $isGitHub) {
+          if ($existingSource -and $useInternalFeed) {
               $existingSource.value = $newSourceUrl
               Write-Host "Updated source '$sourceName' to '$newSourceUrl'"
               $changed = $true
@@ -36,7 +37,7 @@ steps:
           # ("a socket in a way forbidden by its access permissions"). All required packages
           # are served by the internal WinUI Dependencies feed above.
           $nugetOrgSource = $packageSources | Where-Object { $_.key -eq "nuget.org" }
-          if ($nugetOrgSource -and -not $isGitHub) {
+          if ($nugetOrgSource -and $useInternalFeed) {
               [void]$packageSourcesNode.RemoveChild($nugetOrgSource)
               Write-Host "Removed public 'nuget.org' source for the internal build."
               $changed = $true
