@@ -1127,6 +1127,204 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyUnrealizedChildInitiallySelected()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                NavigationView navView = null;
+                NavigationViewItem parent = null;
+                NavigationViewItem child = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = (NavigationView)XamlReader.Load(
+                        "<NavigationView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        "Width='1000' Height='600'><NavigationView.MenuItems>" +
+                        "<NavigationViewItem Content='Parent'><NavigationViewItem.MenuItems>" +
+                        "<NavigationViewItem Content='Child' IsSelected='True' />" +
+                        "</NavigationViewItem.MenuItems></NavigationViewItem>" +
+                        "</NavigationView.MenuItems></NavigationView>");
+                    navView.PaneDisplayMode = mode;
+                    parent = (NavigationViewItem)navView.MenuItems[0];
+                    child = (NavigationViewItem)parent.MenuItems[0];
+                    Content = navView;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(child, navView.SelectedItem);
+                    Verify.IsNull(VisualTreeHelper.GetParent(child));
+                    Verify.IsTrue(parent.IsChildSelected);
+                    Verify.IsFalse(parent.IsExpanded);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyUnrealizedChildSelectionChanges()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var sourceKind in new[] { "MenuItems", "Collection", "ItemsSourceView" })
+                {
+                    var navView = SetupNavigationView(mode);
+                    var children = new ObservableCollection<object>();
+                    NavigationViewItem parent = null;
+                    NavigationViewItem child = null;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        parent = (NavigationViewItem)navView.MenuItems[0];
+                        child = new NavigationViewItem { Content = "Unrealized child" };
+                        if (sourceKind != "MenuItems")
+                        {
+                            parent.MenuItemsSource = sourceKind == "ItemsSourceView" ? new ItemsSourceView(children) : children;
+                            children.Add(child);
+                        }
+                        else
+                        {
+                            parent.MenuItems.Add(child);
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(VisualTreeHelper.GetParent(child));
+                        child.IsSelected = true;
+                        Verify.AreEqual(child, navView.SelectedItem);
+                        Verify.IsTrue(parent.IsChildSelected);
+                        Verify.IsFalse(parent.IsExpanded);
+                        Verify.IsNull(VisualTreeHelper.GetParent(child));
+
+                        child.IsSelected = false;
+                        Verify.IsNull(navView.SelectedItem);
+                        Verify.IsFalse(parent.IsChildSelected);
+
+                        if (sourceKind != "MenuItems")
+                        {
+                            children.Remove(child);
+                        }
+                        else
+                        {
+                            parent.MenuItems.Remove(child);
+                        }
+                        navView.SelectedItem = parent;
+                        child.IsSelected = true;
+                        Verify.AreEqual(parent, navView.SelectedItem, "A removed child must not select itself in its former NavigationView.");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFooterRootPrecedesUnrealizedChildSelection()
+        {
+            NavigationView navView = null;
+            NavigationViewItem child = null;
+            NavigationViewItem footerRoot = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView { Width = 1000, Height = 600, PaneDisplayMode = NavigationViewPaneDisplayMode.Left };
+                var parent = new NavigationViewItem { Content = "Parent" };
+                child = new NavigationViewItem { Content = "Child", IsSelected = true };
+                parent.MenuItems.Add(child);
+                navView.MenuItems.Add(parent);
+                footerRoot = new NavigationViewItem { Content = "Footer", IsSelected = true };
+                navView.FooterMenuItems.Add(footerRoot);
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(footerRoot, navView.SelectedItem);
+                Verify.IsTrue(footerRoot.IsSelected);
+                Verify.IsFalse(child.IsSelected, "Only the first preselected item stays selected.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyChildAddedToUnrealizedMenuItemsSourceIsSelected()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.Left);
+            var children = new ObservableCollection<object>();
+            NavigationViewItem added = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var parent = (NavigationViewItem)navView.MenuItems[0];
+                children.Add(new NavigationViewItem { Content = "Existing" });
+                parent.MenuItemsSource = children;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                added = new NavigationViewItem { Content = "Added", IsSelected = true };
+                children.Add(added);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(VisualTreeHelper.GetParent(added));
+                Verify.AreEqual(added, navView.SelectedItem);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedBoundContainerIsSelectedResetCompletes()
+        {
+            NavigationView navView = null;
+            ObservableCollection<Category> categories = null;
+            Category removed = null;
+            bool containerDeselected = false;
+            ManualResetEvent loadedEvent = new(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                removed = new("Menu Item 2", "MI2", "Icon", null, false);
+                categories = new ObservableCollection<Category> {
+                    new("Menu Item 1", "MI1", "Icon", null, false),
+                    removed
+                };
+
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' IsSelected='{Binding SelectsOnInvoked, Mode=TwoWay}'/>
+</DataTemplate>")
+                };
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => navView.SelectedItem = removed);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var container = (NavigationViewItem)navView.ContainerFromMenuItem(removed);
+                Verify.IsTrue(container.IsSelected);
+                // Clearing the removed container's DataContext resets its bound IsSelected while it is still in the repeater.
+                container.RegisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, (sender, dp) => containerDeselected = !container.IsSelected);
+                categories.Remove(removed);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(containerDeselected);
+                Verify.IsNull(navView.SelectedItem);
+            });
+        }
+
+        [TestMethod]
         public void VerifySingleSelection()
         {
             string navItemPresenter1CurrentState = string.Empty;
