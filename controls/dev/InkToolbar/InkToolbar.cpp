@@ -731,9 +731,15 @@ void InkToolbar::OnFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspe
     auto button = found->m_toolButton
         ? found->m_toolButton.as<winrt::UIElement>()
         : found->m_menuButton.as<winrt::UIElement>();
+    // The dropdown may have lost its content while open (e.g. ConfigurationContent cleared); then the button
+    // no longer has one and reads as a leaf node.
+    const bool stillHasDropDown = found->m_toolButton
+        ? winrt::get_self<InkToolbarToolButton>(found->m_toolButton)->HasL3()
+        : winrt::get_self<InkToolbarMenuButton>(found->m_menuButton)->HasL3();
     m_openFlyouts.erase(found);
     SharedHelpers::RaiseAutomationPropertyChangedEvent(
-        button, winrt::ExpandCollapseState::Expanded, winrt::ExpandCollapseState::Collapsed);
+        button, winrt::ExpandCollapseState::Expanded,
+        stillHasDropDown ? winrt::ExpandCollapseState::Collapsed : winrt::ExpandCollapseState::LeafNode);
 }
 
 // When an L3 opens, move focus into the relevant control (pen color / eraser / stencil selection).
@@ -766,28 +772,20 @@ void InkToolbar::OnFlyoutOpened(winrt::IInspectable const& sender, winrt::IInspe
         }
     }
 
-    // The flyout name is set on the flyout content, but ShouldConstrainToRootBounds(false) hosts it in
-    // a separate popup window that Narrator reads as "Popup". Copy the name onto that popup so the
-    // flyout is announced by name instead of "popup".
+    // Each flyout opens in its own popup window, which Narrator names "Popup" (Caps+T reads "Popup, window")
+    // because the flyout's name only reaches the presenter inside it. Name the popup after the flyout. The
+    // popup is reused, so the name also applies when the window is announced on later opens.
     auto flyoutName = winrt::AutomationProperties::GetName(flyout);
-    if (!flyoutName.empty())
+    auto asFlyout = flyout.try_as<winrt::Flyout>();
+    if (!flyoutName.empty() && asFlyout && XamlRoot())
     {
-        winrt::UIElement contentRoot{ nullptr };
-        if (found->m_penL3)
+        for (auto const& popup : winrt::VisualTreeHelper::GetOpenPopupsForXamlRoot(XamlRoot()))
         {
-            contentRoot = found->m_penL3.try_as<winrt::UIElement>();
-        }
-        else if (auto asFlyout = flyout.try_as<winrt::Flyout>())
-        {
-            contentRoot = asFlyout.Content().try_as<winrt::UIElement>();
-        }
-
-        for (winrt::DependencyObject node = contentRoot; node; node = winrt::VisualTreeHelper::GetParent(node))
-        {
-            if (node.try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>() ||
-                node.try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Popup>())
+            auto presenter = popup.Child().try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>();
+            if (presenter && presenter.Content() == asFlyout.Content())
             {
-                winrt::AutomationProperties::SetName(node, flyoutName);
+                winrt::AutomationProperties::SetName(popup, flyoutName);
+                break;
             }
         }
     }
@@ -837,29 +835,9 @@ void InkToolbar::UpdateToolButtonVisuals(winrt::InkToolbarToolButton const& butt
     bool isEnabled = button.IsEnabled();
     SetButtonCheck(button, isEnabled ? isActive : false);
 
-    // Tie the extension (chevron) glyph to whether the checked button has an attached flyout with
-    // additional options: eraser only when it has an L3; custom tool/pen only when they supply
-    // configuration content; every other tool always does.
-    bool hasMore = false;
-    if (winrt::FlyoutBase::GetAttachedFlyout(button) && IsButtonChecked(button))
-    {
-        if (auto eraserButton = button.try_as<winrt::InkToolbarEraserButton>())
-        {
-            hasMore = winrt::get_self<InkToolbarEraserButton>(eraserButton)->ShouldShowL3();
-        }
-        else if (auto customTool = button.try_as<winrt::InkToolbarCustomToolButton>())
-        {
-            hasMore = customTool.ConfigurationContent() != nullptr;
-        }
-        else if (auto customPen = button.try_as<winrt::InkToolbarCustomPenButton>())
-        {
-            hasMore = customPen.ConfigurationContent() != nullptr;
-        }
-        else
-        {
-            hasMore = true;
-        }
-    }
+    // Tie the extension (chevron) glyph to whether the checked button has a dropdown with additional
+    // options (InkToolbarToolButton::HasL3).
+    bool hasMore = IsButtonChecked(button) && winrt::get_self<InkToolbarToolButton>(button)->HasL3();
     button.IsExtensionGlyphShown(hasMore);
 }
 

@@ -1270,6 +1270,8 @@ _Check_return_ HRESULT FlyoutBase::Open()
 
     IFC_RETURN(EnsurePopupAndPresenter());
 
+    IFC_RETURN(ForwardAutomationPropertiesToPopup());
+
     // Set how the popup will be dismissed. This needs to be done each time the flyout is
     // opened because the placement mode may change. In theory we should wait until the
     // placement logic has been executed to get the final placement, but the light dismiss
@@ -1344,6 +1346,27 @@ _Check_return_ HRESULT FlyoutBase::Open()
     // the popup is left with a transparent background. Do the propagation after the popup opens instead. Windowed
     // popups support having a backdrop set after the popup is open.
     IFC_RETURN(ForwardSystemBackdropToPopup());
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT FlyoutBase::ForwardAutomationPropertiesToPopup()
+{
+    // The popup is its own UIA window and is marked as a dialog by default, so Narrator reads all of its
+    // content when it opens. A flyout that sets AutomationProperties.IsDialog (for example to false, for a
+    // tool or options flyout) gets that value on the popup instead. Done on every open so later changes to
+    // the flyout's property apply; flyouts that don't set it keep the default.
+    if (!m_tpPopup)
+    {
+        return S_OK;
+    }
+
+    if (!GetHandle()->IsPropertyDefault(MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::AutomationProperties_IsDialog)))
+    {
+        BOOLEAN isDialog = FALSE;
+        IFC_RETURN(DirectUI::AutomationProperties::GetIsDialogStatic(this, &isDialog));
+        IFC_RETURN(DirectUI::AutomationProperties::SetIsDialogStatic(m_tpPopup.Cast<Popup>(), isDialog));
+    }
 
     return S_OK;
 }
