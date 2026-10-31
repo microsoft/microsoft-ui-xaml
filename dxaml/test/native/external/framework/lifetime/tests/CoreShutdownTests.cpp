@@ -9,6 +9,11 @@
 #include <SafeEventRegistration.h>
 #include <TestEvent.h>
 #include <wrl.h>
+#if defined(MUX_TIP_REAL)
+#define wil_details_GetKernelBaseModuleHandle() GetModuleHandleW(L"kernelbase.dll")
+#include <tip/tip.h>
+#undef wil_details_GetKernelBaseModuleHandle
+#endif
 
 using namespace Platform;
 using namespace ::Windows::Foundation;
@@ -110,6 +115,77 @@ void CoreShutdownTests::OffThreadReleaseWakesIdleCleanup()
     {
         VERIFY_ARE_EQUAL(uiThreadId, state->threadId);
     }
+}
+
+void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
+{
+#if !defined(MUX_TIP_REAL)
+    Log::Result(TestResults::Skipped, L"The public TiP stub has no running tests to observe.");
+#else
+    struct ReleaseState
+    {
+        Event destroyed;
+        DWORD delayMs = 0;
+    };
+    class ReleaseSignal final : public WRL::RuntimeClass<IInspectable>
+    {
+        InspectableClass(L"LifetimeTests.TipReleaseSignal", BaseTrust);
+    public:
+        explicit ReleaseSignal(std::shared_ptr<ReleaseState> state) : m_state(std::move(state)) {}
+        ~ReleaseSignal()
+        {
+            m_state->destroyed.Set();
+            Sleep(m_state->delayMs);
+        }
+    private:
+        std::shared_ptr<ReleaseState> m_state;
+    };
+    // UIAffinityReleaseQueueCleanupTest is process-scoped, so its running sample can be opened by measure id.
+    constexpr unsigned int cleanupMeasure = 64884230;
+
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+    std::shared_ptr<ReleaseState> states[3];
+    xaml_controls::Grid^ elements[3] = {};
+    // The first release outlasts the 40 ms cleanup budget, so the drain spans ticks.
+    RunOnUIThread([&]
+    {
+        TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        for (int i = 0; i < 3; ++i)
+        {
+            states[i] = std::make_shared<ReleaseState>();
+            elements[i] = ref new xaml_controls::Grid();
+            auto signal = WRL::Make<ReleaseSignal>(states[i]);
+            elements[i]->Tag = reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(signal.Get()));
+        }
+        states[0]->delayMs = 60;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(cleanupMeasure)));
+
+    elements[0] = nullptr;
+    elements[1] = nullptr;
+    VERIFY_IS_TRUE(states[0]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    // The first pass is still releasing, so its sample is running.
+    GUID sampleId{};
+    {
+        auto running = tip::open_dynamic(cleanupMeasure);
+        VERIFY_IS_TRUE(static_cast<bool>(running));
+        sampleId = running.test_id();
+    }
+    // Arrives before the queue drains, so it joins the running sample.
+    elements[2] = nullptr;
+    VERIFY_IS_TRUE(states[1]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    VERIFY_IS_TRUE(states[2]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    TestServices::WindowHelper->WaitForIdle();
+
+    // The drain completed the sample and left none running.
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(sampleId, cleanupMeasure)));
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(cleanupMeasure)));
+#endif
 }
 
 // Exposed an edge case in our peer cleanup
