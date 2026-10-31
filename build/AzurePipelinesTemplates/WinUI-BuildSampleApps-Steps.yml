@@ -91,14 +91,14 @@ steps:
   - powershell: |
       # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
       $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
-      $galleryTrimArg = ""
+      $galleryPublishArgs = "/p:PublishAot=$publishAot"
 
       if ($env:BUILD_REPOSITORY_PROVIDER -in @('GitHub','GitHubEnterprise')) {
         $publishAot = $false
-        $galleryTrimArg = "/p:PublishTrimmed=false"
+        $galleryPublishArgs = "/p:PublishAot=$publishAot /p:PublishTrimmed=false"
       }
       Write-Host "##vso[task.setvariable variable=publishAotValue;]$publishAot"
-      Write-Host "##vso[task.setvariable variable=galleryTrimArg;]$galleryTrimArg"
+      Write-Host "##vso[task.setvariable variable=galleryPublishArgs;]$galleryPublishArgs"
     displayName: Set PublishAot variable
 
   - template: WinUI-BuildSampleApp-Steps.yml
@@ -107,7 +107,8 @@ steps:
       solution: Samples\WinUIGallery\WinUIGallery.slnx
       artifactsRoot: ${{ parameters.artifactsRoot }}
       restoreConfigFile: $(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config
-      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=$(publishAotValue) $(galleryTrimArg)'
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      additionalMsBuildArgs: '$(galleryPublishArgs)'
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       condition: not(and(eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x86')))
