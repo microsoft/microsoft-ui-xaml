@@ -206,7 +206,7 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
 
 void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
 {
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(true /*isCollectionChange*/);
 }
  
 winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
@@ -352,17 +352,20 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateNoTransition();
+    InvalidateTopNavigationItemWidth();
 }
 
 void NavigationViewItem::OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateForInfoBadge();
+    InvalidateTopNavigationItemWidth();
 }
 
 void NavigationViewItem::OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
+    OnChildrenChanged(true /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -382,20 +385,21 @@ void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPrope
     }
     
     UpdateRepeaterItemsSource();
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
-    UpdateVisualStateForChevron();
+    UpdateRepeaterItemsSource();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::ShowSelectionIndicator(bool visible)
@@ -727,6 +731,30 @@ void NavigationViewItem::UpdateVisualStateForChevron()
     }
 }
 
+void NavigationViewItem::OnChildrenChanged(bool isCollectionChange)
+{
+    UpdateVisualStateForChevron();
+    InvalidateTopNavigationItemWidth(isCollectionChange);
+}
+
+void NavigationViewItem::InvalidateTopNavigationItemWidth(bool isCollectionChange)
+{
+    if (m_appliedTemplate && !IsOnLeftNav())
+    {
+        if (auto navView = GetNavigationView())
+        {
+            const auto navViewImpl = winrt::get_self<NavigationView>(navView);
+            // Ignore property changes caused by recycling a data-templated container.
+            if (isCollectionChange || IsInNavigationViewOwnedRepeater() ||
+                navViewImpl->GetTopDataProvider().IndexOf(*this) != -1)
+            {
+                // Overflow items are not measured by UpdateTopNavigationWidthCache.
+                navViewImpl->TopNavigationViewItemContentChanged(true /*forceInvalidateWidthCache*/);
+            }
+        }
+    }
+}
+
 bool NavigationViewItem::HasChildren()
 {
     return (MenuItems() != nullptr && MenuItems().Size() > 0) || 
@@ -973,14 +1001,7 @@ void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent,
     SuggestedToolTipChanged(newContent);
     UpdateVisualStateNoTransition();
 
-    if (!IsOnLeftNav())
-    {
-        // Content has changed for the item, so we want to trigger a re-measure
-        if (auto navView = GetNavigationView())
-        {
-            winrt::get_self<NavigationView>(navView)->TopNavigationViewItemContentChanged();
-        }
-    }
+    InvalidateTopNavigationItemWidth();
 }
 
 void NavigationViewItem::OnGotFocus(winrt::RoutedEventArgs const& e)

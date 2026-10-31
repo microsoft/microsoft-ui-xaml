@@ -3339,11 +3339,11 @@ winrt::SplitView NavigationView::GetSplitView()
     return m_rootSplitView.get();
 }
 
-void NavigationView::TopNavigationViewItemContentChanged()
+void NavigationView::TopNavigationViewItemContentChanged(bool forceInvalidateWidthCache)
 {
     if (m_appliedTemplate)
     {
-        if (!MenuItemsSource())
+        if (forceInvalidateWidthCache || !MenuItemsSource())
         {
             m_topDataProvider.InvalidWidthCache();
         }
