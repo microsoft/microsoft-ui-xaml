@@ -55,8 +55,6 @@
 #include <FxCallbacks.h>
 #include <CompHelper/CompositionImplicitAnimationHelper.h>
 #include <DirectManipulationHelper.h>
-#include <ErrorHandlerSettings.h>
-#include <strsafe.h>
 
 using namespace DirectUI;
 using namespace RuntimeFeatureBehavior;
@@ -1176,19 +1174,6 @@ XRECTF HWCompTreeNodeWinRT::GetOverallLocalPrependClipRect()
 
 void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, _In_ const XRECTF& prependClipRect)
 {
-    // Temporary diagnostics for the CalendarView decade focus baseline investigation.
-    const bool traceCalendarItem = m_pUIElementNoRef->OfTypeByIndex<KnownTypeIndex::CalendarViewItem>();
-    wfn::Vector2 previousSize{};
-    xref_ptr<WUComp::ICompositionClip> previousClip;
-    if (traceCalendarItem || IsInfiniteRectF(prependClipRect))
-    {
-        IFCFAILFAST(m_prependVisual->get_Size(&previousSize));
-    }
-    if (traceCalendarItem)
-    {
-        IFCFAILFAST(m_prependVisual->get_Clip(previousClip.ReleaseAndGetAddressOf()));
-    }
-
     if (!IsInfiniteRectF(prependClipRect))
     {
         // We have a non-empty clip.  Create an InsetClip if necessary and update it.
@@ -1226,53 +1211,6 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
         IFCFAILFAST(m_prependVisual->put_Clip(nullptr));
         wfn::Vector2 size{};
         IFCFAILFAST(m_prependVisual->put_Size(size));
-
-        // Temporary diagnostics for nonzero sizes cleared on any element.
-        if (previousSize.X != 0.0f || previousSize.Y != 0.0f)
-        {
-            IFCFAILFAST(m_prependVisual->get_Size(&size));
-
-            wchar_t message[512];
-            IFCFAILFAST(StringCchPrintfW(
-                message, ARRAYSIZE(message),
-                L"PrependSizeClearProbe SetPrependClipRect node=%p element=%p type=%u name=%.128s frame=%u "
-                L"previousSize=(%g,%g) size=(%g,%g)",
-                this, m_pUIElementNoRef, static_cast<unsigned>(m_pUIElementNoRef->GetTypeIndex()),
-                m_pUIElementNoRef->m_strName.IsNullOrEmpty() ? L"" : m_pUIElementNoRef->m_strName.GetBuffer(),
-                m_pUIElementNoRef->GetContext()->GetFrameNumber(),
-                previousSize.X, previousSize.Y, size.X, size.Y));
-            ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
-        }
-    }
-
-    if (traceCalendarItem)
-    {
-        wfn::Vector2 size{};
-        xref_ptr<WUComp::ICompositionClip> clip;
-        IFCFAILFAST(m_prependVisual->get_Size(&size));
-        IFCFAILFAST(m_prependVisual->get_Clip(clip.ReleaseAndGetAddressOf()));
-
-        wchar_t message[1024];
-        IFCFAILFAST(StringCchPrintfW(
-            message,
-            ARRAYSIZE(message),
-            L"CalendarDecadeClipProbe node=%p element=%p frame=%u finite=%d layoutClip=%d ancestorLayoutClip=%d "
-            L"inheritedClip=(%g,%g,%g,%g) overallClip=(%g,%g,%g,%g) actual=(%g,%g) "
-            L"previousSize=(%g,%g) previousClip=%d size=(%g,%g) clip=%d",
-            this,
-            m_pUIElementNoRef,
-            m_pUIElementNoRef->GetContext()->GetFrameNumber(),
-            !IsInfiniteRectF(prependClipRect),
-            m_pUIElementNoRef->HasLayoutClip(),
-            m_pUIElementNoRef->ShouldApplyLayoutClipAsAncestorClip(),
-            m_prependClip.X, m_prependClip.Y, m_prependClip.Width, m_prependClip.Height,
-            prependClipRect.X, prependClipRect.Y, prependClipRect.Width, prependClipRect.Height,
-            m_pUIElementNoRef->GetActualWidth(), m_pUIElementNoRef->GetActualHeight(),
-            previousSize.X, previousSize.Y,
-            previousClip != nullptr,
-            size.X, size.Y,
-            clip != nullptr));
-        ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
     }
 }
 

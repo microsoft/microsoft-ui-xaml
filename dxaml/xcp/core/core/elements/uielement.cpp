@@ -62,8 +62,6 @@
 
 #include <CValueBoxer.h>
 #include <rendertargetbitmapmgr.h>
-#include <ErrorHandlerSettings.h>
-#include <strsafe.h>
 
 #ifdef XAMLPROFILER_ENABLED
 #include <XcpAllocation.h>
@@ -73,24 +71,6 @@ using namespace DirectUI;
 using namespace DCompHelpers;
 using namespace Focus;
 using namespace Theming;
-
-// Temporary diagnostics for CalendarView scrolling composition-node initialization.
-static void TraceCalendarPanelCompositionRequirement(
-    CUIElement* element, bool setting, CompositionRequirement reason, bool previouslyRequired)
-{
-    if (element->OfTypeByIndex<KnownTypeIndex::CalendarPanel>())
-    {
-        wchar_t message[512];
-        IFCFAILFAST(StringCchPrintfW(
-            message, ARRAYSIZE(message),
-            L"CalendarDecadeBoundaryProbe requirement frame=%u element=%p action=%s reason=%u "
-            L"isManipulatableReason=%d previouslyRequired=%d requires=%d manipulatable=%d peer=%p",
-            element->GetContext()->GetFrameNumber(), element, setting ? L"set" : L"unset",
-            static_cast<unsigned>(reason), reason == CompositionRequirement::Manipulatable,
-            previouslyRequired, element->RequiresCompositionNode(), element->IsManipulatable(), element->GetCompositionPeer()));
-        ErrorHandling::GetErrorHandlingSettings()->LogMessage(message, ErrorHandling::LoggingLevel::Info);
-    }
-}
 
 #ifdef XAMLPROFILER_ENABLED
 #if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
@@ -10761,7 +10741,6 @@ _Check_return_ HRESULT CUIElement::SetRequiresComposition(
 
     ASSERT(RequiresComposition());
 
-    TraceCalendarPanelCompositionRequirement(this, true, compositionReason, didRequireCompNode);
     return S_OK;
 }
 
@@ -11056,8 +11035,6 @@ void CUIElement::UnsetRequiresComposition(
     {
         CUIElement::NWSetContentDirty(this, DirtyFlags::Render);
     }
-
-    TraceCalendarPanelCompositionRequirement(this, false, compositionReason, didRequireCompNode);
 }
 
 //------------------------------------------------------------------------
