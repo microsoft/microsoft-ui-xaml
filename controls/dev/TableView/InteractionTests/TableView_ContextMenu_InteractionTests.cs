@@ -288,6 +288,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies Escape closes a keyboard-opened cell menu and returns focus to the cell it was opened on.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void EscapeReturnsFocusToMenuTarget()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -311,6 +312,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu, and that the editor's own menu neither ends the edit while open nor when Escape closes it.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void RightClickOnEditorOpensNoTableViewMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -335,6 +337,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a command picked from the editor's own menu closes the menu without ending the edit, and Escape still cancels afterwards.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void EditorMenuCommandKeepsEdit()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -357,6 +360,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies that after the editor's own menu closes, moving to another cell still commits the typed value.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void ClickAwayAfterEditorMenuCommitsEdit()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -389,6 +393,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on another row's cell while a cell is editing opens no menu: neither the cell's, the row's nor the table's.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void RightClickOnOtherRowWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -407,6 +412,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on a column header while a cell is editing opens no menu: neither the header's nor the table's.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void RightClickOnHeaderWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -424,6 +430,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on the empty area below the rows while a cell is editing does not open the table's ContextFlyout.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void RightClickBelowRowsWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -440,6 +447,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on a group header while a cell is editing opens no menu.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void RightClickOnGroupHeaderWhileEditingOpensNoMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -464,6 +472,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a press-and-hold on a cell opens the column's CellContextFlyout for that row and leaves selection alone.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void PressAndHoldOnCellOpensCellMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -491,6 +500,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on a group header with no menu of its own opens the table's ContextFlyout, not a row menu.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void RightClickOnGroupHeaderOpensTableMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -510,6 +520,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies Shift+F10 on a focused group header opens the table's ContextFlyout and keeps focus on the header.")]
+        [TestProperty("Ignore", "True")] // Times out on CI (UIA starvation from leaked TableView pages), see #12491. Re-enable when fixed.
         public void ShiftF10OnGroupHeaderOpensTableMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
