@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="WinUICsDesktopSampleApp.WindowPlacement.MarkupWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Markup window"
+    Width="500"
+    Height="350"
+    PlacementId="Markup">
+
+    <StackPanel Padding="12" Spacing="8">
+        <TextBlock Text="Markup window" FontSize="20" />
+        <TextBlock TextWrapping="Wrap" Text="Width=500, Height=350 and PlacementId=Markup are set in XAML." />
+        <Button Content="Close" Click="OnClose" />
+    </StackPanel>
+</Window>

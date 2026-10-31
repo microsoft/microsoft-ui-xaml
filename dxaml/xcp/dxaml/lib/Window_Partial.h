@@ -28,6 +28,8 @@ namespace DirectUI
         _Check_return_ HRESULT get_DispatcherImpl(_Outptr_result_maybenull_ wuc::ICoreDispatcher** pValue);
         _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT get_PlacementIdImpl(_Out_ HSTRING* value);
+        _Check_return_ HRESULT put_PlacementIdImpl(_In_opt_ HSTRING value);
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
@@ -136,4 +138,3 @@ namespace DirectUI
         bool m_peggedForHWNDLifetime{ false };
     };
 }
-

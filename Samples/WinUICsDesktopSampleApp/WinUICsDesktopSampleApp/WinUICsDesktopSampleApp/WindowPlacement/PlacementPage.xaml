@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="WinUICsDesktopSampleApp.WindowPlacement.PlacementPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="16" ColumnSpacing="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="12" Padding="0,0,12,0">
+                <TextBlock Text="Automatic window placement" Style="{StaticResource TitleTextBlockStyle}" TextWrapping="Wrap" />
+                <TextBlock TextWrapping="Wrap"
+                           Text="WinUI saves a window when it closes and restores it on the first Activate(). Reuse the same PlacementId to reopen it. An empty ID disables persistence." />
+                <TextBlock x:Name="StatusText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                <TextBox x:Name="PlacementIdBox" Header="PlacementId for the next window" Text="Doc" />
+                <CheckBox x:Name="SetSizeCheck" Content="Set fallback Width/Height before Activate()" IsChecked="True" />
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <NumberBox x:Name="WidthBox" Header="Width (DIPs)" Value="800" Minimum="200" Maximum="3000" SpinButtonPlacementMode="Compact" />
+                    <NumberBox x:Name="HeightBox" Grid.Column="1" Header="Height (DIPs)" Value="600" Minimum="150" Maximum="2000" SpinButtonPlacementMode="Compact" />
+                </Grid>
+                <TextBlock TextWrapping="Wrap" Text="Saved placement takes priority over these dimensions. Use a new ID to test the fallback size." />
+                <ComboBox x:Name="InitialPresenterCombo" Header="Presenter before Activate()" SelectedIndex="0" HorizontalAlignment="Stretch">
+                    <x:String>Overlapped</x:String>
+                    <x:String>FullScreen</x:String>
+                    <x:String>CompactOverlay</x:String>
+                </ComboBox>
+                <Button Content="Open window" Click="OnOpen" Style="{StaticResource AccentButtonStyle}" />
+                <Button Content="Open markup window" Click="OnOpenMarkup"
+                        ToolTipService.ToolTip="PlacementId=Markup, Width=500, Height=350 are set in XAML." />
+                <ComboBox x:Name="WindowsCombo" Header="Open test windows" PlaceholderText="Select a window" HorizontalAlignment="Stretch" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Activate selected" Click="OnActivateSelected" />
+                    <Button Content="Close selected" Click="OnCloseSelected" />
+                </StackPanel>
+                <Button Content="Close all test windows" Click="OnCloseAll" />
+                <TextBlock x:Name="ErrorText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                <Expander Header="Saved records (private diagnostic format)" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <Button Content="Refresh saved records" Click="OnReadStore" />
+                        <Button x:Name="DeleteSavedRecordsButton" Content="Delete saved records" Click="OnDeleteSavedRecords" />
+                        <TextBlock x:Name="StoreText" FontFamily="Consolas" FontSize="12"
+                                   TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Column="1" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Spacing="8">
+                <TextBlock Text="Events (newest first)" Style="{StaticResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Clear" Click="OnClearLog" />
+                    <Button Content="Copy" Click="OnCopyLog" />
+                </StackPanel>
+            </StackPanel>
+            <ListView x:Name="LogList" Grid.Row="1" SelectionMode="Extended" FontFamily="Consolas" FontSize="12">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="Padding" Value="4,2" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </Grid>
+    </Grid>
+</UserControl>

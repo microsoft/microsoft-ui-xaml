@@ -33,6 +33,8 @@
     <!-- Test specifying Enabled/Disabled optional changes -->
     <EnabledXamlOptionalChanges>_Reserved</EnabledXamlOptionalChanges>
     <DisabledXamlOptionalChanges>_Reserved</DisabledXamlOptionalChanges>
+    <DefineConstants Condition="'$(MUXFinalRelease)' != 'true'">$(DefineConstants);MUX_PRERELEASE</DefineConstants>
+    <DefaultItemExcludes Condition="'$(MUXFinalRelease)' == 'true'">$(DefaultItemExcludes);WindowPlacement\**\*</DefaultItemExcludes>
    
   </PropertyGroup>
 

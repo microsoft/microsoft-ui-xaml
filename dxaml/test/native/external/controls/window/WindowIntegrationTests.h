@@ -62,7 +62,210 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
 #ifdef MUX_PRERELEASE
-        // Experimental Width/Height properties on Window are only present in prerelease builds.
+        // Window placement
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoreNormal)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-normal: Reopens a normal window at its saved position and size instead of its fallback dimensions.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementPersistMovedBounds)
+            TEST_METHOD_PROPERTY(L"Description", L"persist-moved-bounds: Reopens at the user's updated position and size, not the initial bounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoreMaximized)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-maximized: Reopens maximized and preserves the normal restore bounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementMaximizedRestoreTracksNormalSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Width and Height keep the restored client size when switching directly from restored maximized placement to FullScreen or CompactOverlay.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoreMinimizedNormal)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-minimized-normal: Reopens a minimized normal window as normal, preserving its bounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoreMinimizedMaximized)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-minimized-maximized: Reopens maximized, not minimized, and preserves normal restore bounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoresOnlyOnFirstActivation)
+            TEST_METHOD_PROPERTY(L"Description", L"Repeated Activate calls do not undo a move or resize after the first restore.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementDoesNotCascadeForSharedId)
+            TEST_METHOD_PROPERTY(L"Description", L"A second live window with the same id restores the saved placement without cascading.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementIdCanBeSetInMarkup)
+            TEST_METHOD_PROPERTY(L"Description", L"PlacementId set in markup selects the record used when saving.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavesUsingCurrentId)
+            TEST_METHOD_PROPERTY(L"Description", L"Changing PlacementId after activation saves under the current id, not the original id.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementIdRemainsUsableAfterClose)
+            TEST_METHOD_PROPERTY(L"Description", L"PlacementId can still be read, changed, and cleared after the window closes.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSettingIdAfterActivationDoesNotRestore)
+            TEST_METHOD_PROPERTY(L"Description", L"Setting PlacementId after activation does not restore, even on a later Activate call.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementClearingIdDisablesSaving)
+            TEST_METHOD_PROPERTY(L"Description", L"Clearing PlacementId normalizes it to empty and prevents overwriting the earlier record.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementIdsAreCaseSensitive)
+            TEST_METHOD_PROPERTY(L"Description", L"Ids differing only by case keep independent records and do not restore each other's bounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementFallbackWithoutSavedPlacement)
+            TEST_METHOD_PROPERTY(L"Description", L"fallback-without-saved-placement: Uses requested dimensions for a new id, then restores the placement saved on close.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRequiresActivate)
+            TEST_METHOD_PROPERTY(L"Description", L"Unshown and AppWindow-only windows do not overwrite saved placements.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementActivateRestoresAfterAppWindowShow)
+            TEST_METHOD_PROPERTY(L"Description", L"Window.Activate restores saved bounds even when AppWindow.Show has already shown the window.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavesOnlyConfirmedSessionEnd)
+            TEST_METHOD_PROPERTY(L"Description", L"A canceled session end saves nothing; a confirmed session end saves the current bounds.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavesFinalCloseHandlerChanges)
+            TEST_METHOD_PROPERTY(L"Description", L"A canceled close saves nothing; the final close saves the id and bounds chosen by the close handler.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRejectsInvalidRecords)
+            TEST_METHOD_PROPERTY(L"Description", L"Rejects malformed, mismatched and future-version records and falls back to requested dimensions.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRecordCompatibility)
+            TEST_METHOD_PROPERTY(L"Description", L"Ignores unknown fields and replaces malformed or future-version records only when saving.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSkipsUnsupportedPresenters)
+            TEST_METHOD_PROPERTY(L"Description", L"Does not restore or save while FullScreen or CompactOverlay is active.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementCloseDuringActivation)
+            TEST_METHOD_PROPERTY(L"Description", L"Closing during initial placement or activation, including nested Activate, does not overwrite saved data.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementReentrantActivate)
+            TEST_METHOD_PROPERTY(L"Description", L"Nested Activate preserves restored bounds and state and allows saving after activation completes.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSizeChangedCanOverrideRestoredSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Width and Height set during a restore callback override saved size without reapplying old fallback dimensions.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavesDuringSentMessages)
+            TEST_METHOD_PROPERTY(L"Description", L"Cross-thread session-end and close messages save final bounds without changing the earlier id's record.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavesOnDestroy)
+            TEST_METHOD_PROPERTY(L"Description", L"Window.Close and WM_CLOSE save during WM_DESTROY, not before destruction starts.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavesDuringNativeDestruction)
+            TEST_METHOD_PROPERTY(L"Description", L"DestroyWindow, AppWindow.Destroy, and owner destruction save final placement before Window.Close cleans up XAML.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementNativeDestructionSkipsUnsupportedPresenters)
+            TEST_METHOD_PROPERTY(L"Description", L"Native destruction after switching to FullScreen or CompactOverlay preserves the earlier Overlapped placement.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementAdaptToReplacementDisplay)
+            TEST_METHOD_PROPERTY(L"Description", L"adapt-to-replacement-display: Simulates a missing display by editing saved data; restores usable bounds and size without changing the VM's display setup.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementPreferSameNameDisplay)
+            TEST_METHOD_PROPERTY(L"Description", L"prefer-same-name-display: Edits saved coordinates while retaining the display name, then restores usable bounds; does not test competing displays.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementFitOffscreenBounds)
+            TEST_METHOD_PROPERTY(L"Description", L"fit-offscreen-bounds: Edits saved bounds to be partly off-screen, then restores them inside the current work area, allowing native border tolerance.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoreSnapped)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-snapped: Captures and restores left, right and corner snap bounds independently of normal bounds, including custom chrome.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementCapturesMinimizedSnappedBounds)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-minimized-snapped (capture limitation): Documents native capture gaps and preserves earlier records when capture is rejected.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestoreMinimizedSnapped)
+            TEST_METHOD_PROPERTY(L"Description", L"restore-minimized-snapped: Edits saved data to represent a minimized snapped window, then reopens snapped, not minimized; native capture gaps are tested separately.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementMigratesChangedWorkArea)
+            TEST_METHOD_PROPERTY(L"Description", L"Migrates normal, maximized and snapped placements when the work area grows or shrinks.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRespectsFixedSizing)
+            TEST_METHOD_PROPERTY(L"Description", L"Checks native sizing policy for oversized resizable and fixed-size windows without changing IsResizable.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementPreserveLogicalSize)
+            TEST_METHOD_PROPERTY(L"Description", L"preserve-logical-size: Doubles the recorded DPI and restores at the target display's actual DPI without changing display settings.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementClearsStaleSnapFields)
+            TEST_METHOD_PROPERTY(L"Description", L"Repeated session-end saves followed by close replace snapped records without leaving stale snap fields.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRespectsSnappingSetting)
+            TEST_METHOD_PROPERTY(L"Description", L"Checks the available native path's snap-setting behavior and restores the original setting after testing.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+        
+        // Width/Height tests
+
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the experimental Width/Height properties on Window can be read and written in DIPs.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")

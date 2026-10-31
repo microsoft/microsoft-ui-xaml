@@ -12,6 +12,7 @@
 #include <DesktopWindowXamlSource_partial.h>
 #include "CWindowChrome.h"
 #include "BaseWindow.h"
+#include "WindowPlacement.h"
 
 
 namespace DirectUI
@@ -35,6 +36,8 @@ namespace DirectUI
         _Check_return_ HRESULT get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue) override;
         _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_PlacementIdImpl(_Out_ HSTRING* value) override;
+        _Check_return_ HRESULT put_PlacementIdImpl(_In_opt_ HSTRING value) override;
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
@@ -134,6 +137,12 @@ namespace DirectUI
         void MakeWindowRTL();
 
     private:
+        _Check_return_ HRESULT ApplyInitialWindowPlacement();
+        bool TryApplySavedWindowPlacement();
+        bool SupportsAutomaticWindowPlacement();
+        void RefreshWindowPlacementEligibility();
+        _Check_return_ HRESULT SaveWindowPlacement();
+
         LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
         _Check_return_ HRESULT OnSizeChanged(WPARAM wParam, LPARAM lParam);
         _Check_return_ HRESULT OnMoved(WPARAM wParam, LPARAM lParam);
@@ -227,6 +236,17 @@ namespace DirectUI
         const wrl::WeakRef m_weakDispatcherQueue;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
+
+        enum class PlacementState
+        {
+            NotActivated,
+            Activating,
+            Activated,
+            ActivatedWithUnsupportedPresenter,
+            SavingOnDestroy,
+        };
+        WindowPlacement m_windowPlacement;
+        PlacementState m_placementState = PlacementState::NotActivated;
 
         // --------------------------------------------------
         // Window sizing support

@@ -19,13 +19,32 @@ namespace WinUICsDesktopSampleApp
         private bool isMarkupWindowActivated = false;
         private bool isRuntimeWindowActivated = false;
         private ContentDialog dialog = null;
+#if MUX_PRERELEASE
+        private readonly WindowPlacement.PlacementPage placementPage;
+        private readonly NavigationViewItem navigationViewItemWindowPlacement;
+#endif
 
         public MainWindow()
         {
             this.InitializeComponent();
 
+#if MUX_PRERELEASE
+            placementPage = new WindowPlacement.PlacementPage { Name = "placementPage", Visibility = Visibility.Collapsed };
+            sampleContentGrid.Children.Add(placementPage);
+            navigationViewItemWindowPlacement = new NavigationViewItem
+            {
+                Name = "navigationViewItemWindowPlacement",
+                Content = "Window Placement",
+                Icon = new SymbolIcon(Symbol.NewWindow),
+            };
+            navigationView.MenuItems.Insert(2, navigationViewItemWindowPlacement);
+#endif
+
             this.Activated += Window_Activated;
             this.Closed += Window_Closed;
+#if MUX_PRERELEASE
+            this.Closed += (sender, args) => placementPage.CloseTestWindows();
+#endif
             this.SizeChanged += Window_SizeChanged;
             this.VisibilityChanged += Window_VisibilityChanged;
 
@@ -53,7 +72,17 @@ namespace WinUICsDesktopSampleApp
                 this.Content.XamlRoot.Content.PreviewKeyUp -= PreviewKeyUpHandler;
             }
 
-            switch ((args.SelectedItem as NavigationViewItem).Content)
+            var selectedItem = args.SelectedItem as NavigationViewItem;
+#if MUX_PRERELEASE
+            bool showWindowPlacement = placementPage != null && selectedItem == navigationViewItemWindowPlacement;
+            if (placementPage != null)
+            {
+                placementPage.Visibility = showWindowPlacement ? Visibility.Visible : Visibility.Collapsed;
+            }
+            sampleContent.Visibility = showWindowPlacement ? Visibility.Collapsed : Visibility.Visible;
+#endif
+
+            switch (selectedItem.Content)
             {
                 case "External Control":
                     stackPanelExternalControl.Visibility = Visibility.Visible;

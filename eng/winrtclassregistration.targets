@@ -20,7 +20,9 @@
       <!-- TEMPORARY: with the -n:2 merge of Microsoft.UI.winmd, we can no longer use
       IxpWinMDs to create IXP class entries (multiple dlls host Microsoft.UI.* types).
       As a workaround, those entries are copied from the IXP transport package appx manifest. -->
-      <_WinMdsForClassRegistration Include="@(ExternalWinMDs)" Condition="'%(ExternalWinMDs.Merge)'=='false'"/>
+      <_WinMdsForClassRegistration Include="@(ExternalWinMDs)" Exclude="@(StorageWinMD)" Condition="'%(ExternalWinMDs.Merge)'=='false'"/>
+      <!-- Foundation owns Storage's shipped registrations; our private test setup needs its own copy. -->
+      <_WinMdsForClassRegistration Include="@(StorageWinMD)" Condition="'$(IncludeStorageExtensions)' == 'true'"/>
       <_WinMdsForClassRegistration Include="@(AdditionalWinMDsForClassRegistration)"/>
 
       <!-- Include Microsoft.Web.WebView2.Core.winmd (needed for internal activation outside of cppwinrt / cswinrt, eg WRL)-->
@@ -42,7 +44,7 @@
           BeforeTargets="_CreateWinUIPackageLayout;KillCreatedMSBuildInstances;Binplace"
           AfterTargets="Build"
           DependsOnTargets="_GetClassRegistrationWinMDs"
-          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(LiftedIXPAppxManifest)"
+          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(LiftedIXPAppxManifest);$(MSBuildThisFileFullPath);$(RepoRoot)\eng\productmetadata.props"
           Outputs="$(OutDir)LiftedWinRTClassRegistrations.xml;$(OutDir)TestExtensions.xml">
 
     <GenerateWinRTClassRegistrations

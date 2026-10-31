@@ -491,9 +491,185 @@ IFACEMETHODIMP DesktopWindowImpl::remove_VisibilityChanged(EventRegistrationToke
     return S_OK;
 }
 
+_Check_return_ HRESULT DesktopWindowImpl::get_PlacementIdImpl(_Out_ HSTRING* value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(m_windowPlacement.GetId(value));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_PlacementIdImpl(_In_opt_ HSTRING value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(m_windowPlacement.SetId(value));
+
+    return S_OK;
+}
+
+bool DesktopWindowImpl::SupportsAutomaticWindowPlacement()
+{
+    // Check the live presenter: apps can switch presenters between activation and close.
+    if (!m_appWindowForChangedEvent)
+    {
+        return false;
+    }
+
+    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+    ixp::AppWindowPresenterKind kind{};
+
+    return SUCCEEDED(m_appWindowForChangedEvent->get_Presenter(&presenter)) &&
+           presenter &&
+           SUCCEEDED(presenter->get_Kind(&kind)) &&
+           kind == ixp::AppWindowPresenterKind_Overlapped;
+}
+
+void DesktopWindowImpl::RefreshWindowPlacementEligibility()
+{
+    if ((m_placementState != PlacementState::Activated &&
+         m_placementState != PlacementState::ActivatedWithUnsupportedPresenter) ||
+        !m_appWindowForChangedEvent)
+    {
+        return;
+    }
+
+    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+    ixp::AppWindowPresenterKind kind{};
+    if (SUCCEEDED(m_appWindowForChangedEvent->get_Presenter(&presenter)) &&
+        presenter && SUCCEEDED(presenter->get_Kind(&kind)))
+    {
+        m_placementState = kind == ixp::AppWindowPresenterKind_Overlapped ?
+            PlacementState::Activated : PlacementState::ActivatedWithUnsupportedPresenter;
+    }
+    // AppWindow clears Presenter before WM_DESTROY. Preserve the last known eligibility.
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ApplyInitialWindowPlacement()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Initial placement precedence:
+    // 1. Custom placement (phase 2).
+    // 2. Cascade from a matching visible window (phase 2).
+    // 3. Saved placement.
+    if (TryApplySavedWindowPlacement())
+    {
+        if (!m_bIsClosed)
+        {
+            // It's possible that the app set a new Width/Height during TryApplySavedWindowPlacement
+            // during a Window.SizeChanged event handler.  If it did, apply the pending client size now.
+            IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+        }
+
+        return S_OK;
+    }
+
+    // 4. Requested Width/Height.
+    IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+
+    // 5. Existing/OS defaults when no source supplied placement or size.
+    return S_OK;
+}
+
+bool DesktopWindowImpl::TryApplySavedWindowPlacement()
+{
+    if (!SupportsAutomaticWindowPlacement())
+    {
+        return false;
+    }
+
+    // Saved placement overrides Width/Height set before activation.
+    // Clear the pending dimensions before restoring: event handlers may set new values that we must keep.
+    const auto width = m_pendingClientWidthDips;
+    const auto height = m_pendingClientHeightDips;
+    m_pendingClientWidthDips.reset();
+    m_pendingClientHeightDips.reset();
+
+    const bool applied = m_windowPlacement.TryRestore(m_hwnd.get());
+    if (!applied && !m_bIsClosed)
+    {
+        if (!m_pendingClientWidthDips)
+        {
+            m_pendingClientWidthDips = width;
+        }
+        if (!m_pendingClientHeightDips)
+        {
+            m_pendingClientHeightDips = height;
+        }
+    }
+
+    if (applied && !m_bIsClosed)
+    {
+        // Restoring a window as maximized can skip the resize notification that
+        // updates our cached unmaximized size. Update the cache now so Width and Height
+        // stay correct if the app switches to FullScreen or CompactOverlay.
+        bool useRestoredClientSize = false;
+        wf::Size restoredClientSize{};
+        SIZE chromePx{};
+        if (SUCCEEDED(TryGetWin32RestoredClientSizeInDips(&useRestoredClientSize, &restoredClientSize)) &&
+            useRestoredClientSize &&
+            SUCCEEDED(GetSavedRestoreChromeSizeInPixels(&chromePx)))
+        {
+            // The window is maximized/minimized. Use Windows' saved normal bounds, not its live size.
+            const float scale = GetWindowScale();
+            SetTrackedRestoredSize(restoredClientSize,
+                wf::Size{ static_cast<float>(chromePx.cx) / scale, static_cast<float>(chromePx.cy) / scale });
+        }
+        else
+        {
+            // Measure the live client area and title bar/borders if the window is normal.
+            // This helper deliberately ignores maximized/minimized windows.
+            TrackLastRestoredClientSize();
+        }
+    }
+
+    // A restore callback can close the window; treat that as handled so callers skip fallback sizing.
+    return applied || m_bIsClosed;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::SaveWindowPlacement()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    RefreshWindowPlacementEligibility();
+    if (m_placementState == PlacementState::SavingOnDestroy ||
+        m_placementState == PlacementState::Activated)
+    {
+        IFC_RETURN(m_windowPlacement.Save(m_hwnd.get()));
+    }
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
 {
     IFC_RETURN(CheckIsWindowClosed());
+
+    const bool firstPlacementActivation =
+        AreNewWindowingApisEnabled() &&
+        m_placementState == PlacementState::NotActivated;
+    auto placementActivationGuard = wil::scope_exit([&]()
+    {
+        if (firstPlacementActivation && m_placementState == PlacementState::Activating)
+        {
+            m_placementState = PlacementState::NotActivated;
+        }
+    });
+
+    if (firstPlacementActivation)
+    {
+        // Native activation also occurs through AppWindow.Show. Only Window.Activate opts into saving.
+        // A nested Activate must neither restore again nor enable saving before this call finishes.
+        m_placementState = PlacementState::Activating;
+        IFC_RETURN(ApplyInitialWindowPlacement());
+
+        if (m_bIsClosed)
+        {
+            return S_OK;
+        }
+    }
 
     // Show the top-level win32 window
     auto nCmdShow = SW_SHOW;
@@ -506,22 +682,23 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
         nCmdShow = SW_RESTORE;
     }
 
-    if (m_bInitialWindowActivation)
+    ::ShowWindow(m_hwnd.get(), nCmdShow);
+    if (AreNewWindowingApisEnabled() && m_bIsClosed)
     {
-        // Apply any Width/Height that were requested before the window was first shown
-        // (e.g. from XAML markup). Skipped when the feature is contained off.
-        if (AreNewWindowingApisEnabled())
-        {
-            IFC_RETURN(ApplyPendingClientSizeIfNeeded());
-        }
+        return S_OK;
     }
 
-    ::ShowWindow(m_hwnd.get(), nCmdShow);
     ::UpdateWindow(m_hwnd.get());
 
     // It is necessary to set the top-level win32 window as the active window after
     // attaching DesktopWindowXamlSource.
     ::SetActiveWindow(m_hwnd.get());
+
+    if (firstPlacementActivation && !m_bIsClosed)
+    {
+        m_placementState = PlacementState::ActivatedWithUnsupportedPresenter;
+        RefreshWindowPlacementEligibility();
+    }
 
     return S_OK;
 }
@@ -1196,6 +1373,11 @@ _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindo
         return S_OK;
     }
 
+    if (AreNewWindowingApisEnabled())
+    {
+        RefreshWindowPlacementEligibility();
+    }
+
     if (DesktopUtility::IsPriorToWindows11() && m_windowChrome)
     {
         // Style/size messages can arrive while AppWindow still reports the old presenter.
@@ -1422,18 +1604,6 @@ LRESULT DesktopWindowImpl::OnMessage(
     ctl::ComPtr<xaml::IWindow> spWindow;
     IFCFAILFAST(ResolveWindowWeakReference(&spWindow));
 
-    // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
-    // Desktop Window is destroyed.
-    auto dxamlCore = DirectUI::DXamlCore::GetCurrent();
-    if ((WM_DESTROY == uMsg)
-        && dxamlCore->m_handleToDesktopWindowMap.empty()
-        && dxamlCore->GetDispatcherShutdownMode() == xaml::DispatcherShutdownMode_OnLastWindowClose)
-    {
-        PostQuitMessage(0);
-
-        return 0;
-    }
-
     if (AreNewWindowingApisEnabled())
     {
         switch (uMsg)
@@ -1447,7 +1617,28 @@ LRESULT DesktopWindowImpl::OnMessage(
                 // Track it immediately.
                 TrackLastRestoredClientSize();
                 break;
+            case WM_ENDSESSION:
+                if (wParam)
+                {
+                    TRACE_HR_NORETURN(SaveWindowPlacement());
+                }
+                break;
+            case WM_DESTROY:
+                TRACE_HR_NORETURN(SaveWindowPlacement());
+                break;
         }
+    }
+
+    // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
+    // Desktop Window is destroyed.
+    auto dxamlCore = DirectUI::DXamlCore::GetCurrent();
+    if ((WM_DESTROY == uMsg)
+        && dxamlCore->m_handleToDesktopWindowMap.empty()
+        && dxamlCore->GetDispatcherShutdownMode() == xaml::DispatcherShutdownMode_OnLastWindowClose)
+    {
+        PostQuitMessage(0);
+
+        return 0;
     }
 
     switch (uMsg)
@@ -1984,6 +2175,11 @@ _Check_return_ HRESULT DesktopWindowImpl::get_WindowHandle(_Out_ HWND* pValue)
 
 void DesktopWindowImpl::Shutdown()
 {
+    if (AreNewWindowingApisEnabled())
+    {
+        RefreshWindowPlacementEligibility();
+    }
+
     // Disarm any deferred restored-size re-evaluation that may still be queued on the dispatcher: once
     // the window is torn down the callback must not touch this (soon to be destroyed) object. Feature
     // code, so contained by AreNewWindowingApisEnabled; the sentinel is also only allocated once a
@@ -2004,7 +2200,6 @@ void DesktopWindowImpl::Shutdown()
         VERIFYHR(m_appWindowForChangedEvent->remove_Changed(m_appWindowChangedToken));
     }
     m_appWindowChangedToken.value = 0;
-    m_appWindowForChangedEvent.Reset();
 
     m_islandInputSite = nullptr;
     m_positioningBridgeWindowHandle = NULL;
@@ -2025,9 +2220,17 @@ void DesktopWindowImpl::Shutdown()
 
     m_dxamlCoreNoRef->m_handleToDesktopWindowMap.erase(iter);
 
+    // AppWindow clears its presenter before forwarding WM_DESTROY to us.
+    if (AreNewWindowingApisEnabled() &&
+        m_placementState == PlacementState::Activated)
+    {
+        m_placementState = PlacementState::SavingOnDestroy;
+    }
+
     // in case base class destructor doesn't get called
     ::DestroyWindow(m_hwnd.get());
     m_hwnd = NULL;
+    m_appWindowForChangedEvent.Reset();
 
     // UnPeg the window, only if it's pegged before.
     m_dxamlWindowInstance->UnPeg();
