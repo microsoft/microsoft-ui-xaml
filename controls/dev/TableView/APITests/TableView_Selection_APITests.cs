@@ -20,6 +20,8 @@ using WEX.TestExecution.Markup;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewRowTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewSelectionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -375,6 +377,144 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     VerifySelectionIsCoherent(tableView, items, $"after Deselect({index})");
                 }
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies IndexOf returns the selection-space index of a flat item, and -1 for null or an item not in the source.")]
+        public void VerifyIndexOfInFlatProjection()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeItems();
+                tableView = CreateSelectionTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, tableView.IndexOf(items[2]), "IndexOf must return the item's projected index.");
+                Verify.AreEqual(-1, tableView.IndexOf(null), "IndexOf(null) must return -1.");
+                Verify.AreEqual(-1, tableView.IndexOf(new Person { Name = "Asha", Role = "Designer" }), "An equal-valued object that is not in the source must return -1.");
+
+                tableView.Select(tableView.IndexOf(items[1]));
+                Verify.AreSame(items[1], tableView.SelectedItem, "IndexOf must share the Select index space.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies IndexOf matches value-typed items by value, and answers before Loaded and after Unloaded.")]
+        public void VerifyIndexOfMatchesValuesBeforeLoadAndAfterUnload()
+        {
+            TableView tableView = null;
+            TableView numbers = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(new List<string> { "alpha", "beta", "gamma" }, headers: new[] { "Value" }, bound: false);
+                // Boxed into List<object>: CsWinRT cannot project List<int> as the IVectorView<object> TableView reads.
+                numbers = CreateTableView(new List<object> { 10, 20, 30 }, headers: new[] { "Value" }, bound: false);
+
+                Verify.AreEqual(1, tableView.IndexOf(new string("beta".ToCharArray())), "A string must match by value before Loaded.");
+                Verify.AreEqual(2, numbers.IndexOf(30), "A boxed number must match by value before Loaded.");
+                Verify.AreEqual(-1, tableView.IndexOf("delta"), "A value not in the source must return -1.");
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, tableView.IndexOf(new string("gamma".ToCharArray())), "A string must match by value once loaded.");
+                Content = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsLoaded, "Precondition: the table is unloaded.");
+                Verify.AreEqual(0, tableView.IndexOf("alpha"), "IndexOf must still answer after Unloaded.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies IndexOf matches reference items by identity, so the second of two equal records resolves to its own row.")]
+        public void VerifyIndexOfDistinguishesEqualRecords()
+        {
+            TableView tableView = null;
+            EqualByValueItem first = null;
+            EqualByValueItem second = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                first = new EqualByValueItem("Same");
+                second = new EqualByValueItem("Same");
+                tableView = CreateTableView(new List<EqualByValueItem> { first, second }, headers: new[] { "Name" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(Equals(first, second), "Precondition: the two records compare equal.");
+                Verify.AreEqual(0, tableView.IndexOf(first), "The first record must resolve to row 0.");
+                Verify.AreEqual(1, tableView.IndexOf(second), "An equal but distinct record must resolve to its own row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies IndexOf counts group header slots, and returns -1 under a collapsed group, for a filtered-out item and for a group info object.")]
+        public void VerifyIndexOfInGroupedProjection()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeShapedPeople();
+                source = TableViewSource.From(items).GroupBy(o => Person(o).Role);
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // #Designer, Asha, Ines, #Engineer, Diego, Rafa, Owen, #Architect, Mei
+                var diego = items.First(p => p.Name == "Diego");
+                var mei = items.First(p => p.Name == "Mei");
+                Verify.AreEqual(4, tableView.IndexOf(diego), "Group header rows take index slots.");
+                Verify.AreEqual(8, tableView.IndexOf(mei), "The last group's member must count every header above it.");
+                Verify.AreEqual(-1, tableView.IndexOf(GetGroupInfo(tableView, 0)), "A group info object is not a data item.");
+
+                tableView.Select(tableView.IndexOf(mei));
+                Verify.AreSame(mei, tableView.SelectedItem, "IndexOf must share the Select index space when grouped.");
+
+                tableView.CollapseGroup("Engineer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(-1, tableView.IndexOf(items.First(p => p.Name == "Diego")), "An item under a collapsed group is not displayed.");
+                Verify.AreEqual(5, tableView.IndexOf(items.First(p => p.Name == "Mei")), "Collapsed members no longer take slots.");
+                source.Filter(o => Person(o).Role != "Architect");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual(-1, tableView.IndexOf(items.First(p => p.Name == "Mei")), "A filtered-out item must return -1."));
         }
     }
 
@@ -898,4 +1038,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 $"Exactly one realized row should report IsSelected in a single-selection control ({context}).");
         }
     }
+
+    // Value equality, so a matcher that uses Equals instead of identity finds the wrong row.
+    internal sealed record EqualByValueItem(string Name);
 }

@@ -5,6 +5,10 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "TableViewSource.h"
+#include "TableViewGroupInfo.h"
+#include "GroupedEntry.h"
+#include "TVDiag.h"
 
 #include <utility>
 #include <vector>
@@ -263,19 +267,29 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
     // SelectionModel indexes but does not look items up, so resolving a held item on reload still
     // needs this. Linear scan: it runs at most once per reload.
     auto const target = UnwrapEditingDataItem(item);
+    const bool isValue = static_cast<bool>(target.try_as<winrt::IPropertyValue>());
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
     {
-        // Identity, not ABI-pointer equality: the same object reached through a different
-        // interface (boxed values, projected interfaces) must still match.
-        if (auto const candidate = UnwrapEditingDataItem(view.GetAt(index));
-            candidate && SameInspectableIdentity(candidate, target))
+        if (IsDisplayedItemMatch(view.GetAt(index), target, isValue))
         {
             return index;
         }
     }
 
     return -1;
+}
+
+// Values by value (a fresh box each read), reference items by COM identity, not ABI-pointer
+// equality. Group headers are projection entries, never app items.
+bool TableView::IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target, bool targetIsValue) const
+{
+    auto const candidate = UnwrapEditingDataItem(row);
+    if (!candidate || !target || TryGetGroupedEntry(candidate))
+    {
+        return false;
+    }
+    return targetIsValue ? SameGroupKey(candidate, target) : SameInspectableIdentity(candidate, target);
 }
 
 // ----- The single writer -----
@@ -940,4 +954,317 @@ void TableView::DeselectAll()
 {
     ClearPendingSelection();
     ApplySelection(-1, true);
+}
+
+// ----- Item lookup and bring-into-view -----
+
+// The displayed projection, also before Loaded and after Unloaded drained the repeater.
+winrt::ItemsSourceView TableView::DisplayedRowsView() const
+{
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        if (auto const view = repeater.ItemsSourceView())
+        {
+            return view;
+        }
+    }
+    if (m_rowsItemsSourceView)
+    {
+        return m_rowsItemsSourceView;
+    }
+    if (auto const source = m_activeSource.get())
+    {
+        return winrt::get_self<::TableViewSource>(source)->GetItemsSourceView();
+    }
+    return nullptr;
+}
+
+int32_t TableView::IndexOf(winrt::IInspectable const& item)
+{
+    auto const view = item ? DisplayedRowsView() : nullptr;
+    if (!view)
+    {
+        return -1;
+    }
+
+    auto const target = UnwrapEditingDataItem(item);
+    const bool isValue = static_cast<bool>(target.try_as<winrt::IPropertyValue>());
+
+    // The view's own lookup answers for reference items when it finds the same object. A boxed value
+    // can be a different box than the one in the source, and the view may match by equality (two
+    // equal records), so anything else is scanned.
+    if (!isValue)
+    {
+        try
+        {
+            const int32_t index = view.IndexOf(target);
+            if (index < 0)
+            {
+                return -1;
+            }
+            if (IsDisplayedItemMatch(view.GetAt(index), target, false))
+            {
+                return index;
+            }
+        }
+        catch (...)
+        {
+        }
+    }
+
+    const int32_t count = view.Count();
+    for (int32_t index = 0; index < count; ++index)
+    {
+        if (IsDisplayedItemMatch(view.GetAt(index), target, isValue))
+        {
+            return index;
+        }
+    }
+    return -1;
+}
+
+int32_t TableView::DisplayedRowCount() const
+{
+    auto const view = DisplayedRowsView();
+    return view ? view.Count() : 0;
+}
+
+void TableView::StartBringItemIntoView(int32_t index, winrt::BringIntoViewOptions const& options)
+{
+    if (index < 0 || index >= DisplayedRowCount())
+    {
+        throw winrt::hresult_invalid_argument();
+    }
+
+    // Always started on a later turn, as the name says: a source change made right after the call
+    // (in the same turn) cancels it instead of scrolling the new rows.
+    m_pendingBringIntoViewIndex = index;
+    m_pendingBringIntoViewOptions = options;
+    m_bringIntoViewIssued = false;
+    m_bringIntoViewPassesLeft = s_bringIntoViewPasses;
+    m_bringIntoViewWaitsLeft = s_bringIntoViewWaits;
+    ArmPendingBringIntoView();
+    PostPendingBringIntoViewAttempt();
+}
+
+void TableView::PostPendingBringIntoViewAttempt()
+{
+    if (auto const queue = DispatcherQueue())
+    {
+        queue.TryEnqueue([weakThis = get_weak()]()
+        {
+            if (auto const strongThis = weakThis.get(); strongThis && strongThis->m_pendingBringIntoViewIndex >= 0)
+            {
+                strongThis->RunPendingBringIntoViewAttempt();
+            }
+        });
+    }
+}
+
+void TableView::RunPendingBringIntoViewAttempt()
+{
+    // UpdateLayout inside an attempt raises LayoutUpdated synchronously; a nested attempt would
+    // consume the passes and cancel the request before the outer one issues the scroll.
+    if (m_bringIntoViewAttemptInProgress)
+    {
+        return;
+    }
+    m_bringIntoViewAttemptInProgress = true;
+    auto const reset = wil::scope_exit([this]() noexcept { m_bringIntoViewAttemptInProgress = false; });
+
+    try
+    {
+        if (m_pendingBringIntoViewIndex < 0 || TryBringPendingItemIntoView())
+        {
+            CancelPendingBringItemIntoView();
+        }
+    }
+    catch (...)
+    {
+        CancelPendingBringItemIntoView();
+        TVDiag::LogRetailF(L"[TableView] A pending StartBringItemIntoView failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
+    }
+}
+
+void TableView::ArmPendingBringIntoView()
+{
+    if (m_pendingBringIntoViewLayoutToken.value)
+    {
+        return;
+    }
+
+    // LayoutUpdated is raised after the layout pass, so the repeater can realize the row here, and a
+    // row positioned from estimated heights is checked again once the scroll has applied.
+    m_pendingBringIntoViewLayoutToken = LayoutUpdated([weakThis = get_weak()](auto const&, auto const&)
+    {
+        if (auto const strongThis = weakThis.get())
+        {
+            strongThis->RunPendingBringIntoViewAttempt();
+        }
+    });
+}
+
+void TableView::CancelPendingBringItemIntoView()
+{
+    m_pendingBringIntoViewIndex = -1;
+    m_pendingBringIntoViewOptions = nullptr;
+    m_bringIntoViewIssued = false;
+    RevokePendingBringIntoViewLayout();
+}
+
+void TableView::RevokePendingBringIntoViewLayout()
+{
+    if (m_pendingBringIntoViewLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingBringIntoViewLayoutToken);
+        m_pendingBringIntoViewLayoutToken = {};
+    }
+}
+
+// Where the request asked for the row: fully inside the body viewport, and at the requested vertical
+// alignment unless the scroll extent cannot reach it.
+bool TableView::IsBringIntoViewSatisfied(winrt::FrameworkElement const& element, winrt::BringIntoViewOptions const& options) const
+{
+    if (!IsRowElementArranged(element) || !IsRowElementInViewport(element))
+    {
+        return false;
+    }
+    auto const scroller = m_bodyScroller.get();
+    const double ratio = options ? options.VerticalAlignmentRatio() : std::numeric_limits<double>::quiet_NaN();
+    if (!scroller || !std::isfinite(ratio))
+    {
+        return true;
+    }
+
+    const double offset = scroller.VerticalOffset();
+    if (offset <= 0.5 || offset >= scroller.ScrollableHeight() - 0.5)
+    {
+        return true;
+    }
+    try
+    {
+        const double top = element.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+        const double desired = ratio * (scroller.ViewportHeight() - element.ActualHeight()) - options.VerticalOffset();
+        return std::abs(top - desired) <= 1.0;
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return true;
+    }
+}
+
+// True when the request is finished (brought into view, verified, or no longer applicable).
+bool TableView::TryBringPendingItemIntoView()
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+    if (!IsLoaded() || !repeater || !view || IsInLayoutCallback())
+    {
+        return false;
+    }
+
+    const int32_t index = m_pendingBringIntoViewIndex;
+    auto const requested = m_pendingBringIntoViewOptions;
+    if (index < 0 || index >= view.Count())
+    {
+        // The rows changed underneath the request; there is nothing left to bring into view.
+        return true;
+    }
+
+    // Once issued, later layout passes verify the real position. Rows away from the realized range
+    // are placed from estimated heights, so the first scroll can land short; it is re-issued a
+    // bounded number of times, but only after the previous scroll has applied.
+    auto const scroller = m_bodyScroller.get();
+    if (m_bringIntoViewIssued)
+    {
+        auto const realized = repeater.TryGetElement(index).try_as<winrt::FrameworkElement>();
+        if (realized && repeater.GetElementIndex(realized) == index && IsBringIntoViewSatisfied(realized, requested))
+        {
+            return true;
+        }
+        const double offset = scroller ? scroller.VerticalOffset() : 0.0;
+        if (std::abs(offset - m_bringIntoViewIssueOffset) < 0.5 && m_bringIntoViewWaitsLeft-- > 0)
+        {
+            return false;
+        }
+        if (--m_bringIntoViewPassesLeft <= 0)
+        {
+            return true;
+        }
+    }
+
+    // As ItemsView: realize, lay out so the element has its real position and size, then re-validate,
+    // because the layout runs app code that can change the rows or recycle the element.
+    auto element = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>();
+    if (!element)
+    {
+        return true;
+    }
+    element.UpdateLayout();
+    if (m_pendingBringIntoViewIndex != index)
+    {
+        // Cancelled or replaced by the app code that layout ran.
+        return m_pendingBringIntoViewIndex < 0;
+    }
+    if (repeater.ItemsSourceView() != view || index >= view.Count())
+    {
+        return true;
+    }
+    if (repeater.GetElementIndex(element) != index)
+    {
+        // Recycled during that layout: lay the replacement out too, and check again.
+        element = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>();
+        if (!element)
+        {
+            return true;
+        }
+        element.UpdateLayout();
+        if (repeater.ItemsSourceView() != view || index >= view.Count() || repeater.GetElementIndex(element) != index)
+        {
+            return true;
+        }
+    }
+
+    // A copy, so the app's options object is never modified.
+    winrt::BringIntoViewOptions bring;
+    if (requested)
+    {
+        bring.AnimationDesired(requested.AnimationDesired());
+        bring.HorizontalAlignmentRatio(requested.HorizontalAlignmentRatio());
+        bring.VerticalAlignmentRatio(requested.VerticalAlignmentRatio());
+        bring.HorizontalOffset(requested.HorizontalOffset());
+        bring.VerticalOffset(requested.VerticalOffset());
+        bring.TargetRect(requested.TargetRect());
+    }
+    if (m_bringIntoViewIssued)
+    {
+        // The corrective pass is a nudge from a nearby position, never an animation.
+        bring.AnimationDesired(false);
+    }
+
+    // Without a target the full-width row would scroll the body horizontally to its leading edge
+    // and under the frozen columns. Keep the current horizontal viewport; only the row's vertical
+    // extent is brought into view. The column header band is outside the body scroller.
+    if (!bring.TargetRect())
+    {
+        if (auto const scroller = m_bodyScroller.get(); scroller && scroller.ViewportWidth() > 0.0)
+        {
+            const double viewportWidth = scroller.ViewportWidth();
+            double frozenWidth = ComputeLeadingFrozenWidth();
+            if (!(frozenWidth < viewportWidth))
+            {
+                frozenWidth = 0.0;
+            }
+            bring.TargetRect(winrt::Rect{
+                static_cast<float>(scroller.HorizontalOffset() + frozenWidth), 0.0f,
+                static_cast<float>(viewportWidth - frozenWidth), static_cast<float>(std::max(1.0, element.ActualHeight())) });
+        }
+    }
+
+    m_bringIntoViewIssueOffset = scroller ? scroller.VerticalOffset() : 0.0;
+    m_bringIntoViewWaitsLeft = s_bringIntoViewWaits;
+    element.StartBringIntoView(bring);
+    m_bringIntoViewIssued = true;
+    return false;
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
@@ -30,7 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // Category 9 of the TableView test plan: grouping and group headers.
     //
     // SUBJECT. What the CONTROL does with a grouped source: the TableViewGroupInfo projection the
-    // headers bind to, header content templating, the expand/collapse verbs, ToggleRequested, and
+    // headers bind to, header content templating, the expand/collapse verbs, GroupExpanding/GroupCollapsed, and
     // the header's visual states.
     //
     // NOT THE SUBJECT. §8 already owns the grouping algebra on TableViewSource (one header per key,
@@ -47,8 +48,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 9.1 TableViewGroupInfo
 
         [TestMethod]
-        [TestProperty("Description", "Verifies TableViewGroupInfo reports the group's key, member count and nesting level.")]
-        public void VerifyGroupInfoReportsKeyItemCountAndLevel()
+        [TestProperty("Description", "Verifies TableViewGroupInfo reports the group's key and member count.")]
+        public void VerifyGroupInfoReportsKeyAndItemCount()
         {
             TableView tableView = null;
 
@@ -79,7 +80,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Verify.AreEqual(expected[i].Key, info.Key as string, $"Group {i} must carry its own key.");
                     Verify.AreEqual(expected[i].Count, info.ItemCount, $"Group {i} ('{expected[i].Key}') must report its member count.");
-                    Verify.AreEqual(0, info.Level, "Level is 0 for single-level grouping (TableView.idl:337).");
                 }
             });
         }
@@ -172,7 +172,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 info.PropertyChanged += (sender, args) => raised.Add(args.PropertyName);
 
-                GetGroupHeader(tableView, 0).IsExpanded = false;
+                tableView.CollapseGroup(info.Key);
             });
 
             SettleLayout(tableView);
@@ -560,11 +560,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(untouched.IsExpanded, "Per-group state must be per group, not global.");
             });
         }
-        // DROPPED FROM THE API PLAN. TableViewGroupHeader raises ToggleRequested only from its own
-        // gesture handlers - OnKeyDown (Enter/Space) and OnPointerReleased - while the automation
-        // peer's Expand/Collapse takes the separate RequestExpansion route by design. There is no
-        // input-free way to reach the event, so "ToggleRequested carries the activated group's key"
-        // moves to the interaction tests rather than being weakened into a no-op here.
 
         [TestMethod]
         [TestProperty("Description", "Verifies a collapsed group stays collapsed across an unrelated source update.")]
@@ -1138,15 +1133,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a group marked non-expandable ignores a collapse request.")]
-        public void VerifyNonExpandableGroupIgnoresToggle()
+        [TestProperty("Description", "Verifies external SetValue on the read-only IsExpanded, IsExpandable and IsEditing DPs is reverted and changes nothing.")]
+        public void VerifyReadOnlyDependencyPropertiesRejectExternalWrites()
         {
             TableView tableView = null;
             List<string> before = null;
+            var events = 0;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateGroupedTable();
+                tableView.GroupExpanding += (s, e) => events++;
+                tableView.GroupCollapsed += (s, e) => events++;
                 LoadContent(tableView);
             });
 
@@ -1155,18 +1153,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 before = GetProjectedLabels(tableView, includeCount: false);
-                GetGroupHeader(tableView, 0).IsExpandable = false;
+                var header = GetGroupHeader(tableView, 0);
+                header.SetValue(TableViewGroupHeader.IsExpandedProperty, false);
+                header.SetValue(TableViewGroupHeader.IsExpandableProperty, false);
+                tableView.SetValue(TableView.IsEditingProperty, true);
+
+                Verify.IsTrue(header.IsExpanded, "An external IsExpanded write must be reverted.");
+                Verify.IsTrue(header.IsExpandable, "An external IsExpandable write must be reverted.");
+                Verify.IsFalse(tableView.IsEditing, "An external IsEditing write must be reverted.");
             });
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => GetExpandCollapseProvider(tableView, 0).Collapse());
-
-            SettleLayout(tableView);
-
             RunOnUIThread.Execute(() =>
-                VerifySequence(before, GetProjectedLabels(tableView, includeCount: false),
-                    "a group that declares itself non-expandable must not collapse"));
+            {
+                VerifySequence(before, GetProjectedLabels(tableView, includeCount: false), "rejected writes must not reshape");
+                Verify.AreEqual(0, events, "Rejected writes must raise no group events.");
+                Verify.AreEqual(ExpandCollapseState.Expanded, GetExpandCollapseProvider(tableView, 0).ExpandCollapseState,
+                    "The peer must still report the real state.");
+            });
         }
 
         [TestMethod]
@@ -1222,7 +1227,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Expanded", GetCurrentVisualState(GetGroupHeader(tableView, 0), "ExpansionStates"),
                     "An expanded group must be in the Expanded state (TableView.idl:372)."));
 
-            RunOnUIThread.Execute(() => GetGroupHeader(tableView, 0).IsExpanded = false);
+            RunOnUIThread.Execute(() => tableView.CollapseGroup(GetGroupInfo(tableView, 0).Key));
 
             SettleLayout(tableView);
 
@@ -1232,7 +1237,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the group header's ExpandabilityStates follow IsExpandable.")]
+        [TestProperty("Description", "Verifies a group with members stays in the Expandable state whether expanded or collapsed.")]
         public void VerifyGroupHeaderExpandabilityVisualStates()
         {
             TableView tableView = null;
@@ -1249,13 +1254,532 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Expandable", GetCurrentVisualState(GetGroupHeader(tableView, 0), "ExpandabilityStates"),
                     "A group with members must be in the Expandable state (TableView.idl:373)."));
 
-            RunOnUIThread.Execute(() => GetGroupHeader(tableView, 0).IsExpandable = false);
+            RunOnUIThread.Execute(() => tableView.CollapseGroup(GetGroupInfo(tableView, 0).Key));
 
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
-                Verify.AreEqual("NotExpandable", GetCurrentVisualState(GetGroupHeader(tableView, 0), "ExpandabilityStates"),
-                    "A group that cannot expand must not advertise an expander."));
+                Verify.AreEqual("Expandable", GetCurrentVisualState(GetGroupHeader(tableView, 0), "ExpandabilityStates"),
+                    "Collapsing a group with members must not change its expandability state."));
+        }
+
+        #endregion
+
+        #region ExpandGroup, CollapseGroup and the group events
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies CollapseGroup/ExpandGroup change only the named group and raise GroupCollapsed/GroupExpanding once each, with no event for a no-op or an unknown key.")]
+        public void VerifyExpandAndCollapseGroupRaiseGroupEvents()
+        {
+            TableView tableView = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                tableView.GroupExpanding += (s, e) => events.Add("E:" + e.GroupKey);
+                tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.CollapseGroup("Engineer");
+                tableView.CollapseGroup("Engineer");
+                tableView.CollapseGroup("NoSuchGroup");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "#Designer", "Asha", "Ines", "#Engineer", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false), "only Engineer collapses");
+                Verify.AreEqual("C:Engineer", string.Join(",", events), "One GroupCollapsed for the one change; none for the no-op or unknown key.");
+                events.Clear();
+                tableView.ExpandGroup("Engineer");
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "#Designer", "Asha", "Ines", "#Engineer", "Diego", "Rafa", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false), "Engineer expands again");
+                Verify.AreEqual("E:Engineer", string.Join(",", events), "One GroupExpanding for Engineer; none for the already-expanded Designer.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies GroupExpanding is raised before the group expands.")]
+        public void VerifyGroupExpandingIsRaisedBeforeTheStateChanges()
+        {
+            TableView tableView = null;
+            bool? expandedInHandler = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfoByKey(tableView, "Designer");
+                tableView.GroupExpanding += (s, e) => expandedInHandler = info.IsExpanded;
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(false, expandedInHandler, "GroupExpanding must be raised while the group is still collapsed.");
+                Verify.IsTrue(GetGroupInfoByKey(tableView, "Designer").IsExpanded, "The group must then expand.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies CollapseAllGroups and ExpandAllGroups raise one event per group whose state changes, and none for groups already in that state.")]
+        public void VerifyBulkExpandCollapseRaisesOneEventPerChangedGroup()
+        {
+            TableView tableView = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.GroupExpanding += (s, e) => events.Add("E:" + e.GroupKey);
+                tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
+                tableView.CollapseAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("C:Architect,C:Engineer", string.Join(",", events.OrderBy(e => e, StringComparer.Ordinal)),
+                    "CollapseAllGroups must raise GroupCollapsed once for each group it changed.");
+                events.Clear();
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("E:Architect,E:Designer,E:Engineer", string.Join(",", events.OrderBy(e => e, StringComparer.Ordinal)),
+                    "ExpandAllGroups must raise GroupExpanding once for each group it changed.");
+                events.Clear();
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, events.Count, "A bulk call that changes nothing must raise nothing."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GroupExpanding handler that lazily adds members to the group still ends with the group expanded and showing them.")]
+        public void VerifyGroupExpandingHandlerCanLazyLoadItems()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateGroupedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.GroupExpanding += (s, e) => items.Add(new ShapedPerson("Zoe", "Designer", "Studio"));
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "#Designer", "Asha", "Ines", "Zoe", "#Engineer", "Diego", "Rafa", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false), "the group must expand and show the lazily added member");
+                Verify.IsTrue(GetGroupInfoByKey(tableView, "Designer").IsExpanded, "The group must report expanded.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a throwing GroupExpanding handler is contained: raised once, the group still expands, and focus stays in the table.")]
+        [TestProperty("data:Route", "{Peer, ExpandGroup}")]
+        public void VerifyThrowingGroupExpandingHandlerIsContained()
+        {
+            var route = ((string)TestContext.DataRow["Route"]).Trim();
+            TableView tableView = null;
+            Exception escaped = null;
+            var raised = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    raised++;
+                    throw new InvalidOperationException("GroupExpanding handler fault");
+                };
+                try
+                {
+                    if (route == "Peer")
+                    {
+                        GetExpandCollapseProvider(tableView, 0).Expand();
+                    }
+                    else
+                    {
+                        tableView.ExpandGroup("Designer");
+                    }
+                }
+                catch (Exception e)
+                {
+                    escaped = e;
+                }
+
+                if (route == "ExpandGroup")
+                {
+                    Verify.AreEqual(1, raised, "ExpandGroup must raise GroupExpanding synchronously.");
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(escaped, $"{route}: a handler fault must not escape the expand request.");
+                Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised exactly once.");
+                Verify.IsTrue(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: the group must still expand.");
+                Verify.IsTrue(GetProjectedLabels(tableView, includeCount: false).Contains("Asha"), $"{route}: the expanded group's rows must show.");
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                var inTable = false;
+                for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
+                {
+                    inTable |= ReferenceEquals(current, tableView);
+                }
+                Verify.IsTrue(inTable, $"{route}: focus must stay inside the table.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GroupExpanding handler that calls ExpandGroup on the same group is a no-op: one event, the group expanded, no recursion.")]
+        [TestProperty("data:Route", "{Peer, ExpandGroup}")]
+        public void VerifyGroupExpandingHandlerReexpandingSameGroupIsNoOp()
+        {
+            var route = ((string)TestContext.DataRow["Route"]).Trim();
+            TableView tableView = null;
+            var raised = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    // Bounded so a broken guard fails the test instead of overflowing the stack.
+                    if (++raised < 5)
+                    {
+                        tableView.ExpandGroup(e.GroupKey);
+                    }
+                };
+                if (route == "Peer")
+                {
+                    GetExpandCollapseProvider(tableView, 0).Expand();
+                }
+                else
+                {
+                    tableView.ExpandGroup("Designer");
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised once.");
+                Verify.IsTrue(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: the group must be expanded.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GroupExpanding handler that calls CollapseGroup on the same group cannot reverse the pinned direction: state and events stay consistent.")]
+        public void VerifyGroupExpandingHandlerCollapsingSameGroupKeepsStateConsistent()
+        {
+            TableView tableView = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    events.Add("E:" + e.GroupKey);
+                    tableView.CollapseGroup(e.GroupKey);
+                };
+                GetExpandCollapseProvider(tableView, 0).Expand();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, events.Count(e => e.StartsWith("E:", StringComparison.Ordinal)), "GroupExpanding must be raised once.");
+                var expanded = GetGroupInfoByKey(tableView, "Designer").IsExpanded;
+                var lastWasCollapse = events.Last().StartsWith("C:", StringComparison.Ordinal);
+                Verify.AreEqual(!lastWasCollapse, expanded, $"The final state must match the last event; events [{string.Join(", ", events)}].");
+                Verify.AreEqual(expanded, GetProjectedLabels(tableView, includeCount: false).Contains("Asha"), "The projection must match the reported state.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GroupExpanding handler that swaps ItemsSource to a source with the same keys does not apply the expansion to the new source's groups.")]
+        public void VerifyGroupExpandingHandlerSwappingItemsSourceLeavesNewGroupsAlone()
+        {
+            TableView tableView = null;
+            var events = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var swapped = false;
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    events++;
+                    if (!swapped)
+                    {
+                        swapped = true;
+                        tableView.ItemsSource = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                    }
+                };
+                tableView.GroupCollapsed += (s, e) => events++;
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, events, "Only the original GroupExpanding may be raised.");
+                VerifySequence(new[] { "#Designer", "Asha", "Ines", "#Engineer", "Diego", "Rafa", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false), "the new source's groups must be in their default state");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GroupExpanding handler that swaps ItemsSource and then collapses and expands the same key on the new source leaves the new group expanded.")]
+        public void VerifyExpandGroupOnSwappedSourceFromGroupExpandingHandler()
+        {
+            TableView tableView = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var swapped = false;
+                tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    events.Add("E:" + e.GroupKey);
+                    if (swapped)
+                    {
+                        return;
+                    }
+
+                    swapped = true;
+                    tableView.ItemsSource = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                    tableView.UpdateLayout();
+                    // Same identity, new source: the re-entrancy guard for the old source must not drop these.
+                    tableView.CollapseGroup("Designer");
+                    tableView.ExpandGroup("Designer");
+                };
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("E:Designer,C:Designer,E:Designer", string.Join(",", events),
+                    "The new source's group must raise its own collapse and expand.");
+                VerifySequence(new[] { "#Designer", "Asha", "Ines", "#Engineer", "Diego", "Rafa", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false), "the new source's group must end expanded");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ExpandAllGroups with a GroupExpanding handler that regroups raises no event for groups whose state never changes.")]
+        public void VerifyBulkExpandWithRegroupingHandlerRaisesOnlyForChangedGroups()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.GroupExpanding += (s, e) =>
+                {
+                    events.Add("E:" + e.GroupKey);
+                    source.GroupBy(o => Person(o).Role);
+                };
+                tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("E:Designer", string.Join(",", events), "Only the collapsed group may raise an event, exactly once.");
+                Verify.IsTrue(GetProjectedLabels(tableView, includeCount: false).Contains("Asha"), "Every group must end expanded.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ExpandGroup/CollapseGroup match keys by group identity: a new key instance under an identity selector, and a boxed enum key.")]
+        [TestProperty("data:Key", "{Identity, Enum}")]
+        public void VerifyExpandCollapseGroupMatchesByIdentity()
+        {
+            var keyKind = ((string)TestContext.DataRow["Key"]).Trim();
+            TableView tableView = null;
+            Func<object> key = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var source = TableViewSource.From(MakeShapedPeople());
+                if (keyKind == "Identity")
+                {
+                    source.GroupBy(o => Person(o).Department, k => ((Department)k).Name);
+                    key = () => new Department { Name = "Platform" };
+                }
+                else
+                {
+                    source.GroupBy(o => Person(o).Role == "Engineer" ? TableViewDensity.Compact : TableViewDensity.Standard);
+                    key = () => TableViewDensity.Compact;
+                }
+
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup(key()));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var labels = GetProjectedLabels(tableView, includeCount: false);
+                Verify.IsFalse(labels.Contains("Diego"), $"{keyKind}: the matching group must collapse.");
+                Verify.IsTrue(labels.Contains("Asha"), $"{keyKind}: other groups must stay expanded.");
+                tableView.ExpandGroup(key());
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(GetProjectedLabels(tableView, includeCount: false).Contains("Diego"), $"{keyKind}: the matching group must expand again."));
         }
 
         #endregion

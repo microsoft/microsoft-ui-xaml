@@ -420,7 +420,7 @@ namespace MUXControlsTestApp
             RowStateLogTextBlock.Text += (e.NewState?.Name ?? "null") + ";";
         }
 
-        // Hooks every realized group header's ToggleRequested, and the FIRST header's CommonStates group.
+        // Hooks the grouped table's GroupExpanding/GroupCollapsed, and the FIRST header's CommonStates group.
         // Same in-process visual-tree walk as OnHookRowStatesClick: it creates no automation peers, so it does
         // not trip finding #13.
         private void OnHookGroupHeadersClick(object sender, RoutedEventArgs e)
@@ -437,11 +437,10 @@ namespace MUXControlsTestApp
                 return;
             }
 
-            foreach (var header in headers)
-            {
-                header.ToggleRequested -= OnGroupHeaderToggleRequested;
-                header.ToggleRequested += OnGroupHeaderToggleRequested;
-            }
+            GroupedTableView.GroupExpanding -= OnGroupExpanding;
+            GroupedTableView.GroupExpanding += OnGroupExpanding;
+            GroupedTableView.GroupCollapsed -= OnGroupCollapsed;
+            GroupedTableView.GroupCollapsed += OnGroupCollapsed;
             GroupToggleReportTextBlock.Text = "hooked;";
 
             var first = headers[0];
@@ -475,15 +474,15 @@ namespace MUXControlsTestApp
             GroupHeaderStateLogTextBlock.Text += (e.NewState?.Name ?? "null") + ";";
         }
 
-        // One entry per raise, "<key>|<key>;". The key is read on entry, then the handler MUTATES the header
-        // and reads the key again: TableView.idl:350-355 says the key rides on the args precisely so a
-        // re-entrant handler still sees the key that was actually activated, and that is only observable if
-        // the handler does re-enter.
-        private void OnGroupHeaderToggleRequested(TableViewGroupHeader sender, TableViewGroupHeaderToggleRequestedEventArgs args)
+        // One entry per raise: "E:<key>;" for GroupExpanding, "C:<key>;" for GroupCollapsed.
+        private void OnGroupExpanding(TableView sender, TableViewGroupExpandingEventArgs args)
         {
-            GroupToggleReportTextBlock.Text += (args.GroupKey?.ToString() ?? "null") + "|";
-            sender.IsExpanded = !sender.IsExpanded;
-            GroupToggleReportTextBlock.Text += (args.GroupKey?.ToString() ?? "null") + ";";
+            GroupToggleReportTextBlock.Text += "E:" + (args.GroupKey?.ToString() ?? "null") + ";";
+        }
+
+        private void OnGroupCollapsed(TableView sender, TableViewGroupCollapsedEventArgs args)
+        {
+            GroupToggleReportTextBlock.Text += "C:" + (args.GroupKey?.ToString() ?? "null") + ";";
         }
 
         private static void CollectDescendants<T>(DependencyObject root, List<T> results) where T : class

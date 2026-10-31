@@ -80,7 +80,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 // Basic pivot is selected by default; its TableView authors CanUserResizeColumns="True"
-                // and every column defaults CanResize="true" (TableView.idl:140, :469).
+                // and every column defaults CanUserResize="true" (TableView.idl:140, :469).
                 UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {

@@ -56,7 +56,7 @@ public sealed partial class GroupsPage
     }
 
     private IEnumerable<Person> InViewOrder() =>
-        SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? GroupInView(AppliedGroupKey) : null, SortOrdersGroups);
+        SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? GroupInView(AppliedGroupKey) : null);
 
     private static IComparable? SortKey(Person person, string path) => path switch
     {

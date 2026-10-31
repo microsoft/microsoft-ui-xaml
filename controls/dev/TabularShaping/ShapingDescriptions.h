@@ -51,6 +51,9 @@ namespace ShapingHelpers
     {
         winrt::hstring PropertyName;
         KeySelector Evaluator{ nullptr };
+        // Orders the groups by the first axis's key; None orders them by where each group's first item
+        // lands once the items are sorted.
+        winrt::SortDirection Direction{ winrt::SortDirection::None };
 
         bool IsDiffable() const noexcept { return !PropertyName.empty(); }
     };
@@ -93,8 +96,9 @@ namespace ShapingHelpers
         bool IsNoOp() const noexcept { return RequiredWork == ShapingWork::None; }
     };
 
-    // An immutable description of the wanted shape. Filters apply first, then grouping, then
-    // sorting within each group — the order the reshape below implements.
+    // An immutable description of the wanted shape. Filters apply first, then sorting, then
+    // grouping, which keeps the sorted order within each group — the order the reshape below
+    // implements.
     struct ShapingSpec
     {
         std::vector<FilterDescription> Filters;
@@ -138,9 +142,9 @@ namespace ShapingHelpers
 
     // Pure reshape. Applies exactly the work `delta` calls for:
     //
-    //   FullReshape         filter -> bucket -> sort within buckets
-    //   ReBucket            re-bucket from FilteredSource -> sort, membership untouched
-    //   ReSortWithinBuckets sort only; membership and bucketing untouched
+    //   FullReshape         filter -> sort -> bucket
+    //   ReBucket            sort FilteredSource -> bucket, membership untouched
+    //   ReSortWithinBuckets as ReBucket when grouped (group order follows the sort); else sort only
     //   None                no-op
     //
     // A state with no prior projection (HasProjection false) is promoted to FullReshape whatever

@@ -185,14 +185,14 @@ void TableView::OnKeyDownForEditing(
     case winrt::Windows::System::VirtualKey::F2:
         // Keyboard equivalent of double-click, on the cell the user navigated to. Only when the
         // key is still unhandled: F2 belongs to whatever focused control claimed it first.
-        if (!args.Handled() && !IsEditing() && BeginEdit())
+        if (!args.Handled() && !IsEditInProgress() && BeginEdit())
         {
             args.Handled(true);
         }
         break;
 
     case winrt::Windows::System::VirtualKey::Enter:
-        if (IsEditing())
+        if (IsEditInProgress())
         {
             // Acted on even if the editor marked it handled: a single-line TextBox reports Enter as
             // handled, which would leave the editor with no way to close from the keyboard.
@@ -208,7 +208,7 @@ void TableView::OnKeyDownForEditing(
         // CellEditingTemplate swallows Escape to close its popup, and that must not also cancel
         // and roll back the whole cell edit. The same goes for the editor's own menu: Escape
         // light-dismisses it and focus is back in the editor by the time the key routes there.
-        if (!args.Handled() && IsEditing() && !m_editorFlyoutClosing)
+        if (!args.Handled() && IsEditInProgress() && !m_editorFlyoutClosing)
         {
             CancelEdit();
             args.Handled(true);
@@ -230,7 +230,7 @@ void TableView::OnLosingFocusForEditing(
     const winrt::IInspectable& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args)
 {
-    if (!IsEditing())
+    if (!IsEditInProgress())
     {
         return;
     }
@@ -295,7 +295,7 @@ void TableView::CompleteFocusLossCommit()
     m_editorFlyoutClosingRevoker.revoke();
     m_editorPopupClosedRevoker.revoke();
 
-    if (!IsEditing())
+    if (!IsEditInProgress())
     {
         return;
     }

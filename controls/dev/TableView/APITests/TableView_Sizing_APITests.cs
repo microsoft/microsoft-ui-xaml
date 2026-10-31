@@ -946,19 +946,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies per-column CanResize=false removes only that column's gripper and leaves every header a tab stop.")]
+        [TestProperty("Description", "Verifies per-column CanUserResize=false removes only that column's gripper and leaves every header a tab stop.")]
         public void VerifyPerColumnCanResizeFalseHidesGripper()
         {
             // TableViewColumn.idl:136: "Gates the resize affordance for this column only; the owner's
             // CanUserResizeColumns gates all of them." Both properties gate the *affordance*; neither
             // is documented to block a programmatic Width assignment, so this deliberately does not
-            // assert that CanResize=false prevents setting Width.
+            // assert that CanUserResize=false prevents setting Width.
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 LoadContent(tableView);
             });
 
@@ -970,7 +970,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(FindGripper(GetHeaderCell(tableView, 1)), "The opted-out column must lose its gripper.");
                 Verify.IsNotNull(FindGripper(GetHeaderCell(tableView, 2)), "The opt-out must not apply table-wide.");
 
-                // CanResize gates only the gripper: every visible header stays a tab stop.
+                // CanUserResize gates only the gripper: every visible header stays a tab stop.
                 for (int i = 0; i < tableView.Columns.Count; i++)
                 {
                     Verify.IsTrue(GetHeaderCell(tableView, i).IsTabStop,
@@ -1818,9 +1818,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // the cell elements, all of which are readable properties, and the body scroller is an ordinary
     // ScrollViewer that ChangeView drives programmatically. No pointer input is involved.
     //
-    // Spec basis: TableView.idl:4 "Column pinning edge; None scrolls naturally, Leading pins left,
-    // Trailing is reserved", and TableViewColumn.idl:147 "Pins the column during horizontal scroll;
-    // Leading is implemented, Trailing reserved."
+    // Spec basis: TableViewFrozenEdge has None (scrolls naturally) and Leading (pins to the leading
+    // edge during horizontal scroll).
     //
     // Category 4.6 of the TableView test plan: leading frozen columns.
     [TestClass]
@@ -2047,18 +2046,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies FrozenEdge.Trailing roundtrips but has no layout effect while it is reserved.")]
-        public void VerifyTrailingFrozenEdgeIsReservedNoOp()
+        [TestProperty("Description", "Verifies an out-of-range FrozenEdge value (the removed Trailing slot) lays out exactly like None.")]
+        public void VerifyOutOfRangeFrozenEdgeBehavesAsNone()
         {
-            // Asserting the absence of behavior is the right test here precisely because the value is
-            // public API today: if a reserved enum value quietly acquires behavior, that becomes a
-            // compatibility burden the moment Trailing is actually implemented.
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateScrollableTable(columnCount: 5);
-                tableView.Columns[4].FrozenEdge = TableViewFrozenEdge.Trailing;
+                tableView.Columns[4].FrozenEdge = (TableViewFrozenEdge)2;
                 LoadContent(tableView);
             });
 
@@ -2068,17 +2064,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(TableViewFrozenEdge.Trailing, tableView.Columns[4].FrozenEdge,
-                    "The reserved value must roundtrip on the property.");
-
-                Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0,
-                    "Precondition: the body must actually have scrolled horizontally.");
-
-                VerifyNotPinned(GetHeaderCell(tableView, 4), "a Trailing header cell, which must behave exactly like None");
-
+                Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0, "Precondition: the body must actually have scrolled horizontally.");
+                VerifyNotPinned(GetHeaderCell(tableView, 4), "an out-of-range FrozenEdge header cell");
                 foreach (var row in GetRealizedRows(tableView))
                 {
-                    VerifyNotPinned(GetRowCell(row, 4), "a Trailing row cell, which must behave exactly like None");
+                    VerifyNotPinned(GetRowCell(row, 4), "an out-of-range FrozenEdge row cell");
                 }
             });
         }

@@ -72,7 +72,7 @@ public sealed partial class PerformancePage : SamplePageBase
             Header = "Photo",
             Width = new GridLength((double)resources["ColWidthAvatar"]),
             CellTemplate = (DataTemplate)resources["AvatarTemplate"],
-            CanSort = false,
+            CanUserSort = false,
         };
         _departmentChipColumn ??= new TableViewTemplateColumn
         {

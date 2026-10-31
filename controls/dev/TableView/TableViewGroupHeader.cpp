@@ -5,7 +5,6 @@
 #include "common.h"
 #include "TableViewGroupHeader.h"
 #include "TableView.h"
-#include "TableViewGroupHeaderToggleRequestedEventArgs.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
 
@@ -37,6 +36,7 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
 {
+    TableView::ElementLayoutScope const layoutScope;
     auto const desired = MeasureBand(availableSize);
 
     // The base measure realizes the content template, so a header created disabled, or given a new
@@ -219,11 +219,38 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
 
     if (property == s_IsExpandedProperty || property == s_IsExpandableProperty)
     {
-        // The DPs are authoritative: they drive the VisualStates and are mirrored onto the
-        // projection here, so there is a single write path for expansion state.
-        SyncExpansionToContent();
-        UpdateVisualStates(true /* useTransitions */);
+        if (m_isSettingExpansionInternal)
+        {
+            return;
+        }
+        // Read-only to the app: restore the control's value.
+        SetExpansionStateInternal(m_internalIsExpandable, m_internalIsExpanded);
     }
+}
+
+void TableViewGroupHeader::SetExpansionStateInternal(bool isExpandable, bool isExpanded, bool syncContent, bool useTransitions)
+{
+    m_internalIsExpandable = isExpandable;
+    m_internalIsExpanded = isExpanded;
+    {
+        m_isSettingExpansionInternal = true;
+        auto const reset = wil::scope_exit([this]() noexcept { m_isSettingExpansionInternal = false; });
+        if (IsExpandable() != isExpandable)
+        {
+            IsExpandable(isExpandable);
+        }
+        if (IsExpanded() != isExpanded)
+        {
+            IsExpanded(isExpanded);
+        }
+    }
+
+    // Both written first, then the projection synced once, so it never reports a mixed state.
+    if (syncContent)
+    {
+        SyncExpansionToContent();
+    }
+    UpdateVisualStates(useTransitions);
 }
 
 void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState)
@@ -271,27 +298,14 @@ void TableViewGroupHeader::RequestToggle()
         return;
     }
 
-    auto const info = Content().try_as<winrt::TableViewGroupInfo>();
-    auto const args = winrt::make<TableViewGroupHeaderToggleRequestedEventArgs>(info ? info.Key() : nullptr);
-
-    // Raised inline, deliberately. The owner resolves the target group synchronously and
-    // defers only the structural reshape, so nothing is destroyed while XAML is still
-    // unwinding pointer dispatch.
-    //
-    // Posting HERE is what created the bug it appeared to prevent: by the time a queued raise
-    // ran, a scroll could have recycled this header onto another group, so the toggle hit
-    // the wrong one -- or the header had left the viewport and it was dropped. Resolution has to
-    // happen while the gesture's row index is still current, which means the raise cannot be
-    // deferred; only the reshape can.
-    //
-    // Strong self across the raise keeps THIS object alive if a handler releases it mid-invoke.
-    // It does not protect XAML's in-flight pointer dispatch -- that safety comes from the owner
-    // deferring the reshape, and from RequestToggle being the last statement in
-    // OnPointerReleased so nothing here touches a member after the raise.
-    auto const strongThis = get_strong();
-    auto const self = strongThis.as<winrt::TableViewGroupHeader>();
-
-    m_toggleRequestedEventSource(self, args);
+    // Inline, deliberately: the owner resolves the target group while the gesture's row index is
+    // still current and defers only the structural reshape. Deferring the resolution would let a
+    // scroll recycle this header onto another group first.
+    if (auto const owner = GetOwningTableView())
+    {
+        auto const self = get_strong().as<winrt::TableViewGroupHeader>();
+        winrt::get_self<TableView>(owner)->ToggleGroupExpansion(self);
+    }
 }
 
 void TableViewGroupHeader::RequestExpansion(bool expand)

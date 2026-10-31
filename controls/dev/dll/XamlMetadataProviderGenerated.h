@@ -5061,14 +5061,6 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
-                        L"ScrollableHeight", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollPresenter>().ScrollableHeight()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"ScrollableWidth", /* propertyName */
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollPresenter>().ScrollableWidth()); },
@@ -5128,6 +5120,14 @@ Entry c_typeEntries[] =
                         L"ZoomSnapPoints", /* propertyName */
                         L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase>", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().ZoomSnapPoints(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ScrollableHeight", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollPresenter>().ScrollableHeight()); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
@@ -5904,46 +5904,6 @@ Entry c_typeEntries[] =
                     }
 
                     xamlType.AddMember(
-                        L"CurrentAnchor", /* propertyName */
-                        L"Microsoft.UI.Xaml.UIElement", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().CurrentAnchor(); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExpressionAnimationSources", /* propertyName */
-                        L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().ExpressionAnimationSources(); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExtentHeight", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentHeight()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExtentWidth", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentWidth()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"HorizontalOffset", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().HorizontalOffset()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"ScrollableHeight", /* propertyName */
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ScrollableHeight()); },
@@ -5976,6 +5936,30 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"CurrentAnchor", /* propertyName */
+                        L"Microsoft.UI.Xaml.UIElement", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().CurrentAnchor(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ExpressionAnimationSources", /* propertyName */
+                        L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().ExpressionAnimationSources(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ExtentHeight", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentHeight()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"ViewportHeight", /* propertyName */
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ViewportHeight()); },
@@ -5992,9 +5976,25 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"ExtentWidth", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentWidth()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"ZoomFactor", /* propertyName */
                         L"Single", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ZoomFactor()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"HorizontalOffset", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().HorizontalOffset()); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */

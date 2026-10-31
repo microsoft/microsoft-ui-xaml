@@ -612,6 +612,55 @@ void RowMetadataProvider::ExpandSubtree(winrt::hstring const& key)
     }
 }
 
+std::vector<TableViewGroupExpansionInfo> RowMetadataProvider::GetGroupExpansionInfos()
+{
+    std::vector<TableViewGroupExpansionInfo> infos;
+    auto const adapter = m_groupedAdapter;
+    if (!adapter || (m_sourceKind != SourceKind::Grouped && m_sourceKind != SourceKind::GroupedHierarchical))
+    {
+        return infos;
+    }
+
+    // The adapter's group list, not the flattened rows.
+    if (auto const groups = adapter->Source())
+    {
+        for (auto const& group : ShapingHelpers::EnumerateInspectableItems(groups))
+        {
+            auto identity = GetGroupExpansionKey(group);
+            if (identity.empty())
+            {
+                continue;
+            }
+            infos.push_back({ std::move(identity), ShapingHelpers::GetGroupKeyObject(group), adapter->IsGroupExpanded(group) });
+        }
+    }
+    return infos;
+}
+
+winrt::hstring RowMetadataProvider::GetGroupExpansionIdentity(winrt::IInspectable const& group)
+{
+    return group ? GetGroupExpansionKey(group) : winrt::hstring{};
+}
+
+bool RowMetadataProvider::TryGetGroupExpansionInfo(winrt::hstring const& identity, TableViewGroupExpansionInfo& info)
+{
+    if (IsNodeExpansionKey(identity) || !m_groupedAdapter)
+    {
+        return false;
+    }
+
+    auto const group = ResolveGroupFromKey(identity);
+    if (!group)
+    {
+        return false;
+    }
+
+    info.Identity = identity;
+    info.Key = ShapingHelpers::GetGroupKeyObject(group);
+    info.IsExpanded = m_groupedAdapter->IsGroupExpanded(group);
+    return true;
+}
+
 void RowMetadataProvider::CollapseAllRows()
 {
     if (auto const adapter = m_hierarchicalAdapter)

@@ -381,7 +381,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(f.Table);
             RunOnUIThread.Execute(() =>
             {
-                peer = new TableViewColumnHeaderAutomationPeer(f.Table, f.OfficeColumn);
+                peer = CreateColumnHeaderPeer(f.Table, f.OfficeColumn);
                 peer.ShowContextMenu();
             });
             IdleSynchronizer.Wait();
@@ -397,15 +397,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A TableView-owned header peer (public constructor) forwards ShowContextMenu to the realized header, so the column's header menu opens rather than the table menu.")]
-        public void TableOwnedHeaderPeerOpensHeaderMenu()
+        [TestProperty("Description", "A header peer built with the public constructor forwards ShowContextMenu to its header, so the column's header menu opens rather than the table menu.")]
+        public void ConstructedHeaderPeerOpensHeaderMenu()
         {
             var f = LoadFixture();
 
-            RunOnUIThread.Execute(() => new TableViewColumnHeaderAutomationPeer(f.Table, f.NameColumn).ShowContextMenu());
+            RunOnUIThread.Execute(() => CreateColumnHeaderPeer(f.Table, f.NameColumn).ShowContextMenu());
             IdleSynchronizer.Wait();
 
-            VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), expectedItem: null, "UIA on a TableView-owned Name header peer");
+            VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), expectedItem: null, "UIA on a constructed Name header peer");
             CloseMenus(f);
         }
 
@@ -583,7 +583,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void HeaderRequestSuppressedWhileEditing()
         {
             var f = LoadEditableFixture();
-            RequestWhileEditing(f, () => new TableViewColumnHeaderAutomationPeer(f.Table, f.NameColumn).ShowContextMenu());
+            RequestWhileEditing(f, () => CreateColumnHeaderPeer(f.Table, f.NameColumn).ShowContextMenu());
             VerifyNoMenuOpened(f, "UIA on the Name header while row 3 / Name is editing");
         }
 

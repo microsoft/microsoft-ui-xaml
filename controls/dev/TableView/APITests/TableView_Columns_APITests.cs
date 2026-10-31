@@ -1185,34 +1185,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewCellFactoryTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies TableViewTextColumn.GenerateElement returns a TextBlock.")]
+        [TestProperty("Description", "Verifies a realized TableViewTextColumn cell is a TextBlock.")]
         public void VerifyTextColumnGenerateElementProducesTextBlock()
         {
+            TableView tableView = null;
+
             RunOnUIThread.Execute(() =>
             {
-                var column = new TableViewTextColumn { Header = "Name", Binding = CreateBinding("Name") };
-                var element = column.GenerateElement(new Person { Name = "Asha", Role = "Designer" });
-
-                Verify.IsNotNull(element, "GenerateElement should produce a cell element.");
-                Verify.IsTrue(element is TextBlock, $"The built-in text cell should be a TextBlock, was {element.GetType().Name}.");
+                tableView = CreateTableView(headers: new[] { "Name" });
+                LoadContent(tableView);
             });
-        }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies GenerateElement returns a distinct element on every call.")]
-        public void VerifyGenerateElementReturnsNewElementPerCall()
-        {
+            IdleSynchronizer.Wait();
+
             RunOnUIThread.Execute(() =>
             {
-                var item = new Person { Name = "Asha", Role = "Designer" };
-                var column = new TableViewTextColumn { Header = "Name", Binding = CreateBinding("Name") };
-
-                var first = column.GenerateElement(item);
-                var second = column.GenerateElement(item);
-
-                // A FrameworkElement cannot have two parents. If a column cached one element, rows
-                // would steal it from each other as they realize.
-                Verify.IsFalse(ReferenceEquals(first, second), "Each call must return a new element.");
+                var element = GetCellContent(GetRowCell(GetProjectedRow(tableView, 0), 0));
+                Verify.IsNotNull(element, "The text column should produce a cell element.");
+                Verify.IsTrue(element is TextBlock, $"The built-in text cell should be a TextBlock, was {element.GetType().Name}.");
             });
         }
 
@@ -1220,12 +1210,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies built-in columns do not set a local DataContext on generated cells.")]
         public void VerifyGenerateElementDoesNotSetLocalDataContext()
         {
+            TableView tableView = null;
+
             RunOnUIThread.Execute(() =>
             {
-                var item = new Person { Name = "Asha", Role = "Designer" };
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Template", CellTemplate = CreateTextTemplate("Cell") });
+                LoadContent(tableView);
+            });
 
-                var textElement = new TableViewTextColumn { Binding = CreateBinding("Name") }.GenerateElement(item);
-                var templateElement = new TableViewTemplateColumn { CellTemplate = CreateTextTemplate("Cell") }.GenerateElement(item);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetProjectedRow(tableView, 0);
+                var textElement = (FrameworkElement)GetCellContent(GetRowCell(row, 0));
+                var templateElement = (FrameworkElement)GetCellContent(GetRowCell(row, 1));
 
                 // The IDL imposes this rule on third-party columns; the built-ins are its reference
                 // implementation and must follow it too.
@@ -1237,47 +1237,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies TableViewTemplateColumn.GenerateElement carries CellTemplate rather than falling back to text.")]
+        [TestProperty("Description", "Verifies a realized TableViewTemplateColumn cell carries CellTemplate rather than falling back to text.")]
         public void VerifyTemplateColumnGenerateElementUsesCellTemplate()
         {
+            TableView tableView = null;
+            DataTemplate cellTemplate = null;
+
             RunOnUIThread.Execute(() =>
             {
-                var cellTemplate = CreateTextTemplate("FromTemplate");
-                var column = new TableViewTemplateColumn { CellTemplate = cellTemplate };
-                var element = column.GenerateElement(new Person { Name = "Asha", Role = "Designer" });
+                cellTemplate = CreateTextTemplate("FromTemplate");
+                tableView = CreateTableView(headers: new string[0]);
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Template", CellTemplate = cellTemplate });
+                LoadContent(tableView);
+            });
 
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var element = GetCellContent(GetRowCell(GetProjectedRow(tableView, 0), 0));
                 Verify.IsNotNull(element, "A template column should produce a cell element.");
 
-                // Asserted on the returned element's ContentTemplate, not on inflated content.
-                // GenerateElement is a factory: it hands back a presenter carrying the template, and the
-                // content is wired later by TableViewRow when the cell is attached to a row. A presenter
-                // that is not in a tree and has no Content has nothing to inflate, so looking for a
-                // TextBlock here asserts a stage of the pipeline this method is not responsible for.
-                // TableViewCellContentTests.VerifyTemplateCellRendersRowItem covers actual inflation.
                 var presenter = element as ContentPresenter;
                 Verify.IsNotNull(presenter, "A template column should produce a ContentPresenter.");
                 Verify.AreEqual(cellTemplate, presenter.ContentTemplate,
                     "The presenter should carry the column's CellTemplate.");
-
-                // The regression the test name is really about: falling back to rendering the item's
-                // ToString() in a TextBlock instead of honouring CellTemplate.
                 Verify.IsNull(element as TextBlock,
                     "A template column must not fall back to a plain text cell when CellTemplate is set.");
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies GenerateElement with a null data item does not throw into row realization.")]
+        [TestProperty("Description", "Verifies realizing a row for a null data item does not throw out of cell generation.")]
         public void VerifyGenerateElementWithNullDataItemDoesNotCrash()
         {
+            TableView tableView = null;
+
             RunOnUIThread.Execute(() =>
             {
                 // Null items are legal in a List<T> of reference types, so this has to survive.
-                // The IDL does not say whether the return may be null, so nothing is asserted about
-                // the returned value -- only that the call does not throw.
-                new TableViewTextColumn { Binding = CreateBinding("Name") }.GenerateElement(null);
-                new TableViewTemplateColumn { CellTemplate = CreateTextTemplate("Cell") }.GenerateElement(null);
-                new ProbeColumn().GenerateElement(null);
+                var items = new List<Person> { new Person { Name = "Asha", Role = "Designer" }, null };
+                tableView = CreateTableView(items, headers: new[] { "Name" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Template", CellTemplate = CreateTextTemplate("Cell") });
+                tableView.Columns.Add(new ProbeColumn { Header = "Probe" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, GetProjectedCount(tableView), "Both items, including the null one, must be projected.");
+                Verify.IsNotNull(GetProjectedRow(tableView, 1), "The null item's row must realize.");
             });
         }
 
@@ -1305,6 +1316,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsGreaterThan(rowCount, 0, "At least one row should be realized.");
                 Verify.IsGreaterThanOrEqual(probe.GenerateCount, rowCount,
                     "GenerateElementCore should be invoked at least once per realized row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a derived column's GenerateElementCore supplies a distinct element for every realized cell.")]
+        public void VerifyCustomColumnGeneratesAnElementPerRealizedCell()
+        {
+            TableView tableView = null;
+            PrefixColumn column = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                column = new PrefixColumn { Header = "P" };
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = GetRealizedRows(tableView).Select(row => GetCellContent(GetRowCell(row, 1))).ToList();
+                Verify.IsGreaterThan(cells.Count, 1, "Precondition: several rows are realized.");
+                Verify.IsTrue(cells.All(cell => cell is TextBlock), "Every realized cell must host the element GenerateElementCore returned.");
+                Verify.AreEqual(cells.Count, cells.Distinct().Count(), "No two realized cells may share an element.");
+                Verify.IsGreaterThanOrEqual(column.GenerateCount, cells.Count, "GenerateElementCore must run at least once per realized cell.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies NotifyCellContentChanged from a derived column regenerates its realized cells and re-sizes an Auto width.")]
+        public void VerifyNotifyCellContentChangedRegeneratesCells()
+        {
+            TableView tableView = null;
+            PrefixColumn column = null;
+            int generatedBefore = 0;
+            double widthBefore = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                column = new PrefixColumn { Header = "P", Width = GridLength.Auto };
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                generatedBefore = column.GenerateCount;
+                widthBefore = column.ActualWidth;
+                column.Prefix = new string('W', 30);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "At least one row should be realized.");
+                Verify.IsGreaterThanOrEqual(column.GenerateCount - generatedBefore, rows.Count, "Every realized cell of the column must be regenerated.");
+                foreach (var row in rows)
+                {
+                    Verify.AreEqual(column.Prefix, (GetCellContent(GetRowCell(row, 1)) as TextBlock)?.Text, "Every realized cell must show the new content.");
+                }
+
+                Verify.IsGreaterThan(column.ActualWidth, widthBefore, "An Auto column must re-measure to the regenerated content.");
             });
         }
 
@@ -1415,11 +1495,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(item.Name, cell.Text, $"The cell should show its own row's data ({context}).");
             }
         }
+    }
 
-        private static Binding CreateBinding(string path) => new Binding
+    // A derived column whose cell content depends on column state, so changing it needs NotifyCellContentChanged.
+    internal sealed partial class PrefixColumn : TableViewColumn
+    {
+        private string _prefix = "A";
+
+        public int GenerateCount { get; private set; }
+
+        public string Prefix
         {
-            Path = new PropertyPath(path),
-            Mode = BindingMode.OneWay,
-        };
+            get => _prefix;
+            set
+            {
+                _prefix = value;
+                NotifyCellContentChanged();
+            }
+        }
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            GenerateCount++;
+            return new TextBlock { Text = _prefix };
+        }
     }
 }

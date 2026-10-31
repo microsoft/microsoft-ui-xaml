@@ -27,14 +27,13 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    auto const table = m_table.get();
-    auto const column = m_column.get();
-    if (!table || !column)
+    if (!m_table.get() || !m_column.get())
     {
         return __super::OnCreateAutomationPeer();
     }
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(*this, table, column);
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(
+        get_strong().as<winrt::TableViewColumnHeader>());
     m_automationPeer = winrt::make_weak(peer);
     return peer;
 }
@@ -110,7 +109,7 @@ void TableViewColumnHeader::OnApplyTemplate()
 void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorReserve)
 {
     m_isSortable = sortable;
-    m_indicatorReserve = sortable ? indicatorReserve : 0.0;
+    m_indicatorReserve = indicatorReserve;
     UpdateContentReserve();
     HostSortIndicator();
     UpdateVisualStates(false /* useTransitions */);
@@ -118,8 +117,14 @@ void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorR
 
 void TableViewColumnHeader::SetSortDirectionInternal(winrt::SortDirection direction)
 {
+    const bool wasShown = ShowsSortIndicator();
     m_sortDirection = direction;
-    if (auto const indicator = m_sortIndicator.get())
+    if (wasShown != ShowsSortIndicator())
+    {
+        UpdateContentReserve();
+        HostSortIndicator();
+    }
+    else if (auto const indicator = m_sortIndicator.get())
     {
         indicator.Direction(TableView::ToSortIndicatorDirection(direction));
     }
@@ -151,7 +156,7 @@ void TableViewColumnHeader::UpdateContentReserve()
     if (auto const presenter = m_contentPresenter.get())
     {
         auto margin = m_templateContentMargin;
-        if (m_isSortable)
+        if (ShowsSortIndicator())
         {
             margin.Right += m_indicatorReserve;
         }
@@ -170,7 +175,7 @@ void TableViewColumnHeader::HostSortIndicator()
         return;
     }
 
-    if (!m_isSortable)
+    if (!ShowsSortIndicator())
     {
         host.Child(nullptr);
         return;

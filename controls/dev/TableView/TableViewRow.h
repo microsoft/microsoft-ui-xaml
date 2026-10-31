@@ -28,6 +28,9 @@ public:
 
     // IFrameworkElement overrides
     void OnApplyTemplate();
+    // Mark the row's layout for TableView::IsInLayoutCallback.
+    winrt::Size MeasureOverride(winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::Size const& finalSize);
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     // Use the Control virtual signatures; event-handler overloads break the ABI shim.
@@ -176,7 +179,7 @@ private:
     // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
 
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
-    // binding a template column needs. GenerateElement alone is not a complete cell.
+    // binding a template column needs. GenerateDisplayElement alone is not a complete cell.
     void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
 
     // Drops begin-edit gesture state (recycle, owner change).

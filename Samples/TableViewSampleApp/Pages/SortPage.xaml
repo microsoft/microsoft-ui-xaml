@@ -135,7 +135,7 @@
 
     <controls:SamplePresenter
         Header="Sorting"
-        Description="TableView owns single-column sort state: click a header to sort and again to reverse, or call SortByColumn, ToggleSortDirection and ClearSort; the Sorted event reports each change. Template columns sort by SortMemberPath, the value behind the control: Seeded by the bool, Next match by the DateTimeOffset and Kickoff by the TimeSpan. As text, 2 Jan sorts before 28 Dec; show the text-date column to compare. Grouped, the order of the calls matters: a sort applied after GroupBy reorders the rows within each group, and one applied before it orders the groups too. Under Hierarchy (TableViewSource.ParentBy), a sort orders each set of siblings and children stay under their parent."
+        Description="TableView owns single-column sort state: click a header to sort and again to reverse, or call SortByColumn, ToggleSortDirection and ClearSort; the Sorted event reports each change. Template columns sort by SortMemberPath, the value behind the control: Seeded by the bool, Next match by the DateTimeOffset and Kickoff by the TimeSpan. As text, 2 Jan sorts before 28 Dec; show the text-date column to compare. Grouped, a sort reorders the rows within each group and the groups follow their first rows, whichever was declared first; TableViewSource.SortGroups orders the groups by key instead. Under Hierarchy (TableViewSource.ParentBy), a sort orders each set of siblings and children stay under their parent."
         Snippet="Sort"
         StretchExample="True"
         TryIt="Click the Next match header to sort by date, then open a row's Next match picker, pick a later date and watch the row move. Choose Sort next match as text in Actions and compare the order. Switch Shaping mode to Grouped and click Pts: the rows reorder within each group. Switch to Hierarchy, expand Cyan Mustangs and choose Points ↓: its U21 side (13 pts) moves above its B side (10 pts), and both stay under the club."
@@ -163,7 +163,7 @@
                 <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="170" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate" HeaderToolTip="Date of the next fixture. Editable; sorts by the DateTimeOffset, so 28 Dec comes before 2 Jan."/>
                 <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="150" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff" HeaderToolTip="Kickoff time, 24-hour clock. Editable; sorts by the TimeSpan."/>
                 <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="110" Visibility="Collapsed" IsReadOnly="True" HeaderToolTip="The same date as plain text. Sorts alphabetically, so 2 Jan comes before 28 Dec." Binding="{Binding NextMatchText}"/>
-                <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="48" IsReadOnly="True" CanSort="False" HeaderToolTip="Played. Not sortable: every team has played the same number of games." Binding="{Binding Played}"/>
+                <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="48" IsReadOnly="True" CanUserSort="False" HeaderToolTip="Played. Not sortable: every team has played the same number of games." Binding="{Binding Played}"/>
                 <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="48" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
                 <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="48" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
                 <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="48" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>
@@ -255,7 +255,7 @@
                     x:Name="Shaping"
                     AutomationIdPrefix="Sort"
                     HierarchyColumnHeader="Team"
-                    Description="Group the standings, then sort: the rows reorder within each group, and the groups keep the source order of their first rows. Sort first and then group, and the sort orders the groups as well. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position. Under Hierarchy, each seed's B and U21 sides nest under the club, and a sort orders the clubs and, separately, the sides under each club.">
+                    Description="Group the standings, then sort: the rows reorder within each group, and the groups follow their first rows, so the sort can reorder the groups too. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position. Under Hierarchy, each seed's B and U21 sides nest under the club, and a sort orders the clubs and, separately, the sides under each club.">
                     <ComboBoxItem Content="Group" Tag="Group"/>
                     <ComboBoxItem Content="Standing" Tag="Standing"/>
                     <ComboBoxItem Content="Country" Tag="Country"/>

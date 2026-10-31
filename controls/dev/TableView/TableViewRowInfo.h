@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include <winrt/Windows.Foundation.h>
 
@@ -34,6 +35,14 @@ struct TableViewRowInfo
 };
 
 using TableViewRowItemKeySelector = std::function<winrt::hstring(winrt::IInspectable const&)>;
+
+// A group header's expansion identity (what Expand/Collapse take), its GroupBy key, and its state.
+struct TableViewGroupExpansionInfo
+{
+    winrt::hstring Identity;
+    winrt::Windows::Foundation::IInspectable Key{ nullptr };
+    bool IsExpanded{ false };
+};
 
 struct ITableViewRowMetadataProvider
 {
@@ -64,6 +73,13 @@ struct ITableViewRowMetadataProvider
 
     // Expands a tree node and all descendants. No-op for group keys or non-hierarchical sources.
     virtual void ExpandSubtree(winrt::hstring const&) {}
+
+    // Every group in the projection, in display order: O(groups). Empty when the source is not grouped.
+    virtual std::vector<TableViewGroupExpansionInfo> GetGroupExpansionInfos() { return {}; }
+    // The expansion identity of a live group object. Empty when it has none.
+    virtual winrt::hstring GetGroupExpansionIdentity(winrt::Windows::Foundation::IInspectable const& /*group*/) { return {}; }
+    // The group a group expansion identity names. False for node keys and unknown groups.
+    virtual bool TryGetGroupExpansionInfo(winrt::hstring const& /*identity*/, TableViewGroupExpansionInfo& /*info*/) { return false; }
 
     // 1-based position among data rows between adjacent header bands, and that count. Returns false
     // if `rows` isn't the provider's projection, or for flat sources, headers, or out of range.

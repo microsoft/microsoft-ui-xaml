@@ -10,6 +10,7 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewSource.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
@@ -577,6 +578,16 @@ TableView::TableView()
 
     auto weakThis = get_weak();
 
+    // IsEditing is read-only to the app; a write that is not the control's own is reverted.
+    RegisterPropertyChangedCallback(s_IsEditingProperty,
+        [weakThis](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->OnIsEditingPropertyChanged();
+            }
+        });
+
     // Use bubbling KeyDown so focused editors can consume typing keys before row navigation.
     m_keyDownHandler = winrt::KeyEventHandler(
         [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
@@ -711,6 +722,13 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     ReclaimItemsSource();
     // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
     SampleInstanceTelemetry();
+
+    // A StartBringItemIntoView made before Loaded; posted so the rows have their first layout.
+    if (m_pendingBringIntoViewIndex >= 0)
+    {
+        ArmPendingBringIntoView();
+        PostPendingBringIntoViewAttempt();
+    }
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
@@ -1246,6 +1264,9 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         return;
     }
 
+    // A pending StartBringItemIntoView index names a row of the data set being replaced.
+    CancelPendingBringItemIntoView();
+
     // Until Initialize has its verdict, attaching a source is part of initialization rather than a tracked swap.
     auto const initializing = !m_tip.initializationDone;
     auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource, !initializing);
@@ -1271,7 +1292,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         // The edited item is about to leave the control. Forced, because the data set is already gone
         // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
         // a dependency-property change callback, and moving focus from one re-enters the framework.
-        if (IsEditing())
+        if (IsEditInProgress())
         {
             TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
         }
@@ -1879,7 +1900,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
             auto strongThis = weakThis.get();
-            return strongThis && strongThis->IsEditing();
+            return strongThis && strongThis->IsEditInProgress();
         });
         // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
         sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
@@ -1993,6 +2014,7 @@ void TableView::RefreshRowsPipeline()
 void TableView::OnTableViewSourceProjectionChanged()
 {
     SupersedeTipOperation();
+    CancelPendingBringItemIntoView();
 
     // The repeater's focus rescue during recycling must not be mistaken for the user's position.
     SuppressBodyFocusTrackingForThisTurn();
@@ -2003,7 +2025,7 @@ void TableView::OnTableViewSourceProjectionChanged()
 
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
     // metadata describe the previous projection. Re-read them and re-drive the rows.
-    if (IsEditing())
+    if (IsEditInProgress())
     {
         // The edited item may not exist in the new projection. Forced, for the same reason as an
         // ItemsSource swap: the shape is already gone by the time a handler could veto it.
@@ -2191,7 +2213,7 @@ void TableView::OnRowsSourceResetForFocus(
     CaptureBodyFocusForReshape();
 
     // Close the edit before the repeater recycles the editor's container for another record.
-    if (IsEditing())
+    if (IsEditInProgress())
     {
         TerminateEditWithoutVisualRestore();
     }
@@ -2499,7 +2521,7 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
 // dependency-property change callback, where moving focus re-enters focus/layout processing.
 void TableView::OnColumnIsReadOnlyChanged(winrt::TableViewColumn const& column)
 {
-    if (!column || !IsEditing())
+    if (!column || !IsEditInProgress())
     {
         return;
     }
@@ -2518,7 +2540,7 @@ void TableView::OnIsReadOnlyPropertyChanged(const winrt::DependencyPropertyChang
     // this runs from a DP change callback, where moving focus re-enters focus/layout processing.
     if (IsReadOnly())
     {
-        if (IsEditing())
+        if (IsEditInProgress())
         {
             TerminateEditWithoutVisualRestore();
         }
@@ -2566,6 +2588,7 @@ void TableView::OnRowElementPrepared(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
+    auto const layoutScope = BeginLayoutCallbackScope();
     TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Rows);
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
@@ -2601,6 +2624,7 @@ void TableView::OnRowElementClearing(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementClearingEventArgs& args)
 {
+    auto const layoutScope = BeginLayoutCallbackScope();
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         // A recycled row is about to be re-bound to a different item; an edit left open would keep
@@ -2676,6 +2700,7 @@ void TableView::OnRowElementIndexChanged(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
+    auto const layoutScope = BeginLayoutCallbackScope();
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {
@@ -3180,8 +3205,8 @@ void TableView::RebuildHeadersCore()
                 header.Style(headerStyle);
             }
 
-            const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
-            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsResizable = CanUserResizeColumns() && column.CanUserResize();
+            const bool headerIsSortable = canUserSortColumns && column.CanUserSort();
             AttachFocusCornerRadius(header);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
@@ -3242,7 +3267,7 @@ void TableView::RebuildHeadersCore()
                 {
                     if (auto strongThis = weakThis.get())
                     {
-                        if (strongThis->ToggleSortDirection(column))
+                        if (strongThis->ToggleSortDirectionFromUserInput(column))
                         {
                             args.Handled(true);
                         }
@@ -3456,6 +3481,34 @@ void TableView::RefreshSortIndicators()
     }
 }
 
+void TableView::RaiseColumnSortStateAutomationChanged(const winrt::TableViewColumn& column, winrt::SortDirection oldDirection)
+{
+    if (!column || !winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        return;
+    }
+    auto const header = TableViewCellsPanel::CellForColumn(m_headerHost.get(), column);
+    if (!header)
+    {
+        return;
+    }
+    if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(header))
+    {
+        // The header peer reports the sort state through its help text.
+        winrt::hstring oldText;
+        if (auto const headerPeer = peer.try_as<winrt::TableViewColumnHeaderAutomationPeer>())
+        {
+            oldText = winrt::get_self<TableViewColumnHeaderAutomationPeer>(headerPeer)->HelpTextForSortDirection(oldDirection);
+        }
+        auto const newText = peer.GetHelpText();
+        if (oldText != newText)
+        {
+            peer.RaisePropertyChangedEvent(
+                winrt::AutomationElementIdentifiers::HelpTextProperty(), winrt::box_value(oldText), winrt::box_value(newText));
+        }
+    }
+}
+
 void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
     // Rebuild, not restyle in place: the style also decides whether density sets MinHeight/Padding.
@@ -3464,58 +3517,16 @@ void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyProper
 
 void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
-    // The chevron and the click handler are stamped at header-build time. Queued first so it still
-    // runs when a Sorting or Sorted handler throws.
+    // The chevron and the click handler are stamped at header-build time. Like WPF's
+    // DataGrid.CanUserSortColumns this gates user input only, so an applied sort is left in place.
     QueueRebuildHeaders();
-
-    // The gate turning off must also drop any sort it was responsible for; leaving the rows in a
-    // sorted order with no affordance to change it would strand the user.
-    if (!CanUserSortColumns())
-    {
-        // A sort cannot run while an edit is opening, and must not close it once open; clear once no edit is open.
-        if (m_editState == EditState::Beginning)
-        {
-            QueueReshapeAfterEditCloses([this]()
-            {
-                if (!CanUserSortColumns())
-                {
-                    ClearSortInternal(false);
-                }
-            });
-        }
-        else
-        {
-            ClearSortInternal(false);
-        }
-    }
 }
 
-void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
+void TableView::OnColumnCanUserSortChanged(const winrt::TableViewColumn& /*column*/)
 {
-    // The chevron and the click handler are stamped at header-build time. Queued first so it still
-    // runs when a Sorting or Sorted handler throws.
+    // The chevron and the click handler are stamped at header-build time. CanUserSort gates user
+    // input only, so an applied sort is left in place.
     QueueRebuildHeaders();
-
-    // A column that just opted out must not keep an active sort applied to it. One lit only by the
-    // app's source sort keeps it: the app owns that axis.
-    if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None && !IsSortLitOnlyByApp())
-    {
-        if (m_editState == EditState::Beginning)
-        {
-            QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
-            {
-                if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort() && !IsSortLitOnlyByApp())
-                {
-                    SortByColumnInternal(optedOut, winrt::SortDirection::None, false, false);
-                }
-            });
-        }
-        else
-        {
-            // Bypasses the CanSort gate that just closed; the public methods keep refusing.
-            SortByColumnInternal(column, winrt::SortDirection::None, false, false);
-        }
-    }
 }
 
 double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const{
@@ -3683,6 +3694,7 @@ void TableView::OnTableViewUnloaded()
     m_reshapeFocusRow = -1;
     CancelHeaderFocusRestore();
     RevokeTipInitializationLayout();
+    CancelPendingBringItemIntoView();
 
     if (m_pendingGroupFocusLayoutToken.value)
     {
@@ -4066,7 +4078,7 @@ bool TableView::IsColumnResizeAllowed(const winrt::TableViewColumn& column)
 {
     return column &&
         CanUserResizeColumns() &&
-        column.CanResize() &&
+        column.CanUserResize() &&
         column.Visibility() == winrt::Visibility::Visible &&
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this;
 }

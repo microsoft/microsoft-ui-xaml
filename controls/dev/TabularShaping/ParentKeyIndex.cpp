@@ -35,8 +35,8 @@ namespace
         try { return selector(item); } catch (...) { return nullptr; }
     }
 
-    // Value boxes the shared formatter misses (e.g. WinRT enums as OtherType), keyed by
-    // (type, value) so a fresh box per call keeps the key. Empty when not handled.
+    // Value boxes the shared formatter misses, keyed by value so a fresh box per call keeps the key. Empty when not
+    // handled. Enums (OtherType) are keyed by the shared formatter (ValueKey, EnumValue), as grouping and sorting are.
     std::wstring TryFormatExtraValueKey(winrt::IInspectable const& key)
     {
         auto const pv = key.try_as<winrt::Windows::Foundation::IPropertyValue>();
@@ -48,29 +48,6 @@ namespace
         wchar_t buffer[64];
         switch (pv.Type())
         {
-        case winrt::Windows::Foundation::PropertyType::OtherType:
-        {
-            std::wstring value;
-            try
-            {
-                value = std::to_wstring(pv.GetInt64());
-            }
-            catch (...)
-            {
-                try
-                {
-                    value = L"u" + std::to_wstring(pv.GetUInt64());
-                }
-                catch (...)
-                {
-                    return {};
-                }
-            }
-
-            std::wstring typeName;
-            try { typeName = winrt::get_class_name(key); } catch (...) {}
-            return std::wstring{ c_valueKeyPrefix } + L"e:" + typeName + L":" + value;
-        }
         case winrt::Windows::Foundation::PropertyType::Point:
         {
             const auto p = pv.GetPoint();

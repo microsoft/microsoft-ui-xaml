@@ -35,7 +35,7 @@ public sealed partial class SortPage
 
     // Under a Hierarchy mode the rows start collapsed, so the readout ranks the senior clubs.
     private IEnumerable<LeagueTeam> InViewOrder() =>
-        SampleShaping.InViewOrder(TeamsTable, IsHierarchical ? Teams.Where(t => t.ParentId is null) : Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null, SortOrdersGroups);
+        SampleShaping.InViewOrder(TeamsTable, IsHierarchical ? Teams.Where(t => t.ParentId is null) : Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null);
 
     private static IComparable? SortKey(LeagueTeam team, string path) => path switch
     {
