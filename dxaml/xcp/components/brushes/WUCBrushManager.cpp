@@ -81,6 +81,7 @@ void WUCBrushManager::EnsureResources(
 void WUCBrushManager::ReleaseDCompResources()
 {
     m_sharedTransitionAnimationsNoRef = nullptr;
+    m_easingFunctionStatics.Reset();
     m_compositor.Reset();
     m_compositor2.Reset();
     m_compositor4.Reset();

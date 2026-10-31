@@ -16,6 +16,9 @@
 #include "RuntimeEnabledFeaturesEnum.h"
 #include <WUCRenderingScopeGuard.h>
 #include <robuffer.h>
+#include <UIAutomation.h>
+#include <AutoVariant.h>
+#include <AutoBSTR.h>
 
 using namespace ::Windows::Foundation;
 using namespace Platform;
@@ -549,6 +552,214 @@ WriteableBitmap^ CompositorTreeDeviceLostTests::CreateWriteableBitmap()
     }
 
     return bitmap;
+}
+
+// Note: Rebuilding the ContentIsland is a test-only scenario when using MockDComp
+// or ResetDeviceAndVisuals*().
+void CompositorTreeDeviceLostTests::RebuildContentIslandAfterDeviceLost()
+{
+    const auto& wh = TestServices::WindowHelper;
+
+    WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    StackPanel^ root;
+    Border^ border;
+    XamlRoot^ xamlRoot;
+    Microsoft::UI::Content::ContentIsland^ contentIsland;
+    RunOnUIThread([&]()
+    {
+        root = ref new StackPanel();
+        border = ref new Border();
+        border->Width = 50;
+        border->Height = 50;
+        border->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+        root->Children->Append(border);
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        xamlRoot = root->XamlRoot;
+        VERIFY_IS_NOT_NULL(xamlRoot);
+        contentIsland = xamlRoot->ContentIsland;
+        VERIFY_IS_NOT_NULL(contentIsland);
+    });
+    auto mockDevice = wh->MockDCompDevice;
+    VERIFY_IS_NOT_NULL(mockDevice);
+
+    for (int reset = 0; reset < 2; ++reset)
+    {
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Release the ContentIsland with a full device reset.");
+            wh->ResetDeviceAndVisualsWithoutUIThreadTick();
+        });
+
+        wh->SynchronouslyTickUIThread(2);
+        VERIFY_IS_NOT_NULL(wh->MockDCompDevice);
+        VERIFY_IS_TRUE(mockDevice != wh->MockDCompDevice);
+        mockDevice = wh->MockDCompDevice;
+        wh->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Verify the rebuilt ContentIsland preserves the XAML tree.");
+            auto rebuiltIsland = xamlRoot->ContentIsland;
+            VERIFY_IS_NOT_NULL(rebuiltIsland);
+            VERIFY_IS_TRUE(contentIsland != rebuiltIsland);
+            contentIsland = rebuiltIsland;
+            VERIFY_ARE_EQUAL(root, wh->WindowContent);
+            VERIFY_ARE_EQUAL(xamlRoot, root->XamlRoot);
+            VERIFY_ARE_EQUAL(border, root->Children->GetAt(0));
+            VERIFY_ARE_EQUAL(xamlRoot, border->XamlRoot);
+            VERIFY_ARE_EQUAL(50.0, border->ActualWidth);
+            VERIFY_ARE_EQUAL(50.0, border->ActualHeight);
+        });
+    }
+
+    Button^ button;
+    auto clickRegistration = CreateSafeEventRegistration(Button, Click);
+    auto clickEvent = std::make_shared<Event>();
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Add new content after repeated island recovery.");
+        button = ref new Button();
+        root->Children->Append(button);
+        clickRegistration.Attach(button, [clickEvent]() { clickEvent->Set(); });
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Verify focus and keyboard input after island recovery.");
+        VERIFY_ARE_EQUAL(xamlRoot, button->XamlRoot);
+        VERIFY_IS_TRUE(button->Focus(FocusState::Programmatic));
+    });
+    TestServices::KeyboardHelper->Enter();
+    clickEvent->WaitForDefault();
+    VERIFY_IS_TRUE(clickEvent->HasFired());
+}
+
+// Note: Rebuilding the ContentIsland is a test-only scenario when using MockDComp
+// or ResetDeviceAndVisuals*().
+void CompositorTreeDeviceLostTests::RebuildContentIslandPreservesUIAProviders()
+{
+    const auto& wh = TestServices::WindowHelper;
+    WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    Button^ button;
+    XamlRoot^ xamlRoot;
+    Microsoft::UI::Content::ContentIsland^ contentIsland;
+    wrl::ComPtr<IRawElementProviderFragment> originalRootProvider;
+    wrl::ComPtr<IRawElementProviderFragment> retainedButtonProvider;
+    auto clickRegistration = CreateSafeEventRegistration(Button, Click);
+    auto clickEvent = std::make_shared<Event>();
+    TestCleanupWrapper cleanup([&]()
+    {
+        RunOnUIThread([&]()
+        {
+            retainedButtonProvider.Reset();
+            originalRootProvider.Reset();
+        });
+        wh->ResetWindowContentAndWaitForIdle();
+    });
+
+    auto getRootProvider = [&]()
+    {
+        Platform::Object^ providerObject;
+        wh->GetUIAWindow(&providerObject);
+        wrl::ComPtr<IInspectable> inspectable(reinterpret_cast<IInspectable*>(providerObject));
+        wrl::ComPtr<IRawElementProviderFragment> provider;
+        LogThrow_IfFailed(inspectable.As(&provider));
+        return provider;
+    };
+
+    auto verifyAndInvokeButton = [&](const wrl::ComPtr<IRawElementProviderFragment>& provider)
+    {
+        VERIFY_IS_NOT_NULL(provider.Get());
+        wrl::ComPtr<IRawElementProviderSimple> simple;
+        LogThrow_IfFailed(provider.As(&simple));
+
+        Common::AutoVariant name;
+        LogThrow_IfFailed(simple->GetPropertyValue(UIA_NamePropertyId, name.ReleaseAndGetAddressOf()));
+        VERIFY_ARE_EQUAL(VT_BSTR, name.Storage()->vt);
+        Common::AutoBSTR nameString(name.Storage()->bstrVal);
+        Common::AutoBSTR::VerifyAreEqual(L"RecoveryButton", nameString);
+
+        wrl::ComPtr<IUnknown> pattern;
+        LogThrow_IfFailed(simple->GetPatternProvider(UIA_InvokePatternId, &pattern));
+        VERIFY_IS_NOT_NULL(pattern.Get());
+        wrl::ComPtr<IInvokeProvider> invoke;
+        LogThrow_IfFailed(pattern.As(&invoke));
+        LogThrow_IfFailed(invoke->Invoke());
+    };
+
+    // Create the window content and get the UIA provider for the Button
+    RunOnUIThread([&]()
+    {
+        button = ref new Button();
+        button->Width = 100;
+        button->Height = 50;
+        xaml_automation::AutomationProperties::SetName(button, L"RecoveryButton");
+        clickRegistration.Attach(button, [clickEvent]() { clickEvent->Set(); });
+        wh->WindowContent = button;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        xamlRoot = button->XamlRoot;
+        contentIsland = xamlRoot->ContentIsland;
+        VERIFY_IS_NOT_NULL(contentIsland);
+        originalRootProvider = getRootProvider();
+        LogThrow_IfFailed(originalRootProvider->Navigate(NavigateDirection_FirstChild, &retainedButtonProvider));
+        LOG_OUTPUT(L"> Verify the button provider before recovery.");
+        verifyAndInvokeButton(retainedButtonProvider);
+    });
+    clickEvent->WaitForDefault();
+    clickEvent->Reset();
+
+    // Now reset the dcomp device (to test adding/removing MockDComp) and ensure the
+    // button's UIA provider hasn't changed and is still functional.
+    for (int reset = 0; reset < 2; ++reset)
+    {
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Rebuild the main ContentIsland, reset %d.", reset + 1);
+            wh->ResetDeviceAndVisualsWithoutUIThreadTick();
+        });
+        wh->SynchronouslyTickUIThread(2);
+        wh->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto rebuiltIsland = xamlRoot->ContentIsland;
+            VERIFY_IS_NOT_NULL(rebuiltIsland);
+            VERIFY_IS_TRUE(contentIsland != rebuiltIsland);
+            contentIsland = rebuiltIsland;
+            VERIFY_ARE_EQUAL(button, wh->WindowContent);
+            VERIFY_ARE_EQUAL(xamlRoot, button->XamlRoot);
+
+            auto rebuiltRootProvider = getRootProvider();
+            wrl::ComPtr<IRawElementProviderFragment> freshButtonProvider;
+            LogThrow_IfFailed(rebuiltRootProvider->Navigate(NavigateDirection_FirstChild, &freshButtonProvider));
+            LOG_OUTPUT(L"> Verify a fresh button-provider query after recovery.");
+            verifyAndInvokeButton(freshButtonProvider);
+            VERIFY_ARE_EQUAL(originalRootProvider.Get(), rebuiltRootProvider.Get());
+            VERIFY_ARE_EQUAL(retainedButtonProvider.Get(), freshButtonProvider.Get());
+        });
+        clickEvent->WaitForDefault();
+        clickEvent->Reset();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Verify the retained button provider after recovery.");
+            verifyAndInvokeButton(retainedButtonProvider);
+        });
+        clickEvent->WaitForDefault();
+        clickEvent->Reset();
+    }
 }
 
 } } } } } }

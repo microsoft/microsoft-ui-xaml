@@ -2181,6 +2181,7 @@ public:
         LOG_OUTPUT(L"    > SystemBackdrop::OnTargetConnected called.");
         m_connectedCount++;
         m_previousConnectedTarget = connectedTarget;
+        m_previousConnectedXamlRoot = xamlRoot;
     }
 
     void OnTargetDisconnected(ICompositionSupportsSystemBackdrop^ disconnectedTarget) override
@@ -2192,6 +2193,7 @@ public:
 
     int GetConnectedCount() { return m_connectedCount; }
     ICompositionSupportsSystemBackdrop^ GetPreviousConnectedTarget() { return m_previousConnectedTarget; }
+    XamlRoot^ GetPreviousConnectedXamlRoot() { return m_previousConnectedXamlRoot; }
 
     int GetDisconnectedCount() { return m_disconnectedCount; }
     ICompositionSupportsSystemBackdrop^ GetPreviousDisconnectedTarget() { return m_previousDisconnectedTarget; }
@@ -2199,6 +2201,7 @@ public:
 private:
     int m_connectedCount {0};
     ICompositionSupportsSystemBackdrop^ m_previousConnectedTarget;
+    XamlRoot^ m_previousConnectedXamlRoot;
 
     int m_disconnectedCount {0};
     ICompositionSupportsSystemBackdrop^ m_previousDisconnectedTarget;
@@ -2252,6 +2255,45 @@ void XamlIslandTests::IslandSystemBackdrop()
 
         dqc->ShutdownQueue();
 
+        return 0;
+    });
+
+    WaitForSingleObjectWithTimeout(uiThread);
+}
+
+void XamlIslandTests::IslandSystemBackdropBeforeContent()
+{
+    VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
+
+    auto uiThread = RunOnNewThread([]()
+    {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
+        auto dqc = DispatcherQueueController::CreateOnCurrentThread();
+        auto xi = ref new XamlIsland();
+        auto customBackdrop = ref new CustomBackdrop_TrackOnConnected();
+        auto target = safe_cast<ICompositionSupportsSystemBackdrop^>(xi);
+
+        VERIFY_IS_NULL(xi->Content);
+        LOG_OUTPUT(L"  > Setting SystemBackdrop before island content.");
+        xi->SystemBackdrop = customBackdrop;
+
+        VERIFY_IS_NULL(xi->Content);
+        VERIFY_ARE_EQUAL(1, customBackdrop->GetConnectedCount());
+        VERIFY_ARE_EQUAL(target, customBackdrop->GetPreviousConnectedTarget());
+        VERIFY_IS_NOT_NULL(customBackdrop->GetPreviousConnectedXamlRoot());
+        VERIFY_ARE_EQUAL(0, customBackdrop->GetDisconnectedCount());
+
+        LOG_OUTPUT(L"  > Setting island content after SystemBackdrop.");
+        xi->Content = ref new Grid();
+        VERIFY_ARE_EQUAL(customBackdrop->GetPreviousConnectedXamlRoot(), xi->Content->XamlRoot);
+        VERIFY_ARE_EQUAL(1, customBackdrop->GetConnectedCount());
+        VERIFY_ARE_EQUAL(0, customBackdrop->GetDisconnectedCount());
+
+        xi->SystemBackdrop = nullptr;
+        VERIFY_ARE_EQUAL(1, customBackdrop->GetDisconnectedCount());
+        VERIFY_ARE_EQUAL(target, customBackdrop->GetPreviousDisconnectedTarget());
+
+        dqc->ShutdownQueue();
         return 0;
     });
 
