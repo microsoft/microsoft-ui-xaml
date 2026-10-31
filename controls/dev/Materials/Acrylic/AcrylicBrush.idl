@@ -22,6 +22,9 @@ unsealed runtimeclass AcrylicBrush : Microsoft.UI.Xaml.Media.XamlCompositionBrus
 
     Boolean AlwaysUseFallback { get; set; };
 
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsNoiseEnabled { get; set; };
+
     [MUX_PUBLIC]
     {
         [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToZeroOneRange_Nullable")]
@@ -32,6 +35,7 @@ unsealed runtimeclass AcrylicBrush : Microsoft.UI.Xaml.Media.XamlCompositionBrus
     static Microsoft.UI.Xaml.DependencyProperty TintOpacityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty TintTransitionDurationProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty AlwaysUseFallbackProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsNoiseEnabledProperty { get; };
 
     [MUX_PUBLIC]
     {
