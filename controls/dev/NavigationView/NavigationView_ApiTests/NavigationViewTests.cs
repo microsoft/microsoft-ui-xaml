@@ -818,6 +818,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Re-templating a NavigationView whose pane the app closed (IsPaneOpen=false) keeps the pane closed when PaneDisplayMode doesn't change (GitHub #7609).")]
+        public void VerifyRetemplateKeepsForceClosedPaneClosed()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact })
+            {
+                Log.Comment($"PaneDisplayMode={paneDisplayMode}");
+                var navView = SetupForceClosedNavViewForRetemplate(paneDisplayMode);
+
+                RunOnUIThread.Execute(() => navView.Template = LoadRetemplateTestTemplate());
+                IdleSynchronizer.Wait();
+                VerifyRetemplatedPaneState(navView, paneDisplayMode, expectedIsPaneOpen: false, "re-templating");
+
+                RunOnUIThread.Execute(() => navView.Template = LoadRetemplateTestTemplate());
+                IdleSynchronizer.Wait();
+                VerifyRetemplatedPaneState(navView, paneDisplayMode, expectedIsPaneOpen: false, "re-templating again");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A custom VisualStateManager that switches PaneDisplayMode LeftCompact -> Left while a new template is applied still clears the force-close flag, so the pane opens as it did before #7609.")]
+        public void VerifyPaneDisplayModeChangeDuringRetemplateReopensPane()
+        {
+            var navView = SetupForceClosedNavViewForRetemplate(NavigationViewPaneDisplayMode.LeftCompact);
+            RetemplateTestVisualStateManager vsm = null;
+            RunOnUIThread.Execute(() =>
+            {
+                vsm = new RetemplateTestVisualStateManager();
+                // The new template root template-binds this as its custom VisualStateManager while the template is
+                // expanded, before NavigationView.OnApplyTemplate runs.
+                navView.Tag = vsm;
+                navView.Template = LoadRetemplateTestTemplate(bindCustomVisualStateManagerToTag: true);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(vsm.SwitchedInState, "The custom VisualStateManager should have switched PaneDisplayMode while the template was applied");
+                Log.Comment($"PaneDisplayMode switched in GoToStateCore('{vsm.SwitchedInState}')");
+            });
+            VerifyRetemplatedPaneState(navView, NavigationViewPaneDisplayMode.Left, expectedIsPaneOpen: true, "LeftCompact -> Left during re-templating");
+        }
+
+        private NavigationView SetupForceClosedNavViewForRetemplate(NavigationViewPaneDisplayMode paneDisplayMode)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "MenuItem" });
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.IsPaneOpen = false;
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+            VerifyRetemplatedPaneState(navView, paneDisplayMode, expectedIsPaneOpen: false, "launch");
+            return navView;
+        }
+
+        private static void VerifyRetemplatedPaneState(NavigationView navView, NavigationViewPaneDisplayMode expectedPaneDisplayMode, bool expectedIsPaneOpen, string step)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(expectedPaneDisplayMode, navView.PaneDisplayMode, $"PaneDisplayMode after {step}");
+                Verify.AreEqual(expectedPaneDisplayMode == NavigationViewPaneDisplayMode.Left ? NavigationViewDisplayMode.Expanded : NavigationViewDisplayMode.Compact,
+                    navView.DisplayMode, $"DisplayMode after {step}");
+                Verify.AreEqual(expectedIsPaneOpen, navView.IsPaneOpen, $"NavigationView.IsPaneOpen after {step}");
+
+                var splitView = VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView") as SplitView;
+                Verify.IsNotNull(splitView);
+                Verify.AreEqual(expectedIsPaneOpen, splitView.IsPaneOpen, $"RootSplitView.IsPaneOpen after {step}");
+            });
+        }
+
+        // A new, minimal ControlTemplate instance with the parts the pane open/close logic uses. It has no menu ItemsRepeater:
+        // re-applying a template with one while MenuItems holds NavigationViewItem instances hits a chk-build ItemsRepeater
+        // assert (VirtualizationInfo::MoveOwnershipToLayoutFromElementFactory). Optionally template-binds the root's custom
+        // VisualStateManager to the NavigationView's Tag.
+        private static ControlTemplate LoadRetemplateTestTemplate(bool bindCustomVisualStateManagerToTag = false)
+        {
+            var customVisualStateManagerAttribute = bindCustomVisualStateManagerToTag ? "VisualStateManager.CustomVisualStateManager='{TemplateBinding Tag}'" : "";
+            return (ControlTemplate)XamlReader.Load($@"
+                <ControlTemplate
+                    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                    TargetType='controls:NavigationView'>
+                    <Grid {customVisualStateManagerAttribute}>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name='ClosedCompactGroup'>
+                                <VisualState x:Name='NotClosedCompact' />
+                                <VisualState x:Name='ClosedCompact' />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <SplitView x:Name='RootSplitView' DisplayMode='Inline'
+                            IsPaneOpen='{{Binding RelativeSource={{RelativeSource TemplatedParent}}, Path=IsPaneOpen, Mode=TwoWay}}' />
+                    </Grid>
+                </ControlTemplate>");
+        }
+        [TestMethod]
         public void VerifyDefaultsAndBasicSetting()
         {
             NavigationView navView = null;
@@ -3410,6 +3509,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             IdleSynchronizer.Wait();
+        }
+    }
+
+    // An app-style custom VisualStateManager: the first time NavigationView goes to a ClosedCompactGroup state on the
+    // template it's attached to (NavigationView.UpdateIsClosedCompact, called from OnApplyTemplate), it switches
+    // PaneDisplayMode LeftCompact -> Left synchronously.
+    public partial class RetemplateTestVisualStateManager : VisualStateManager
+    {
+        public string SwitchedInState { get; private set; }
+
+        protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
+        {
+            var result = base.GoToStateCore(control, templateRoot, stateName, group, state, useTransitions);
+
+            if (SwitchedInState == null && (stateName == "ClosedCompact" || stateName == "NotClosedCompact")
+                && control is NavigationView navView && navView.PaneDisplayMode == NavigationViewPaneDisplayMode.LeftCompact)
+            {
+                SwitchedInState = stateName;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+            }
+
+            return result;
         }
     }
 }
