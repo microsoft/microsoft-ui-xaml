@@ -1,30 +1,5 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project>
-  <!-- 
-      NuGet will see both the latest package from the .NET SDK and
-      the one we are overriding to and thereby emit an warning.
-      Disabling that warning here.
-   -->
-  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
-    <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
-    <!--
-        NU1505: Duplicate PackageDownload for Microsoft.Windows.SDK.NET.Ref.
-        The .NET SDK bundles its own SDK.NET.Ref version (e.g. 10.0.17763.55) as an
-        implicit FrameworkReference. Our explicit override below pins a different patch
-        (TargetPlatformVersion + MicrosoftWindowsSDKNetRefPackVersionSuffixOverride, e.g.
-        10.0.17763.38). Both get translated to PackageDownload entries, triggering NU1505.
-        The explicit Remove/Include further down ensures the runtime uses our pinned version;
-        the warning is informational.
-    -->
-    <NoWarn>$(NoWarn);NU1505</NoWarn>
-  </PropertyGroup>
-
-  <!--
-      Generally, the Microsoft.Windows.SDK.NET.Ref pack is bundled with the .NET SDK. Sometimes we need to override it, and it
-      has to be done after the Microsoft.NET.SDK has been imported, which means it needs to be in either the .csproj itself,
-      or a .targets file.  With .NET 9, the package name changed to Microsoft.Windows.SDK.NET.Ref.Windows.  So we'll just remove
-      any version we find before adding our explicitly versioned reference.
-   -->
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0'))">
     <DefineConstants>$(DefineConstants);CSWINRT3_0</DefineConstants>
     <UsingCSWinRT3>true</UsingCSWinRT3>
@@ -32,15 +7,10 @@
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride></MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <XeWin10TargetVersion>$(TargetPlatformVersion)</XeWin10TargetVersion>
   </PropertyGroup>
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!='' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))">
-    <FrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref;Microsoft.Windows.SDK.NET.Ref.Windows" />
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                        IsImplicitlyDefined="true"
-                        Pack="false"
-                        PrivateAssets="All"
-                        TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)"
-                        RuntimeFrameworkVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
-  </ItemGroup>
+  <!-- Override the SDK's pack selection without adding a second FrameworkReference. -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!='' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0-windows'))">
+    <WindowsSdkPackageVersion>$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)</WindowsSdkPackageVersion>
+  </PropertyGroup>
 
   <!--
       The .NET 8 targeting packs are never referenced explicitly; the SDK injects them as implicit

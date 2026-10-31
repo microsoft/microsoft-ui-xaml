@@ -23,6 +23,8 @@
     <WindowsSdkPackageVersion>$(WindowsAppSdkWindowsSdkPackageVersion_v3)</WindowsSdkPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride></MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
+    <!-- Transport packages still contain win10-specific native assets. -->
+    <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
 
   <!-- Separate per-TFM outputs to prevent collisions. -->
@@ -45,8 +47,9 @@
     <PackageReference Include="Microsoft.Web.WebView2"/>
   </ItemGroup>
 
-  <ItemGroup Condition="$(_IsCsWinRTv3)">
-    <PackageReference Update="Microsoft.Windows.CsWinRT" VersionOverride="$(MicrosoftCsWinRTv3PackageVersion)" PrivateAssets="all" />
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Windows.CsWinRT" VersionOverride="$(MicrosoftCsWinRTPackageVersion)" PrivateAssets="all" Condition="!$(_IsCsWinRTv3)" />
+    <PackageReference Update="Microsoft.Windows.CsWinRT" VersionOverride="$(MicrosoftCsWinRTv3PackageVersion)" PrivateAssets="all" Condition="$(_IsCsWinRTv3)" />
   </ItemGroup>
 
   <!-- Private types are selected by the input WinMDs, not these filters.
