@@ -27,10 +27,8 @@ namespace
     template <typename D, typename... I>
     using ComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
 
-    // A selected row that is not realized, as a data-item peer with no container (ListView's
-    // ItemAutomationPeer pattern). Reading it never creates a row; only Realize does. Once the row
-    // is realized the peer forwards to the row's own peer, but it stays a separate element with its
-    // own RuntimeId.
+    // A container-free data-item peer for a selected, unrealized row. Reads never realize it; once
+    // realized it forwards to the row's peer but keeps its own RuntimeId.
     class TableViewRowItemAutomationPeer :
         public ReferenceTracker<
             TableViewRowItemAutomationPeer,
@@ -41,9 +39,7 @@ namespace
     public:
         TableViewRowItemAutomationPeer(winrt::TableView const& table, winrt::IInspectable const& item, int32_t index, bool byIndex)
             : m_table(winrt::make_weak(table))
-            // A source that hands out a new object on every read (boxed values) gives the item no
-            // identity to track: such a peer stands for the row at its index only while that row
-            // stays selected.
+            // Boxed values have no stable identity: such a peer tracks its index while that row stays selected.
             , m_byIndex(byIndex)
             , m_lastIndex(index)
         {
@@ -98,18 +94,15 @@ namespace
             return ItemToName(tableImpl->UnwrapEditingDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index)));
         }
 
-        // Forwarded once the row is realized, so a client holding this peer sees the row.
         bool IsOffscreenCore() { auto const p = RealizedRowPeer(ItemIndex()); return !p || p.IsOffscreen(); }
         winrt::Rect GetBoundingRectangleCore() { auto const p = RealizedRowPeer(ItemIndex()); return p ? p.GetBoundingRectangle() : winrt::Rect{}; }
-        // Not forwarded: the framework re-parents returned children to the peer that returns them,
-        // which would take the row's cell peers away from the row. Clients reach cells through the row.
+        // Not forwarded: the framework re-parents returned children, which would steal the row's cell peers.
         winrt::IVector<winrt::AutomationPeer> GetChildrenCore() { return nullptr; }
         winrt::Point GetClickablePointCore() { auto const p = RealizedRowPeer(ItemIndex()); return p ? p.GetClickablePoint() : winrt::Point{}; }
         bool HasKeyboardFocusCore() { auto const p = RealizedRowPeer(ItemIndex()); return p && p.HasKeyboardFocus(); }
         bool IsKeyboardFocusableCore() { auto const p = RealizedRowPeer(ItemIndex()); return p && p.IsKeyboardFocusable(); }
         void SetFocusCore() { if (auto const p = RealizedRowPeer(ItemIndex())) { p.SetFocus(); } }
 
-        // ISelectionItemProvider
         bool IsSelected()
         {
             // Resolved first: it throws when the table is gone, before the table is dereferenced.
@@ -138,7 +131,6 @@ namespace
             winrt::get_self<TableView>(m_table.get())->SelectRowIndexFromInteraction(index, false);
         }
 
-        // IVirtualizedItemProvider
         void Realize()
         {
             TableViewRowAutomationPeer::RealizeRowAt(m_table.get(), RequireIndex(),
@@ -146,8 +138,7 @@ namespace
         }
 
     private:
-        // -1 once the item has left the source (or, for a boxed value, once its row is no longer
-        // selected); the table is alive whenever this is >= 0.
+        // -1 once the item left the source (or a boxed value's row was deselected); the table is alive when >= 0.
         int32_t ItemIndex()
         {
             auto const table = m_table.get();
@@ -572,8 +563,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         return {};
     }
 
-    // A UIA read must not realize the row: GetOrCreateElement would make it the repeater's anchor
-    // and move the realization window away from the user's viewport.
+    // A UIA read must not realize the row: it would become the repeater's anchor and move the viewport.
     std::vector<winrt::IRawElementProviderSimple> selection;
     std::vector<tracker_ref<winrt::AutomationPeer>> liveCache;
     if (auto const repeater = impl->GetRowsRepeaterInternal())
@@ -624,8 +614,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
     winrt::AutomationPeer peer{ nullptr };
     for (auto const& cached : m_selectedItemPeerCache)
     {
-        // Only TableViewRowItemAutomationPeer instances are cached; IVirtualizedItemProvider is
-        // implemented on the instance itself, not on the composed base, so get_self is valid on it.
+        // Only TableViewRowItemAutomationPeer instances are cached, so get_self on the provider is valid.
         if (auto const provider = cached.get().try_as<winrt::IVirtualizedItemProvider>();
             provider && winrt::get_self<TableViewRowItemAutomationPeer>(provider)->TryRebind(item, index))
         {
@@ -647,8 +636,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
             table.get_strong().as<winrt::TableView>(), item, index, byIndex).as<winrt::AutomationPeer>();
     }
 
-    // Parented where realized rows are, so a client sees the data item beside them. Re-resolved on
-    // every call: there may have been no row to ask, or the template may have been reapplied.
+    // Parented where realized rows are; re-resolved each call, as the template may have been reapplied.
     winrt::AutomationPeer parent = *this;
     if (auto const repeater = table.GetRowsRepeaterInternal();
         repeater && winrt::VisualTreeHelper::GetChildrenCount(repeater) > 0)

@@ -223,8 +223,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var offset = scroller.VerticalOffset;
                 var realized = string.Join(",", RealizedRowIndices(tableView));
 
-                // GH #12445: report the selected row, but a UIA read must not realize it: that would
-                // re-anchor the repeater on the row instead of the user's viewport.
+                // Report the selected row without realizing it, which would re-anchor the repeater.
                 var selected = RequireSelectionProvider(tableView).GetSelection();
                 tableView.UpdateLayout();
 

@@ -288,8 +288,7 @@ void TableViewRowAutomationPeer::RealizeRowAt(
         ThrowElementNotAvailable();
     }
 
-    // Arranged first, as the ItemsRepeater docs require: a just-created element has no position to
-    // bring into view. Layout runs app code that can change the source or recycle the row.
+    // Arranged first, as ItemsRepeater requires; layout runs app code that can change the source or recycle the row.
     try
     {
         row.UpdateLayout();
