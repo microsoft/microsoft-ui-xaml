@@ -28,3 +28,21 @@ No reviewer found a problem in the product fix. All findings were about tests an
 
 Tests after round 1: `*ShapeTests::*` 35/35 pass with the fix. Before the fix all 3 new tests fail
 (VERIFY pixel 0 on the mask path for every identity case; AV on WUC and GeometryGroup).
+
+## Round 2
+
+Reviewers: opus, sol, gemini (code-review); sonnet-adv, terra-adv (rubber-duck, adversarial).
+Opus, sol and gemini found no significant issues. Opus and sonnet-adv re-checked every file:line
+citation in the notes and found them accurate.
+
+| # | Reviewer | Finding | Disposition |
+|---|----------|---------|-------------|
+| 1 | terra-adv, sonnet-adv | A GeometryGroup with an identity `Transform` on the group itself isn't tested. Only a child transform is. `CGeometryGroup` inherits `CGeometry::GetPrintGeometry`, so it hit the same NULL. | Fixed. Added a "GeometryGroup with TranslateTransform(0,0)" case to `GeometryWithIdentityTransformInternal` (ShapeTests.cpp:1837), old rendering only. It doesn't AV, so it can share that test. Verified it reads pixel 0 before the fix and passes after. |
+| 2 | sonnet-adv | Wider suites weren't run. Print and alpha mask masters could change because identity clips now clip. | Checked. `AlphaMaskTests` and `PrintingTests` are the only tests that use those paths, and both are `Ignore=TRUE` at the class level (AlphaMaskTests.h:20, PrintingIntegrationTestSuite.h:16). Noted in the results table. |
+| 3 | sonnet-adv | No test for an identity transform on `UIElement.Clip`. | Kept as documented. The clip only changes on the print and alpha mask paths, which RTB can't observe and whose suites are ignored. |
+| 4 | terra-adv | Open PR #12460 also edits ShapeTests.cpp/.h next to `MaxTextureSize`, so a merge conflict is likely. | Noted. It's a trivial test-file conflict for whoever merges second. No code change. |
+| 5 | sonnet-adv | Nit: the notes could be read as saying default production rendering always uses the print path. | No change. The tests follow the repo convention: `WUCCompleteSynchronousCompTree` is the old rendering mode. |
+
+Tests after round 2: `*ShapeTests::*` 35/35 pass with the fix. Before the fix, every identity case in
+`GeometryWithIdentityTransform` reads pixel 0, including the new GeometryGroup case (run with Verify
+exceptions turned off).

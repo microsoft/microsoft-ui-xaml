@@ -107,11 +107,11 @@ dxaml\test\native\external\foundation\graphics\rendering\ShapeTests.cpp / .h:
 - `ShapeTests::GeometryWithIdentityTransform` (default rendering, shape mask path) - ShapeTests.cpp:1694
 - `ShapeTests::GeometryWithIdentityTransformWUC` (WUC shapes mode) - ShapeTests.cpp:1699
 - Shared body `GeometryWithIdentityTransformInternal` - ShapeTests.cpp:1738
-- `ShapeTests::GeometryGroupChildWithIdentityTransform` (default rendering only) - ShapeTests.cpp:1837
+- `ShapeTests::GeometryGroupChildWithIdentityTransform` (default rendering only) - ShapeTests.cpp:1847
 - Helper `VerifyCenterPixelsAreGreen` - ShapeTests.cpp:1712. It puts the Paths side by side,
   renders each one with RenderTargetBitmap, and checks that its center pixel is opaque green.
 
-GeometryGroup is in its own test. Before the fix it crashes the test host, and if it shared a test
+The GeometryGroup *child* case is in its own test. Before the fix it crashes the test host, and if it shared a test
 with the other cases, the crash would hide whether the other cases failed.
 
 | Case | Shape mask path | WUC shapes |
@@ -122,6 +122,7 @@ with the other cases, the crash would hide whether the other cases failed.
 | PathGeometry + identity `MatrixTransform` | yes | yes (goes through `GetPrintGeometry`, geometry.cpp:2153) |
 | Stroke-only PathGeometry with a PolyLineSegment + `TranslateTransform()` (the issue's repro shape) | yes | yes |
 | 10x10 rect + `TranslateTransform()` in a 50x50 Path with `Stretch=Fill` | yes | skipped: WUC shapes don't support Stretch yet (`// WUCShapes_TODO: stretch attribute`, shape.cpp:1645) |
+| GeometryGroup whose own `Transform` is `TranslateTransform()` (ShapeTests.cpp:1837). `CGeometryGroup` inherits `CGeometry::GetPrintGeometry`, so this hits the same NULL and the shape mask path skips drawing; no AV, so it can share the test | yes | skipped: `CGeometryGroup::GetCompositionGeometry` isn't implemented for WUC shapes |
 | GeometryGroup whose child has `TranslateTransform()` (separate test) | yes | skipped: `CGeometryGroup::GetCompositionGeometry` isn't implemented for WUC shapes |
 
 The stroke case Path gets an explicit 50x50 size. A Path with no size in a Canvas has a 0x0 layout
@@ -132,10 +133,11 @@ so it would draw nothing for reasons unrelated to this bug.
 
 | Run | Result |
 |-----|--------|
-| New tests, before the fix | All 3 fail. `GeometryWithIdentityTransform`: every identity-transform case reads pixel 0 (checked with Verify exceptions turned off, so all 6 cases ran); the no-transform control passes. `GeometryWithIdentityTransformWUC` and `GeometryGroupChildWithIdentityTransform`: the test host crashes with 0xC0000005 (the NULL `UnwrapD2DGeometry` AV). |
+| New tests, before the fix | All 3 fail. `GeometryWithIdentityTransform`: every identity-transform case reads pixel 0 (checked with Verify exceptions turned off, so all 7 cases ran, including the round 2 GeometryGroup-own-Transform case); the no-transform control passes. `GeometryWithIdentityTransformWUC` and `GeometryGroupChildWithIdentityTransform`: the test host crashes with 0xC0000005 (the NULL `UnwrapD2DGeometry` AV). |
 | New tests, after the fix | 3/3 pass |
 | `*ShapeTests::*` after the fix | 35/35 pass |
 | `*Geometry*` after the fix (round 0) | 3/3 pass |
+| `*AlphaMaskTests::*`, `*PrintingTests::*` (round 2) | Not runnable: both classes are `Ignore=TRUE` at the class level (AlphaMaskTests.h:20, PrintingIntegrationTestSuite.h:16). So no CI test covers the alpha mask or print clip paths, and none can regress from this change. |
 | `*RenderTargetBitmap*` (`-HostingMode WPF`) after the fix (round 0) | 25/26. `RenderTargetBitmapTests::RasterizationScale` fails a master compare (alpha 0x1e vs 0x20). It fails **the same way on the unfixed build**, so it's pre-existing. It uses Ellipses with no Transform, which this change doesn't touch. |
 
 ## Brainstorm summary

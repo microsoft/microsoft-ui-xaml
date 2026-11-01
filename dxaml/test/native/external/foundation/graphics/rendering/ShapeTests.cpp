@@ -1826,6 +1826,16 @@ void ShapeTests::GeometryWithIdentityTransformInternal(DCompRendering dcompRende
             path->Height = 50;
             path->Stretch = Stretch::Fill;
         }
+
+        // A GeometryGroup whose own Transform is identity. GeometryGroup has no WUC shapes implementation
+        // (CGeometryGroup::GetCompositionGeometry), so only check it on the old rendering path.
+        if (dcompRendering != DCompRendering::WUCShapesSynchronousCompTree)
+        {
+            GeometryGroup^ group = ref new GeometryGroup();
+            group->Children->Append(MakeSquareGeometry(50));
+            group->Transform = ref new TranslateTransform();
+            addFilledPath(L"GeometryGroup with TranslateTransform(0,0)", group);
+        }
     });
 
     VerifyCenterPixelsAreGreen(elements);
