@@ -1043,8 +1043,7 @@ bool ShapedItemsSource::AreShapeInputsCurrent() const
         return true;
     }
 
-    // A flat filtered projection keeps the unfiltered source only once the source has changed
-    // incrementally.
+    // A flat filtered projection keeps the unfiltered source only once the source changes incrementally.
     if (!m_groupSelector && m_shapingState.Source.size() != m_refreshSourceRowCount)
     {
         return false;
@@ -1669,10 +1668,8 @@ void ShapedItemsSource::AbandonIncrementalCommit() noexcept
     PostPendingRefresh();
 }
 
-// Grouped (not hierarchical) projection with no sort ahead of the group verb, so group order is the
-// first appearance of each key. An item appended to the source joins its group at the end, or at its
-// sorted slot there, or opens a new last group; removing an item leaves its group or drops an
-// emptied one. Anything else rebuilds. Nothing is mutated until the plan is complete.
+// Group order is each key's first appearance (no sort ahead of the group verb). Only an append or a
+// removal is applied in place; nothing is mutated until the plan is complete.
 bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
@@ -1723,8 +1720,7 @@ bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::X
     }
 
     const bool inProjection = isAdd ? m_pipeline.PassesFilter(item) : isRow;
-    // A removed item that is no row yet passes the filter was reported as another object than the
-    // row's (a boxed value, an equal copy), so the row can't be found; rebuild.
+    // A removed item that passes the filter but is no row was reported as another object (a boxed value, an equal copy).
     if (!isAdd && !isRow && (!m_pipeline.HasFilter() || m_pipeline.PassesFilter(item)))
     {
         return false;
@@ -1773,9 +1769,8 @@ bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::X
             {
                 return false;
             }
-            // Group order is each key's first appearance in the source. Removing a group's first
-            // item can move its first appearance past a later group's, unless the group goes away
-            // or is already last; unsorted, the first item is the one at position 0.
+            // Removing a group's first item can move its first appearance past a later group's, unless
+            // the group goes away or is already last.
             else if (groupSize > 1 && groupIndex + 1 < m_groupSource.Size() && (HasActiveSort() || position == 0))
             {
                 return false;
@@ -1808,9 +1803,8 @@ bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::X
         return false;
     }
 
-    // From here on a throw (a rows or group listener, an item subscription) leaves the projection
-    // part-changed, and a listener can rebuild re-entrantly, after which the rebuild already holds
-    // this change and the rest of the commit would duplicate it.
+    // From here a throw leaves the projection part-changed, and a listener can rebuild re-entrantly,
+    // after which the rest of the commit would duplicate this change.
     auto const rebuiltByListener = [&]() { return generation != m_projectionGeneration; };
     try
     {
@@ -2451,8 +2445,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows, s
 {
     // The grouped projection is materialized through the group adapter, not from the retained
     // layer-1 state, so leaving that state live would let the in-place path re-sort a flat
-    // projection that is no longer the one being shown. Item subscriptions survive the rebuild, so
-    // only arriving items subscribe.
+    // projection that is no longer the one being shown. Item subscriptions survive the rebuild.
     auto trackedItems = std::move(m_flatItemPropertyChangedRevokers);
     {
         auto restoreTrackedItems = wil::scope_exit([&]() noexcept { m_flatItemPropertyChangedRevokers = std::move(trackedItems); });

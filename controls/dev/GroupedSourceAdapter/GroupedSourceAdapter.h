@@ -67,9 +67,8 @@ private:
     // moves) never take this path — they stay a single Reset.
     bool TryApplyExpansionSplice(winrt::hstring const& intentKey, bool expand);
 
-    // A single row inserted into or removed from one group: re-mints that group's header with the
-    // new count and splices the row, instead of a full Rebuild + Reset. Returns false, having changed
-    // nothing, when the change cannot be resolved that way; the caller then rebuilds.
+    // Splices a single row inserted into or removed from one group. Returns false, having changed
+    // nothing, when it can't; the caller then rebuilds.
     void OnGroupItemsChanged(
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
         winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
@@ -121,8 +120,7 @@ private:
     };
     std::vector<InnerGroupSubscription> m_innerSubscriptions;
 
-    // Where each group's header sits in m_entries, in group order, so a change inside one group is
-    // located without scanning every row. Recomputed from m_entries after an expansion splice.
+    // Each group's header index in m_entries, so a change inside a group is located without a scan.
     struct GroupHeaderSlot
     {
         winrt::IInspectable Group{ nullptr };
