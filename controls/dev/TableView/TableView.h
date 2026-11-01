@@ -111,8 +111,7 @@ struct ColumnResizeFrozenColumn
     winrt::IInspectable width{ nullptr };
 };
 
-// A locked Star column before a resized one, held at the width it rendered when the resize began,
-// as FreezeColumnsBeforeResize holds an unlocked one.
+// A locked Star column before a resized one, held at the width it rendered when the resize began.
 struct LockedColumnHold
 {
     winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };

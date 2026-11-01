@@ -1550,7 +1550,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 DragLockedStarTableColumns(tableView);
 
-                // GH #12446: the clamp frees authored space; the locked share then no longer fits.
+                // The clamp frees authored space; the locked share then no longer fits.
                 tableView.Columns[3].MaxWidth = 50.0;
                 tableView.UpdateLayout();
 
@@ -1626,7 +1626,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"The column after the {input} resize must give or take the width");
                 }
 
-                // Any other change to the inputs ends the hold, so the columns fill the viewport again.
                 tableView.Columns[3].MaxWidth = 60.0;
                 tableView.UpdateLayout();
                 VerifyLockedStarLayout(tableView, "after a MaxWidth change ends the hold");
@@ -1772,7 +1771,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return tableView;
         }
 
-        // The GH #12446 drags, scaled down to the test viewport.
         private static void DragLockedStarTableColumns(TableView tableView)
         {
             DragAndVerify(tableView, 0, 114.0);

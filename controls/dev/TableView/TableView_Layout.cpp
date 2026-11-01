@@ -202,8 +202,7 @@ void TableView::ResetColumnDesiredWidths()
 // first; Star columns then split the viewport width left over between them.
 void TableView::ResolveColumnWidths()
 {
-    // Before any early return: a change that this pass doesn't size (a held column collapsed, say)
-    // must still end the holds, or restoring it later would match the signature again.
+    // Before any early return: a change this pass doesn't size (e.g. a held column collapsing) must still end the holds.
     if (!m_lockedColumnHolds.empty() && LockedColumnHoldsSignature() != m_lockedColumnHoldsSignature)
     {
         m_lockedColumnHolds.clear();
@@ -390,11 +389,8 @@ void TableView::ResolveColumnWidths()
 
     if (std::any_of(starColumns.begin(), starColumns.end(), isLocked))
     {
-        // A locked Star column holds its share of the authored layout, so a neighbor's drag leaves it
-        // alone while that share still fits next to the other Star columns' MinWidth. Once it does not,
-        // it is divided with the other Star columns by factor. Either way, a resize of a later column
-        // never moves it: FreezeColumnsBeforeResize holds it at the width it rendered until an input
-        // other than a user resize changes.
+        // A locked Star column keeps its authored share while that fits beside the other Star columns'
+        // MinWidth, else shares by factor; a hold from FreezeColumnsBeforeResize overrides both.
         auto const heldWidth = [this](winrt::TableViewColumn const& c) -> std::optional<double>
         {
             for (auto const& hold : m_lockedColumnHolds)
@@ -471,8 +467,7 @@ void TableView::ResolveColumnWidths()
                 }
             });
 
-        // The authored layout ignores what resizes already took, so the held share can exceed the room
-        // the current layout leaves (e.g. after a Min/MaxWidth change elsewhere).
+        // The authored share ignores earlier resizes, so it can exceed the room left now.
         double room = layoutRound(viewport) - fixedTotal;
         for (auto const& c : starColumns)
         {
@@ -482,8 +477,7 @@ void TableView::ResolveColumnWidths()
             }
         }
 
-        // Up to a device pixel of slack: a drag clamped at its bound reserves the locked column's
-        // rounded width, and rounding the viewport and a MinWidth can leave room that much short of it.
+        // A device pixel of slack: rounding can leave the room just short of a clamped drag's reservation.
         const double tolerance = 1.0 / std::max(layoutRoundFactor, 1.0);
         if (lockedTotal <= std::max(0.0, room) + tolerance)
         {
@@ -501,8 +495,6 @@ void TableView::ResolveColumnWidths()
         else
         {
             // One pass with the other Star columns, so a Min/MaxWidth clamp hands its excess to them.
-            // This is plain Star sharing, which can give the locked column less than the room the
-            // held branch would: crossing the boundary moves it by that difference.
             DistributeStarWidths(
                 std::move(starColumns),
                 std::max(0.0, layoutRound(viewport) - fixedTotal),
