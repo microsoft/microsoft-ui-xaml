@@ -21,3 +21,15 @@ Reviewed commit 1ef15de5b. All 5 agreed the product fix and test are correct. No
 | 8 | gpt-5.6-terra | - | No issues. | - |
 
 Tests after round 1: docs-only changes, so no rerun. Last results: new test passed (1/1), `*StowedExceptionTests*` passed (5/5).
+
+## Round 2
+
+Reviewed commits 1ef15de5b and 1a7660bbc. claude-opus-5.5, gpt-6.1-sol and gemini-4-argon found no issues. Opus re-checked every file:line ref in the notes.
+
+| # | Reviewer | Severity | Finding | Action |
+|---|----------|----------|---------|--------|
+| 1 | gpt-5.6-terra (rated blocking), claude-sonnet-5.5 (non-blocking) | - | Notes say the app "normally survives" when `Handled` isn't set, but ErrorHelper.cpp:919-921 says CoreApplication fail-fasts when the error is handed back. Terra asked to fix the notes and the code/test comments. | Partly accepted. The probe disproves the claim that the app crashes anyway: with no Expander and Handled not set, the app survives (both on shipping 2.5.1 and on local bits). What happens after XAML hands the error back is in FrameworkUdk/CsWinRT, outside this repo. Reworded the Symptom section to say the survival is observed, not traced, and to call out the 919-921 comment. Code and test comments ("errors the app would otherwise survive") are accurate, so left unchanged. |
+| 2 | claude-sonnet-5.5 | Medium | No post-fix end-to-end check of the issue's C# scenario. | Done. Reran the C# probe on local amd64chk bits (full packaging native folder), swapping only Microsoft.ui.xaml.dll. Fix reverted: Expander + unhandled crashes with 0xC000027B. With fix: survives. Other modes survive both ways. Added the table to the notes. This also shows there's no second stale-context source in this scenario. |
+| 3 | gpt-5.6-terra | Low | "Such a failure still surfaces through the fallback, which reports its own error" is overstated: `RunClassConstructorIfNecessary` ignores the final result (ReflectionAPI.cpp:461-475). | Fixed. The notes now say real `pfn` failures are intentionally not captured as error contexts, callers ignore this HRESULT and fall back, and this matches the code before 7e63c33f5. |
+
+Tests after round 2: the product code and test didn't change. The end-to-end probe A/B above was run (MUX rebuilt with the fix reverted, then rebuilt with the fix restored and re-checked: survives). Last VM results still stand: new test passed (1/1), `*StowedExceptionTests*` passed (5/5).
