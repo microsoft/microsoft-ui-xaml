@@ -1648,7 +1648,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GroupStyleSelectorTest()
         {
             Grid rootPanel = null;
@@ -3081,7 +3081,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "If the selected item's container is not focusable, validate that focus is sent to children instead.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesFocusChildrenOfSelectedItemIfContainerIsNotFocusable()
         {
             StackPanel root = null;

@@ -122,7 +122,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AddingMergedDictionaryUpdatesReferences2)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
             END_TEST_METHOD()

@@ -48,7 +48,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CannotCreateWindowsXamlManagerInUIThread()
         {
             UIExecutor.Execute(() =>
@@ -62,7 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CannotCreateWindowsXamlManager()
         {
             Exception caughtException = VerifyExtensions.Throws<Exception>(()=>
@@ -73,7 +73,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CannotCreateDesktopWindowXamlSourceInUIThread()
         {
             UIExecutor.Execute(() =>
@@ -87,7 +87,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CannotCreateDesktopWindowXamlSource()
         {
             Exception caughtException = VerifyExtensions.Throws<Exception>(()=>

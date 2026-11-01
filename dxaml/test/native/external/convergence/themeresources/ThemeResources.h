@@ -24,7 +24,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TestThemeResourcesFor_Current)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML loads the correct resources for apps targeting the current OS version")
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", APPXMANIFEST_WINDOWS_VERSION_CURRENT)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestThemeResourcesFor_PackagedXamlBridge)

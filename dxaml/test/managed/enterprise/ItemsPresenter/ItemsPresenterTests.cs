@@ -295,7 +295,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanCarouselPanelHandleReset()
         {
             //

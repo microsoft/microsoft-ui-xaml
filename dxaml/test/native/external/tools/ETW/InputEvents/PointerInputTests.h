@@ -23,7 +23,7 @@ public:
         BEGIN_TEST_METHOD(PointerEvents)
         TEST_METHOD_PROPERTY(L"Description", L"Validates dragging a Rectangle in a Canvas with the left mouse button and raw pointer events.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 };
 } } } } } } }

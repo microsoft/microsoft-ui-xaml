@@ -99,7 +99,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(WideMenuFlyoutShouldAlignToLeftOfScreen)
             TEST_METHOD_PROPERTY(L"Description", L"If a MenuFlyout is too wide to horizontally align to the point passed to ShowAt, it will open aligned to the left of the screen.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // x-coordinate of flyout is 7.5 pixels off
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // x-coordinate of flyout is 7.5 pixels off
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOnlyOneSubMenuItemIsOpenAtATimeByTouch)
@@ -127,14 +127,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateNestedSubMenuItemPosition)
             TEST_METHOD_PROPERTY(L"Description", L"Validate the position of a tall nested sub menu.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
                                                             // Test expects width to be 1024 and height 768
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNestedSplitMenuItemPosition)
             TEST_METHOD_PROPERTY(L"Description", L"Validate the position of a tall nested split menu.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
                                                             // Test expects width to be 1024 and height 768
         END_TEST_METHOD()
 

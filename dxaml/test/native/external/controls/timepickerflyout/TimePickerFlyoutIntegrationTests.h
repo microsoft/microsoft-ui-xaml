@@ -50,7 +50,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyBackButtonClosesFlyout)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that pressing the Back button closes the flyout.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // BackButton only available in UWP
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // BackButton only available in UWP
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyFlyoutResizesWithSmallHeight)
@@ -80,7 +80,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateAcceptDismissButtonsAreHiddenWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that opening a TimePickerFlyout with a gamepad causes the accept and dismiss buttons to become hidden.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)

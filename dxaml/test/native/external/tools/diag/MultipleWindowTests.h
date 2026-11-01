@@ -40,7 +40,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(BasicMultipleWindowTest_Notified)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can get notified of a new window.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(BasicMultipleWindowTest_Attach)
@@ -54,7 +54,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(VerifyFailGettingWindowProperties)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that we fail graciously trying to get the properties for a window.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
             
             BEGIN_TEST_METHOD(SetCoreDispatcherOnce)
@@ -67,7 +67,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             BEGIN_TEST_METHOD(ProperlyHandleApplicationResources)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
         };
     }

@@ -191,7 +191,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateFocusOrderWithoutSelectedItem()
         {
             // Expected focus order: (other)->Header->GroupHeader->Footer->(other)
@@ -685,7 +685,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanTabOntoFirstNonEmptyGroupHeaderWithHiddenEmptyGroupsAtTheBeginning()
         {
             ListView lv = null;
@@ -940,7 +940,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateArrowNavigationWithNonFocusableGroupsThatHaveFocusableChildren()
         {
             ListView lv = null;

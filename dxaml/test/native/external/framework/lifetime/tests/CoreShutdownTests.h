@@ -29,7 +29,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(RoutedEventArgsCleanup)
             TEST_METHOD_PROPERTY(L"Description", L"Properly clean up outstanding RoutedEventArgs peers that could outlive the core.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(FocusedTextBoxAtCoreShutdown)

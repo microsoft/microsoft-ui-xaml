@@ -171,7 +171,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CancelDuringAnimation()
         {
             XamlRoot xamlRoot = null;
@@ -221,7 +221,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void KeysPressedDuringAnimation()
         {
             XamlRoot xamlRoot = null;

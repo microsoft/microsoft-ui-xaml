@@ -53,7 +53,7 @@ public:
     TEST_METHOD(ProjectionMakesConcavePolygon)
 
     BEGIN_TEST_METHOD(FindElementsInHostCoordinates_SwapChainPanel)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test code
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash in test code
     END_TEST_METHOD()
     
     TEST_METHOD(FindElementsInHostCoordinates_BaseItemChrome)

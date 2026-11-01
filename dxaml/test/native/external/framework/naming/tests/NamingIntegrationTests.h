@@ -74,7 +74,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StoryboardCanResolveNamescopeOwnerViaMentor)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNamedDataTemplateInDictionaryWithConnectionId)
@@ -89,11 +89,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(UserControlWithinDataTemplateCanStillFindItsElements)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ItemsPanelTemplateNamescopeMembersDoRegisterTheirName)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNameRegistrationWithExisitingStandardNamescopeOwner)

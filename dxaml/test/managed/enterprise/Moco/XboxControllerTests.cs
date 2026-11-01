@@ -1940,7 +1940,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollViewer2DNavigation()
         {
             ScrollViewer sv = null;
@@ -2233,7 +2233,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollViewerEngagement()
         {
             ScrollViewerEngagementTest();

@@ -28,7 +28,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"BCQ", L"TRUE")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates basic ICC scenario")
                 TEST_METHOD_PROPERTY(L"EnabledOnOneCore", L"TRUE")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateConnectOnIComponentConnectorGetsCalledForDeferredElements)
@@ -37,7 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"BCQ", L"TRUE")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates ICC is called for deferred elements")
                 TEST_METHOD_PROPERTY(L"EnabledOnOneCore", L"TRUE")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

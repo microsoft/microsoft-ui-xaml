@@ -55,7 +55,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD(VerifyPathWithNestedStyles)
             BEGIN_TEST_METHOD(VerifyPathToItemsControlItemContainerStyle)
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
             TEST_METHOD(VerifyPathToFlyoutPresenterStyle)
         };

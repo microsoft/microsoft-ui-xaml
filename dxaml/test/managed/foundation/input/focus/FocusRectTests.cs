@@ -656,7 +656,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a Canvas")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void BringFocusedMenuFlyoutItemIntoViewWithRootCanvas()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: true);
@@ -664,7 +664,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a ScrollViewer")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void BringFocusedMenuFlyoutItemIntoViewWithRootScrollViewer()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: false);
@@ -1271,7 +1271,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates that round focus rectangles work")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
         public void ValidateRoundedFocusRect()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
