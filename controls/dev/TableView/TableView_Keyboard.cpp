@@ -2664,8 +2664,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
     const int32_t rowIndex = repeater.GetElementIndex(row);
 
-    // GotFocus is asynchronous, so live focus may already have moved on (into a context menu, say);
-    // the element that got focus says which cell to record.
+    // GotFocus is async and live focus may have moved on (e.g. into a context menu), so use the element that got it.
     winrt::UIElement const focusedCell = focusedElement
         ? rowImpl->FindOwnCellInternal(focusedElement, false /* requireExact */)
         : nullptr;
@@ -2676,8 +2675,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
         winrt::DependencyObject const rowObject = row;
         const bool focusStillOnRow = root && winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() == rowObject;
 
-        // Focus went to the ROW container itself - the body's entry level. Record the row so a later
-        // re-entry, or a menu opened on the row, works on it.
+        // Focus went to the ROW container itself - the body's entry level. Record the row.
         if ((focusedElement == rowObject || focusStillOnRow) && rowIndex >= 0)
         {
             m_currentCellRow = rowIndex;
@@ -2685,8 +2683,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
 
-        // Leave cell level (releasing whichever row was drilled in) only while focus is still on the
-        // row: after it left, the reset would leave the cell a menu restores focus to unfocusable.
+        // Only while focus is still on the row: otherwise a menu would restore focus to an unfocusable cell.
         if (focusStillOnRow)
         {
             SetCellCursorActiveInternal(false);

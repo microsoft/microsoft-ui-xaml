@@ -336,8 +336,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            // One UI-thread turn, so the cell's GotFocus is raised after focus has already moved on, as when
-            // a context menu opens.
+            // Raise the cell's GotFocus after focus has moved on, as when a context menu opens.
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(GetRowCell(row, 2).Focus(FocusState.Keyboard), "Precondition: cell 2 takes focus.");
