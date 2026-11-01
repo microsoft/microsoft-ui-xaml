@@ -1095,7 +1095,6 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
     {
         ResetCellAutomationNames();
         // Drop the row peer's cell-peer cache so the next item's cell peers are not served from it.
-        // Peers a UIA client already holds are not affected.
         if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
             .try_as<winrt::TableViewRowAutomationPeer>())
         {
@@ -1121,7 +1120,7 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
         m_isCellLevel = false;
 
         RestoreCellContentTabStopsInternal();
-        // ElementPrepared may skip the rebuild that used to restamp row/cell tab stops.
+        // ElementPrepared may skip the rebuild, which would otherwise restamp row/cell tab stops.
         ApplyFocusLevelInternal();
 
         UpdateVisualState(false);

@@ -828,7 +828,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // Recycling cost: work done per recycled container, observed through public extensibility points.
     [TestClass]
     public class TableViewRecyclingCostTests : TableViewApiTestBase
     {
@@ -854,8 +853,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // The rebuild's chrome pass ends in ApplyHierarchyAffordance, which always raises a
-                // RowHierarchyStates GoToState; a custom VSM on the template root counts those.
+                // Each rebuild raises a RowHierarchyStates GoToState; a custom VSM on the template root counts them.
                 foreach (var row in GetRealizedRows(tableView))
                 {
                     var root = VisualTreeHelper.GetChildrenCount(row) > 0 ? VisualTreeHelper.GetChild(row, 0) as FrameworkElement : null;
@@ -880,8 +878,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsGreaterThan(recycles, 0, "Precondition: scrolling must recycle tracked rows.");
 
-                // One RebuildCells pass plus RefreshRowHierarchyState's own ApplyHierarchyAffordance; the
-                // slack absorbs incidental refreshes (a rebuild-per-callback regression costs several per recycle).
+                // One RebuildCells pass plus RefreshRowHierarchyState's own; the slack absorbs incidental refreshes.
                 const int expectedPerRecycle = 2;
                 const int slack = 8;
                 var ratio = (double)vsm.HierarchyStateCalls / recycles;
