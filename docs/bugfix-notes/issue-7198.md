@@ -96,7 +96,7 @@ else
   Before, the clip was silently dropped on those paths. On screen the clip was always applied
   (the comp tree path doesn't use `GetPrintGeometry`), so print and masks now match the screen.
 - **Not covered by a test:** the `UIElement.Clip` change. RenderTargetBitmap renders comp visuals,
-  not this print path (RenderTargetBitmapImplUsingSpriteVisuals.cpp:161-171), and there is no
+  not this print path (RenderTargetBitmapImplUsingSpriteVisuals.cpp:113-160), and there is no
   master-free way in the test tree to read alpha mask pixels. The code path is the same
   `GetPrintGeometry` call the shape tests cover.
 

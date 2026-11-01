@@ -46,3 +46,19 @@ citation in the notes and found them accurate.
 Tests after round 2: `*ShapeTests::*` 35/35 pass with the fix. Before the fix, every identity case in
 `GeometryWithIdentityTransform` reads pixel 0, including the new GeometryGroup case (run with Verify
 exceptions turned off).
+
+## Round 3
+
+Reviewers: opus, sol, gemini (code-review); sonnet-adv, terra-adv (rubber-duck, adversarial).
+Sol, gemini and terra-adv found no issues. No reviewer found a blocking issue.
+
+| # | Reviewer | Finding | Disposition |
+|---|----------|---------|-------------|
+| 1 | opus | The notes cite RenderTargetBitmapImplUsingSpriteVisuals.cpp:161-171 for "RTB renders comp visuals". Those lines build the completion state. The proof is at 113-160 (comp peer, hand-off visual, `CaptureAsync`). | Fixed. Citation is now 113-160. |
+| 2 | sonnet-adv | Confirm the WUC test isn't filtered out of the pipeline. | Checked. `GeometryWithIdentityTransformWUC` has no Ignore property and `ShapeTests` isn't ignored at the class level (ShapeTests.h:14-21, 190-192). It ran in every 35/35 VM run. |
+| 3 | sonnet-adv | Add a WUC PathGeometry case with a non-identity translation. | Not done. The non-identity branch is unchanged by this fix, so that test would pass before and after. The old-rendering Translate/Scale cases already cover it on the changed function. |
+| 4 | sonnet-adv | The review log names models and a VM, and doesn't belong in the product repo. | No change. The bug-fix flow commits these notes with the branch on purpose so others can follow the reasoning. They can be dropped before a PR if wanted. |
+| 5 | sonnet-adv | Nit: Rect cases are redundant in WUC mode. | No change. The notes already say they don't exercise the fix in WUC. They are cheap controls. |
+| 6 | sonnet-adv | Nit: assert that `GetPrintGeometry` never returns NULL on S_OK. | No change. All callers already handle the result, and adding an assert in product code isn't needed for this fix. |
+
+Tests after round 3: no code or test changes, so the round 2 results stand (`*ShapeTests::*` 35/35).
