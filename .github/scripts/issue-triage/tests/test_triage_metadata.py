@@ -18,6 +18,9 @@ class ProjectFake:
         self.fail_update = False
         self.queries = []
 
+    def verify_project_installation(self):
+        pass
+
     def graphql(self, query, variables):
         self.queries.append((query, variables))
         if "addProjectV2ItemById" in query:
@@ -324,6 +327,23 @@ class MetadataTests(unittest.TestCase):
         with patch.object(client, "request", return_value={"data": {"partial": True}, "errors": [{}]}):
             with self.assertRaises(t.TriageError):
                 client.graphql("query { viewer { login } }", {})
+
+    def test_project_installation_requires_repository_access(self):
+        client = t.GitHub("example/winui", "fixture-token")
+        with patch.object(client, "request", return_value={"repositories": [{"full_name": "example/winui"}]}):
+            client.verify_project_installation()
+        with patch.object(client, "request", return_value={"repositories": [{"full_name": "other/repo"}]}):
+            with self.assertRaises(t.TriageError):
+                client.verify_project_installation()
+
+    def test_personal_project_authentication_fails_before_any_issue_write(self):
+        self.project.verify_project_installation = lambda: (_ for _ in ()).throw(
+            t.TriageError("GitHub GET failed (HTTP 403)")
+        )
+        with self.assertRaises(t.TriageError):
+            self.publish()
+        self.assertEqual(self.client.writes, [])
+        self.assertEqual(self.project.mutations, [])
 
 
 if __name__ == "__main__":

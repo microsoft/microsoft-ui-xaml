@@ -226,11 +226,22 @@ safe-outputs:
           uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
           with:
             python-version: "3.12"
+        - name: Create publisher-only project App token
+          id: triage_project_app
+          if: ${{ vars.WINUI_TRIAGE_APP_CLIENT_ID != '' }}
+          uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+          with:
+            client-id: ${{ vars.WINUI_TRIAGE_APP_CLIENT_ID }}
+            private-key: ${{ secrets.WINUI_TRIAGE_APP_PRIVATE_KEY }}
+            owner: microsoft
+            repositories: microsoft-ui-xaml
+            permission-organization-projects: write
+            permission-issues: read
         - name: Rebuild evidence, validate, and preview or publish
           timeout-minutes: 10
           env:
             GITHUB_TOKEN: ${{ github.token }}
-            TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}
+            TRIAGE_PROJECT_TOKEN: ${{ steps.triage_project_app.outputs.token }}
             TRIAGE_PUBLISH: ${{ github.event_name != 'workflow_dispatch' || inputs.publish }}
           run: >-
             python .github/scripts/issue-triage/triage.py publish

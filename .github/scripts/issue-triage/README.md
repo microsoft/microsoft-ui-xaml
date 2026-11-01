@@ -323,24 +323,34 @@ are preserved. Priority does not depend on area confidence or reproduction
 completeness. The comment records an assessment, not a claim that the project
 write succeeded.
 
-**Required project setup:** configure the Actions secret
-`WINUI_TRIAGE_PROJECT_TOKEN` with an organization-approved credential granting
-read/write access to project 1868 and read access to this repository's issues.
-For a fine-grained PAT, use the `microsoft` resource owner, organization Projects
-read/write permission, and repository Issues read access; organization approval
-may be required. A classic PAT needs `project` plus access to this repository
-and any required organization SSO authorization. Scope it as narrowly as
-available, set expiry/rotation, and do not paste it in issues, logs, or source.
-The job-scoped `GITHUB_TOKEN` cannot write organization Projects.
+**Required project setup:** create or select an organization-approved GitHub App
+and install it in `microsoft` for `microsoft-ui-xaml`. Grant organization
+Projects read/write and repository Issues read access (Metadata read is implicit).
+An organization administrator must approve the installation and project access.
+Store its client ID in the Actions **variable** `WINUI_TRIAGE_APP_CLIENT_ID`
+and its full PEM private key in the Actions **secret**
+`WINUI_TRIAGE_APP_PRIVATE_KEY`. Do not paste the key in issues, logs, or source;
+rotate it according to organization policy.
 
-Only the separate trusted publisher receives that secret, via
-`TRIAGE_PROJECT_TOKEN`; the LLM, analysis and detection jobs do not receive it.
+The publisher uses a SHA-pinned `actions/create-github-app-token` to mint a
+short-lived installation token, restricted to this repository and the requested
+permissions; the action revokes it at job completion. Only the separate trusted
+publisher receives the key/token, with the generated token passed as
+`TRIAGE_PROJECT_TOKEN`; the LLM, analysis and detection jobs do not receive them.
+Project mutations are attributed to the App's bot identity, not the dispatching
+user. The publisher verifies installation authentication and repository access
+before any issue writes. Personal tokens cannot supply bot attribution and
+are not supported: the old `WINUI_TRIAGE_PROJECT_TOKEN` secret is no longer read
+and can be removed/revoked by its owner. The job-scoped `GITHUB_TOKEN` cannot
+write organization Projects, and a custom App appears as its own bot rather
+than `github-actions[bot]`.
 No elevated repository issue credential is substituted: Bug Type, comment and
 label writes continue to use job-scoped `GITHUB_TOKEN` with `issues: write`.
 No project IDs/options or free-form mutations are accepted from the model.
-If the secret is absent, normal triage and Bug Type updates still work, while
+If the App client ID is absent, normal triage and Bug Type updates still work, while
 Priority is explicitly assessment-only with a workflow warning. If configured
-access/schema discovery fails, the publisher fails before any issue writes.
+App token generation or access/schema discovery fails, publishing fails before
+any issue writes.
 Preview discovers the plan read-only and never mutates issue Type or Projects.
 
 Issue content/Type/releases are rechecked before writes, and project Priority is

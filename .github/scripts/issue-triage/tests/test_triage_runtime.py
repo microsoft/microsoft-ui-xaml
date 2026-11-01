@@ -339,9 +339,15 @@ class WorkflowRuntimeTests(unittest.TestCase):
         agent = re.search(r"(?ms)^  agent:\n.*?(?=^  \w|\Z)", self.lock).group()
         detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
         publisher = re.search(r"(?ms)^  publish_triage_summary:\n.*?(?=^  \w|\Z)", self.lock).group()
-        self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", agent)
-        self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", detection)
-        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}", publisher)
+        for job in (agent, detection):
+            self.assertNotIn("WINUI_TRIAGE_APP_PRIVATE_KEY", job)
+            self.assertNotIn("create-github-app-token", job)
+        self.assertNotIn("secrets.WINUI_TRIAGE_PROJECT_TOKEN", self.lock)
+        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ steps.triage_project_app.outputs.token }}", publisher)
+        self.assertIn("permission-organization-projects: write", publisher)
+        self.assertIn("permission-issues: read", publisher)
+        self.assertIn("repositories: microsoft-ui-xaml", publisher)
+        self.assertIn("private-key: ${{ secrets.WINUI_TRIAGE_APP_PRIVATE_KEY }}", publisher)
         for name in ("impact", "workaround", "priority_reason", "regression_release"):
             self.assertIn(f'"{name}"', self.lock)
 

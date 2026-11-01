@@ -115,6 +115,13 @@ class GitHub:
             raise TriageError("GitHub Projects GraphQL request failed; no automatic retry")
         return response["data"]
 
+    def verify_project_installation(self) -> None:
+        data = self.request("GET", "installation/repositories?per_page=100")
+        if self.repository not in {
+            repository.get("full_name") for repository in data.get("repositories", [])
+        }:
+            raise TriageError("Project publishing requires an App installation token for this repository")
+
     def pages(self, suffix: str, max_pages: int = 10) -> list[dict]:
         result = []
         for page in range(1, max_pages + 1):
@@ -1031,6 +1038,7 @@ def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: 
     if result["priority"] and project_client is None:
         print("::warning::WinUI project priority is assessment-only: TRIAGE_PROJECT_TOKEN is not configured.")
     if project_client is not None:
+        project_client.verify_project_installation()
         project_priority_snapshot(project_client, evidence["_snapshot"]["issue"]["node_id"])
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
