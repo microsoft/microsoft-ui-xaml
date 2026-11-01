@@ -322,13 +322,21 @@ void ActivationFactoryCache::ResetCache()
 
     auto pfn = reinterpret_cast<PFN_DllGetActivationFactory>(
             GetProcAddress(module, exportName));
+    // A miss here is expected (the type may live in another module), and every caller falls
+    // back to another lookup. So don't use IFC_RETURN: it would leave an error context on
+    // this thread, and ErrorHelper::ProcessUnhandledError fail-fasts when any context is left,
+    // even for errors the app would otherwise survive (#11253).
     if (!pfn)
     {
-        IFC_RETURN(CLASS_E_CLASSNOTAVAILABLE);
+        return CLASS_E_CLASSNOTAVAILABLE;
     }
 
     wrl::ComPtr<IActivationFactory> activationFactory;
-    IFC_RETURN(pfn(activatableClassId, &activationFactory));
+    const HRESULT hr = pfn(activatableClassId, &activationFactory);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
 
     return activationFactory->QueryInterface(iid, factory);
 }
