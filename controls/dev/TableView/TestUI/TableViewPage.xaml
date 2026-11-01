@@ -432,8 +432,7 @@
                 </controls:TableView>
             </Grid>
 
-            <!-- Body cells that host controls, like the sample's Keyboard navigation page: row-level Up
-                 from the first row must reach the header band, not a cell control. -->
+            <!-- Body cells that host controls: row-level Up from the first row must reach the header band. -->
             <Grid x:Name="CellControlsTableHost" Visibility="Collapsed">
                 <controls:TableView x:Name="CellControlsTableView"
                                     AutomationProperties.Name="CellControlsTableView"

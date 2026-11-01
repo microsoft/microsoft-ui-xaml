@@ -1307,7 +1307,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                // Empty selection: AddToSelection selects the row.
                 first.AddToSelection();
                 tableView.UpdateLayout();
                 Verify.AreEqual(1, tableView.SelectedIndex, "AddToSelection() with nothing selected must select the row.");

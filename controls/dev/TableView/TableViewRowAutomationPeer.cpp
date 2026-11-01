@@ -713,9 +713,7 @@ void TableViewRowAutomationPeer::AddToSelection()
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
 
-    // Deliberately follows the UIA SelectionItem spec and WPF DataGrid: a single-select container
-    // fails rather than replacing another row's selection (dxaml Selector/ItemsView replace).
-    // Adding the selected row, or into an empty selection, is fine.
+    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
     if (auto const tableView = GetOwningTableView();
         tableView && !winrt::get_self<TableView>(tableView)->CanSelectMultipleRows() &&
         tableView.SelectedIndex() >= 0 && !IsSelected())

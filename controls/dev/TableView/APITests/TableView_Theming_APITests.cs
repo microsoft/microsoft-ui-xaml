@@ -352,10 +352,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Repro for GitHub #12351. The header bottom rule must read as a line: its pixel has to be
-        // distinct from BOTH the header band above and the first row below, not a midtone between them
-        // (which reads as a soft band edge with no divider). Composited from the realized brushes over
-        // the window backdrop, honoring PART_HeaderRow.BackgroundSizing.
+        // The header bottom rule must differ from both the band above and the first row, not be a midtone.
         [TestMethod]
         public void VerifyHeaderBottomRuleIsVisibleAgainstBandAndRows()
         {

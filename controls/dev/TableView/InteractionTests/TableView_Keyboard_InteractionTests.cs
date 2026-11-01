@@ -2428,8 +2428,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Row-level Up from the first row of a table whose cells host controls moves to the header band, not into a cell control (#12441).")]
         public void UpFromFirstRowWithCellControlsMovesToHeaderNotIntoCellControl()
         {
-            // PART_BodyScroller handles an unhandled Up by focusing a candidate inside the body, which for row 0
-            // can be a control in that row's own cells; that focus move hides the key from the TableView.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
