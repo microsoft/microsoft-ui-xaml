@@ -15,7 +15,7 @@ namespace TableViewDetails
     {
         winrt::ToolTip ToolTip{ nullptr };
         winrt::hstring PublishedHelpText{};
-        // Detached by SuppressOwnedToolTip and still ours; RestoreOwnedToolTip re-attaches it.
+        // Detached by SuppressOwnedToolTip; RestoreOwnedToolTip re-attaches it.
         bool IsSuppressed{ false };
     };
 
@@ -317,10 +317,7 @@ namespace TableViewDetails
         }
     }
 
-    // Workaround: a tooltip opening under a resting pointer resets its ProtectedCursor to the arrow
-    // until the pointer moves. That is a framework bug; remove this pair once it is fixed there.
-    // Detached rather than disabled: a disabled ToolTip still opens (at zero opacity) and still
-    // resets the cursor. Detaching also closes it or cancels its pending open.
+    // Workaround for a framework bug: an opening tooltip resets the cursor (detached, as a disabled one still opens).
     inline void SuppressOwnedToolTip(const winrt::FrameworkElement& element)
     {
         if (auto const record = GetRecord(element); record && !record->IsSuppressed && IsOwnedToolTip(element, *record))

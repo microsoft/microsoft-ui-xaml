@@ -538,8 +538,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the resize cursor holds on the gripper of a column with a HeaderToolTip while the pointer rests past the tooltip delay, before and after the first sort, and that a drag then resizes (GH #12436).")]
         public void ResizeCursorHoldsOnGripperOfColumnWithHeaderToolTip()
         {
-            // Name sets HeaderToolTip; a sort click suppresses that tooltip until the pointer re-enters,
-            // which is why the cursor seemed to appear only after sorting.
+            // A sort click suppresses Name's HeaderToolTip until the pointer re-enters.
             const string column = "Name";
             using (var setup = new TestSetupHelper(PageName))
             {

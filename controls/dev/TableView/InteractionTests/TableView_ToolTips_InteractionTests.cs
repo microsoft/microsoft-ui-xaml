@@ -363,7 +363,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                // Opening the tooltip under a resting pointer reset the cursor to the arrow; the cursor itself is checked in the layout tests.
                 var bounds = nameHeader.BoundingRectangle;
                 var gripper = new Point(bounds.Left + bounds.Width - 3, bounds.Top + (bounds.Height / 2));
                 HoverPoint(gripper, "the Name header's resize gripper");
@@ -371,7 +370,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsNull(toolTip, "The header tooltip must not open while the pointer is on the resize gripper.");
 
-                // Moving back onto the header content and re-entering restores the tooltip.
                 HoverPoint(new Point(bounds.Left + (bounds.Width / 3), gripper.Y), "the Name header's content");
                 UIObject contentToolTip = FindOpenToolTip("after hovering the header content");
                 Verify.IsNotNull(contentToolTip, "Hovering the header content must still open its tooltip.");
