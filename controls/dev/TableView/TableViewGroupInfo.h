@@ -47,9 +47,8 @@ public:
     winrt::event_token PropertyChanged(winrt::PropertyChangedEventHandler const& value);
     void PropertyChanged(winrt::event_token const& token);
 
-    // {Binding} resolves the properties here when the app's metadata can't describe this type, as
-    // in a trimmed or AOT app (GH #12352). [bindable] would add it to every C++ app's generated
-    // XamlTypeInfo, which then needs the Tabular projection header.
+    // {Binding} resolves the properties here when the app's metadata can't describe this type (trimmed or AOT apps).
+    // Not [bindable]: that adds it to every C++ app's generated XamlTypeInfo, which then needs the Tabular projection header.
     winrt::TypeName Type();
     winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetCustomProperty(winrt::hstring const& name);
     winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetIndexedProperty(winrt::hstring const& name, winrt::TypeName const& type);

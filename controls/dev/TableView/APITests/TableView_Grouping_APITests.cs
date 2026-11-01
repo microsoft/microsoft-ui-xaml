@@ -285,7 +285,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies TableViewGroupInfo describes its own properties to {Binding} through ICustomPropertyProvider.")]
         public void VerifyGroupInfoProvidesCustomProperties()
         {
-            // GH #12352: a trimmed app's metadata can't describe TableViewGroupInfo, so {Binding} relies on this.
+            // A trimmed app's metadata can't describe TableViewGroupInfo, so {Binding} relies on this.
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
@@ -1511,7 +1511,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal const string DefaultGroupHeaderKeyTextName = "TableViewGroupHeaderKeyText";
         internal const string DefaultGroupHeaderCountTextName = "TableViewGroupHeaderItemCountText";
 
-        // Checks the key and count TextBlocks of the default content (or a copy of it) by name.
         internal static void VerifyDefaultGroupHeaderText(TableViewGroupHeader header, string expectedKeyText, string context)
         {
             Verify.IsNotNull(header, $"The header must be realized ({context}).");
