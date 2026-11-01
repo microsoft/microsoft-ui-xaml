@@ -7,7 +7,15 @@ using System;
 using System.Numerics;
 using System.Collections;
 using System.Linq;
+#if CSWINRT3_0
+using Windows.Storage.Streams;
+using ColorPickerColorChangedHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.ColorPicker, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs>;
+using ColorSpectrumColorChangedHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs>;
+#else
 using System.Runtime.InteropServices.WindowsRuntime;
+using ColorPickerColorChangedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.ColorPicker, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs>;
+using ColorSpectrumColorChangedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs>;
+#endif
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI;
@@ -177,7 +185,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var raisedArgs = new global::System.Collections.Generic.List<ColorChangedEventArgs>();
                 ColorPicker eventSender = null;
 
-                TypedEventHandler<ColorPicker, ColorChangedEventArgs> handler = (ColorPicker sender, ColorChangedEventArgs args) =>
+                ColorPickerColorChangedHandler handler = (ColorPicker sender, ColorChangedEventArgs args) =>
                 {
                     eventSender = sender;
                     raisedArgs.Add(args);
@@ -310,7 +318,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var raisedArgs = new global::System.Collections.Generic.List<ColorChangedEventArgs>();
                 var raisedSenders = new global::System.Collections.Generic.List<ColorSpectrum>();
 
-                TypedEventHandler<ColorSpectrum, ColorChangedEventArgs> handler = (ColorSpectrum sender, ColorChangedEventArgs args) =>
+                ColorSpectrumColorChangedHandler handler = (ColorSpectrum sender, ColorChangedEventArgs args) =>
                 {
                     raisedSenders.Add(sender);
                     raisedArgs.Add(args);

@@ -283,7 +283,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             FileInfo certFile = new FileInfo(certFilePath);
             if (certFile.Exists)
             {
+#if CSWINRT3_0
+                X509Certificate2 certificate = X509CertificateLoader.LoadCertificateFromFile(certFile.FullName);
+#else
                 X509Certificate2 certificate = new X509Certificate2(certFile.FullName);
+#endif
                 X509Store store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
                 store.Open(OpenFlags.MaxAllowed);
                 store.Add(certificate);

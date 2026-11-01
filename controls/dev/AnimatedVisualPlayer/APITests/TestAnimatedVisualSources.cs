@@ -5,7 +5,11 @@ using System;
 using System.Numerics;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation;
+#if CSWINRT3_0
+using AnimatedVisualInvalidatedHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>;
+#else
+using AnimatedVisualInvalidatedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>;
+#endif
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -94,7 +98,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // IDynamicAnimatedVisualSource whose content can be changed and then announced via AnimatedVisualInvalidated.
     internal sealed partial class AvpTestDynamicSource : IDynamicAnimatedVisualSource
     {
-        private TypedEventHandler<IDynamicAnimatedVisualSource, object> _invalidated;
+        private AnimatedVisualInvalidatedHandler _invalidated;
 
         public Vector2 Size { get; set; } = new Vector2(200, 100);
         public TimeSpan Duration { get; set; } = TimeSpan.FromMilliseconds(300);
@@ -103,7 +107,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public int SubscriberCount { get; private set; }
         public AvpTestAnimatedVisual LastVisual { get; private set; }
 
-        public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated
+        public event AnimatedVisualInvalidatedHandler AnimatedVisualInvalidated
         {
             add
             {

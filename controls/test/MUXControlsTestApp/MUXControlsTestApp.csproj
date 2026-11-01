@@ -36,6 +36,7 @@
       0253; <!-- Possible unintended reference comparison; to get a value comparison, cast the right hand side to type 'x' -->
       8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
     </NoWarn>
+    <NoWarn Condition="'$(UseCsWinRT3)' == 'true'">$(NoWarn);CSWINRT3005</NoWarn>
     <MSBuildWarningsAsMessages>
       CA1416; <!-- 'x' is supported on 'Windows' 10.0.18362.0 and later -->
     </MSBuildWarningsAsMessages>

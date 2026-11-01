@@ -465,13 +465,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 IntPtr.Zero,
                 NativeMethods.CLSCTX.CLSCTX_LOCAL_SERVER,
                 NativeMethods.CLSID_IApplicationActivationManager,
-                out object applicationActivationManagerAsObject) != 0)
+                out NativeMethods.IApplicationActivationManager applicationActivationManager) != 0)
             {
                 throw new Exception("Failed to create ApplicationActivationManager!");
             }
 
-            var applicationActivationManager =
-                (NativeMethods.IApplicationActivationManager)applicationActivationManagerAsObject;
             int result = applicationActivationManager.ActivateApplication(
                 appUserModelId,
                 arguments,
@@ -810,7 +808,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 IntPtr pUnkOuter,
                 CLSCTX dwClsContext,
                 [In, MarshalAs(UnmanagedType.LPStruct)] Guid riid,
-                [MarshalAs(UnmanagedType.IUnknown)] out object rReturnedComObject);
+                [MarshalAs(UnmanagedType.Interface)] out IApplicationActivationManager rReturnedComObject);
 
             [Flags]
             public enum CLSCTX : uint
