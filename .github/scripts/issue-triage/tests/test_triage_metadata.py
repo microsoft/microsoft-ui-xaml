@@ -9,33 +9,25 @@ from test_triage import FakeGitHub, MAPPING, agent_output, event
 
 class ProjectFake:
     def __init__(self):
-        self.item = None
+        self.item = {
+            "id": "item_id", "isArchived": False,
+            "project": {"id": "project_id"}, "fieldValueByName": None,
+        }
         self.mutations = []
         self.title = "WinUI"
         self.closed = False
         self.options = [{"id": name + "_id", "name": name} for name in ("P0", "P1", "P2")]
-        self.after_add = None
         self.fail_update = False
         self.queries = []
-
-    def verify_project_installation(self):
-        pass
 
     def graphql(self, query, variables):
         self.queries.append((query, variables))
         if "addProjectV2ItemById" in query:
-            self.mutations.append(("add", variables))
-            self.item = {
-                "id": "item_id", "isArchived": False,
-                "project": {"id": "project_id"}, "fieldValueByName": None,
-            }
-            if self.after_add:
-                self.after_add()
-            return {"addProjectV2ItemById": {"item": {"id": "item_id"}}}
+            raise AssertionError("Triage must never insert a project item with a PAT")
         if "updateProjectV2ItemFieldValue" in query:
             self.mutations.append(("update", variables))
             if self.fail_update:
-                raise t.TriageError("Project update failed")
+                raise t.ProjectError("Project update failed")
             self.item["fieldValueByName"] = {
                 "__typename": "ProjectV2ItemFieldSingleSelectValue",
                 "optionId": variables["option"], "name": variables["option"].removesuffix("_id"),
@@ -217,14 +209,14 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(self.client.issue["type"]["name"], "Bug")
         self.assertTrue(plan["published"])
 
-    def test_new_project_item_is_added_then_priority_set_and_verified(self):
+    def test_existing_project_item_priority_is_set_verified_and_idempotent(self):
         plan = self.publish()
-        self.assertEqual([name for name, _ in self.project.mutations], ["add", "update"])
-        self.assertEqual(self.project.mutations[0][1], {"project": "project_id", "issue": "I_example"})
-        self.assertEqual(self.project.mutations[1][1]["option"], "P1_id")
+        self.assertEqual([name for name, _ in self.project.mutations], ["update"])
+        self.assertEqual(self.project.mutations[0][1]["option"], "P1_id")
+        self.assertIsNone(plan["project_priority_error"])
         self.assertTrue(plan["published"])
         self.publish()
-        self.assertEqual(len(self.project.mutations), 2)
+        self.assertEqual(len(self.project.mutations), 1)
 
     def test_existing_priority_including_a_nonstandard_value_and_archive_are_preserved(self):
         for value, archived in (("P0", False), ("P2", False), ("P3", False), (None, True), (None, False)):
@@ -238,17 +230,20 @@ class MetadataTests(unittest.TestCase):
                 self.assertEqual(len(self.project.mutations), int(value is None and not archived))
                 self.assertFalse(any(name == "add" for name, _ in self.project.mutations))
 
-    def test_human_priority_appearing_after_insertion_is_not_overwritten(self):
-        def human_update():
-            self.project.item["fieldValueByName"] = {"name": "P2", "optionId": "P2_id"}
-        self.project.after_add = human_update
-        self.publish()
-        self.assertEqual([name for name, _ in self.project.mutations], ["add"])
+    def test_missing_project_membership_never_inserts_as_pat_owner(self):
+        self.project.item = None
+        self.client.issue["type"] = None
+        plan = self.publish()
+        self.assertTrue(plan["published"])
+        self.assertIn("leave insertion to project automation", plan["project_priority_error"])
+        self.assertEqual(self.project.mutations, [])
+        self.assertEqual(self.client.issue["type"]["name"], "Bug")
 
-    def test_project_configuration_or_access_failure_prevents_all_writes(self):
+    def test_project_configuration_or_access_failure_does_not_block_normal_triage(self):
         for mode in ("wrong_project", "closed", "wrong_option", "access"):
             with self.subTest(mode=mode):
                 self.client = FakeGitHub()
+                self.client.issue["type"] = None
                 self.project = ProjectFake()
                 if mode == "wrong_project":
                     self.project.title = "Other"
@@ -257,17 +252,24 @@ class MetadataTests(unittest.TestCase):
                 elif mode == "wrong_option":
                     self.project.options[0]["name"] = "Urgent"
                 else:
-                    self.project.graphql = lambda *_: (_ for _ in ()).throw(t.TriageError("Forbidden"))
-                with self.assertRaises(t.TriageError):
-                    self.publish()
-                self.assertEqual(self.client.writes, [])
+                    self.project.graphql = lambda *_: (_ for _ in ()).throw(t.ProjectError("Forbidden"))
+                plan = self.publish()
+                self.assertTrue(plan["published"])
+                self.assertFalse(plan["project_priority_enabled"])
+                self.assertIsNotNone(plan["project_priority_error"])
+                self.assertEqual(self.client.issue["type"]["name"], "Bug")
+                self.assertTrue(any(path.endswith("/comments") for _, path, _ in self.client.writes))
+                self.assertTrue(any(path.endswith("/labels") for _, path, _ in self.client.writes))
                 self.assertEqual(self.project.mutations, [])
 
-    def test_failed_project_mutation_is_not_retried_or_marked_successful(self):
+    def test_failed_project_mutation_is_not_retried_but_normal_triage_succeeds(self):
+        self.client.issue["type"] = None
         self.project.fail_update = True
-        with self.assertRaises(t.TriageError):
-            self.publish()
-        self.assertEqual([name for name, _ in self.project.mutations], ["add", "update"])
+        plan = self.publish()
+        self.assertTrue(plan["published"])
+        self.assertEqual(plan["project_priority_error"], "Project update failed")
+        self.assertEqual(self.client.issue["type"]["name"], "Bug")
+        self.assertEqual([name for name, _ in self.project.mutations], ["update"])
 
     def test_human_type_change_during_label_write_prevents_metadata_overwrite(self):
         self.client.issue["type"] = None
@@ -328,22 +330,53 @@ class MetadataTests(unittest.TestCase):
             with self.assertRaises(t.TriageError):
                 client.graphql("query { viewer { login } }", {})
 
-    def test_project_installation_requires_repository_access(self):
-        client = t.GitHub("example/winui", "fixture-token")
-        with patch.object(client, "request", return_value={"repositories": [{"full_name": "example/winui"}]}):
-            client.verify_project_installation()
-        with patch.object(client, "request", return_value={"repositories": [{"full_name": "other/repo"}]}):
-            with self.assertRaises(t.TriageError):
-                client.verify_project_installation()
+    def test_expired_pat_is_isolated_before_and_after_preflight(self):
+        for phase in ("preflight", "read", "write"):
+            with self.subTest(phase=phase):
+                self.client = FakeGitHub()
+                self.client.issue["type"] = None
+                self.project = ProjectFake()
+                client = t.GitHub("example/winui", "expired-fixture-token")
+                original = self.project.graphql
+                calls = 0
+                def expired(query, variables):
+                    nonlocal calls
+                    calls += 1
+                    fails = (
+                        phase == "preflight"
+                        or phase == "read" and calls > 2
+                        or phase == "write" and "updateProjectV2ItemFieldValue" in query
+                    )
+                    if fails:
+                        if phase == "write":
+                            self.project.mutations.append(("update", variables))
+                        with patch.object(client, "request", side_effect=t.TriageError("GitHub POST failed (HTTP 401)")):
+                            return client.graphql(query, variables)
+                    return original(query, variables)
+                self.project.graphql = expired
+                plan = self.publish()
+                self.assertTrue(plan["published"])
+                self.assertIn("HTTP 401", plan["project_priority_error"])
+                self.assertEqual(self.client.issue["type"]["name"], "Bug")
+                self.assertEqual(len(self.project.mutations), int(phase == "write"))
 
-    def test_personal_project_authentication_fails_before_any_issue_write(self):
-        self.project.verify_project_installation = lambda: (_ for _ in ()).throw(
-            t.TriageError("GitHub GET failed (HTTP 403)")
-        )
-        with self.assertRaises(t.TriageError):
+    def test_issue_api_failure_still_fails_normal_triage(self):
+        self.client.issue["type"] = None
+        original = self.client.write
+        def failed_type(method, path, payload):
+            if path == "issues/100":
+                raise t.TriageError("GitHub PATCH failed (HTTP 403)")
+            return original(method, path, payload)
+        self.client.write = failed_type
+        with self.assertRaisesRegex(t.TriageError, "PATCH failed"):
             self.publish()
-        self.assertEqual(self.client.writes, [])
         self.assertEqual(self.project.mutations, [])
+
+    def test_project_transport_failure_becomes_project_error(self):
+        client = t.GitHub("example/winui", "fixture-token")
+        with patch.object(client, "request", side_effect=t.TriageError("Expired credential")):
+            with self.assertRaises(t.ProjectError):
+                client.graphql("query { viewer { login } }", {})
 
 
 if __name__ == "__main__":

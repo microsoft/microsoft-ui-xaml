@@ -46,6 +46,10 @@ class TriageError(RuntimeError):
     pass
 
 
+class ProjectError(TriageError):
+    pass
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         raise TriageError("GitHub redirected a request; refusing to change repository scope")
@@ -110,17 +114,13 @@ class GitHub:
         return self.request(method, self.repo_path(suffix), payload)
 
     def graphql(self, query: str, variables: dict) -> dict:
-        response = self.request("POST", "graphql", {"query": query, "variables": variables})
+        try:
+            response = self.request("POST", "graphql", {"query": query, "variables": variables})
+        except TriageError as error:
+            raise ProjectError(str(error)) from error
         if response.get("errors") or not isinstance(response.get("data"), dict):
-            raise TriageError("GitHub Projects GraphQL request failed; no automatic retry")
+            raise ProjectError("GitHub Projects GraphQL request failed; no automatic retry")
         return response["data"]
-
-    def verify_project_installation(self) -> None:
-        data = self.request("GET", "installation/repositories?per_page=100")
-        if self.repository not in {
-            repository.get("full_name") for repository in data.get("repositories", [])
-        }:
-            raise TriageError("Project publishing requires an App installation token for this repository")
 
     def pages(self, suffix: str, max_pages: int = 10) -> list[dict]:
         result = []
@@ -904,17 +904,17 @@ def project_priority_snapshot(client: GitHub, issue_id: str) -> dict:
     """, {"number": PROJECT_NUMBER})
     project = (data.get("organization") or {}).get("projectV2")
     if not project or project["title"] != "WinUI" or project["closed"]:
-        raise TriageError("Expected the open microsoft WinUI project 1868")
+        raise ProjectError("Expected the open microsoft WinUI project 1868")
     fields = project["fields"]
     if fields["pageInfo"]["hasNextPage"]:
-        raise TriageError("Project field pagination requires manual configuration")
+        raise ProjectError("Project field pagination requires manual configuration")
     priority = [field for field in fields["nodes"] if field.get("name") == "Priority"]
     if len(priority) != 1:
-        raise TriageError("WinUI project must have one single-select Priority field")
+        raise ProjectError("WinUI project must have one single-select Priority field")
     field = priority[0]
     options = {name: [o["id"] for o in field["options"] if o["name"] == name] for name in ("P0", "P1", "P2")}
     if any(len(ids) != 1 for ids in options.values()):
-        raise TriageError("WinUI Priority must have exact P0, P1 and P2 options")
+        raise ProjectError("WinUI Priority must have exact P0, P1 and P2 options")
     items = []
     cursor = None
     for _ in range(10):
@@ -939,18 +939,18 @@ def project_priority_snapshot(client: GitHub, issue_id: str) -> dict:
         """, {"issue": issue_id, "cursor": cursor})
         node = data.get("node")
         if not node or node.get("id") != issue_id:
-            raise TriageError("Project query returned an unexpected issue")
+            raise ProjectError("Project query returned an unexpected issue")
         connection = node["projectItems"]
         items.extend(item for item in connection["nodes"] if item["project"]["id"] == project["id"])
         if not connection["pageInfo"]["hasNextPage"]:
             break
         cursor = connection["pageInfo"]["endCursor"]
         if not cursor:
-            raise TriageError("Invalid issue project pagination")
+            raise ProjectError("Invalid issue project pagination")
     else:
-        raise TriageError("Issue project pagination limit reached")
+        raise ProjectError("Issue project pagination limit reached")
     if len(items) > 1:
-        raise TriageError("Multiple WinUI project items found; manual review required")
+        raise ProjectError("Multiple WinUI project items found; manual review required")
     return {
         "project_id": project["id"], "field_id": field["id"],
         "options": {name: ids[0] for name, ids in options.items()},
@@ -958,7 +958,7 @@ def project_priority_snapshot(client: GitHub, issue_id: str) -> dict:
     }
 
 
-def publish_metadata(client: GitHub, result: dict, evidence: dict, labels: list[str], project_client) -> None:
+def publish_metadata(client: GitHub, result: dict, evidence: dict, labels: list[str], project_client) -> str | None:
     expected = dict(evidence["_snapshot"]["content"])
     expected["labels"] = sorted(set(expected["labels"]) | set(labels))
 
@@ -977,30 +977,23 @@ def publish_metadata(client: GitHub, result: dict, evidence: dict, labels: list[
             raise TriageError("GitHub did not apply the Bug issue Type")
         expected["issue_type"] = updated["type"]
     if not result["priority"] or project_client is None:
-        return
+        return None
     fresh()
+    try:
+        publish_project_priority(project_client, result, issue)
+    except ProjectError as error:
+        return str(error)
+    return None
+
+
+def publish_project_priority(project_client: GitHub, result: dict, issue: dict) -> None:
     project = project_priority_snapshot(project_client, issue["node_id"])
     item = project["item"]
     if item and (item["isArchived"] or item["fieldValueByName"] is not None):
         print("Existing or archived WinUI project priority is preserved")
         return
     if item is None:
-        data = project_client.graphql("""
-            mutation($project: ID!, $issue: ID!) {
-              addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
-                item { id }
-              }
-            }
-        """, {"project": project["project_id"], "issue": issue["node_id"]})
-        added_id = data["addProjectV2ItemById"]["item"]["id"]
-        fresh()
-        project = project_priority_snapshot(project_client, issue["node_id"])
-        item = project["item"]
-        if not item or item["id"] != added_id:
-            raise TriageError("Project item changed after insertion; refusing priority update")
-        if item["isArchived"] or item["fieldValueByName"] is not None:
-            print("A newly supplied human project value is preserved")
-            return
+        raise ProjectError("Issue is not in the WinUI project; leave insertion to project automation or a maintainer")
     updated = project_client.graphql("""
         mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
           updateProjectV2ItemFieldValue(input: {
@@ -1013,13 +1006,13 @@ def publish_metadata(client: GitHub, result: dict, evidence: dict, labels: list[
         "option": project["options"][result["priority"]],
     })
     if updated["updateProjectV2ItemFieldValue"]["projectV2Item"]["id"] != item["id"]:
-        raise TriageError("Unexpected project priority mutation result")
+        raise ProjectError("Unexpected project priority mutation result")
     verified = project_priority_snapshot(project_client, issue["node_id"])["item"]
     if (
         not verified or verified["id"] != item["id"]
         or (verified["fieldValueByName"] or {}).get("optionId") != project["options"][result["priority"]]
     ):
-        raise TriageError("WinUI project priority could not be verified; inspect before retrying")
+        raise ProjectError("WinUI project priority could not be verified; inspect before retrying")
 
 
 def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: bool) -> dict:
@@ -1034,18 +1027,27 @@ def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: 
         "issue_type": "Bug" if bug_type_applies(result, evidence) else None,
         "project_priority": result["priority"],
         "project_priority_enabled": project_client is not None,
+        "project_priority_error": None,
     }
     if result["priority"] and project_client is None:
         print("::warning::WinUI project priority is assessment-only: TRIAGE_PROJECT_TOKEN is not configured.")
     if project_client is not None:
-        project_client.verify_project_installation()
-        project_priority_snapshot(project_client, evidence["_snapshot"]["issue"]["node_id"])
+        try:
+            project_priority_snapshot(project_client, evidence["_snapshot"]["issue"]["node_id"])
+        except ProjectError as error:
+            plan["project_priority_error"] = str(error)
+            plan["project_priority_enabled"] = False
+            project_client = None
+            print("::warning::WinUI priority deferred; normal triage continues: " + plain_text(str(error)))
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as stream:
             stream.write(("## Publish plan\n\n" if write else "## Preview only - no issue writes\n\n"))
             stream.write(body + "\n\nLabels to add: " + ", ".join(labels) + "\n")
             stream.write(f"\nIssue Type plan: {plan['issue_type']}; WinUI priority assessment: {plan['project_priority']}\n")
+            if plan["project_priority_error"]:
+                stream.write("\nPriority deferred; normal triage continues: "
+                             + plain_text(plan["project_priority_error"]) + "\n")
     if not write:
         print("Preview only: validated triage; no issue writes were made")
         return plan
@@ -1063,7 +1065,14 @@ def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: 
             return plan
         client.write("POST", f"issues/{number}/labels", {"labels": labels})
     if plan["issue_type"] or (result["priority"] and project_client is not None):
-        publish_metadata(client, result, evidence, labels, project_client)
+        error = publish_metadata(client, result, evidence, labels, project_client)
+        if error:
+            plan["project_priority_error"] = error
+            print("::warning::WinUI priority deferred or unverified; normal triage published: " + plain_text(error))
+            if summary_path:
+                with open(summary_path, "a", encoding="utf-8") as stream:
+                    stream.write("\nPriority was not verified; inspect partial project writes before retrying: "
+                                 + plain_text(error) + "\n")
     plan["published"] = True
     return plan
 

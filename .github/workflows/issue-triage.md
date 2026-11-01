@@ -226,22 +226,11 @@ safe-outputs:
           uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
           with:
             python-version: "3.12"
-        - name: Create publisher-only project App token
-          id: triage_project_app
-          if: ${{ vars.WINUI_TRIAGE_APP_CLIENT_ID != '' }}
-          uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
-          with:
-            client-id: ${{ vars.WINUI_TRIAGE_APP_CLIENT_ID }}
-            private-key: ${{ secrets.WINUI_TRIAGE_APP_PRIVATE_KEY }}
-            owner: microsoft
-            repositories: microsoft-ui-xaml
-            permission-organization-projects: write
-            permission-issues: read
         - name: Rebuild evidence, validate, and preview or publish
           timeout-minutes: 10
           env:
             GITHUB_TOKEN: ${{ github.token }}
-            TRIAGE_PROJECT_TOKEN: ${{ steps.triage_project_app.outputs.token }}
+            TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}
             TRIAGE_PUBLISH: ${{ github.event_name != 'workflow_dispatch' || inputs.publish }}
           run: >-
             python .github/scripts/issue-triage/triage.py publish
@@ -398,12 +387,14 @@ report-grounded `priority_reason`, or `None` for OTHER, and `regression_release:
 None` except for a latest-release regression. Truncated context, a conflicting
 existing Type or feature intake defers priority for human review.
 
-Only the trusted publisher can add the issue to the microsoft WinUI project
-(number 1868) and fill a missing Priority single-select value. Existing project
+Only the trusted publisher can fill a missing Priority single-select value in
+the microsoft WinUI project (number 1868). It never adds project items; project
+automation or a maintainer must add the issue first. Existing project
 priorities and archived items are preserved. Project writes require configured
 publisher-only credentials and are not performed during preview. Do not emit
 project/field/option IDs, choose arbitrary priorities, or claim a proposed value
-was applied; a priority assessment may remain advisory when access is not set up.
+was applied; a priority assessment remains advisory when project membership or
+access is unavailable. Project credential failures do not block normal triage.
 
 ## UWP-specific bugs
 

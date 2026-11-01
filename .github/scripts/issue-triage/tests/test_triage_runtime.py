@@ -340,14 +340,13 @@ class WorkflowRuntimeTests(unittest.TestCase):
         detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
         publisher = re.search(r"(?ms)^  publish_triage_summary:\n.*?(?=^  \w|\Z)", self.lock).group()
         for job in (agent, detection):
-            self.assertNotIn("WINUI_TRIAGE_APP_PRIVATE_KEY", job)
-            self.assertNotIn("create-github-app-token", job)
-        self.assertNotIn("secrets.WINUI_TRIAGE_PROJECT_TOKEN", self.lock)
-        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ steps.triage_project_app.outputs.token }}", publisher)
-        self.assertIn("permission-organization-projects: write", publisher)
-        self.assertIn("permission-issues: read", publisher)
-        self.assertIn("repositories: microsoft-ui-xaml", publisher)
-        self.assertIn("private-key: ${{ secrets.WINUI_TRIAGE_APP_PRIVATE_KEY }}", publisher)
+            self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", job)
+        self.assertNotIn("WINUI_TRIAGE_APP_PRIVATE_KEY", self.lock)
+        self.assertNotIn("create-github-app-token", self.lock)
+        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}", publisher)
+        self.assertIn("GITHUB_TOKEN: ${{ github.token }}", publisher)
+        self.assertIn("It never adds project items", policy)
+        self.assertIn("credential failures do not block normal triage", policy)
         for name in ("impact", "workaround", "priority_reason", "regression_release"):
             self.assertIn(f'"{name}"', self.lock)
 

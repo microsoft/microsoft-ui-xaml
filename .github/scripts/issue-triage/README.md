@@ -316,45 +316,61 @@ accuracy; the prompt must distinguish actual failure evidence from keywords.
 The fixed target is [microsoft's WinUI project 1868](https://github.com/orgs/microsoft/projects/1868).
 The trusted publisher verifies its title is `WinUI`, discovers its existing
 single-select `Priority` field and exact `P0`, `P1`, `P2` option IDs, paginates issue
-project memberships (including archived items), adds a missing item, and fills
+project memberships (including archived items), and fills
 only an empty Priority. It never creates fields/options or changes another
-project. Existing values, including options outside P0/P1/P2, and archived items
+project, and never inserts an issue into the project. Configure the project's
+built-in auto-add workflow, or have a maintainer add the issue first. Missing
+membership defers Priority without blocking normal triage; a later eligible
+run can fill the value after insertion. Existing values, including options outside P0/P1/P2, and archived items
 are preserved. Priority does not depend on area confidence or reproduction
 completeness. The comment records an assessment, not a claim that the project
 write succeeded.
 
-**Required project setup:** create or select an organization-approved GitHub App
-and install it in `microsoft` for `microsoft-ui-xaml`. Grant organization
-Projects read/write and repository Issues read access (Metadata read is implicit).
-An organization administrator must approve the installation and project access.
-Store its client ID in the Actions **variable** `WINUI_TRIAGE_APP_CLIENT_ID`
-and its full PEM private key in the Actions **secret**
-`WINUI_TRIAGE_APP_PRIVATE_KEY`. Do not paste the key in issues, logs, or source;
-rotate it according to organization policy.
+**Required project setup:** configure the repository Actions **secret**
+`WINUI_TRIAGE_PROJECT_TOKEN` with an organization-approved PAT. Its owner must
+already have write access to the WinUI project; token permissions cannot grant
+access the owner lacks. For a fine-grained PAT:
 
-The publisher uses a SHA-pinned `actions/create-github-app-token` to mint a
-short-lived installation token, restricted to this repository and the requested
-permissions; the action revokes it at job completion. Only the separate trusted
-publisher receives the key/token, with the generated token passed as
-`TRIAGE_PROJECT_TOKEN`; the LLM, analysis and detection jobs do not receive them.
-Project mutations are attributed to the App's bot identity, not the dispatching
-user. The publisher verifies installation authentication and repository access
-before any issue writes. Personal tokens cannot supply bot attribution and
-are not supported: the old `WINUI_TRIAGE_PROJECT_TOKEN` secret is no longer read
-and can be removed/revoked by its owner. The job-scoped `GITHUB_TOKEN` cannot
-write organization Projects, and a custom App appears as its own bot rather
-than `github-actions[bot]`.
+| Setting | Required value |
+|---------|----------------|
+| Resource owner | `microsoft` |
+| Repository access | Only select repositories: `microsoft-ui-xaml` |
+| Organization permissions: Projects | Read and write |
+| Repository permissions: Issues | Read-only |
+| Repository permissions: Metadata | Read-only (automatically included) |
+| Expiration/approval | Organization-approved lifetime and any required administrator approval |
+
+For a classic PAT, use the `project` scope (not just `read:project`) and authorize
+organization SSO if required. Public issue reads do not need broad `repo` access;
+private repository access, if ever required, needs the relevant scope. No
+`workflow`, repository administration, or Issues write permission is needed
+for this project credential. Set expiry/rotation and never paste it into issues,
+logs, source, or chat. Store it under Settings > Secrets and variables > Actions
+> Secrets, not Variables. No GitHub App credentials are used.
+
+Only the separate trusted publisher receives this PAT through
+`TRIAGE_PROJECT_TOKEN`; the LLM, analysis and detection jobs do not receive it.
+The job-scoped `GITHUB_TOKEN` cannot write organization Projects. A PAT always
+authenticates as its owner: Priority edits may be attributed to that user in
+project history. The triager cannot impersonate `github-actions[bot]` with a
+PAT. Avoiding project insertion in the triager prevents a PAT-authored
+"added to project" event; insertion performed by GitHub's built-in project
+automation retains that automation's bot attribution.
 No elevated repository issue credential is substituted: Bug Type, comment and
 label writes continue to use job-scoped `GITHUB_TOKEN` with `issues: write`.
 No project IDs/options or free-form mutations are accepted from the model.
-If the App client ID is absent, normal triage and Bug Type updates still work, while
-Priority is explicitly assessment-only with a workflow warning. If configured
-App token generation or access/schema discovery fails, publishing fails before
-any issue writes.
+If the PAT is absent, expired, revoked, unauthorized, or project discovery
+fails, Priority is advisory/deferred with a workflow warning and summary.
+Normal comments, routing/UWP/reproduction labels and Bug Type updates continue
+using the job-scoped `GITHUB_TOKEN`, independently of the PAT. Project API failures
+after preflight are also isolated; an ambiguous mutation is reported as
+unverified rather than retried or falsely claimed successful. This isolation
+does not suppress issue API errors, invalid model output, or stale/ineligible
+issue checks: those normal-triage safety failures still stop publication.
 Preview discovers the plan read-only and never mutates issue Type or Projects.
 
 Issue content/Type/releases are rechecked before writes, and project Priority is
-re-read after normal triage and again after inserting a missing project item.
+re-read after normal triage, immediately before an eligible Priority update.
 The publisher verifies the applied priority. GitHub does not offer a transaction
 across comments, labels, Type and project fields, nor an atomic "set only if
 empty" project mutation: a human edit in the final read/write interval remains
