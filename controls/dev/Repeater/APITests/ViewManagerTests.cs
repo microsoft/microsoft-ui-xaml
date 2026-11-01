@@ -1132,8 +1132,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // Scenario: focus a realized element, remove an item, replace the first one and lay out (only the replacement is
-        //           created), then insert ahead of the focused element.
+        // Scenario: focus a realized element, remove an item, replace the first one, lay out, then insert ahead of it.
         // Expected: every realized element, the focused one included, shows the item at its index, and focus stays.
         [TestMethod]
         [TestProperty("Description", "Verifies a focused element and the other realized elements move with their items on an insert after a remove and a replace.")]

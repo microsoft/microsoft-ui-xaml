@@ -482,11 +482,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // Scenario: remove an item, replace the first one, lay out (only the replacement is created), then insert an
-        //           item between two elements that stayed realized.
+        // Scenario: remove an item, replace the first one, lay out, then insert between two still-realized elements.
         // Expected: the realized element after the insert moves to its new index and keeps the right data.
-        // A failure means: an insert after a remove can leave a realized element at its old index, showing the
-        //                  wrong item and leaving the inserted item unrealized.
         [TestMethod]
         [TestProperty("Description", "Verifies an insert after a remove and a replace moves the following realized elements to their new indexes.")]
         public void InsertAfterRemoveAndReplaceShiftsRealizedElements()
