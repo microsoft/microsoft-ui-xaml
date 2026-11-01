@@ -4038,8 +4038,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         }
     });
 
-    // Counted from PointerPressed with handledEventsToo: the gripper marks its presses handled, so
-    // Tapped/DoubleTapped never reach the table.
+    // PointerPressed with handledEventsToo: the gripper handles its presses, so DoubleTapped never arrives.
     gripperVisual.AddHandler(
         winrt::UIElement::PointerPressedEvent(),
         winrt::box_value(winrt::PointerEventHandler(
@@ -4084,9 +4083,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
 
 double TableView::DoubleClickSlop(const winrt::UIElement& element)
 {
-    // SM_CXDOUBLECLK is in physical pixels and positions are in DIPs, so divide by the rasterization
-    // scale or the tolerance halves at 200%. Read per press: the metric and the scale both change at
-    // run time (mouse settings, moving between monitors), and GetSystemMetrics is a cheap cached read.
+    // SM_CXDOUBLECLK is in physical pixels; positions are DIPs. Not cached: both can change at run time.
     const auto cx = static_cast<double>(::GetSystemMetrics(SM_CXDOUBLECLK));
     const auto cy = static_cast<double>(::GetSystemMetrics(SM_CYDOUBLECLK));
     const double physical = (std::max)((std::max)(cx, cy), 4.0) / 2.0;
@@ -4109,8 +4106,7 @@ double TableView::DoubleClickSlop(const winrt::UIElement& element)
 
 uint64_t TableView::DoubleClickIntervalMicroseconds()
 {
-    // PointerPoint.Timestamp is in microseconds, GetDoubleClickTime in milliseconds. Not cached, so a
-    // mouse control panel change applies immediately.
+    // PointerPoint.Timestamp is in microseconds, GetDoubleClickTime in milliseconds.
     return static_cast<uint64_t>(::GetDoubleClickTime()) * 1000ull;
 }
 
@@ -4190,7 +4186,6 @@ bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
     return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi));
 }
 
-// For Escape and unload. Idempotent - EndDrag no-ops when no drag is in flight.
 void TableView::CancelColumnResizeDrag()
 {
     auto const state = m_activeColumnResizeDrag;

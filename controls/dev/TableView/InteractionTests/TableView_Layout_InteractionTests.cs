@@ -602,9 +602,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Bug 64665235. Double-clicking a header divider fits the column to its header and widest realized cell, as in
-        // Explorer, Task Manager and WPF DataGrid; that includes shrinking. Name authors Width="160" and every Basic name
-        // is "Person N" (TableViewTestPageFacts.BasicName), far narrower than 160.
+        // Name authors Width="160"; its "Person N" content is far narrower.
         [TestMethod]
         [TestProperty("Description", "Verifies double-clicking a column's resize gripper shrinks a too-wide column to fit its content.")]
         public void PointerDoubleClickGripperShrinksColumnToFitContent()
@@ -633,7 +631,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(after >= (60.0 * scale) - 1.0, "The fitted width must still honour MinWidth=60.");
                 Verify.IsTrue(Math.Abs(ageAfter - ageBefore) <= 1.0, "Fitting Name must not resize the Age column.");
 
-                // Fitting is idempotent: a second double-click on the already-fitted column must not move it.
                 DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
                 double again = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
                 Log.Comment("Name width after a second double-click={0}.", again);
@@ -670,7 +667,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsGreaterThan(after, narrowed + (5.0 * scale),
                     "Double-clicking the gripper must grow a column narrower than its content to fit that content.");
-                // Fit-to-content, not "restore the authored Width": the content is far narrower than 160.
                 Verify.IsLessThan(after, authored - (20.0 * scale),
                     "The fitted width must come from the content, not from the authored Width.");
             }
