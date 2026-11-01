@@ -8,7 +8,7 @@
 # in OS/WinAppSDK). Unlike Foundation/Widgets, the monobuild builds WinUI
 # product-only (no test binaries / scenario apps), so this pipeline rebuilds WinUI
 # from source with the test surface enabled and runs the same Build + RunTests +
-# RunStaticTests + RunScenarioTests stages the standalone WinUI-PR pipeline uses,
+# RunStaticTests + RunScenarioTests stages, plus separate CsWinRT 3.0 stages by default,
 # then PUTs `TestSucceeded_WinUI` on the parent monobuild so its TestGate stage can
 # move forward. See docs/Onboarding-Tests-To-Monobuild.md.
 #
@@ -34,8 +34,8 @@ parameters: # parameters are shown up in ADO UI at build queue time
   displayName: 'Source monobuild Build Id (run id of the producing build) - required'
   type: string
   default: ''
-# WinUI-PR parity knobs (the trigger only POSTs sourcePipeline + sourceBuildId, so
-# triggered runs use these defaults - matching a default standalone WinUI-PR run).
+# Test options (the trigger only POSTs sourcePipeline + sourceBuildId, so
+# triggered runs use these defaults).
 - name: MUXFinalRelease
   type: boolean
   default: false
@@ -47,6 +47,10 @@ parameters: # parameters are shown up in ADO UI at build queue time
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
+- name: runCsWinRT3Tests
+  displayName: "Build and run the CsWinRT 3.0 test passes"
+  type: boolean
+  default: true
 
 variables:
 - template: AzurePipelinesTemplates\WinUI-Versions.yml
@@ -141,6 +145,7 @@ extends:
         # which is the first half of this pipeline's critical path.
         buildHostSku: D64
         buildScenarioApps: true
+        buildCsWinRT3Tests: ${{ parameters.runCsWinRT3Tests }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
         # OS-project WinUI-InternalFeed group; defines WinUILKGCompilerFeedUri + LKG dependency feed URIs (this pipeline runs in the OS project).
@@ -163,8 +168,26 @@ extends:
         dependsOn: Build
         runArm64Tests: ${{ parameters.runArm64Tests }}
 
+    - ${{ if eq(parameters.runCsWinRT3Tests, true) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+          useCsWinRT3: true
+          stageName: RunTests_CsWinRT3
+          testPayloadArtifactName: TestPayload_CsWinRT3
+          runArtifactNamespace: RunTestsStage_CsWinRT3
+      - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+          dependsOn: Build
+          runArm64Tests: ${{ parameters.runArm64Tests }}
+          useCsWinRT3: true
+          stageName: RunScenarioTests_CsWinRT3
+          testPayloadArtifactName: ScenarioTestPayload_CsWinRT3
+          runArtifactNamespace: RunScenarioTestsStage_CsWinRT3
+
     # Tag the parent monobuild on success. condition: succeeded() inside the template
-    # means the tag is applied only when RunTests + RunScenarioTests pass (RunStaticTests
+    # means the tag is applied only when both enabled projection test lanes pass (RunStaticTests
     # is continueOnError, matching standalone WinUI-PR gating). Test failures, cancel, or
     # timeout leave the tag absent, which the monobuild TestGate detects via the run's
     # Triggered_WinUI_<runId> tag and fails on.
@@ -177,3 +200,6 @@ extends:
           - RunTests
           - RunStaticTests
           - RunScenarioTests
+          - ${{ if eq(parameters.runCsWinRT3Tests, true) }}:
+            - RunTests_CsWinRT3
+            - RunScenarioTests_CsWinRT3
