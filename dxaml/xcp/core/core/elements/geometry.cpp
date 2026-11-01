@@ -2496,19 +2496,21 @@ CGeometry::GetPrintGeometry(
     IFC(GetPrintGeometryVirtual(cp, printParams, &pGeometry));
     IFCPTRRC(pGeometry, E_POINTER);
 
-    // If Geometry.Transform is present, create a transformed PAL geometry.
+    // If Geometry.Transform is present and isn't identity, create a transformed PAL geometry.
+    // Otherwise, use the untransformed geometry.
+    CMILMatrix transform(true);
     if (m_pTransform)
     {
-        CMILMatrix transform;
         m_pTransform->GetTransform(&transform);
-        if(transform.IsIdentity() == false)
-        {
-            IFC(cp.GetFactory()->CreateTransformedGeometry(
-                pGeometry,
-                &transform,
-                &pTransformedGeometry
-                ));
-        }
+    }
+
+    if (!transform.IsIdentity())
+    {
+        IFC(cp.GetFactory()->CreateTransformedGeometry(
+            pGeometry,
+            &transform,
+            &pTransformedGeometry
+            ));
     }
     else
     {

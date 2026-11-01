@@ -183,6 +183,14 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(GeometryWithIdentityTransform)
+        TEST_METHOD_PROPERTY(L"Description", L"Renders Paths whose geometry has an identity Transform using old rendering code. Verifies the fill is drawn.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(GeometryWithIdentityTransformWUC)
+        TEST_METHOD_PROPERTY(L"Description", L"Renders Paths whose geometry has an identity Transform using new WUC APIs. Verifies the fill is drawn.")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 
@@ -211,6 +219,8 @@ private:
     void PathWithArcTestInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering dcompRendering);
 
     void PathWithBezierTestInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering dcompRendering);
+
+    void GeometryWithIdentityTransformInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering dcompRendering);
 
     // Temporarily put WUC versions of tests here to hide them from being executed
     void RenderPathWUC();

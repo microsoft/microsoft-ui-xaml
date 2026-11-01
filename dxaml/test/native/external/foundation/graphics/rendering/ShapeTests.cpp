@@ -1642,4 +1642,173 @@ void ShapeTests::MaxTextureSize()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+// Renders the element with RenderTargetBitmap and returns its center pixel as 0xAARRGGBB.
+static uint32_t GetCenterPixelWithRenderTargetBitmap(xaml::UIElement^ element)
+{
+    auto renderedEvent = std::make_shared<Event>();
+    auto getPixelsEvent = std::make_shared<Event>();
+    RenderTargetBitmap^ rtb = nullptr;
+    IBuffer^ buffer = nullptr;
+    int width = 0;
+    int height = 0;
+
+    RunOnUIThread([&]()
+    {
+        rtb = ref new RenderTargetBitmap();
+        create_task(rtb->RenderAsync(element)).then([renderedEvent]()
+        {
+            renderedEvent->Set();
+        });
+    });
+    renderedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        width = rtb->PixelWidth;
+        height = rtb->PixelHeight;
+        create_task(rtb->GetPixelsAsync()).then([&buffer, getPixelsEvent](IBuffer^ result)
+        {
+            buffer = result;
+            getPixelsEvent->Set();
+        });
+    });
+    getPixelsEvent->WaitForDefault();
+
+    uint32_t pixel = 0;
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_TRUE(width > 0 && height > 0);
+        DataReader^ dataReader = DataReader::FromBuffer(buffer);
+        Platform::Array<byte>^ bytes = ref new Platform::Array<byte>(buffer->Length);
+        dataReader->ReadBytes(bytes);
+
+        // Pixels are BGRA8.
+        const unsigned int index = ((height / 2) * width + (width / 2)) * 4;
+        pixel = (bytes[index + 3] << 24) | (bytes[index + 2] << 16) | (bytes[index + 1] << 8) | bytes[index];
+    });
+    return pixel;
+}
+
+void ShapeTests::GeometryWithIdentityTransform()
+{
+    GeometryWithIdentityTransformInternal(DCompRendering::WUCCompleteSynchronousCompTree);
+}
+
+void ShapeTests::GeometryWithIdentityTransformWUC()
+{
+    GeometryWithIdentityTransformInternal(DCompRendering::WUCShapesSynchronousCompTree);
+}
+
+// Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/7198.
+// A geometry whose Transform evaluates to identity used to produce no geometry at all,
+// so the shape was not drawn (or the app crashed with WUC shapes).
+void ShapeTests::GeometryWithIdentityTransformInternal(DCompRendering dcompRendering)
+{
+    TestCleanupWrapper cleanup;
+    WUCRenderingScopeGuard guard(dcompRendering);
+
+    const uint32_t green = 0xFF008000;
+    std::vector<std::pair<Platform::String^, xaml_shapes::Path^>> paths;
+
+    RunOnUIThread([&]()
+    {
+        auto makeSquare = []()
+        {
+            RectangleGeometry^ rect = ref new RectangleGeometry();
+            rect->Rect = Rect(0, 0, 50, 50);
+            return rect;
+        };
+
+        auto addPath = [&](Platform::String^ name, Geometry^ data)
+        {
+            xaml_shapes::Path^ path = ref new xaml_shapes::Path();
+            path->Fill = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Green);
+            path->Data = data;
+            paths.emplace_back(name, path);
+        };
+
+        // Control case with no transform.
+        addPath(L"NoTransform", makeSquare());
+
+        {
+            RectangleGeometry^ rect = makeSquare();
+            rect->Transform = ref new TranslateTransform();
+            addPath(L"TranslateTransform(0,0)", rect);
+        }
+
+        {
+            RectangleGeometry^ rect = makeSquare();
+            rect->Transform = ref new ScaleTransform();
+            addPath(L"ScaleTransform(1,1)", rect);
+        }
+
+        {
+            PathFigure^ figure = ref new PathFigure();
+            figure->StartPoint = Point(0, 0);
+            figure->IsClosed = true;
+            figure->IsFilled = true;
+            LineSegment^ line1 = ref new LineSegment();
+            line1->Point = Point(50, 0);
+            LineSegment^ line2 = ref new LineSegment();
+            line2->Point = Point(50, 50);
+            LineSegment^ line3 = ref new LineSegment();
+            line3->Point = Point(0, 50);
+            figure->Segments->Append(line1);
+            figure->Segments->Append(line2);
+            figure->Segments->Append(line3);
+            PathGeometry^ pathGeometry = ref new PathGeometry();
+            pathGeometry->Figures->Append(figure);
+            MatrixTransform^ matrixTransform = ref new MatrixTransform();
+            Matrix identity = { 1, 0, 0, 1, 0, 0 };
+            matrixTransform->Matrix = identity;
+            pathGeometry->Transform = matrixTransform;
+            addPath(L"PathGeometry with identity MatrixTransform", pathGeometry);
+        }
+
+        {
+            RectangleGeometry^ child = makeSquare();
+            child->Transform = ref new TranslateTransform();
+            GeometryGroup^ group = ref new GeometryGroup();
+            group->Children->Append(child);
+            // GeometryGroup has no WUC shapes implementation (CGeometryGroup::GetCompositionGeometry), so only check it
+            // on the old rendering path.
+            if (dcompRendering != DCompRendering::WUCShapesSynchronousCompTree)
+            {
+                addPath(L"GeometryGroup child with TranslateTransform(0,0)", group);
+            }
+        }
+
+        // A 10x10 square stretched to 50x50. The center pixel is only filled if the stretch is applied.
+        // WUC shapes don't support Stretch yet (CShape::PopulateCompositionSpriteShape), so only check it
+        // on the old rendering path.
+        if (dcompRendering != DCompRendering::WUCShapesSynchronousCompTree)
+        {
+            RectangleGeometry^ rect = ref new RectangleGeometry();
+            rect->Rect = Rect(0, 0, 10, 10);
+            rect->Transform = ref new TranslateTransform();
+            addPath(L"Stretch=Fill with TranslateTransform(0,0)", rect);
+            paths.back().second->Width = 50;
+            paths.back().second->Height = 50;
+            paths.back().second->Stretch = Stretch::Fill;
+        }
+
+        StackPanel^ stackPanel = ref new StackPanel();
+        stackPanel->Orientation = Orientation::Horizontal;
+        for (auto& entry : paths)
+        {
+            stackPanel->Children->Append(entry.second);
+        }
+        TestServices::WindowHelper->WindowContent = stackPanel;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    for (auto& entry : paths)
+    {
+        LOG_OUTPUT(L"Checking %s", entry.first->Data());
+        VERIFY_ARE_EQUAL(green, GetCenterPixelWithRenderTargetBitmap(entry.second));
+    }
+}
+
 } } } } } }
