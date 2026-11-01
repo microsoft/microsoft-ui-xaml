@@ -34,9 +34,7 @@
 
     <!-- Initials are bound explicitly: PersonPicture derives none from an Arabic or Hebrew DisplayName.
          Never bind a raw string to an ImageSource: the path goes through AvatarImageConverter.
-         Decorative: PersonPicture always names itself after the person, and a cell or row name
-         reads its content's name, so the Viewbox (which has no automation peer) keeps that name
-         out of the cell and the row: the Name column already says it. -->
+         The Viewbox (no automation peer) keeps PersonPicture's own name out of the cell and row names. -->
     <DataTemplate x:Key="AvatarTemplate" x:DataType="models:Person">
         <Viewbox
             Width="28"

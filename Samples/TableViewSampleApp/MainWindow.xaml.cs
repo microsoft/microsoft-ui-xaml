@@ -378,8 +378,7 @@ public sealed partial class MainWindow : Window
             // OnAppWindowChanged reapplies after Activate() wires XamlRoot.
             var scale = (Content as FrameworkElement)?.XamlRoot?.RasterizationScale ?? 1.0;
             if (scale <= 0) scale = 1.0;
-            // System-rendered caption buttons drive the system insets;
-            // UpdateTitleBarLeftInset applies the left one.
+            // System-rendered caption buttons drive the system insets.
             RightPaddingColumn.Width = new GridLength(titleBar.RightInset / scale);
             m_systemLeftInset = titleBar.LeftInset / scale;
             UpdateTitleBarLeftInset(NavView.DisplayMode);
@@ -452,9 +451,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateTitleBarLeftInset(NavigationViewDisplayMode mode)
     {
-        // The NavigationView sits below the title bar, so in Minimal mode its back and menu buttons
-        // overlay the top of the page, not the title. Push the page below them, by the same 44 DIPs
-        // NavigationViewMinimalHeaderMargin uses, and keep the title at the standard 16 DIP inset.
+        // Minimal mode's back/menu buttons overlay the page, not the title: 44 matches NavigationViewMinimalHeaderMargin.
         // On RTL system locales, AppWindow.TitleBar moves the caption buttons
         // to the left side, so we must also reserve m_systemLeftInset.
         ContentFrame.Margin = new Thickness(0, mode == NavigationViewDisplayMode.Minimal ? 44 : 0, 0, 0);

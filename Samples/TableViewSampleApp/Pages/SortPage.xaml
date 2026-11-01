@@ -14,8 +14,7 @@
     <Page.Resources>
         <!-- Page-private: the templates are typed to LeagueTeam. Each editor carries a per-row accessible name. -->
 
-        <!-- Crest: initials from the club name, so the cell is never blank. Decorative: the Viewbox
-             keeps PersonPicture's own name out of the cell and row names (see AvatarTemplate). -->
+        <!-- Crest: initials from the club name, so the cell is never blank. Decorative (see AvatarTemplate). -->
         <DataTemplate x:Key="CrestTemplate" x:DataType="models:LeagueTeam">
             <Viewbox
                 Width="28"

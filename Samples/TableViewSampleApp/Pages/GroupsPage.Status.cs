@@ -153,8 +153,7 @@ public sealed partial class GroupsPage
             group.KeyText));
     }
 
-    // UI Automation ExpandCollapse toggles a group without any input event, so every group header
-    // also reports its IsExpanded changes (the implicit TableViewGroupHeader Style sets this).
+    // UI Automation ExpandCollapse raises no input event, so group headers report IsExpanded changes.
     public static readonly DependencyProperty ReportsExpansionProperty = DependencyProperty.RegisterAttached(
         "ReportsExpansion", typeof(bool), typeof(GroupsPage), new PropertyMetadata(false, OnReportsExpansionChanged));
 
@@ -181,8 +180,7 @@ public sealed partial class GroupsPage
         (node as GroupsPage)?.RecordHeaderExpansion((TableViewGroupHeader)sender);
     }
 
-    // A recycled header also reports here, with the state of the group it now shows; that is still
-    // that group's real state, so recording it is correct either way.
+    // A recycled header reports its new group's real state, so recording it is still correct.
     private void RecordHeaderExpansion(TableViewGroupHeader header)
     {
         if (!IsGrouped || !header.IsExpandable || header.Content is not TableViewGroupInfo group)
