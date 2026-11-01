@@ -33,3 +33,14 @@ Reviewed commits 1ef15de5b and 1a7660bbc. claude-opus-5.5, gpt-6.1-sol and gemin
 | 3 | gpt-5.6-terra | Low | "Such a failure still surfaces through the fallback, which reports its own error" is overstated: `RunClassConstructorIfNecessary` ignores the final result (ReflectionAPI.cpp:461-475). | Fixed. The notes now say real `pfn` failures are intentionally not captured as error contexts, callers ignore this HRESULT and fall back, and this matches the code before 7e63c33f5. |
 
 Tests after round 2: the product code and test didn't change. The end-to-end probe A/B above was run (MUX rebuilt with the fix reverted, then rebuilt with the fix restored and re-checked: survives). Last VM results still stand: new test passed (1/1), `*StowedExceptionTests*` passed (5/5).
+
+## Round 3
+
+Reviewed `git diff 8da148dcd HEAD` (3 commits). All 5 reviewers found no blocking or non-blocking issues. Opus and both adversarial reviewers re-checked the file:line refs, the test against vacuity (harness doesn't clear contexts between the probe and the assert; PerfOptIn path honored by WindowHelper.cpp), thread affinity (contexts are per-thread TLS), and open PRs (#12244 touches unrelated parts of xcpcore.cpp).
+
+| # | Reviewer | Severity | Finding | Action |
+|---|----------|----------|---------|--------|
+| 1 | claude-sonnet-5.5 | Nit | "Every caller ignores this HRESULT" is loose; callers check `SUCCEEDED` and fall back. | Reworded. |
+| 2 | claude-opus-5.5, gpt-6.1-sol, gemini-4-argon, gpt-5.6-terra | - | No issues. | - |
+
+Tests after round 3: docs-only change, so no rerun. Final results: new test passed (1/1), `*StowedExceptionTests*` passed (5/5), end-to-end probe survives with the fix and crashes (0xC000027B) without it.
