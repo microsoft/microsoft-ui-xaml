@@ -15,8 +15,7 @@ TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
 
-    // Tab into the body must not land on a cache group header outside the viewport, nor skip the
-    // remembered entry target.
+    // Tab into the body must not land on an off-viewport cache group header, nor skip the remembered target.
     m_gettingFocusRevoker = GettingFocus(
         winrt::auto_revoke,
         [weakThis = get_weak()](winrt::UIElement const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)

@@ -2327,9 +2327,7 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
     return row;
 }
 
-// The single entry policy for both Tab paths into the body: resume the row or group header focus
-// last rested on only while it is enabled and at least partly in view, so entry never scrolls to it.
-// Otherwise the caller falls back to the viewport edge.
+// Resume where focus last rested only while it is enabled and partly in view, so entry never scrolls.
 winrt::UIElement TableView::FindRememberedEntryElementInternal()
 {
     auto const repeater = m_rowsRepeater.get();
@@ -2525,8 +2523,7 @@ bool TableView::TryRedirectFocusEntryTo(
     return false;
 }
 
-// Tab from outside the table that XAML aims at a group header (no header band, or a cache header
-// on Shift+Tab) follows the same entry policy as a row target does in TableViewRow.
+// Tab from outside aimed at a group header follows the same entry policy as a row target in TableViewRow.
 bool TableView::TryRedirectOutsideEntryAtGroupHeader(
     winrt::TableViewGroupHeader const& target,
     winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)

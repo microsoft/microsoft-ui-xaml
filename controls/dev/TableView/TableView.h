@@ -384,9 +384,8 @@ public:
         winrt::DependencyObject const& oldFocusedElement,
         winrt::FocusNavigationDirection direction);
 
-    // Tab from another band resumes the remembered entry target (FindRememberedEntryElementInternal);
-    // otherwise a row or group header outside the viewport lands on the viewport edge row or group
-    // header instead. Returns true when focus was redirected.
+    // Tab from another band resumes the remembered entry target, else lands on the viewport edge row
+    // or group header instead of one outside the viewport. Returns true when focus was redirected.
     bool TryRedirectBandEntryToViewport(
         winrt::UIElement const& target,
         winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
