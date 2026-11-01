@@ -2659,6 +2659,314 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyTopNavigationViewVisualPropertyChangesRefreshOverflowWidths()
+        {
+            foreach (var property in new[] { "Icon", "InfoBadge", "Content" })
+            {
+                foreach (var useSource in new[] { false, true })
+                {
+                    foreach (var openOverflow in new[] { false, true })
+                    {
+                        NavigationView navView = null;
+                        NavigationViewItem first = null;
+                        NavigationViewItem changing = null;
+                        ItemsRepeater primaryRepeater = null;
+                        Button overflowButton = null;
+                        Action<bool> setWide = null;
+                        double availableWidth = 0;
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            first = new NavigationViewItem { Content = "First", Width = 100 };
+                            changing = new NavigationViewItem { Content = "Item" };
+                            if (property != "Icon") { changing.Icon = new SymbolIcon(Symbol.Home); }
+                            var items = new ObservableCollection<NavigationViewItem> { first, changing };
+                            navView = new NavigationView
+                            {
+                                PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                                IsSettingsVisible = false,
+                                IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                                Width = 800,
+                                Height = 300
+                            };
+                            if (useSource) { navView.MenuItemsSource = items; }
+                            else { foreach (var item in items) { navView.MenuItems.Add(item); } }
+                            navView.SelectedItem = first;
+                            setWide = wide =>
+                            {
+                                switch (property)
+                                {
+                                    case "Icon": changing.Icon = wide ? new SymbolIcon(Symbol.Home) : null; break;
+                                    case "InfoBadge": changing.InfoBadge = wide ? new InfoBadge { Value = 99, Width = 80 } : null; break;
+                                    case "Content": changing.Content = wide ? "A much longer navigation item label" : "Item"; break;
+                                }
+                            };
+                            Content = navView;
+                            Content.UpdateLayout();
+                            primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                            var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                            var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                            topGrid.Measure(infiniteSize);
+                            var smallWidth = topGrid.DesiredSize.Width;
+                            setWide(true);
+                            Content.UpdateLayout();
+                            topGrid.Measure(infiniteSize);
+                            Verify.IsTrue(topGrid.DesiredSize.Width - smallWidth >= 20);
+                            availableWidth = (smallWidth + topGrid.DesiredSize.Width) / 2;
+                            navView.Width = availableWidth;
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                            overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                            if (openOverflow)
+                            {
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                                provider.Invoke();
+                            }
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() => setWide(false));
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(availableWidth, navView.Width);
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                                property + ": shrinking an overflow item must invalidate its cached width.");
+                            Verify.AreEqual(first, navView.SelectedItem);
+                            Verify.AreEqual(0, changing.MenuItems.Count);
+                            overflowButton.Flyout.Hide();
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewIconOnlyChevronFits()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    Width = 1008
+                };
+                var item = new NavigationViewItem { Icon = new SymbolIcon(Symbol.Home) };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+
+                var chevron = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(item, "ExpandCollapseChevron");
+                var presenter = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                var layoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                var leafWidth = layoutRoot.ActualWidth;
+                Verify.AreEqual(Visibility.Collapsed, chevron.Visibility);
+
+                item.MenuItems.Add(new NavigationViewItem { Content = "Child" });
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Visible, chevron.Visibility);
+                Verify.IsTrue(chevron.ActualWidth > 0 && chevron.ActualHeight > 0);
+                var bounds = chevron.TransformToVisual(layoutRoot).TransformBounds(
+                    new global::Windows.Foundation.Rect(0, 0, chevron.ActualWidth, chevron.ActualHeight));
+                Verify.IsTrue(bounds.Left >= -0.5 && bounds.Right <= layoutRoot.ActualWidth + 0.5,
+                    "The visible chevron must fit inside the icon-only item's layout root.");
+
+                item.MenuItems.Clear();
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Collapsed, chevron.Visibility);
+                Verify.AreEqual(leafWidth, layoutRoot.ActualWidth, "Removing children should restore the icon-only leaf width.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewRecoversAfterChildrenAreRemoved()
+        {
+            foreach (bool useMenuItemsSource in new[] { false, true })
+            {
+                foreach (string childrenKind in new[] { "MenuItems", "SourceCollection", "SourceReplacement", "Unrealized" })
+                {
+                    foreach (bool openOverflow in new[] { false, true })
+                    {
+                        Log.Comment($"MenuItemsSource={useMenuItemsSource}, children={childrenKind}, open overflow={openOverflow}");
+                        NavigationView navView = null;
+                        NavigationViewItem parent = null;
+                        ItemsRepeater primaryRepeater = null;
+                        Button overflowButton = null;
+                        var children = new ObservableCollection<NavigationViewItem>();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            navView = new NavigationView
+                            {
+                                PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                                IsSettingsVisible = false,
+                                IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                                Width = 800,
+                                Height = 300
+                            };
+                            var first = new NavigationViewItem { Content = "First", Width = 100 };
+                            parent = new NavigationViewItem { Icon = new SymbolIcon(Symbol.Home) };
+                            if (childrenKind == "SourceCollection")
+                            {
+                                parent.MenuItemsSource = children;
+                            }
+                            if (useMenuItemsSource)
+                            {
+                                navView.MenuItemsSource = new ObservableCollection<NavigationViewItem> { first, parent };
+                            }
+                            else
+                            {
+                                navView.MenuItems.Add(first);
+                                navView.MenuItems.Add(parent);
+                            }
+                            navView.SelectedItem = first;
+                            Content = navView;
+                            Content.UpdateLayout();
+
+                            primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count);
+                            var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                            var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                            topGrid.Measure(infiniteSize);
+                            var leafWidth = topGrid.DesiredSize.Width;
+
+                            var child = new NavigationViewItem { Content = "Child" };
+                            switch (childrenKind)
+                            {
+                                case "MenuItems": parent.MenuItems.Add(child); break;
+                                case "SourceCollection": children.Add(child); break;
+                                case "SourceReplacement": parent.MenuItemsSource = new[] { child }; break;
+                                case "Unrealized": parent.HasUnrealizedChildren = true; break;
+                            }
+                            Content.UpdateLayout();
+                            topGrid.Measure(infiniteSize);
+                            var parentWidth = topGrid.DesiredSize.Width;
+                            Verify.IsTrue(parentWidth > leafWidth);
+                            navView.Width = (leafWidth + parentWidth) / 2;
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                            overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                            Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                            if (openOverflow)
+                            {
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                                Verify.IsNotNull(provider);
+                                provider.Invoke();
+                            }
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            switch (childrenKind)
+                            {
+                                case "MenuItems": parent.MenuItems.Clear(); break;
+                                case "SourceCollection": children.Clear(); break;
+                                case "SourceReplacement": parent.MenuItemsSource = null; break;
+                                case "Unrealized": parent.HasUnrealizedChildren = false; break;
+                            }
+                            navView.InvalidateMeasure();
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                                "The smaller leaf must return from overflow without resizing NavigationView.");
+                            Verify.AreEqual(Visibility.Collapsed, navView.TemplateSettings.OverflowButtonVisibility);
+                            overflowButton.Flyout.Hide();
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewRecoversWithDataTemplatedItems()
+        {
+            NavigationView navView = null;
+            ItemsRepeater primaryRepeater = null;
+            Button overflowButton = null;
+            var parent = new Category(null, "Parent", null, new ObservableCollection<Category>(), true);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = new Category("First navigation item", "First", null, new ObservableCollection<Category>(), true);
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                    Width = 800,
+                    Height = 300,
+                    MenuItemsSource = new ObservableCollection<Category> { first, parent },
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <NavigationViewItem Icon='Home' Content='{Binding Content}' MenuItemsSource='{Binding Children}'/>
+                          </DataTemplate>")
+                };
+                navView.SelectedItem = first;
+                Content = navView;
+                Content.UpdateLayout();
+                primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count);
+                var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                topGrid.Measure(infiniteSize);
+                var leafWidth = topGrid.DesiredSize.Width;
+
+                parent.Children.Add(new Category("Child", "Child", null, new ObservableCollection<Category>(), true));
+                Content.UpdateLayout();
+                topGrid.Measure(infiniteSize);
+                var parentWidth = topGrid.DesiredSize.Width;
+                Verify.IsTrue(parentWidth > leafWidth);
+                navView.Width = (leafWidth + parentWidth) / 2;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                Verify.IsNotNull(provider);
+                provider.Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parent.Children.Clear();
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                    "Recycling data-templated containers must not keep invalidating the width cache.");
+                Verify.AreEqual(Visibility.Collapsed, navView.TemplateSettings.OverflowButtonVisibility);
+                overflowButton.Flyout.Hide();
+            });
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonRemainsVisibleAfterSelectingOnlyOverflowItem()
         {
             foreach (bool useMenuItemsSource in new[] { false, true })
