@@ -219,8 +219,7 @@ private:
     bool TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void AbandonIncrementalCommit() noexcept;
     bool TryReshapeStaleSortedFlatProjection();
-    // False when an unobserved or pending edit may have changed which items pass the filter, or a
-    // failed rebuild left the retained state behind the source.
+    // False when an unobserved edit or a failed rebuild may have left the retained state stale.
     bool IsFilterMembershipCurrent() const;
     bool IsFlatProjectionSorted() const;
     bool IsFlatRowInSortOrderWithNeighbours(uint32_t index) const;
@@ -228,16 +227,13 @@ private:
     void UntrackFlatItemPropertyChanged(winrt::IInspectable const& item);
     void ClearFlatItemPropertyChangedTracking();
     void RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows);
-    // Single owner for sort-key and filter-membership staleness: live shaping already subscribes to
-    // every item and re-shapes on any shaping-relevant edit, so these subscriptions would be a
-    // second handler per item observing the same change. Filter tracking costs a subscription per
-    // item, so it waits until the source has changed incrementally.
+    // Live shaping already observes every item, so it owns staleness then. Filter tracking costs a
+    // subscription per item, so it waits until the source has changed incrementally.
     bool ShouldTrackItemPropertyChanges() const
     {
         return (HasActiveSort() || (m_pipeline.HasFilter() && m_sourceChangesIncrementally)) && !IsLiveShapingEnabled();
     }
-    // Under a filter every source item is observed once the unfiltered source is retained, since an
-    // excluded item's edit can admit it.
+    // Under a filter, excluded items are observed too: an edit can admit them.
     std::vector<winrt::IInspectable> const& FlatItemsToTrack() const noexcept
     {
         return m_pipeline.HasFilter() && !m_shapingState.Source.empty() ? m_shapingState.Source : m_shapingState.Items;
@@ -252,7 +248,6 @@ private:
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
-    // `unfilteredRows` is the source before the filter; empty when no filter is set.
     void RebuildFlat(std::vector<winrt::IInspectable>& rows, std::vector<winrt::IInspectable> unfilteredRows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
     void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
@@ -432,9 +427,8 @@ private:
     // locate a removed row without an O(n) WinRT ABI scan.
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
-    // Sort-key and filter-key changes raise no collection notification, so while sorted or filtered,
-    // INPC items are observed: a sort-key change marks the row dirty, and under a filter any change
-    // marks membership stale, for the next collection change.
+    // Sort- and filter-key changes raise no collection notification, so while sorted or filtered, INPC
+    // items are observed and an edit marks the row dirty or the membership stale.
     // Keyed by IUnknown address (stable across re-orders); holding Item keeps the address unique.
     struct FlatItemPropertyChangedSubscription
     {
@@ -447,9 +441,8 @@ private:
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
     // A tracked item changed while filtered: the predicate may now disagree with the membership.
     bool m_filterMembershipMayBeStale{ false };
-    // Set by the first INotifyCollectionChanged change, the only kind applied in place. Only then is a
-    // filtered projection's in-place state (the unfiltered source, item subscriptions) kept, so a
-    // source that never changes pays nothing for it.
+    // Set by the first collection change; only then is a filtered projection's in-place state kept,
+    // so a source that never changes pays nothing for it.
     bool m_sourceChangesIncrementally{ false };
     // First path segment of each active sort axis' SortMemberPath.
     std::unordered_set<winrt::hstring> m_sortKeyPropertyNames;

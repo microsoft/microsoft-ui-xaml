@@ -2228,8 +2228,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // The first collection change after a load re-shapes every row and starts the in-place
-        // bookkeeping; this one leaves the source as it was.
+        // Starts the in-place bookkeeping with a collection change that leaves the source as it was.
         internal static void StartIncrementalChanges<T>(ObservableCollection<T> items)
         {
             var first = items[0];
@@ -2237,8 +2236,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             items.Insert(0, first);
         }
 
-        // Throws from the rows view's first `throwOnAction` notification while `change` runs. WinRT
-        // event sources contain a handler's exception, so it need not reach the caller.
+        // WinRT event sources contain a handler's exception, so it need not reach the caller.
         internal static void RunWithThrowingRowsListener(TableView tableView, string throwOnAction, Action change)
         {
             var armed = true;
@@ -2280,8 +2278,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 new List<string> { "Diego", "Nadia", "Owen", "Zoe" });
         }
 
-        // The arriving item is filtered out and its subscription throws once. A commit left half-done
-        // would also leave it unobserved, so its later edit into the filter would never be applied.
+        // The arriving item is filtered out and its subscription throws once; its later edit must still apply.
         private void VerifyFilteredChangeRecoversFromAThrowingItemSubscription(
             Action<ObservableCollection<ShapedPerson>, ShapedPerson> change, List<string> expected)
         {

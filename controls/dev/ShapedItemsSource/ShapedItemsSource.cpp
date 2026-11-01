@@ -616,8 +616,8 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 
 void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-    // Subscription DELTA from the args (only the changed items), here rather than per splice site,
-    // so every branch is covered.
+    // Subscription DELTA from the args, here rather than per splice site, so every branch is
+    // covered at cost proportional to the change.
     ApplyLiveShapingDelta(args);
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
@@ -630,15 +630,8 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
         return;
     }
 
-    // SORTED and/or FILTERED flat projection: apply a single-item change in place (one predicate
-    // call, binary-search insert / tracked removal) instead of re-shaping every row. The splices
-    // are still linear in the row count, but run no app code per row. Anything else falls back to
-    // Refresh.
-    //
-    // Invariant: re-sorting and re-filtering are driven by collection notifications on this path.
-    // An in-place mutation of a row's sort-key or filter-key field that raises only
-    // INotifyPropertyChanged leaves the row where it was until the next collection change, which
-    // repairs a stale sort first and rebuilds a possibly stale filter membership.
+    // Sorted and/or filtered flat projection: apply a single-item change in place; anything else
+    // falls back to Refresh. An INPC-only sort- or filter-key edit is repaired at the next collection change.
     if (HasActiveSort() || m_pipeline.HasFilter())
     {
         const bool canTryInPlace =
@@ -1007,8 +1000,7 @@ bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
 
 bool ShapedItemsSource::IsFilterMembershipCurrent() const
 {
-    // A failed rebuild kept the previous shaping state, which no longer describes the source. Checked
-    // first: it applies to a sort-only projection too.
+    // Checked first, sort-only too: a failed rebuild kept shaping state that no longer describes the source.
     if (m_validatedSourceStamp == ~uint64_t{ 0 })
     {
         return false;
@@ -1232,9 +1224,8 @@ void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt
     }
 }
 
-// Sorted and/or filtered, ungrouped flat projection only. Nothing is mutated until every
-// precondition passes, so a false return leaves all state untouched. A commit that throws once
-// it has started mutating abandons the retained state instead (AbandonIncrementalCommit).
+// Nothing is mutated until every precondition passes, so a false return leaves all state untouched;
+// a commit that throws once it has started mutating abandons the retained state (AbandonIncrementalCommit).
 bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
@@ -1250,9 +1241,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
         return false;
     }
 
-    // The change's own indices address the unfiltered source. With no filter that is
-    // FilteredSource itself; under a filter it is Source, and an item's FilteredSource index is
-    // the number of members ahead of it. An identity mismatch there falls back to Refresh.
+    // The change's indices address the unfiltered source: Source under a filter, else FilteredSource.
     auto& filteredSource = m_shapingState.FilteredSource;
     auto& source = filtered ? m_shapingState.Source : filteredSource;
     auto& membership = m_sourceFilterMembership;
@@ -1375,8 +1364,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
 
         const bool removesRow = removal && removal->InProjection;
         const size_t filteredSize = filteredSource.size() - (removesRow ? 1 : 0);
-        // A removal planned alongside is a Replace at this same index, so the members ahead of it
-        // are the same before and after the removal.
+        // A removal planned alongside is a Replace at this index, so the members ahead are unchanged.
         const size_t filteredIndex = filteredIndexOf(sourceIndex);
         if (filteredIndex > filteredSize)
         {
@@ -1548,7 +1536,6 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
         }
         case NotifyCollectionChangedAction::Move:
         {
-            // Under a filter a move also moves membership; that case rebuilds.
             if (filtered)
             {
                 return false;
@@ -1623,8 +1610,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
 
 void ShapedItemsSource::AbandonIncrementalCommit() noexcept
 {
-    // A listener or subscription threw part-way through an in-place commit (a Replace may hold its
-    // removal but not its insert), so the retained state can no longer be trusted to match m_rows.
+    // A throw part-way through a commit (a Replace may hold its removal only) leaves state not matching m_rows.
     InvalidateShapingState();
     m_validatedSourceStamp = ~uint64_t{ 0 };
     m_pendingRefresh = true;
@@ -1973,8 +1959,7 @@ void ShapedItemsSource::Refresh()
         }
         else
         {
-            // A hierarchy filters in its index build (needs the unfiltered parent chain). A flat
-            // projection keeps the unfiltered rows so a later change can be filtered in place.
+            // A hierarchy filters in its index build (needs the unfiltered parent chain).
             std::vector<winrt::IInspectable> unfilteredRows;
             if (!m_parentKeySelector)
             {
@@ -2152,8 +2137,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows, std:
     // the same way a full rebuild of that spec would.
     m_shapingState.FilteredSource = rows;
 
-    // The kept rows are a subsequence of the unfiltered ones, so one merge walk recovers which
-    // source items passed without running the predicate again.
+    // The kept rows are a subsequence of the unfiltered ones, so a merge walk recovers membership.
     std::vector<bool> membership;
     membership.reserve(unfilteredRows.size());
     size_t kept = 0;
