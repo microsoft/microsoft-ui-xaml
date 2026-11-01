@@ -307,7 +307,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 Verify.AreEqual(info.KeyText, provider.GetStringRepresentation(), "The string representation is the key text.");
-                Verify.AreEqual(info.KeyText, info.ToString(), "IStringable reports the key text too.");
+                // C#/WinRT routes ToString() only to an IStringable declared in metadata, so ask for it explicitly.
+                Verify.AreEqual(info.KeyText, ((global::Windows.Foundation.IStringable)(object)info).ToString(), "IStringable reports the key text too.");
                 Verify.AreEqual("Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo", provider.Type?.FullName, "The provider's type is the runtime class.");
                 Verify.IsNull(provider.GetCustomProperty("NoSuchProperty"), "An unknown name has no property.");
                 Verify.IsNull(provider.GetIndexedProperty("KeyText", typeof(string)), "There are no indexed properties.");
