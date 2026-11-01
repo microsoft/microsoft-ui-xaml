@@ -50,9 +50,8 @@ void TableViewRowTemplateSelector::EnsureTemplates()
 void TableViewRowTemplateSelector::Detach() noexcept
 {
     // Breaks the template -> pool edge; see the header for why this cannot be a destructor.
-    // Runs from ~TableView, possibly after XAML shut down on this thread (SetValue then throws) or after
-    // DeinitializeMUXC cleared MUXC's DPs, where SetPoolInstance would re-register PoolInstance.
-    // PoolInstanceProperty() never registers, so skip when it is null and contain any throw.
+    // May run after XAML shut down on this thread (SetValue throws) or after MUXC cleared its DPs:
+    // PoolInstanceProperty() never registers, so skip when it is null, and contain any throw.
     try
     {
         if (auto const poolInstanceProperty = winrt::RecyclePool::PoolInstanceProperty())

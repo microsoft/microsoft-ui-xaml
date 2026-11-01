@@ -201,14 +201,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // Bug 64723090: ~TableView -> TableViewRowTemplateSelector::Detach -> RecyclePool.SetPoolInstance throws when
-    // SetValue fails because XAML on the thread is shutting down, and the throw out of the destructor fail-fasts.
-    // Not derived from ApiTestBase and isolated: shutting XAML down on a second thread leaves the host's
-    // IdleSynchronizer unable to report idle, so the shared Setup/Cleanup would hang.
+    // Isolated, not ApiTestBase: after XAML shuts down on a second thread the shared Setup/Cleanup would hang.
     [TestClass]
     public class TableViewShutdownTests
     {
-        // App-lifetime strong reference, like an app view model holding the control past ShutdownAllPeers.
+        // Holds the control past ShutdownAllPeers, like an app view model would.
         private static TableView s_keepAlive;
 
         [TestMethod]
@@ -228,17 +225,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     templatesPooled = ShowTableViewAndRunUntilExit(controller.DispatcherQueue);
 
-                    // Leave only XAML's own references and s_keepAlive.
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     GC.Collect();
 
-                    // Window stays open: FrameworkShutdownStarting closes it, then ShutdownAllPeers runs
-                    // and the thread's DXamlCore goes away while s_keepAlive still holds the TableView.
+                    // Window stays open, so shutdown runs while s_keepAlive still holds the TableView.
                     controller.ShutdownQueue();
                     xaml.Dispose();
 
-                    // Final release on the shut-down thread runs ~TableView -> Detach -> SetValue, which fails.
+                    // Final release after shutdown: ~TableView -> Detach -> SetValue fails.
                     var tableView = s_keepAlive;
                     s_keepAlive = null;
                     ((WinRT.IWinRTObject)tableView).NativeObject.Dispose();
