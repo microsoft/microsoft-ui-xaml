@@ -1701,6 +1701,37 @@ void ShapeTests::GeometryWithIdentityTransformWUC()
     GeometryWithIdentityTransformInternal(DCompRendering::WUCShapesSynchronousCompTree);
 }
 
+static RectangleGeometry^ MakeSquareGeometry(float size)
+{
+    RectangleGeometry^ rect = ref new RectangleGeometry();
+    rect->Rect = Rect(0, 0, size, size);
+    return rect;
+}
+
+// Puts each element side by side in the window, then verifies the center pixel of each one is opaque green.
+static void VerifyCenterPixelsAreGreen(const std::vector<std::pair<Platform::String^, UIElement^>>& elements)
+{
+    const uint32_t green = 0xFF008000;
+
+    RunOnUIThread([&]()
+    {
+        StackPanel^ stackPanel = ref new StackPanel();
+        stackPanel->Orientation = Orientation::Horizontal;
+        for (auto& entry : elements)
+        {
+            stackPanel->Children->Append(entry.second);
+        }
+        TestServices::WindowHelper->WindowContent = stackPanel;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    for (auto& entry : elements)
+    {
+        LOG_OUTPUT(L"Checking %s", entry.first->Data());
+        VERIFY_ARE_EQUAL(green, GetCenterPixelWithRenderTargetBitmap(entry.second));
+    }
+}
+
 // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/7198.
 // A geometry whose Transform evaluates to identity used to produce no geometry at all,
 // so the shape was not drawn (or the app crashed with WUC shapes).
@@ -1709,39 +1740,32 @@ void ShapeTests::GeometryWithIdentityTransformInternal(DCompRendering dcompRende
     TestCleanupWrapper cleanup;
     WUCRenderingScopeGuard guard(dcompRendering);
 
-    const uint32_t green = 0xFF008000;
-    std::vector<std::pair<Platform::String^, xaml_shapes::Path^>> paths;
+    std::vector<std::pair<Platform::String^, UIElement^>> elements;
 
     RunOnUIThread([&]()
     {
-        auto makeSquare = []()
-        {
-            RectangleGeometry^ rect = ref new RectangleGeometry();
-            rect->Rect = Rect(0, 0, 50, 50);
-            return rect;
-        };
-
-        auto addPath = [&](Platform::String^ name, Geometry^ data)
+        auto addFilledPath = [&](Platform::String^ name, Geometry^ data)
         {
             xaml_shapes::Path^ path = ref new xaml_shapes::Path();
             path->Fill = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Green);
             path->Data = data;
-            paths.emplace_back(name, path);
+            elements.emplace_back(name, path);
+            return path;
         };
 
         // Control case with no transform.
-        addPath(L"NoTransform", makeSquare());
+        addFilledPath(L"NoTransform", MakeSquareGeometry(50));
 
         {
-            RectangleGeometry^ rect = makeSquare();
+            RectangleGeometry^ rect = MakeSquareGeometry(50);
             rect->Transform = ref new TranslateTransform();
-            addPath(L"TranslateTransform(0,0)", rect);
+            addFilledPath(L"TranslateTransform(0,0)", rect);
         }
 
         {
-            RectangleGeometry^ rect = makeSquare();
+            RectangleGeometry^ rect = MakeSquareGeometry(50);
             rect->Transform = ref new ScaleTransform();
-            addPath(L"ScaleTransform(1,1)", rect);
+            addFilledPath(L"ScaleTransform(1,1)", rect);
         }
 
         {
@@ -1764,20 +1788,30 @@ void ShapeTests::GeometryWithIdentityTransformInternal(DCompRendering dcompRende
             Matrix identity = { 1, 0, 0, 1, 0, 0 };
             matrixTransform->Matrix = identity;
             pathGeometry->Transform = matrixTransform;
-            addPath(L"PathGeometry with identity MatrixTransform", pathGeometry);
+            addFilledPath(L"PathGeometry with identity MatrixTransform", pathGeometry);
         }
 
+        // The scenario from the issue: a stroke-only Path with a PolyLineSegment and a default TranslateTransform.
+        // The 10px stroke runs horizontally through the center. The Path gets an explicit size because a Path
+        // in a Canvas has a 0x0 layout size, and WUC shapes clip to the layout size.
         {
-            RectangleGeometry^ child = makeSquare();
-            child->Transform = ref new TranslateTransform();
-            GeometryGroup^ group = ref new GeometryGroup();
-            group->Children->Append(child);
-            // GeometryGroup has no WUC shapes implementation (CGeometryGroup::GetCompositionGeometry), so only check it
-            // on the old rendering path.
-            if (dcompRendering != DCompRendering::WUCShapesSynchronousCompTree)
-            {
-                addPath(L"GeometryGroup child with TranslateTransform(0,0)", group);
-            }
+            PolyLineSegment^ polyLine = ref new PolyLineSegment();
+            polyLine->Points->Append(Point(25, 25));
+            polyLine->Points->Append(Point(50, 25));
+            PathFigure^ figure = ref new PathFigure();
+            figure->StartPoint = Point(0, 25);
+            figure->Segments->Append(polyLine);
+            PathGeometry^ pathGeometry = ref new PathGeometry();
+            pathGeometry->Figures->Append(figure);
+            pathGeometry->Transform = ref new TranslateTransform();
+
+            xaml_shapes::Path^ path = ref new xaml_shapes::Path();
+            path->Width = 50;
+            path->Height = 50;
+            path->Stroke = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Green);
+            path->StrokeThickness = 10;
+            path->Data = pathGeometry;
+            elements.emplace_back(ref new Platform::String(L"Stroked PolyLineSegment with TranslateTransform(0,0)"), path);
         }
 
         // A 10x10 square stretched to 50x50. The center pixel is only filled if the stretch is applied.
@@ -1785,30 +1819,42 @@ void ShapeTests::GeometryWithIdentityTransformInternal(DCompRendering dcompRende
         // on the old rendering path.
         if (dcompRendering != DCompRendering::WUCShapesSynchronousCompTree)
         {
-            RectangleGeometry^ rect = ref new RectangleGeometry();
-            rect->Rect = Rect(0, 0, 10, 10);
+            RectangleGeometry^ rect = MakeSquareGeometry(10);
             rect->Transform = ref new TranslateTransform();
-            addPath(L"Stretch=Fill with TranslateTransform(0,0)", rect);
-            paths.back().second->Width = 50;
-            paths.back().second->Height = 50;
-            paths.back().second->Stretch = Stretch::Fill;
+            xaml_shapes::Path^ path = addFilledPath(L"Stretch=Fill with TranslateTransform(0,0)", rect);
+            path->Width = 50;
+            path->Height = 50;
+            path->Stretch = Stretch::Fill;
         }
-
-        StackPanel^ stackPanel = ref new StackPanel();
-        stackPanel->Orientation = Orientation::Horizontal;
-        for (auto& entry : paths)
-        {
-            stackPanel->Children->Append(entry.second);
-        }
-        TestServices::WindowHelper->WindowContent = stackPanel;
     });
-    TestServices::WindowHelper->WaitForIdle();
 
-    for (auto& entry : paths)
+    VerifyCenterPixelsAreGreen(elements);
+}
+
+// Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/7198, GeometryGroup variant.
+// A GeometryGroup child whose Transform evaluates to identity used to crash. GeometryGroup has no WUC shapes
+// implementation (CGeometryGroup::GetCompositionGeometry), so this only runs on the old rendering path.
+void ShapeTests::GeometryGroupChildWithIdentityTransform()
+{
+    TestCleanupWrapper cleanup;
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    std::vector<std::pair<Platform::String^, UIElement^>> elements;
+
+    RunOnUIThread([&]()
     {
-        LOG_OUTPUT(L"Checking %s", entry.first->Data());
-        VERIFY_ARE_EQUAL(green, GetCenterPixelWithRenderTargetBitmap(entry.second));
-    }
+        RectangleGeometry^ child = MakeSquareGeometry(50);
+        child->Transform = ref new TranslateTransform();
+        GeometryGroup^ group = ref new GeometryGroup();
+        group->Children->Append(child);
+
+        xaml_shapes::Path^ path = ref new xaml_shapes::Path();
+        path->Fill = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Green);
+        path->Data = group;
+        elements.emplace_back(ref new Platform::String(L"GeometryGroup child with TranslateTransform(0,0)"), path);
+    });
+
+    VerifyCenterPixelsAreGreen(elements);
 }
 
 } } } } } }

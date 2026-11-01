@@ -29,15 +29,24 @@ So "identity transform" was treated like "no geometry at all".
 
 | Caller | Before the fix |
 |--------|---------------|
-| `CShape` mask/print render, shape.cpp:375 and :387 | `if (pPrintGeometry != nullptr)` (shape.cpp:410) skips fill and stroke. The shape is invisible. This is the issue as reported. |
-| `CGeometry::GetPrintGeometry` stretch overload, geometry.cpp:2553-2556 | `if (pTransformedGeometry && stretch != None)` is false, so it returns NULL too. Same invisible shape. |
+| `CShape::PreChildrenPrintVirtual` (shape.cpp:330), calls at shape.cpp:375 and :387 | `if (pPrintGeometry != nullptr)` (shape.cpp:404) skips fill and stroke. The shape is invisible. This is the issue as reported. |
+| `CGeometry::GetPrintGeometry` stretch overload, geometry.cpp:2553-2556 | `if (pTransformedGeometry && stretch != None)` is false, so the else branch (geometry.cpp:2593-2595) passes the NULL through. Same invisible shape. |
 | `CPathGeometry::GetCompositionGeometry` (WUC shapes mode), geometry.cpp:2153-2156 | Passes NULL to `UnwrapD2DGeometry`, which calls `pGeometry->GetType()` with no NULL check (D2DAcceleratedPrimitives.cpp:18). **AV.** |
 | `CGeometryCollection::GetPrintGeometry` (GeometryGroup children), geometry.cpp:2228-2232 | Puts NULL in the child array and calls `CD2DFactory::CreateGeometryGroup`, which calls `UnwrapD2DGeometry` on each child (D2DAccelerated.cpp:362). **AV.** |
-| `CUIElement::PrintPushUIEClip` / `PrintPushLayoutClip`, uielement.cpp:9425 and :9453 | `if (palClipGeometry != nullptr)` skips the clip. An element whose `Clip` has an identity transform is printed **unclipped**. |
+| `CUIElement::PrintPushUIEClip`, uielement.cpp:9425-9426 | `if (palClipGeometry != nullptr)` skips the clip. An element whose `UIElement.Clip` has an identity transform is drawn **unclipped** on this path. |
+
+`PrintPushLayoutClip` (uielement.cpp:9453) calls the same function, but layout clip geometries are
+created internally with no `Transform`, so it was never affected.
+
+The `CUIElement::Print` path (where the clip push happens, uielement.cpp:9339) is reached from:
+
+- Printing: `PrintDocument.cpp:425`.
+- Alpha masks: `AlphaMask.cpp:447` (`GetAlphaMask`, for example for `DropShadow.Mask`).
+  The mask respects local properties like `Clip` (AlphaMask.cpp:198).
 
 ## The fix
 
-dxaml\xcp\core\core\elements\geometry.cpp, `CGeometry::GetPrintGeometry` (3-arg overload):
+dxaml\xcp\core\core\elements\geometry.cpp, `CGeometry::GetPrintGeometry` (3-arg overload), geometry.cpp:2499-2518:
 
 ```cpp
 CMILMatrix transform(true);
@@ -63,8 +72,8 @@ else
 - Every caller in the table above now gets a non-NULL geometry for an identity transform.
 - An identity transform is a no-op, so the untransformed geometry is exactly the right answer.
   This is what the "no transform" case already returned.
-- The mask path then draws fill and stroke (shape.cpp:410 passes). The stretch overload applies
-  the stretch. The WUC and GeometryGroup paths no longer AV.
+- The shape mask/print path then draws fill and stroke (shape.cpp:404 passes). The stretch
+  overload applies the stretch. The WUC PathGeometry and GeometryGroup paths no longer AV.
 
 ## Why it's safe
 
@@ -72,53 +81,62 @@ else
 - **No transform:** same as before. `transform` starts as identity, so we take the `SetInterface` branch.
 - **Identity transform:** this is the only behavior change. The old result was NULL. Nobody relies
   on that:
-  - The function already asserts the input is non-NULL (`IFCPTRRC(pGeometry, E_POINTER)`), so the
-    identity case was the *only* way to get a NULL out. The callers' NULL checks are defensive, not
-    a "skip this geometry" protocol.
+  - The function already rejects a NULL input (`IFCPTRRC(pGeometry, E_POINTER)`, geometry.cpp:2497).
+    So the identity case was the only way to get **S_OK with a NULL** out of this overload.
+    (Other failures, like a GeometryGroup with a NULL child, return an error HRESULT, not S_OK.)
+    The callers' NULL checks are defensive, not a "skip this geometry" protocol.
   - Two callers crash on NULL, which shows NULL was never an intended output.
 - **Refcounting:** the two branches are mutually exclusive, so `pTransformedGeometry` is written once.
   `SetInterface` AddRefs, and the existing Cleanup releases both `pGeometry` and `pTransformedGeometry`.
   This is the same pattern the old "no transform" branch used.
 - **Uninitialized matrix:** the old code declared `CMILMatrix transform;` without init and relied on
   `GetTransform` filling it. The new code starts from identity, which is strictly safer.
-- **Observable change in print output:** an element whose `Clip` (or layout clip) geometry has an
-  identity transform will now be clipped when printed. Before, the clip was silently dropped. This
-  is a correctness fix: on screen the clip is applied, so print now matches the screen.
-  It can't be covered by an RTB test, because RTB uses comp visuals, not this print path
-  (RenderTargetBitmapImplUsingSpriteVisuals.cpp:161-171).
+- **Observable change for `UIElement.Clip`:** an element whose `Clip` geometry has an identity
+  transform is now clipped when printed and in its alpha mask (for example a `DropShadow` mask).
+  Before, the clip was silently dropped on those paths. On screen the clip was always applied
+  (the comp tree path doesn't use `GetPrintGeometry`), so print and masks now match the screen.
+- **Not covered by a test:** the `UIElement.Clip` change. RenderTargetBitmap renders comp visuals,
+  not this print path (RenderTargetBitmapImplUsingSpriteVisuals.cpp:161-171), and there is no
+  master-free way in the test tree to read alpha mask pixels. The code path is the same
+  `GetPrintGeometry` call the shape tests cover.
 
 ## Tests
 
 dxaml\test\native\external\foundation\graphics\rendering\ShapeTests.cpp / .h:
 
-- `ShapeTests::GeometryWithIdentityTransform` (default rendering, mask path) - ShapeTests.cpp:1694
+- `ShapeTests::GeometryWithIdentityTransform` (default rendering, shape mask path) - ShapeTests.cpp:1694
 - `ShapeTests::GeometryWithIdentityTransformWUC` (WUC shapes mode) - ShapeTests.cpp:1699
-- Shared body `GeometryWithIdentityTransformInternal` - ShapeTests.cpp:1707
+- Shared body `GeometryWithIdentityTransformInternal` - ShapeTests.cpp:1738
+- `ShapeTests::GeometryGroupChildWithIdentityTransform` (default rendering only) - ShapeTests.cpp:1837
+- Helper `VerifyCenterPixelsAreGreen` - ShapeTests.cpp:1712. It puts the Paths side by side,
+  renders each one with RenderTargetBitmap, and checks that its center pixel is opaque green.
 
-Each test lays out a row of green 50x50 Paths. It renders each one with RenderTargetBitmap and checks
-that the center pixel is opaque green.
+GeometryGroup is in its own test. Before the fix it crashes the test host, and if it shared a test
+with the other cases, the crash would hide whether the other cases failed.
 
-| Case | Mask path | WUC shapes |
-|------|-----------|------------|
+| Case | Shape mask path | WUC shapes |
+|------|-----------------|------------|
 | No transform (control) | yes | yes |
-| RectangleGeometry + `TranslateTransform()` | yes | yes |
-| RectangleGeometry + `ScaleTransform()` | yes | yes |
-| PathGeometry + identity `MatrixTransform` | yes | yes |
-| GeometryGroup whose child has `TranslateTransform()` | yes | skipped: `CGeometryGroup::GetCompositionGeometry` isn't implemented for WUC shapes |
+| RectangleGeometry + `TranslateTransform()` | yes | runs, but doesn't exercise the fix: `CRectangleGeometry::GetCompositionGeometry` (rectangle.cpp:907-937) builds a WUC rectangle and ignores `Transform` |
+| RectangleGeometry + `ScaleTransform()` | yes | same as above |
+| PathGeometry + identity `MatrixTransform` | yes | yes (goes through `GetPrintGeometry`, geometry.cpp:2153) |
+| Stroke-only PathGeometry with a PolyLineSegment + `TranslateTransform()` (the issue's repro shape) | yes | yes |
 | 10x10 rect + `TranslateTransform()` in a 50x50 Path with `Stretch=Fill` | yes | skipped: WUC shapes don't support Stretch yet (`// WUCShapes_TODO: stretch attribute`, shape.cpp:1645) |
+| GeometryGroup whose child has `TranslateTransform()` (separate test) | yes | skipped: `CGeometryGroup::GetCompositionGeometry` isn't implemented for WUC shapes |
 
-The issue's repro uses Stroke, and the tests use Fill. Both are drawn inside the same
-`if (pPrintGeometry != nullptr)` block (shape.cpp:410), so Fill covers it.
+The stroke case Path gets an explicit 50x50 size. A Path with no size in a Canvas has a 0x0 layout
+size, and WUC shapes size the ShapeVisual to the layout size (VisualContentRenderer.cpp:641-642),
+so it would draw nothing for reasons unrelated to this bug.
 
 ### Results (x64chk, VM ge_current-260723-Desktop)
 
 | Run | Result |
 |-----|--------|
-| New tests, before the fix | **Both crash** the test host with 0xC0000005 (the NULL `UnwrapD2DGeometry` AV) |
-| New tests, after the fix | 2/2 pass |
-| `*ShapeTests::*` after the fix | 34/34 pass |
-| `*Geometry*` after the fix | 3/3 pass |
-| `*RenderTargetBitmap*` (`-HostingMode WPF`) after the fix | 25/26. `RenderTargetBitmapTests::RasterizationScale` fails a master compare (alpha 0x1e vs 0x20). It fails **the same way on the unfixed build**, so it's pre-existing. It uses Ellipses with no Transform, which this change doesn't touch. |
+| New tests, before the fix | All 3 fail. `GeometryWithIdentityTransform`: every identity-transform case reads pixel 0 (checked with Verify exceptions turned off, so all 6 cases ran); the no-transform control passes. `GeometryWithIdentityTransformWUC` and `GeometryGroupChildWithIdentityTransform`: the test host crashes with 0xC0000005 (the NULL `UnwrapD2DGeometry` AV). |
+| New tests, after the fix | 3/3 pass |
+| `*ShapeTests::*` after the fix | 35/35 pass |
+| `*Geometry*` after the fix (round 0) | 3/3 pass |
+| `*RenderTargetBitmap*` (`-HostingMode WPF`) after the fix (round 0) | 25/26. `RenderTargetBitmapTests::RasterizationScale` fails a master compare (alpha 0x1e vs 0x20). It fails **the same way on the unfixed build**, so it's pre-existing. It uses Ellipses with no Transform, which this change doesn't touch. |
 
 ## Brainstorm summary
 

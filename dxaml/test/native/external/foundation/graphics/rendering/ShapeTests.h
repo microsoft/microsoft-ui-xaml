@@ -191,6 +191,10 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Renders Paths whose geometry has an identity Transform using new WUC APIs. Verifies the fill is drawn.")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(GeometryGroupChildWithIdentityTransform)
+        TEST_METHOD_PROPERTY(L"Description", L"Renders a Path whose GeometryGroup child has an identity Transform. Verifies the fill is drawn.")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 
