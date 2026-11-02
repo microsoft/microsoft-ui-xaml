@@ -435,6 +435,7 @@ private:
     PropertyChanged_revoker m_backButtonContainerMarginChangedRevoker{};
     winrt::FrameworkElement::ActualThemeChanged_revoker m_backButtonActualThemeChangedRevoker{};
     tracker_ref<winrt::FrameworkElement> m_backButtonBackplate{ this };
+    tracker_ref<winrt::FrameworkElement> m_backButtonContainer{ this };
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

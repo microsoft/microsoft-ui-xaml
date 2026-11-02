@@ -46,6 +46,7 @@ static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
 static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
 static constexpr auto c_navViewBackButton = L"NavigationViewBackButton"sv;
+static constexpr auto c_buttonHolderGrid = L"ButtonHolderGrid"sv;
 static constexpr auto c_backButtonHitTargetExpandedState = L"HitTargetExpanded"sv;
 static constexpr auto c_backButtonHitTargetDefaultState = L"HitTargetDefault"sv;
 static constexpr auto c_navViewBackButtonToolTip = L"NavigationViewBackButtonToolTip"sv;
@@ -146,6 +147,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_backButtonContainerMarginChangedRevoker.revoke();
     m_backButtonActualThemeChangedRevoker.revoke();
     m_backButtonBackplate.set(nullptr);
+    m_backButtonContainer.set(nullptr);
     m_backButtonHitTargetApplied = false;
 
     m_settingsItem.set(nullptr);
@@ -648,8 +650,10 @@ void NavigationView::OnApplyTemplate()
         m_backButtonMinHeightChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::MinHeightProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
         m_backButtonMaxWidthChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::MaxWidthProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
         m_backButtonMaxHeightChangedRevoker = RegisterPropertyChanged(backButton, winrt::FrameworkElement::MaxHeightProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
-        if (const auto container = winrt::VisualTreeHelper::GetParent(backButton).try_as<winrt::FrameworkElement>())
+        if (const auto container = GetTemplateChildT<winrt::FrameworkElement>(c_buttonHolderGrid, controlProtected);
+            container && container == winrt::VisualTreeHelper::GetParent(backButton))
         {
+            m_backButtonContainer.set(container);
             m_backButtonContainerMarginChangedRevoker = RegisterPropertyChanged(container, winrt::FrameworkElement::MarginProperty(), { this, &NavigationView::OnBackButtonPropertyChanged });
         }
         m_backButtonActualThemeChangedRevoker = backButton.ActualThemeChanged(winrt::auto_revoke, { this, &NavigationView::OnBackButtonActualThemeChanged });
@@ -2019,9 +2023,11 @@ void NavigationView::UpdateBackButtonHitTarget()
         ApplyBackButtonHitTarget(backButton);
         if (!m_backButtonHitTargetInputChanged)
         {
-            break;
+            return;
         }
     }
+    // Inputs still changed during the retry, so the result may be stale: keep the style's geometry instead.
+    ClearBackButtonHitTarget(backButton);
 }
 
 void NavigationView::ApplyBackButtonHitTarget(const winrt::Button& backButton)
@@ -2057,8 +2063,10 @@ void NavigationView::ApplyBackButtonHitTarget(const winrt::Button& backButton)
     const auto styleMargin = GetStyleValue<winrt::Thickness>(backButton, winrt::FrameworkElement::MarginProperty(), winrt::Thickness{});
     const auto styleHeight = GetStyleValue<double>(backButton, winrt::FrameworkElement::HeightProperty(), std::numeric_limits<double>::quiet_NaN());
     const auto styleMinWidth = GetStyleValue<double>(backButton, winrt::FrameworkElement::MinWidthProperty(), 0.0);
+    // Only the stock template's ButtonHolderGrid margin is known to be free space; a custom template's container margin may
+    // hold other elements.
     winrt::Thickness containerMargin{};
-    if (const auto container = winrt::VisualTreeHelper::GetParent(backButton).try_as<winrt::FrameworkElement>())
+    if (const auto container = m_backButtonContainer.get())
     {
         containerMargin = container.Margin();
     }
@@ -2072,8 +2080,11 @@ void NavigationView::ApplyBackButtonHitTarget(const winrt::Button& backButton)
     const double hitTargetHeight = std::isnan(styleHeight) ? styleHeight : std::max(styleHeight, minHeight) + insetTop;
     const double hitTargetMinWidth = backplateMinWidth + insetLeft;
 
-    // A MaxWidth/MaxHeight below the enlarged size, or a MinHeight with an Auto Height, would change the backplate's size.
-    const bool isConstrained = backButton.MaxWidth() < hitTargetMinWidth ||
+    // Negative margins can't become a backplate inset. A MaxWidth/MaxHeight below the enlarged size, or a MinHeight with an
+    // Auto Height, would change the backplate's size.
+    const bool isConstrained = styleMargin.Left < 0 || styleMargin.Top < 0 || containerMargin.Left < 0 || containerMargin.Top < 0 ||
+        hitTargetMinWidth < 0 || hitTargetHeight < 0 ||
+        backButton.MaxWidth() < hitTargetMinWidth ||
         (std::isnan(styleHeight) ? (minHeight > 0 || backButton.MaxHeight() < std::numeric_limits<double>::infinity()) : backButton.MaxHeight() < hitTargetHeight);
     if (isConstrained)
     {
