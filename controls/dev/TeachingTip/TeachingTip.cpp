@@ -1453,14 +1453,46 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
     ClosePopup();
 }
 
+// Returns the Popup whose Child is the element, or null.
+static winrt::Popup GetPopupOwningChild(const winrt::DependencyObject& element)
+{
+    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    {
+        if (auto const popup = frameworkElement.Parent().try_as<winrt::Popup>())
+        {
+            if (popup.Child() == frameworkElement)
+            {
+                return popup;
+            }
+        }
+    }
+    return nullptr;
+}
+
 bool TeachingTip::IsInGeneratedItemContainer(const winrt::DependencyObject& element)
 {
-    // Walk up the visual parents from the element. A child of an ItemsRepeater, or an ItemsControl item container, that
-    // is not itself its item was generated for a data item and can be reused for another one.
+    // Walk up the visual parents from the element (and from a Popup's child to the Popup). A child of an ItemsRepeater, or
+    // an ItemsControl item container, that is not itself its item was generated for a data item and can be reused for
+    // another one.
     winrt::DependencyObject current = element;
     while (current)
     {
-        auto const parent = winrt::VisualTreeHelper::GetParent(current);
+        winrt::DependencyObject parent{ nullptr };
+        if (auto const popup = GetPopupOwningChild(current))
+        {
+            // An open Popup's child is a visual child of the PopupRoot, not of the Popup, so continue from the Popup
+            // that owns it. A Popup that isn't in the visual tree (for example a flyout's) has no owner we can check,
+            // so fail closed: it may belong to a generated container.
+            if (!winrt::VisualTreeHelper::GetParent(popup))
+            {
+                return true;
+            }
+            parent = popup;
+        }
+        else
+        {
+            parent = winrt::VisualTreeHelper::GetParent(current);
+        }
         if (auto const repeater = parent.try_as<winrt::ItemsRepeater>())
         {
             // Fail closed unless the repeater maps this child to an item that is the child itself. A recycled child kept
