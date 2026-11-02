@@ -54,7 +54,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         private:
             Platform::String^ GetPathToFiles() const;
 
-            void AutoScrollHorizontallyInGridView(bool alsoScrollWithMouseWheel, INT firstItemCenterX);
+            void AutoScrollHorizontallyInGridView(bool alsoScrollWithMouseWheel);
             void AutoScrollVerticallyInListView(bool alsoScrollWithMouseWheel);
         };
     } } }
