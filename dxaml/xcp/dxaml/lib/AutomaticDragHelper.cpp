@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "AutomaticDragHelper.h"
 #include "UIElement.g.h"
+#include "InputServices.h"
 
 // The standard Windows mouse drag box size is defined by SM_CXDRAG and SM_CYDRAG.
 // UIElement uses the standard box size with dimensions multiplied by this constant.
@@ -12,6 +13,38 @@
 #define UIELEMENT_MOUSE_DRAG_THRESHOLD_MULTIPLIER 2.0
 
 using namespace DirectUI;
+
+namespace
+{
+    // The input processor's own pointer state. UIElement.PointerCaptures is updated only after
+    // PointerCaptureLost handlers return, so it can still list a capture that is already gone.
+    _Check_return_ HRESULT GetPointerState(
+        _In_ UINT pointerId,
+        _Out_ std::shared_ptr<CPointerState>* pointerState)
+    {
+        pointerState->reset();
+        CInputServices* inputServices = DXamlCore::GetCurrent()->GetHandle()->GetInputServices();
+        if (inputServices)
+        {
+            auto& mapPointerState = inputServices->GetMapPointerState();
+            if (mapPointerState.ContainsKey(pointerId))
+            {
+                IFC_RETURN(mapPointerState.Get(pointerId, *pointerState));
+            }
+        }
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT IsPointerContactDown(
+        _In_ UINT pointerId,
+        _Out_ bool* isDown)
+    {
+        std::shared_ptr<CPointerState> pointerState;
+        IFC_RETURN(GetPointerState(pointerId, &pointerState));
+        *isDown = pointerState && pointerState->IsPointerDown();
+        return S_OK;
+    }
+}
 
 AutomaticDragHelper::AutomaticDragHelper(_In_ DirectUI::UIElement* pUIElement, _In_ bool shouldAddInputHandlers)
     : m_pOwnerNoRef(pUIElement)
@@ -65,26 +98,10 @@ AutomaticDragHelper::OwnerHasPointerCapture(
     _In_ UINT pointerId,
     _Out_ bool* hasCapture)
 {
-    *hasCapture = false;
-    ctl::ComPtr<wfc::IVectorView<xaml_input::Pointer*>> captures;
-    IFC_RETURN(m_pOwnerNoRef->get_PointerCaptures(&captures));
-    if (captures)
-    {
-        UINT count = 0;
-        IFC_RETURN(captures->get_Size(&count));
-        for (UINT i = 0; i < count; ++i)
-        {
-            ctl::ComPtr<xaml_input::IPointer> capture;
-            UINT capturedId = 0;
-            IFC_RETURN(captures->GetAt(i, &capture));
-            IFC_RETURN(capture->get_PointerId(&capturedId));
-            if (capturedId == pointerId)
-            {
-                *hasCapture = true;
-                break;
-            }
-        }
-    }
+    std::shared_ptr<CPointerState> pointerState;
+    IFC_RETURN(GetPointerState(pointerId, &pointerState));
+    CDependencyObject* captureOwner = pointerState ? pointerState->GetCaptureDO() : nullptr;
+    *hasCapture = captureOwner && captureOwner == m_pOwnerNoRef->GetHandle();
     return S_OK;
 }
 
@@ -248,6 +265,18 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         m_isLeftButtonPressed = false;
         m_isCheckingForMouseDrag = false;
         IFC_RETURN(UnregisterEvents());
+    }
+    else if (!m_isLeftButtonPressed && m_spPointer)
+    {
+        UINT touchPointerId = 0;
+        IFC_RETURN(m_spPointer->get_PointerId(&touchPointerId));
+        bool isTouchDown = false;
+        IFC_RETURN(IsPointerContactDown(touchPointerId, &isTouchDown));
+        if (pointerId != touchPointerId && isTouchDown)
+        {
+            // Likewise, a pending touch candidate keeps the drag while its contact is down.
+            return S_OK;
+        }
     }
 
     // Reset touch state on every other press, including a secondary-button press.
@@ -428,6 +457,10 @@ _In_ xaml_input::IPointerRoutedEventArgs* pArgs)
     }
     else
     {
+        // XAML saw the finger lift, so DirectManipulation cannot start a drag for it any more.
+        m_spPointerPoint = nullptr;
+        m_spPointer = nullptr;
+        m_isHoldingCompleted = false;
         IFC_RETURN(UnregisterEvents());
     }
 
@@ -457,6 +490,19 @@ AutomaticDragHelper::HandlePointerCaptureLostEventArgs(
         UINT touchPointerId = 0;
         IFC_RETURN(m_spPointer->get_PointerId(&touchPointerId));
         if (pointerId != touchPointerId)
+        {
+            return S_OK;
+        }
+
+        // The helper never captures touch. A descendant giving up its own capture of the finger
+        // (now visible through handledEventsToo) does not end the owner's candidate.
+        ctl::ComPtr<xaml::IRoutedEventArgs> routedArgs;
+        ctl::ComPtr<IInspectable> originalSource;
+        bool isOwnerSource = false;
+        IFC_RETURN(ctl::do_query_interface(routedArgs, pArgs));
+        IFC_RETURN(routedArgs->get_OriginalSource(&originalSource));
+        IFC_RETURN(ctl::are_equal(originalSource.Get(), ctl::as_iinspectable(m_pOwnerNoRef), &isOwnerSource));
+        if (!isOwnerSource)
         {
             return S_OK;
         }
@@ -522,8 +568,9 @@ AutomaticDragHelper::HandleHoldingEventArgs(
         ixp::HoldingState holdingState = ixp::HoldingState_Started;
         IFC_RETURN(pArgs->get_HoldingState(&holdingState));
 
-        if (holdingState == ixp::HoldingState::HoldingState_Started)
+        if (holdingState == ixp::HoldingState::HoldingState_Started && m_spPointer)
         {
+            // Only meaningful together with the touch pointer it will start a drag for.
             m_isHoldingCompleted = true;
         }
     }
@@ -541,9 +588,12 @@ AutomaticDragHelper::HandleDirectManipulationDraggingStarted()
     // deletes this helper, so take what the callout needs and touch no member after it.
     ctl::ComPtr<ixp::IPointerPoint> pointerPoint = m_spPointerPoint;
     ctl::ComPtr<xaml_input::IPointer> pointer = m_spPointer;
+    const bool startTouchDrag = m_isHoldingCompleted && pointerPoint && pointer;
+    // Consume the hold with its pointers: a later cross-slide (for example pen on a
+    // ListViewBaseItem, which forwards only touch presses) must not reuse it.
     m_spPointerPoint = nullptr;
     m_spPointer = nullptr;
-    const bool startTouchDrag = m_isHoldingCompleted;
+    m_isHoldingCompleted = false;
     ctl::ComPtr<UIElement> owner(m_pOwnerNoRef);
 
     // Release cross-slide viewport now
