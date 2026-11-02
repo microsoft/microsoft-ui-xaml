@@ -1174,7 +1174,16 @@ ModernCollectionBasePanel::NotifyOfItemsChangingImpl(
             }
             IFC(hr);
 
-            IFC(OnGroupReset(nIndex));
+            // A custom ICollectionView can raise a Reset whose index is not a group index.
+            // Resetting a group that does not exist would leave stale containers, so reset everything.
+            if (nIndex < static_cast<UINT>(m_cacheManager.GetTotalGroupCount()))
+            {
+                IFC(OnGroupReset(nIndex));
+            }
+            else
+            {
+                IFC(OnCollectionReset());
+            }
         }
         else
         {
