@@ -17,9 +17,6 @@ public sealed class EtwListenerService : IDisposable
     private static readonly Guid XamlProfilerProviderGuid =
         new("A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D");
 
-    private static readonly Guid XamlProviderGuid =
-        new("531A35AB-63CE-4BCF-AA98-F88C7A89E455");
-
     private const string SessionName = "XamlProfilerSession";
 
     // Batching: events arrive on the ETW pump thread far faster than the UI
@@ -79,7 +76,6 @@ public sealed class EtwListenerService : IDisposable
             };
 
             _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose);
-            _session.EnableProvider(XamlProviderGuid, TraceEventLevel.Verbose, 0x10000);
 
             var pidInfo = _targetProcessId != 0 ? $" (PID: {_targetProcessId})" : " (all processes)";
             StatusChanged?.Invoke($"Session started{pidInfo} — waiting for events...");
@@ -156,9 +152,6 @@ public sealed class EtwListenerService : IDisposable
         try
         {
             eventName = evt.EventName;
-            if (evt.ProviderGuid == XamlProviderGuid && eventName != "CompTreeRemoveChild")
-                return;
-
             int count = evt.PayloadNames?.Length ?? 0;
             payload = new object?[count];
             for (int i = 0; i < count; i++)

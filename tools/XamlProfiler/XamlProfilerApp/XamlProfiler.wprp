@@ -14,7 +14,7 @@
     <!-- Also capture the existing Microsoft-Windows-XAML provider for reference -->
     <EventProvider Id="EP_MicrosoftWindowsXaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5">
       <Keywords>
-        <Keyword Value="0x1FFFF" />
+        <Keyword Value="0xFFFF" />
       </Keywords>
     </EventProvider>
 
