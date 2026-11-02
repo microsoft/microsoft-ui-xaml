@@ -203,17 +203,37 @@ void PopupAutomationIntegrationTests::VerifyComboBoxTemplateChildSharesDataPeerF
     AutomationClient::UIAElementInfo info{};
     info.m_Name = L"Combo fragment anchor";
     std::shared_ptr<AutomationClient::AutomationClientManager> mainClient;
+    std::shared_ptr<AutomationClient::AutomationClientManager> windowClient;
     UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
     {
         mainClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(info);
+        windowClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromWindow();
     });
 
     wrl::ComPtr<IRawElementProviderFragment> retainedProvider;
     xaml_automation_peers::AutomationPeer^ retainedPeer = nullptr;
+    wrl::ComPtr<IUIAutomationElementArray> clientItems;
     for (int cycle = 0; cycle < 3; ++cycle)
     {
         RunOnUIThread([&]() { combo->IsDropDownOpen = true; });
         TestServices::WindowHelper->WaitForIdle();
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            // Reach the data item and its template child through a main-window client
+            // traversal, so peer QI below reuses the providers a UIA client created.
+            wrl::ComPtr<IUIAutomation> automation;
+            windowClient->GetAutomation(&automation);
+            wrl::ComPtr<IUIAutomationElement> windowElement;
+            windowClient->GetCurrentUIAutomationElement(&windowElement);
+            Common::AutoVariant name;
+            name.SetString(L"Template item");
+            wrl::ComPtr<IUIAutomationCondition> condition;
+            LogThrow_IfFailed(automation->CreatePropertyCondition(UIA_NamePropertyId, *(name.Storage()), &condition));
+            LogThrow_IfFailed(windowElement->FindAll(TreeScope_Descendants, condition.Get(), clientItems.ReleaseAndGetAddressOf()));
+            int count = 0;
+            LogThrow_IfFailed(clientItems->get_Length(&count));
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(count, 2, L"The data item and its template child must be reachable from the main window.");
+        });
         RunOnUIThread([&]()
         {
             auto providerForPeer = [](xaml_automation_peers::AutomationPeer^ peer)
