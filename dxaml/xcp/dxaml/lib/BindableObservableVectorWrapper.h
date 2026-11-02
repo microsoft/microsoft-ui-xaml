@@ -9,6 +9,7 @@
 
 #include "BindableVectorWrapper.h"
 #include <CollectionMoveView.h>
+#include <CollectionRangeChangeView.h>
 #include <optional>
 
 namespace DirectUI
@@ -49,7 +50,7 @@ namespace DirectUI
         IFACEMETHOD(Clear)() override;
 
         // The SDK's default GetMany and ReplaceAll call get_Size/GetAt and Clear/Append,
-        // respectively, so they also respect the Move view and reentrancy guard.
+        // respectively, so they also respect the projected view and reentrancy guard.
 
         // IObservableVector<IInspectable *>
         IFACEMETHOD(add_VectorChanged)(
@@ -100,18 +101,30 @@ namespace DirectUI
 
         _Check_return_ HRESULT ProcessCollectionChange(_In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
         _Check_return_ HRESULT ProcessCollectionMove(_In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
+        _Check_return_ HRESULT ProcessCollectionRangeChange(
+            INT index,
+            _In_opt_ xaml_interop::IBindableVector *pOldItems,
+            _In_opt_ xaml_interop::IBindableVector *pNewItems);
         _Check_return_ HRESULT ProcessVectorChange(_In_ IInspectable *pArgs);
-        _Check_return_ HRESULT CheckMoveSourceUnchanged() const;
-        _Check_return_ HRESULT CheckMoveReentrancy() const;
+        _Check_return_ HRESULT CheckProjectedSourceUnchanged() const;
+        _Check_return_ HRESULT CheckProjectionReentrancy() const;
+
+        bool IsProjecting() const { return m_moveView || m_rangeView; }
+        UINT GetProjectedSize() const;
+        _Check_return_ HRESULT GetProjectedItem(UINT index, _Outptr_ IInspectable **item);
 
         _Check_return_ HRESULT RaiseVectorChanged(_In_ wfc::CollectionChange action, UINT index);
         _Check_return_ HRESULT RaiseVectorChanged(wfc::IVectorChangedEventArgs* pArgs);
 
     private:
 
+        // While a Move or a multi-item change is expanded into per-item notifications,
+        // these project the intermediate collection that each notification describes.
         std::optional<Components::CollectionMoveView> m_moveView;
-        bool m_preparingMove = false;
-        bool m_sourceChangedDuringMove = false;
+        std::optional<Components::CollectionRangeChangeView> m_rangeView;
+        ctl::ComPtr<xaml_interop::IBindableVector> m_rangeOldItems;
+        bool m_preparingProjection = false;
+        bool m_sourceChangedDuringProjection = false;
 
         TrackerEventSource<
             wfc::VectorChangedEventHandler<IInspectable *>,
