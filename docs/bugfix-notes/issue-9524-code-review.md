@@ -10,7 +10,8 @@ Three review rounds, five models each.
 | Round | Reviewed commit | Fixes commit |
 |-------|-----------------|--------------|
 | 1 | bccd02df1 | 8142db7e1 |
-| 2 | 8142db7e1 | (this commit) |
+| 2 | 8142db7e1 | 0db22aab4 |
+| 3 | 0db22aab4 | (this commit) |
 
 ## Round 1
 
@@ -35,3 +36,19 @@ The prompt asked reviewers to look hard at the never-activated case, thread assu
 | gemini | No issues. Same note as opus about `handlerVisible` being a no-op when the handler doesn't run. | - |
 | sonnet | No issues. Checked the destructor path (`Shutdown` with `m_hwnd = NULL`, `IsIconic(NULL)` returns FALSE, no crash). Nit: the Symptom section says `Close` raises `VisibilityChanged(false)` without saying it's skipped when minimized or hidden. | Fixed in the notes. |
 | terra | No issues. Suggested keeping this behavior when open PR #12288 (same file) merges. | Noted. No conflict today. |
+
+## Round 3
+
+The prompt pointed at other Window members after close, slow-machine flakiness, the UWP path, and unverifiable doc claims.
+
+| Reviewer | Finding | Disposition |
+|----------|---------|-------------|
+| opus | No issues in the fix or test. Said "44/44" can't be right, since the .h has 45 methods with 2 ignored. | Checked the VM log: `Summary: Total=44, Passed=44`. Kept. |
+| opus | "UWP windows aren't used in WinUI 3" is overstated. `Window_Partial.cpp` still picks `UWPWindowImpl` for the dummy window, `EnableUWPWindow`, or islands-only. | Fixed. Reworded with a cite. |
+| sol | No issues. | - |
+| gemini | No issues. | - |
+| sonnet | "Failed in all 3 states" may be wrong, because a failed VERIFY would stop the loop. | Checked the pre-fix VM log: it shows `Close state=0/1/2`, each with `threw hr=0x800710dd`. Kept. |
+| sonnet | A `VERIFY` inside the `VisibilityChanged` handler may not surface cleanly. | Declined. The existing test at `WindowIntegrationTests.cpp:207` does the same thing in the same event. |
+| sonnet | Same UWP wording point as opus. | Fixed (see above). |
+| sonnet | Other getters (`Bounds`, `Title`, `Content`) still throw after close. | Out of scope. The issue is only about `Visible`. |
+| terra | Same UWP wording point. | Fixed (see above). |

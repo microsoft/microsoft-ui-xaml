@@ -51,7 +51,8 @@ being destroyed or is already gone.
 - **Compat risk is low.** The only code that breaks is code that relied on the exception to detect a closed window.
   Returning false is what the issue asks for. It also matches the `VisibilityChanged(false)` that `Close` raises
   for a window that isn't minimized or hidden.
-- **UWP path is not touched.** `UWPWindowImpl::get_VisibleImpl` is unchanged. UWP windows aren't used in WinUI 3.
+- **UWP path is not touched.** `UWPWindowImpl::get_VisibleImpl` is unchanged. That impl is only picked for the
+  dummy window, or when the `EnableUWPWindow` feature is on or the app is islands-only (`Window_Partial.cpp:92-108`).
 
 ## Test
 
