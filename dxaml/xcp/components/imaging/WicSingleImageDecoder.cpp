@@ -22,6 +22,52 @@
 
 using namespace DirectUI;
 
+// Distance from an image dimension to the requested one. Scaling up counts double, since shrinking a larger
+// image gives a better result than stretching a smaller one.
+static uint32_t GetScaleDistance(UINT actual, UINT requested)
+{
+    return (actual >= requested) ? (actual - requested) : 2 * (requested - actual);
+}
+
+// An .ico holds one image per size, and WIC does not expose them in size order. Use the image closest to the
+// requested size instead of frame 0.
+static _Check_return_ HRESULT GetIcoFrameForSize(
+    _In_ IWICBitmapDecoder* bitmapDecoder,
+    const XSIZE& requestedSize,
+    _Inout_ wrl::ComPtr<IWICBitmapFrameDecode>& bitmapFrameDecode
+    )
+{
+    const UINT requestedWidth = static_cast<UINT>(requestedSize.Width);
+    const UINT requestedHeight = static_cast<UINT>(requestedSize.Height);
+
+    UINT frameCount = 0;
+    IFC_RETURN(bitmapDecoder->GetFrameCount(&frameCount));
+
+    UINT width = 0;
+    UINT height = 0;
+    IFC_RETURN(bitmapFrameDecode->GetSize(&width, &height));
+    uint32_t bestDistance = GetScaleDistance(width, requestedWidth) + GetScaleDistance(height, requestedHeight);
+
+    for (UINT i = 1; i < frameCount && bestDistance != 0; ++i)
+    {
+        // Skip an image WIC cannot read rather than failing a decode that frame 0 alone would have satisfied.
+        wrl::ComPtr<IWICBitmapFrameDecode> candidate;
+        if (FAILED(bitmapDecoder->GetFrame(i, &candidate)) || FAILED(candidate->GetSize(&width, &height)))
+        {
+            continue;
+        }
+
+        const uint32_t distance = GetScaleDistance(width, requestedWidth) + GetScaleDistance(height, requestedHeight);
+        if (distance < bestDistance)
+        {
+            bitmapFrameDecode = std::move(candidate);
+            bestDistance = distance;
+        }
+    }
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT WicSingleImageDecoder::DecodeFrame(
     _In_ EncodedImageData& encodedImageData,
     _In_ const ImageDecodeParams& decodeParams,
@@ -44,6 +90,15 @@ _Check_return_ HRESULT WicSingleImageDecoder::DecodeFrame(
 
     wrl::ComPtr<IWICBitmapFrameDecode> spBitmapFrameDecode;
     IFC_RETURN(spBitmapDecoder->GetFrame(0, &spBitmapFrameDecode));
+
+    if ((imageMetadata.containerFormat == GUID_ContainerFormatIco) &&
+        (decodeParams.GetDecodeWidth() != 0 || decodeParams.GetDecodeHeight() != 0))
+    {
+        IFC_RETURN(GetIcoFrameForSize(
+            spBitmapDecoder.Get(),
+            ImagingUtility::CalculateScaledSize(imageMetadata, decodeParams),
+            spBitmapFrameDecode));
+    }
 
     // Current stage tracks the WIC pipeline as it is constructed since some pieces
     // are optional like the scaler and the color transform.

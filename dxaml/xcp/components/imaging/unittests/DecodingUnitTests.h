@@ -38,11 +38,21 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Entirely out of bounds frames are expected to be skipped.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(IcoDecodeSize)
+                TEST_METHOD_PROPERTY(L"Description", L"Decoding an .ico to a size uses the image that best fits that size.")
+            END_TEST_METHOD()
+
         private:
             static void ValidateImage(
                 const WEX::Common::String& fileName,
                 const WEX::Common::String& testIdentifier,
                 uint32_t expectedCrc32
+                );
+
+            static void ValidateIcoDecode(
+                uint32_t decodeWidth,
+                uint32_t decodeHeight,
+                uint32_t expectedPixel
                 );
         };
     }}
