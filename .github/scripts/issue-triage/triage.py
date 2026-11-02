@@ -38,8 +38,8 @@ MAX_PROMPT_BYTES = 2 * 1024 * 1024
 CONTEXT_MARKER = "[WINUI_TRIAGE_CONTEXT]"
 CONTEXT_START = "<untrusted-issue-evidence>"
 CONTEXT_END = "</untrusted-issue-evidence>"
-LATEST_RELEASE_REPOSITORIES = ("microsoft/WindowsAppSDK", "microsoft/microsoft-ui-xaml")
 PROJECT_NUMBER = 1868
+SHIPBLOCKER_IMPACTS = {"CRASH", "DATA_LOSS", "SECURITY", "PUBLIC_API_BREAK"}
 
 
 class TriageError(RuntimeError):
@@ -236,19 +236,6 @@ def snapshot(client: GitHub, number: int) -> dict:
         and comment["user"].get("type") != "Bot"
         and comment.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"}
     ]
-    latest_releases = []
-    if eligible(issue):
-        for repository in LATEST_RELEASE_REPOSITORIES:
-            release = client.request("GET", f"repos/{repository}/releases/latest")
-            if (
-                release.get("draft") is not False or release.get("prerelease") is not False
-                or not isinstance(release.get("tag_name"), str) or not release["tag_name"]
-            ):
-                raise TriageError("Latest stable release metadata is invalid")
-            latest_releases.append({
-                "repository": repository, "tag": release["tag_name"],
-                "published_at": release["published_at"],
-            })
     content = {
         "number": number,
         "node_id": issue["node_id"],
@@ -256,7 +243,6 @@ def snapshot(client: GitHub, number: int) -> dict:
         "body": issue.get("body") or "",
         "labels": sorted(label_names(issue)),
         "issue_type": issue.get("type"),
-        "latest_releases": latest_releases,
         "author_comments": author_comments,
         "repository_comments": repository_comments,
     }
@@ -378,7 +364,6 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
         "input_sha256": current["input_sha256"],
         "issue_kind": kind,
         "existing_issue_type": (issue.get("type") or {}).get("name"),
-        "latest_releases": content["latest_releases"],
         "title": evidence_text(content["title"], 256),
         "body": evidence_text(content["body"], MAX_BODY),
         "author_followups": [
@@ -428,7 +413,7 @@ def validate(output: dict, evidence: dict) -> dict:
     if (
         not required <= set(item) <= required | {
             "missing_information_kind", "uwp_specific", "uwp_reason",
-            "impact", "workaround", "priority_reason", "regression_release",
+            "impact", "workaround", "priority_reason",
         }
         or item["type"] != "publish_triage_summary"
     ):
@@ -450,39 +435,41 @@ def validate(output: dict, evidence: dict) -> dict:
     }
     if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
         raise TriageError("Invalid content-based issue kind")
-    priority_fields = {"impact", "workaround", "priority_reason", "regression_release"}
+    priority_fields = {"impact", "workaround", "priority_reason"}
     result["priority"] = None
     result["priority_reason"] = "None"
     if priority_fields & set(item):
         if not priority_fields <= set(item):
             raise TriageError("Incomplete priority assessment")
         impact = required_string(item, "impact", 40)
-        if impact not in ("CRASH", "LATEST_RELEASE_REGRESSION", "BROKEN_FUNCTIONALITY", "OTHER"):
+        if impact not in SHIPBLOCKER_IMPACTS | {
+            "REGRESSION", "ADOPTION_BLOCKER", "BROKEN_FUNCTIONALITY", "NICE_TO_HAVE", "OTHER",
+        }:
             raise TriageError("Invalid priority impact")
         if type(item["workaround"]) is not bool:
             raise TriageError("Invalid workaround assessment")
         reason = required_string(item, "priority_reason", 400)
-        regression_release = required_string(item, "regression_release", 160)
         bug_applies = (
             result["issue_kind"] == "BUG" and evidence["issue_kind"] != "FEATURE"
             and evidence.get("existing_issue_type") in (None, "Bug")
         )
+        feature_applies = (
+            result["issue_kind"] == "FEATURE"
+            and evidence.get("existing_issue_type") in (None, "Feature")
+            and impact in ("ADOPTION_BLOCKER", "NICE_TO_HAVE")
+        )
         if impact != "OTHER":
-            if not bug_applies or evidence["context_truncated"] or reason == "None":
+            if not (bug_applies or feature_applies) or evidence["context_truncated"] or reason == "None":
                 result["review_notes"].append(
-                    "Project priority needs a supported bug assessment and complete context; priority is deferred."
-                )
-            elif impact == "LATEST_RELEASE_REGRESSION" and regression_release not in {
-                release["repository"] + "@" + release["tag"] for release in evidence["latest_releases"]
-            }:
-                result["review_notes"].append(
-                    "The regression is not tied to supplied latest stable release metadata; priority is deferred."
+                    "Project priority needs a supported bug or feature assessment and complete context; priority is deferred."
                 )
             else:
-                result["priority"] = (
-                    "P0" if impact in ("CRASH", "LATEST_RELEASE_REGRESSION")
-                    else "P2" if item["workaround"] else "P1"
-                )
+                if impact in SHIPBLOCKER_IMPACTS:
+                    result["priority"] = "P1" if item["workaround"] else "P0"
+                elif impact in ("REGRESSION", "ADOPTION_BLOCKER"):
+                    result["priority"] = "P1"
+                else:
+                    result["priority"] = "P2" if impact == "NICE_TO_HAVE" or item["workaround"] else "P1"
                 result["priority_reason"] = reason
     else:
         result["normalization_notes"].append(

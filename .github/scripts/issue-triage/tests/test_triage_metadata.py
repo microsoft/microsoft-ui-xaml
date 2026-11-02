@@ -76,44 +76,41 @@ class MetadataTests(unittest.TestCase):
 
     def test_priority_precedence_and_no_mentioned_workaround_default(self):
         for impact, workaround, priority in (
-            ("CRASH", False, "P0"), ("CRASH", True, "P0"),
-            ("LATEST_RELEASE_REGRESSION", False, "P0"),
-            ("LATEST_RELEASE_REGRESSION", True, "P0"),
+            ("CRASH", False, "P0"), ("CRASH", True, "P1"),
+            ("DATA_LOSS", False, "P0"), ("DATA_LOSS", True, "P1"),
+            ("SECURITY", False, "P0"), ("SECURITY", True, "P1"),
+            ("PUBLIC_API_BREAK", False, "P0"), ("PUBLIC_API_BREAK", True, "P1"),
+            ("REGRESSION", False, "P1"), ("REGRESSION", True, "P1"),
+            ("ADOPTION_BLOCKER", False, "P1"), ("ADOPTION_BLOCKER", True, "P1"),
             ("BROKEN_FUNCTIONALITY", False, "P1"),
-            ("BROKEN_FUNCTIONALITY", True, "P2"), ("OTHER", False, None),
+            ("BROKEN_FUNCTIONALITY", True, "P2"),
+            ("NICE_TO_HAVE", False, "P2"), ("NICE_TO_HAVE", True, "P2"),
+            ("OTHER", False, None), ("OTHER", True, None),
         ):
             with self.subTest(impact=impact, workaround=workaround):
                 result, _ = self.assess(
                     impact=impact, workaround=workaround,
                     priority_reason="The reporter describes this failure and any bypass.",
-                    regression_release="microsoft/WindowsAppSDK@v2.5.1",
                 )
                 self.assertEqual(result["priority"], priority)
 
-    def test_latest_release_regression_requires_exact_trusted_release(self):
-        for release in ("None", "latest", "microsoft/WindowsAppSDK@v2.4", "attacker/repo@v2.5.1"):
-            with self.subTest(release=release):
+    def test_reported_regression_is_not_restricted_to_latest_stable_release(self):
+        for affected in ("older release", "main-branch build", "latest stable release"):
+            with self.subTest(affected=affected):
                 result, _ = self.assess(
-                    impact="LATEST_RELEASE_REGRESSION", priority_reason="Reported regression.",
-                    regression_release=release,
+                    impact="REGRESSION", workaround=True,
+                    priority_reason=f"The reporter says this worked before but fails in the {affected}.",
                 )
-                self.assertIsNone(result["priority"])
-                self.assertTrue(result["review_notes"])
-        self.client.release_tag = "v2.6"
-        result, _ = self.assess(
-            impact="LATEST_RELEASE_REGRESSION", priority_reason="Reported regression.",
-            regression_release="microsoft/WindowsAppSDK@v2.5.1",
-        )
-        self.assertIsNone(result["priority"])
+                self.assertEqual(result["priority"], "P1")
 
-    def test_release_changes_and_type_changes_invalidate_prepared_assessment(self):
-        for change in ("release", "type"):
+    def test_content_and_type_changes_invalidate_prepared_assessment(self):
+        for change in ("body", "type"):
             with self.subTest(change=change):
                 client = FakeGitHub()
                 evidence = t.prepare(client, event(), MAPPING)
                 result = t.validate(agent_output(evidence), evidence)
-                if change == "release":
-                    client.release_tag = "v2.6"
+                if change == "body":
+                    client.issue["body"] += " New failure evidence."
                 else:
                     client.issue["type"] = {"id": 2, "name": "Task"}
                 with self.assertRaises(t.TriageError):
@@ -154,11 +151,11 @@ class MetadataTests(unittest.TestCase):
         for changes in (
             {"impact": "P0"}, {"workaround": "false"}, {"workaround": 1},
             {"priority_reason": ""}, {"priority_reason": "x" * 401},
-            {"regression_release": "x" * 161},
+            {"impact": "LATEST_RELEASE_REGRESSION"},
         ):
             with self.subTest(changes=changes), self.assertRaises(t.TriageError):
                 t.validate(agent_output(evidence, **changes), evidence)
-        fields = ("impact", "workaround", "priority_reason", "regression_release")
+        fields = ("impact", "workaround", "priority_reason")
         for missing in fields:
             output = agent_output(evidence)
             output["items"][0].pop(missing)
@@ -170,6 +167,46 @@ class MetadataTests(unittest.TestCase):
         result = t.validate(output, evidence)
         self.assertIsNone(result["priority"])
         self.assertTrue(any("no priority assessment" in note for note in result["normalization_notes"]))
+
+    def test_nice_to_have_and_adoption_blocker_features_can_receive_priority_without_bug_type(self):
+        for impact, priority in (("NICE_TO_HAVE", "P2"), ("ADOPTION_BLOCKER", "P1")):
+            for existing in (None, "Feature"):
+                with self.subTest(impact=impact, existing=existing):
+                    self.client = FakeGitHub()
+                    self.client.issue["type"] = {"name": existing} if existing else None
+                    self.client.issue["labels"] = [{"name": "feature proposal"}]
+                    result, evidence = self.assess(
+                        issue_kind="FEATURE", impact=impact,
+                        priority_reason="The reporter describes the requested capability and its impact.",
+                    )
+                    self.assertEqual(result["priority"], priority)
+                    self.assertFalse(t.bug_type_applies(result, evidence))
+                    with (
+                        patch.dict(os.environ, {"TRIAGE_PROJECT_TOKEN": "fixture-token"}),
+                        patch.object(t, "GitHub", return_value=self.project),
+                    ):
+                        plan = t.publish(self.client, result, evidence, MAPPING, True)
+                    self.assertTrue(plan["published"])
+                    self.assertFalse(any(path == "issues/100" for _, path, _ in self.client.writes))
+                    self.assertEqual(self.project.mutations[-1][1]["option"], priority + "_id")
+                    self.project = ProjectFake()
+
+    def test_feature_priority_conflicts_and_incomplete_context_are_deferred(self):
+        for kind, existing, truncated, reason, impact in (
+            ("FEATURE", "Bug", False, "Requested enhancement.", "NICE_TO_HAVE"),
+            ("FEATURE", "Task", False, "Requested enhancement.", "NICE_TO_HAVE"),
+            ("FEATURE", None, True, "Requested enhancement.", "NICE_TO_HAVE"),
+            ("FEATURE", None, False, "None", "NICE_TO_HAVE"),
+            ("OTHER", None, False, "Unclear request.", "NICE_TO_HAVE"),
+            ("FEATURE", None, False, "Feature request.", "REGRESSION"),
+        ):
+            with self.subTest(kind=kind, existing=existing, truncated=truncated, impact=impact):
+                evidence = t.prepare(self.client, event(), MAPPING)
+                evidence.update(existing_issue_type=existing, context_truncated=truncated)
+                result = t.validate(agent_output(
+                    evidence, issue_kind=kind, impact=impact, priority_reason=reason,
+                ), evidence)
+                self.assertIsNone(result["priority"])
 
     def test_bug_type_is_real_issue_type_not_a_bug_label_and_is_idempotent(self):
         self.client.issue["type"] = None

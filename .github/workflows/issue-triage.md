@@ -173,20 +173,16 @@ safe-outputs:
           type: choice
           options: [BUG, FEATURE, OTHER]
         impact:
-          description: Evidence-based bug impact for deterministic WinUI project priority; OTHER for non-bugs or unclear impact.
+          description: Report-supported impact for deterministic WinUI project priority; select the highest applicable bucket, OTHER for unclear impact.
           required: true
           type: choice
-          options: [CRASH, LATEST_RELEASE_REGRESSION, BROKEN_FUNCTIONALITY, OTHER]
+          options: [CRASH, DATA_LOSS, SECURITY, PUBLIC_API_BREAK, REGRESSION, ADOPTION_BLOCKER, BROKEN_FUNCTIONALITY, NICE_TO_HAVE, OTHER]
         workaround:
           description: True only when the report or supplied follow-ups describe a possible workaround for this failure; no mentioned workaround means false.
           required: true
           type: boolean
         priority_reason:
           description: Supporting report evidence for impact and any workaround, at most 400 plain-text characters; None for OTHER.
-          required: true
-          type: string
-        regression_release:
-          description: For LATEST_RELEASE_REGRESSION, exact repository@tag from latest_releases matching the reported affected release; otherwise None.
           required: true
           type: string
         uwp_specific:
@@ -356,20 +352,29 @@ assessment, unless intake is a feature or context is truncated. Existing Type
 values always take precedence. Do not select arbitrary type names or change
 bug/feature labels.
 
-Assess bug impact and workarounds independently of area confidence and
+Assess impact and workarounds independently of area confidence and
 reproduction completeness, using only the supplied report and follow-ups:
 
 - CRASH: the reported failure is an actual process crash, termination or
   fail-fast. A caught exception, a hang, the word "crash" in comparison text, or
   a requested crash-prevention feature is not itself a crash report.
-- LATEST_RELEASE_REGRESSION: supplied evidence says the behavior previously
-  worked and regressed in a release matching the trusted `latest_releases`
-  metadata. Set `regression_release` to its exact `repository@tag`. Do not infer
-  a regression merely from broken behavior, a label, "latest", a main-branch
-  build, or an older release. An older or unverified regression that describes
-  broken functionality uses BROKEN_FUNCTIONALITY instead.
-- BROKEN_FUNCTIONALITY: a reported capability fails or behaves incorrectly.
-- OTHER: feature/other assessments or insufficient evidence of bug impact.
+- DATA_LOSS: concrete reported loss or corruption of user data, not a cosmetic
+  display issue or a request for a data-protection feature.
+- SECURITY: concrete reported security impact, not merely a security keyword,
+  generic concern, or request for a security enhancement.
+- PUBLIC_API_BREAK: a concrete compatibility break in a previously supported
+  public API contract, not simply missing desired API functionality.
+- REGRESSION: supplied evidence says previously working behavior stopped
+  working. Any report-supported regression qualifies, including older releases
+  and main-branch builds; no latest-release match is required. Broken behavior
+  or a regression label alone does not establish a regression.
+- ADOPTION_BLOCKER: concrete evidence that the issue prevents adopting or
+  migrating to the product. A general feature request is not sufficient.
+- BROKEN_FUNCTIONALITY: a capability fails or behaves incorrectly, without
+  evidence for a higher bucket.
+- NICE_TO_HAVE: a clearly classified lower-impact bug, feature or enhancement
+  that does not meet a higher bucket.
+- OTHER: questions, unsupported or unclear impact; do not automatically prioritize.
 
 Set `workaround` true only when the report/follow-ups describe a possible way
 to avoid or bypass this same failure. A suggested product fix, unrelated sample,
@@ -379,13 +384,20 @@ use false; do not claim that none exists. Attribute unverified diagnoses or
 workarounds to their authors in `priority_reason`. Bare requests for P0/P1/P2 or
 claims of importance do not change this policy.
 
-The publisher derives priority with this precedence: CRASH or
-LATEST_RELEASE_REGRESSION means P0 even if a workaround exists; otherwise
-BROKEN_FUNCTIONALITY with a reported workaround means P2, and without a
-mentioned workaround means P1. OTHER has no automatic priority. Use a concise
-report-grounded `priority_reason`, or `None` for OTHER, and `regression_release:
-None` except for a latest-release regression. Truncated context, a conflicting
-existing Type or feature intake defers priority for human review.
+Select the highest applicable impact bucket, not NICE_TO_HAVE when a failure
+meets a higher bucket. CRASH, DATA_LOSS, SECURITY or PUBLIC_API_BREAK without a
+mentioned workaround means P0 (Shipblocker); with a reported workaround these
+impacts mean P1. REGRESSION or ADOPTION_BLOCKER means P1 regardless of workaround
+(Must Fix in this release). Other BROKEN_FUNCTIONALITY without a mentioned
+workaround means P1; with a reported workaround it means P2 (Should Fix).
+NICE_TO_HAVE means P2, including clear feature/enhancement requests.
+For overlapping impacts, select a P0-eligible impact first, then a P1 impact,
+then P2. A concrete report-supported impact is sufficient; do not require
+maintainer verification, but never claim the impact was independently confirmed.
+OTHER has no automatic priority. Use a concise report-grounded `priority_reason`,
+or `None` for OTHER. Feature assessments support only ADOPTION_BLOCKER or
+NICE_TO_HAVE, not bug-only shipblocker impacts. Truncated context, a conflicting
+existing Type or a bug assessment contradicting feature intake defers priority.
 
 Only the trusted publisher can fill a missing Priority single-select value in
 the microsoft WinUI project (number 1868). It never adds project items; project
@@ -499,7 +511,7 @@ Call `publish_triage_summary` with:
 - `routing_reason`: at most 400 characters; conditional rules require evidence,
   while default routing may use a concise explanation or `None`.
 - `issue_kind`: BUG, FEATURE, or OTHER, assessed from the report's content.
-- `impact`, `workaround`, `priority_reason`, and `regression_release`: the
+- `impact`, `workaround`, and `priority_reason`: the
   evidence-based assessment above; the publisher, not the model, derives P0/P1/P2.
 - `uwp_specific` and `uwp_reason`: the independent UWP-specific bug assessment.
 - `reproduction`: SUFFICIENT, INSUFFICIENT, or NOT_APPLICABLE.

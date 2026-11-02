@@ -330,10 +330,13 @@ class WorkflowRuntimeTests(unittest.TestCase):
         policy = self.source.split("## Repository issue Type and WinUI project priority\n", 1)[1]
         policy = policy.split("## UWP-specific", 1)[0]
         for guidance in (
-            "Existing Type", "LATEST_RELEASE_REGRESSION", "BROKEN_FUNCTIONALITY",
-            "no mentioned workaround", "means P0 even if a workaround exists",
-            "means P2", "means P1", "number 1868", "Existing project",
-            "not performed during preview", "main-branch", "latest_releases",
+            "Existing Type", "DATA_LOSS", "SECURITY", "PUBLIC_API_BREAK", "REGRESSION",
+            "ADOPTION_BLOCKER", "BROKEN_FUNCTIONALITY", "NICE_TO_HAVE",
+            "no mentioned workaround", "means P0 (Shipblocker)",
+            "means P2 (Should Fix)", "means P1 regardless of workaround",
+            "number 1868", "Existing project", "not performed during preview",
+            "main-branch builds; no latest-release match is required",
+            "including clear feature/enhancement requests",
         ):
             self.assertIn(guidance, policy)
         agent = re.search(r"(?ms)^  agent:\n.*?(?=^  \w|\Z)", self.lock).group()
@@ -347,8 +350,9 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("GITHUB_TOKEN: ${{ github.token }}", publisher)
         self.assertIn("It never adds project items", policy)
         self.assertIn("credential failures do not block normal triage", policy)
-        for name in ("impact", "workaround", "priority_reason", "regression_release"):
+        for name in ("impact", "workaround", "priority_reason"):
             self.assertIn(f'"{name}"', self.lock)
+        self.assertNotIn("regression_release", self.lock)
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

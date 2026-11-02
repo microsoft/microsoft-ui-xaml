@@ -65,17 +65,6 @@ class FakeGitHub:
         self.writes = []
         self.searches = []
         self.after_write = None
-        self.release_tag = "v2.5.1"
-
-    def request(self, method, path, payload=None):
-        if method == "GET" and path in {
-            f"repos/{repo}/releases/latest" for repo in t.LATEST_RELEASE_REPOSITORIES
-        }:
-            return {
-                "tag_name": self.release_tag, "published_at": "2026-09-19T00:00:00Z",
-                "draft": False, "prerelease": False,
-            }
-        raise AssertionError((method, path))
 
     def get(self, suffix):
         if suffix == "issues/100":
@@ -123,7 +112,6 @@ def agent_output(evidence, **changes):
         "missing_information_kind": "NONE",
         "uwp_specific": False, "uwp_reason": "None",
         "impact": "OTHER", "workaround": False, "priority_reason": "None",
-        "regression_release": "None",
         "duplicate_candidates_json": "[]",
     }
     item.update(changes)
