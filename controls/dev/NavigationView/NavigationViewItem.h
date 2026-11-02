@@ -182,6 +182,8 @@ private:
     winrt::Pointer m_capturedPointer{ nullptr };
     winrt::weak_ref<winrt::UIElement> m_captureOwner{ nullptr };
     bool m_captureOwnerIsItem{ false };
+    // An item-owned mouse/pen press that may still become a drag, even after its capture was lost.
+    bool m_isItemDragCandidate{ false };
     uint32_t m_trackedPointerId{ 0 };
     bool m_isPressed{ false };
     bool m_isPointerOver{ false };

@@ -1085,9 +1085,28 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
         {
             m_isPressed = false;
             m_isPointerOver = false;
+            m_isItemDragCandidate = false;
 
             ResetTrackedPointerId();
+            const auto presenterBeforeRelease = GetPresenterOrItem();
             ReleaseCapturedPointer();
+            // Our capture-lost handlers ignore the release because the bookkeeping is already consumed,
+            // so end the replaced press visually here, before any early return below.
+            UpdateVisualState(true);
+
+            // The release ran application PointerCaptureLost handlers. Don't accept the new press on an
+            // item they disabled or retemplated; also keep the CanDrag helper later in the route from arming.
+            if (!IsEnabled() || GetPresenterOrItem() != presenterBeforeRelease)
+            {
+                args.Handled(true);
+                return;
+            }
+
+            // Another interaction began during the callout.
+            if (m_isPressed || m_capturedPointer || m_trackedPointerId != 0)
+            {
+                return;
+            }
         }
         else
         {
@@ -1108,6 +1127,7 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
     MUX_ASSERT(!m_capturedPointer);
 
     m_isPressed = true;
+    m_isItemDragCandidate = false;
 
     auto pointer = args.Pointer();
     auto presenter = GetPresenterOrItem();
@@ -1133,6 +1153,7 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
         m_capturedPointer = pointer;
         m_captureOwner = winrt::make_weak(owner);
         m_captureOwnerIsItem = captureOnItem;
+        m_isItemDragCandidate = captureOnItem;
     }
 
     UpdateVisualState(true);
@@ -1151,6 +1172,7 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
     if (m_isPressed)
     {
         m_isPressed = false;
+        m_isItemDragCandidate = false;
         const auto capturedPointer = m_capturedPointer;
         const bool isPointerInBounds = !IsOutOfControlBounds(args.GetCurrentPoint(*this).Position());
         if (m_captureOwnerIsItem)
@@ -1242,8 +1264,11 @@ void NavigationViewItem::OnItemPointerCanceled(const winrt::IInspectable&, const
 
 void NavigationViewItem::OnDragStarting(const winrt::UIElement&, const winrt::DragStartingEventArgs&)
 {
-    if (m_captureOwnerIsItem)
+    // The mouse drag helper releases capture before StartDragAsync, and that capture loss already
+    // cleared the capture bookkeeping while keeping hover. The candidate flag survives it.
+    if (m_captureOwnerIsItem || m_isItemDragCandidate)
     {
+        m_isItemDragCandidate = false;
         m_isPressed = false;
         // The system drag loop delivers no PointerExited, so a hover state entered now could
         // outlive the drag. The next pointer move over the item restores it.
@@ -1257,6 +1282,7 @@ void NavigationViewItem::OnDragStarting(const winrt::UIElement&, const winrt::Dr
 
 void NavigationViewItem::CancelItemOwnedInteraction()
 {
+    m_isItemDragCandidate = false;
     if (m_captureOwnerIsItem)
     {
         m_isPressed = false;
@@ -1293,6 +1319,7 @@ void NavigationViewItem::OnIsEnabledChanged(const winrt::IInspectable&, const wi
     {
         m_isPressed = false;
         m_isPointerOver = false;
+        m_isItemDragCandidate = false;
 
         ResetTrackedPointerId();
         ReleaseCapturedPointer();
@@ -1406,6 +1433,7 @@ void NavigationViewItem::HookInputEvents(const winrt::IControlProtected& control
 
 void NavigationViewItem::UnhookInputEvents()
 {
+    m_isItemDragCandidate = false;
     if (m_captureOwnerIsItem)
     {
         m_isPressed = false;
