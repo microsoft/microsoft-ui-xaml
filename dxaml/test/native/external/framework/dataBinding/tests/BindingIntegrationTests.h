@@ -48,6 +48,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"Ensure we can bind properties to non DPs")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CanBindBooleanBoxToString)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Validates that binding a Windows.Foundation.PropertyValue boolean box to a string shows True/False, not the IReference class name (#4266)")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CanDefineAttachedPropertyBindingInCode)
                 TEST_METHOD_PROPERTY(L"Description",
                     L"Ensure that attached property bindings defined in code work properly")

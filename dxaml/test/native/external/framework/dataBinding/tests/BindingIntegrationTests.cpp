@@ -372,6 +372,44 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CanBindBooleanBoxToString()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            // ToggleButton.IsChecked hands the binding a Windows.Foundation.PropertyValue box,
+            // which has no ICustomPropertyProvider.
+            auto checkBox = ref new CheckBox;
+            auto checkedText = ref new TextBox;
+
+            auto binding = ref new Binding;
+            binding->Path = ref new PropertyPath(L"IsChecked");
+            binding->Mode = BindingMode::OneWay;
+            binding->Source = checkBox;
+            checkedText->SetBinding(TextBox::TextProperty, binding);
+
+            checkBox->IsChecked = true;
+            VERIFY_ARE_EQUAL(ref new String(L"True"), checkedText->Text);
+
+            checkBox->IsChecked = false;
+            VERIFY_ARE_EQUAL(ref new String(L"False"), checkedText->Text);
+
+            // A boolean box as the DataContext, with {Binding} to the whole object.
+            auto dataContextText = ref new TextBlock;
+            dataContextText->SetBinding(TextBlock::TextProperty, ref new Binding);
+
+            dataContextText->DataContext = ::Windows::Foundation::PropertyValue::CreateBoolean(true);
+            VERIFY_ARE_EQUAL(ref new String(L"True"), dataContextText->Text);
+
+            dataContextText->DataContext = ::Windows::Foundation::PropertyValue::CreateBoolean(false);
+            VERIFY_ARE_EQUAL(ref new String(L"False"), dataContextText->Text);
+
+            // Other non-ICPP PropertyValue boxes still show the class name.
+            dataContextText->DataContext = ::Windows::Foundation::PropertyValue::CreatePoint(::Windows::Foundation::Point(1, 2));
+            VERIFY_ARE_EQUAL(ref new String(L"Windows.Foundation.IReference`1<Windows.Foundation.Point>"), dataContextText->Text);
+        });
+    }
+
     void BindingIntegrationTests::CanDefineAttachedPropertyBindingInCode()
     {
         TestCleanupWrapper cleanup;

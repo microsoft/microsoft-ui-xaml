@@ -745,7 +745,31 @@ StringValueConverter::Convert(
     }
     else
     {
-        IFC(pSource->GetRuntimeClassName(strObjectString.GetAddressOf()));
+        // A Windows.Foundation.PropertyValue boolean box (for example, what ToggleButton.IsChecked
+        // returns) has no ICPP, so it would otherwise show its class name. Use the same text
+        // as .NET's Boolean.ToString().
+        BOOLEAN isBoolean = FALSE;
+        BOOLEAN boolValue = FALSE;
+        ctl::ComPtr<wf::IPropertyValue> spPropertyValue;
+        if (SUCCEEDED(ctl::do_query_interface(spPropertyValue, pSource)))
+        {
+            wf::PropertyType propertyType = wf::PropertyType_Empty;
+            IFC(spPropertyValue->get_Type(&propertyType));
+            if (propertyType == wf::PropertyType_Boolean)
+            {
+                IFC(spPropertyValue->GetBoolean(&boolValue));
+                isBoolean = TRUE;
+            }
+        }
+
+        if (isBoolean)
+        {
+            IFC(strObjectString.Set(boolValue ? L"True" : L"False"));
+        }
+        else
+        {
+            IFC(pSource->GetRuntimeClassName(strObjectString.GetAddressOf()));
+        }
     }
 
     IFC(StaticStore::GetPropertyValueStaticsNoRef()->CreateString(strObjectString.Get(), ppTargetValue));
