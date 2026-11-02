@@ -1924,6 +1924,18 @@ namespace
         return a == b || (std::isnan(a) && std::isnan(b));
     }
 
+    // True if a visual state setter or an animation supplies the effective value instead of the local or style value.
+    bool IsAnimatedValue(const winrt::Button& button, const winrt::DependencyProperty& property)
+    {
+        const auto value = button.GetValue(property);
+        const auto baseValue = button.GetAnimationBaseValue(property);
+        if (property == winrt::FrameworkElement::MarginProperty())
+        {
+            return winrt::unbox_value<winrt::Thickness>(value) != winrt::unbox_value<winrt::Thickness>(baseValue);
+        }
+        return !AreSameLength(winrt::unbox_value<double>(value), winrt::unbox_value<double>(baseValue));
+    }
+
     // The stock template's backplate (RootGrid), which is a child of its root HitTargetGrid.
     winrt::FrameworkElement GetBackButtonBackplate(const winrt::Button& button)
     {
@@ -2035,12 +2047,12 @@ void NavigationView::ApplyBackButtonHitTarget(const winrt::Button& backButton)
     backButton.ApplyTemplate();
 
     // NavigationView's own values are cleared first so the reads below see the style's. App property-changed callbacks run
-    // synchronously during each ClearValue and write below; a value the app sets at any point turns the enlargement off
-    // instead of being cleared or overwritten.
+    // synchronously during each ClearValue and write below; a value the app sets at any point (including through a visual
+    // state setter or animation, which outranks local values) turns the enlargement off instead of being cleared or overwritten.
     const winrt::DependencyProperty geometryProperties[] = { winrt::FrameworkElement::MarginProperty(), winrt::FrameworkElement::HeightProperty(), winrt::FrameworkElement::MinWidthProperty() };
     for (const auto& property : geometryProperties)
     {
-        if (!IsBackButtonValueAvailable(property))
+        if (!IsBackButtonValueAvailable(property) || IsAnimatedValue(backButton, property))
         {
             ClearBackButtonHitTarget(backButton);
             return;
