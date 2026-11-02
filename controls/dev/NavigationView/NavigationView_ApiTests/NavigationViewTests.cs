@@ -3784,6 +3784,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             // #9812 review: children of a NavigationViewItem placed directly in PaneFooter aren't part of the menu index space,
             // so a selected menu child must not mark them IsChildSelected (collapsing one would then take the pill).
+            // An item placed in PaneFooter from the start can't show its children (nothing hooks its IsExpanded), so this
+            // uses an item that was expanded in MenuItems and then moved to PaneFooter: its child repeater stays visible
+            // and still reports ElementPrepared to the NavigationView.
             var failures = new List<string>();
             NavigationView navView = null;
             NavigationViewItem parent = null;
@@ -3808,12 +3811,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 parent.MenuItems.Add(child);
                 navView.MenuItems.Add(parent);
 
-                // Same local index (1) as Parent, so a local index path of [1] looks like an ancestor of the selection [main, 1, 0].
+                // Last in MenuItems, so moving it out doesn't shift Parent's index.
                 paneFooterChild0 = new NavigationViewItem { Content = "PaneFooter child 0", Icon = new SymbolIcon(Symbol.Contact) };
-                paneFooterChild1 = new NavigationViewItem { Content = "PaneFooter child 1", Icon = new SymbolIcon(Symbol.Contact) };
-                paneFooterChild1.MenuItems.Add(new NavigationViewItem { Content = "PaneFooter grandchild" });
                 paneFooterItem = new NavigationViewItem { Content = "PaneFooter item", Icon = new SymbolIcon(Symbol.Contact) };
-                navView.PaneFooter = paneFooterItem;
+                paneFooterItem.MenuItems.Add(paneFooterChild0);
+                navView.MenuItems.Add(paneFooterItem);
 
                 navView.Loaded += (sender, args) => loadedEvent.Set();
                 Content = navView;
@@ -3821,33 +3823,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             loadedEvent.WaitOne();
             WaitForSelectionIndicatorAnimation();
-            RunOnUIThread.Execute(() => parent.IsExpanded = true);
+            RunOnUIThread.Execute(() =>
+            {
+                parent.IsExpanded = true;
+                paneFooterItem.IsExpanded = true;
+            });
             WaitForSelectionIndicatorAnimation();
             RunOnUIThread.Execute(() => navView.SelectedItem = child);
             WaitForSelectionIndicatorAnimation();
 
-            // Children added after the PaneFooter item has loaded: its child repeater then reports to the NavigationView.
             RunOnUIThread.Execute(() =>
             {
-                paneFooterItem.MenuItems.Add(paneFooterChild0);
-                paneFooterItem.MenuItems.Add(paneFooterChild1);
-                paneFooterItem.IsExpanded = true;
+                navView.MenuItems.Remove(paneFooterItem);
+                navView.PaneFooter = paneFooterItem;
             });
             WaitForSelectionIndicatorAnimation();
-            RunOnUIThread.Execute(() => paneFooterChild1.IsExpanded = true);
+
+            // Same local index (1) as Parent, so its index path [main, 1] looks like an ancestor of the selection [main, 1, 0].
+            RunOnUIThread.Execute(() =>
+            {
+                paneFooterChild1 = new NavigationViewItem { Content = "PaneFooter child 1", Icon = new SymbolIcon(Symbol.Contact) };
+                paneFooterChild1.MenuItems.Add(new NavigationViewItem { Content = "PaneFooter grandchild" });
+                paneFooterItem.MenuItems.Add(paneFooterChild1);
+            });
             WaitForSelectionIndicatorAnimation();
             RunOnUIThread.Execute(() =>
             {
+                Verify.IsTrue(paneFooterItem.IsExpanded && VisualTreeHelper.GetParent(paneFooterChild1) != null,
+                    "The PaneFooter item's children should be realized for this test to be meaningful");
                 foreach (var item in new[] { paneFooterChild0, paneFooterChild1 })
                 {
-                    Log.Comment($"  PaneFooter expanded: {item.Content} IsChildSelected={item.IsChildSelected}, in tree={VisualTreeHelper.GetParent(item) != null}");
+                    Log.Comment($"  PaneFooter: {item.Content} IsChildSelected={item.IsChildSelected}, in tree={VisualTreeHelper.GetParent(item) != null}");
                     if (item.IsChildSelected)
                     {
-                        failures.Add($"PaneFooter expanded: {item.Content} has IsChildSelected=True, but the selected item is in the menu");
+                        failures.Add($"PaneFooter: {item.Content} has IsChildSelected=True, but the selected item is in the menu");
                     }
                 }
             });
 
+            RunOnUIThread.Execute(() => paneFooterChild1.IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
             RunOnUIThread.Execute(() => paneFooterChild1.IsExpanded = false);
             WaitForSelectionIndicatorAnimation();
             CheckOnlyThisItemShowsSelectionIndicator(child, new[] { parent, child, paneFooterItem, paneFooterChild0, paneFooterChild1 }, "PaneFooter child collapsed", failures);
