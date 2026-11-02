@@ -3669,6 +3669,7 @@ void TableView::OnTableViewUnloaded()
         return;
     }
 
+    CancelColumnResizeDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
