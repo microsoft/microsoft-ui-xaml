@@ -303,6 +303,11 @@ SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::I
         || newStateName == wrl_wrappers::HStringReference(L"ClosedCompactRight");
     m_receivedPaneStateChanges.emplace(sequence, newState ? std::optional<bool>(!isClosedState) : std::nullopt);
 
+    // Queued notifications arrive in the order they were raised, after any synchronous one
+    // raised before them. So when a queued one arrives, an older sequence we never received
+    // will not come: an earlier app handler failed during its delivery.
+    const uint64_t lostThrough = coreArgs->IsCurrentStateChangedQueued() ? sequence - 1 : 0;
+
     // A synchronous custom manager can report a newer completion before an older
     // queued notification, including one that advances a missing-state request.
     const auto group = static_cast<CVisualStateGroup*>(m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle());
@@ -317,7 +322,7 @@ SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::I
             receivedState = received->second;
             m_receivedPaneStateChanges.erase(received);
         }
-        else if (!group->IsCurrentStateChangedUndelivered(expectedSequence))
+        else if (expectedSequence > lostThrough && !group->IsCurrentStateChangedUndelivered(expectedSequence))
         {
             break;
         }
@@ -325,9 +330,9 @@ SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::I
         // arrive, so it is handled like a missing state.
         if (receivedState && *receivedState == m_pendingPaneStateChanges.front().isPaneOpen)
         {
-            const bool isPaneOpen = m_pendingPaneStateChanges.front().isPaneOpen;
+            const auto completed = m_pendingPaneStateChanges.front();
             m_pendingPaneStateChanges.pop_front();
-            IFC_RETURN(OnPaneOpenedOrClosed(isPaneOpen));
+            IFC_RETURN(PublishPaneStateChange(completed.requestId, completed.isPaneOpen));
         }
         else if (m_pendingPaneStateChanges.size() > 1 &&
             m_pendingPaneStateChanges[1].completionSequence == expectedSequence + 1)
@@ -344,6 +349,10 @@ SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::I
     if (m_pendingPaneStateChanges.empty())
     {
         m_receivedPaneStateChanges.clear();
+    }
+    while (m_receivedPaneStateChanges.size() > c_maxTrackedPaneStateChanges)
+    {
+        m_receivedPaneStateChanges.erase(m_receivedPaneStateChanges.begin());
     }
 
     return S_OK;
@@ -593,6 +602,12 @@ SplitView::BeginPaneRequest(bool isOpen, _Out_ PaneRequest* request)
         else
         {
             m_pendingPaneStateChanges.push_back({ sequence, request->id, isOpen });
+            if (m_pendingPaneStateChanges.size() > c_maxTrackedPaneStateChanges)
+            {
+                // Notifications that never reach us (for example, an earlier app handler keeps
+                // failing) must not grow this without bound; the oldest completion is dropped.
+                m_pendingPaneStateChanges.pop_front();
+            }
         }
     }
 
@@ -648,9 +663,10 @@ SplitView::AbandonPaneRequest(const PaneRequest& request)
         }
     }
 
-    // The request may also have been moved here by a template change.
+    // The request may also have been moved here by a template change. A complete entry is a
+    // committed DisplayModeStates completion waiting for an older request, so it stays.
     const auto abandoned = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
-        [&request](const auto& change) { return change.requestId == request.id; });
+        [&request](const auto& change) { return change.requestId == request.id && !change.isComplete; });
     if (abandoned != m_fallbackPaneStateChanges.end())
     {
         m_fallbackPaneStateChanges.erase(abandoned);
@@ -659,6 +675,23 @@ SplitView::AbandonPaneRequest(const PaneRequest& request)
     }
 
     return S_OK;
+}
+
+_Check_return_ HRESULT
+SplitView::PublishPaneStateChange(uint64_t requestId, bool isPaneOpen)
+{
+    // A synchronous DisplayModeStates completion can arrive while an older request that
+    // completes through the fallback is still running (for example, PaneOpening applied a
+    // template with DisplayModeStates and then closed the pane). Publish in request order.
+    if (!m_fallbackPaneStateChanges.empty() && m_fallbackPaneStateChanges.front().requestId < requestId)
+    {
+        const auto position = std::find_if(m_fallbackPaneStateChanges.begin(), m_fallbackPaneStateChanges.end(),
+            [requestId](const auto& change) { return change.requestId > requestId; });
+        m_fallbackPaneStateChanges.insert(position, { requestId, isPaneOpen, true });
+        return S_OK;
+    }
+
+    return OnPaneOpenedOrClosed(isPaneOpen);
 }
 
 _Check_return_ HRESULT

@@ -143,6 +143,7 @@ CVisualStateGroup::NotifyVisualStateEvent(
         if (VisualStateEventChanged == EventState)
         {
             spArgs->SetCurrentStateChangedSequence(NextCurrentStateChangedSequence());
+            spArgs->SetCurrentStateChangedQueued();
         }
 
         // To maintain SL5 comptability, the VisualStateChanged/Changing events need to arrive with their sender set

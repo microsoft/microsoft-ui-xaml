@@ -64,6 +64,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT BeginPaneRequest(bool isOpen, _Out_ PaneRequest* request);
         _Check_return_ HRESULT AbandonPaneRequest(const PaneRequest& request);
+        _Check_return_ HRESULT PublishPaneStateChange(uint64_t requestId, bool isPaneOpen);
         _Check_return_ HRESULT PublishFallbackPaneStateChanges();
         _Check_return_ HRESULT OnIsPaneOpenChanged(bool isOpen, PaneRequest& request);
         _Check_return_ HRESULT OnDisplayModeChanged();
@@ -135,6 +136,7 @@ namespace DirectUI
             uint64_t requestId;
             bool isPaneOpen;
         };
+        static constexpr size_t c_maxTrackedPaneStateChanges = 32;
         std::deque<PendingPaneStateChange> m_pendingPaneStateChanges;
         std::map<uint64_t, std::optional<bool>> m_receivedPaneStateChanges;
         uint64_t m_nextPaneRequestId{ 0 };
