@@ -282,7 +282,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies TableViewGroupInfo describes its own properties to {Binding} through ICustomPropertyProvider.")]
+        [TestProperty("Description", "Verifies TableViewGroupInfo describes its own properties to {Binding} through ICustomPropertyProvider, for an expanded group, a collapsed group and a non-string key.")]
         public void VerifyGroupInfoProvidesCustomProperties()
         {
             // A trimmed app's metadata can't describe TableViewGroupInfo, so {Binding} relies on this.
@@ -298,47 +298,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var info = GetGroupInfo(tableView, 0);
-                var provider = (object)info as ICustomPropertyProvider;
-                Verify.IsNotNull(provider, "TableViewGroupInfo must implement ICustomPropertyProvider.");
-                if (provider == null)
-                {
-                    return;
-                }
-
-                Verify.AreEqual(info.KeyText, provider.GetStringRepresentation(), "The string representation is the key text.");
-                // C#/WinRT routes ToString() only to an IStringable declared in metadata, so ask for it explicitly.
-                Verify.AreEqual(info.KeyText, ((global::Windows.Foundation.IStringable)(object)info).ToString(), "IStringable reports the key text too.");
-                Verify.AreEqual("Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo", provider.Type?.FullName, "The provider's type is the runtime class.");
-                Verify.IsNull(provider.GetCustomProperty("NoSuchProperty"), "An unknown name has no property.");
-                Verify.IsNull(provider.GetIndexedProperty("KeyText", typeof(string)), "There are no indexed properties.");
-
-                var expected = new (string Name, Type Type, object Value)[]
-                {
-                    ("Key", typeof(object), info.Key),
-                    ("KeyText", typeof(string), info.KeyText),
-                    ("ItemCount", typeof(int), info.ItemCount),
-                    ("ItemCountText", typeof(string), info.ItemCountText),
-                    ("Level", typeof(int), info.Level),
-                    ("IsExpandable", typeof(bool), info.IsExpandable),
-                    ("IsExpanded", typeof(bool), info.IsExpanded),
-                };
-                foreach (var (name, type, value) in expected)
-                {
-                    var property = provider.GetCustomProperty(name);
-                    Verify.IsNotNull(property, $"{name} must be resolvable by name.");
-                    if (property == null)
-                    {
-                        continue;
-                    }
-
-                    Verify.AreEqual(name, property.Name, $"{name}: Name.");
-                    Verify.IsTrue(property.CanRead, $"{name}: CanRead.");
-                    Verify.IsFalse(property.CanWrite, $"{name}: read-only.");
-                    Verify.AreEqual(type, property.Type, $"{name}: Type.");
-                    Verify.AreEqual(value, property.GetValue(info), $"{name}: GetValue must read the projected value.");
-                }
+                VerifyCustomProperties(GetGroupInfo(tableView, 0), "expanded group");
+                GetExpandCollapseProvider(tableView, 1).Collapse();
             });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfo(tableView, 1);
+                Verify.IsTrue(info?.IsExpandable == true && info?.IsExpanded == false, "Precondition: the group must be expandable but collapsed, so the two getters differ.");
+                VerifyCustomProperties(info, "collapsed group");
+
+                var source = TableViewSource.From(MakeShapedPeople());
+                source.GroupBy(o => Person(o).Name.Length);
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfo(tableView, 1);
+                // An int key differs from its string KeyText by type; it must also differ from ItemCount.
+                Verify.IsTrue(info?.Key is int && !Equals(info.Key, (object)info.ItemCount), "Precondition: the group must have an int key that differs from its item count.");
+                VerifyCustomProperties(info, "int key");
+            });
+        }
+
+        private static void VerifyCustomProperties(TableViewGroupInfo info, string context)
+        {
+            var provider = (object)info as ICustomPropertyProvider;
+            Verify.IsNotNull(provider, $"TableViewGroupInfo must implement ICustomPropertyProvider ({context}).");
+            if (provider == null)
+            {
+                return;
+            }
+
+            Verify.AreEqual(info.KeyText, provider.GetStringRepresentation(), $"The string representation is the key text ({context}).");
+            // C#/WinRT routes ToString() only to an IStringable declared in metadata, so ask for it explicitly.
+            Verify.AreEqual(info.KeyText, ((global::Windows.Foundation.IStringable)(object)info).ToString(), $"IStringable reports the key text too ({context}).");
+            Verify.AreEqual("Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo", provider.Type?.FullName, $"The provider's type is the runtime class ({context}).");
+            Verify.IsNull(provider.GetCustomProperty("NoSuchProperty"), $"An unknown name has no property ({context}).");
+            Verify.IsNull(provider.GetIndexedProperty("KeyText", typeof(string)), $"There are no indexed properties ({context}).");
+
+            var expected = new (string Name, Type Type, object Value)[]
+            {
+                ("Key", typeof(object), info.Key),
+                ("KeyText", typeof(string), info.KeyText),
+                ("ItemCount", typeof(int), info.ItemCount),
+                ("ItemCountText", typeof(string), info.ItemCountText),
+                ("Level", typeof(int), info.Level),
+                ("IsExpandable", typeof(bool), info.IsExpandable),
+                ("IsExpanded", typeof(bool), info.IsExpanded),
+            };
+            foreach (var (name, type, value) in expected)
+            {
+                var property = provider.GetCustomProperty(name);
+                Verify.IsNotNull(property, $"{name} must be resolvable by name ({context}).");
+                if (property == null)
+                {
+                    continue;
+                }
+
+                Verify.AreEqual(name, property.Name, $"{name}: Name ({context}).");
+                Verify.IsTrue(property.CanRead, $"{name}: CanRead ({context}).");
+                Verify.IsFalse(property.CanWrite, $"{name}: read-only ({context}).");
+                Verify.AreEqual(type, property.Type, $"{name}: Type ({context}).");
+                Verify.AreEqual(value, property.GetValue(info), $"{name}: GetValue must read the projected value ({context}).");
+            }
         }
 
         [TestMethod]
