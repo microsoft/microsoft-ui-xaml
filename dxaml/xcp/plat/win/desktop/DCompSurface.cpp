@@ -365,12 +365,6 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
         }
     }
 
-    if (XamlProfilerTracing::IsEnabled() &&
-        (m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr))
-    {
-        TraceSurfaceMemoryChange(false);
-    }
-
     m_d3dDevice.reset();
     m_surfaceUpdates.clear();
 
@@ -1118,11 +1112,6 @@ DCompSurface::Resize(
 
     IFC(m_compositionSurfaceHelper.Resize(width, height));
 
-    if (XamlProfilerTracing::IsEnabled())
-    {
-        TraceSurfaceMemoryChange(false);
-    }
-
     // If the surface size changed, then we clear out the pending update list. If the surface became smaller,
     // the existing surface updates can draw to a part of the surface that exceeds the new smaller bounds. If
     // the surface became larger, the existing surface updates may no longer update the entire surface, which is
@@ -1141,11 +1130,6 @@ DCompSurface::Resize(
     if (!IsVirtual())
     {
         UpdateMemoryFootprint(TRUE);
-    }
-
-    if (XamlProfilerTracing::IsEnabled())
-    {
-        TraceSurfaceMemoryChange(true);
     }
 
 Cleanup:
@@ -1378,38 +1362,6 @@ void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
         static_cast<bool>(m_includesGutters),
         static_cast<bool>(m_requestAtlas),
         static_cast<bool>(m_fAlphaMask));
-
-    TraceSurfaceMemoryChange(true);
-}
-
-void DCompSurface::TraceSurfaceMemoryChange(bool isAllocation)
-{
-    if (!XamlProfilerTracing::IsEnabled())
-    {
-        return;
-    }
-
-    const uint64_t estimatedSizeBytes =
-        static_cast<uint64_t>(GetWidthWithGutters()) *
-        static_cast<uint64_t>(GetHeightWithGutters()) *
-        static_cast<uint64_t>(GetPixelStride());
-
-    XamlProfilerTracing::DCompSurfaceMemoryChanged(
-        reinterpret_cast<uint64_t>(this),
-        isAllocation,
-        estimatedSizeBytes,
-        GetWidthWithGutters(),
-        GetHeightWithGutters(),
-        GetPixelStride(),
-        m_pVirtualCompositionSurface != nullptr);
-    XamlProfilerTracing::XamlHeapSnapshot(
-        XcpAllocation::GetHeapHandle(),
-        XcpAllocation::IsUsingPrivateHeap(),
-        XcpAllocation::GetOutstandingAllocationSize(),
-        XcpAllocation::GetOutstandingAllocationCount(),
-        XcpAllocation::GetAllocationSize(),
-        XcpAllocation::GetAllocationCount(),
-        XcpAllocation::GetDeallocationCount());
 }
 
 //-------------------------------------------------------------------------

@@ -237,7 +237,6 @@ private:
         );
 
     void TraceSurfaceInit(DXGI_FORMAT format);
-    void TraceSurfaceMemoryChange(bool isAllocation);
 
     _Check_return_ HRESULT CopySubresource(
         _In_ const XRECT& destRect,
