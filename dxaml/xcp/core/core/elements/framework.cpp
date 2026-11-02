@@ -846,6 +846,7 @@ CFrameworkElement::OnStyleChanged(
 
         for (auto i = 0U; i < newStylePropertyCount; i++)
         {
+#if 1
             IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
             const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
 
@@ -872,6 +873,23 @@ CFrameworkElement::OnStyleChanged(
             {
                 IFC(pNewStyle->NotifySetterApplied(i));
             }
+#else
+            IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
+            const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
+
+            IGNOREHR(InvalidateProperty(pDP, baseValueSource));
+
+            // Let the style know that the property setter has been applied.
+            // If the value has a new peer after InvalidateProperty, an optimized style will add a
+            // peer reference to it to ensure the life of the peer through the lifetime of the style.
+            //
+            // Notify every applied setter unconditionally. Skipping this notification when a
+            // higher-priority style layer appears to own the property is unsafe: IsPropertySetByStyle
+            // conflates the BuiltInStyle and Style layers, so we cannot reliably prove which setters
+            // are safe to skip, and a skipped setter's value can be left unrealized and fall back to
+            // a default when the higher-priority layer is later invalidated.
+            IFC(pNewStyle->NotifySetterApplied(i));
+#endif
         }
 
         if (pNewStyle->HasMutableSetters() || shouldStoreSourceInfo)

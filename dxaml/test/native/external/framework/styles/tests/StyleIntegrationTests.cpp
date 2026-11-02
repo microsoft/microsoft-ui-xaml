@@ -4308,6 +4308,88 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
+    void StyleIntegrationTests::DuplicateDefaultStyleSettersPreserveEffectiveValue()
+    {
+        TestCleanupWrapper cleanup;
+        DefaultStyleControl^ control = nullptr;
+
+        auto verifyEffectiveStyle = [&](double expectedWidth)
+        {
+            auto probe = ref new ContentControl();
+            probe->Style = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            const double actualWidth = probe->Width;
+            VERIFY_ARE_EQUAL(expectedWidth, actualWidth,
+                WEX::Common::String().Format(
+                    L"The effective setter value must still be a usable Style (expectedWidth=%g, actualWidth=%g)",
+                    expectedWidth, actualWidth));
+        };
+
+        RunOnUIThread([&]()
+        {
+            control = ref new DefaultStyleControl();
+            // Compiled XBF is required to exercise deferred setter values.
+            control->DefaultStyleResourceUri = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            m_rootCanvas->Children->Append(control);
+            m_rootCanvas->UpdateLayout();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto retainedStyle = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            verifyEffectiveStyle(37.0);
+            auto replacement = ref new Style();
+            replacement->TargetType = Control::typeid;
+            auto setter = ref new Setter();
+            setter->Property = FrameworkElement::WidthProperty;
+            setter->Value = 73.0;
+            replacement->Setters->Append(setter);
+            control->SetValue(CustomControl::AttachedTagProperty, replacement);
+            verifyEffectiveStyle(73.0);
+
+            LOG_OUTPUT(L"ClearValue should not crash");
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            LOG_OUTPUT(L"And confirm the correct value");
+            verifyEffectiveStyle(37.0);
+            retainedStyle = nullptr;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void StyleIntegrationTests::DefaultStyleAttachedTagCanBeReadAfterCollection()
+    {
+        TestCleanupWrapper cleanup;
+        DefaultStyleControl^ control = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            control = ref new DefaultStyleControl();
+            control->DefaultStyleResourceUri = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            m_rootCanvas->Children->Append(control);
+            m_rootCanvas->UpdateLayout();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Read the Style from AttachedTag and release the reference when this callback returns");
+            auto style = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            VERIFY_IS_NOT_NULL(style);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        LOG_OUTPUT(L"Collect peers without overriding or clearing AttachedTag");
+        TestServices::WindowHelper->GCCollect();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Reading the Style from AttachedTag again should not crash");
+            auto style = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            VERIFY_IS_NOT_NULL(style);
+            LOG_OUTPUT(L"The Style was retrieved successfully after collection");
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
     void StyleIntegrationTests::VerifyImplicitStyleInvalidationInThemeDictionaries()
     {
         TestCleanupWrapper cleanup;

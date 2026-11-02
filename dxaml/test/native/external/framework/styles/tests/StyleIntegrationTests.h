@@ -337,6 +337,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DuplicateDefaultStyleSettersPreserveEffectiveValue)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that the last duplicate default-style setter remains usable after a local override "
+                L"is set and cleared while a reference to the original Style is retained.")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DefaultStyleAttachedTagCanBeReadAfterCollection)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that the default-style AttachedTag value can be read again after releasing the Style reference "
+                L"and collecting peers, without overriding or clearing the property.")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root and its ThemeDictionaries contains an implicit style")
