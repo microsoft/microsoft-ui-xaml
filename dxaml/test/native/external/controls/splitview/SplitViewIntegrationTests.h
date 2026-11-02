@@ -260,6 +260,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that more consecutive undelivered completions than the group remembers cannot block later pane completions.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterUndeliveredQueuedNotification)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a built-in (queued) completion that an earlier failing app handler kept from SplitView does not block later pane completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesOrderCompletionsWhenPaneOpeningAddsDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that PaneOpened is raised before PaneClosed when a PaneOpening handler applies a template with DisplayModeStates and then closes the pane.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()
