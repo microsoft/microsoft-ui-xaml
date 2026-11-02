@@ -2,13 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "MetadataAPI.h"
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
 #include "XamlTraceLogging.h"
-#ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
-#endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <FrameworkTheming.h>
@@ -63,16 +62,13 @@
 #include <CValueBoxer.h>
 #include <rendertargetbitmapmgr.h>
 
-#ifdef XAMLPROFILER_ENABLED
 #include <XcpAllocation.h>
-#endif
 
 using namespace DirectUI;
 using namespace DCompHelpers;
 using namespace Focus;
 using namespace Theming;
 
-#ifdef XAMLPROFILER_ENABLED
 #if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
 // Recovers the concrete core object's requested allocation size from the debug allocator's
 // validation header. Defined in the allocation library (XcpAllocationDebug.cpp); forward-declared
@@ -110,7 +106,22 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
     return 0;
 }
 
-XamlElementTracing::Identity XamlElementTracing::GetIdentity(
+uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
+{
+    if (obj == nullptr)
+    {
+        return 0;
+    }
+#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
+    return XcpDebugGetAllocationSize(obj);
+#elif !defined(NO_XCP_NEW_AND_DELETE)
+    return static_cast<uint64_t>(XcpAllocation::OSMemoryGetBlockSize(obj));
+#else
+    return 0;
+#endif
+}
+
+XamlTelemetry::Identity XamlTelemetry::GetIdentity(
     _In_opt_ CDependencyObject* object,
     _In_opt_ CDependencyObject* relatedUIElement)
 {
@@ -132,22 +143,6 @@ XamlElementTracing::Identity XamlElementTracing::GetIdentity(
     }
     return identity;
 }
-
-uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
-{
-    if (obj == nullptr)
-    {
-        return 0;
-    }
-#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
-    return XcpDebugGetAllocationSize(obj);
-#elif !defined(NO_XCP_NEW_AND_DELETE)
-    return static_cast<uint64_t>(XcpAllocation::OSMemoryGetBlockSize(obj));
-#else
-    return 0;
-#endif
-}
-#endif // XAMLPROFILER_ENABLED
 
 // Uncomment to get generic UIElement debug traces
 // #define UIE_DBG
@@ -1324,7 +1319,6 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     const bool isParentEnabled = params.fCoercedIsEnabled;
     static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
 
-#ifdef XAMLPROFILER_ENABLED
     if (XamlProfilerTracing::IsEnabled())
     {
         // Best-effort XAML source location for this element. Populated only when source-info
@@ -1362,7 +1356,6 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
             XcpAllocation::GetAllocationCount(),
             XcpAllocation::GetDeallocationCount());
     }
-#endif // XAMLPROFILER_ENABLED
 
     // When Xaml Diagnostics is enabled we need to peg the peer to make sure that it enters the tree so that
     // Xaml Diagnostics can take a reference to it.
@@ -1966,7 +1959,6 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
         TraceElementRemovedInfo(reinterpret_cast<XUINT64>(this), reinterpret_cast<XUINT64>(pParent));
     }
 
-#ifdef XAMLPROFILER_ENABLED
     if (XamlProfilerTracing::IsEnabled())
     {
         XamlProfilerTracing::ElementLeftTree(
@@ -1983,7 +1975,6 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
             XcpAllocation::GetAllocationCount(),
             XcpAllocation::GetDeallocationCount());
     }
-#endif // XAMLPROFILER_ENABLED
 
     // Work on the children
     if (m_pChildren)
@@ -7016,7 +7007,6 @@ CUIElement::AddChild(_In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->Append(pChild));
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
 
-#ifdef XAMLPROFILER_ENABLED
         if (XamlProfilerTracing::IsEnabled())
         {
             XamlProfilerTracing::ChildAdded(
@@ -7027,7 +7017,6 @@ CUIElement::AddChild(_In_ CUIElement *pChild)
                 pChild->GetTemplatedParent() != nullptr,
                 XamlProfilerGetPeerHandle(pChild));
         }
-#endif // XAMLPROFILER_ENABLED
     }
     else
     {
@@ -7076,7 +7065,6 @@ CUIElement::InsertChild(_In_ XUINT32 nIndex, _In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->Insert(nIndex, pChild));
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
 
-#ifdef XAMLPROFILER_ENABLED
         if (XamlProfilerTracing::IsEnabled())
         {
             XamlProfilerTracing::ChildInserted(
@@ -7087,7 +7075,6 @@ CUIElement::InsertChild(_In_ XUINT32 nIndex, _In_ CUIElement *pChild)
                 pChild->GetTemplatedParent() != nullptr,
                 XamlProfilerGetPeerHandle(pChild));
         }
-#endif // XAMLPROFILER_ENABLED
     }
     else
     {
@@ -7138,14 +7125,12 @@ CUIElement::RemoveChild(_In_ CUIElement *pChild)
         // peer resurrection.
         pChild->TryPegPeer(&peggedPeer, &peerIsPendingDelete);
 
-#ifdef XAMLPROFILER_ENABLED
         if (XamlProfilerTracing::IsEnabled())
         {
             XamlProfilerTracing::ChildRemoved(
                 reinterpret_cast<uint64_t>(this),
                 reinterpret_cast<uint64_t>(pChild));
         }
-#endif // XAMLPROFILER_ENABLED
 
         ptrItem = (CUIElement *)pCollection->RemoveAt(iIndex);
 
@@ -11144,8 +11129,7 @@ CUIElement::EnsureCompositionPeer(
     // Gated on IsEnabled(): with no session attached nothing is emitted, so the suppression
     // bookkeeping (and its GetDebugLabel() allocation) is pointless. The overlay is only ever
     // created while a profiler session is attached, so this always runs when it matters.
-#ifdef XAMLPROFILER_ENABLED
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         const uint64_t thisCompNodeId = reinterpret_cast<uint64_t>(pCompositionPeer);
         bool suppress = WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pParentNode));
@@ -11165,7 +11149,6 @@ CUIElement::EnsureCompositionPeer(
             WucVisualTreeProfiler::SuppressCompNode(thisCompNodeId);
         }
     }
-#endif // XAMLPROFILER_ENABLED
 
     // Insert the composition peer into the tree.
     if (pTargetCompositionPeer == nullptr)
@@ -11233,7 +11216,6 @@ CUIElement::EnsureCompositionPeer(
             );
 
         // Suppressed pick-overlay comp nodes are never advertised to the profiler.
-#ifdef XAMLPROFILER_ENABLED
         if (XamlProfilerTracing::IsEnabled() &&
             !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pCompositionPeer)))
         {
@@ -11244,7 +11226,6 @@ CUIElement::EnsureCompositionPeer(
                 pElement->GetDebugLabel().GetBuffer(),
                 XamlProfilerGetPeerHandle(pElement));
         }
-#endif // XAMLPROFILER_ENABLED
 
         SetInterface(*ppTargetCompositionPeer, pCompositionPeer);
     }
@@ -11378,7 +11359,6 @@ CUIElement::RemoveCompositionPeer()
                 );
 
             // Suppressed pick-overlay comp nodes were never advertised, so don't emit unlink.
-#ifdef XAMLPROFILER_ENABLED
             if (XamlProfilerTracing::IsEnabled() &&
                 !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(m_pCompositionPeer)))
             {
@@ -11386,7 +11366,6 @@ CUIElement::RemoveCompositionPeer()
                     reinterpret_cast<uint64_t>(this),
                     reinterpret_cast<uint64_t>(m_pCompositionPeer));
             }
-#endif // XAMLPROFILER_ENABLED
 
             static_cast<HWCompTreeNodeWinRT*>(m_pCompositionPeer)->UntargetFromLights(GetDCompTreeHost());
 
@@ -11405,12 +11384,13 @@ CUIElement::RemoveCompositionPeer()
             }
         }
 
-        // Clear any pick-overlay suppression so the (now freed) comp-node pointer address can
-        // be reused later without wrongly suppressing an unrelated comp node. Cheap no-op when
-        // this node was never suppressed.
-#ifdef XAMLPROFILER_ENABLED
-        WucVisualTreeProfiler::UnsuppressCompNode(reinterpret_cast<uint64_t>(m_pCompositionPeer));
-#endif // XAMLPROFILER_ENABLED
+        // Clear recorded suppression even if capture stopped before teardown, so a reused
+        // comp-node address cannot incorrectly suppress an unrelated node.
+        const uint64_t compNodeId = reinterpret_cast<uint64_t>(m_pCompositionPeer);
+        if (XamlProfilerTracing::IsEnabled() || WucVisualTreeProfiler::IsCompNodeSuppressed(compNodeId))
+        {
+            WucVisualTreeProfiler::UnsuppressCompNode(compNodeId);
+        }
 
         ReleaseInterface(m_pCompositionPeer);
     }
@@ -13395,11 +13375,7 @@ CUIElement::BoundsTestEntry(
 {
     HitTestParams myParams(hitTestParams);
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestBegin(this);
-#else
-    TraceHitTestBegin();
-#endif
+    XamlTelemetry::HitTestBegin(this);
 
     // TODO: HitTest: Consider leaving layout stale and only updating layout during Tick
     IFC_RETURN(UpdateLayout());
@@ -13409,27 +13385,16 @@ CUIElement::BoundsTestEntry(
 
     IFC_RETURN(BoundsTestInternal(target, pCallback, &hitTestParams, canHitDisabledElements, canHitInvisibleElements, nullptr /* pResult */));
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestEnd(this);
-#else
-    TraceHitTestEnd();
-#endif
+    XamlTelemetry::HitTestEnd(this);
 
     // TODO: HitTest: put the stats on CCoreServices or something
-#ifdef XAMLPROFILER_ENABLED
-    if (XamlElementTracing::IsEnabled())
+    if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::InputKeyword))
     {
-        XamlElementTracing::OuterBoundsStats(this, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
-        XamlElementTracing::InnerBoundsStats(this, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
-        XamlElementTracing::ContentBoundsStats(this, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
-        XamlElementTracing::ChildBoundsStats(this, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
+        XamlTelemetry::OuterBoundsStats(this, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
+        XamlTelemetry::InnerBoundsStats(this, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
+        XamlTelemetry::ContentBoundsStats(this, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
+        XamlTelemetry::ChildBoundsStats(this, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
     }
-#else
-    TraceOuterBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
-    TraceInnerBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
-    TraceContentBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
-    TraceChildBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
-#endif
 
     return S_OK;
 }

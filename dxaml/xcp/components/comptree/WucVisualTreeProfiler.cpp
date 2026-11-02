@@ -3,12 +3,6 @@
 
 #include "precomp.h"
 
-// Safeguard: this profiler-only translation unit is gated on XamlProfilerEnabled (which defines
-// XAMLPROFILER_ENABLED); the #error below turns an out-of-sync build into a clear diagnostic.
-#ifndef XAMLPROFILER_ENABLED
-#error "WucVisualTreeProfiler.cpp must only be compiled when XAMLPROFILER_ENABLED is defined (set XamlProfilerEnabled=true in dxaml\Xaml.Cpp.Props); do not remove the XamlProfilerEnabled ClCompile condition in Microsoft.UI.Xaml.CompTree.vcxproj."
-#endif // XAMLPROFILER_ENABLED
-
 #include "WucVisualTreeProfiler.h"
 #include <Windows.UI.Composition.h>
 #include "XcpAllocation.h"

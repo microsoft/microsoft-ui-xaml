@@ -2,11 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 
 #include "palgfx.h"
-#ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
-#endif // XAMLPROFILER_ENABLED
 
 #include "TimeMgr.h"
 #include "InputServices.h"
@@ -636,7 +635,6 @@ HWCompTreeNode::InsertChild(
 
     IFC_RETURN(InsertChildInternal(pDCompTreeHost, pChild, pReferenceNode, pElement));
 
-#ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
     if (XamlProfilerTracing::IsEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
@@ -646,7 +644,6 @@ HWCompTreeNode::InsertChild(
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(pChild));
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }
@@ -683,7 +680,6 @@ HWCompTreeNode::InsertChildAtBeginning(
 
     IFC_RETURN(InsertChildAtBeginningInternal(pDCompTreeHost, pChild));
 
-#ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
     if (XamlProfilerTracing::IsEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
@@ -693,7 +689,6 @@ HWCompTreeNode::InsertChildAtBeginning(
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(pChild));
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }
@@ -715,22 +710,17 @@ HWCompTreeNode::RemoveChild(
         HWCompNode *pNodeNoRef = m_children.unsafe_get_item(index);
         if (pNodeNoRef == pChild)
         {
-            TraceCompTreeRemoveChildInfo(
-                reinterpret_cast<XUINT64>(this),
-                reinterpret_cast<XUINT64>(pChild)
-                );
-
-#ifdef XAMLPROFILER_ENABLED
-            // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-            if (XamlProfilerTracing::IsEnabled() &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+            if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_VERBOSE, XamlTelemetry::DCompKeyword))
             {
-                XamlProfilerTracing::CompNodeChildRemoved(
+                const bool isProfilerSuppressed =
+                    XamlProfilerTracing::IsEnabled() &&
+                    (WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) ||
+                    WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)));
+                XamlTelemetry::CompTreeRemoveChild(
                     reinterpret_cast<uint64_t>(this),
-                    reinterpret_cast<uint64_t>(pChild));
+                    reinterpret_cast<uint64_t>(pChild),
+                    isProfilerSuppressed);
             }
-#endif // XAMLPROFILER_ENABLED
 
             IFC_RETURN(RemoveChildInternal(pChild));
             ReleaseInterface(pChild);
@@ -984,12 +974,10 @@ HWCompWinRTVisualRenderDataNode::ClearVisualContent()
     xref_ptr<WUComp::IVisualCollection> visualCollection;
     IFCFAILFAST(m_containerVisual->get_Children(visualCollection.ReleaseAndGetAddressOf()));
     IFCFAILFAST(visualCollection->RemoveAll());
-#ifdef XAMLPROFILER_ENABLED
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildrenCleared(m_containerVisual.get());
     }
-#endif // XAMLPROFILER_ENABLED
 }
 
 //-------------------------------------------------------------------------

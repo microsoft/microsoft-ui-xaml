@@ -173,8 +173,11 @@ Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 | Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
-The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
-events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
+Layout, focus, virtualization, navigation, hit-testing and PasswordBox TraceLogging
+events carry element identities in all builds. Tree-specific events and
+Microsoft-Windows-XAML-Profiler instrumentation are also compiled in all builds;
+event emission is controlled by runtime ETW enablement.
+The GPU memory events come
 from Windows, whatever the build. They carry the values
 `IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
 reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
@@ -208,7 +211,7 @@ different objects in the two.
 
 While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML
 source position of the objects it parses, which `ElementCreatedWithSource`
-carries (and, in builds with `XamlProfilerEnabled`, `ElementEnteredTree`), and
+carries (along with `ElementEnteredTree`), and
 keeps setters and resource references for XAML diagnostics. That costs the
 target some memory and CPU time, as in any trace that enables the provider.
 Only XAML parsed while the provider is enabled has positions: a launch has them

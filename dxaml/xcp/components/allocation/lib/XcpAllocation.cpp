@@ -58,7 +58,7 @@ _Check_return_ size_t XcpAllocation::OSMemoryGetBlockSize(_In_opt_ const void *p
 #define COUNT_ALLOC 1
 #endif
 
-#if COUNT_ALLOC && defined(XAMLPROFILER_ENABLED)
+#if COUNT_ALLOC
 #define COUNT_OUTSTANDING_ALLOC 1
 #endif
 
