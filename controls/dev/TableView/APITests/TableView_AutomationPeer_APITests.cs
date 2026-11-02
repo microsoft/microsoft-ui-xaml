@@ -196,6 +196,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             AutomationPeer itemPeer = null;
+            string unrealizedName = null;
             var items = MakeNamedPeople(200);
             int target = -1;
 
@@ -236,7 +237,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 itemPeer = new ProviderPeerProbe().ToPeer(selected[0]);
                 Verify.IsNotNull(itemPeer, "The reported provider must resolve to a peer.");
-                Verify.AreEqual(items[target].Name, itemPeer.GetName(), "The data-item peer must be named from its item.");
+                unrealizedName = itemPeer.GetName();
+                Verify.IsTrue(unrealizedName.Contains(items[target].Name), $"The data-item peer must be named from its item (got '{unrealizedName}').");
                 Verify.AreEqual(AutomationControlType.DataItem, itemPeer.GetAutomationControlType(), "A row is a DataItem.");
                 Verify.IsTrue(itemPeer.IsOffscreen(), "An unrealized row is off screen.");
                 var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
@@ -271,6 +273,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(bounds.Width > 0 && bounds.Height > 0, $"The held peer must report the row's bounds (got {bounds}).");
                 Verify.IsFalse(itemPeer.IsOffscreen(), "The held peer must not report an on-screen row as off screen.");
                 Verify.AreEqual(rowPeer.GetName(), itemPeer.GetName(), "The held peer must report the row's name.");
+                Verify.AreEqual(unrealizedName, itemPeer.GetName(), "Realizing the row must not change the data-item peer's name.");
                 Verify.AreSame(rowPeer.Navigate(AutomationNavigationDirection.Parent), itemPeer.Navigate(AutomationNavigationDirection.Parent),
                     "The data-item peer must have the same parent as a realized row.");
 
@@ -416,6 +419,264 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(((ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem)).IsSelected,
                     "The data-item peer must still report itself selected.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held data-item peer keeps its name when its row is realized, then forwards the row's enabled state, culture and ScrollItem.")]
+        public void VerifyRealizedDataItemPeerForwardsRowState()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            string unrealizedName = null;
+            // No ToString override, so the item's own string is its type name.
+            var items = Enumerable.Range(0, 200).Select(i => new PlainPerson { Name = $"Person {i}", Role = $"Role {i}" }).ToList();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                unrealizedName = itemPeer.GetName();
+                Verify.IsNull(itemPeer.GetPattern(PatternInterface.ScrollItem), "An unrealized row has no element to scroll into view.");
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsNotNull(row, "Realize must create the selected row.");
+                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+                Verify.AreEqual(rowPeer.GetName(), unrealizedName, "An unrealized row must be named as it is once realized.");
+                Verify.AreEqual(rowPeer.GetCulture(), itemPeer.GetCulture(), "The held peer must report the row's culture.");
+
+                Verify.IsTrue(itemPeer.IsEnabled(), "Precondition: the row is enabled.");
+                row.IsEnabled = false;
+                Verify.IsFalse(itemPeer.IsEnabled(), "The held peer must report a disabled row as disabled.");
+                row.IsEnabled = true;
+
+                Verify.IsNotNull(itemPeer.GetPattern(PatternInterface.ScrollItem) as IScrollItemProvider, "A realized row must offer ScrollItem.");
+                var scroller = GetBodyScroller(tableView);
+                scroller.ChangeView(null, scroller.VerticalOffset + scroller.ViewportHeight + 1, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: the row must still be realized.");
+                Verify.IsFalse(IsInViewport(row, GetBodyScroller(tableView)), "Precondition: the row must be out of view.");
+                ((IScrollItemProvider)itemPeer.GetPattern(PatternInterface.ScrollItem)).ScrollIntoView();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsTrue(row != null && IsInViewport(row, GetBodyScroller(tableView)), "ScrollIntoView must bring the row into view.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held data-item peer is parented with the realized rows after the TableView template is reapplied.")]
+        public void VerifyDataItemPeerParentFollowsReappliedTemplate()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            ItemsRepeater oldRepeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                oldRepeater = GetRowsRepeater(tableView);
+
+                var template = tableView.Template;
+                tableView.Template = null;
+                tableView.UpdateLayout();
+                tableView.Template = template;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                Verify.AreNotSame(oldRepeater, repeater, "Precondition: reapplying the template must replace the rows repeater.");
+                var row = repeater.TryGetElement(0);
+                Verify.IsNotNull(row, "Precondition: the first row must be realized.");
+                Verify.AreSame(FrameworkElementAutomationPeer.CreatePeerForElement(row).Navigate(AutomationNavigationDirection.Parent),
+                    itemPeer.Navigate(AutomationNavigationDirection.Parent),
+                    "A held data-item peer must have the same parent as the current realized rows.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Realize fails, without scrolling or pinning the layout, when an ElementPrepared handler rebinds the data-item peer to another occurrence.")]
+        public void VerifyDataItemPeerRealizeFailsWhenReboundDuringCreation()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+            items[180] = items[150];
+            double offset = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var virtualized = (IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem);
+                offset = GetBodyScroller(tableView).VerticalOffset;
+
+                bool rebound = false;
+                global::Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> handler = (sender, args) =>
+                {
+                    if (args.Index == 150 && !rebound)
+                    {
+                        rebound = true;
+                        tableView.Select(180);
+                        RequireSelectionProvider(tableView).GetSelection();
+                    }
+                };
+                repeater.ElementPrepared += handler;
+                try
+                {
+                    VerifyElementNotAvailable(() => virtualized.Realize(), "Realize of a rebound peer");
+                }
+                finally
+                {
+                    repeater.ElementPrepared -= handler;
+                }
+                Verify.IsTrue(rebound, "Precondition: the handler must have rebound the peer.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                Verify.AreEqual(offset, scroller.VerticalOffset, "A failed Realize must not scroll.");
+                scroller.ChangeView(null, 3000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var repeater = GetRowsRepeater(tableView);
+                Verify.IsTrue(RealizedRowIndices(tableView).Any(i => IsInViewport((FrameworkElement)repeater.TryGetElement(i), scroller)),
+                    "After a failed Realize, realized rows must follow the viewport.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an empty selection drops the cached data-item peer, so a later selection of the same row gets a new one.")]
+        public void VerifyGetSelectionDropsDataItemPeerOnEmptySelection()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+                var first = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+
+                tableView.Deselect(150);
+                var empty = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(0, empty == null ? 0 : empty.Length, "Precondition: the selection must be empty.");
+
+                tableView.Select(150);
+                Verify.AreNotSame(first, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "An empty selection must release the cached data-item peer.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer follows the selected occurrence when an insert moves another occurrence of its item to the index it last had.")]
+        public void VerifyDataItemPeerPrefersSelectedOccurrenceAfterInsert()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(200));
+            items[149] = items[150];
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var selectionItem = (ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem);
+
+                items.Insert(0, new NamedPerson { Name = "Inserted", Role = "Inserted" });
+                tableView.UpdateLayout();
+                Verify.AreEqual(151, tableView.SelectedIndex, "Precondition: the selection must move with the inserted row.");
+
+                Verify.IsTrue(selectionItem.IsSelected, "The data-item peer must follow the selected occurrence, not the one now at its old index.");
+            });
+        }
+
+        private static bool IsInViewport(FrameworkElement element, ScrollViewer scroller)
+        {
+            var top = element.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+            return top >= -0.5 && top + element.ActualHeight <= scroller.ViewportHeight + 0.5;
+        }
+
+        private sealed class PlainPerson
+        {
+            public string Name { get; set; }
+
+            public string Role { get; set; }
         }
 
         // A non-generic list that hands out a new box on every read, so its items have no stable identity.

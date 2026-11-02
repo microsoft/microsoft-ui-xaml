@@ -269,12 +269,14 @@ void TableViewRowAutomationPeer::RealizeRowAt(
     }
 
     winrt::UIElement element{ nullptr };
+    bool madeAnchor = false;
     try
     {
         element = repeater.TryGetElement(rowIndex);
         if (!element)
         {
             element = repeater.GetOrCreateElement(rowIndex);
+            madeAnchor = true;
         }
     }
     catch (...)
@@ -283,22 +285,25 @@ void TableViewRowAutomationPeer::RealizeRowAt(
     }
 
     auto const row = element.try_as<winrt::TableViewRow>();
-    if (!row || !isExpectedRow(row))
+    bool isExpected = row && isExpectedRow(row);
+    if (isExpected)
     {
-        ThrowElementNotAvailable();
+        // Arranged first, as ItemsRepeater requires; layout runs app code that can change the source or recycle the row.
+        try
+        {
+            row.UpdateLayout();
+        }
+        catch (winrt::hresult_error const&)
+        {
+            isExpected = false;
+        }
     }
-
-    // Arranged first, as ItemsRepeater requires; layout runs app code that can change the source or recycle the row.
-    try
+    if (!isExpected || repeater.TryGetElement(rowIndex) != row || !isExpectedRow(row))
     {
-        row.UpdateLayout();
-    }
-    catch (winrt::hresult_error const&)
-    {
-        ThrowElementNotAvailable();
-    }
-    if (repeater.TryGetElement(rowIndex) != row || !isExpectedRow(row))
-    {
+        if (madeAnchor)
+        {
+            tableImpl->ReleaseRowsRepeaterAnchor(element);
+        }
         ThrowElementNotAvailable();
     }
     row.StartBringIntoView();
