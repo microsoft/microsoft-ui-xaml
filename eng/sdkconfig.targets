@@ -1,5 +1,12 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<Project>
+<Project TreatAsLocalProperty="PublishAot">
+  <!-- Solution builds pass PublishAot globally so restore includes the AOT tooling for eligible tests.
+       Resource/packaging projects and legacy projection TFMs do not support NativeAOT and must opt out,
+       even when the value came from the command line. -->
+  <PropertyGroup Condition="'$(PublishAot)' == 'true' and '$(TargetFramework)' != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">
+    <PublishAot>false</PublishAot>
+  </PropertyGroup>
+
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0'))">
     <DefineConstants>$(DefineConstants);CSWINRT3_0</DefineConstants>
     <UsingCSWinRT3>true</UsingCSWinRT3>
