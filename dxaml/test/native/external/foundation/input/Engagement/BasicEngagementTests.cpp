@@ -1298,6 +1298,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 popupBtn2->Content = "Button2";
                 stackPanel = ref new StackPanel();
                 popup1 = ref new xaml_primitives::Popup();
+                popup1->XamlRoot = rootStackPanel->XamlRoot;
                 popup1->Child = stackPanel;
                 stackPanel->Children->Append(popupBtn1);
                 stackPanel->Children->Append(popupBtn2);
@@ -2193,7 +2194,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             {
                 rootPanel = dynamic_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
                     LR"(<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-                            <Popup IsOpen="True">
+                            <Popup x:Name="popup">
                                 <StackPanel>
                                     <Slider x:Name="slider"/>
                                     <Button x:Name="btn"/>
@@ -2205,6 +2206,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 slider = safe_cast<xaml_controls::Slider^>(rootPanel->FindName(L"slider"));
 
                 TestServices::WindowHelper->WindowContent = rootPanel;
+                safe_cast<xaml_primitives::Popup^>(rootPanel->FindName(L"popup"))->IsOpen = true;
             });
 
             TestServices::WindowHelper->WaitForIdle();

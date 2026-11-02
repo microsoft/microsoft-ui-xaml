@@ -178,17 +178,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         SetupAppBar(false);
 
-        Automation::AutomationClient::UIAElementInfo uiaInfo;
-        uiaInfo.m_Name = L"Close";
-        uiaInfo.m_cType = UIA_ButtonControlTypeId;
-
         UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
         {
             wrl::ComPtr<IUIAutomationElement> spUIACloseButton;
 
-            auto spAutomationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+            // A desktop host also exposes its window-chrome Close button.
+            auto spAutomationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromClassName(L"AppBarLightDismiss");
             spAutomationClientManager->GetCurrentUIAutomationElement(&spUIACloseButton);
-            VERIFY_IS_NULL(spUIACloseButton);   // WPF_HOSTING_MODE_FAILURE: This fails when wpf-hosted.
+            VERIFY_IS_NULL(spUIACloseButton);
         });
     }
 
@@ -208,8 +205,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        Automation::AutomationClient::UIAElementInfo uiaInfoCloseButton;
-        uiaInfoCloseButton.m_Name = L"Close";
         Automation::AutomationClient::UIAElementInfo uiaInfoAppBar;
         uiaInfoAppBar.m_Name = L"TestAppBar";
 
@@ -221,7 +216,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             wrl::ComPtr<IUIAutomationElement> spUIACloseButton;
             wrl::ComPtr<IUIAutomationInvokePattern> spInvokePattern;
 
-            auto spAutomationClientManagerClose = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfoCloseButton);
+            auto spAutomationClientManagerClose = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromClassName(L"AppBarLightDismiss");
             spAutomationClientManagerClose->GetCurrentUIAutomationElement(&spUIACloseButton);
             VERIFY_IS_NOT_NULL(spUIACloseButton);
             VERIFY_SUCCEEDED(spUIACloseButton->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&spInvokePattern)));

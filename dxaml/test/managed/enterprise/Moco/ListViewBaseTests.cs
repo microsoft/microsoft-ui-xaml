@@ -1663,7 +1663,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
                 for (int i = 0; i < 4; i++)
                 {
-                    List<int> group = new List<int>();
+                    List<object> group = new List<object>();
                     for (int j = 0; j < i; j++)
                     {
                         group.Add(i * 100 + j);
@@ -1695,7 +1695,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     var header = lv.GroupHeaderContainerFromItemContainer(container) as ListViewBaseHeaderItem;
                     var tb = header.FindNameInSubtree("TB") as TextBlock;
                     // verify we applied correct group style by checking the TextBlock.Text inside the header template.
-                    Verify.AreEqual(tb.Text, (header.Content as List<int>).Count.ToString());
+                    Verify.AreEqual(tb.Text, (header.Content as List<object>).Count.ToString());
                 }
             });
 

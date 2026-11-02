@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -1770,6 +1772,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         public void VerifyMaintainViewportResetHappensBeforeSynchronousLayoutDuringReset()
         {
             ListView list = null;
+            Task resetTask = null;
 
             UIExecutor.Execute(() =>
             {
@@ -1787,27 +1790,30 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
                 bool canReset = true;
                 var scrollViewer = list.FindElementOfTypeInSubtree<ScrollViewer>();
-                scrollViewer.ViewChanged += async delegate
+                scrollViewer.ViewChanged += delegate
                 {
                     if(canReset)
                     {
                         Log.Comment("ScrollViewer viewport changed.");
                         canReset = false;
 
-                        await list.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.High, delegate
+                        resetTask = list.DispatcherQueue.TryEnqueueAsync(delegate
                         {
                             Log.Comment("Triggering the maintain viewport behavior with a collection change.");
                             ((ObservableCollection<string>)list.ItemsSource).Insert(0, "Inserted Item");
                             Log.Comment("Hard reset.");
                             // We used to crash during the rest
                             list.ItemsSource = Enumerable.Range(0, 500).Select(x => "Item " + x).ToList();
-                        });
+                        }, DispatcherQueuePriority.High);
                     }
                 };
             });
             TestServices.WindowHelper.WaitForIdle();
             TestServices.InputHelper.PanFromCenter(list, 0, 200, 0.5);
             TestServices.WindowHelper.WaitForIdle();
+
+            Verify.IsNotNull(resetTask, "Panning must trigger the reset scenario.");
+            resetTask.GetAwaiter().GetResult();
 
             UIExecutor.Execute(() =>
             {

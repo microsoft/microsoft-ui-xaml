@@ -301,6 +301,11 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
                     Log.Comment("Open dialog to make the current window lose foreground.");
                     var dialog = new MessageDialog("Foreground Dialog");
+                    var host = TestServices.Win32Host;
+                    if (host != null)
+                    {
+                        WinRT.Interop.InitializeWithWindow.Initialize(dialog, new IntPtr((long)host.MainWindowHandle));
+                    }
                     dialogOperation = dialog.ShowAsync();
                 });
 
@@ -379,4 +384,3 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         }
     }
 }
-

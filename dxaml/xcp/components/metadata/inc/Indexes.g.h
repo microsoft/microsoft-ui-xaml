@@ -3327,6 +3327,7 @@ enum class KnownMethodIndex: UINT16
     GettingFocusEventArgs_TrySetNewFocusedElement,
     HoldingRoutedEventArgs_GetPosition,
     InputManager_GetLastInputDeviceType,
+    InputManager_GetLastInputDeviceTypeForXamlRoot,
     LosingFocusEventArgs_TryCancel,
     LosingFocusEventArgs_TrySetNewFocusedElement,
     ManipulationDeltaRoutedEventArgs_Complete,
