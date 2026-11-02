@@ -23,9 +23,8 @@
     docs\ad-hoc-testing-of-local-build-with-fast-inner-loop.md), restored like for any other sample build, but both builds
     use the XAML compiler targets and tools that XamlCompiler.sln just built (XamlCompilerPropsAndTargetsDirectory, the same
     mechanism eng\usexamlcompiler.props uses for the regression projects), so that they test the current compiler even when
-    the package is older. The default compiler is the .NET executable compiler for C# projects (MSBuild sets DOTNET_HOST_PATH)
-    and the in-process .NET Framework task for C++ projects. The sample builds go to BuildOutput\obj\<flavor>\Samples, which
-    is deleted before each of the two builds.
+    the package is older. The default compiler (of msbuild.exe) is the in-process .NET Framework task. The sample builds go to
+    BuildOutput\obj\<flavor>\Samples, which is deleted before each of the two builds.
 
 .PARAMETER ExePath
     The native compiler to test. Defaults to the one XamlCompiler.sln packaged for the architecture of the current flavor.

@@ -24,7 +24,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// is annotated for trimming anyway (the analyzer can't know what the callbacks do), so .NET 9+ uses the type name parser
     /// of System.Reflection.Metadata instead, and does the resolution like .NET 10 does it for
     /// Type.GetType(typeName, assemblyResolver, typeResolver, throwOnError), see TypeNameResolver in dotnet/runtime.
-    /// .NET Framework and .NET 8 keep calling Type.GetType, since TypeName doesn't exist in the System.Reflection.Metadata they use.
+    /// .NET Framework keeps calling Type.GetType, since TypeName doesn't exist in the System.Reflection.Metadata it uses.
     /// </remarks>
     internal static class LmrTypeNameResolver
     {

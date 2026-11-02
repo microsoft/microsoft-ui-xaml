@@ -24,7 +24,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// methods in overload resolution.
     /// </para>
     /// <para>
-    /// For any other object (e.g. a runtime type), these forward to the reflection member on .NET Framework and .NET 8, so the
+    /// For any other object (e.g. a runtime type), these forward to the reflection member on .NET Framework, so the
     /// behavior there doesn't change at all. In the Native AOT build (.NET 10) that would need the annotations: there, the
     /// members of <see cref="Type"/> only work on the closed set of runtime types in <c>KnownRuntimeTypes</c> (the
     /// built-in types of the XAML language), and everything else throws <see cref="NotSupportedException"/>.

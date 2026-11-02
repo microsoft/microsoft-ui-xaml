@@ -133,7 +133,8 @@ The pieces are:
 `src\XamlCompiler\runtests-native.cmd` (`Tests\RunNativeCompilerTests.ps1`)
 builds the regression projects with the Native AOT compiler
 (`UseNativeXamlCompiler=true`) and runs `CodegenTests` against the masters. With
-`-Differential`, it also builds them with the default compiler first and
+`-Differential`, it also builds them with the default compiler (the in-process
+.NET Framework task) first and
 requires the native compiler to generate byte-identical files. With `-Samples`,
 it does the same differential comparison for real sample apps from `Samples\`
 (see the script header for the list and the requirements).

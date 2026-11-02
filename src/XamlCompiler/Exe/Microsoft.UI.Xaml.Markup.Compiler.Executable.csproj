@@ -4,8 +4,13 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
     <AssemblyName>XamlCompiler</AssemblyName>
-    <TargetFrameworks>net472;net8.0;net10.0</TargetFrameworks>
-    <!-- Each target framework gets its own output and binplace folder, since they produce same-named files -->
+    <!--
+      Published as a Native AOT, self-contained binary (XamlCompiler.exe), so it can be launched directly by the MSBuild targets
+      without any requirement on the host (.NET runtime or SDK, MSBuild flavor). It is what 'dotnet build' (.NET MSBuild) always
+      uses, and what the .NET Framework MSBuild (Visual Studio, msbuild.exe) uses with UseNativeXamlCompiler=true instead of the
+      in-process CompileXaml task (see Microsoft.UI.Xaml.Markup.Compiler.interop.targets).
+    -->
+    <TargetFramework>net10.0</TargetFramework>
     <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
     <TargetDestination>$(MarkupCompilerDestinationPath).Executable\$(TargetFramework)</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -18,24 +23,7 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <WarningsAsErrors>false</WarningsAsErrors>
   </PropertyGroup>
-  <!--
-    The net8.0 build is launched via the dotnet host running MSBuild (see Microsoft.UI.Xaml.Markup.Compiler.interop.targets),
-    so it is framework-dependent with no apphost, and rolls forward to whatever newer runtime that host has.
-  -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
-    <UseAppHost>false</UseAppHost>
-    <RollForward>Major</RollForward>
-    <!-- Don't require the latest .NET 8 patch (eng\sdkconfig.targets pins packs to it); any 8.0+ runtime is fine -->
-    <RuntimeFrameworkVersion>8.0.0</RuntimeFrameworkVersion>
-    <!-- Legacy formatter-serialization members in the shared System.Xaml/LMR/ANTLR sources; same suppressions as the net8.0 task build -->
-    <NoWarn>$(NoWarn);SYSLIB0050;SYSLIB0051;CA2235</NoWarn>
-  </PropertyGroup>
-  <!--
-    The net10.0 build is published as a Native AOT, self-contained binary (XamlCompiler.exe), so it can be launched
-    directly by the MSBuild task without any requirement on the host (.NET SDK, DOTNET_HOST_PATH, MSBuild flavor).
-  -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+  <PropertyGroup>
     <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
     <PublishAot>true</PublishAot>
     <!-- Link both GC modes (the MSBuild task selects one through the 'DOTNET_gcServer' variable of the compiler process, see GetXamlCompilerGCMode) -->
@@ -60,12 +48,13 @@
       Small launch performance improvement, and a small memory use reduction as well.
     -->
     <IlcDehydrate>false</IlcDehydrate>
+    <!-- Legacy formatter-serialization members in the shared System.Xaml/LMR/ANTLR sources -->
     <NoWarn>$(NoWarn);SYSLIB0050;SYSLIB0051;CA2235</NoWarn>
     <!-- Each flavor produces the native compiler for its own architecture; the package merges them (see eng\packaging.targets) -->
     <_NativeXamlCompilerRid Condition="'$(_BuildArch)' == 'amd64'">win-x64</_NativeXamlCompilerRid>
     <_NativeXamlCompilerRid Condition="'$(_BuildArch)' == 'arm64'">win-arm64</_NativeXamlCompilerRid>
     <_NativeXamlCompilerDir>$(OutDir)native\$(_NativeXamlCompilerRid)\</_NativeXamlCompilerDir>
-    <!-- The IL-only output of this TFM isn't deployed, only the native binary published below is -->
+    <!-- The IL-only output isn't deployed, only the native binary published below is -->
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
     <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.NativeAot.cs) -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -84,8 +73,8 @@
     <Compile Include="$(BuildTasksDir)ConsoleCompileXaml.cs" />
     <Compile Include="$(BuildTasksDir)CompilerJsonContext.cs" />
   </ItemGroup>
-  <!-- Native AOT replacements for the built-in COM interop used to call GenXbf.dll and vcmeta.dll on the other target frameworks -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+  <!-- Native AOT replacements for the built-in COM interop used to call GenXbf.dll and vcmeta.dll by the .NET Framework build of the compiler -->
+  <ItemGroup>
     <AdditionalFiles Include="$(BuildTasksDir)NativeMethods.txt;$(BuildTasksDir)NativeMethods.json" />
     <Compile Include="$(BuildTasksDir)NativeMethods.NativeAot.cs" />
     <Compile Include="$(BuildTasksDir)Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
@@ -478,7 +467,6 @@
     <Content Include="$(BuildTasksDir)XamlCompiler.bp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(BuildTasksDir)app.config" />
     <None Include="$(BuildTasksDir)packages.config" />
   </ItemGroup>
   <PropertyGroup>
@@ -512,14 +500,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net10.0' ">
-    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net10.0' ">
+  <ItemGroup>
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
     <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" Condition=" '$(TargetFramework)' == 'net10.0' " />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
     <!-- Compile-time only: the legacy CAS code paths in System.Xaml that need it are never executed -->
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
   </ItemGroup>
@@ -547,57 +531,14 @@
       <EmbeddedResource Include="@(XamlProxyTypesAssembly)" LogicalName="Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.dll" />
     </ItemGroup>
   </Target>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(NuGetPackageRoot)\system.text.json\$(SystemTextJsonVersion)\lib\netstandard2.0\System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(OutDir)$(TargetName).exe.config" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Memory.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Buffers.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Numerics.Vectors.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Text.Encodings.Web.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.Bcl.AsyncInterfaces.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Runtime.CompilerServices.Unsafe.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.Build.Framework.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.Build.Utilities.Core.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-
-    <!-- IO dependencies -->
-    <PackageContent Include="$(TargetDir)Microsoft.Bcl.AsyncInterfaces.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(TargetDir)System.Text.Encodings.Web.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(TargetDir)System.Runtime.CompilerServices.Unsafe.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-
-    <!-- Include some extra dependencies for the .NET Framework executable compiler -->
-    <PackageContent Include="$(TargetDir)Microsoft.Build.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Collections.Immutable.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Threading.Tasks.Dataflow.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Threading.Tasks.Extensions.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' ">
     <PackageContent Include="NOTICE.txt" PackageLocation="$(ToolsPackageLocation)" />
   </ItemGroup>
   <!--
-    .NET (Core) build of the executable compiler, used by 'dotnet build'. Lives next to the in-proc net8.0 task, mirroring net472.
-    Microsoft.UI.Xaml.Markup.Compiler.IO/MSBuildInterop are already packaged into tools\net8.0 above.
+    The package has one self-contained native binary per architecture under tools\net10.0\<rid>, next to the assemblies of the
+    tasks that .NET MSBuild loads to run it (tools\net10.0, see Microsoft.UI.Xaml.Markup.Compiler.csproj).
   -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)$(TargetName).deps.json" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)$(TargetName).runtimeconfig.json" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)Microsoft.Build.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)Microsoft.Build.Framework.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)Microsoft.Build.Utilities.Core.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)System.CodeDom.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-  </ItemGroup>
-  <!--
-    Native AOT build of the executable compiler, used by the MSBuild task with UseNativeXamlCompiler=true. The package has one
-    self-contained binary per architecture under tools\net10.0\<rid>, with nothing else next to it.
-  -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' and '$(RuntimeIdentifier)' == '' and '$(_NativeXamlCompilerRid)' != '' ">
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' and '$(_NativeXamlCompilerRid)' != '' ">
     <PackageContent Include="$(_NativeXamlCompilerDir)$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\net10.0\$(_NativeXamlCompilerRid)" />
   </ItemGroup>
   <!--
@@ -607,7 +548,7 @@
   <Target Name="PublishNativeXamlCompiler"
           AfterTargets="Build"
           BeforeTargets="AddBinplaceItems"
-          Condition=" '$(TargetFramework)' == 'net10.0' and '$(RuntimeIdentifier)' == '' and '$(_NativeXamlCompilerRid)' != '' ">
+          Condition=" '$(RuntimeIdentifier)' == '' and '$(_NativeXamlCompilerRid)' != '' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
              Properties="TargetFramework=$(TargetFramework);RuntimeIdentifier=$(_NativeXamlCompilerRid);OutDir=$(_NativeXamlCompilerDir)build\;PublishDir=$(_NativeXamlCompilerDir);_IsPublishing=true" />

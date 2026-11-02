@@ -11,10 +11,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
         {
             try
             {
-#if NET5_0_OR_GREATER
                 // So that XAML files in a Windows code page (e.g. encoding="windows-1252") can be read like with .NET Framework
                 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-#endif
                 CompileXaml compiler = new CompileXaml();
                 return compiler.Run(args);
             }

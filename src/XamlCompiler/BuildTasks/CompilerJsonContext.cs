@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#if NET10_0_OR_GREATER
 using System.Text.Json.Serialization;
 using Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop;
 
@@ -16,4 +15,3 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
     {
     }
 }
-#endif
