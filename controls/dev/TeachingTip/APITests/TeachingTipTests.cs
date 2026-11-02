@@ -2935,6 +2935,130 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close when its target is removed");
         }
 
+        // Scenario (issue #8095 review, Copilot): an OPEN tip's target is removed for good, and an app Unloaded handler on
+        //           the target (registered after the tip's) closes the tip; the app's Closing handler cancels every close.
+        // Expected: the popup still closes, as it did before #8095 (an unload closed the popup directly).
+        // A failure means: the IsOpen change made the deferred unload check skip its popup cleanup, so a cancelled close
+        //           left the tip up for a target that is gone.
+        [TestMethod]
+        public void OpenTipPopupClosesWhenRemovedTargetUnloadHandlerClosesTipAndClosingCancels()
+        {
+            TeachingTip tip = null;
+            StackPanel host = null;
+            Button target = null;
+            int closingCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new StackPanel();
+                target = new Button() { Content = "Target" };
+                host.Children.Add(target);
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target };
+                var root = new StackPanel();
+                root.Children.Add(host);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => tip.IsOpen = true);
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open");
+
+            RunOnUIThread.Execute(() =>
+            {
+                target.Unloaded += (s, e) => tip.IsOpen = false;
+                tip.Closing += (s, e) => { closingCount++; e.Cancel = true; };
+                host.Children.Remove(target);
+            });
+            WaitForFrames(2);
+            bool closed = WaitForTipState(tip, isOpen: false);
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"After removal: tip.IsOpen={tip.IsOpen}, popup.IsOpen={TeachingTipTestHooks.GetPopup(tip).IsOpen}, target.IsLoaded={target.IsLoaded}, Closing raised {closingCount} time(s)");
+                Verify.IsFalse(target.IsLoaded, "Precondition: the target is gone");
+            });
+            Verify.IsTrue(closed, "The popup should close when the target is removed, even though the app cancels Closing");
+            RunOnUIThread.Execute(() => tip.IsOpen = false);
+            WaitForTipState(tip, isOpen: false);
+        }
+
+        // Scenario (issue #8095 review, Copilot): an OPEN tip targets a static Button; the Button is removed, and the app's
+        //           Unloaded handler on it (registered after the tip's) retargets the tip to an already loaded element that
+        //           an ItemsRepeater generated for a string item, all before the next Rendering tick.
+        //           Run 2: the TIP itself is removed and its app Unloaded handler retargets it to a static loaded Button.
+        // Expected: run 1 stays open on the new target (it never unloaded; the former target's pending check is dropped);
+        //           run 2 closes (the tip's own unload is still checked after a retarget).
+        // A failure means: the former target's pending unload check judged the new target (and closed the tip because the
+        //           new target is in a generated container), or a retarget dropped the tip's own removal check.
+        [TestMethod]
+        public void PendingUnloadCheckFollowsTheElementThatUnloaded()
+        {
+            VerifyRetargetDuringUnload(tipUnloads: false);
+            VerifyRetargetDuringUnload(tipUnloads: true);
+        }
+
+        private void VerifyRetargetDuringUnload(bool tipUnloads)
+        {
+            string what = tipUnloads ? "the tip removed and retargeted in its Unloaded handler" : "the target removed and the tip retargeted in its Unloaded handler";
+            TeachingTip tip = null;
+            StackPanel host = null, root = null;
+            Button oldTarget = null, staticTarget = null;
+            ItemsRepeater repeater = null;
+            FrameworkElement newTarget = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new StackPanel();
+                oldTarget = new Button() { Content = "Old target" };
+                staticTarget = new Button() { Content = "Static target" };
+                host.Children.Add(oldTarget);
+                repeater = new ItemsRepeater() { ItemsSource = new List<string> { "Item" } };
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = oldTarget, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                root = new StackPanel();
+                root.Children.Add(host);
+                root.Children.Add(staticTarget);
+                root.Children.Add(repeater);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                newTarget = (FrameworkElement)repeater.TryGetElement(0);
+                Verify.IsNotNull(newTarget, "Precondition: the repeater generated an element for 'Item'");
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open: " + what);
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (tipUnloads)
+                {
+                    tip.Unloaded += (s, e) => tip.Target = staticTarget;
+                    root.Children.Remove(tip);
+                }
+                else
+                {
+                    oldTarget.Unloaded += (s, e) => tip.Target = newTarget;
+                    host.Children.Remove(oldTarget);
+                }
+            });
+            WaitForFrames(2);
+            bool settled = WaitForTipState(tip, isOpen: !tipUnloads);
+            bool retargeted = false, newTargetLoaded = false;
+            RunOnUIThread.Execute(() =>
+            {
+                retargeted = tip.Target == (tipUnloads ? (FrameworkElement)staticTarget : newTarget);
+                newTargetLoaded = tip.Target != null && tip.Target.IsLoaded;
+                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, retargeted={retargeted}, newTarget.IsLoaded={newTargetLoaded}, tip.IsLoaded={tip.IsLoaded}");
+            });
+            Verify.IsTrue(retargeted, "Precondition: the app's Unloaded handler retargeted the tip: " + what);
+            Verify.IsTrue(newTargetLoaded, "Precondition: the new target is loaded: " + what);
+            Verify.IsTrue(settled, tipUnloads ? "The tip should close when it is removed, even if it was retargeted: " + what
+                                              : "The tip should stay open on a new target that never unloaded: " + what);
+            RunOnUIThread.Execute(() => tip.IsOpen = false);
+            WaitForTipState(tip, isOpen: false);
+        }
+
         // Scenario (issue #8095 review): NavigationView.MenuItemsSource holds 3 strings, so NavigationView wraps them in
         //           NavigationViewItems from a shared, recycled pool. An OPEN tip targets the container of "Item0", then
         //           PaneDisplayMode switches Left -> Top, which recycles the containers into the top repeater.
