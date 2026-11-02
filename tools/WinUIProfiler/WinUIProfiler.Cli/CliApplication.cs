@@ -18,7 +18,7 @@ internal static class CliApplication
           WinUIProfiler.Cli summary <trace.etl | session.sqlite> [--pid <pid>]
           WinUIProfiler.Cli dump <trace.etl | session.sqlite> [--pid <pid>] [--name <text>] [--max <count>]
           WinUIProfiler.Cli record <trace.etl> --pid <pid> --out <session.sqlite> [--limit-mb <size>]
-          WinUIProfiler.Cli objects <session.sqlite> [--type <text>] [--name <text>]
+          WinUIProfiler.Cli objects <session.sqlite> [--kind element|visual] [--type <text>] [--name <text>]
           WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other] [--filter <text>]]
 
@@ -29,20 +29,22 @@ internal static class CliApplication
                      name contains <text>; --max limits the output (default 1000, 0 = all).
           record     Writes one process's events from a trace to a new session file, as the
                      app does while connected. --limit-mb is the size limit (default 500).
-          objects    Lists the UI elements in a session file. --type and --name filter them.
-          timeline   Prints the events that mention one UI element, marking the field that holds it.
+          objects    Lists the UI elements and composition visuals in a session file. --kind keeps one kind;
+                     --type and --name filter them (a visual's name is its owner element's).
+          timeline   Prints the events that mention one object, marking the field that holds it.
           frames     Lists the frames per UI thread. --frame prints one frame's events: --bucket keeps
                      one bucket; --filter keeps events whose name or a field value contains <text>
                      (a number matches a field with exactly that value).
 
-          Events are the XAML TraceLogging events and the kernel's GPU memory usage and
-          budget events (DxgKrnl) of the process. A trace needs --pid; a session file
-          holds one process.
+          Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
+          and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls) and the kernel's
+          GPU memory usage and budget events (DxgKrnl) of the process. A trace needs --pid; a
+          session file holds one process.
         """;
 
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
         string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket,
-        string? EventFilter)
+        string? EventFilter, ObjectKind? Kind)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -104,6 +106,7 @@ internal static class CliApplication
         long? frameId = null;
         string? bucket = null;
         string? eventFilter = null;
+        ObjectKind? kind = null;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
         for (var i = 2; i < args.Length; i++)
@@ -132,9 +135,13 @@ internal static class CliApplication
                 case "--type" when args[0] == "objects":
                     typeFilter = value;
                     break;
+                case "--kind" when args[0] == "objects":
+                    kind = Enum.TryParse<ObjectKind>(value, ignoreCase: true, out var parsed) && Enum.IsDefined(parsed)
+                        ? parsed : throw new ArgumentException("--kind must be element or visual.");
+                    break;
                 case "--object" when args[0] == "timeline":
                     objectId = long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0
-                        ? id : throw new ArgumentException("--object must be an element ID from 'objects'.");
+                        ? id : throw new ArgumentException("--object must be an object ID from 'objects'.");
                     break;
                 case "--address" when args[0] == "timeline":
                     address = ParseAddress(value) ?? throw new ArgumentException("--address must be a hex (0x...) or decimal address.");
@@ -158,7 +165,7 @@ internal static class CliApplication
         }
 
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
-            typeFilter, objectId, address, frameId, bucket, eventFilter);
+            typeFilter, objectId, address, frameId, bucket, eventFilter, kind);
         if (options.Command is "objects" or "timeline" or "frames" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
@@ -214,26 +221,26 @@ internal static class CliApplication
 
     private static int Processes(Options options, TextWriter output, CancellationToken cancellationToken)
     {
+        var providers = Enum.GetValues<XamlProvider>();
         var counts = new Dictionary<int, long[]>();
         var result = Read(options, null, profilerEvent =>
         {
             if (!counts.TryGetValue(profilerEvent.ProcessId, out var perProvider))
             {
-                counts[profilerEvent.ProcessId] = perProvider = new long[Enum.GetValues<XamlProvider>().Length];
+                counts[profilerEvent.ProcessId] = perProvider = new long[providers.Length];
             }
 
             perProvider[(int)profilerEvent.Provider]++;
         }, cancellationToken);
 
         // In a trace, every process that uses the GPU has GPU memory events; only those with XAML events are listed.
-        output.WriteLine($"{"PID",8} {"Events",10} {"XAML",10} {"XAML-Prof",10} {"DxgKrnl",10}");
+        output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
         foreach (var (processId, perProvider) in counts
-            .Where(entry => options.IsSessionFile ||
-                entry.Value[(int)XamlProvider.Xaml] + entry.Value[(int)XamlProvider.XamlProfiler] > 0)
+            .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl])
             .OrderByDescending(entry => entry.Value.Sum()))
         {
-            output.WriteLine($"{processId,8} {perProvider.Sum(),10} {perProvider[(int)XamlProvider.Xaml],10} " +
-                $"{perProvider[(int)XamlProvider.XamlProfiler],10} {perProvider[(int)XamlProvider.DxgKrnl],10}");
+            output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
+                string.Join(" ", providers.Select(provider => $"{perProvider[(int)provider],10}")));
         }
 
         output.WriteLine($"{(options.IsSessionFile ? "Session" : "Trace")}: {result.Duration.TotalSeconds:F1} s, {result.EventsLost} events lost.");
@@ -337,35 +344,36 @@ internal static class CliApplication
 
     private static int Objects(Options options, TextWriter output)
     {
-        var all = SessionFile.ReadObjects(options.InputPath);
-        var selected = all.Where(element =>
-            (options.TypeFilter is not { } type || element.Type?.Contains(type, StringComparison.OrdinalIgnoreCase) == true) &&
-            (options.NameFilter is not { } name || element.Name?.Contains(name, StringComparison.OrdinalIgnoreCase) == true)).ToList();
-        output.WriteLine($"{"ID",7}  {"Type",-32} {"Name",-24} {"Address",-14} {"First (ms)",12} {"Last (ms)",12} {"Events",7}");
-        foreach (var element in selected)
+        var all = SessionFile.ReadObjects(options.InputPath, options.Kind);
+        var selected = all.Where(tracked =>
+            (options.TypeFilter is not { } type || tracked.Type?.Contains(type, StringComparison.OrdinalIgnoreCase) == true) &&
+            (options.NameFilter is not { } name || tracked.Name?.Contains(name, StringComparison.OrdinalIgnoreCase) == true)).ToList();
+        output.WriteLine($"{"ID",7}  {"Kind",-7} {"Type",-32} {"Name",-24} {"Address",-14} {"First (ms)",12} {"Last (ms)",12} {"Events",7}");
+        foreach (var tracked in selected)
         {
-            output.WriteLine($"{element.ObjectId,7}  {ShortType(element.Type),-32} {element.Name ?? "",-24} 0x{element.Address,-12:X} " +
-                $"{element.FirstMilliseconds,12:F3} {element.LastMilliseconds,12:F3} {element.Events,7}");
+            output.WriteLine($"{tracked.ObjectId,7}  {tracked.Kind,-7} {ShortType(tracked.Type),-32} {tracked.Name ?? "",-24} " +
+                $"0x{tracked.Address,-12:X} {tracked.FirstMilliseconds,12:F3} {tracked.LastMilliseconds,12:F3} {tracked.Events,7}");
         }
 
-        output.WriteLine($"{selected.Count} of {all.Count} UI elements.");
+        output.WriteLine($"{selected.Count} of {all.Count} objects.");
         return 0;
     }
 
     private static int Timeline(Options options, TextWriter output, CancellationToken cancellationToken)
     {
-        var selected = SessionFile.ReadObjects(options.InputPath, options.ObjectId, options.Address);
+        var selected = SessionFile.ReadObjects(options.InputPath, objectId: options.ObjectId, address: options.Address);
         if (selected.Count == 0)
         {
-            output.WriteLine(options.ObjectId is { } id ? $"No UI element with ID {id}." : $"No UI element at 0x{options.Address:X}.");
+            output.WriteLine(options.ObjectId is { } id ? $"No object with ID {id}." : $"No object at 0x{options.Address:X}.");
             return 0;
         }
 
-        foreach (var element in selected)
+        foreach (var tracked in selected)
         {
-            output.WriteLine($"UI element {element.ObjectId}: {element.Type ?? "type not seen"}" +
-                (element.Name is null ? "" : $" \"{element.Name}\"") + $" at 0x{element.Address:X}, {element.Events} events");
-            SessionFile.ReadTimeline(options.InputPath, element.ObjectId, 0, -1,
+            output.WriteLine($"{(tracked.Kind == ObjectKind.Visual ? "Visual" : "UI element")} {tracked.ObjectId}: " +
+                $"{tracked.Type ?? "type not seen"}" + (tracked.Name is null ? "" : $" \"{tracked.Name}\"") +
+                $" at 0x{tracked.Address:X}, {tracked.Events} events");
+            SessionFile.ReadTimeline(options.InputPath, tracked.ObjectId, 0, -1,
                 (profilerEvent, fields, frame) => output.WriteLine(FormatEvent(profilerEvent,
                     string.Join(", ", fields) + (frame is null ? "" : $", frame {frame}"))), cancellationToken);
             output.WriteLine();
@@ -409,7 +417,7 @@ internal static class CliApplication
 
     private static void WriteSessionInfo(SessionFileInfo info, TextWriter output)
     {
-        output.WriteLine($"Stored: {info.StoredEvents} events, {info.UIElements} UI elements, {info.Frames} frames; " +
+        output.WriteLine($"Stored: {info.StoredEvents} events, {info.UIElements} UI elements, {info.Visuals} visuals, {info.Frames} frames; " +
             $"source {info.Source}, coverage {info.Coverage}; " +
             $"ended: {info.EndReason ?? "not recorded (still recording, or stopped unexpectedly)"}.");
         if (info.CompleteFromSeq is { } completeFrom)
@@ -421,7 +429,10 @@ internal static class CliApplication
     private static string ShortName(XamlProvider provider) => provider switch
     {
         XamlProvider.Xaml => "XAML",
+        XamlProvider.XamlDiagnostics => "XAML-Diag",
         XamlProvider.XamlProfiler => "XAML-Prof",
+        XamlProvider.MicrosoftUIXaml => "MUX",
+        XamlProvider.MicrosoftUIXamlControls => "MUXC",
         _ => "DxgKrnl"
     };
 

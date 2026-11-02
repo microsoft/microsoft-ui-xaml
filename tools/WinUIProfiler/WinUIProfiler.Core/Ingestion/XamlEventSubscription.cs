@@ -6,9 +6,12 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's XAML TraceLogging events, and the kernel's GPU memory events for it, from a TraceEvent
-// source (an .etl file or a live session). TraceLogging events carry their own field names and types; the kernel's
-// events are decoded with its installed manifest. Manifest events on the XAML providers are not read.
+// Delivers one process's events from the XAML providers, and the kernel's GPU memory events for it, from a TraceEvent
+// source (an .etl file or a live session). TraceLogging events carry their own field names and types. Manifest events
+// are decoded with the manifest Windows registers for their provider: system XAML's for Microsoft-Windows-XAML and
+// Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for DxgKrnl. An event that manifest
+// does not describe is not delivered. WinUI's FrameInfo is the one shared event whose fields differ, so it is decoded
+// here.
 internal static class XamlEventSubscription
 {
     // WINEVENT_CHANNEL_TRACELOGGING (winmeta.h). Manifest events on the same providers use other channels.
@@ -18,6 +21,10 @@ internal static class XamlEventSubscription
     // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
     private const int VidMmProcessBudgetChange = 366;
     private const int VidMmProcessUsageChange = 367;
+
+    // Microsoft-Windows-XAML FrameInfo, version 0. WinUI writes one 4-byte Boolean, Value, which is whether the frame
+    // drew (TraceFrameInfo in xcpcore.cpp). System XAML's manifest describes four UInt32 fields instead.
+    private const int FrameInfo = 64;
 
     internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink)
     {
@@ -39,8 +46,7 @@ internal static class XamlEventSubscription
                 return;
             }
 
-            // The dynamic parser also decodes manifest events when a manifest is registered, so filter by channel.
-            if ((int)data.Channel != TraceLoggingChannel || !XamlProviders.TryGet(data.ProviderGuid, out var provider))
+            if (!XamlProviders.TryGet(data.ProviderGuid, out var provider))
             {
                 return;
             }
@@ -79,12 +85,18 @@ internal static class XamlEventSubscription
 #pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
         var timestampQpc = data.TimeStampQPC;
 #pragma warning restore CS0618
-        return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider, data.EventName,
-            (int)data.Opcode, CopyFields(data));
+        return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider,
+            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider));
     }
 
-    private static EventField[] CopyFields(TraceEvent data)
+    private static EventField[] CopyFields(TraceEvent data, XamlProvider provider)
     {
+        if (provider == XamlProvider.Xaml && (int)data.ID == FrameInfo && data.Version == 0 &&
+            data.EventDataLength == sizeof(int))
+        {
+            return [new("Value", BitConverter.ToInt32(data.EventData()) != 0)];
+        }
+
         var names = data.PayloadNames;
         var fields = new EventField[names.Length];
         for (var i = 0; i < names.Length; i++)

@@ -144,8 +144,8 @@
             <TabViewItem x:Uid="FramesTab" IsClosable="False">
                 <views:FramesView x:Name="FramesPanel" />
             </TabViewItem>
-            <TabViewItem x:Name="ElementsTab" x:Uid="ElementsTab" IsClosable="False">
-                <views:ElementsView x:Name="ElementsPanel" />
+            <TabViewItem x:Name="ObjectsTab" x:Uid="ObjectsTab" IsClosable="False">
+                <views:ObjectsView x:Name="ObjectsPanel" />
             </TabViewItem>
         </TabView>
     </Grid>

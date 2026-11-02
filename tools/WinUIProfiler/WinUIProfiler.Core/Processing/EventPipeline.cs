@@ -10,9 +10,9 @@ namespace WinUIProfiler.Engine.Processing;
 // Moves events from the ETW reader thread to one processing thread, which runs every processor in order.
 public sealed class EventPipeline : IDisposable
 {
-    // About 21 MB at the ~320 bytes per event measured on a real trace; holds more than a second of a
-    // startup burst (53,614 events in one second were measured).
-    public const int DefaultCapacity = 65_536;
+    // About 42 MB at the ~320 bytes per event measured on a real trace; holds more than a second of a
+    // startup burst (75,757 events in one second of a WinUI 3 Gallery launch were measured).
+    public const int DefaultCapacity = 131_072;
 
     private readonly BlockingCollection<ProfilerEvent> queue;
     private readonly IReadOnlyList<IEventProcessor> processors;
