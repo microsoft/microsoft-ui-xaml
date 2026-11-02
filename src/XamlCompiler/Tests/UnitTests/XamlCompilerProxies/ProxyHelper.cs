@@ -115,7 +115,7 @@ namespace Win8Xaml.CompilerProxies
     {
         const string ProgramFiles = @"C:\Program Files\";
         const string ProgramFilesx86 = @"C:\Program Files (x86)\";
-        const string XamlBuildTaskFile = @"Microsoft.UI.Xaml.Markup.Compiler.dll";
+        const string XamlBuildTaskFile = @"XamlCompiler.dll";
         public const string WinUIWinmdFile = @"Microsoft.UI.Xaml.winmd";
 
         static Assembly _xamlCompilerAssembly;

@@ -106,12 +106,8 @@ namespace UnitTests
         public void MetadataCache_AssemblyQualifiedNamesMatchRuntimeReflection()
         {
             string path = CreateLookupAssembly();
-#if NET
             // The PersistedAssemblyBuilder that created it (see SaveAssembly) isn't a runtime assembly, so load the saved one instead
             Assembly runtime = Assembly.Load(File.ReadAllBytes(path));
-#else
-            Assembly runtime = _runtimeLookupAssembly;
-#endif
             Assembly metadata = _universe.LoadAssemblyFromFile(path);
             foreach (string name in new[] { "GlobalType", "CacheTests.First.Shared", "CacheTests.Outer+OnlyNested", "CacheTests.Generic`1" })
             {
@@ -287,19 +283,11 @@ namespace UnitTests
         {
             string fileName = name + "." + version + ".dll";
             var assemblyName = new AssemblyName(name) { Version = version };
-#if NET
             // .NET has no AssemblyBuilderAccess.RunAndSave: PersistedAssemblyBuilder saves the assembly, but can't run it
             var assembly = new PersistedAssemblyBuilder(assemblyName, typeof(object).Assembly);
             ModuleBuilder module = assembly.DefineDynamicModule(moduleName ?? name);
             defineTypes(module);
             assembly.Save(Path.Combine(_directory, fileName));
-#else
-            AssemblyBuilder assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(
-                assemblyName, AssemblyBuilderAccess.RunAndSave, _directory);
-            ModuleBuilder module = assembly.DefineDynamicModule(moduleName ?? name, fileName);
-            defineTypes(module);
-            assembly.Save(fileName);
-#endif
             return Path.Combine(_directory, fileName);
         }
 

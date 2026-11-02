@@ -4,13 +4,8 @@
     <SigningMethods Include="StrongName" />
   </ItemGroup>
   <PropertyGroup>
-    <!--
-      net472 is the in-process compiler task of the .NET Framework MSBuild (Visual Studio, msbuild.exe). net10.0 isn't shipped (see
-      the PackageContent items below): it is the in-proc, CoreCLR build of the same code the Native AOT executable compiler
-      (Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj, net10.0) runs, so the unit tests can exercise the net10.0-only code
-      paths (see Tests\UnitTests\Net10\XamlCompilerUnitTests.Net10.csproj).
-    -->
-    <TargetFrameworks>net472;net10.0</TargetFrameworks>
+    <!-- The in-process compiler task of the .NET Framework MSBuild (Visual Studio, msbuild.exe) -->
+    <TargetFrameworks>net472</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AssemblyName>Microsoft.UI.Xaml.Markup.Compiler</AssemblyName>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
@@ -65,29 +60,6 @@
       InputSerializer/OutputDeserializer tasks (Exe\Microsoft.UI.Xaml.Markup.Compiler.IO), see the PackageContent items below.
     -->
     <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" ExcludeAssets="compile" PrivateAssets="all" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <PackageReference Include="System.CodeDom" Version="8.0.0" />
-    <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
-  </ItemGroup>
-  <!-- Same configuration as the net10.0 (Native AOT) build of the executable compiler, so this build runs the same code -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <!-- Not shared with the other target frameworks, which use the same output folder; also has the runtime dependencies -->
-    <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
-    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt): not a runtime dependency -->
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
-    <AdditionalFiles Include="BuildTasks\NativeMethods.txt;BuildTasks\NativeMethods.json" />
-    <Compile Include="BuildTasks\NativeMethods.NativeAot.cs" />
-    <Compile Include="BuildTasks\Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
-    <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />
-    <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeComClasses.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildTasks\AddDefaultXamlLinkMetadata.cs" />
@@ -533,7 +505,7 @@
         their dependencies.
       * tools\net10.0: the tasks that run the executable compiler, which .NET MSBuild ('dotnet build') always uses: there is no
         in-process compiler task for .NET MSBuild.
-    They are all packaged by the net472 build (the net10.0 build of this project is only used by the unit tests).
+    They are all packaged by this project.
   -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <PackageContent Include="Targets\*" PackageLocation="$(BuildTargetsPackageLocation)" />
