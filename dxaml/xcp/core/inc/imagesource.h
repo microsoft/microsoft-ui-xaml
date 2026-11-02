@@ -178,8 +178,12 @@ protected:
     bool m_fDecodeToRenderSize;
     bool m_fDecodeToRenderSizeForcedOff;
 
-    // Set when only liveness disabled DecodeToRenderSize, cleared when the SVG enters the live tree.
+    // Set when only liveness disabled DecodeToRenderSize, cleared when the source enters the live tree.
     bool m_decodeToRenderSizeDisqualifiedByLiveness;
+
+    // Set when EnterImpl re-enables DecodeToRenderSize; the next DecodeToRenderSize with a surface resizes
+    // the surface that was decoded at natural size while the source was not in the live tree.
+    bool m_resizeOnNextDecodeToRenderSize = false;
     uint32_t m_frameIndex = 0;
 
     _Check_return_ HRESULT OnImageAvailableCommon(

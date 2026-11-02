@@ -34,6 +34,11 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    // Regression test for GitHub #10870. Asserts decode size via ETW, so no master file.
+    BEGIN_TEST_METHOD(SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize)
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 };

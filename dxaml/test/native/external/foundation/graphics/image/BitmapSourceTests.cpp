@@ -8,7 +8,9 @@
 #include "FileLoader.h"
 #include "TestCleanupWrapper.h"
 #include "BitmapSourceTests.h"
+#include "ETWWaiterProxy.h"
 #include <WUCRenderingScopeGuard.h>
+#include <MUX-ETWEvents.h>
 
 using namespace Concurrency;
 using namespace ::Windows::Foundation;
@@ -132,6 +134,71 @@ void BitmapSourceTests::SetSourceAsync()
 
     TestServices::Utilities->SetMockDCompSurfaceIdMode(MockDComp::SurfaceIdMode::XmlOrder);
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
+}
+
+void BitmapSourceTests::SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    const int imageElementWidth = 100;
+    const int imageElementHeight = 100;
+
+    // barcelona.png is 266x150, so this only fires for a decode at the element size. Without the fix the
+    // detached SetSourceAsync decodes at natural size and no render-size decode follows the attach.
+    Platform::String^ etwValidationString =
+        L"@DecodeWidth=" + imageElementWidth + L" AND " +
+        L"@DecodeHeight=" + imageElementHeight;
+
+    ETWWaiterProxy imageEtwWaiter;
+    imageEtwWaiter.Start(
+        WINDOWS_UI_XAML_ETW_PROVIDER,
+        DecodeToRenderSizeBegin_value,
+        etwValidationString);
+
+    auto rootGrid = safe_cast<Grid^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"SimpleImage.xaml"));
+    VERIFY_IS_NOT_NULL(rootGrid);
+
+    LOG_OUTPUT(L"Getting stream of image");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.png");
+
+    auto sourceAsyncCompletionEvent = std::make_shared<Event>();
+    BitmapImage^ bitmapImage = nullptr;
+    Microsoft::UI::Xaml::Controls::Image^ testImage = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = rootGrid;
+
+        testImage = safe_cast<Microsoft::UI::Xaml::Controls::Image^>(rootGrid->FindName(L"imageElement"));
+        VERIFY_IS_NOT_NULL(testImage);
+        testImage->Width = imageElementWidth;
+        testImage->Height = imageElementHeight;
+        testImage->Stretch = Stretch::Fill;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    LOG_OUTPUT(L"Completing SetSourceAsync while the BitmapImage is not in the tree");
+    RunOnUIThread([&]()
+    {
+        bitmapImage = ref new BitmapImage();
+        VERIFY_IS_NOT_NULL(bitmapImage);
+
+        create_task(bitmapImage->SetSourceAsync(bitmapStream))
+            .then([=]()
+        {
+            sourceAsyncCompletionEvent->Set();
+        });
+    });
+    sourceAsyncCompletionEvent->WaitForDefault();
+
+    LOG_OUTPUT(L"Attaching the decoded BitmapImage to the Image element");
+    RunOnUIThread([&]()
+    {
+        testImage->Source = bitmapImage;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    imageEtwWaiter.WaitForDefault();
 }
 
 } } } } } } }

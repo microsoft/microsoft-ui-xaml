@@ -731,8 +731,11 @@ CImageSource::SetSource(
     {
         TraceDecodeToRenderSizeDisqualified(ImageDecodeBoundsFinder::NotInLiveTree);
 
-        // Remember liveness disabled DecodeToRenderSize so EnterImpl can re-enable it once the SVG is live.
-        m_decodeToRenderSizeDisqualifiedByLiveness = OfTypeByIndex<KnownTypeIndex::SvgImageSource>();
+        // Remember liveness disabled DecodeToRenderSize so EnterImpl can re-enable it once the source is live.
+        // Covers SVG and BitmapImage.SetSourceAsync; a synchronous SetSource stays forced off (see above).
+        m_decodeToRenderSizeDisqualifiedByLiveness =
+            OfTypeByIndex<KnownTypeIndex::SvgImageSource>() ||
+            (!bSyncDecode && OfTypeByIndex<KnownTypeIndex::BitmapImage>());
 
         m_fDecodeToRenderSizeForcedOff = TRUE;
     }
@@ -1993,6 +1996,7 @@ CImageSource::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParam
             m_decodeToRenderSizeDisqualifiedByLiveness = false;
             m_fDecodeToRenderSizeForcedOff = FALSE;
             m_fDecodeToRenderSize = ShouldDecodeToRenderSize();
+            m_resizeOnNextDecodeToRenderSize = m_fDecodeToRenderSize;
         }
     }
 
@@ -2677,9 +2681,16 @@ CImageSource::DecodeToRenderSize(
     // Svg images should always be resized to have crisp quality whenever a new
     // size is requested. Non-Svg images decode to a larger size to have
     // maximum quality while also limiting the number of times the image is decoded.
+    // The first request after EnterImpl re-enabled DecodeToRenderSize is resized like Svg, since the
+    // existing surface was decoded at natural size while the source was not in the live tree.
     const bool isSvg = OfTypeByIndex<KnownTypeIndex::SvgImageSource>();
+    const bool resizeToRequest = isSvg || m_resizeOnNextDecodeToRenderSize;
+    if (m_pImageSurfaceWrapper->HasAnySurface())
+    {
+        m_resizeOnNextDecodeToRenderSize = false;
+    }
     bool sizeChange = false;
-    if (isSvg)
+    if (resizeToRequest)
     {
         sizeChange =
             (width != pendingWidth) ||
@@ -2698,7 +2709,7 @@ CImageSource::DecodeToRenderSize(
     {
         uint32_t newWidth = width;
         uint32_t newHeight = height;
-        if (!isSvg)
+        if (!resizeToRequest)
         {
             newWidth = std::max(width, imageSourceWidth);
             newHeight = std::max(height, imageSourceHeight);
