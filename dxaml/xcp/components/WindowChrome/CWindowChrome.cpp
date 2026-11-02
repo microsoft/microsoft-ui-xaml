@@ -377,11 +377,6 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
                                                                         ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
     }
 
-    // GetClientRect always reports top 0. Also compare the bridge's actual
-    // top in the parent, so a move between offsets 1 and 0 isn't skipped.
-    POINT bridgeOrigin = {};
-    ::MapWindowPoints(bridgeWindow, m_topLevelWindow, &bridgeOrigin, 1);
-
     const auto windowWidth = RectHelpers::rectWidth(clientRect);
     const auto windowHeight = RectHelpers::rectHeight(clientRect);
     const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
@@ -399,7 +394,7 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
     // if there is no change between old and new values, don't update comp window
     if( ::IsIconic(m_topLevelWindow) ||
         (windowHeight - topBorderHeight) == 0 ||
-        (::EqualRect(&bridgeWindowRect, &newBridgeWindowRect) && bridgeOrigin.y == newIslandPos.Y))
+        ::EqualRect(&bridgeWindowRect, &newBridgeWindowRect))
     {
         return;
     }

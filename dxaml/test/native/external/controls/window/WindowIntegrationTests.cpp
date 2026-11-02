@@ -512,6 +512,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     verifyPainting(extendedOffset, true);
                 }
 
+                // A borderless, non-resizable Overlapped window keeps a frame style,
+                // so it keeps the one-pixel offset.
+                RunOnUIThread([&]()
+                {
+                    auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                    presenter->IsResizable = false;
+                    presenter->SetBorderAndTitleBar(false, false);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, false);
+                RunOnUIThread([&]()
+                {
+                    auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                    presenter->SetBorderAndTitleBar(true, true);
+                    presenter->IsResizable = true;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, true);
+
                 setECITB(false);
                 verifyPainting(0, true);
             }
