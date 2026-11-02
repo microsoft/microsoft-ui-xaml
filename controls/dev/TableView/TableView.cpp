@@ -3872,7 +3872,8 @@ bool TableView::ApplyColumnResizeDrag(TableView* owner, const winrt::TableViewCo
     auto const current = col.Width();
     const double currentValue =
         current.GridUnitType == winrt::GridUnitType::Pixel ? current.Value : col.ActualWidth();
-    if (std::abs(currentValue - next) < 0.0001)
+    if (std::abs(currentValue - next) < 0.0001 &&
+        !(state.commitPixelWidth && current.GridUnitType != winrt::GridUnitType::Pixel))
     {
         return false;
     }
@@ -3929,6 +3930,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         state->didDelta = false;
         state->frozen.clear();
         state->lastPressTimestamp = 0;
+        state->commitPixelWidth = false;
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -4045,7 +4047,8 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
             [weakColumn, weakThis, state](winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
     {
         auto const gripper = sender.try_as<winrt::UIElement>();
-        auto const point = args.GetCurrentPoint(gripper);
+        // Relative to the XamlRoot content, the space the slop is in: local DIPs grow under an ancestor scale.
+        auto const point = args.GetCurrentPoint(nullptr);
         if (!point ||
             args.Pointer().PointerDeviceType() != winrt::Microsoft::UI::Input::PointerDeviceType::Mouse ||
             !point.Properties().IsLeftButtonPressed())
@@ -4183,7 +4186,7 @@ bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
 
     const double lo = NonNegativeFiniteOrZero(column.MinWidth());
     const double hi = MaxWidthForColumn(column, lo);
-    return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi));
+    return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi), true /* commitPixelWidth */);
 }
 
 void TableView::CancelColumnResizeDrag()
@@ -4244,7 +4247,7 @@ bool TableView::CanResizeColumnFromAutomation(const winrt::TableViewColumn& colu
     return GetAvailableResizeGripper(column) != nullptr;
 }
 
-bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width)
+bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width, bool commitPixelWidth)
 {
     auto const gripper = GetAvailableResizeGripper(column);
     if (!gripper || gripper.IsDragging())
@@ -4254,9 +4257,10 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
 
     // DragStarted anchors the gesture at ActualWidth, so the offset is taken from the same value.
     const double totalDelta = width - column.ActualWidth();
+    commitPixelWidth = commitPixelWidth && column.Width().GridUnitType != winrt::GridUnitType::Pixel;
 
     // Rounding noise from the pixel conversion; writing it would pin an Auto or Star column.
-    if (std::abs(totalDelta) < 1e-3)
+    if (std::abs(totalDelta) < 1e-3 && !commitPixelWidth)
     {
         return true;
     }
@@ -4266,6 +4270,11 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
     if (!gripper.IsDragging())
     {
         return false;
+    }
+
+    if (auto const state = m_activeColumnResizeDrag; commitPixelWidth && state && state->gripper.get() == gripper)
+    {
+        state->commitPixelWidth = true;
     }
 
     bool applied = true;

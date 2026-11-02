@@ -725,6 +725,152 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking the gripper of an Auto column and of a Star column leaves each with a Pixel Width at its fitted size, including when the fit does not change the Auto column's size.")]
+        public void PointerDoubleClickGripperCommitsAutoAndStarColumnsAsPixel()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var setWidths = FindElement.ById<Button>(SetAgeAutoScoreStarButton);
+                var report = FindElement.ById<Button>(ReportBasicColumnWidthsButton);
+                if (FindElement.ById(BasicTable) == null || setWidths == null || report == null)
+                {
+                    Verify.Fail("BasicTableView, SetAgeAutoScoreStarButton and/or ReportBasicColumnWidthsButton were not found on the test page.");
+                    return;
+                }
+
+                setWidths.Invoke();
+                if (!WaitForStatusText("Auto and Star set"))
+                {
+                    Verify.Fail("The page did not switch Age to Auto and Score to Star.");
+                    return;
+                }
+                Wait.ForIdle();
+
+                var before = ReadBasicColumnWidths(report);
+                if (!before.ContainsKey("Age") || !before.ContainsKey("Score"))
+                {
+                    Verify.Fail("The page did not report the Age and Score widths.");
+                    return;
+                }
+                Verify.AreEqual("Auto", before["Age"].Mode, "Precondition: Age is Auto.");
+                Verify.AreEqual("Star", before["Score"].Mode, "Precondition: Score is Star.");
+
+                foreach (string column in new[] { "Age", "Score" })
+                {
+                    DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), column));
+                    var after = ReadBasicColumnWidths(report);
+                    if (!after.ContainsKey(column))
+                    {
+                        Verify.Fail("The page did not report the " + column + " width.");
+                        return;
+                    }
+                    Log.Comment("{0}: before {1}:{2}:{3}, after {4}:{5}:{6}.", column,
+                        before[column].Mode, before[column].Value, before[column].Actual,
+                        after[column].Mode, after[column].Value, after[column].Actual);
+                    Verify.AreEqual("Pixel", after[column].Mode, column + ": a double-click fit must leave the column with a Pixel Width.");
+                    Verify.IsTrue(Math.Abs(after[column].Value - after[column].Actual) <= 0.5,
+                        column + ": the Pixel Width must be the fitted size the column now has.");
+                    if (column == "Age")
+                    {
+                        // Age's Auto width already fits its content, so this is the unchanged-size fit.
+                        Verify.IsTrue(Math.Abs(after[column].Actual - before[column].Actual) <= 1.0,
+                            "Precondition: fitting the Auto column must not change its size.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a gripper double-click under an ancestor scale is recognised when the second press is one physical pixel from the first.")]
+        public void PointerDoubleClickGripperFitsColumnUnderAncestorScale()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var scaleButton = FindElement.ById<Button>(ScaleBasicTableVerticallyButton);
+                if (FindElement.ById(BasicTable) == null || scaleButton == null)
+                {
+                    Verify.Fail("BasicTableView and/or ScaleBasicTableVerticallyButton were not found on the test page.");
+                    return;
+                }
+
+                scaleButton.Invoke();
+                if (!WaitForStatusText("Scaled vertically"))
+                {
+                    Verify.Fail("The page did not scale the table.");
+                    return;
+                }
+                Wait.ForIdle();
+
+                double scale = GetAppWindowScale();
+                var bounds = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle;
+                var first = GripperPoint(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+                // Under ScaleY=0.25 one physical pixel is four of the gripper's own DIPs: outside the double-click
+                // slop (half the system rectangle, two physical pixels by default) unless measured in window space.
+                Log.Comment("SM_CXDOUBLECLK={0}, SM_CYDOUBLECLK={1}.", GetSystemMetrics(SM_CXDOUBLECLK), GetSystemMetrics(SM_CYDOUBLECLK));
+                PointerInput.Move(first);
+                Wait.ForIdle();
+                // PointerInput.Move between the clicks takes longer than the double-click time.
+                ClickAtScreenPoint(first);
+                ClickAtScreenPoint(new Point(first.X, first.Y + 1));
+                Wait.ForIdle();
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width under ScaleY=0.25 before={0}, after double-click={1}; window scale={2}.", bounds.Width, after, scale);
+                Verify.IsLessThan(after, bounds.Width - (20.0 * scale),
+                    "A double-click with one physical pixel of jitter must fit the column under an ancestor scale.");
+            }
+        }
+
+        // Parses the page's "<Header>=<GridUnitType>:<Value>:<ActualWidth>;..." report.
+        private static Dictionary<string, (string Mode, double Value, double Actual)> ReadBasicColumnWidths(Button report)
+        {
+            var status = FindElement.ById<TextBlock>(StatusText);
+            string previous = status.DocumentText;
+            report.Invoke();
+            Wait.ForIdle();
+            DateTime deadline = DateTime.Now.AddSeconds(3);
+            while (status.DocumentText == previous && DateTime.Now < deadline)
+            {
+                Wait.ForMilliseconds(100);
+            }
+
+            var widths = new Dictionary<string, (string Mode, double Value, double Actual)>();
+            foreach (string entry in status.DocumentText.Split(';'))
+            {
+                string[] pair = entry.Split('=');
+                string[] parts = pair.Length == 2 ? pair[1].Split(':') : new string[0];
+                if (parts.Length == 3)
+                {
+                    widths[pair[0]] = (parts[0],
+                        double.Parse(parts[1], global::System.Globalization.CultureInfo.InvariantCulture),
+                        double.Parse(parts[2], global::System.Globalization.CultureInfo.InvariantCulture));
+                }
+            }
+            Log.Comment("Column widths: {0}", status.DocumentText);
+            return widths;
+        }
+
+        private const int SM_CXDOUBLECLK = 36;
+        private const int SM_CYDOUBLECLK = 37;
+        private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+        private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetCursorPos(int x, int y);
+
+        [DllImport("user32.dll")]
+        private static extern void mouse_event(uint flags, int dx, int dy, uint data, UIntPtr extraInfo);
+
+        private static void ClickAtScreenPoint(Point point)
+        {
+            SetCursorPos(point.X, point.Y);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        }
         [DllImport("user32.dll")]
         private static extern uint GetDoubleClickTime();
 
