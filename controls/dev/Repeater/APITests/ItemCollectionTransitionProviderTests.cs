@@ -171,7 +171,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var completed = new List<ItemCollectionTransitionCompletedEventArgs>();
             var completedEvent = new AutoResetEvent(false);
             UIElement insertedElement = null;
+#if CSWINRT3_0
+            global::System.EventHandler<ItemCollectionTransitionProvider, ItemCollectionTransitionCompletedEventArgs> onCompleted = (sender, args) =>
+#else
             TypedEventHandler<ItemCollectionTransitionProvider, ItemCollectionTransitionCompletedEventArgs> onCompleted = (sender, args) =>
+#endif
             {
                 completed.Add(args);
                 if (insertedElement != null && args.Element == insertedElement)

@@ -1899,9 +1899,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // ItemInvoked, DragItemsStarting and DragItemsCompleted are only raised by real input, so their unsubscription
                 // can't be observed in-process; the interaction tests cover those events. Only observable events are checked here.
                 int expanding = 0, collapsed = 0, selectionChanged = 0;
+#if CSWINRT3_0
+                global::System.EventHandler<TreeView, TreeViewExpandingEventArgs> onExpanding = (s, e) => expanding++;
+                global::System.EventHandler<TreeView, TreeViewCollapsedEventArgs> onCollapsed = (s, e) => collapsed++;
+                global::System.EventHandler<TreeView, TreeViewSelectionChangedEventArgs> onSelectionChanged = (s, e) => selectionChanged++;
+#else
                 global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewExpandingEventArgs> onExpanding = (s, e) => expanding++;
                 global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewCollapsedEventArgs> onCollapsed = (s, e) => collapsed++;
                 global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewSelectionChangedEventArgs> onSelectionChanged = (s, e) => selectionChanged++;
+#endif
 
                 treeView.Expanding += onExpanding;
                 treeView.Collapsed += onCollapsed;

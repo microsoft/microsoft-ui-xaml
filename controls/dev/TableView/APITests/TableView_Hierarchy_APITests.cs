@@ -1149,7 +1149,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var table = tableView;
+#if CSWINRT3_0
+                global::System.EventHandler<TableView, SelectionChangedEventArgs> onSelectionChanged = null;
+#else
                 global::Windows.Foundation.TypedEventHandler<TableView, SelectionChangedEventArgs> onSelectionChanged = null;
+#endif
                 onSelectionChanged = (s, e) =>
                 {
                     table.SelectionChanged -= onSelectionChanged;

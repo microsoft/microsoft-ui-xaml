@@ -353,8 +353,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // The window expected while scrolling starts and after it ends: the destination offset along the scrolling
             // axis, and the alignment shift (the repeater is offset inside the wider viewport) along the other axis.
             var expectedWindow = isVerticalScroll ?
-                new Rect(-expectedAlignmentShift, targetOffset, viewportWidth, viewportHeight) :
-                new Rect(targetOffset, -expectedAlignmentShift, viewportWidth, viewportHeight);
+                new Rect((float)-expectedAlignmentShift, (float)targetOffset, (float)viewportWidth, (float)viewportHeight) :
+                new Rect((float)targetOffset, (float)-expectedAlignmentShift, (float)viewportWidth, (float)viewportHeight);
 
             RunOnUIThread.Execute(() =>
             {

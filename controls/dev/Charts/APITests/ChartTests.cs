@@ -160,13 +160,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0.0, chart.DesiredSize.Width, "Zero available width should stay zero.");
                 Verify.AreEqual(0.0, chart.DesiredSize.Height, "Zero available height should stay zero.");
 
-                chart.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                chart.Measure(new Size(float.PositiveInfinity, float.PositiveInfinity));
                 Verify.AreEqual(160.0, chart.DesiredSize.Width, "Infinite available width should use fallback width.");
                 Verify.AreEqual(96.0, chart.DesiredSize.Height, "Infinite available height should use fallback height.");
 
                 chart.MinWidth = 200.0;
                 chart.MinHeight = 120.0;
-                chart.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                chart.Measure(new Size(float.PositiveInfinity, float.PositiveInfinity));
                 Verify.AreEqual(200.0, chart.DesiredSize.Width, "MinWidth should raise the fallback width.");
                 Verify.AreEqual(120.0, chart.DesiredSize.Height, "MinHeight should raise the fallback height.");
             });

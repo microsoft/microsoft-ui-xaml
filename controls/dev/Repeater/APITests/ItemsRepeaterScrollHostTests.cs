@@ -216,8 +216,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var surface = AsScrollingSurface(scrollHost);
 
                 // Unscrolled: item 3 starts 300px below the top of the viewport.
-                VerifyRect(new Rect(0, -300, c_viewportWidth, c_viewportHeight), surface.GetRelativeViewport(items[3]), "unscrolled item 3");
-                VerifyRect(new Rect(0, 0, c_viewportWidth, c_viewportHeight), surface.GetRelativeViewport(items[0]), "unscrolled item 0");
+                VerifyRect(new Rect(0, -300, (float)c_viewportWidth, (float)c_viewportHeight), surface.GetRelativeViewport(items[3]), "unscrolled item 3");
+                VerifyRect(new Rect(0, 0, (float)c_viewportWidth, (float)c_viewportHeight), surface.GetRelativeViewport(items[0]), "unscrolled item 0");
 
                 scrollViewer.ViewChanged += (sender, args) =>
                 {
@@ -239,8 +239,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var surface = AsScrollingSurface(scrollHost);
 
                 // Item 3 is now 100px below the top of the viewport, item 1 is 100px above it.
-                VerifyRect(new Rect(0, -100, c_viewportWidth, c_viewportHeight), surface.GetRelativeViewport(items[3]), "scrolled item 3");
-                VerifyRect(new Rect(0, 100, c_viewportWidth, c_viewportHeight), surface.GetRelativeViewport(items[1]), "scrolled item 1");
+                VerifyRect(new Rect(0, -100, (float)c_viewportWidth, (float)c_viewportHeight), surface.GetRelativeViewport(items[3]), "scrolled item 3");
+                VerifyRect(new Rect(0, 100, (float)c_viewportWidth, (float)c_viewportHeight), surface.GetRelativeViewport(items[1]), "scrolled item 1");
 
                 // With a 0 ratio the viewport top edge (offset 200) coincides with item 2's top edge.
                 foreach (var item in items)

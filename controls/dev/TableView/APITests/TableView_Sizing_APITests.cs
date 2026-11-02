@@ -2283,8 +2283,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var transform = element.TransformToVisual(ancestor);
 
             return Math.Min(
-                transform.TransformPoint(new Point(0.0, 0.0)).X,
-                transform.TransformPoint(new Point(element.ActualWidth, 0.0)).X);
+                transform.TransformPoint(new Point(0, 0)).X,
+                transform.TransformPoint(new Point((float)element.ActualWidth, 0)).X);
         }
 
         // Scrolls far enough to realize the row at the given index, derived from a measured row height

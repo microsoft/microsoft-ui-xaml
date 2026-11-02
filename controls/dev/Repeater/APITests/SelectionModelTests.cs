@@ -1475,7 +1475,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var selectionModel = new SelectionModel() { Source = CreateNestedData(levels: 1, groupsAtLevel: 2, countAtLeaf: 3) };
                 int removedHandlerCalls = 0;
                 int remainingHandlerCalls = 0;
+#if CSWINRT3_0
+                global::System.EventHandler<SelectionModel, SelectionModelChildrenRequestedEventArgs> removedHandler = (sender, args) =>
+#else
                 TypedEventHandler<SelectionModel, SelectionModelChildrenRequestedEventArgs> removedHandler = (sender, args) =>
+#endif
                 {
                     removedHandlerCalls++;
                     args.Children = args.Source is IList ? args.Source : null;

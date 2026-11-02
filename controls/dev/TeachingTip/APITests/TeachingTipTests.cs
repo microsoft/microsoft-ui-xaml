@@ -30,6 +30,17 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
+#if CSWINRT3_0
+using TeachingTipEventHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, object>;
+using TeachingTipClosingHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs>;
+using TeachingTipClosedHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs>;
+using TeachingTipOpenedHandler = System.EventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, Microsoft.UI.Xaml.Controls.TeachingTipOpenedEventArgs>;
+#else
+using TeachingTipEventHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, object>;
+using TeachingTipClosingHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs>;
+using TeachingTipClosedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs>;
+using TeachingTipOpenedHandler = Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.TeachingTip, Microsoft.UI.Xaml.Controls.TeachingTipOpenedEventArgs>;
+#endif
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -970,7 +981,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             int removedHandlerClicks = 0;
             int closingCount = 0;
             object clickSender = null;
-            TypedEventHandler<TeachingTip, object> removedHandler = (s, a) => removedHandlerClicks++;
+            TeachingTipEventHandler removedHandler = (s, a) => removedHandlerClicks++;
             RunOnUIThread.Execute(() =>
             {
                 tip.ActionButtonClick += (s, a) => { clicks++; clickSender = s; };
@@ -1065,7 +1076,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var events = new List<string>();
             var closedRaised = new ManualResetEvent(false);
             int removedHandlerCalls = 0;
-            TypedEventHandler<TeachingTip, object> removedHandler = (s, a) => removedHandlerCalls++;
+            TeachingTipEventHandler removedHandler = (s, a) => removedHandlerCalls++;
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreSame(command, tip.CloseButtonCommand);
@@ -1488,11 +1499,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // A target that touches a window edge is not clipped by it. An out-of-root tip whose screen has room beyond that
             // edge can therefore still use that side. The test hooks turn off the out-of-root "always Top" shortcut and
             // supply deterministic window and screen bounds.
-            VerifyFlushEdgePlacement(TeachingTipPlacementMode.Left, t => new Rect(t.X, t.Y - AmpleSpace, t.Width + AmpleSpace, t.Height + 2 * AmpleSpace),
+            VerifyFlushEdgePlacement(TeachingTipPlacementMode.Left, t => new Rect(t.X, (float)(t.Y - AmpleSpace), (float)(t.Width + AmpleSpace), (float)(t.Height + 2 * AmpleSpace)),
                 (t, w) => t.X - w.X);
-            VerifyFlushEdgePlacement(TeachingTipPlacementMode.Right, t => new Rect(t.X, t.Y - AmpleSpace, t.Width, t.Height + 2 * AmpleSpace),
+            VerifyFlushEdgePlacement(TeachingTipPlacementMode.Right, t => new Rect(t.X, (float)(t.Y - AmpleSpace), t.Width, (float)(t.Height + 2 * AmpleSpace)),
                 (t, w) => (w.X + w.Width) - (t.X + t.Width));
-            VerifyFlushEdgePlacement(TeachingTipPlacementMode.Top, t => new Rect(t.X - AmpleSpace, t.Y, t.Width + 2 * AmpleSpace, t.Height + AmpleSpace),
+            VerifyFlushEdgePlacement(TeachingTipPlacementMode.Top, t => new Rect((float)(t.X - AmpleSpace), t.Y, (float)(t.Width + 2 * AmpleSpace), (float)(t.Height + AmpleSpace)),
                 (t, w) => t.Y - w.Y);
         }
 
@@ -1938,7 +1949,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             UseWindowBoundsAroundTarget(tip, AmpleSpace, AmpleSpace, AmpleSpace, AmpleSpace);
 
             var notifications = new List<(string name, object sender)>();
-            var handlers = new Dictionary<string, TypedEventHandler<TeachingTip, object>>();
+            var handlers = new Dictionary<string, TeachingTipEventHandler>();
             foreach (var name in new[] { "OpenedStatusChanged", "IdleStatusChanged", "EffectivePlacementChanged", "EffectiveHeroContentPlacementChanged", "OffsetChanged", "TitleVisibilityChanged", "SubtitleVisibilityChanged" })
             {
                 handlers[name] = (s, a) => { lock (notifications) { notifications.Add((name, s)); } };
@@ -2045,10 +2056,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // Each removed handler is its event's only handler, so removing it also removes the native subscription.
-                TypedEventHandler<TeachingTip, object> removedActionButtonClick = (s, a) => calls.Add("removed ActionButtonClick");
-                TypedEventHandler<TeachingTip, object> removedCloseButtonClick = (s, a) => calls.Add("removed CloseButtonClick");
-                TypedEventHandler<TeachingTip, TeachingTipClosingEventArgs> removedClosing = (s, a) => calls.Add("removed Closing");
-                TypedEventHandler<TeachingTip, TeachingTipClosedEventArgs> removedClosed = (s, a) => calls.Add("removed Closed");
+                TeachingTipEventHandler removedActionButtonClick = (s, a) => calls.Add("removed ActionButtonClick");
+                TeachingTipEventHandler removedCloseButtonClick = (s, a) => calls.Add("removed CloseButtonClick");
+                TeachingTipClosingHandler removedClosing = (s, a) => calls.Add("removed Closing");
+                TeachingTipClosedHandler removedClosed = (s, a) => calls.Add("removed Closed");
                 tip.ActionButtonClick += removedActionButtonClick;
                 tip.ActionButtonClick -= removedActionButtonClick;
                 tip.CloseButtonClick += removedCloseButtonClick;
@@ -2088,7 +2099,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tip = CreateUntargetedTip();
             var observations = new List<string>();
             var openedRaised = new ManualResetEvent(false);
-            TypedEventHandler<TeachingTip, TeachingTipOpenedEventArgs> handler = (s, a) =>
+            TeachingTipOpenedHandler handler = (s, a) =>
             {
                 // Opened follows the expand animation, so the tip is already idle with its popup open.
                 var popup = TeachingTipTestHooks.GetPopup(s);
@@ -2300,20 +2311,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var className in classNames)
                 {
-                    var factory = global::WinRT.ActivationFactory.Get(className);
-                    Verify.IsNotNull(factory, className + " activation factory");
-                    Verify.AreEqual(className, new global::WinRT.IInspectable(factory).GetRuntimeClassName(), className + " activation factory runtime class name");
+                    Verify.AreEqual(className, WindowsRuntimeTestHelpers.GetActivationFactoryRuntimeClassName(className), className + " activation factory runtime class name");
 
                     // Composable classes (TeachingTip, TeachingTipTemplateSettings, TeachingTipAutomationPeer) and the static-only
                     // TeachingTipTestHooks are not default-activatable: IActivationFactory.ActivateInstance returns E_NOTIMPL.
                     int hresult = 0;
                     try
                     {
-                        IntPtr instance = new global::ABI.WinRT.Interop.IActivationFactory(factory).ActivateInstance();
-                        if (instance != IntPtr.Zero)
-                        {
-                            global::System.Runtime.InteropServices.Marshal.Release(instance);
-                        }
+                        WindowsRuntimeTestHelpers.ActivateInstance(className);
                     }
                     catch (Exception e)
                     {
@@ -2659,10 +2664,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 targetBounds = GetBoundsInRoot(tip.Target);
                 TeachingTipTestHooks.SetUseTestWindowBounds(tip, true);
                 TeachingTipTestHooks.SetTestWindowBounds(tip, new Rect(
-                    targetBounds.X - left,
-                    targetBounds.Y - top,
-                    targetBounds.Width + left + right,
-                    targetBounds.Height + top + bottom));
+                    (float)(targetBounds.X - left),
+                    (float)(targetBounds.Y - top),
+                    (float)(targetBounds.Width + left + right),
+                    (float)(targetBounds.Height + top + bottom)));
             });
             return targetBounds;
         }
@@ -2685,7 +2690,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static Rect GetBoundsInRoot(FrameworkElement element)
         {
-            return element.TransformToVisual(null).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+            return element.TransformToVisual(null).TransformBounds(new Rect(0, 0, (float)element.ActualWidth, (float)element.ActualHeight));
         }
 
         private static void OpenTip(TeachingTip tip)
@@ -2732,7 +2737,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var popup = TeachingTipTestHooks.GetPopup(tip);
             var tailOcclusionGrid = VisualTreeUtils.FindVisualChildByName(popup.Child, "TailOcclusionGrid");
             Verify.IsNotNull(tailOcclusionGrid, "TailOcclusionGrid");
-            return new Rect(popup.HorizontalOffset, popup.VerticalOffset, tailOcclusionGrid.ActualWidth, tailOcclusionGrid.ActualHeight);
+            return new Rect((float)popup.HorizontalOffset, (float)popup.VerticalOffset, (float)tailOcclusionGrid.ActualWidth, (float)tailOcclusionGrid.ActualHeight);
         }
 
         private static Polygon GetTailPolygon(TeachingTip tip)
@@ -2872,7 +2877,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 TeachingTipTestHooks.SetUseTestWindowBounds(tip, true);
                 TeachingTipTestHooks.SetTestWindowBounds(tip, window);
                 TeachingTipTestHooks.SetUseTestScreenBounds(tip, true);
-                TeachingTipTestHooks.SetTestScreenBounds(tip, new Rect(target.X - AmpleSpace, target.Y - AmpleSpace, target.Width + 2 * AmpleSpace, target.Height + 2 * AmpleSpace));
+                TeachingTipTestHooks.SetTestScreenBounds(tip, new Rect((float)(target.X - AmpleSpace), (float)(target.Y - AmpleSpace), (float)(target.Width + 2 * AmpleSpace), (float)(target.Height + 2 * AmpleSpace)));
             });
             OpenTip(tip);
             RunOnUIThread.Execute(() => Verify.AreEqual(placement, TeachingTipTestHooks.GetEffectivePlacement(tip), $"Effective placement for a target flush with the {placement} edge"));
@@ -2902,7 +2907,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // (TeachingTip::OnHeroContentPlacementChanged). One pixel more than the tip's height still fits.
             RunOnUIThread.Execute(() =>
             {
-                UseFitBounds(tip, constrainToRootBounds, new Rect(0, 0, tipWidth + 100, tipHeight + 1));
+                UseFitBounds(tip, constrainToRootBounds, new Rect(0, 0, (float)(tipWidth + 100), (float)(tipHeight + 1)));
                 tip.HeroContentPlacement = TeachingTipHeroContentPlacementMode.Top;
             });
             IdleSynchronizer.Wait();
@@ -2912,7 +2917,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // Exactly the tip's height does not fit: the tip closes.
             RunOnUIThread.Execute(() =>
             {
-                UseFitBounds(tip, constrainToRootBounds, new Rect(0, 0, tipWidth + 100, tipHeight));
+                UseFitBounds(tip, constrainToRootBounds, new Rect(0, 0, (float)(tipWidth + 100), (float)tipHeight));
                 tip.HeroContentPlacement = TeachingTipHeroContentPlacementMode.Bottom;
             });
 
@@ -3000,7 +3005,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static Point GetPopupOffset(TeachingTip tip)
         {
             var popup = TeachingTipTestHooks.GetPopup(tip);
-            return new Point(popup.HorizontalOffset, popup.VerticalOffset);
+            return new Point((float)popup.HorizontalOffset, (float)popup.VerticalOffset);
         }
 
         // Restores the test window and sizes it to a fraction of its maximized size, then waits until the XAML content has that width.
@@ -3051,7 +3056,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static string GetRuntimeClassName(object projectedObject)
         {
-            return new global::WinRT.IInspectable(((global::WinRT.IWinRTObject)projectedObject).NativeObject).GetRuntimeClassName();
+            return WindowsRuntimeTestHelpers.GetRuntimeClassName(projectedObject);
         }
 
         // A template with only the parts TeachingTip requires (Container and ContentRootGrid, see concern C6) plus a TailEdgeBorder,

@@ -451,7 +451,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     probed = true;
 
                     Verify.AreEqual(4, context.ItemCount);
-                    var infinite = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
+                    var infinite = new Rect(0, 0, float.PositiveInfinity, float.PositiveInfinity);
                     Verify.AreEqual(infinite, context.RealizationRect);
                     Verify.AreEqual(infinite, context.VisibleRect);
                     Verify.AreEqual(-1, context.RecommendedAnchorIndex);
@@ -715,7 +715,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 20, 300, 200), context.VisibleRect);
 
                 var layout = new ProbeVirtualizingLayout();
-                var desired = layout.Measure(context, new Size(300, double.PositiveInfinity));
+                var desired = layout.Measure(context, new Size(300, float.PositiveInfinity));
                 Verify.AreEqual(new Size(100, 30), desired, "The layout measured the three 10px elements supplied by the context.");
                 Verify.AreEqual(new Size(300, 30), layout.Arrange(context, new Size(300, 30)));
             });
@@ -759,7 +759,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreSame(children[3], context.Children[3]);
 
                 var layout = new WrappingNonVirtualizingLayout(new ProbeVirtualizingLayout());
-                var desired = layout.Measure(context, new Size(200, double.PositiveInfinity));
+                var desired = layout.Measure(context, new Size(200, float.PositiveInfinity));
                 Verify.AreEqual(new Size(100, 40), desired, "The layout measured the four 10px children from ChildrenCore.");
             });
         }
@@ -973,7 +973,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     element.Measure(availableSize);
                     height += element.DesiredSize.Height;
                 }
-                return new Size(100, height);
+                return new Size(100, (float)height);
             }
 
             protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
@@ -983,7 +983,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 for (int i = 0; i < context.ItemCount; i++)
                 {
                     var element = context.GetOrCreateElementAt(i);
-                    element.Arrange(new Rect(0, offset, finalSize.Width, element.DesiredSize.Height));
+                    element.Arrange(new Rect(0, (float)offset, finalSize.Width, element.DesiredSize.Height));
                     offset += element.DesiredSize.Height;
                 }
                 return finalSize;
@@ -1005,7 +1005,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     element.Measure(availableSize);
                     height += element.DesiredSize.Height;
                 }
-                return new Size(100, height);
+                return new Size(100, (float)height);
             }
 
             protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
@@ -1014,7 +1014,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 for (int i = 0; i < context.ItemCount; i++)
                 {
                     var element = context.GetOrCreateElementAt(i);
-                    element.Arrange(new Rect(0, offset, finalSize.Width, element.DesiredSize.Height));
+                    element.Arrange(new Rect(0, (float)offset, finalSize.Width, element.DesiredSize.Height));
                     offset += element.DesiredSize.Height;
                 }
                 return finalSize;
@@ -1084,7 +1084,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 double offset = 0;
                 foreach (var child in context.Children)
                 {
-                    child.Arrange(new Rect(0, offset, finalSize.Width, 20));
+                    child.Arrange(new Rect(0, (float)offset, finalSize.Width, 20));
                     offset += 20;
                 }
                 return finalSize;

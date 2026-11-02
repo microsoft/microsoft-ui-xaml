@@ -925,7 +925,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 int removedHandlerCalls = 0;
                 int remainingHandlerCalls = 0;
                 var keysSeenByRemainingHandler = new List<string>();
+#if CSWINRT3_0
+                global::System.EventHandler<RecyclingElementFactory, SelectTemplateEventArgs> removedHandler = (sender, args) =>
+#else
                 global::Windows.Foundation.TypedEventHandler<RecyclingElementFactory, SelectTemplateEventArgs> removedHandler = (sender, args) =>
+#endif
                 {
                     removedHandlerCalls++;
                     args.TemplateKey = "Button";

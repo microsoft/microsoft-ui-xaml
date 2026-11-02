@@ -196,7 +196,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(viewportClip);
                 originalViewportClip = viewportClip;
                 Verify.AreEqual(
-                    new Rect(0, 0, c_defaultUIScrollPresenterWidth, c_defaultUIScrollPresenterHeight),
+                    new Rect(0, 0, (float)c_defaultUIScrollPresenterWidth, (float)c_defaultUIScrollPresenterHeight),
                     viewportClip.Rect);
 
                 Log.Comment("Allowing content to render outside the viewport.");
@@ -220,7 +220,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RectangleGeometry viewportClip = scrollPresenter.Clip as RectangleGeometry;
                 Verify.IsNotNull(viewportClip);
                 Verify.AreEqual(
-                    new Rect(0, 0, c_defaultUIScrollPresenterWidth, c_defaultUIScrollPresenterHeight),
+                    new Rect(0, 0, (float)c_defaultUIScrollPresenterWidth, (float)c_defaultUIScrollPresenterHeight),
                     viewportClip.Rect);
 
                 Log.Comment("Resizing ScrollPresenter and verifying the viewport clip.");
@@ -236,7 +236,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(viewportClip);
                 Verify.AreSame(originalViewportClip, viewportClip);
                 Verify.AreEqual(
-                    new Rect(0, 0, scrollPresenter.ViewportWidth, scrollPresenter.ViewportHeight),
+                    new Rect(0, 0, (float)scrollPresenter.ViewportWidth, (float)scrollPresenter.ViewportHeight),
                     viewportClip.Rect);
 
                 Content = null;

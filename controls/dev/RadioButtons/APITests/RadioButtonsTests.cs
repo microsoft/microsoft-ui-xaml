@@ -390,7 +390,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var radioButtons = CreateLoadedRadioButtons(itemCount: 7, maxColumns: 1);
 
             int layoutChangedCount = 0;
+#if CSWINRT3_0
+            global::System.EventHandler<RadioButtons, object> handler = (s, a) => layoutChangedCount++;
+#else
             global::Windows.Foundation.TypedEventHandler<RadioButtons, object> handler = (s, a) => layoutChangedCount++;
+#endif
 
             RunOnUIThread.Execute(() =>
             {
@@ -661,7 +665,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RadioButton addedCheckedItem = null;
             var selectionChangedArgs = new List<SelectionChangedEventArgs>();
             int layoutChangedCount = 0;
+#if CSWINRT3_0
+            global::System.EventHandler<RadioButtons, object> layoutChangedHandler = (sender, args) =>
+#else
             global::Windows.Foundation.TypedEventHandler<RadioButtons, object> layoutChangedHandler = (sender, args) =>
+#endif
             {
                 if (sender == hooksBeforeLoad)
                 {

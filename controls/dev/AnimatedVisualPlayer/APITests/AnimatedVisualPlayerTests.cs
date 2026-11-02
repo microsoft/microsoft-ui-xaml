@@ -163,14 +163,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyMeasure(player, Stretch.None, new Size(400, 400), new Size(200, 100));
 
                 VerifyMeasure(player, Stretch.Uniform, new Size(400, 400), new Size(400, 200));
-                VerifyMeasure(player, Stretch.Uniform, new Size(100, double.PositiveInfinity), new Size(100, 50));
-                VerifyMeasure(player, Stretch.Uniform, new Size(double.PositiveInfinity, 50), new Size(100, 50));
+                VerifyMeasure(player, Stretch.Uniform, new Size(100, float.PositiveInfinity), new Size(100, 50));
+                VerifyMeasure(player, Stretch.Uniform, new Size(float.PositiveInfinity, 50), new Size(100, 50));
 
                 VerifyMeasure(player, Stretch.Fill, new Size(300, 50), new Size(300, 50));
-                VerifyMeasure(player, Stretch.Fill, new Size(100, double.PositiveInfinity), new Size(100, 50));
+                VerifyMeasure(player, Stretch.Fill, new Size(100, float.PositiveInfinity), new Size(100, 50));
 
                 VerifyMeasure(player, Stretch.UniformToFill, new Size(300, 60), new Size(300, 60));
-                VerifyMeasure(player, Stretch.UniformToFill, new Size(100, double.PositiveInfinity), new Size(100, 50));
+                VerifyMeasure(player, Stretch.UniformToFill, new Size(100, float.PositiveInfinity), new Size(100, 50));
 
                 Verify.AreEqual(1, emptySource.CreateCount);
                 Verify.IsFalse(emptyPlayer.IsAnimatedVisualLoaded, "Zero-size content is treated as empty and not loaded.");
@@ -1384,7 +1384,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var reached = new ManualResetEvent(false);
                 XamlRoot xamlRoot = null;
+#if CSWINRT3_0
+                global::System.EventHandler<XamlRoot, XamlRootChangedEventArgs> handler = (sender, args) =>
+#else
                 TypedEventHandler<XamlRoot, XamlRootChangedEventArgs> handler = (sender, args) =>
+#endif
                 {
                     if (sender.IsHostVisible == expectedVisible)
                     {

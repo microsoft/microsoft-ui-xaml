@@ -28,8 +28,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public class RepeaterApiContractTests : ApiTestBase
     {
-        private static readonly Guid IID_IInspectable = new Guid("AF86E2E0-B12D-4C6A-9C5A-D7AA65101E90");
-
         // Product concern PC-LFL-TIMER: a LinedFlowLayout whose asynchronous measure timer was created crashes the process
         // when it is destroyed off the UI thread (for example by the .NET finalizer). LinedFlowLayouts that run a layout
         // pass in this class are kept alive for the lifetime of the test process, like in LinedFlowLayoutTests.
@@ -236,7 +234,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.ElementPrepared += (s, e) => preparedArgs = preparedArgs ?? e;
                 repeater.ElementClearing += (s, e) => clearingArgs = clearingArgs ?? e;
                 int indexChangedCount = 0;
+#if CSWINRT3_0
+                global::System.EventHandler<ItemsRepeater, ItemsRepeaterElementIndexChangedEventArgs> onIndexChanged = (s, e) =>
+#else
                 global::Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementIndexChangedEventArgs> onIndexChanged = (s, e) =>
+#endif
                 {
                     indexChangedCount++;
                     indexChangedArgs = indexChangedArgs ?? e;
@@ -370,12 +372,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 foreach (var className in notActivatable)
                 {
-                    var factory = global::WinRT.ActivationFactory.Get(className);
-                    Verify.AreEqual(className, global::WinRT.IInspectable.FromAbi(factory.ThisPtr).GetRuntimeClassName(false), className + " factory name");
+                    Verify.AreEqual(className, WindowsRuntimeTestHelpers.GetActivationFactoryRuntimeClassName(className), className + " factory name");
                     int hr = 0;
                     try
                     {
-                        global::ABI.WinRT.Interop.IActivationFactoryMethods.ActivateInstanceUnsafe(factory, IID_IInspectable);
+                        WindowsRuntimeTestHelpers.ActivateInstance(className);
                     }
                     catch (Exception e)
                     {
@@ -386,11 +387,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
 
                 const string scrollHostName = "Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost";
-                var scrollHostFactory = global::WinRT.ActivationFactory.Get(scrollHostName);
-                Verify.AreEqual(scrollHostName, global::WinRT.IInspectable.FromAbi(scrollHostFactory.ThisPtr).GetRuntimeClassName(false));
-                var created = global::ABI.WinRT.Interop.IActivationFactoryMethods.ActivateInstanceUnsafe(scrollHostFactory, IID_IInspectable);
+                Verify.AreEqual(scrollHostName, WindowsRuntimeTestHelpers.GetActivationFactoryRuntimeClassName(scrollHostName));
+                var created = WindowsRuntimeTestHelpers.ActivateInstance(scrollHostName);
                 Verify.IsNotNull(created);
-                Verify.AreEqual(scrollHostName, global::WinRT.IInspectable.FromAbi(created.ThisPtr).GetRuntimeClassName(false), "The sealed scroll host is created by ActivateInstance.");
+                Verify.AreEqual(scrollHostName, created, "The sealed scroll host is created by ActivateInstance.");
             });
         }
 
@@ -410,7 +410,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Source = new List<object>() { new List<object>() { 1, 2, 3 }, new List<object>() { 4, 5, 6 } }
                 };
                 int childrenRequestedCalls = 0;
+#if CSWINRT3_0
+                global::System.EventHandler<SelectionModel, SelectionModelChildrenRequestedEventArgs> onChildrenRequested = (s, e) =>
+#else
                 global::Windows.Foundation.TypedEventHandler<SelectionModel, SelectionModelChildrenRequestedEventArgs> onChildrenRequested = (s, e) =>
+#endif
                 {
                     childrenRequestedCalls++;
                     e.Children = e.Source is global::System.Collections.IList ? e.Source : null;
@@ -429,7 +433,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 factory.Templates["T"] = (DataTemplate)XamlReader.Load("<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock/></DataTemplate>");
                 factory.Templates["U"] = (DataTemplate)XamlReader.Load("<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button/></DataTemplate>");
                 int selectTemplateKeyCalls = 0;
+#if CSWINRT3_0
+                global::System.EventHandler<RecyclingElementFactory, SelectTemplateEventArgs> onSelectTemplateKey = (s, e) =>
+#else
                 global::Windows.Foundation.TypedEventHandler<RecyclingElementFactory, SelectTemplateEventArgs> onSelectTemplateKey = (s, e) =>
+#endif
                 {
                     selectTemplateKeyCalls++;
                     e.TemplateKey = "U";

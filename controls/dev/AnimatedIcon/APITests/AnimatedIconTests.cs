@@ -372,9 +372,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // Constraints are multiples of 4 DIPs so layout rounding is exact at 100/125/150/175/200% display scale.
             Verify.AreEqual(new Size(60, 60), MeasureIcon(icon, new Size(100, 60)));
             Verify.AreEqual(new Size(32, 32), MeasureIcon(icon, new Size(32, 96)));
-            Verify.AreEqual(new Size(24, 24), MeasureIcon(icon, new Size(double.PositiveInfinity, 24)));
-            Verify.AreEqual(new Size(36, 36), MeasureIcon(icon, new Size(36, double.PositiveInfinity)));
-            Verify.AreEqual(new Size(48, 48), MeasureIcon(icon, new Size(double.PositiveInfinity, double.PositiveInfinity)));
+            Verify.AreEqual(new Size(24, 24), MeasureIcon(icon, new Size(float.PositiveInfinity, 24)));
+            Verify.AreEqual(new Size(36, 36), MeasureIcon(icon, new Size(36, float.PositiveInfinity)));
+            Verify.AreEqual(new Size(48, 48), MeasureIcon(icon, new Size(float.PositiveInfinity, float.PositiveInfinity)));
         }
 
         // Scenario: Measures an icon that is not in the live tree and whose source creates a visual with a natural size
@@ -519,7 +519,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void RightToLeftFlowDirectionIsCounteredUnlessMirrored()
         {
             var icon = CreateLoadedIcon(new AnimatedBackVisualSource());
-            Verify.AreEqual(new Point(0.5, 0.5), GetRenderTransformOrigin(icon));
+            Verify.AreEqual(new Point(0.5f, 0.5f), GetRenderTransformOrigin(icon));
             Verify.AreEqual(1.0, GetMirrorScaleX(icon));
 
             // XAML mirrors RightToLeft content; the icon undoes that unless MirroredWhenRightToLeft is set.
@@ -1864,7 +1864,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static Size MeasureIcon(AnimatedIcon icon, Size available)
         {
-            var desired = new Size(double.NaN, double.NaN);
+            var desired = new Size(float.NaN, float.NaN);
             RunOnUIThread.Execute(() =>
             {
                 icon.Measure(available);
@@ -1954,7 +1954,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static Point GetRenderTransformOrigin(AnimatedIcon icon)
         {
-            var origin = new Point(double.NaN, double.NaN);
+            var origin = new Point(float.NaN, float.NaN);
             RunOnUIThread.Execute(() => origin = icon.RenderTransformOrigin);
             return origin;
         }
@@ -2405,7 +2405,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static string GetActivationFactoryRuntimeClassName(string typeName)
         {
             string name = null;
-            RunOnUIThread.Execute(() => name = new global::WinRT.IInspectable(global::WinRT.ActivationFactory.Get(typeName)).GetRuntimeClassName(false));
+            RunOnUIThread.Execute(() => name = WindowsRuntimeTestHelpers.GetActivationFactoryRuntimeClassName(typeName));
             return name;
         }
 

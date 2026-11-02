@@ -55,8 +55,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
         // name of the .NET projection type.
         public static string GetNativeRuntimeClassName(object instance)
         {
-            var objRef = ((global::WinRT.IWinRTObject)instance).NativeObject;
-            return global::WinRT.IInspectable.FromAbi(objRef.ThisPtr).GetRuntimeClassName(false);
+            return WindowsRuntimeTestHelpers.GetRuntimeClassName(instance);
         }
     }
 }

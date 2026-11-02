@@ -858,7 +858,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var top = double.NaN;
                     try
                     {
-                        top = element?.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y ?? double.NaN;
+                        top = element?.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y ?? float.NaN;
                     }
                     catch (ArgumentException)
                     {
@@ -904,7 +904,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         return;
                     }
 
-                    var top = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                    var top = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
                     var delta = edge == "Top" ? top : top + header.ActualHeight - scroller.ViewportHeight;
                     done = Math.Abs(delta) < 0.5;
                     if (!done)
@@ -926,7 +926,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue((header.Content as TableViewGroupInfo).IsExpanded, $"Precondition: {key} is expanded.");
                 Verify.IsTrue(header.Focus(FocusState.Keyboard), $"Precondition: the {key} header takes keyboard focus.");
                 var scroller = GetBodyScroller(tableView);
-                var headerTop = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                var headerTop = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
                 var edgeDelta = edge == "Top" ? headerTop : headerTop + header.ActualHeight - scroller.ViewportHeight;
                 Verify.IsLessThan(Math.Abs(edgeDelta), 1.0,
                     $"Precondition: the {key} header is aligned with the {edge} viewport edge (header top {headerTop:F1}, height {header.ActualHeight:F1}, viewport {scroller.ViewportHeight:F1}).");
@@ -948,7 +948,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         offsetBefore = scroller.VerticalOffset;
                         var header = FindRealizedGroupHeader(tableView, key);
                         Verify.IsNotNull(header, $"The {key} header is realized ({context}).");
-                        topBefore = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                        topBefore = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
                         focusLog.Clear();
                         toggling = true;
                         var provider = FrameworkElementAutomationPeer.CreatePeerForElement(header)
@@ -971,7 +971,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         toggling = false;
                         var scroller = GetBodyScroller(tableView);
                         var header = FindRealizedGroupHeader(tableView, key);
-                        var topAfter = header?.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y ?? double.NaN;
+                        var topAfter = header?.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y ?? float.NaN;
                         Log.Comment($"{context}: offset {offsetBefore:F1} -> {scroller.VerticalOffset:F1}, header top {topBefore:F1} -> {topAfter:F1}, scrollable {scroller.ScrollableHeight:F1}; focus: {(focusLog.Count == 0 ? "<unchanged>" : string.Join(" | ", focusLog))}.");
 
                         var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewGroupHeader;
@@ -1046,7 +1046,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var scroller = GetBodyScroller(tableView);
                 offsetBefore = scroller.VerticalOffset;
                 target = GetRealizedRows(tableView)
-                    .Select(r => (Row: r, Top: r.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y))
+                    .Select(r => (Row: r, Top: r.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y))
                     .Where(r => r.Top >= scroller.ViewportHeight)
                     .OrderBy(r => r.Top)
                     .Select(r => r.Row)
@@ -1066,7 +1066,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var scroller = GetBodyScroller(tableView);
-                var top = target.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                var top = target.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
                 Verify.IsTrue(scroller.VerticalOffset > offsetBefore + 0.5 && top < scroller.ViewportHeight,
                     $"{reveal}: the row must be brought into view after the dropped toggle: offset {offsetBefore:F1} -> {scroller.VerticalOffset:F1}, top {top:F1}, viewport {scroller.ViewportHeight:F1}.");
             });
@@ -1094,7 +1094,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             var scroller = GetBodyScroller(tableView);
-            var top = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+            var top = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
             Verify.IsTrue(top >= -0.5 && top + header.ActualHeight <= scroller.ViewportHeight + 0.5,
                 $"The {key} header must stay fully in the viewport ({context}): top {top:F1}, height {header.ActualHeight:F1}, viewport {scroller.ViewportHeight:F1}.");
         }

@@ -197,7 +197,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsLessThanOrEqual(global::System.Math.Abs(scroller.VerticalOffset - offset), 20.5,
                     "Tab entry must not scroll the body beyond the focus bring-into-view padding.");
 
-                var top = row.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                var top = row.TransformToVisual(scroller).TransformPoint(new Point(0, 0)).Y;
                 Log.Comment($"Focused row top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}.");
                 Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
                     "Tab entry must land on a row inside the viewport, not on a cache row.");
@@ -245,7 +245,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(row, "Tab from the header band must land on a row.");
                 Verify.IsLessThanOrEqual(Math.Abs(scroller.VerticalOffset - offset), 20.5, "Tab from the header band must not scroll the body.");
 
-                var top = row.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                var top = row.TransformToVisual(scroller).TransformPoint(new Point(0, 0)).Y;
                 Log.Comment($"Focused row top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}.");
                 Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
                     "Tab from the header band must land on a row inside the viewport, not on a cache row.");
@@ -450,7 +450,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     repeater.GetElementIndex(e) >= 0)
                 .Where(e =>
                 {
-                    var top = e.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                    var top = e.TransformToVisual(scroller).TransformPoint(new Point(0, 0)).Y;
                     return top >= -0.5 && top + e.ActualHeight <= scroller.ViewportHeight + 0.5;
                 })
                 .Select(e => repeater.GetElementIndex(e))
@@ -494,7 +494,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         .OrderBy(e => repeater.GetElementIndex(e))
                         .FirstOrDefault();
                     cachedHeaderFirst = first is TableViewGroupHeader header &&
-                        header.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y + header.ActualHeight <= 0.5;
+                        header.TransformToVisual(scroller).TransformPoint(new Point(0, 0)).Y + header.ActualHeight <= 0.5;
                 });
             }
 
@@ -520,7 +520,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Tab from the header band must land on a row or group header.");
                 Verify.IsLessThanOrEqual(Math.Abs(scroller.VerticalOffset - offset), 20.5, "Tab from the header band must not scroll the body.");
 
-                var top = focused.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                var top = focused.TransformToVisual(scroller).TransformPoint(new Point(0, 0)).Y;
                 Verify.IsTrue(top >= -0.5 && top + focused.ActualHeight <= scroller.ViewportHeight + 0.5,
                     "Tab from the header band must land inside the viewport, not on a cache group header.");
             });
