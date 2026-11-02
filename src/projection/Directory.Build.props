@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" TreatAsLocalProperty="PublishAot">
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
@@ -23,6 +23,9 @@
     <WindowsSdkPackageVersion>$(WindowsAppSdkWindowsSdkPackageVersion_v3)</WindowsSdkPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride></MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
+    <!-- A solution-wide AOT request is for consumers, not these reference-projection producers.
+         Set this before CsWinRT's targets infer app-local interop generation for AOT libraries. -->
+    <PublishAot>false</PublishAot>
     <!-- Transport packages still contain win10-specific native assets. -->
     <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
