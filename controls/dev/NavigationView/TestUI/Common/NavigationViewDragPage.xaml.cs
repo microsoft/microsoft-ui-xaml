@@ -37,6 +37,14 @@ namespace MUXControlsTestApp
                     RetemplateCount.Text = (++retemplateCount).ToString();
                 }
             }), true);
+            DragItem.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (DisableOnCaptureLost.IsChecked == true)
+                {
+                    PressCaptureOwner.Text = "None";
+                    DragItem.IsEnabled = false;
+                }
+            }), true);
             foreach (var item in new[] { DragItem, NestedDragItem })
             {
                 item.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>

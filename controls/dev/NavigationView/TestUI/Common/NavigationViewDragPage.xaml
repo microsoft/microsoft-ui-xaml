@@ -17,6 +17,7 @@
             <CheckBox x:Name="RetemplateOnPress" Content="Retemplate on press"/>
             <Button x:Name="Snapshot" Content="Read state" Click="Snapshot_Click"/>
             <CheckBox x:Name="DeferDragStart" Content="Defer drag start"/>
+            <CheckBox x:Name="DisableOnCaptureLost" Content="Disable on capture lost"/>
         </StackPanel>
         <NavigationView x:Name="NavView" Grid.Row="1" PaneDisplayMode="Left"
                         IsPaneOpen="True" OpenPaneLength="220" IsSettingsVisible="False"

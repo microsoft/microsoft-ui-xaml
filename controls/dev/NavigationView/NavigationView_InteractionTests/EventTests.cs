@@ -216,6 +216,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                             Verify.AreEqual(inputType.ToString(), new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
                             Verify.AreEqual((++expectedDragCount).ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
                             Verify.AreEqual(sourceId, new TextBlock(FindElement.ById("DragSource")).GetText());
+                            // The drag starts just past the threshold, inside the item, and the system
+                            // drag loop delivers no PointerExited.
+                            Verify.AreEqual("False", new TextBlock(FindElement.ById("DragStartPointerOver")).GetText());
                             Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                             VerifyNavigationViewDragStateReset();
                         }
@@ -502,6 +505,127 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 // No PointerExited arrives during the system drag loop; the pointer ended on the target.
                 Verify.AreEqual("False", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
             }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemMouseDrop()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Mouse);
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("CancelDrag")).Uncheck();
+                Wait.ForIdle();
+                var mouse = PointerInput.Current;
+                var start = FindElement.ById("DragItem").GetClickablePoint();
+                var end = FindElement.ById("DropTarget").GetClickablePoint();
+                mouse.Move(start);
+                Wait.ForIdle();
+                mouse.Press(PointerButtons.Primary);
+                try
+                {
+                    // Separate small moves keep the system drag loop fed; a one-shot gesture
+                    // does not complete a mouse drop on the test machine.
+                    for (int step = 1; step <= 20; ++step)
+                    {
+                        mouse.Move(new System.Drawing.Point(
+                            start.X + (end.X - start.X) * step / 20, start.Y + (end.Y - start.Y) * step / 20));
+                        System.Threading.Thread.Sleep(50);
+                    }
+                    mouse.Move(new System.Drawing.Point(end.X + 4, end.Y));
+                    System.Threading.Thread.Sleep(200);
+                }
+                finally
+                {
+                    mouse.Release(PointerButtons.Primary);
+                }
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => new TextBlock(FindElement.ById("CompletionResult")).GetText() == "Copy",
+                    retryTimoutByMilliseconds: 10000);
+                Verify.AreEqual("Mouse", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("False", new TextBlock(FindElement.ById("DragStartPointerOver")).GetText());
+                Verify.AreEqual("DragItem", new TextBlock(FindElement.ById("DroppedText")).GetText());
+                Verify.AreEqual("Copy", new TextBlock(FindElement.ById("CompletionResult")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+                // No PointerExited arrives during the system drag loop; the pointer ended on the target.
+                Verify.AreEqual("False", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenBarrelPressDuringMousePressResetsPressedState()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+            using var pen = new SyntheticPen();
+            var mouse = PointerInput.Current;
+            var start = FindElement.ById("DragItem").GetClickablePoint();
+            mouse.Move(start);
+            mouse.Press(PointerButtons.Primary);
+            try
+            {
+                Wait.ForIdle();
+                Verify.AreEqual("Item", new TextBlock(FindElement.ById("PressCaptureOwner")).GetText());
+                // A secondary press from another pointer replaces the mouse press without starting a new one.
+                pen.PressBarrel(start);
+                pen.Release();
+                pen.LeaveRange();
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+            finally
+            {
+                mouse.Release(PointerButtons.Primary);
+            }
+            Wait.ForIdle();
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            VerifyNavigationViewDragStateReset();
+            InputHelper.LeftClick(FindElement.ById("DragItem"));
+            Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            VerifyNavigationViewDragStateReset();
+        }
+
+        [TestMethod]
+        public void NavigationViewItemDisabledByCaptureLostRejectsPenPress()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+            using var pen = new SyntheticPen();
+            var mouse = PointerInput.Current;
+            var start = FindElement.ById("DragItem").GetClickablePoint();
+            new CheckBox(FindElement.ById("DisableOnCaptureLost")).Check();
+            Wait.ForIdle();
+            mouse.Move(start);
+            mouse.Press(PointerButtons.Primary);
+            try
+            {
+                Wait.ForIdle();
+                Verify.AreEqual("Item", new TextBlock(FindElement.ById("PressCaptureOwner")).GetText());
+                // The pen press releases the mouse capture; the application disables the item from
+                // PointerCaptureLost, before the pen press would be accepted.
+                pen.Press(start);
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("None", new TextBlock(FindElement.ById("PressCaptureOwner")).GetText());
+                pen.Move(new System.Drawing.Point(start.X + 24, start.Y));
+                pen.Release();
+                pen.LeaveRange();
+            }
+            finally
+            {
+                mouse.Release(PointerButtons.Primary);
+            }
+            Wait.ForIdle();
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            VerifyNavigationViewDragStateReset();
+            new CheckBox(FindElement.ById("DisableOnCaptureLost")).Uncheck();
+            new Button(FindElement.ById("EnableDragItem")).Invoke();
+            Wait.ForIdle();
+            InputHelper.LeftClick(FindElement.ById("DragItem"));
+            Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            VerifyNavigationViewDragStateReset();
         }
 
         private static void VerifyNavigationViewDragStateReset()
