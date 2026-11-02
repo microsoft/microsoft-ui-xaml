@@ -34,7 +34,9 @@
 
     <!-- Initials are bound explicitly: PersonPicture derives none from an Arabic or Hebrew DisplayName.
          Never bind a raw string to an ImageSource: the path goes through AvatarImageConverter.
-         The Viewbox (no automation peer) keeps PersonPicture's own name out of the cell and row names. -->
+         AccessibilityView="Raw" alone does not keep PersonPicture's name out of the cell and row
+         names: that name walk descends only ContentPresenter, Panel and Border, so it stops at the Viewbox,
+         which has no name of its own. -->
     <DataTemplate x:Key="AvatarTemplate" x:DataType="models:Person">
         <Viewbox
             Width="28"
