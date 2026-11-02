@@ -1949,6 +1949,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
             UIExecutor.Execute(() =>
             {
+                // The exact offsets below assume 26x32 targets, independent of theme padding.
                 var sp = (StackPanel)XamlReader.Load(@"
                     <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'   xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                         <Button x:Name='before'>Before</Button>
@@ -1961,11 +1962,11 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                             VerticalScrollMode='Enabled'
                             HorizontalScrollBarVisibility='Auto'>
                             <Canvas Width='600' Height='600'>
-                                <Button Canvas.Top='0' Canvas.Left='0'>1</Button>
-                                <Button Canvas.Top='200' Canvas.Left='0'>2</Button>
-                                <Button Canvas.Top='500' Canvas.Left='0'>3</Button>
-                                <Button Canvas.Top='0' Canvas.Left='200'>5</Button>
-                                <Button Canvas.Top='0' Canvas.Left='500'>6</Button>
+                                <Button Width='26' Height='32' Canvas.Top='0' Canvas.Left='0'>1</Button>
+                                <Button Width='26' Height='32' Canvas.Top='200' Canvas.Left='0'>2</Button>
+                                <Button Width='26' Height='32' Canvas.Top='500' Canvas.Left='0'>3</Button>
+                                <Button Width='26' Height='32' Canvas.Top='0' Canvas.Left='200'>5</Button>
+                                <Button Width='26' Height='32' Canvas.Top='0' Canvas.Left='500'>6</Button>
                             </Canvas>
                         </ScrollViewer>
                         <Button x:Name='after'>After</Button>
@@ -2259,6 +2260,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
             UIExecutor.Execute(() =>
             {
                 // Even though by tab order '2' is the first focusable element, '1' should get focus once engaged because it is near the top.
+                // Keep the 26x32 target geometry used by the exact offset expectations below.
                 var sp = (StackPanel)XamlReader.Load(@"
                     <StackPanel Margin='40' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                         <Button x:Name='before'>Before</Button>
@@ -2271,11 +2273,11 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                             VerticalScrollMode='Enabled'
                             HorizontalScrollBarVisibility='Auto'>
                             <Canvas Width='500' Height='500'>
-                                <Button Canvas.Top='200' Canvas.Left='0'>2</Button>
-                                <Button Canvas.Top='400' Canvas.Left='0'>3</Button>
-                                <Button Canvas.Top='0' Canvas.Left='200'>5</Button>
-                                <Button Canvas.Top='0' Canvas.Left='400'>6</Button>
-                                <Button Canvas.Top='0' Canvas.Left='0'>1</Button>
+                                <Button Width='26' Height='32' Canvas.Top='200' Canvas.Left='0'>2</Button>
+                                <Button Width='26' Height='32' Canvas.Top='400' Canvas.Left='0'>3</Button>
+                                <Button Width='26' Height='32' Canvas.Top='0' Canvas.Left='200'>5</Button>
+                                <Button Width='26' Height='32' Canvas.Top='0' Canvas.Left='400'>6</Button>
+                                <Button Width='26' Height='32' Canvas.Top='0' Canvas.Left='0'>1</Button>
                             </Canvas>
                         </ScrollViewer>
                         <Button x:Name='after'>After</Button>
