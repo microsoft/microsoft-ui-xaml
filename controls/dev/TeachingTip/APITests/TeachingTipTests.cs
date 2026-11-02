@@ -3165,6 +3165,177 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForTipState(tip, isOpen: false);
         }
 
+        // Scenario (issue #8095 review): two ItemsRepeaters share an element factory whose elements hold a Popup with a Button
+        //           as its Child. The A0 element's Popup is opened (as a template binding would) and an OPEN tip targets the
+        //           Button in it. In one UI-thread step the first repeater's items are cleared and the second gets "B0", so the
+        //           same element (and Popup) is reused for "B0"; the Popup, closed when it left the tree, is opened again.
+        // Expected: the tip either closes or its target still shows "A0".
+        // A failure means: the ancestor check stopped at the PopupRoot (an open Popup's child is a visual child of the
+        //           PopupRoot) and missed the generated container that owns the Popup.
+        [TestMethod]
+        public void OpenTipClosesWhenTargetInPopupOfReusedTemplateElement()
+        {
+            TeachingTip tip = null;
+            ItemsRepeater repeaterA = null, repeaterB = null;
+            StackPanel element = null;
+            Microsoft.UI.Xaml.Controls.Primitives.Popup popup = null;
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var factory = new SharedPoolPopupTemplateFactory();
+                repeaterA = new ItemsRepeater() { ItemTemplate = factory, ItemsSource = new List<string> { "A0" } };
+                repeaterB = new ItemsRepeater() { ItemTemplate = factory };
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                var root = new StackPanel();
+                root.Children.Add(repeaterA);
+                root.Children.Add(repeaterB);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                element = (StackPanel)repeaterA.TryGetElement(0);
+                Verify.IsNotNull(element, "Element for A0");
+                popup = (Microsoft.UI.Xaml.Controls.Primitives.Popup)element.Children[0];
+                target = (Button)popup.Child;
+                popup.IsOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(popup.IsOpen && target.IsLoaded, "Precondition: the Popup in the A0 element is open");
+                tip.Target = target;
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the Button in the A0 element's Popup");
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeaterA.ItemsSource = null;
+                repeaterB.ItemsSource = new List<string> { "B0" };
+                Content.UpdateLayout();
+                popup.IsOpen = true;
+                Content.UpdateLayout();
+            });
+            WaitForFrames(2);
+            WaitForTipState(tip, isOpen: false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var shownItem = target.Content as string;
+                Log.Comment($"After reuse: tip.IsOpen={tip.IsOpen}, popup.IsOpen={popup.IsOpen}, target.IsLoaded={target.IsLoaded}, shows={shownItem}");
+                Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(element), "Precondition: the shared pool should hand the A0 element to the second repeater");
+                Verify.AreEqual(0, repeaterB.GetElementIndex(element), "Precondition: the reused element represents B0 (index 0) in the second repeater");
+                Verify.IsTrue(popup.IsOpen, "Precondition: the reused element's Popup is open again");
+                Verify.IsTrue(target.IsLoaded, "Precondition: the target is loaded again, so a close isn't caused by it being unloaded");
+                Verify.AreSame(tip.XamlRoot, target.XamlRoot, "Precondition: the target is back in the tip's XamlRoot");
+                Verify.IsTrue(!tip.IsOpen || shownItem == "A0",
+                    $"An open tip must not stay on the Button in a reused Popup when it now shows '{shownItem}' instead of 'A0'");
+                tip.IsOpen = false;
+                popup.IsOpen = false;
+            });
+            WaitForTipState(tip, isOpen: false);
+        }
+
+        // Scenario (issue #8095 review): an OPEN tip targets a Button that is the Child of a Popup.
+        //           Run 1: the Popup is in static content; its panel is moved to another panel in one UI-thread step, which
+        //                  closes the Popup (a Popup closes when it leaves the tree), and it is reopened in the same step.
+        //           Run 2: the Popup is not in the visual tree (like a flyout's); it is closed and reopened in one step.
+        // Expected: run 1 stays open (the ancestor check follows the Popup's Child to the Popup and finds no generated
+        //           container); run 2 closes, because a Popup outside the visual tree has no owner the check can inspect.
+        // A failure means: the Popup step of the ancestor check over-closes static content, or keeps a tip open on content
+        //           whose owner it can't verify.
+        [TestMethod]
+        public void OpenTipOnPopupChildTargetAfterPopupReopens()
+        {
+            VerifyTipOnPopupChildAfterReopen(inVisualTree: true);
+            VerifyTipOnPopupChildAfterReopen(inVisualTree: false);
+        }
+
+        private void VerifyTipOnPopupChildAfterReopen(bool inVisualTree)
+        {
+            string what = inVisualTree ? "a Popup in static content that is moved" : "a Popup outside the visual tree";
+            TeachingTip tip = null;
+            StackPanel hostA = null, hostB = null, popupHost = null;
+            Microsoft.UI.Xaml.Controls.Primitives.Popup popup = null;
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                target = new Button() { Content = "In popup", Width = 100, Height = 40 };
+                popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup() { Child = target };
+                hostA = new StackPanel();
+                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
+                popupHost = new StackPanel();
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                var root = new StackPanel();
+                if (inVisualTree)
+                {
+                    popupHost.Children.Add(popup);
+                    hostA.Children.Add(popupHost);
+                }
+                root.Children.Add(hostA);
+                root.Children.Add(hostB);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+                if (!inVisualTree)
+                {
+                    popup.XamlRoot = root.XamlRoot;
+                }
+                popup.IsOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(target.IsLoaded, "Precondition: the Button in the open Popup is loaded: " + what);
+                tip.Target = target;
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the Button in " + what);
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (inVisualTree)
+                {
+                    hostA.Children.Remove(popupHost);
+                    hostB.Children.Add(popupHost);
+                }
+                else
+                {
+                    popup.IsOpen = false;
+                }
+                popup.IsOpen = true;
+                Content.UpdateLayout();
+            });
+            WaitForFrames(2);
+            bool settled = WaitForTipState(tip, isOpen: inVisualTree);
+            bool targetLoaded = false, sameRoot = false, popupOpen = false;
+            RunOnUIThread.Execute(() =>
+            {
+                targetLoaded = target.IsLoaded;
+                sameRoot = target.XamlRoot == tip.XamlRoot;
+                popupOpen = popup.IsOpen;
+                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, popup.IsOpen={popupOpen}, target.IsLoaded={targetLoaded}, sameXamlRoot={sameRoot}");
+            });
+            Verify.IsTrue(popupOpen, "Precondition: the Popup is open again: " + what);
+            Verify.IsTrue(targetLoaded, "Precondition: the target is loaded again: " + what);
+            Verify.IsTrue(sameRoot, "Precondition: the target is in the tip's XamlRoot: " + what);
+            Verify.IsTrue(settled, inVisualTree ? "The tip should stay open on the Button in " + what : "The tip should close on the Button in " + what);
+            RunOnUIThread.Execute(() =>
+            {
+                tip.IsOpen = false;
+                popup.IsOpen = false;
+            });
+            WaitForTipState(tip, isOpen: false);
+        }
+
         // Scenario (issue #8095 review): an OPEN tip targets an element hosted by an ItemsRepeater or an ItemsControl, and the
         //           whole items host is moved to another panel in one UI-thread step, so the target unloads and comes back.
         //           Covered: UIElement items that are their own container (ItemsRepeater, ItemsControl), generated elements
@@ -3623,6 +3794,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 var button = new Button() { Width = 100, Height = 40 };
                 var element = new Border() { Child = button };
+                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(button));
+                return element;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                _pool.PutElement(args.Element, PoolKey, args.Parent);
+            }
+        }
+
+        // Element factory with one RecyclePool shared by every repeater that uses it. Each element is a StackPanel holding a
+        // Popup whose Child is a Button (whose Content is set by a compiled-binding style DataTemplateComponent).
+        private partial class SharedPoolPopupTemplateFactory : ElementFactory
+        {
+            private const string PoolKey = "Item";
+            private readonly RecyclePool _pool = new RecyclePool();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                if (_pool.TryGetElement(PoolKey, args.Parent) is UIElement recycled)
+                {
+                    return recycled;
+                }
+                var button = new Button() { Width = 100, Height = 40 };
+                var popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup() { Child = button };
+                var element = new StackPanel() { Height = 40 };
+                element.Children.Add(popup);
                 XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(button));
                 return element;
             }
