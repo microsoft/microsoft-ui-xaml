@@ -571,6 +571,134 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             VerifyCaptureReleased();
         }
 
+        [TestMethod]
+        public void TouchHoldDragStartsDrag()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var touch = new SyntheticTouch();
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            var target = FindElement.ById("DropHandle").GetClickablePoint();
+            for (int attempt = 1; attempt <= 2; ++attempt)
+            {
+                TouchHoldAndDrag(touch, start, target);
+                Verify.AreEqual(attempt.ToString(), ReadText("TouchPressCount"));
+                Verify.AreEqual("Touch", ReadText("LastPointerDevice"));
+                Verify.AreEqual(attempt.ToString(), ReadText("DragCount"));
+            }
+        }
+
+        [TestMethod]
+        public void ChildTouchCaptureReleaseKeepsTouchHoldDrag()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            new CheckBox(FindElement.ById("ChildReleasesTouchCapture")).Check();
+            Wait.ForIdle();
+            using var touch = new SyntheticTouch();
+            var start = FindElement.ById("TouchHandle").GetClickablePoint();
+            var target = FindElement.ById("DropHandle").GetClickablePoint();
+
+            // The child captures the finger on an unhandled press and gives the capture back
+            // (handling the loss) before holding starts. The finger is still down, so the drag
+            // source keeps its touch drag candidate.
+            touch.Press(0, start);
+            touch.Hold(1500);
+            Verify.AreEqual("1", ReadText("TouchPressCount"), "The drag source must see the unhandled press.");
+            Verify.AreEqual("1", ReadText("ChildCaptureCount"));
+            Verify.AreEqual("1", ReadText("ChildCaptureLostCount"));
+            Log.Comment("Holding started events on the drag source: " + ReadText("HoldingStartedCount"));
+            TouchMoveTo(touch, 0, start, target);
+            touch.Release(0);
+            Wait.ForIdle();
+            Verify.AreEqual("1", ReadText("DragCount"));
+        }
+
+        [TestMethod]
+        public void SecondTouchTapKeepsFirstTouchHoldDrag()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var touch = new SyntheticTouch();
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            var target = FindElement.ById("DropHandle").GetClickablePoint();
+
+            // Finger A holds; finger B taps the same source. B's gesture must not replace or end A's.
+            touch.Press(0, start);
+            touch.Hold(1500);
+            Log.Comment("Holding started events before the second finger: " + ReadText("HoldingStartedCount"));
+            touch.Press(1, new System.Drawing.Point(start.X + 30, start.Y));
+            touch.Hold(100);
+            touch.Release(1);
+            touch.Hold(300);
+            Verify.AreEqual("2", ReadText("TouchPressCount"), "Both fingers must reach the drag source.");
+            Verify.AreEqual("0", ReadText("DragCount"));
+            TouchMoveTo(touch, 0, start, target);
+            touch.Release(0);
+            Wait.ForIdle();
+            Verify.AreEqual("1", ReadText("DragCount"));
+        }
+
+        [TestMethod]
+        public void ListViewPenCrossSlideAfterTouchDragIsSafe()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            new CheckBox(FindElement.ById("UseListView")).Check();
+            Wait.ForIdle();
+            Verify.AreEqual("Visible", ReadText("ListMode"));
+            var source = FindElement.ById("ListDragItem");
+            var target = FindElement.ById("DropHandle");
+            using (InputController.Activate(PointerInputType.SingleTouch))
+            {
+                InputHelper.Pan(source, source.GetClickablePoint(), target.GetClickablePoint(),
+                    holdDuration: 1000, panAcceleration: 0, dragDuration: 500);
+            }
+            Verify.AreEqual("Touch", ReadText("LastPointerDevice"));
+            Verify.AreEqual("1", ReadText("DragCount"));
+
+            // ListViewBaseItem forwards only touch presses to the helper, so nothing resets the
+            // consumed touch hold before a pen press-and-hold cross-slide on the same item.
+            using (var pen = new SyntheticPen())
+            {
+                var start = source.GetClickablePoint();
+                var end = target.GetClickablePoint();
+                pen.Press(start);
+                for (int elapsed = 0; elapsed < 1500; elapsed += 50)
+                {
+                    pen.Move(start);
+                    System.Threading.Thread.Sleep(50);
+                }
+                for (int step = 1; step <= 10; ++step)
+                {
+                    pen.Move(new System.Drawing.Point(start.X + (end.X - start.X) * step / 10, start.Y + (end.Y - start.Y) * step / 10));
+                }
+                pen.Release();
+            }
+            Wait.ForIdle();
+            Verify.AreEqual("Pen", ReadText("LastPointerDevice"));
+            Log.Comment("DragCount after the pen gesture: " + ReadText("DragCount"));
+            new Button(FindElement.ById("Snapshot")).Invoke();
+            Wait.ForIdle();
+            Verify.AreEqual("0", ReadText("ListCaptureCount"));
+        }
+
+        private static void TouchHoldAndDrag(SyntheticTouch touch, System.Drawing.Point start, System.Drawing.Point target)
+        {
+            touch.Press(0, start);
+            touch.Hold(1500);
+            Log.Comment("Holding started events on the drag source: " + ReadText("HoldingStartedCount"));
+            TouchMoveTo(touch, 0, start, target);
+            touch.Release(0);
+            Wait.ForIdle();
+        }
+
+        private static void TouchMoveTo(SyntheticTouch touch, int contact, System.Drawing.Point start, System.Drawing.Point end)
+        {
+            for (int step = 1; step <= 10; ++step)
+            {
+                touch.Move(contact, new System.Drawing.Point(start.X + (end.X - start.X) * step / 10, start.Y + (end.Y - start.Y) * step / 10));
+                System.Threading.Thread.Sleep(30);
+            }
+            touch.Hold(200);
+        }
+
         private static string ReadText(string id)
         {
             return new TextBlock(FindElement.ById(id)).GetText();

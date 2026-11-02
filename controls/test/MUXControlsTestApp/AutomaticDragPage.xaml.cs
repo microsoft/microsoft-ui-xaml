@@ -33,6 +33,8 @@ namespace MUXControlsTestApp
         private int dragOverCount;
         private int childCaptureCount;
         private int childCaptureLostCount;
+        private int holdingStartedCount;
+        private int touchPressCount;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int index);
@@ -63,9 +65,20 @@ namespace MUXControlsTestApp
                 {
                     PenPressPointerId.Text = args.Pointer.PointerId.ToString();
                 }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    TouchPressCount.Text = (++touchPressCount).ToString();
+                }
                 if (ReleaseOnPress.IsChecked == true)
                 {
                     DragSource.ReleasePointerCapture(args.Pointer);
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.HoldingEvent, new HoldingEventHandler((sender, args) =>
+            {
+                if (args.HoldingState == HoldingState.Started)
+                {
+                    HoldingStartedCount.Text = (++holdingStartedCount).ToString();
                 }
             }), true);
             DragSource.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler((sender, args) =>
@@ -99,6 +112,21 @@ namespace MUXControlsTestApp
             }), true);
             TouchChild.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
             {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && ChildReleasesTouchCapture.IsChecked == true)
+                {
+                    // Leave the press unhandled so the drag source still sees it, then give the
+                    // capture back while the finger stays down (before holding starts).
+                    ChildTouchPointerId.Text = args.Pointer.PointerId.ToString();
+                    ChildTouchPressCount.Text = (++childTouchPressCount).ToString();
+                    if (TouchChild.CapturePointer(args.Pointer))
+                    {
+                        ChildCaptureCount.Text = (++childCaptureCount).ToString();
+                        var pointer = args.Pointer;
+                        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                            () => TouchChild.ReleasePointerCapture(pointer));
+                    }
+                    return;
+                }
                 if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
                     HandleChildTouch(sender, args);
