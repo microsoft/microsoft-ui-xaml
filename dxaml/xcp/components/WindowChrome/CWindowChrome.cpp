@@ -181,7 +181,9 @@ LRESULT CWindowChrome::OnCreate()
 // - A window with no frame styles (for example the FullScreen presenter) has
 //   no native border to show above XAML, so XAML fills the whole client area.
 //   The styles change before the presenter's resize, so WM_SIZE sees them.
-// - Borderless Overlapped windows can keep WS_THICKFRAME and still get 1 pixel.
+// - Overlapped windows always keep a frame style (borderless ones keep
+//   WS_DLGFRAME and WS_THICKFRAME; WS_BORDER stays set even if an app
+//   strips the rest), so they still get 1 pixel.
 // Return Value:
 // - 1 physical pixel when Window.ExtendsContentIntoTitleBar is enabled, the
 //   window is not maximized, and it has a frame style; 0 otherwise.
@@ -193,7 +195,9 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
     }
 
     const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
-    if ((style & (WS_BORDER | WS_DLGFRAME | WS_THICKFRAME)) == 0)
+    const auto exStyle = ::GetWindowLongPtrW(m_topLevelWindow, GWL_EXSTYLE);
+    if ((style & (WS_BORDER | WS_DLGFRAME | WS_THICKFRAME)) == 0
+        && (exStyle & WS_EX_DLGMODALFRAME) == 0)
     {
         return 0;
     }
@@ -373,6 +377,11 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
                                                                         ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
     }
 
+    // GetClientRect always reports top 0. Also compare the bridge's actual
+    // top in the parent, so a move between offsets 1 and 0 isn't skipped.
+    POINT bridgeOrigin = {};
+    ::MapWindowPoints(bridgeWindow, m_topLevelWindow, &bridgeOrigin, 1);
+
     const auto windowWidth = RectHelpers::rectWidth(clientRect);
     const auto windowHeight = RectHelpers::rectHeight(clientRect);
     const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
@@ -390,7 +399,7 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
     // if there is no change between old and new values, don't update comp window
     if( ::IsIconic(m_topLevelWindow) ||
         (windowHeight - topBorderHeight) == 0 ||
-        ::EqualRect(&bridgeWindowRect, &newBridgeWindowRect))
+        (::EqualRect(&bridgeWindowRect, &newBridgeWindowRect) && bridgeOrigin.y == newIslandPos.Y))
     {
         return;
     }

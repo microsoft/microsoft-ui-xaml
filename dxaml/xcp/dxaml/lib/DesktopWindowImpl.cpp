@@ -1351,7 +1351,7 @@ bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF b
 {
     ASSERT(DesktopUtility::IsPriorToWindows11());
 
-    // The one-pixel XAML offset can remain in fullscreen/borderless windows.
+    // The one-pixel XAML offset can remain in borderless windows.
     // Only treat it as a border when the HWND still has a native frame.
     const bool shouldPaintTopRow = m_windowChrome && m_windowChrome->ShouldPaintTopRowOfClientArea();
     const RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());

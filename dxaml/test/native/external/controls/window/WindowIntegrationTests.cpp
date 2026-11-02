@@ -433,9 +433,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     RunOnUIThread([&]()
                     {
                         const int actualOffset = GetDesktopChildSiteBridgeTopOffset(windowHandle);
-                        LOG_OUTPUT(L"Top-border state: Window ECITB=%d AppWindow ECITB=%d presenter=%d nativeBorder=%d expectedOffset=%d actualOffset=%d",
+                        LOG_OUTPUT(L"Top-border state: Window ECITB=%d AppWindow ECITB=%d presenter=%d style=0x%08x exStyle=0x%08x nativeBorder=%d expectedOffset=%d actualOffset=%d",
                             window->ExtendsContentIntoTitleBar, window->AppWindow->TitleBar->ExtendsContentIntoTitleBar,
-                            static_cast<int>(window->AppWindow->Presenter->Kind), hasNativeBorder, expectedOffset, actualOffset);
+                            static_cast<int>(window->AppWindow->Presenter->Kind),
+                            static_cast<DWORD>(::GetWindowLongPtrW(windowHandle, GWL_STYLE)),
+                            static_cast<DWORD>(::GetWindowLongPtrW(windowHandle, GWL_EXSTYLE)),
+                            hasNativeBorder, expectedOffset, actualOffset);
                         VERIFY_ARE_EQUAL(expectedOffset, actualOffset);
                         const auto colors = GetColorsForEraseBackgroundMessage(windowHandle);
                         const bool paintBorder = needsDwmWorkaround && hasNativeBorder && expectedOffset != 0;
@@ -508,6 +511,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     TestServices::WindowHelper->WaitForIdle();
                     verifyPainting(extendedOffset, true);
                 }
+
                 setECITB(false);
                 verifyPainting(0, true);
             }
