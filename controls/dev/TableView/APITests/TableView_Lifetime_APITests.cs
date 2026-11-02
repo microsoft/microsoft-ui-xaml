@@ -207,6 +207,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         // Holds the control past ShutdownAllPeers, like an app view model would.
         private static TableView s_keepAlive;
+        private static DataTemplate s_rowTemplate;
 
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
@@ -214,6 +215,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyTableViewReleasedAfterXamlShutdownOnItsThreadDoesNotCrash()
         {
             Exception failure = null;
+            Exception clearPoolFailure = null;
             bool templatesPooled = false;
 
             var thread = new global::System.Threading.Thread(() =>
@@ -233,10 +235,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     controller.ShutdownQueue();
                     xaml.Dispose();
 
-                    // Final release after shutdown: ~TableView -> Detach -> SetValue fails.
+                    // The state from the crash stack: clearing the template's pool, as main's Detach did, now throws.
+                    var rowTemplate = s_rowTemplate;
+                    s_rowTemplate = null;
+                    try
+                    {
+                        Microsoft.UI.Xaml.Controls.RecyclePool.SetPoolInstance(rowTemplate, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        clearPoolFailure = ex;
+                    }
+
+                    // Drop the test's references after shutdown. In-process this does not reach Detach's throwing
+                    // call (it passes without the fix too), so it only checks that releasing the control does not crash.
                     var tableView = s_keepAlive;
                     s_keepAlive = null;
                     ((WinRT.IWinRTObject)tableView).NativeObject.Dispose();
+                    ((WinRT.IWinRTObject)rowTemplate).NativeObject.Dispose();
                 }
                 catch (Exception ex)
                 {
@@ -249,6 +265,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(thread.Join(TimeSpan.FromSeconds(60)), "The secondary UI thread should finish shutting down XAML.");
             Verify.IsNull(failure, $"Secondary UI thread failed: {failure}");
             Verify.IsTrue(templatesPooled, "The row template must carry a RecyclePool so Detach has a pool edge to break.");
+            Verify.IsNotNull(clearPoolFailure, "Precondition: after XAML shutdown, clearing the row template's pool must throw; that is the state Detach has to tolerate.");
+            Log.Comment($"Clearing the pool after shutdown threw {clearPoolFailure?.GetType().Name} 0x{clearPoolFailure?.HResult:X8}: {clearPoolFailure?.Message}");
+            Verify.AreEqual(unchecked((int)0x8000FFFF), clearPoolFailure?.HResult ?? 0, "Precondition: clearing the pool must fail with E_UNEXPECTED, the shutdown failure.");
 
             Log.Comment("Releasing the TableView after XAML shutdown completed without crashing.");
         }
@@ -279,6 +298,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var selector = (Microsoft.UI.Xaml.Controls.DataTemplateSelector)repeater.ItemTemplate;
                         var rowTemplate = selector.SelectTemplate(replacement[0]);
                         templatesPooled = rowTemplate != null && Microsoft.UI.Xaml.Controls.RecyclePool.GetPoolInstance(rowTemplate) != null;
+                        s_rowTemplate = rowTemplate;
                         Log.Comment($"Realized rows: {GetRealizedRows(tableView).Count}; row template pooled: {templatesPooled}.");
                     }
                     finally
