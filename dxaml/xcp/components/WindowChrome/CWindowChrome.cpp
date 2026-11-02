@@ -176,14 +176,24 @@ LRESULT CWindowChrome::OnCreate()
 // Method Description:
 // - Computes the existing spacing above XAML within the client area.
 //   This is not a measurement of the native border or current XAML position.
-// - Uses only cached Window.ExtendsContentIntoTitleBar and maximization state;
-//   fullscreen and borderless presenters are not checked.
+// - Uses cached Window.ExtendsContentIntoTitleBar state, maximization state,
+//   and the current HWND frame styles. Presenters are not queried.
+// - A window with no frame styles (for example the FullScreen presenter) has
+//   no native border to show above XAML, so XAML fills the whole client area.
+//   The styles change before the presenter's resize, so WM_SIZE sees them.
+// - Borderless Overlapped windows can keep WS_THICKFRAME and still get 1 pixel.
 // Return Value:
-// - 1 physical pixel when Window.ExtendsContentIntoTitleBar is enabled and the
-//   window is not maximized; 0 otherwise.
+// - 1 physical pixel when Window.ExtendsContentIntoTitleBar is enabled, the
+//   window is not maximized, and it has a frame style; 0 otherwise.
 int CWindowChrome::GetTopBorderHeight() const noexcept
 {
     if (!IsTitlebarVisible() || IsMaximized(m_topLevelWindow))
+    {
+        return 0;
+    }
+
+    const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
+    if ((style & (WS_BORDER | WS_DLGFRAME | WS_THICKFRAME)) == 0)
     {
         return 0;
     }
@@ -202,7 +212,7 @@ bool CWindowChrome::ShouldPaintTopRowOfClientArea()
     const int topBorderHeight = GetTopBorderHeight();
     const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
 
-    // Fullscreen and borderless windows can still leave a one-pixel gap above XAML.
+    // Borderless windows can still leave a one-pixel gap above XAML.
     // That gap alone does not mean Windows has a native border to show through it.
     // WS_BORDER requests a simple border; WS_THICKFRAME requests a resizable frame.
     // If neither bit is set, use normal background painting and clear any WinUI-owned DWM margins.

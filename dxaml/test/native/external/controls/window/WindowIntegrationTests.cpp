@@ -474,13 +474,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
                 });
                 TestServices::WindowHelper->WaitForIdle();
-                verifyPainting(extendedOffset, false);
+                // FullScreen has no native frame, so XAML covers the whole screen (#12138).
+                verifyPainting(0, false);
                 setECITB(false);
-                // Frameless transitions can leave the bridge at its last position
-                // until a subsequent frame/size change, even with ECITB disabled.
-                verifyPainting(extendedOffset, false);
+                verifyPainting(0, false);
                 setECITB(true);
-                verifyPainting(extendedOffset, false);
+                verifyPainting(0, false);
                 RunOnUIThread([&]()
                 {
                     window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Overlapped);
