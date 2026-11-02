@@ -460,13 +460,13 @@ holds the same events, UI elements and frames as one `record` writes from the
 trace, and the Frames and Elements tabs follow it as it grows.
 
 - A reader thread reads the file in its order and posts the process's events to
-  the processing thread in batches of 4,096. When 32 batches are queued, as
-  many events as a live session's queue holds, the reader waits instead of
-  dropping events, so no event of the process is dropped, and the connection
-  panel's dropped count stays 0. Its lost count is the number of events ETW
-  lost while the trace was recorded, of any process. As in a live session, the
-  500 MB limit can still delete the oldest events from the session file (see
-  Session files above); the panel then says from when the file is complete.
+  the processing thread's queue, which holds as many events as a live
+  session's. When the queue is full, the reader waits instead of dropping
+  events, so no event of the process is dropped, and the connection panel's
+  dropped count stays 0. Its lost count is the number of events ETW lost while
+  the trace was recorded, of any process. As in a live session, the 500 MB
+  limit can still delete the oldest events from the session file (see Session
+  files above); the panel then says from when the file is complete.
 - ETW delivers a trace's events in timestamp order, merging the processors'
   buffers, but events with the same timestamp on different processors can come
   in any order. The events keep the file's order; the connection panel

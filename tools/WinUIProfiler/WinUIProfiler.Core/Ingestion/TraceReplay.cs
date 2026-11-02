@@ -33,12 +33,11 @@ public sealed record TraceReplayStatus(TraceReplayState State, long XamlEvents, 
 }
 
 // Reads one process's events from a recorded trace (.etl) into a new session file, through the pipeline and processors
-// a live session uses. A reader thread reads the file in its order, which is time order, and posts the process's events
-// in batches. A batch waits while the pipeline is full instead of being dropped, so every event of the process is stored,
+// a live session uses. A reader thread reads the file in its order, which is time order, and posts the process's
+// events. An event waits while the pipeline is full instead of being dropped, so every event of the process is stored,
 // in the file's order, unless the session file's size limit deletes the oldest. Stop ends the reading early.
 public sealed class TraceReplay : IAsyncDisposable
 {
-    public const int BatchSize = 4_096;
     // A process name read from the trace can be as long as any file name; the session file's name has to fit the rest.
     private const int MaxNameLength = 64;
     private static readonly TimeSpan ChangedInterval = TimeSpan.FromMilliseconds(250);
@@ -52,8 +51,6 @@ public sealed class TraceReplay : IAsyncDisposable
     private readonly double durationMilliseconds;
 
     // Used only on the reader thread.
-    private readonly ProfilerEvent[] batch = new ProfilerEvent[BatchSize];
-    private int count;
     private long lastQpc = long.MinValue;
     private bool halted;
 
@@ -74,8 +71,9 @@ public sealed class TraceReplay : IAsyncDisposable
         var duration = source.SessionDuration.TotalMilliseconds;
         durationMilliseconds = double.IsFinite(duration) && duration > 0 ? duration : 0;
         // Queues as many events as a live session's pipeline holds, so the reader runs through a launch's burst of events
-        // while the processors catch up and doesn't wait for them. With 4 batches, a WinUI 3 Gallery launch took 12% longer.
-        pipeline = EventPipeline.ForTrace([counter, writer], EventPipeline.DefaultCapacity / BatchSize);
+        // while the processors catch up and doesn't wait for them. With a queue of 16,384 events, reading a WinUI 3
+        // Gallery launch took about 3% longer.
+        pipeline = EventPipeline.ForTrace([counter, writer]);
         try
         {
             source.AllEvents += OnAnyEvent;
@@ -212,9 +210,8 @@ public sealed class TraceReplay : IAsyncDisposable
                 failure ??= error;
             }
 
-            // The events read since the last full batch, also when Stop or damage ended the reading.
-            var flushed = count == 0 || Flush();
-            readAll = failure is null && !halted && flushed;
+            // The trace was read to its end unless Stop, damage or a failure ended the reading.
+            readAll = failure is null && !halted;
             Volatile.Write(ref lostEvents, source.EventsLost);
         }
         catch (Exception error)
@@ -258,8 +255,9 @@ public sealed class TraceReplay : IAsyncDisposable
             }
 
             lastQpc = profilerEvent.TimestampQpc;
-            batch[count++] = profilerEvent;
-            if (count == batch.Length && !Flush())
+            // Waits while the pipeline is full, also after Stop: the events already queued are processed before the
+            // file is closed anyway. An event that could not be processed or stored ends the reading.
+            if (writer.Failure is not null || !pipeline.PostBlocking(profilerEvent))
             {
                 Halt();
             }
@@ -268,21 +266,6 @@ public sealed class TraceReplay : IAsyncDisposable
         {
             failure ??= error;
             Halt();
-        }
-    }
-
-    // Queues the batch, waiting while the pipeline is full, also after Stop: the batches already queued are processed
-    // before the file is closed anyway. False when an event could not be processed or stored, so the reading must end.
-    private bool Flush()
-    {
-        try
-        {
-            return writer.Failure is null && pipeline.PostBatch(batch.AsSpan(0, count));
-        }
-        finally
-        {
-            Array.Clear(batch, 0, count);
-            count = 0;
         }
     }
 
@@ -307,7 +290,7 @@ public sealed class TraceReplay : IAsyncDisposable
 
         try
         {
-            // Processes the batches already queued, so no event posted is discarded.
+            // Processes the events already queued, so no event posted is discarded.
             pipeline.Dispose();
         }
         catch (Exception error)
