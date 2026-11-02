@@ -1114,7 +1114,7 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::SetMockUIAClientsListening()
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::ClearMockUIAClientsListening()
 {
-    DXamlCore::GetCurrent()->SetMockUIAClientsListening(true);
+    DXamlCore::GetCurrent()->SetMockUIAClientsListening(false);
 }
 
 IFACEMETHODIMP DxamlCoreTestHooks::GetLightsTargetingElement(
