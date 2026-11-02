@@ -45,6 +45,8 @@ In `StringValueConverter::Convert`, when there is no ICPP, check whether the sou
 - **ICPP boxes don't change.** The ICPP branch (:741-745) runs first, as before. So C# apps that already show `True` see no change.
 - **Who sees the change.** `StringValueConverter` is created only at DefaultValueConverter.cpp:62, for string targets. But `DynamicValueConverter` reaches it from more than `{Binding}`:
   - `XamlBindingHelper.ConvertValue(typeof(String), <bool box>)` (dxaml\xcp\dxaml\lib\XamlBindingHelperFactory_Partial.cpp:47-52) now returns `True`/`False` instead of the class name. This is a public API change, and it is intended: it is the same conversion. The test checks it. x:Bind's generated code only passes strings into `ConvertValue`, so x:Bind output does not change.
+  - ContentPresenter's default template binds `TextBlock.Text` to the content with a OneWay `{Binding}` (dxaml\xcp\dxaml\lib\ContentPresenter_Partial.cpp:157-190). So a bool box used as `Content`, or as an ItemsControl item, now shows `True`/`False` too. The test checks it.
+  - Diagnostics and InternalDebugInterop also use `DynamicValueConverter`, but only convert from strings, so they never reach this converter.
   - Any non-ICPP `IPropertyValue` that reports `PropertyType_Boolean` changes, including one an app implements itself. That is the point of the fix.
 - **`ConvertValueToString` is not touched.** That helper prints a bool as `1`/`0` (:952-960). It is used by automation (dxaml\xcp\dxaml\lib\FrameworkElement_partial.cpp:506-508) and diagnostics. Reusing it here would have shown `1`/`0` in bindings, and changing it would change those other callers.
 - **Only the forward direction changes.** For a TwoWay binding, `DynamicValueConverter::ConvertBack` asks for the same (Boolean, String) converter (dxaml\xcp\dxaml\lib\DynamicValueConverter.cpp:124), and `StringValueConverter::ConvertBack` still returns E_FAIL (dxaml\xcp\dxaml\lib\DefaultValueConverter.h:474-481). So string-to-bool write-back fails the same way it did before.
@@ -52,7 +54,7 @@ In `StringValueConverter::Convert`, when there is no ICPP, check whether the sou
 
 ## Test
 
-`BindingIntegrationTests::CanBindBooleanBoxToString` (dxaml\test\native\external\framework\dataBinding\tests\BindingIntegrationTests.cpp:375-415):
+`BindingIntegrationTests::CanBindBooleanBoxToString` (dxaml\test\native\external\framework\dataBinding\tests\BindingIntegrationTests.cpp:375-440):
 
 | Case | Expect |
 |------|--------|
@@ -62,6 +64,7 @@ In `StringValueConverter::Convert`, when there is no ICPP, check whether the sou
 | Same with `false` | `False` |
 | Same with `PropertyValue::CreatePoint(1, 2)` | Class name, unchanged |
 | `XamlBindingHelper::ConvertValue(String, PropertyValue::CreateBoolean(true))` | `True` |
+| `ContentPresenter.Content = PropertyValue::CreateBoolean(false)`, default template text | `False` |
 
 Results (VM, amd64chk, `-HostingMode WPF`):
 

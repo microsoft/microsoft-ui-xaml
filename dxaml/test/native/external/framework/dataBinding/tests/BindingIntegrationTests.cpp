@@ -412,6 +412,31 @@ namespace Framework { namespace DataBinding {
             auto converted = ::Microsoft::UI::Xaml::Markup::XamlBindingHelper::ConvertValue(String::typeid, ::Windows::Foundation::PropertyValue::CreateBoolean(true));
             VERIFY_ARE_EQUAL(ref new String(L"True"), safe_cast<String^>(converted));
         });
+
+        // ContentPresenter's default TextBlock binds Text to the content, so a bool box as content
+        // takes the same path.
+        ContentPresenter^ presenter = nullptr;
+        RunOnUIThread([&]()
+        {
+            presenter = ref new ContentPresenter;
+            presenter->Content = ::Windows::Foundation::PropertyValue::CreateBoolean(false);
+            TestServices::WindowHelper->WindowContent = presenter;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            DependencyObject^ child = presenter;
+            while (child != nullptr && dynamic_cast<TextBlock^>(child) == nullptr)
+            {
+                child = ::Microsoft::UI::Xaml::Media::VisualTreeHelper::GetChildrenCount(child) > 0
+                    ? ::Microsoft::UI::Xaml::Media::VisualTreeHelper::GetChild(child, 0)
+                    : nullptr;
+            }
+            VERIFY_IS_NOT_NULL(child);
+            VERIFY_ARE_EQUAL(ref new String(L"False"), safe_cast<TextBlock^>(child)->Text);
+        });
     }
 
     void BindingIntegrationTests::CanDefineAttachedPropertyBindingInCode()
