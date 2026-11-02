@@ -151,6 +151,7 @@ public:
 
 private:
     void ResetCellAutomationNames();
+    void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
     bool HasCellAutomationPeers() const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
@@ -236,6 +237,7 @@ private:
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N
     // full RebuildCells per row). Recycle / owner / DataContext paths still rebuild synchronously.
     void QueueRebuildCells();
+    void InvalidateCellsCurrent();
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
@@ -297,6 +299,8 @@ private:
 
     // One-shot: set by the DataContext rebuild, consumed by the next ElementPrepared, cleared by any other rebuild.
     bool m_cellsRebuiltForDataContext{ false };
+    // Cells were cleared or a rebuild was dropped/queued while the DataContext rebuild ran.
+    bool m_cellsInvalidated{ false };
     // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
     bool m_inRecyclePool{ false };
 

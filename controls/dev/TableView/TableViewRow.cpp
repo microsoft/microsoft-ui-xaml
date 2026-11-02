@@ -1129,7 +1129,13 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
-    return rebuildCells ? RebuildCells() : false;
+    if (!rebuildCells)
+    {
+        // Without the rebuild, pooled cell peers would keep their item index and advertise VirtualizedItem.
+        UpdateCellPeerItems(DataContext());
+        return false;
+    }
+    return RebuildCells();
 }
 
 bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent)
@@ -1201,6 +1207,7 @@ void TableViewRow::RefreshColumnsSubscriptionInternal()
     {
         ResetCellAutomationNames();
         host.Children().Clear();
+        InvalidateCellsCurrent();
     }
 
     RebuildCells();
@@ -1225,8 +1232,15 @@ void TableViewRow::OnDataContextChanged(
     {
         return;
     }
+    m_cellsInvalidated = false;
     const bool rebuilt = RebuildCells();
-    m_cellsRebuiltForDataContext = rebuilt && dataItem && DataContext() == dataItem;
+    m_cellsRebuiltForDataContext = rebuilt && !m_cellsInvalidated && dataItem && DataContext() == dataItem;
+}
+
+void TableViewRow::InvalidateCellsCurrent()
+{
+    m_cellsRebuiltForDataContext = false;
+    m_cellsInvalidated = true;
 }
 
 void TableViewRow::OnColumnsVectorChanged(
@@ -1253,6 +1267,8 @@ void TableViewRow::QueueRebuildCells()
     {
         return;
     }
+
+    InvalidateCellsCurrent();
 
     auto dispatcher = DispatcherQueue();
     if (!dispatcher)
@@ -1836,6 +1852,7 @@ void TableViewRow::RefreshCells()
     {
         ResetCellAutomationNames();
         host.Children().Clear();
+        InvalidateCellsCurrent();
     }
 
     RebuildCells();
@@ -1897,6 +1914,28 @@ void TableViewRow::ResetCellAutomationNames()
             {
                 TVDiag::LogRetailF(L"[TableView] Optional released-cell name state could not be reset.");
             }
+        }
+    }
+}
+
+void TableViewRow::UpdateCellPeerItems(winrt::IInspectable const& dataItem)
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        try
+        {
+            for (auto const& cell : host.Children())
+            {
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                    .try_as<winrt::TableViewCellAutomationPeer>())
+                {
+                    winrt::get_self<TableViewCellAutomationPeer>(peer)->UpdateNameItem(dataItem);
+                }
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Optional recycled-cell name state could not be refreshed.");
         }
     }
 }
@@ -1971,6 +2010,8 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     // Re-entry guard. See OnDataContextChanged.
     if (m_isRebuildingCells)
     {
+        // The outer pass may already be past the point this request needed.
+        InvalidateCellsCurrent();
         return false;
     }
     m_isRebuildingCells = true;
@@ -2036,21 +2077,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     const auto children = host.Children();
     if (updateExistingCellPeerItems)
     {
-        try
-        {
-            for (auto const& cell : children)
-            {
-                if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
-                    .try_as<winrt::TableViewCellAutomationPeer>())
-                {
-                    winrt::get_self<TableViewCellAutomationPeer>(peer)->UpdateNameItem(dataItem);
-                }
-            }
-        }
-        catch (...)
-        {
-            TVDiag::LogRetailF(L"[TableView] Optional recycled-cell name state could not be refreshed.");
-        }
+        UpdateCellPeerItems(dataItem);
     }
 
     uint32_t nonNullColumnCount = 0;
