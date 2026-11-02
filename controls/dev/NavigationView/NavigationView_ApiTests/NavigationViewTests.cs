@@ -2864,6 +2864,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyBackButtonHitTargetKeepsVisualStateValues()
+        {
+            // A custom NavigationView template can set the back button's Margin from a visual state. That value is animated, so it
+            // isn't a local value; NavigationView must keep it (no enlargement) and enlarge again once the state no longer sets it.
+            RunOnUIThread.Execute(() =>
+            {
+                var stockNavView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
+                Content = stockNavView;
+                Content.UpdateLayout();
+                var normalStyle = GetBackButton(stockNavView).Style;
+
+                var template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='NavigationView'>
+                        <Grid>
+                          <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name='TestStates'>
+                              <VisualState x:Name='TestDefault' />
+                              <VisualState x:Name='TestWide'>
+                                <VisualState.Setters>
+                                  <Setter Target='NavigationViewBackButton.Margin' Value='8,2,0,2' />
+                                </VisualState.Setters>
+                              </VisualState>
+                            </VisualStateGroup>
+                          </VisualStateManager.VisualStateGroups>
+                          <Grid HorizontalAlignment='Left' VerticalAlignment='Top'>
+                            <Button x:Name='NavigationViewBackButton' Width='40' VerticalAlignment='Top' />
+                          </Grid>
+                        </Grid>
+                      </ControlTemplate>");
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
+                navView.Template = template;
+                // Without the stock parts DisplayMode stays at its default (Minimal), where an open pane hides the back button.
+                navView.IsPaneOpen = false;
+                Content = navView;
+                Content.UpdateLayout();
+                var backButton = GetBackButton(navView);
+                backButton.Style = normalStyle;
+                Content.UpdateLayout();
+                VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target before the state");
+                Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width before the state");
+
+                Log.Comment("Visual state sets Margin 8,2,0,2");
+                VisualStateManager.GoToState(navView, "TestWide", false);
+                Content.UpdateLayout();
+                Verify.AreEqual(new Thickness(8, 2, 0, 2), backButton.Margin, "Visual state Margin kept");
+                VerifyElementOffset(navView, backButton, 8.0, 2.0, "Back button");
+                Verify.AreEqual(40.0, backButton.ActualWidth, "Back button width");
+                Verify.AreEqual(36.0, backButton.ActualHeight, "Back button height");
+                VerifyNoHitTargetValues(backButton, null);
+
+                Log.Comment("Back to a state without the setter");
+                VisualStateManager.GoToState(navView, "TestDefault", false);
+                Content.UpdateLayout();
+                VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
+                Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width");
+                Verify.AreEqual(38.0, backButton.ActualHeight, "Back button hit target height");
+            });
+        }
+
         // A LeftMinimal NavigationView, in Content, whose NavigationBackButtonSmallStyle is the stock one plus the given setters.
         private NavigationView CreateNavViewWithBackButtonSmallStyle(params Setter[] setters)
         {
