@@ -11129,7 +11129,7 @@ CUIElement::EnsureCompositionPeer(
     // Gated on IsEnabled(): with no session attached nothing is emitted, so the suppression
     // bookkeeping (and its GetDebugLabel() allocation) is pointless. The overlay is only ever
     // created while a profiler session is attached, so this always runs when it matters.
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         const uint64_t thisCompNodeId = reinterpret_cast<uint64_t>(pCompositionPeer);
         bool suppress = WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pParentNode));
@@ -11384,10 +11384,13 @@ CUIElement::RemoveCompositionPeer()
             }
         }
 
-        // Clear any pick-overlay suppression so the (now freed) comp-node pointer address can
-        // be reused later without wrongly suppressing an unrelated comp node. Cheap no-op when
-        // this node was never suppressed.
-        WucVisualTreeProfiler::UnsuppressCompNode(reinterpret_cast<uint64_t>(m_pCompositionPeer));
+        // Clear recorded suppression even if capture stopped before teardown, so a reused
+        // comp-node address cannot incorrectly suppress an unrelated node.
+        const uint64_t compNodeId = reinterpret_cast<uint64_t>(m_pCompositionPeer);
+        if (XamlProfilerTracing::IsEnabled() || WucVisualTreeProfiler::IsCompNodeSuppressed(compNodeId))
+        {
+            WucVisualTreeProfiler::UnsuppressCompNode(compNodeId);
+        }
 
         ReleaseInterface(m_pCompositionPeer);
     }

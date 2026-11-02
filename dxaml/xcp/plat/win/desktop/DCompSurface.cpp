@@ -189,7 +189,10 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
     }
 
-    TraceProfilerMemoryChange(true);
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceProfilerMemoryChange(true);
+    }
 
     if (m_spWinRTSurface == nullptr)
     {
@@ -245,7 +248,10 @@ DCompSurface::InitializeSurface(
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
-        TraceProfilerMemoryChange(true);
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            TraceProfilerMemoryChange(true);
+        }
 
         // Wrap with an ICompositionSurface
         auto hr = pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
@@ -273,7 +279,10 @@ DCompSurface::InitializeSurface(
 
         UpdateMemoryFootprint(TRUE);
 
-        TraceProfilerMemoryChange(true);
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            TraceProfilerMemoryChange(true);
+        }
 
         // Wrap with an ICompositionSurface
         IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
@@ -356,7 +365,8 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
         }
     }
 
-    if (m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr)
+    if (XamlProfilerTracing::IsEnabled() &&
+        (m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr))
     {
         TraceProfilerMemoryChange(false);
     }
@@ -774,7 +784,10 @@ DCompSurface::CopySubresource(
         sourceBoxWithGutters.bottom = pSource->GetHeight();
     }
 
-    TraceProfilerTextureObserved(pDestD3DResource, dstOffsetWithGutters);
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceProfilerTextureObserved(pDestD3DResource, dstOffsetWithGutters);
+    }
 
     // Nobody should be staging from heap memory
     ASSERT(pSource->IsDriverVisible());
@@ -930,7 +943,10 @@ DCompSurface::BeginDraw(
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
 
-    TraceProfilerTextureObserved(*ppSurface, offset);
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceProfilerTextureObserved(*ppSurface, offset);
+    }
 
     if (s_traceDCompSurfaceUpdates)
     {
@@ -984,7 +1000,10 @@ DCompSurface::BeginDrawWithGutters(
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
 
-    TraceProfilerTextureObserved(*ppSurface, offset);
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceProfilerTextureObserved(*ppSurface, offset);
+    }
 
     if (s_traceDCompSurfaceUpdates)
     {
@@ -1114,7 +1133,10 @@ DCompSurface::Resize(
 
     IFC(m_compositionSurfaceHelper.Resize(width, height));
 
-    TraceProfilerMemoryChange(false);
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceProfilerMemoryChange(false);
+    }
 
     // If the surface size changed, then we clear out the pending update list. If the surface became smaller,
     // the existing surface updates can draw to a part of the surface that exceeds the new smaller bounds. If
@@ -1136,7 +1158,10 @@ DCompSurface::Resize(
         UpdateMemoryFootprint(TRUE);
     }
 
-    TraceProfilerMemoryChange(true);
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceProfilerMemoryChange(true);
+    }
 
 Cleanup:
     RRETURN(hr);

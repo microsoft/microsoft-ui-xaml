@@ -988,7 +988,7 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
 
         // Notify the XAML Profiler that this visual became the root of the in-proc island target,
         // so a consumer can attach the island's WUC visual subtree to the right target.
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), 0 /* ownerCompNodeId unknown */);
         }
@@ -1078,7 +1078,7 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 // Notify the XAML Profiler that this island root visual was connected to its
                 // ContentIsland target, including the owning comp node so the consumer can stitch
                 // the XamlIslandRoot's WUC subtree onto the island.
-                if (WucVisualTreeProfiler::IsEnabled())
+                if (XamlProfilerTracing::IsEnabled())
                 {
                     WucVisualTreeProfiler::NotifyRootSet(
                         wucVisual,

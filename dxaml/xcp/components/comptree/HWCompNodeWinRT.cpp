@@ -423,7 +423,7 @@ void HWCompTreeNodeWinRT::InsertWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
 
     // Notify the XAML Profiler of this intra-comp-node spine edge so an out-of-process
     // consumer can reconstruct the full WUC visual tree (prepend -> primary -> content, etc).
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(parentVisual, childVisual, reinterpret_cast<uint64_t>(this), -1 /* index */);
     }
@@ -437,7 +437,7 @@ void HWCompTreeNodeWinRT::RemoveWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
     if (childCollection != nullptr)
     {
         IFCFAILFAST(childCollection->Remove(childVisual));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(parentVisual, childVisual);
         }
@@ -593,12 +593,12 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
 
         // Transfer the current visual over to the end of the new container's children
         IFCFAILFAST(originalChildrenCollection->Remove(visual));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(oldParent, visual.get());
         }
         IFCFAILFAST(newChildrenCollection->InsertAtTop(visual));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
         }
@@ -2693,7 +2693,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         xref_ptr<WUComp::IVisualCollection> childCollection;
         GetVisualCollectionFromWUCSpineVisual(GetBottomMostNonContentVisual(), childCollection.ReleaseAndGetAddressOf());
         IFCFAILFAST(childCollection->InsertAtBottom(m_dmanipHitTestVisual.Get()));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
         }
@@ -2707,7 +2707,7 @@ void HWCompTreeNodeWinRT::CleanupDManipHitTestVisual()
         xref_ptr<WUComp::IVisualCollection> childCollection;
         GetVisualCollectionFromWUCSpineVisual(GetBottomMostNonContentVisual(), childCollection.ReleaseAndGetAddressOf());
         IFCFAILFAST(childCollection->Remove(m_dmanipHitTestVisual.Get()));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
         }
@@ -3285,7 +3285,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             // hand in visual from multiple places in the tree when it's actually in only one place. Ignore the E_INVALIDARGs that
             // we get from DComp.
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
-            if (WucVisualTreeProfiler::IsEnabled())
+            if (XamlProfilerTracing::IsEnabled())
             {
                 WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
             }
@@ -3307,7 +3307,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             // LTEs can render one UIElement in multiple places, which causes us to insert the same WUC hand in visual in multiple
             // places in the tree. DComp will return E_INVALIDARG in this case, which we'll ignore.
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
-            if (WucVisualTreeProfiler::IsEnabled())
+            if (XamlProfilerTracing::IsEnabled())
             {
                 WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
             }
@@ -3345,7 +3345,7 @@ void HWCompTreeNodeWinRT::CleanupHandInVisual()
         // hand in visual from multiple places in the tree when it's actually in only one place. Ignore the E_INVALIDARGs that
         // we get from DComp.
         IFCFAILFAST_ALLOW_INVALIDARG(hr);
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
         }
@@ -3600,7 +3600,7 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
 
     // Notify the XAML Profiler of this inter-comp-node edge. The child WUC visual is owned by the
     // child comp node, so pass the child comp node's pointer as the owner id.
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
     }
@@ -3621,7 +3621,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
     GetVisualCollectionFromWUCSpineVisual(GetBottomMostVisual(), childCollection.ReleaseAndGetAddressOf());
 
     IFCFAILFAST(childCollection->InsertAtBottom(wucChild));
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
     }
@@ -3642,7 +3642,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::RemoveChildInternal(_In_ HWCompNode 
         xref_ptr<WUComp::IVisual> visualToRemove = child->GetWUCVisualInMainTree();
 
         IFCFAILFAST(childCollection->Remove(visualToRemove));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostVisual(), visualToRemove.get());
         }
@@ -3772,7 +3772,7 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
     if (SUCCEEDED(hr))
     {
         IFCFAILFAST(childrenCollection->RemoveAll());
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildrenCleared(GetContainerVisualForChildren());
         }

@@ -3509,7 +3509,7 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCurrentContainer(
     // Notify the XAML Profiler of this sprite/leaf visual edge. The parent container visual is
     // itself a comp node's child collection visual (announced via the comp node's spine events),
     // so the owner comp node can be derived from the parent id on the consumer side.
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
     }
@@ -3528,7 +3528,7 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCollection(
     IFC_RETURN(visualCollection->InsertAbove(visual, m_pCurrentSpriteVisualNoRef));
     SetLastSpriteVisual(visual);
 
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
     }

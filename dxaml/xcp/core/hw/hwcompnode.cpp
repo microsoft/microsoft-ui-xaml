@@ -713,8 +713,9 @@ HWCompTreeNode::RemoveChild(
             if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_VERBOSE, XamlTelemetry::DCompKeyword))
             {
                 const bool isProfilerSuppressed =
-                    WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) ||
-                    WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild));
+                    XamlProfilerTracing::IsEnabled() &&
+                    (WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) ||
+                    WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)));
                 XamlTelemetry::CompTreeRemoveChild(
                     reinterpret_cast<uint64_t>(this),
                     reinterpret_cast<uint64_t>(pChild),
@@ -973,7 +974,7 @@ HWCompWinRTVisualRenderDataNode::ClearVisualContent()
     xref_ptr<WUComp::IVisualCollection> visualCollection;
     IFCFAILFAST(m_containerVisual->get_Children(visualCollection.ReleaseAndGetAddressOf()));
     IFCFAILFAST(visualCollection->RemoveAll());
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildrenCleared(m_containerVisual.get());
     }

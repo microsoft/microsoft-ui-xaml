@@ -1467,7 +1467,7 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
         IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
         contentIslandExperimental->put_Root(nullptr);
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyRootCleared(reinterpret_cast<uint64_t>(m_contentIsland.Get()));
         }
@@ -2268,7 +2268,7 @@ _Check_return_ HRESULT CPopup::SetRootVisualForWindowedPopupWindow(_In_ ixp::IVi
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(containerVisual->get_Children(&visualChildren))
         IFCFAILFAST(visualChildren->InsertAtTop(m_publicRootVisual.Get()));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
         }
@@ -2303,7 +2303,7 @@ void CPopup::AddAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* popupV
     wrl::ComPtr<ixp::IVisualCollection> visualChildren;
     IFCFAILFAST(containerVisual->get_Children(&visualChildren));
     IFCFAILFAST(visualChildren->InsertAtTop(popupVisual));
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual, 0 /* ownerCompNodeId */, -1 /* index */);
     }
@@ -2320,7 +2320,7 @@ void CPopup::RemoveAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* pop
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(containerVisual->get_Children(&visualChildren));
         IFCFAILFAST(visualChildren->Remove(popupVisual));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(m_animationRootVisual.Get(), popupVisual);
         }
@@ -2391,7 +2391,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             wrl::ComPtr<ixp::IVisualCollection> animationVisualChildren;
             IFCFAILFAST(animationCV->get_Children(&animationVisualChildren))
             IFCFAILFAST(animationVisualChildren->InsertAtBottom(m_systemBackdropPlacementVisual.Get()));
-            if (WucVisualTreeProfiler::IsEnabled())
+            if (XamlProfilerTracing::IsEnabled())
             {
                 WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
             }
@@ -2400,7 +2400,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(windowCV->get_Children(visualChildren.ReleaseAndGetAddressOf()));
         IFCFAILFAST(visualChildren->InsertAtTop(animationV.Get()));
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
         }
@@ -2432,7 +2432,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
         IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
         contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()), 0 /* ownerCompNodeId */);
         }
