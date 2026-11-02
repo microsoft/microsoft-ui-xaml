@@ -5,11 +5,8 @@
 
 #include <TraceLoggingInterop.h>
 
-// XamlProfiler instrumentation is compiled when XAMLPROFILER_ENABLED is
-// defined by the build's XamlProfilerEnabled setting. This can include
-// fre/Release builds. Call sites are compile-time guarded, and event
-// emission is controlled by runtime ETW enablement.
-#ifdef XAMLPROFILER_ENABLED
+// The provider is available in all configurations for surface and peer tracing.
+// Call sites not yet migrated remain guarded by XAMLPROFILER_ENABLED.
 
 #include "XamlTelemetry.h"
 
@@ -296,20 +293,19 @@ public:
         bool,     IsVirtual,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    // Reports the transient D3D11 texture exposed by DComp during BeginDraw. For atlased
-    // surfaces, Width/Height describe the shared backing texture and OffsetX/OffsetY locate
-    // this surface's update region within it. The resource must not be retained after EndDraw.
-    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
+    // Reports successful native surface creation before WinRT wrapping. Width/Height exclude
+    // gutters; Format/AlphaMode are the actual creation arguments, not backing-texture attributes.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceInit,
         uint64_t, SurfaceId,
-        uint64_t, ResourceId,
+        uint64_t, NativeSurfaceId,
         uint32_t, Width,
         uint32_t, Height,
-        uint32_t, MipLevels,
-        uint32_t, ArraySize,
         uint32_t, Format,
-        uint32_t, SampleCount,
-        int32_t,  OffsetX,
-        int32_t,  OffsetY,
+        uint32_t, AlphaMode,
+        bool,     IsVirtual,
+        bool,     IncludesGutters,
+        bool,     RequestAtlas,
+        bool,     IsAlphaMask,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Associates a rendered IVisual with the DComp surface used by one of its brush roles.
@@ -326,6 +322,7 @@ public:
     // the same values IDXGIAdapter3::QueryVideoMemoryInfo returns.
 };
 
+#ifdef XAMLPROFILER_ENABLED
 // Element-scoped events are TraceLogging events on the existing Microsoft-Windows-XAML provider
 // {531a35ab-63ce-4bcf-aa98-f88c7a89e455}, through the same XamlTelemetryLogging registration that
 // XamlTelemetry uses, rather than on Microsoft-Windows-XAML-Profiler. TraceLogging events are

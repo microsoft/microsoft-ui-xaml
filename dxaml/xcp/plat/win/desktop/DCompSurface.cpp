@@ -189,9 +189,10 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
     }
 
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerMemoryChange(true);
-#endif
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceSurfaceInit(compositionSurfaceFormat);
+    }
 
     if (m_spWinRTSurface == nullptr)
     {
@@ -247,9 +248,10 @@ DCompSurface::InitializeSurface(
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
-#ifdef XAMLPROFILER_ENABLED
-        TraceProfilerMemoryChange(true);
-#endif
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
+        }
 
         // Wrap with an ICompositionSurface
         auto hr = pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
@@ -277,9 +279,10 @@ DCompSurface::InitializeSurface(
 
         UpdateMemoryFootprint(TRUE);
 
-#ifdef XAMLPROFILER_ENABLED
-        TraceProfilerMemoryChange(true);
-#endif
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
+        }
 
         // Wrap with an ICompositionSurface
         IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
@@ -362,12 +365,11 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
         }
     }
 
-#ifdef XAMLPROFILER_ENABLED
-    if (m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr)
+    if (XamlProfilerTracing::IsEnabled() &&
+        (m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr))
     {
-        TraceProfilerMemoryChange(false);
+        TraceSurfaceMemoryChange(false);
     }
-#endif
 
     m_d3dDevice.reset();
     m_surfaceUpdates.clear();
@@ -782,10 +784,6 @@ DCompSurface::CopySubresource(
         sourceBoxWithGutters.bottom = pSource->GetHeight();
     }
 
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerTextureObserved(pDestD3DResource, dstOffsetWithGutters);
-#endif
-
     // Nobody should be staging from heap memory
     ASSERT(pSource->IsDriverVisible());
 
@@ -940,10 +938,6 @@ DCompSurface::BeginDraw(
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
 
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerTextureObserved(*ppSurface, offset);
-#endif
-
     if (s_traceDCompSurfaceUpdates)
     {
         m_updateRects.push_back(rect);
@@ -995,10 +989,6 @@ DCompSurface::BeginDrawWithGutters(
     // before drawing to the 'real' offset into the texture, not into the gutter region.
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
-
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerTextureObserved(*ppSurface, offset);
-#endif
 
     if (s_traceDCompSurfaceUpdates)
     {
@@ -1128,9 +1118,10 @@ DCompSurface::Resize(
 
     IFC(m_compositionSurfaceHelper.Resize(width, height));
 
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerMemoryChange(false);
-#endif
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceSurfaceMemoryChange(false);
+    }
 
     // If the surface size changed, then we clear out the pending update list. If the surface became smaller,
     // the existing surface updates can draw to a part of the surface that exceeds the new smaller bounds. If
@@ -1152,9 +1143,10 @@ DCompSurface::Resize(
         UpdateMemoryFootprint(TRUE);
     }
 
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerMemoryChange(true);
-#endif
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceSurfaceMemoryChange(true);
+    }
 
 Cleanup:
     RRETURN(hr);
@@ -1368,56 +1360,29 @@ DCompSurface::GetTextureSizeInBytes() const
     return GetWidthWithGutters() * GetHeightWithGutters() * GetPixelStride();
 }
 
-#ifdef XAMLPROFILER_ENABLED
-void DCompSurface::TraceProfilerTextureObserved(
-    _In_ IUnknown* updateObject,
-    const POINT& offset) noexcept
+void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
 {
     if (!XamlProfilerTracing::IsEnabled())
     {
         return;
     }
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&texture))))
-    {
-        Microsoft::WRL::ComPtr<ID2D1DeviceContext> deviceContext;
-        Microsoft::WRL::ComPtr<ID2D1Image> target;
-        Microsoft::WRL::ComPtr<ID2D1Bitmap1> targetBitmap;
-        Microsoft::WRL::ComPtr<IDXGISurface> targetSurface;
-
-        if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&deviceContext))))
-        {
-            return;
-        }
-
-        deviceContext->GetTarget(&target);
-        if (target == nullptr ||
-            FAILED(target.As(&targetBitmap)) ||
-            FAILED(targetBitmap->GetSurface(&targetSurface)) ||
-            FAILED(targetSurface.As(&texture)))
-        {
-            return;
-        }
-    }
-
-    D3D11_TEXTURE2D_DESC desc = {};
-    texture->GetDesc(&desc);
-
-    XamlProfilerTracing::DCompSurfaceTextureObserved(
+    XamlProfilerTracing::DCompSurfaceInit(
         reinterpret_cast<uint64_t>(this),
-        reinterpret_cast<uint64_t>(texture.Get()),
-        desc.Width,
-        desc.Height,
-        desc.MipLevels,
-        desc.ArraySize,
-        static_cast<uint32_t>(desc.Format),
-        desc.SampleDesc.Count,
-        offset.x,
-        offset.y);
+        reinterpret_cast<uint64_t>(m_pCompositionSurface),
+        GetWidthWithoutGutters(),
+        GetHeightWithoutGutters(),
+        static_cast<uint32_t>(format),
+        static_cast<uint32_t>(m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED),
+        m_pVirtualCompositionSurface != nullptr,
+        static_cast<bool>(m_includesGutters),
+        static_cast<bool>(m_requestAtlas),
+        static_cast<bool>(m_fAlphaMask));
+
+    TraceSurfaceMemoryChange(true);
 }
 
-void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
+void DCompSurface::TraceSurfaceMemoryChange(bool isAllocation)
 {
     if (!XamlProfilerTracing::IsEnabled())
     {
@@ -1446,7 +1411,6 @@ void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
         XcpAllocation::GetAllocationCount(),
         XcpAllocation::GetDeallocationCount());
 }
-#endif
 
 //-------------------------------------------------------------------------
 //
