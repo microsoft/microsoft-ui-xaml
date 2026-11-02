@@ -407,6 +407,10 @@ namespace Framework { namespace DataBinding {
             // Other non-ICPP PropertyValue boxes still show the class name.
             dataContextText->DataContext = ::Windows::Foundation::PropertyValue::CreatePoint(::Windows::Foundation::Point(1, 2));
             VERIFY_ARE_EQUAL(ref new String(L"Windows.Foundation.IReference`1<Windows.Foundation.Point>"), dataContextText->Text);
+
+            // XamlBindingHelper.ConvertValue uses the same converter.
+            auto converted = ::Microsoft::UI::Xaml::Markup::XamlBindingHelper::ConvertValue(String::typeid, ::Windows::Foundation::PropertyValue::CreateBoolean(true));
+            VERIFY_ARE_EQUAL(ref new String(L"True"), safe_cast<String^>(converted));
         });
     }
 
