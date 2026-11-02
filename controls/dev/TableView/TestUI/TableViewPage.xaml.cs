@@ -919,6 +919,101 @@ namespace MUXControlsTestApp
             });
         }
 
+        private TableViewColumnHeader FindBasicHeaderCell(TableViewColumn column)
+        {
+            return FindDescendants<TableViewColumnHeader>(BasicTableView).FirstOrDefault(header => header.Tag == column);
+        }
+
+        private static void PinColumn(TableViewColumn column)
+        {
+            column.MinWidth = column.ActualWidth;
+            column.MaxWidth = column.ActualWidth;
+        }
+
+        // The ToolTip's DataContext is cleared while ToolTipService unregisters it.
+        private void OnPinNameOnHeaderToolTipDetachClick(object sender, RoutedEventArgs e)
+        {
+            var nameColumn = BasicTableView.Columns[0];
+            var headerCell = FindBasicHeaderCell(nameColumn);
+            var toolTip = headerCell == null ? null : ToolTipService.GetToolTip(headerCell) as ToolTip;
+            if (toolTip == null)
+            {
+                StatusTextBlock.Text = "No Name header tooltip";
+                return;
+            }
+
+            toolTip.DataContext = "HeaderToolTipProbe";
+            void OnDataContextChanged(FrameworkElement s, DataContextChangedEventArgs args)
+            {
+                if (args.NewValue == null)
+                {
+                    toolTip.DataContextChanged -= OnDataContextChanged;
+                    try
+                    {
+                        PinColumn(nameColumn);
+                        StatusTextBlock.Text = "Pinned while detaching";
+                    }
+                    catch (global::System.Exception ex)
+                    {
+                        StatusTextBlock.Text = "Pin failed while detaching: " + ex.Message;
+                    }
+                }
+            }
+            toolTip.DataContextChanged += OnDataContextChanged;
+            StatusTextBlock.Text = "Detach pin armed";
+        }
+
+        private ToolTip _rebuildProbeToolTip;
+
+        // First invoke caches the Name header's ToolTip (before the gripper detaches it); the second pins the
+        // column, and the ToolTip takes its header's DataContext when TableView attaches it again.
+        private void OnPinNameRebuildOnHeaderToolTipAttachClick(object sender, RoutedEventArgs e)
+        {
+            var nameColumn = BasicTableView.Columns[0];
+            var headerCell = FindBasicHeaderCell(nameColumn);
+            if (headerCell == null)
+            {
+                StatusTextBlock.Text = "No Name header";
+                return;
+            }
+
+            if (_rebuildProbeToolTip == null)
+            {
+                _rebuildProbeToolTip = ToolTipService.GetToolTip(headerCell) as ToolTip;
+                headerCell.DataContext = "HeaderToolTipProbe";
+                StatusTextBlock.Text = _rebuildProbeToolTip == null ? "No Name header tooltip" : "Rebuild probe ready";
+                return;
+            }
+
+            if (ToolTipService.GetToolTip(headerCell) != null)
+            {
+                StatusTextBlock.Text = "Name header tooltip not suppressed";
+                return;
+            }
+
+            var toolTip = _rebuildProbeToolTip;
+            void OnDataContextChanged(FrameworkElement s, DataContextChangedEventArgs args)
+            {
+                if (args.NewValue != null)
+                {
+                    toolTip.DataContextChanged -= OnDataContextChanged;
+                    BasicTableView.Columns.Clear();
+                    BasicTableView.Density = BasicTableView.Density == TableViewDensity.Compact
+                        ? TableViewDensity.Standard : TableViewDensity.Compact;
+                }
+            }
+            toolTip.DataContextChanged += OnDataContextChanged;
+            try
+            {
+                PinColumn(nameColumn);
+                StatusTextBlock.Text = "Pinned; columns=" + BasicTableView.Columns.Count;
+            }
+            catch (global::System.Exception ex)
+            {
+                StatusTextBlock.Text = "Pin failed: " + ex.Message;
+            }
+        }
+
         private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
         {
             int count = VisualTreeHelper.GetChildrenCount(root);

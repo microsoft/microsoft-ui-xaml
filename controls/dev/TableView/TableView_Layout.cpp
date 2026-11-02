@@ -652,12 +652,29 @@ void TableView::RefreshResizeGripperAvailability()
         return;
     }
 
-    auto const children = host.Children();
-    const uint32_t count = children.Size();
-    for (uint32_t i = 0; i < count; ++i)
+    // Snapshot: restoring a header tooltip runs app code that can rebuild the headers.
+    std::vector<winrt::FrameworkElement> headerCells;
     {
-        auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>();
-        if (!headerCell)
+        auto const children = host.Children();
+        const uint32_t count = children.Size();
+        headerCells.reserve(count);
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
+            {
+                headerCells.push_back(headerCell);
+            }
+        }
+    }
+
+    auto const isHosted = [this, &host](const winrt::FrameworkElement& headerCell)
+    {
+        return m_headerHost.get() == host && winrt::VisualTreeHelper::GetParent(headerCell) == host;
+    };
+
+    for (auto const& headerCell : headerCells)
+    {
+        if (!isHosted(headerCell))
         {
             continue;
         }
@@ -675,17 +692,25 @@ void TableView::RefreshResizeGripperAvailability()
             continue;
         }
 
+        if (visibility == winrt::Visibility::Collapsed)
+        {
+            // A collapsed gripper under the pointer raises no PointerExited.
+            TableViewDetails::RestoreOwnedToolTip(headerCell);
+            if (!isHosted(headerCell) ||
+                headerCell.Tag().try_as<winrt::TableViewColumn>() != column ||
+                !IsColumnResizePinned(column) ||
+                gripper.Visibility() == visibility)
+            {
+                continue;
+            }
+        }
+
         // Only a peer a client already holds is notified; FromElement would create one.
         auto const header = headerCell.try_as<winrt::TableViewColumnHeader>();
         auto const headerPeer = header && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
             ? winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal() : nullptr;
         // The pin state is already updated, so the old value comes from the visibility being replaced.
         const bool couldResize = gripper.Visibility() == winrt::Visibility::Visible && IsColumnResizeAllowed(column);
-        if (visibility == winrt::Visibility::Collapsed)
-        {
-            // A collapsed gripper under the pointer raises no PointerExited.
-            TableViewDetails::RestoreOwnedToolTip(headerCell);
-        }
         gripper.Visibility(visibility);
 
         if (headerPeer)

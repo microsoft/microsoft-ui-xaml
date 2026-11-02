@@ -727,7 +727,9 @@ cell template is never touched; the control's tooltip covers the rest of the cel
 ### Column header tooltips
 
 `HeaderToolTip` is the header-side counterpart, and covers the whole header cell — content, padding
-and sort affordance:
+and sort affordance — except the resize gripper: while the pointer is on the gripper the tooltip is
+suppressed, so the resize cursor is not reset under a resting pointer. It returns when the pointer
+leaves the gripper or the gripper is withdrawn.
 
 ```xml
 <tabular:TableViewTextColumn Header="Notes"
