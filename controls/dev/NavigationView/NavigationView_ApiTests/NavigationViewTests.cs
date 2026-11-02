@@ -3454,6 +3454,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyIsChildSelectedIsNotRestoredOnPreparedParentAfterSelectionIsCleared()
+        {
+            // #9812 review: SelectedItem = null doesn't clear the selection model when the selected (data-bound) child has no
+            // realized container. A parent prepared afterwards (here by a PaneDisplayMode switch) must not get IsChildSelected
+            // from that stale path, otherwise collapsing it lights the pill with nothing selected.
+            var failures = new List<string>();
+            NavigationView navView = null;
+            Category childCategory = null;
+            Category parentCategory = null;
+            var topLevelItems = new List<object>();
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                childCategory = new Category("Child", "Child", "Icon", null, true);
+                parentCategory = new Category("Parent", "Parent", "Icon", new ObservableCollection<Category> { childCategory }, true);
+                var categories = new ObservableCollection<Category> {
+                    new Category("Menu 0", "Menu0", "Icon", null, true),
+                    parentCategory,
+                    new Category("Menu 2", "Menu2", "Icon", null, true)
+                };
+                topLevelItems.AddRange(categories);
+
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 800,
+                    Height = 460,
+                    Content = new Grid { Height = 600 },
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' MenuItemsSource='{Binding Children}'/>
+</DataTemplate>")
+                };
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            WaitForSelectionIndicatorAnimation();
+
+            RunOnUIThread.Execute(() => ((NavigationViewItem)navView.ContainerFromMenuItem(parentCategory)).IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => navView.SelectedItem = childCategory);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => ((NavigationViewItem)navView.ContainerFromMenuItem(parentCategory)).IsExpanded = false);
+            WaitForSelectionIndicatorAnimation();
+
+            // In Top the child of the collapsed parent has no realized container, so clearing the selection can't deselect it.
+            RunOnUIThread.Execute(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"  Top: child container realized={navView.ContainerFromMenuItem(childCategory) != null}");
+                navView.SelectedItem = null;
+            });
+            WaitForSelectionIndicatorAnimation();
+
+            Action<string> checkNothingSelected = (step) =>
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(navView.SelectedItem);
+                    foreach (var item in topLevelItems)
+                    {
+                        if (navView.ContainerFromMenuItem(item) is NavigationViewItem container && container.IsChildSelected)
+                        {
+                            failures.Add($"{step}: container for {((Category)item).Content} has IsChildSelected=True with nothing selected");
+                        }
+                    }
+                });
+                CheckNoOtherSelectionIndicatorIsLit(navView, null, step, failures);
+            };
+
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
+                WaitForSelectionIndicatorAnimation();
+                checkNothingSelected($"after switching to {mode}");
+            }
+
+            RunOnUIThread.Execute(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => ((NavigationViewItem)navView.ContainerFromMenuItem(parentCategory)).IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => ((NavigationViewItem)navView.ContainerFromMenuItem(parentCategory)).IsExpanded = false);
+            WaitForSelectionIndicatorAnimation();
+            checkNothingSelected("Left, parent expanded and collapsed again");
+
+            foreach (var failure in failures)
+            {
+                Log.Error(failure);
+            }
+
+            Verify.AreEqual(0, failures.Count, "A cleared selection must not mark a re-prepared parent as IsChildSelected");
+        }
+
+        [TestMethod]
         public void VerifyIsChildSelectedIsKeptWhenCompactFooterFlyoutChildrenAreReplaced()
         {
             // #9812 review: re-preparing an ancestor of the selected item inside a footer item's flyout (closed LeftCompact pane)
