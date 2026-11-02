@@ -107,6 +107,7 @@ private:
     void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool syncWithHost = false);
     bool IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon);
     static bool IsTemplateDrivenAnimatedIconState(winrt::hstring const& stateString);
+    static bool IsSelectedAnimatedIconState(winrt::hstring const& stateString);
     static winrt::hstring GetPropagatedAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
     winrt::hstring MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, winrt::hstring const& current, bool isSelected);
     static bool CanAnimatedIconEnterState(winrt::AnimatedIcon const& animatedIcon, wstring_view const& state);

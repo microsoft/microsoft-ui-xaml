@@ -41,6 +41,9 @@ public:
 
     static winrt::DependencyProperty AnimatedIconStateProperty() { return s_StateProperty; }
 
+    // False when the Source couldn't create a visual, so the FallbackIconSource is shown instead.
+    bool CanDisplayPrimaryContent() const { return m_canDisplayPrimaryContent; }
+
     // TestHooks
     void SetAnimationQueueBehavior(winrt::AnimatedIconAnimationQueueBehavior behavior);
     void SetDurationMultiplier(float multiplier);

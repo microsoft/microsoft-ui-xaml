@@ -7,6 +7,7 @@
 #include "NavigationView.h"
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
+#include "AnimatedIcon.h"
 #include "StackLayout.h"
 #include "Utils.h"
 
@@ -684,18 +685,30 @@ void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& anim
     }
 
     auto const currentState = winrt::AnimatedIcon::GetState(animatedIcon);
+
+    // Only remap values that came from this item or its template. The template never propagates a selected state, so
+    // one this item didn't write was set by the app (e.g. to show a SelectsOnInvoked="False" item as toggled on) and
+    // is kept, as it is without this mapping.
+    const bool isOwnState = animatedIcon == m_lastWrittenAnimatedIcon.get() && currentState == m_lastWrittenAnimatedIconState;
+    if (!isOwnState && IsSelectedAnimatedIconState(currentState))
+    {
+        return;
+    }
+
+    auto const hostState = GetPropagatedAnimatedIconState(animatedIcon);
     auto state = currentState;
-    if (syncWithHost && IsTemplateDrivenAnimatedIconState(currentState) && IsSelectionAwareAnimatedIcon(animatedIcon))
+    if (syncWithHost && !hostState.empty() && IsTemplateDrivenAnimatedIconState(currentState) && IsSelectionAwareAnimatedIcon(animatedIcon))
     {
         // AnimatedIcon only copies its host's state on load when it has none, so an icon moved from another item still
         // carries that item's pointer state. Take the state this template propagates instead (from the same ancestor
         // AnimatedIcon listens to). App-defined states are kept, and so is any state on an icon without selected
         // markers, which this item never maps: like AnimatedIcon::OnLoaded, keep its existing value.
-        auto const hostState = GetPropagatedAnimatedIconState(animatedIcon);
-        if (!hostState.empty())
-        {
-            state = hostState;
-        }
+        state = hostState;
+    }
+    else if (!isOwnState && currentState != hostState)
+    {
+        // Not what the template propagates (e.g. the app set PointerOver on a non-hovered item): leave it alone.
+        return;
     }
 
     auto const newState = MapAnimatedIconState(animatedIcon, state, IsSelected());
@@ -727,7 +740,13 @@ bool NavigationViewItem::IsTemplateDrivenAnimatedIconState(winrt::hstring const&
 {
     const wstring_view state{ stateString };
     return state == c_normal || state == c_pointerOver || state == c_pressed ||
-        state == c_selected || state == c_pointerOverSelected || state == c_pressedSelected;
+        IsSelectedAnimatedIconState(stateString);
+}
+
+bool NavigationViewItem::IsSelectedAnimatedIconState(winrt::hstring const& stateString)
+{
+    const wstring_view state{ stateString };
+    return state == c_selected || state == c_pointerOverSelected || state == c_pressedSelected;
 }
 
 winrt::hstring NavigationViewItem::GetPropagatedAnimatedIconState(winrt::AnimatedIcon const& animatedIcon)
@@ -811,6 +830,13 @@ bool NavigationViewItem::CanAnimatedIconEnterState(winrt::AnimatedIcon const& an
 {
     auto const source = animatedIcon.Source();
     if (!source)
+    {
+        return false;
+    }
+
+    // When the Source can't create its visual, AnimatedIcon shows its FallbackIconSource instead, and an
+    // AnimatedIconSource fallback copies this icon's State. Its markers aren't the Source's, so keep the legacy states.
+    if (!winrt::get_self<AnimatedIcon>(animatedIcon)->CanDisplayPrimaryContent())
     {
         return false;
     }
