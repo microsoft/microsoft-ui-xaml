@@ -1058,9 +1058,23 @@ void TableView::OnKeyDownForNavigation(
         {
             // Up/Down preserve the starting level per ARIA treegrid: row-to-row or same-column
             // cell-to-cell.
-            const bool moved = hasCellAnchor
+            bool moved = hasCellAnchor
                 ? FocusCell(newRow, anchorColumn, alignRatio)
                 : FocusRowContainer(newRow, alignRatio);
+            // Row-level Up/Down steps over rows that refuse focus (disabled), as ListView does.
+            if (!moved && !hasCellAnchor && !absoluteRowNav)
+            {
+                const int32_t step = newRow > currentRow ? 1 : -1;
+                for (int32_t next = newRow + step; next >= 0 && next < rowCount; next += step)
+                {
+                    if (FocusRowContainer(next, alignRatio))
+                    {
+                        newRow = next;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
             if (moved)
             {
                 if (!isControlDown)

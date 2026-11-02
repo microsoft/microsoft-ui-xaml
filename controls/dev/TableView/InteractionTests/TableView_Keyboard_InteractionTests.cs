@@ -2525,8 +2525,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Row-level Down onto a disabled row of a table whose cells host controls keeps focus on an enabled row container.")]
-        public void DownOntoDisabledRowWithCellControlsStaysOnRowContainer()
+        [TestProperty("Description", "Row-level Down and Up step over a disabled row of a table whose cells host controls to the next enabled row container.")]
+        public void DownAndUpSkipDisabledRowWithCellControls()
         {
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -2551,9 +2551,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
                 UIObject focused = UIObject.Focused;
-                Log.Comment("Down onto the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Log.Comment("Down over the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
                 Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem && focused.IsEnabled,
-                    "Row-level Down onto a disabled row must keep focus on an enabled row container, not a cell control.");
+                    "Row-level Down over a disabled row must focus an enabled row container, not a cell control.");
+                Verify.IsTrue(focused != null && global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\b" + ScrollingName(2) + @"\b"),
+                    "Row-level Down from row 0 must step over disabled row 1 to row 2.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                focused = UIObject.Focused;
+                Log.Comment("Up over the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem &&
+                    global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\b" + ScrollingName(0) + @"\b"),
+                    "Row-level Up from row 2 must step over disabled row 1 to row 0.");
             }
         }
 

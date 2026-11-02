@@ -1324,6 +1324,87 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection in Single mode, called while a row's IsSelected change is being raised, follows the selection model rather than the not-yet-updated SelectedIndex.")]
+        public void VerifyRowPeerAddToSelectionDuringIsSelectedCallbackUsesModelSelection()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rowOne = (TableViewRow)RequireRowPeer(tableView, 1).Owner;
+                var first = RequireSelectionItemProvider(tableView, 1);
+                var second = RequireSelectionItemProvider(tableView, 2);
+                var zero = RequireSelectionItemProvider(tableView, 0);
+                if (first == null || second == null || zero == null)
+                {
+                    return;
+                }
+
+                first.Select();
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "Precondition: row 1 is the selection.");
+
+                // Moving the selection to row 2 deselects row 1 first; at that point the model already
+                // selects row 2 while SelectedIndex still names row 1.
+                ISelectionItemProvider addFromCallback = second;
+                int callbackCount = 0;
+                global::System.Exception callbackError = null;
+                long token = rowOne.RegisterPropertyChangedCallback(TableViewRow.IsSelectedProperty, (s, dp) =>
+                {
+                    if (rowOne.IsSelected || addFromCallback == null)
+                    {
+                        return;
+                    }
+                    var target = addFromCallback;
+                    addFromCallback = null;
+                    callbackCount++;
+                    try
+                    {
+                        target.AddToSelection();
+                    }
+                    catch (global::System.Exception ex)
+                    {
+                        callbackError = ex;
+                    }
+                });
+
+                try
+                {
+                    second.Select();
+                    tableView.UpdateLayout();
+                    Verify.AreEqual(1, callbackCount, "Row 1's IsSelected callback must run once.");
+                    Verify.IsNull(callbackError, "AddToSelection() on the row the model already selects must not fail: " + callbackError?.Message);
+                    Verify.AreEqual(2, tableView.SelectedIndex, "The selection must end on row 2.");
+
+                    // Clearing the selection: the model is empty while SelectedIndex still names row 1.
+                    first.Select();
+                    tableView.UpdateLayout();
+                    Verify.AreEqual(1, tableView.SelectedIndex, "Precondition: row 1 is the selection again.");
+                    addFromCallback = zero;
+                    callbackCount = 0;
+                    first.RemoveFromSelection();
+                    tableView.UpdateLayout();
+                    Verify.AreEqual(1, callbackCount, "Row 1's IsSelected callback must run once on the clear.");
+                    Verify.IsNull(callbackError, "AddToSelection() with an empty selection model must not fail: " + callbackError?.Message);
+                    Verify.AreEqual(0, tableView.SelectedIndex, "AddToSelection() from the callback must select row 0.");
+                }
+                finally
+                {
+                    rowOne.UnregisterPropertyChangedCallback(TableViewRow.IsSelectedProperty, token);
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies SelectionItem calls on a row of a disabled table fail with UIA_E_ELEMENTNOTENABLED and leave the selection alone.")]
         public void VerifyRowPeerSelectionItemFailsWhenTableIsDisabled()
         {
