@@ -20,6 +20,9 @@ namespace MUXControlsTestApp
         private int _disabledIndex = -1;
         private double? _resetDiagnosticsAtOffset;
 
+        // Animated views can settle a fraction of a pixel away from the requested offset, which is not a visible move.
+        private const double OffsetTolerance = 0.5;
+
         private double CurrentOffset => VerticalScrolling.IsChecked == true ?
             _scrollViewer.VerticalOffset : _scrollViewer.HorizontalOffset;
 
@@ -60,7 +63,7 @@ namespace MUXControlsTestApp
         private void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs args)
         {
             double offset = CurrentOffset;
-            if (Math.Abs(offset - _lastOffset) > 0.01)
+            if (Math.Abs(offset - _lastOffset) > OffsetTolerance)
             {
                 _offsetChanges++;
                 _lastOffset = offset;
@@ -71,7 +74,7 @@ namespace MUXControlsTestApp
             }
 
             if (_resetDiagnosticsAtOffset.HasValue && !args.IsIntermediate &&
-                Math.Abs(offset - _resetDiagnosticsAtOffset.Value) < 0.01)
+                Math.Abs(offset - _resetDiagnosticsAtOffset.Value) < OffsetTolerance)
             {
                 _resetDiagnosticsAtOffset = null;
                 ResetDiagnostics();
@@ -128,7 +131,7 @@ namespace MUXControlsTestApp
                 10.5 * itemSize;
 
             FocusEntryList.SelectedIndex = 10;
-            if (Math.Abs(CurrentOffset - offset) < 0.01)
+            if (Math.Abs(CurrentOffset - offset) < OffsetTolerance)
             {
                 ResetDiagnostics();
             }

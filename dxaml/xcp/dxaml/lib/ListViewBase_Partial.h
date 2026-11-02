@@ -1080,8 +1080,14 @@ namespace DirectUI
                 _In_ INT itemIndex,
                 _Out_ bool* isFullyVisible);
 
+            // Whether the element is fully inside the viewport of every scroller that contains this list.
+            _Check_return_ HRESULT IsElementFullyVisibleInAncestorScrollers(
+                _In_ UIElement* element,
+                _Out_ bool* isFullyVisible);
+
             // Whether focus entering this list onto the given item container must leave it where it is: true when it
-            // is fully visible and this list did not just scroll it into view for this focus entry.
+            // is fully visible, in this list and in every outer scroller, and this list did not just scroll it into
+            // view for this focus entry.
             _Check_return_ HRESULT ShouldKeepFocusEntryTargetInPlace(
                 _In_ UIElement* container,
                 _In_ INT itemIndex,

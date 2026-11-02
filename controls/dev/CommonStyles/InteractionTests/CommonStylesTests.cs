@@ -512,25 +512,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     itemVisible ? initialOffset :
                     position == "Before" ? 11 * itemSize - viewportSize + 20 :
                     10 * itemSize - 20;
-                string initialOffsetText = initialOffset.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
-                    GetFocusEntryText("FocusEntryOffset") == initialOffsetText && GetFocusEntryText("FocusEntryChanges") == "0");
-                Verify.AreEqual(initialOffsetText, GetFocusEntryText("FocusEntryOffset"));
+                    IsFocusEntryOffsetNear(initialOffset) && GetFocusEntryText("FocusEntryChanges") == "0");
+                Verify.IsTrue(IsFocusEntryOffsetNear(initialOffset),
+                    $"Expected initial offset {initialOffset}, actual {GetFocusEntryText("FocusEntryOffset")}.");
                 Verify.AreEqual("10", GetFocusEntryText("FocusEntrySelectedIndex"));
                 Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
 
                 PressTabIntoList(fromAfterList);
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "10");
-                string expectedOffsetText = expectedOffset.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryOffset") == expectedOffsetText);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => IsFocusEntryOffsetNear(expectedOffset));
                 Wait.ForIdle();
 
                 string diagnostics =
-                    $"offset changes={GetFocusEntryText("FocusEntryChanges")}, offset history={GetFocusEntryText("FocusEntryOffsetHistory")}, " +
-                    $"offset at focus={GetFocusEntryText("FocusEntryOffsetAtFocus")}";
+                    $"offset={GetFocusEntryText("FocusEntryOffset")}, offset changes={GetFocusEntryText("FocusEntryChanges")}, " +
+                    $"offset history={GetFocusEntryText("FocusEntryOffsetHistory")}, offset at focus={GetFocusEntryText("FocusEntryOffsetAtFocus")}";
                 Verify.AreEqual("10", GetFocusEntryText("FocusEntryFocusedIndex"), "Focus entering the list must go to the selected item.");
-                Verify.AreEqual(expectedOffsetText, GetFocusEntryText("FocusEntryOffset"),
-                    $"Unexpected offset after focus entered the list; {diagnostics}.");
+                Verify.IsTrue(IsFocusEntryOffsetNear(expectedOffset),
+                    $"Expected offset {expectedOffset} after focus entered the list; {diagnostics}.");
                 if (itemVisible)
                 {
                     Verify.AreEqual("0", GetFocusEntryText("FocusEntryChanges"),
@@ -554,6 +553,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         private static string GetFocusEntryText(string automationId)
         {
             return new TextBlock(FindElement.ById(automationId)).GetText();
+        }
+
+        // Animated views can settle a fraction of a pixel away from the requested offset (e.g. 999.993 instead of 1000).
+        private static bool IsFocusEntryOffsetNear(double expectedOffset)
+        {
+            return double.TryParse(GetFocusEntryText("FocusEntryOffset"), System.Globalization.NumberStyles.Float,
+                       System.Globalization.CultureInfo.InvariantCulture, out double offset) &&
+                Math.Abs(offset - expectedOffset) < 0.5;
         }
     }
 }

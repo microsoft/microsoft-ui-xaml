@@ -1390,6 +1390,59 @@ _Check_return_ HRESULT ListViewBase::ShouldKeepFocusEntryTargetInPlace(
         return S_OK;
     }
     IFC_RETURN(IsElementFullyVisibleInViewport(container, itemIndex, keepInPlace));
+    if (*keepInPlace)
+    {
+        // Bringing focus into view without padding is only a no-op when no outer scroller clips the item either.
+        // Otherwise the outer scroller still brings it into view, with the usual padding.
+        IFC_RETURN(IsElementFullyVisibleInAncestorScrollers(container, keepInPlace));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::IsElementFullyVisibleInAncestorScrollers(
+    _In_ UIElement* element,
+    _Out_ bool* isFullyVisible)
+{
+    *isFullyVisible = true;
+
+    wf::Size size = {};
+    IFC_RETURN(element->get_RenderSize(&size));
+    auto elementCore = static_cast<CUIElement*>(element->GetHandle());
+    const XRECTF elementBounds = { 0.0f, 0.0f, size.Width, size.Height };
+    const XFLOAT tolerance = 0.5f;
+
+    for (auto current = do_pointer_cast<CUIElement>(GetHandle()->GetParentInternal());
+         current;
+         current = do_pointer_cast<CUIElement>(current->GetParentInternal()))
+    {
+        if (!current->IsScroller())
+        {
+            continue;
+        }
+
+        xref_ptr<CGeneralTransform> transform;
+        IFC_RETURN(elementCore->TransformToVisual(current, &transform));
+        XRECTF bounds = {};
+        IFC_RETURN(transform->TransformRect(elementBounds, &bounds));
+
+        // ScrollViewer top/left headers cover the start of the presenter, like in CBringIntoViewHandler.
+        XSIZEF ratios = { 1.0f, 1.0f };
+        if (current->OfTypeByIndex<KnownTypeIndex::ScrollContentPresenter>())
+        {
+            IFC_RETURN(UIElement::GetScrollContentPresenterViewportRatios(current, elementCore, &ratios));
+        }
+        const XFLOAT width = current->GetActualWidth();
+        const XFLOAT height = current->GetActualHeight();
+
+        if (bounds.X < width * (1.0f - ratios.width) - tolerance ||
+            bounds.Y < height * (1.0f - ratios.height) - tolerance ||
+            bounds.X + bounds.Width > width + tolerance ||
+            bounds.Y + bounds.Height > height + tolerance)
+        {
+            *isFullyVisible = false;
+            break;
+        }
+    }
     return S_OK;
 }
 
