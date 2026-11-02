@@ -41,7 +41,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // A source that fails to create a visual, which must make AnimatedIcon show its FallbackIconSource.
     sealed partial class NullVisualAnimatedVisualSource : IAnimatedVisualSource2
     {
-        public IReadOnlyDictionary<string, double> Markers { get; } = new Dictionary<string, double>();
+        public NullVisualAnimatedVisualSource()
+            : this(new Dictionary<string, double>())
+        {
+        }
+
+        public NullVisualAnimatedVisualSource(IReadOnlyDictionary<string, double> markers)
+        {
+            Markers = markers;
+        }
+
+        public IReadOnlyDictionary<string, double> Markers { get; }
 
         public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {
