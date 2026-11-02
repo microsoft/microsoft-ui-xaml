@@ -3759,6 +3759,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that a selected NavigationViewItem that references, but doesn't host, an AnimatedIcon doesn't give it selected states while its unselected hosting item drives it (GitHub #11080).")]
+        public void VerifySharedAnimatedIconIgnoresSelectedNonHostingItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem hostItem = null;
+            NavigationViewItem selectedItem = null;
+            NavigationViewItem otherItem = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                hostItem = new NavigationViewItem() { Content = "Host", Icon = icon };
+                selectedItem = new NavigationViewItem() { Content = "Selected" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(hostItem);
+                navView.MenuItems.Add(selectedItem);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, selectedItem);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Unselected hosting item");
+
+                // A selected item that isn't in the tree also references the same icon (e.g. a shared resource).
+                otherItem = new NavigationViewItem() { Content = "Other" };
+                otherItem.IsSelected = true;
+                otherItem.Icon = icon;
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "After a selected non-hosting item references the icon");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(hostItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOver", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Hovered unselected hosting item");
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(hostItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "Normal", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Unselected hosting item after hover");
+                otherItem.Icon = null;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies that a NavigationViewItem doesn't reset an AnimatedIcon state it never set when the Icon is cleared (GitHub #11080).")]
         public void VerifyAppSetAnimatedIconStateIsNotResetOnDetach()
         {
