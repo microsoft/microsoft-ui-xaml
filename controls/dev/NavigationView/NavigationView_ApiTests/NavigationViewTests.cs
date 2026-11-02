@@ -2772,6 +2772,98 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyBackButtonHitTargetStaysInCustomContainer()
+        {
+            // In a custom NavigationView template the back button's container margin can hold other elements. Only the stock
+            // ButtonHolderGrid's margin is part of the hit target; elsewhere the button grows over its own style margin only.
+            RunOnUIThread.Execute(() =>
+            {
+                var stockNavView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
+                Content = stockNavView;
+                Content.UpdateLayout();
+                var normalStyle = GetBackButton(stockNavView).Style;
+
+                var template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='NavigationView'>
+                        <Grid>
+                          <Button x:Name='SiblingButton' Content='Sibling' Height='40' HorizontalAlignment='Stretch' VerticalAlignment='Top' />
+                          <Grid x:Name='CustomHolder' Margin='0,40,0,0' HorizontalAlignment='Left' VerticalAlignment='Top'>
+                            <Button x:Name='NavigationViewBackButton' Width='40' VerticalAlignment='Top' />
+                          </Grid>
+                        </Grid>
+                      </ControlTemplate>");
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
+                navView.Template = template;
+                // Without the stock parts DisplayMode stays at its default (Minimal), where an open pane hides the back button.
+                navView.IsPaneOpen = false;
+                Content = navView;
+                Content.UpdateLayout();
+                var backButton = GetBackButton(navView);
+                backButton.Style = normalStyle;
+                Content.UpdateLayout();
+
+                var sibling = (VisualTreeHelper.GetChild(navView, 0) as Grid).FindName("SiblingButton") as Button;
+                VerifyElementOffset(navView, sibling, 0.0, 0.0, "Sibling");
+                Verify.AreEqual(40.0, sibling.ActualHeight, "Sibling height");
+                VerifyElementOffset(navView, backButton, 0.0, 40.0, "Back button hit target");
+                Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width");
+                Verify.AreEqual(38.0, backButton.ActualHeight, "Back button hit target height");
+                var visual = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
+                VerifyElementOffset(navView, visual, 4.0, 42.0, "Back button visual");
+                Verify.AreEqual(40.0, visual.ActualWidth, "Back button visual width");
+                Verify.AreEqual(36.0, visual.ActualHeight, "Back button visual height");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBackButtonHitTargetIgnoresNegativeMargin()
+        {
+            // A negative style margin can't be turned into a backplate inset, so the back button keeps its style's geometry.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = CreateNavViewWithBackButtonSmallStyle(new Setter(FrameworkElement.MarginProperty, new Thickness(-4, 2, 0, 2)));
+                var backButton = GetBackButton(navView);
+                VerifyElementOffset(navView, backButton, -4.0, 6.0, "Back button");
+                Verify.AreEqual(40.0, backButton.ActualWidth, "Back button width");
+                Verify.AreEqual(36.0, backButton.ActualHeight, "Back button height");
+                VerifyNoHitTargetValues(backButton, null);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBackButtonHitTargetBacksOffWhenInputsKeepChanging()
+        {
+            // If an app callback still changes an input during the retry, NavigationView stops enlarging instead of keeping
+            // geometry computed from a stale value.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                Content = navView;
+                Content.UpdateLayout();
+                var backButton = GetBackButton(navView);
+                VerifyBackButtonGeometry(navView, backButton, 48.0, isTopMode: false);
+
+                int changes = 0;
+                long token = backButton.RegisterPropertyChangedCallback(FrameworkElement.HeightProperty, (sender, dp) =>
+                {
+                    if (changes < 2 && backButton.ReadLocalValue(FrameworkElement.HeightProperty) == DependencyProperty.UnsetValue)
+                    {
+                        changes++;
+                        backButton.MinHeight = 40 + changes;
+                    }
+                });
+                navView.CompactPaneLength = 64;
+                Content.UpdateLayout();
+                backButton.UnregisterPropertyChangedCallback(FrameworkElement.HeightProperty, token);
+
+                Verify.AreEqual(2, changes, "App changed MinHeight on both passes");
+                VerifyElementOffset(navView, backButton, 4.0, 6.0, "Back button");
+                Verify.AreEqual(42.0, backButton.ActualHeight, "Back button height");
+                VerifyNoHitTargetValues(backButton, null);
+            });
+        }
+
         // A LeftMinimal NavigationView, in Content, whose NavigationBackButtonSmallStyle is the stock one plus the given setters.
         private NavigationView CreateNavViewWithBackButtonSmallStyle(params Setter[] setters)
         {
