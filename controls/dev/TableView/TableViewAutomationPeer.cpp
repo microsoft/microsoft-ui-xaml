@@ -279,7 +279,7 @@ namespace
             auto const tableImpl = table ? winrt::get_self<TableView>(table) : nullptr;
             auto const repeater = tableImpl ? tableImpl->GetRowsRepeaterInternal() : nullptr;
             auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
-            if (!view)
+            if (!tableImpl || !view)
             {
                 return -1;
             }
