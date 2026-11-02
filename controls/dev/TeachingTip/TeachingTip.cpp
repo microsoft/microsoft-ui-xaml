@@ -148,6 +148,8 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         if (args.OldValue()) {
             m_TargetUnloadedRevoker.revoke();
         }
+        // A pending unload check queued by the former target no longer applies: the new target didn't unload.
+        m_pendingUnloadCheckForTarget = false;
 
         // Register to new target if it exists
         if (const auto& value = args.NewValue()) {
@@ -827,7 +829,7 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 
 void TeachingTip::OnIsOpenChanged()
 {
-    ++m_unloadCloseGeneration;
+    ++m_isOpenChangeCount;
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
@@ -1402,7 +1404,7 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     }
 }
 
-void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& sender, winrt::RoutedEventArgs const&)
 {
     // Only write IsOpen when the tip is open. Setting it while it is already closed would replace an app's
     // IsOpen binding with a local value, so the tip could never be opened through that binding again. That
@@ -1417,18 +1419,40 @@ void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::Rou
     // NavigationViewItem's content when NavigationView re-hosts its items) is already back in the tree, or gets its
     // Loaded raised before the next CompositionTarget.Rendering. So check on that tick and close only if the tip or
     // its target really left the tree. Closing writes a local IsOpen=false, which replaces an app's IsOpen binding.
-    const auto generation = ++m_unloadCloseGeneration;
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation]()
+    // Remember which element unloaded: a check caused by the target is dropped if the app retargets the tip first.
+    if (auto const target = m_target.get(); target && sender == target)
     {
-        strongThis->CloseIfUnloaded(generation);
+        m_pendingUnloadCheckForTarget = true;
+    }
+    else
+    {
+        m_pendingUnloadCheckForTip = true;
+    }
+    const auto generation = ++m_unloadCloseGeneration;
+    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation, isOpenChangeCount = m_isOpenChangeCount]()
+    {
+        strongThis->CloseIfUnloaded(generation, isOpenChangeCount);
     });
 }
 
-void TeachingTip::CloseIfUnloaded(uint32_t generation)
+void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t isOpenChangeCount)
 {
-    // Ignore the check if IsOpen changed (or another unload was queued) since it was queued.
-    if (generation != m_unloadCloseGeneration || !IsOpen())
+    // Only the latest queued check runs; it covers every unload recorded since the last check.
+    if (generation != m_unloadCloseGeneration)
     {
+        return;
+    }
+    const bool tipUnloaded = std::exchange(m_pendingUnloadCheckForTip, false);
+    const bool targetUnloaded = std::exchange(m_pendingUnloadCheckForTarget, false);
+    if (!tipUnloaded && !targetUnloaded)
+    {
+        // Only a former target unloaded, and the tip was retargeted since.
+        return;
+    }
+    const bool isOpen = IsOpen();
+    if (isOpen && isOpenChangeCount != m_isOpenChangeCount)
+    {
+        // The app reopened the tip after the unload; don't override that newer request.
         return;
     }
 
@@ -1445,11 +1469,20 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
     if (tipIsBack && targetIsBack)
     {
         // The element was only moved; keep the tip open and follow the target to its new position.
-        RepositionPopup();
+        if (isOpen)
+        {
+            RepositionPopup();
+        }
         return;
     }
 
-    IsOpen(false);
+    // Really removed. If the app closed the tip in the meantime (for example a later Unloaded handler cleared the bound
+    // source), its close may still be pending on a Closing deferral or be cancelled; close the popup anyway, as an
+    // unload always did before #8095. Only write IsOpen while it is still true, so a closed tip's binding is kept.
+    if (isOpen)
+    {
+        IsOpen(false);
+    }
     ClosePopup();
 }
 
