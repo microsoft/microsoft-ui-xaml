@@ -1006,6 +1006,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Timeout", "0:0:30")]
+        [TestProperty("Description", "A target recycled during synchronous bring-into-view layout must not cause an endless ancestor search.")]
+        public void CanRecoverBringItemIntoViewTargetRecycledDuringLayout()
+        {
+            ItemsView itemsView = null;
+            ItemsRepeater repeater = null;
+            bool recycleTarget = false;
+            int recycledTargets = 0;
+            using (var loaded = new AutoResetEvent(false))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var layout = new RepeaterTests.Common.Mocks.MockVirtualizingLayout()
+                    {
+                        MeasureLayoutFunc = (availableSize, context) =>
+                        {
+                            if (recycleTarget)
+                            {
+                                var target = repeater.TryGetElement(0);
+                                Verify.IsNotNull(target);
+                                recycleTarget = false;
+                                context.RecycleElement(target);
+                                recycledTargets++;
+                                Verify.AreEqual(-1, repeater.GetElementIndex(target));
+                            }
+                            return new Size(200, 400);
+                        }
+                    };
+                    itemsView = new ItemsView()
+                    {
+                        Layout = layout,
+                        ItemsSource = new[] { "Target" },
+                        ItemTemplate = XamlReader.Load(
+                            @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                                <ItemContainer><TextBlock Text='{Binding}'/></ItemContainer>
+                              </DataTemplate>") as DataTemplate
+                    };
+                    SetupDefaultUI(itemsView, loaded);
+                });
+
+                WaitForEvent("Waiting for Loaded event", loaded);
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    repeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+                    recycleTarget = true;
+                    itemsView.StartBringItemIntoView(0, new BringIntoViewOptions() { AnimationDesired = false });
+                    Verify.AreEqual(1, recycledTargets, "The cached target must have been recycled during UpdateLayout.");
+                    Verify.IsNotNull(repeater.TryGetElement(0), "The bring request must reacquire its target.");
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Collapses the target of a pending ItemsView.StartBringItemIntoView operation and verifies that the ensuing layout pass does not throw.")]
         public void CanCollapsePendingBringItemIntoViewTarget()
         {
