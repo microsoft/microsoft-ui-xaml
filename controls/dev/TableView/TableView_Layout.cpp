@@ -686,7 +686,7 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
 size_t TableView::LockedColumnHoldsSignature()
 {
     size_t seed = 0;
-    auto const mix = [&seed](size_t value) { seed ^= value + 0x9e3779b97f4a7c15ull + (seed << 6) + (seed >> 2); };
+    auto const mix = [&seed](size_t value) { seed ^= value + static_cast<size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2); };
     auto const bodyScroller = m_bodyScroller.get();
     mix(std::hash<double>{}(bodyScroller ? bodyScroller.ViewportWidth() : 0.0));
     mix(CanUserResizeColumns());
