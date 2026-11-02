@@ -1182,7 +1182,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             RunOnUIThread([&]()
             {
                 bool threw = false;
-                VERIFY_ARE_EQUAL(state == CloseState::Activated, tryGetVisible(window, &threw));
+                VERIFY_ARE_EQUAL(state == CloseState::Activated, tryGetVisible(window, &threw), L"Window.Visible before close");
                 VERIFY_IS_FALSE(threw);
 
                 closing = true;
@@ -1197,11 +1197,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 // see Visible == false. (A never-activated window also gets this event, so its count isn't checked.)
                 if (state == CloseState::Activated)
                 {
-                    VERIFY_ARE_EQUAL(1, closeVisibilityChangedCount);
+                    VERIFY_ARE_EQUAL(1, closeVisibilityChangedCount, L"An activated window raises VisibilityChanged(false) during Close");
                 }
                 else if (state == CloseState::Minimized)
                 {
-                    VERIFY_ARE_EQUAL(0, closeVisibilityChangedCount);
+                    VERIFY_ARE_EQUAL(0, closeVisibilityChangedCount, L"A minimized window doesn't raise VisibilityChanged during Close");
                 }
                 VERIFY_IS_FALSE(handlerThrew, L"Window.Visible should not throw inside the close-time VisibilityChanged handler");
                 VERIFY_IS_FALSE(handlerVisible);

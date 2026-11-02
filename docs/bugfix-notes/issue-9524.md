@@ -47,9 +47,10 @@ being destroyed or is already gone.
   checks `m_bIsClosed`.
 - **There's precedent.** Several `DesktopWindowImpl` getters already work after close without
   `CheckIsWindowClosed`: `Dispatcher` (`:331`), `Width`/`Height` (`:704`, tested by the existing
-  `WindowWidthHeightAfterClose`), and `AppWindow` (`:2280`).
+  `WindowWidthHeightAfterClose`).
 - **Compat risk is low.** The only code that breaks is code that relied on the exception to detect a closed window.
-  Returning false is what the issue asks for, and it matches the last `VisibilityChanged` value the app saw.
+  Returning false is what the issue asks for. It also matches the `VisibilityChanged(false)` that `Close` raises
+  for a window that isn't minimized or hidden.
 - **UWP path is not touched.** `UWPWindowImpl::get_VisibleImpl` is unchanged. UWP windows aren't used in WinUI 3.
 
 ## Test
@@ -71,3 +72,4 @@ It covers 3 states: never activated, activated, and minimized. For each one it:
 |---|---|
 | Pre-fix, `*WindowIntegrationTests::WindowVisibleAfterClose` | Failed in all 3 states: `Window.Visible threw hr=0x800710dd` |
 | Post-fix, `*WindowIntegrationTests::Window*AfterClose*` | 4/4 passed (new test + 3 existing after-close tests) |
+| Post-fix, `*WindowIntegrationTests::*` | 44/44 passed |
