@@ -489,12 +489,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:1"),
@@ -531,13 +532,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
@@ -575,12 +578,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab"
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab"
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>() 
             { 
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:1"),
@@ -616,13 +620,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
@@ -776,12 +782,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:1"),
@@ -818,13 +825,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
@@ -862,12 +871,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab"
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab"
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:1"),
@@ -903,13 +913,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
