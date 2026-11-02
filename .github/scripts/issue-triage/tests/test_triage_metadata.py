@@ -1,5 +1,7 @@
 import copy
 import os
+from pathlib import Path
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -62,6 +64,56 @@ class MetadataTests(unittest.TestCase):
         evidence = t.prepare(self.client, event(), MAPPING)
         result = t.validate(agent_output(evidence, **changes), evidence)
         return result, evidence
+
+    def test_table_change_drives_priority_prompt_and_stale_policy_detection(self):
+        policy, _ = t.load_priority_policy()
+        result, evidence = self.assess(
+            impact="BROKEN_FUNCTIONALITY", priority_reason="The reported capability fails.",
+        )
+        changed = "\n".join(
+            line.replace("| P1 | P2 |", "| P2 | P1 |")
+            if line.startswith("| BROKEN_FUNCTIONALITY |") else line
+            for line in policy.splitlines()
+        ) + "\n"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "priority-policy.md"
+            path.write_text(changed, encoding="utf-8")
+            with patch.object(t, "PRIORITY_POLICY_PATH", path):
+                with self.assertRaises(t.TriageError):
+                    t.publish(self.client, result, evidence, MAPPING, True)
+                self.assertEqual(self.client.writes, [])
+                for workaround, expected in ((False, "P2"), (True, "P1")):
+                    updated, _ = self.assess(
+                        impact="BROKEN_FUNCTIONALITY", workaround=workaround,
+                        priority_reason="The reported capability fails.",
+                    )
+                    self.assertEqual(updated["priority"], expected)
+                context = Path(directory) / "context.json"
+                prompt = Path(directory) / "prompt.txt"
+                context.write_text(t.format_model_context(evidence), encoding="utf-8")
+                prompt.write_text(t.CONTEXT_MARKER, encoding="utf-8")
+                t.attach_context(str(context), str(prompt))
+                self.assertTrue(prompt.read_text(encoding="utf-8").startswith(
+                    changed + "\n\n" + t.CONTEXT_START
+                ))
+
+    def test_invalid_policy_tables_fail_before_publication(self):
+        policy, _ = t.load_priority_policy()
+        first_row = next(line for line in policy.splitlines() if line.startswith("| CRASH |"))
+        for invalid in (
+            policy.replace("| P0 | P1 |", "| P9 | P1 |"),
+            policy.replace(first_row, first_row + "\n" + first_row),
+            policy.replace("| Impact |", "| Unknown |"),
+            policy.replace("| CRASH | BUG |", "| CRASH | INVALID |"),
+            "\n".join(line for line in policy.splitlines() if not line.startswith("| OTHER |")),
+            policy.replace("| P0 | P1 |", "| P0 |"),
+        ):
+            with self.subTest(invalid=invalid[:80]), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "priority-policy.md"
+                path.write_text(invalid, encoding="utf-8")
+                with patch.object(t, "PRIORITY_POLICY_PATH", path), self.assertRaises(t.TriageError):
+                    self.assess()
+                self.assertEqual(self.client.writes, [])
 
     def publish(self, changes=None, write=True):
         result, evidence = self.assess(

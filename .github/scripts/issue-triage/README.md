@@ -12,6 +12,8 @@ The trusted `prepare` step fetches and bounds the issue evidence. A
 prompt, before the model starts. The model receives the complete evidence in its
 initial input: it does not need to discover a filename, paginate a native file
 reader, search JSON, or build a temporary result file.
+The same hook inserts the trusted [priority policy](priority-policy.md) before,
+and outside, the untrusted JSON block.
 
 The hook runs after gh-aw has rendered and downloaded the activation prompt.
 This is deliberately not `${{ steps.prepare.outputs.context }}` interpolation:
@@ -54,11 +56,7 @@ still rebuilds live evidence independently.
 | Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
 | Intake type and content assessment disagree | Preserve existing type labels and surface the discrepancy for human triage; do not fail otherwise valid routing. |
 | Supported BUG assessment, repository Type missing | Set the actual issue Type to `Bug`, not a `bug` label. Preserve an existing Type; feature intake or truncated context defers the update. |
-| Report-supported crash, data loss, security impact or public API break without a mentioned workaround | P0: Shipblocker. A reported workaround lowers these impacts to P1. |
-| Report-supported regression or adoption blocker | P1: Must Fix in this release, regardless of workaround; regressions may affect any release or main build. |
-| Other broken functionality without a mentioned workaround | P1; this does not assert that no workaround exists. |
-| Other broken functionality with a reported possible workaround | P2: Should Fix. |
-| Clearly classified nice-to-have bug, feature or enhancement | P2, unless a higher-impact bucket applies. |
+| Supported impact and workaround assessment | Derive project Priority from the single [priority policy table](priority-policy.md). |
 | Existing WinUI project Priority or archived item | Preserve it; fill only missing values on active items. |
 | Non-bug reproduction rating or incomplete repro without an actionable request | Reconcile applicability or defer the affected request/label; keep useful summary/routing and explain the review requirement. |
 | Strong evidence of a duplicate | Suggest up to five older issues in the canonical comment, for human confirmation. |
@@ -295,37 +293,25 @@ existing Type (including Task/Feature), or set a feature intake's Type to Bug.
 Truncated context defers this metadata update. Current Type participates in the
 input fingerprint, so a concurrent human Type edit invalidates stale output.
 
-The model supplies an impact category, a workaround boolean and a bounded,
-report-grounded rationale. The publisher derives P0/P1/P2 deterministically
-using the precedence in the behavior table. Concrete reported crash, data loss,
-security impact or public API contract break without a known workaround is
-P0 (Shipblocker); with a reported workaround it is P1. A crash means process
-termination, not merely a caught exception or hang. Data loss means lost or
-corrupted user data, not a cosmetic display problem. A public API break requires
-a previously supported contract, not simply a missing desired API. Keywords,
-severity requests and generic security concerns alone do not establish impact;
-concrete report evidence is sufficient without independent maintainer verification.
+The [priority policy table](priority-policy.md) is the single source of truth
+for impact definitions, row precedence, applicable issue kinds and the priority
+with/without a reported workaround. The prompt handoff inserts this trusted
+Markdown outside the untrusted issue-evidence block. The publisher's
+`assess_priority` function reads that same table, validates the model's structured
+assessment and applies the selected row. There are no impact-specific priority
+branches in Python or duplicate bucket definitions in the workflow/README.
 
-A report-supported regression (previously working behavior now fails) or adoption
-blocker is P1 regardless of workaround. Regressions may be in older releases or
-main builds; latest stable release metadata is no longer fetched or required.
-Other broken functionality is P1 without a mentioned workaround and P2 with one.
-Clearly classified nice-to-have bugs, features and enhancements receive P2.
-Feature assessments can also receive P1 for concrete adoption blockers, but cannot
-authorize bug-only crash/data loss/security/public API break or regression buckets.
-If multiple impacts apply, select the highest-priority bucket.
+To change priority mappings, descriptions or issue-kind applicability, edit the
+table and run the existing tests. Adding/removing an impact also requires
+updating the workflow's typed `impact` enum and regenerating its lock file;
+a contract test verifies that enum matches the table. The policy's hash
+participates in the input fingerprint, so an assessment prepared under a
+different policy cannot publish as current. Invalid/duplicate policy rows fail
+closed before publication.
 
-A workaround is a reported possible bypass of the same failure, not a suggested
-code fix or a failed/negated attempt. With no mentioned workaround, broken
-functionality defaults to P1, and shipblocker impacts to P0; this is a no-known-
-workaround assessment, not proof that none exists. Unsupported assessments,
-conflicting existing Type, missing rationale and truncated context cannot
-authorize priority writes. Features require a missing Type or existing Feature
-Type; bug Type updates remain bug-only. OTHER questions/unclear impacts are
-deferred. Older artifacts without priority fields
-remain usable but cannot authorize priority. Partial/malformed fields fail closed.
-These checks validate structure and applicability, not semantic model
-accuracy; the prompt must distinguish actual failure evidence from keywords.
+Older artifacts without priority fields remain usable but cannot authorize
+priority. Partial/malformed fields fail closed. These checks validate structure
+and applicability, not semantic model accuracy.
 
 The fixed target is [microsoft's WinUI project 1868](https://github.com/orgs/microsoft/projects/1868).
 The trusted publisher verifies its title is `WinUI`, discovers its existing

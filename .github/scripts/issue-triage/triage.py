@@ -28,6 +28,7 @@ from find_duplicates import (
 MARKER = "<!-- winui-ai-triage:canonical:v1 -->"
 MAP_PATH = Path(__file__).with_name("area-team-map.json")
 TEAM_PARENT_MAP_PATH = Path(__file__).with_name("team-parent-map.json")
+PRIORITY_POLICY_PATH = Path(__file__).with_name("priority-policy.md")
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
@@ -39,7 +40,6 @@ CONTEXT_MARKER = "[WINUI_TRIAGE_CONTEXT]"
 CONTEXT_START = "<untrusted-issue-evidence>"
 CONTEXT_END = "</untrusted-issue-evidence>"
 PROJECT_NUMBER = 1868
-SHIPBLOCKER_IMPACTS = {"CRASH", "DATA_LOSS", "SECURITY", "PUBLIC_API_BREAK"}
 
 
 class TriageError(RuntimeError):
@@ -243,6 +243,7 @@ def snapshot(client: GitHub, number: int) -> dict:
         "body": issue.get("body") or "",
         "labels": sorted(label_names(issue)),
         "issue_type": issue.get("type"),
+        "priority_policy_sha256": hashlib.sha256(load_priority_policy()[0].encode("utf-8")).hexdigest(),
         "author_comments": author_comments,
         "repository_comments": repository_comments,
     }
@@ -400,6 +401,78 @@ def required_string(item: dict, name: str, limit: int) -> str:
     return value.strip()
 
 
+def load_priority_policy() -> tuple[str, dict]:
+    text = PRIORITY_POLICY_PATH.read_text(encoding="utf-8")
+    if len(text.encode("utf-8")) > 16384:
+        raise TriageError("Priority policy exceeded its size limit")
+    rows = [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in text.splitlines() if line.startswith("|")
+    ]
+    if (
+        len(rows) < 3
+        or rows[0] != ["Impact", "Issue kinds", "Report evidence",
+                       "Without reported workaround", "With reported workaround"]
+        or len(rows[1]) != 5 or any(not re.fullmatch(r"-{3,}", cell) for cell in rows[1])
+    ):
+        raise TriageError("Invalid priority policy table")
+    rules = {}
+    for row in rows[2:]:
+        if len(row) != 5:
+            raise TriageError("Invalid priority policy row")
+        impact, kinds, reason, without, with_workaround = row
+        kinds = {kind.strip() for kind in kinds.split(",")}
+        if (
+            not re.fullmatch(r"[A-Z][A-Z_]{0,39}", impact) or impact in rules
+            or not kinds <= {"BUG", "FEATURE", "OTHER"} or not kinds or not reason
+            or without not in {"P0", "P1", "P2", "None"}
+            or with_workaround not in {"P0", "P1", "P2", "None"}
+        ):
+            raise TriageError("Invalid or duplicate priority policy rule")
+        rules[impact] = {"kinds": kinds, "priorities": (without, with_workaround)}
+    if "OTHER" not in rules or rules["OTHER"]["priorities"] != ("None", "None"):
+        raise TriageError("Priority policy must defer OTHER impact")
+    return text, rules
+
+
+def assess_priority(item: dict, evidence: dict, result: dict) -> None:
+    """Apply the trusted Markdown policy; no impact-specific rules live in code."""
+    fields = {"impact", "workaround", "priority_reason"}
+    result["priority"] = None
+    result["priority_reason"] = "None"
+    if not fields & set(item):
+        result["normalization_notes"].append(
+            "The older output has no priority assessment; project priority is unchanged."
+        )
+        return
+    if not fields <= set(item):
+        raise TriageError("Incomplete priority assessment")
+    impact = required_string(item, "impact", 40)
+    _, rules = load_priority_policy()
+    if impact not in rules:
+        raise TriageError("Invalid priority impact")
+    if type(item["workaround"]) is not bool:
+        raise TriageError("Invalid workaround assessment")
+    reason = required_string(item, "priority_reason", 400)
+    rule = rules[impact]
+    priority = rule["priorities"][int(item["workaround"])]
+    if priority == "None":
+        return
+    kind = result["issue_kind"]
+    if (
+        kind not in rule["kinds"]
+        or evidence.get("existing_issue_type") not in (None, {"BUG": "Bug", "FEATURE": "Feature"}.get(kind))
+        or kind == "BUG" and evidence["issue_kind"] == "FEATURE"
+        or evidence["context_truncated"] or reason == "None"
+    ):
+        result["review_notes"].append(
+            "Project priority needs a supported bug or feature assessment and complete context; priority is deferred."
+        )
+        return
+    result["priority"] = priority
+    result["priority_reason"] = reason
+
+
 def validate(output: dict, evidence: dict) -> dict:
     items = output.get("items")
     if not isinstance(items, list) or len(items) != 1 or not isinstance(items[0], dict):
@@ -435,46 +508,7 @@ def validate(output: dict, evidence: dict) -> dict:
     }
     if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
         raise TriageError("Invalid content-based issue kind")
-    priority_fields = {"impact", "workaround", "priority_reason"}
-    result["priority"] = None
-    result["priority_reason"] = "None"
-    if priority_fields & set(item):
-        if not priority_fields <= set(item):
-            raise TriageError("Incomplete priority assessment")
-        impact = required_string(item, "impact", 40)
-        if impact not in SHIPBLOCKER_IMPACTS | {
-            "REGRESSION", "ADOPTION_BLOCKER", "BROKEN_FUNCTIONALITY", "NICE_TO_HAVE", "OTHER",
-        }:
-            raise TriageError("Invalid priority impact")
-        if type(item["workaround"]) is not bool:
-            raise TriageError("Invalid workaround assessment")
-        reason = required_string(item, "priority_reason", 400)
-        bug_applies = (
-            result["issue_kind"] == "BUG" and evidence["issue_kind"] != "FEATURE"
-            and evidence.get("existing_issue_type") in (None, "Bug")
-        )
-        feature_applies = (
-            result["issue_kind"] == "FEATURE"
-            and evidence.get("existing_issue_type") in (None, "Feature")
-            and impact in ("ADOPTION_BLOCKER", "NICE_TO_HAVE")
-        )
-        if impact != "OTHER":
-            if not (bug_applies or feature_applies) or evidence["context_truncated"] or reason == "None":
-                result["review_notes"].append(
-                    "Project priority needs a supported bug or feature assessment and complete context; priority is deferred."
-                )
-            else:
-                if impact in SHIPBLOCKER_IMPACTS:
-                    result["priority"] = "P1" if item["workaround"] else "P0"
-                elif impact in ("REGRESSION", "ADOPTION_BLOCKER"):
-                    result["priority"] = "P1"
-                else:
-                    result["priority"] = "P2" if impact == "NICE_TO_HAVE" or item["workaround"] else "P1"
-                result["priority_reason"] = reason
-    else:
-        result["normalization_notes"].append(
-            "The older output has no priority assessment; project priority is unchanged."
-        )
+    assess_priority(item, evidence, result)
     if {"uwp_specific", "uwp_reason"} & set(item):
         if type(item.get("uwp_specific")) is not bool:
             raise TriageError("Invalid UWP-specific classification")
@@ -1100,7 +1134,8 @@ def attach_context(context_path: str, prompt_path: str) -> None:
     if prompt.count(CONTEXT_MARKER) != 1:
         raise TriageError("Expected exactly one prepared-evidence slot in the rendered prompt")
     block = CONTEXT_START + "\n" + context + "\n" + CONTEXT_END
-    rendered = prompt.replace(CONTEXT_MARKER, block, 1)
+    policy, _ = load_priority_policy()
+    rendered = prompt.replace(CONTEXT_MARKER, policy + "\n\n" + block, 1)
     if len(rendered.encode("utf-8")) > MAX_PROMPT_BYTES:
         raise TriageError("Prompt with prepared evidence exceeded its byte limit")
     destination.write_text(rendered, encoding="utf-8", newline="")

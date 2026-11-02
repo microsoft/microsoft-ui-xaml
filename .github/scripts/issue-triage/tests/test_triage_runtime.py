@@ -135,7 +135,8 @@ class PromptHandoffTests(unittest.TestCase):
     def test_untrusted_text_stays_data_and_does_not_change_trusted_rules(self):
         t.attach_context(str(self.context), str(self.prompt))
         rendered = self.prompt.read_text(encoding="utf-8")
-        self.assertTrue(rendered.startswith("Trusted prefix\n" + t.CONTEXT_START + "\n"))
+        policy, _ = t.load_priority_policy()
+        self.assertTrue(rendered.startswith("Trusted prefix\n" + policy + "\n\n" + t.CONTEXT_START + "\n"))
         self.assertTrue(rendered.endswith(t.CONTEXT_END + "\nTrusted rules stay last\n"))
         self.assertEqual(rendered.count(t.CONTEXT_START), 1)
         self.assertEqual(rendered.count(t.CONTEXT_END), 1)
@@ -330,15 +331,14 @@ class WorkflowRuntimeTests(unittest.TestCase):
         policy = self.source.split("## Repository issue Type and WinUI project priority\n", 1)[1]
         policy = policy.split("## UWP-specific", 1)[0]
         for guidance in (
-            "Existing Type", "DATA_LOSS", "SECURITY", "PUBLIC_API_BREAK", "REGRESSION",
-            "ADOPTION_BLOCKER", "BROKEN_FUNCTIONALITY", "NICE_TO_HAVE",
-            "no mentioned workaround", "means P0 (Shipblocker)",
-            "means P2 (Should Fix)", "means P1 regardless of workaround",
+            "Existing Type", "priority-policy.md", "single source of",
+            "assess_priority", "same table",
             "number 1868", "Existing project", "not performed during preview",
-            "main-branch builds; no latest-release match is required",
-            "including clear feature/enhancement requests",
         ):
             self.assertIn(guidance, policy)
+        _, rules = t.load_priority_policy()
+        choices = re.search(r"(?ms)^        impact:\n.*?          options: \[([^\]]+)\]", self.source)
+        self.assertEqual(list(rules), [choice.strip() for choice in choices[1].split(",")])
         agent = re.search(r"(?ms)^  agent:\n.*?(?=^  \w|\Z)", self.lock).group()
         detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
         publisher = re.search(r"(?ms)^  publish_triage_summary:\n.*?(?=^  \w|\Z)", self.lock).group()
