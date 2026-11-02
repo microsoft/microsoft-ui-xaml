@@ -1267,6 +1267,35 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
 
                 if (canSynchronizeKeyboardFocusScroll)
                 {
+                    ctl::ComPtr<IInspectable> targetItem;
+                    IFC_RETURN(spItems.Cast<ItemCollection>()->GetAt(newFocusedIndex, &targetItem));
+                    auto revalidateTarget = [&](bool* targetFound) -> HRESULT
+                    {
+                        UINT count = 0;
+                        IFC_RETURN(spItems.Cast<ItemCollection>()->get_Size(&count));
+                        if (static_cast<UINT>(newFocusedIndex) < count)
+                        {
+                            ctl::ComPtr<IInspectable> currentItem;
+                            IFC_RETURN(spItems.Cast<ItemCollection>()->GetAt(newFocusedIndex, &currentItem));
+                            if (ctl::are_equal(currentItem.Get(), targetItem.Get()))
+                            {
+                                *targetFound = true;
+                                return S_OK;
+                            }
+                        }
+
+                        UINT targetIndex = 0;
+                        BOOLEAN found = FALSE;
+                        IFC_RETURN(spItems.Cast<ItemCollection>()->IndexOf(targetItem.Get(), &targetIndex, &found));
+                        *targetFound = !!found;
+                        if (found)
+                        {
+                            newFocusedIndex = static_cast<INT>(targetIndex);
+                            m_indexScrolledForKeyboardFocus = -1;
+                        }
+                        return S_OK;
+                    };
+
                     // Scroll once, directly to where keyboard focus brings the item. The selection and focus updates
                     // below then find it already in view, instead of first aligning it to the viewport edge.
                     ctl::ComPtr<xaml::IDependencyObject> container;
@@ -1286,6 +1315,14 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
                                 newFocusedIndex, FALSE /*isGroupItemIndex*/, FALSE /*isHeader*/, FALSE /*isFooter*/,
                                 FALSE /*isFromPublicAPI*/, TRUE /*ensureContainerRealized*/, FALSE /*animateIfBringIntoView*/,
                                 xaml_controls::ScrollIntoViewAlignment_Default));
+                            bool targetFound = false;
+                            IFC_RETURN(revalidateTarget(&targetFound));
+                            if (!targetFound)
+                            {
+                                // The scroll's application callbacks removed the navigation target.
+                                IFC_RETURN(pArgs->put_Handled(TRUE));
+                                return S_OK;
+                            }
                             IFC_RETURN(ContainerFromIndex(newFocusedIndex, &container));
                         }
 
@@ -1293,6 +1330,14 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
                         {
                             IFC_RETURN(ScrollIntoViewWithFocusPadding(element.Cast<UIElement>(), newFocusedIndex));
                             m_indexScrolledForKeyboardFocus = newFocusedIndex;
+                        }
+
+                        bool targetFound = false;
+                        IFC_RETURN(revalidateTarget(&targetFound));
+                        if (!targetFound)
+                        {
+                            IFC_RETURN(pArgs->put_Handled(TRUE));
+                            return S_OK;
                         }
                     }
                 }
@@ -1358,7 +1403,16 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
                 IFC_RETURN(groupHeader.Cast<FrameworkElement>()->HasFocus(&alreadyFocused));
                 if (canSynchronizeKeyboardFocusScroll && !alreadyFocused)
                 {
-                    IFC_RETURN(ScrollIntoViewWithFocusPadding(groupHeader.Cast<UIElement>(), -1 /*itemIndex*/));
+                    ctl::ComPtr<IPanel> itemsHost;
+                    IFC_RETURN(get_ItemsHost(&itemsHost));
+                    DOUBLE stickyOffset = 0;
+                    IFC_RETURN(itemsHost.Cast<ModernCollectionBasePanel>()->CoerceStickyHeaderOffsets(
+                        groupHeader.Cast<ListViewBaseHeaderItem>(), 1, &stickyOffset));
+                    // A displaced header stays pinned after scrolling; let focus perform the only scroll.
+                    if (DoubleUtil::AreClose(stickyOffset, 0.0))
+                    {
+                        IFC_RETURN(ScrollIntoViewWithFocusPadding(groupHeader.Cast<UIElement>(), -1 /*itemIndex*/));
+                    }
                 }
                 IFC_RETURN(DependencyObject::SetFocusedElement(groupHeader.Cast<DependencyObject>(), xaml::FocusState_Keyboard, animateIfBringIntoView, &isHandled));
                 if (isHandled && !wasGroupInitiallyFocused)
@@ -1435,7 +1489,8 @@ _Check_return_ HRESULT ListViewBase::ScrollIntoViewWithFocusPadding(
         }
     }
 
-    auto coreElement = static_cast<CUIElement*>(element->GetHandle());    auto visualTree = VisualTree::GetContentRootForElement(coreElement)->GetVisualTreeNoRef();
+    auto coreElement = static_cast<CUIElement*>(element->GetHandle());
+    auto visualTree = VisualTree::GetContentRootForElement(coreElement)->GetVisualTreeNoRef();
     CUIElement* rootElement = visualTree->GetRootScrollViewer();
     if (!rootElement)
     {
@@ -1519,6 +1574,15 @@ _Check_return_ HRESULT ListViewBase::IsElementFullyVisibleInViewport(
             {
                 return S_OK;
             }
+            if (headerHeight > 0)
+            {
+                ctl::ComPtr<xaml_media::IGeneralTransform> panelTransform;
+                IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->TransformToVisual(
+                    presenter.Cast<ScrollContentPresenter>(), &panelTransform));
+                wf::Rect headerBounds = {};
+                IFC_RETURN(panelTransform->TransformBounds({0, 0, 0, headerHeight}, &headerBounds));
+                headerHeight = headerBounds.Height;
+            }
         }
     }
 
@@ -1559,6 +1623,21 @@ _Check_return_ HRESULT ListViewBase::IsAlreadyScrolledForKeyboardFocus(
     IFC_RETURN(ContainerFromIndex(index, &container));
     if (auto element = container.AsOrNull<IUIElement>())
     {
+        auto coreElement = static_cast<CUIElement*>(element.Cast<UIElement>()->GetHandle());
+        ctl::ComPtr<IPanel> itemsHost;
+        IFC_RETURN(get_ItemsHost(&itemsHost));
+        auto panel = itemsHost.AsOrNull<IModernCollectionBasePanel>();
+        if (!panel)
+        {
+            return S_OK;
+        }
+        auto corePanel = static_cast<CUIElement*>(panel.Cast<ModernCollectionBasePanel>()->GetHandle());
+        if (coreElement->GetIsMeasureDirty() ||
+            corePanel->GetIsMeasureDirty() ||
+            panel.Cast<ModernCollectionBasePanel>()->IsScrollIntoViewPending())
+        {
+            return S_OK;
+        }
         IFC_RETURN(IsElementFullyVisibleInViewport(element.Cast<UIElement>(), index, isAlreadyScrolled));
     }
     return S_OK;

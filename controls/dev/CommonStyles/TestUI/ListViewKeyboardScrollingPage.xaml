@@ -5,6 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp">
     <local:TestPage.Resources>
+        <DataTemplate x:Key="KeyboardScrollNestedButton">
+            <Button Content="{Binding}" FocusVisualMargin="-80" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </DataTemplate>
         <DataTemplate x:Key="KeyboardScrollGroupHeader">
             <Border Height="50" Background="LightGray">
                 <TextBlock Text="Group" />
@@ -12,7 +15,7 @@
         </DataTemplate>
     </local:TestPage.Resources>
     <StackPanel x:Name="KeyboardScrollingRoot" Spacing="8">
-        <TextBlock Text="Reset, then use arrow, Page Up/Down, or Home/End keys. Extended selection enables Ctrl/Shift combinations. Diagnostics report work for the last key. Layout probing deliberately invalidates an unrelated control."
+        <TextBlock Text="Reset, then use arrow, Page Up/Down, or Home/End keys. Extended selection enables Ctrl/Shift combinations. Diagnostics report work for the last key. Layout probing deliberately invalidates an unrelated control. Callback actions run once during navigation; nested focus and zoom exercise focus bounds."
                    TextWrapping="Wrap" MaxWidth="1000" HorizontalAlignment="Left" />
         <StackPanel Orientation="Horizontal" Spacing="16">
             <ComboBox x:Name="CacheLength" Header="Cache length" SelectedIndex="0" SelectionChanged="CacheLength_SelectionChanged">
@@ -52,8 +55,25 @@
             <CheckBox x:Name="ScrollAwayOnSelectionChanged" Content="Scroll to the end in SelectionChanged" VerticalAlignment="Bottom" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="8">
+            <ComboBox x:Name="SelectionScrollAction" Header="Selection callback" SelectedIndex="0">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Queue distant scroll</ComboBoxItem>
+                <ComboBoxItem>Resize rows</ComboBoxItem>
+                <ComboBoxItem>Scroll under zoomed header</ComboBoxItem>
+            </ComboBox>
+            <ComboBox x:Name="ScrollLayoutAction" Header="Scroll layout callback" SelectedIndex="0">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Remove target</ComboBoxItem>
+                <ComboBoxItem>Insert before target</ComboBoxItem>
+            </ComboBox>
+            <CheckBox x:Name="CommitLayoutDuringFocus" Content="Update layout in GettingFocus" />
+            <CheckBox x:Name="NestedFocusTarget" Content="Nested button with 80-pixel focus margin" />
+            <CheckBox x:Name="ZoomContent" Content="150% content zoom" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
             <Button x:Name="ResetKeyboardScrolling" Content="Reset keyboard scrolling" Click="ResetKeyboardScrolling_Click" />
             <Button x:Name="PublicScrollIntoView" Content="Scroll item 11 into view" Click="PublicScrollIntoView_Click" />
+            <Button x:Name="PrepareStickyHeader" Content="Focus item beneath pinned header" Click="PrepareStickyHeader_Click" />
             <Button x:Name="RedirectFocusTarget" Content="Focus redirection target" />
         </StackPanel>
         <ScrollViewer x:Name="KeyboardScrollingOuterScroller" Width="650" Height="320" HorizontalAlignment="Left"
@@ -90,6 +110,8 @@
             <TextBlock x:Name="KeyboardScrollFocusedKind" Text="Item" />
             <TextBlock x:Name="KeyboardScrollOffsetAtFocus" Text="" />
             <TextBlock x:Name="KeyboardScrollOffsetHistory" Text="" />
+            <TextBlock x:Name="KeyboardScrollExpectedNestedOffset" Text="" />
+            <TextBlock x:Name="KeyboardScrollTopAtFocus" Text="" />
         </StackPanel>
         <TextBlock Text="List requests / ancestor requests / ViewChanging / ViewChanged / selection changes / focus changes / synchronous probe measures / prepared containers / last container realized at reset / focused top / offset changes at key return / selected count / keys processed / prepared indices / focus sequence" />
         <StackPanel Orientation="Horizontal" Spacing="16">

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -34,6 +35,8 @@ namespace MUXControlsTestApp
         private int _navigationKeyCount;
         private double? _resetDiagnosticsAtOffset;
         private bool _scrollAwayOnSelectionChanged;
+        private int _selectionScrollAction;
+        private int _scrollLayoutAction;
 
         private double CurrentOffset => VerticalScrolling.IsChecked == true ?
             _scrollViewer.VerticalOffset : _scrollViewer.HorizontalOffset;
@@ -79,9 +82,29 @@ namespace MUXControlsTestApp
                     KeyboardScrollingList.ScrollIntoView(KeyboardScrollingList.Items[KeyboardScrollingList.Items.Count - 1]);
                     KeyboardScrollingList.UpdateLayout();
                 }
+                int action = _selectionScrollAction;
+                _selectionScrollAction = 0;
+                if (action == 1)
+                {
+                    KeyboardScrollingList.ScrollIntoView(KeyboardScrollingList.Items.Last());
+                }
+                else if (action == 2)
+                {
+                    ((ItemsWrapGrid)KeyboardScrollingList.ItemsPanelRoot).ItemHeight = 200;
+                }
+                else if (action == 3)
+                {
+                    int targetIndex = KeyboardScrollingList.Items.IndexOf(KeyboardScrollingList.SelectedItems.Last());
+                    _scrollViewer.ChangeView(null, targetIndex * 150 + 15, null, true);
+                    KeyboardScrollingList.UpdateLayout();
+                }
             };
             KeyboardScrollingList.GettingFocus += (sender, args) =>
             {
+                if (CommitLayoutDuringFocus.IsChecked == true)
+                {
+                    KeyboardScrollingList.UpdateLayout();
+                }
                 if (_cancelFocusChanges)
                 {
                     args.Cancel = true;
@@ -102,14 +125,22 @@ namespace MUXControlsTestApp
                 KeyboardScrollFocusSequence.Text +=
                     $"{(KeyboardScrollFocusSequence.Text.Length == 0 ? "" : ",")}{focusedElement?.GetType().Name}" +
                     (focusedElement is ListViewItem focusedItem ? $":{KeyboardScrollingList.IndexFromContainer(focusedItem)}" : "");
-                if (focusedElement is ListViewItem item)
+                var item = focusedElement as ListViewItem;
+                if (focusedElement is Button button && NestedFocusTarget.IsChecked == true)
+                {
+                    item = KeyboardScrollingList.ContainerFromItem(button.DataContext) as ListViewItem;
+                }
+                if (item != null)
                 {
                     _focusChanges++;
                     KeyboardScrollFocusChanges.Text = _focusChanges.ToString(CultureInfo.InvariantCulture);
                     KeyboardScrollFocusedIndex.Text = KeyboardScrollingList.IndexFromContainer(item).ToString(CultureInfo.InvariantCulture);
-                    KeyboardScrollFocusedKind.Text = "Item";
+                    KeyboardScrollFocusedKind.Text = focusedElement is Button ? "Button" : "Item";
                     KeyboardScrollOffsetAtFocus.Text = CurrentOffset.ToString(CultureInfo.InvariantCulture);
                     UpdateFocusedBounds();
+                    Rect bounds = item.TransformToVisual(KeyboardScrollingList).TransformBounds(
+                        new Rect(0, 0, item.ActualWidth, item.ActualHeight));
+                    KeyboardScrollTopAtFocus.Text = bounds.Y.ToString(CultureInfo.InvariantCulture);
                 }
                 else if (focusedElement is ListViewHeaderItem)
                 {
@@ -151,6 +182,23 @@ namespace MUXControlsTestApp
             {
                 _viewChangingEvents++;
                 KeyboardScrollViewChangingEvents.Text = _viewChangingEvents.ToString(CultureInfo.InvariantCulture);
+            };
+            KeyboardScrollingList.LayoutUpdated += (sender, args) =>
+            {
+                int action = _scrollLayoutAction;
+                _scrollLayoutAction = 0;
+                if (action != 0)
+                {
+                    var items = (ObservableCollection<string>)KeyboardScrollingList.ItemsSource;
+                    if (action == 1)
+                    {
+                        items.RemoveAt(3);
+                    }
+                    else
+                    {
+                        items.Insert(0, "Inserted");
+                    }
+                }
             };
         }
 
@@ -219,6 +267,7 @@ namespace MUXControlsTestApp
             {
                 _navigationKeyCount++;
                 ResetScrollDiagnostics();
+                _scrollLayoutAction = ScrollLayoutAction.SelectedIndex;
                 if (ProbeLayout.IsChecked == true)
                 {
                     LayoutProbe.ResetAndInvalidate();
@@ -256,8 +305,11 @@ namespace MUXControlsTestApp
             _disableFocusScrollingDuringFocus = false;
             _resetDiagnosticsAtOffset = null;
             _scrollAwayOnSelectionChanged = false;
+            _selectionScrollAction = 0;
+            _scrollLayoutAction = 0;
             bool vertical = VerticalScrolling.IsChecked == true;
-            KeyboardScrollingList.Width = vertical ? 200 : PartialViewport.IsChecked == true ? 550 : 600;
+            KeyboardScrollingList.Width = vertical ? ZoomContent.IsChecked == true ? 300 : 200 :
+                PartialViewport.IsChecked == true ? 550 : 600;
             KeyboardScrollingList.Height = vertical ? PartialViewport.IsChecked == true ? 250 : 300 : 150;
             KeyboardScrollingList.SelectionMode = ExtendedSelection.IsChecked == true ?
                 ListViewSelectionMode.Extended : ListViewSelectionMode.Single;
@@ -267,6 +319,7 @@ namespace MUXControlsTestApp
             ScrollViewer.SetVerticalScrollBarVisibility(KeyboardScrollingList, vertical ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Disabled);
             ((ItemsWrapGrid)KeyboardScrollingList.ItemsPanelRoot).Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
             ((ItemsWrapGrid)KeyboardScrollingList.ItemsPanelRoot).AreStickyGroupHeadersEnabled = DisableStickyHeaders.IsChecked != true;
+            ((ItemsWrapGrid)KeyboardScrollingList.ItemsPanelRoot).ItemHeight = 100;
             var items = Enumerable.Range(1, 39).Select(value => value.ToString()).ToList();
             KeyboardScrollingList.GroupStyle.Clear();
             if (GroupedItems.IsChecked == true)
@@ -290,8 +343,11 @@ namespace MUXControlsTestApp
             }
             else
             {
-                KeyboardScrollingList.ItemsSource = items;
+                KeyboardScrollingList.ItemsSource = ScrollLayoutAction.SelectedIndex != 0 ?
+                    new ObservableCollection<string>(items) : items;
             }
+            KeyboardScrollingList.ItemTemplate = NestedFocusTarget.IsChecked == true ?
+                (DataTemplate)Resources["KeyboardScrollNestedButton"] : null;
             if (LargeFocusMargin.IsChecked == true || ScaleItems.IsChecked == true)
             {
                 var style = new Style(typeof(ListViewItem));
@@ -311,8 +367,18 @@ namespace MUXControlsTestApp
                 KeyboardScrollingList.ItemContainerStyle = null;
             }
             _scrollViewer.BringIntoViewOnFocusChange = DisableFocusScrolling.IsChecked != true;
+            if (ZoomContent.IsChecked == true)
+            {
+                _scrollViewer.ZoomMode = ZoomMode.Enabled;
+                _scrollViewer.ChangeView(null, null, 1.5f, true);
+            }
+            else if (Math.Abs(_scrollViewer.ZoomFactor - 1.0f) > 0.01)
+            {
+                _scrollViewer.ChangeView(null, null, 1.0f, true);
+                _scrollViewer.ClearValue(ScrollViewer.ZoomModeProperty);
+            }
             int index = CancelFocusChanges.IsChecked == true || RedirectFocusChanges.IsChecked == true ||
-                DisableFocusScrollingDuringFocus.IsChecked == true ? 2 : 0;
+                DisableFocusScrollingDuringFocus.IsChecked == true || ScrollLayoutAction.SelectedIndex != 0 ? 2 : 0;
             KeyboardScrollingList.SelectedIndex = index;
             KeyboardScrollingList.ScrollIntoView(KeyboardScrollingList.Items[index]);
             KeyboardScrollingList.UpdateLayout();
@@ -323,6 +389,7 @@ namespace MUXControlsTestApp
             _redirectFocusChanges = RedirectFocusChanges.IsChecked == true;
             _disableFocusScrollingDuringFocus = DisableFocusScrollingDuringFocus.IsChecked == true;
             _scrollAwayOnSelectionChanged = ScrollAwayOnSelectionChanged.IsChecked == true;
+            _selectionScrollAction = SelectionScrollAction.SelectedIndex;
             _navigationKeyCount = 0;
             KeyboardScrollKeysProcessed.Text = "0";
         }
@@ -336,6 +403,21 @@ namespace MUXControlsTestApp
         private void PrepareFocusEntry_Click(object sender, RoutedEventArgs args)
         {
             Control anchor = sender == PrepareFocusEntryAfter ? AfterListFocusTarget : RedirectFocusTarget;
+            if (NestedFocusTarget.IsChecked == true)
+            {
+                KeyboardScrollingList.SingleSelectionFollowsFocus = true;
+                KeyboardScrollingList.ScrollIntoView(KeyboardScrollingList.Items[10]);
+                KeyboardScrollingList.UpdateLayout();
+                var button = ((ListViewItem)KeyboardScrollingList.ContainerFromIndex(10)).FindVisualChildByType<Button>();
+                button.Focus(FocusState.Keyboard);
+                Rect bounds = button.TransformToVisual(KeyboardScrollingList).TransformBounds(
+                    new Rect(0, 0, button.ActualWidth, button.ActualHeight));
+                KeyboardScrollExpectedNestedOffset.Text =
+                    (FocusEntryPosition.SelectedIndex == 1 ?
+                        bounds.Bottom + CurrentOffset + 80 - KeyboardScrollingList.Height :
+                        bounds.Y + CurrentOffset - 80)
+                    .ToString(CultureInfo.InvariantCulture);
+            }
             anchor.Focus(FocusState.Keyboard);
 
             bool vertical = VerticalScrolling.IsChecked == true;
@@ -354,12 +436,20 @@ namespace MUXControlsTestApp
             {
                 ResetScrollDiagnostics();
             }
+
             else
             {
                 _resetDiagnosticsAtOffset = offset;
                 // Animated, like an app reacting to a selection change.
-                _scrollViewer.ChangeView(vertical ? null : offset, vertical ? offset : null, null);
+                _scrollViewer.ChangeView(vertical ? null : offset, vertical ? offset : null, null,
+                    NestedFocusTarget.IsChecked == true);
             }
+        }
+
+        private void PrepareStickyHeader_Click(object sender, RoutedEventArgs args)
+        {
+            ((ListViewItem)KeyboardScrollingList.ContainerFromIndex(0)).Focus(FocusState.Keyboard);
+            _scrollViewer.ChangeView(null, 150, null, true);
         }
     }
 

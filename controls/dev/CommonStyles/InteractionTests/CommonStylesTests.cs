@@ -699,6 +699,140 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ListViewKeyboardFocusCompletesPendingSelectionLayout()
+        {
+            foreach (string action in new[] { "Queue distant scroll", "Resize rows" })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+                {
+                    new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                    new CheckBox(FindElement.ById("ExtendedSelection")).Check();
+                    new CheckBox(FindElement.ById("CommitLayoutDuringFocus")).Check();
+                    new ComboBox(FindElement.ById("SelectionScrollAction")).SelectItemByName(action);
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+
+                    KeyboardHelper.PressKey(Key.Down, ModifierKey.Shift);
+                    VerifyKeyboardScrollInput(1);
+                    Wait.ForIdle();
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText(),
+                        $"Focus must reach the intended row after pending selection work: {action}.");
+                    Verify.AreEqual("2", new TextBlock(FindElement.ById("KeyboardScrollSelectedCount")).GetText());
+                    double focusedTop = double.Parse(
+                        new TextBlock(FindElement.ById("KeyboardScrollFocusedTop")).GetText(), CultureInfo.InvariantCulture);
+                    Verify.IsTrue(focusedTop >= -0.1 && focusedTop + (action == "Resize rows" ? 200 : 100) <= 300.1,
+                        $"Focus must leave the row visible after selection layout completes, not start at {focusedTop}.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ListViewKeyboardScrollingRevalidatesTargetAfterScrollLayout()
+        {
+            foreach (string action in new[] { "Remove target", "Insert before target" })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+                {
+                    new ComboBox(FindElement.ById("ScrollLayoutAction")).SelectItemByName(action);
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifyKeyboardScrollInput(1);
+                    Wait.ForIdle();
+                    string selectedIndex = new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText();
+                    if (action == "Remove target")
+                    {
+                        Verify.IsTrue(selectedIndex == "2" || selectedIndex == "-1",
+                            "Removing the target may clear selection, but must not select its replacement at the stale index.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual("4", selectedIndex,
+                            "The navigation target must be tracked when a scroll callback shifts its index.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ListViewShiftTabPadsPreservedNestedTargetOnce()
+        {
+            foreach (string position in new[] { "Leading", "Trailing" })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+                {
+                    new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                    new CheckBox(FindElement.ById("NestedFocusTarget")).Check();
+                    new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(position);
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+                    new Button(FindElement.ById("PrepareFocusEntryAfter")).Invoke();
+                    string initialOffset = position == "Leading" ? "1000" : "800";
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText() == initialOffset &&
+                        new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText() == "0");
+                    Verify.AreEqual(initialOffset, new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    Wait.ForIdle();
+                    Verify.AreEqual("Button", new TextBlock(FindElement.ById("KeyboardScrollFocusedKind")).GetText());
+                    Verify.AreEqual("10", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
+                    string expectedOffset = new TextBlock(FindElement.ById("KeyboardScrollExpectedNestedOffset")).GetText();
+                    Verify.AreEqual(expectedOffset, new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                    Verify.AreEqual(expectedOffset, new TextBlock(FindElement.ById("KeyboardScrollOffsetAtFocus")).GetText(),
+                        "The child's 80-pixel focus margin must be applied before focus, without a later correction.");
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText());
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ListViewPinnedHeaderFocusScrollsOnce()
+        {
+            using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+            {
+                new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                new CheckBox(FindElement.ById("GroupedItems")).Check();
+                new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                Wait.ForIdle();
+                new Button(FindElement.ById("PrepareStickyHeader")).Invoke();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Up);
+                VerifyKeyboardScrollInput(1);
+                Wait.ForIdle();
+                Verify.AreEqual("Header", new TextBlock(FindElement.ById("KeyboardScrollFocusedKind")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText(),
+                    "Focus on an already pinned header must retain the original single-scroll path.");
+            }
+        }
+
+        [TestMethod]
+        public void ListViewKeyboardFocusClearsZoomedStickyHeader()
+        {
+            using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+            {
+                new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                new CheckBox(FindElement.ById("GroupedItems")).Check();
+                new CheckBox(FindElement.ById("ZoomContent")).Check();
+                new CheckBox(FindElement.ById("ExtendedSelection")).Check();
+                new ComboBox(FindElement.ById("SelectionScrollAction")).SelectItemByName("Scroll under zoomed header");
+                new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.Shift);
+                VerifyKeyboardScrollInput(1);
+                Wait.ForIdle();
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
+                double focusedTop = double.Parse(
+                    new TextBlock(FindElement.ById("KeyboardScrollFocusedTop")).GetText(), CultureInfo.InvariantCulture);
+                Verify.IsTrue(focusedTop >= 74.9,
+                    $"The focused item must clear the 75-pixel zoomed header, not start at {focusedTop}.");
+                double topAtFocus = double.Parse(
+                    new TextBlock(FindElement.ById("KeyboardScrollTopAtFocus")).GetText(), CultureInfo.InvariantCulture);
+                Verify.IsTrue(topAtFocus >= 74.9,
+                    $"Header clearance must be correct before focus, not start at {topAtFocus} and scroll again.");
+            }
+        }
+
         // Selects item index 10, positions the viewport relative to it, then moves focus into the list with
         // Tab (from before the list) or Shift+Tab (from after it). Focus is redirected to the selected item, which
         // must reach its padded position in one scroll, before it gets focus.
