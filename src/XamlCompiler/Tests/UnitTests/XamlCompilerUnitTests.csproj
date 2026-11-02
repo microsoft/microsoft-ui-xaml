@@ -152,6 +152,10 @@
   <PropertyGroup>
     <XamlCompilerUnitTestPayloadMarker>$(OutDir)XamlCompilerUnitTests.payload.complete</XamlCompilerUnitTestPayloadMarker>
   </PropertyGroup>
+  <Target Name="RunXamlReferenceSelectionTests" BeforeTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\ReferenceSelectionTests.proj" Targets="RunTests"
+             RemoveProperties="UsingCSWinRT3;UsingMicrosoftNETSdk;IsNativeLanguage;TargetPlatformVersion;CompileUsingReferenceAssemblies;NoXaml;ExpectCsWinRT3" />
+  </Target>
   <Target Name="InvalidateXamlCompilerUnitTestPayload" BeforeTargets="PrepareForBuild">
     <Delete Files="$(XamlCompilerUnitTestPayloadMarker)" />
   </Target>

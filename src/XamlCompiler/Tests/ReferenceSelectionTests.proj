@@ -1,0 +1,92 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project DefaultTargets="RunTests" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <UsingMicrosoftNETSdk Condition="'$(UsingMicrosoftNETSdk)' == ''">true</UsingMicrosoftNETSdk>
+    <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == ''">10.0.26100.1</TargetPlatformVersion>
+    <WindowsSdkPath>$(MSBuildThisFileDirectory)</WindowsSdkPath>
+    <Language>C#</Language>
+  </PropertyGroup>
+
+  <Import Project="..\Targets\Microsoft.UI.Xaml.Markup.Compiler.interop.targets" />
+
+  <ItemGroup>
+    <ReferencePath Include="ManagedOwner.dll">
+      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+      <ReferenceAssembly>ref\ManagedOwner.dll</ReferenceAssembly>
+    </ReferencePath>
+    <ReferencePath Include="Projection.dll">
+      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+      <ReferenceAssembly>ref\Projection.dll</ReferenceAssembly>
+      <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
+    </ReferencePath>
+    <ReferencePath Include="OtherManagedOwner.dll">
+      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+      <ReferenceAssembly>ref\OtherManagedOwner.dll</ReferenceAssembly>
+      <CsWinRTInputs>Other.winmd</CsWinRTInputs>
+      <CsWinRTGenerateReferenceProjection>false</CsWinRTGenerateReferenceProjection>
+    </ReferencePath>
+    <ReferencePath Include="PackageProjection.dll">
+      <ReferenceSourceTarget>ResolveAssemblyReference</ReferenceSourceTarget>
+      <ReferenceAssembly>ref\PackageProjection.dll</ReferenceAssembly>
+      <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
+    </ReferencePath>
+    <ReferencePathWithRefAssemblies Include="ref\ManagedOwner.dll;ref\Projection.dll;ref\OtherManagedOwner.dll;ref\PackageProjection.dll" />
+    <ReferenceCopyLocalPaths Include="@(ReferencePath)" />
+    <Page Include="Test.xaml" Condition="'$(NoXaml)' != 'true'" />
+  </ItemGroup>
+
+  <!-- Supply the SDK protocol's resolved metadata without requiring projects or packages on disk. -->
+  <Target Name="FindReferenceAssembliesForReferences" />
+
+  <Target Name="CaptureExpectedReferences">
+    <PropertyGroup>
+      <_OriginalReferences>@(ReferencePath)</_OriginalReferences>
+      <_OriginalCompileReferences>@(ReferencePathWithRefAssemblies)</_OriginalCompileReferences>
+      <_ExpectedProjection>Projection.dll</_ExpectedProjection>
+      <_ExpectedProjection Condition="'$(UsingCSWinRT3)' == 'true' and '$(CompileUsingReferenceAssemblies)' != 'false'">ref\Projection.dll</_ExpectedProjection>
+      <_ExpectedReferences>ManagedOwner.dll;$(_ExpectedProjection);OtherManagedOwner.dll;PackageProjection.dll</_ExpectedReferences>
+      <_ExpectedPreCompileReferences>$(_OriginalReferences)</_ExpectedPreCompileReferences>
+      <_ExpectedPreCompileReferences Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true' and '$(UsingCSWinRT3)' == 'true' and '@(Page)' != ''">$(_ExpectedReferences)</_ExpectedPreCompileReferences>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="XamlPreCompile">
+    <Error Condition="'@(ReferencePath)' != '$(_ExpectedPreCompileReferences)'"
+           Text="XamlPreCompile references: expected '$(_ExpectedPreCompileReferences)', got '@(ReferencePath)'." />
+  </Target>
+
+  <Target Name="VerifyCase" DependsOnTargets="CaptureExpectedReferences;XamlPreCompile;_XamlGetManagedReferenceAssemblies">
+    <Error Condition="'$(ExpectCsWinRT3)' == 'true' and '$(UsingCSWinRT3)' != 'true'"
+           Text="CsWinRT 3 was not detected from the target platform version." />
+    <Error Condition="'$(ExpectCsWinRT3)' != 'true' and '$(UsingCSWinRT3)' == 'true'"
+           Text="CsWinRT 3 was enabled for a legacy or explicitly overridden case." />
+    <Error Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true' and '@(_XamlManagedReferenceAssemblies)' != '$(_ExpectedReferences)'"
+           Text="XAML references: expected '$(_ExpectedReferences)', got '@(_XamlManagedReferenceAssemblies)'." />
+    <Error Condition="'@(ReferencePath)' != '$(_OriginalReferences)'"
+           Text="XamlPreCompile did not restore the original ReferencePath." />
+    <Error Condition="'@(ReferenceCopyLocalPaths)' != '$(_OriginalReferences)'"
+           Text="Runtime deployment references changed." />
+    <Error Condition="'@(ReferencePathWithRefAssemblies)' != '$(_OriginalCompileReferences)'"
+           Text="CoreCompile reference assemblies changed." />
+    <Error Condition="'@(_XamlReferencePath)' != '' or '@(_XamlPreCompileSavedReferencePath)' != ''"
+           Text="Temporary reference items leaked." />
+    <Message Importance="High" Text="PASS: $(TestCaseName)" />
+  </Target>
+
+  <Target Name="RunTests">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=TFM-detected v3;TargetPlatformVersion=10.0.26100.1;ExpectCsWinRT3=true" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=v2 implementation references;TargetPlatformVersion=10.0.26100.0" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=reference compilation disabled;TargetPlatformVersion=10.0.26100.1;CompileUsingReferenceAssemblies=false;ExpectCsWinRT3=true" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=explicit v3 override;TargetPlatformVersion=10.0.26100.1;UsingCSWinRT3=false" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=native unchanged;TargetPlatformVersion=10.0.26100.0;IsNativeLanguage=true" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=non-SDK unchanged;TargetPlatformVersion=10.0.26100.0;UsingMicrosoftNETSdk=false" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="VerifyCase"
+             Properties="TestCaseName=no XAML precompile swap;TargetPlatformVersion=10.0.26100.1;NoXaml=true;ExpectCsWinRT3=true" />
+  </Target>
+</Project>

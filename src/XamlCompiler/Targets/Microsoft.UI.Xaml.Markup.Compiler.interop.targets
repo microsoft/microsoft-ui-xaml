@@ -285,18 +285,36 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </Prep_ComputeProcessXamlFilesDependsOn>
     </PropertyGroup>
 
-    <!-- SDK-managed only: run FindReferenceAssembliesForReferences before the passes so
-         @(ReferencePathWithRefAssemblies) (the %(ReferenceAssembly) redirect) is populated. -->
+    <!-- SDK-managed only: resolve reference-assembly metadata before the XAML passes so local CsWinRT
+         projection forwarders can be replaced without redirecting ordinary managed dependencies. -->
     <PropertyGroup Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true'">
         <MarkupCompilePass1DependsOn>
-            FindReferenceAssembliesForReferences;
+            _XamlGetManagedReferenceAssemblies;
             $(MarkupCompilePass1DependsOn)
         </MarkupCompilePass1DependsOn>
         <MarkupCompilePass2DependsOn>
-            FindReferenceAssembliesForReferences;
+            _XamlGetManagedReferenceAssemblies;
             $(MarkupCompilePass2DependsOn)
         </MarkupCompilePass2DependsOn>
     </PropertyGroup>
+
+    <!-- Use CsWinRT's producer metadata to identify local projection projects that need reference DLLs.
+         Preserve other implementation assemblies so static constructors remain visible for dependency-property
+         initialization. -->
+    <Target Name="_XamlGetManagedReferenceAssemblies"
+            DependsOnTargets="FindReferenceAssembliesForReferences"
+            Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true'">
+        <ItemGroup>
+            <_XamlManagedReferenceAssemblies Remove="@(_XamlManagedReferenceAssemblies)" />
+            <_XamlReferencePath Include="@(ReferencePath)" />
+            <_XamlReferencePath>
+                <_XamlAssemblyPath>%(_XamlReferencePath.Identity)</_XamlAssemblyPath>
+                <_XamlAssemblyPath Condition="'$(UsingCSWinRT3)' == 'true' and '%(_XamlReferencePath.ReferenceSourceTarget)' == 'ProjectReference' and '%(_XamlReferencePath.CsWinRTGenerateReferenceProjection)' == 'true' and '$(CompileUsingReferenceAssemblies)' != 'false'">%(_XamlReferencePath.ReferenceAssembly)</_XamlAssemblyPath>
+            </_XamlReferencePath>
+            <_XamlManagedReferenceAssemblies Include="@(_XamlReferencePath->'%(_XamlAssemblyPath)')" RemoveMetadata="_XamlAssemblyPath" />
+            <_XamlReferencePath Remove="@(_XamlReferencePath)" />
+        </ItemGroup>
+    </Target>
 
     <!-- If VCInstallPath properties aren't defined, we can get them from the tools install dir.
          If we *also* don't have the tools install dir, then we can at least attempt to get it from the
@@ -396,20 +414,21 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
     <!--
       The SDK's XamlPreCompile pass compiles @(XamlIntermediateAssembly) (Pass2's LocalAssembly) with a hard-coded
-      References="@(ReferencePath)", so unlike the passes below we can't point it at our own reference list. Under
-      CsWinRT 3.0 @(ReferencePath) holds the projection forwarder rather than the real reference projection, so the
-      compile can't resolve the projected types. Temporarily swap @(ReferencePath) for @(ReferencePathWithRefAssemblies)
-      (the reference projections CoreCompile uses) around this pass and restore it afterward.
+      References="@(ReferencePath)", so unlike the passes below we can't point it at our own reference list.
+      CsWinRT 3.0 local projection projects expose forwarder DLLs rather than the projected API surface.
+      Apply the same producer-metadata-based replacements as the XAML passes, keeping ordinary managed
+      implementation DLLs and their static-constructor metadata. Restore the original paths afterward so
+      generators and packaging continue to receive the implementation assemblies.
       SDK-managed only; no-op for CsWinRT 2.x.
     -->
     <Target Name="_SwapInReferenceProjectionsForXamlPreCompile"
             BeforeTargets="XamlPreCompile"
-            DependsOnTargets="FindReferenceAssembliesForReferences"
-            Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true' and ('@(Page)' != '' Or '@(ApplicationDefinition)' != '')">
+            DependsOnTargets="_XamlGetManagedReferenceAssemblies"
+            Condition="'$(IsNativeLanguage)' != 'true' and '$(UsingMicrosoftNETSdk)' == 'true' and '$(UsingCSWinRT3)' == 'true' and ('@(Page)' != '' Or '@(ApplicationDefinition)' != '')">
         <ItemGroup>
             <_XamlPreCompileSavedReferencePath Include="@(ReferencePath)" />
             <ReferencePath Remove="@(ReferencePath)" />
-            <ReferencePath Include="@(ReferencePathWithRefAssemblies)" />
+            <ReferencePath Include="@(_XamlManagedReferenceAssemblies)" />
         </ItemGroup>
     </Target>
 
@@ -440,18 +459,17 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <ItemGroup>
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
-        <!-- SDK-managed: @(ReferencePathWithRefAssemblies) - the reference dlls, which under CsWinRT 3.0 are the reference
-             projections rather than the forwarder (the same set CoreCompile uses).
+        <!-- SDK-managed: @(_XamlManagedReferenceAssemblies), replacing only local CsWinRT 3.0 projection
+             forwarders and preserving ordinary implementation metadata for static-initializer discovery.
              Native: winmds + facade only (managed CsWinRT dlls carry TypeMap assembly attributes
              that pull in unresolvable .NET references).
-             Non-SDK managed: @(ReferencePath).
-             No-op for CsWinRT 2.x. -->
+             Non-SDK managed: @(ReferencePath). -->
         <ItemGroup>
             <_XamlCompileReferenceAssemblies Remove="@(_XamlCompileReferenceAssemblies)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and '%(ReferencePath.WinMDFile)'=='true'" Include="@(ReferencePath)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and Exists('$(FacadeWinmdPath)')" Include="$(FacadeWinmdPath)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
-            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(_XamlManagedReferenceAssemblies)" />
         </ItemGroup>
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
@@ -584,18 +602,17 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <ItemGroup>
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
-        <!-- SDK-managed: @(ReferencePathWithRefAssemblies) - the reference dlls, which under CsWinRT 3.0 are the reference
-             projections rather than the forwarder (the same set CoreCompile uses).
+        <!-- SDK-managed: @(_XamlManagedReferenceAssemblies), replacing only local CsWinRT 3.0 projection
+             forwarders and preserving ordinary implementation metadata for static-initializer discovery.
              Native: winmds + facade only (managed CsWinRT dlls carry TypeMap assembly attributes
              that pull in unresolvable .NET references).
-             Non-SDK managed: @(ReferencePath).
-             No-op for CsWinRT 2.x. -->
+             Non-SDK managed: @(ReferencePath). -->
         <ItemGroup>
             <_XamlCompileReferenceAssemblies Remove="@(_XamlCompileReferenceAssemblies)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and '%(ReferencePath.WinMDFile)'=='true'" Include="@(ReferencePath)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and Exists('$(FacadeWinmdPath)')" Include="$(FacadeWinmdPath)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
-            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(_XamlManagedReferenceAssemblies)" />
         </ItemGroup>
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
@@ -761,7 +778,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'=='true'" Include="@(WinMDReferenceToCompile)" />
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
-            <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+            <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(_XamlManagedReferenceAssemblies)" />
         </ItemGroup>
         <RemoveDuplicates Condition="'$(XamlLanguage)' == 'CppWinRT'" Inputs="@(XamlReferencesToCompile)">
             <Output TaskParameter="Filtered" ItemName="_DistinctXamlReferencesToCompile" />
@@ -932,20 +949,19 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </Target>
 
     <Target Name="_OnXamlPreCompileError"
-            DependsOnTargets="$(_OnXamlPrecompileErrorDependsOn)" >
+            DependsOnTargets="$(_OnXamlPrecompileErrorDependsOn);_XamlGetManagedReferenceAssemblies" >
 
-        <!-- SDK-managed: @(ReferencePathWithRefAssemblies) - the reference dlls, which under CsWinRT 3.0 are the reference
-             projections rather than the forwarder (the same set CoreCompile uses).
+        <!-- SDK-managed: @(_XamlManagedReferenceAssemblies), replacing only local CsWinRT 3.0 projection
+             forwarders and preserving ordinary implementation metadata for static-initializer discovery.
              Native: winmds + facade only (managed CsWinRT dlls carry TypeMap assembly attributes
              that pull in unresolvable .NET references).
-             Non-SDK managed: @(ReferencePath).
-             No-op for CsWinRT 2.x. -->
+             Non-SDK managed: @(ReferencePath). -->
         <ItemGroup>
             <_XamlCompileReferenceAssemblies Remove="@(_XamlCompileReferenceAssemblies)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and '%(ReferencePath.WinMDFile)'=='true'" Include="@(ReferencePath)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'=='true' and Exists('$(FacadeWinmdPath)')" Include="$(FacadeWinmdPath)" />
             <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'!='true'" Include="@(ReferencePath)" />
-            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(ReferencePathWithRefAssemblies)" />
+            <_XamlCompileReferenceAssemblies Condition="'$(IsNativeLanguage)'!='true' and '$(UsingMicrosoftNETSdk)'=='true'" Include="@(_XamlManagedReferenceAssemblies)" />
         </ItemGroup>
 
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
