@@ -3044,17 +3044,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             WaitForFrames(2);
             bool settled = WaitForTipState(tip, isOpen: !tipUnloads);
-            bool retargeted = false, newTargetLoaded = false;
+            bool retargeted = false, newTargetInTree = false, tipOpen = false;
             RunOnUIThread.Execute(() =>
             {
                 retargeted = tip.Target == (tipUnloads ? (FrameworkElement)staticTarget : newTarget);
-                newTargetLoaded = tip.Target != null && tip.Target.IsLoaded;
-                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, retargeted={retargeted}, newTarget.IsLoaded={newTargetLoaded}, tip.IsLoaded={tip.IsLoaded}");
+                // Not IsLoaded: the tip registers a Loaded handler on its new target, which makes an already loaded element report
+                // IsLoaded=false until a Loaded event is raised for it.
+                newTargetInTree = tip.Target != null && VisualTreeHelper.GetParent(tip.Target) != null && tip.Target.XamlRoot == root.XamlRoot;
+                tipOpen = tip.IsOpen;
+                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, retargeted={retargeted}, newTargetInTree={newTargetInTree}, tip.IsLoaded={tip.IsLoaded}");
             });
             Verify.IsTrue(retargeted, "Precondition: the app's Unloaded handler retargeted the tip: " + what);
-            Verify.IsTrue(newTargetLoaded, "Precondition: the new target is loaded: " + what);
-            Verify.IsTrue(settled, tipUnloads ? "The tip should close when it is removed, even if it was retargeted: " + what
-                                              : "The tip should stay open on a new target that never unloaded: " + what);
+            Verify.IsTrue(newTargetInTree, "Precondition: the new target is in the tree: " + what);
+            Verify.IsTrue(settled, (tipUnloads ? "The tip should close when it is removed, even if it was retargeted: " + what
+                                               : "The tip should stay open on a new target that never unloaded: " + what) + $" (tip.IsOpen={tipOpen})");
             RunOnUIThread.Execute(() => tip.IsOpen = false);
             WaitForTipState(tip, isOpen: false);
         }
