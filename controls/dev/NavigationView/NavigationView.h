@@ -239,6 +239,7 @@ private:
     void OnIsPaneOpenChanged();
     void UpdatePaneButtonsWidths();
     void UpdateBackButtonHitTarget();
+    void ApplyBackButtonHitTarget(const winrt::Button& backButton);
     void OnBackButtonPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnBackButtonActualThemeChanged(const winrt::FrameworkElement& sender, const winrt::IInspectable& args);
     bool IsBackButtonValueAvailable(const winrt::DependencyProperty& property);
@@ -429,6 +430,8 @@ private:
     PropertyChanged_revoker m_backButtonHeightChangedRevoker{};
     PropertyChanged_revoker m_backButtonMinWidthChangedRevoker{};
     PropertyChanged_revoker m_backButtonMinHeightChangedRevoker{};
+    PropertyChanged_revoker m_backButtonMaxWidthChangedRevoker{};
+    PropertyChanged_revoker m_backButtonMaxHeightChangedRevoker{};
     PropertyChanged_revoker m_backButtonContainerMarginChangedRevoker{};
     winrt::FrameworkElement::ActualThemeChanged_revoker m_backButtonActualThemeChangedRevoker{};
     tracker_ref<winrt::FrameworkElement> m_backButtonBackplate{ this };
@@ -503,6 +506,7 @@ private:
     // True while NavigationView has set the back button's local MinWidth/Height/Margin and its backplate's Margin for the enlarged hit target.
     bool m_backButtonHitTargetApplied{ false };
     bool m_isUpdatingBackButtonHitTarget{ false };
+    bool m_backButtonHitTargetInputChanged{ false };
     // The back button Margin/Height/MinWidth that NavigationView set while m_backButtonHitTargetApplied.
     winrt::Thickness m_backButtonHitTargetMargin{};
     double m_backButtonHitTargetHeight{ 0.0 };
