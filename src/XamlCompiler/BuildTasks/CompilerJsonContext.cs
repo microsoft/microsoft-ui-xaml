@@ -11,6 +11,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
     // OutputDeserializer, which use the reflection-based serializer with the same (default) options.
     [JsonSerializable(typeof(CompilerInputs))]
     [JsonSerializable(typeof(CompilerOutputs))]
+    [JsonSerializable(typeof(System.Collections.Generic.List<FileOverlay>))]
     internal sealed partial class CompilerJsonContext : JsonSerializerContext
     {
     }

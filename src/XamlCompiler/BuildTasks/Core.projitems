@@ -216,6 +216,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\AssemblyExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\InternalErrorException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\LanguageSpecificString.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\AtomicFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)utilities\BuildTaskFileService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)utilities\ResourceUtilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\NamedElementsStore.cs" />

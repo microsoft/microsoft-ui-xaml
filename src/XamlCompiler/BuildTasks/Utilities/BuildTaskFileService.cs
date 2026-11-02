@@ -50,10 +50,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
 
-            using (StreamWriter sw = new StreamWriter(destinationFile, false, new UTF8Encoding(true)))
+            AtomicFile.Write(destinationFile, stream =>
             {
-                sw.WriteLine(fileContents);
-            }
+                using (StreamWriter sw = new StreamWriter(stream, new UTF8Encoding(true)))
+                {
+                    sw.WriteLine(fileContents);
+                }
+            });
         }
 
         public virtual bool IsRealBuild

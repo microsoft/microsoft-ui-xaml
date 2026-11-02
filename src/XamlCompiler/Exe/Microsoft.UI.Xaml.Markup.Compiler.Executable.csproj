@@ -68,6 +68,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2046;IL2055;IL2057;IL2060;IL2067;IL2070;IL2072;IL2073;IL2075;IL2080;IL2085;IL2092;IL2093;IL2094;IL2111;IL3000;IL3001;IL3002;IL3003;IL3050;IL3051;CA1420</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(BuildTasksDir)AssertionTraceListener.cs" />
     <Compile Include="$(BuildTasksDir)ConsoleLogger.cs" />
     <Compile Include="$(BuildTasksDir)Program.cs" />
     <Compile Include="$(BuildTasksDir)ConsoleCompileXaml.cs" />

@@ -16,6 +16,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
 
         }
 
+        // The version of this contract the producer (the CompileXaml task) implements: see CompilerContract
+        public int ContractVersion { get; set; }
+
+        // Whether this is a design-time (IntelliSense) build. Set by the task from CompileMode and from the IDE host object, if
+        // any; the compiler also treats CompileMode=DesignTimeBuild as a design-time build, for the inputs of older tasks.
+        public bool IsDesignTimeBuild { get; set; }
+
+        // Optional path to a JSON list of FileOverlay: the contents and/or last change times of the XAML files open in the IDE
+        // (design-time builds only). The task deletes it after the run.
+        public string FileOverlaysPath { get; set; }
+
         public string ProjectPath { get; set; }
 
         public string Language { get; set; }

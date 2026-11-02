@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
@@ -22,6 +23,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
     internal sealed class CompileXaml
     {
         private ConsoleLogger Log { get; } = new ConsoleLogger();
+
+        // Reported as a diagnostic message of the compilation (see AssertionTraceListener)
+        public void ReportAssertionFailure(string message)
+        {
+            Log.LogDiagnosticMessage(message);
+        }
+
         public int Run(string[] args)
         {
             Options o = ParseCommandLineParameters(args);
@@ -64,34 +72,55 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
         private int ExecuteCompilation(Options parsedOptions)
         {
             bool result = false;
-            CompilerInputs ci = DeserializeCompilerInputs(parsedOptions.JsonInputFile);
-            CompileXamlInternal core = CreateCore(ci);
+            CompileXamlInternal core = null;
             try
             {
-                core.SaveState = SavedStateManager.Load(ci.SavedStateFile);
-
-                result = core.DoExecute();
-                if (result)
+                CompilerInputs ci = DeserializeCompilerInputs(parsedOptions.JsonInputFile);
+                if (ci.ContractVersion > CompilerContract.Version)
                 {
-                    core.SaveStateBeforeFinishing();
+                    LogError($"The XAML compiler task (contract version {ci.ContractVersion}) is newer than the XAML compiler (contract version {CompilerContract.Version}): use the XamlCompiler.exe of the same Windows App SDK version as the task (see XamlCompilerNativeExePath).");
+                }
+                else if (ci.ForceSharedStateShutdown)
+                {
+                    // The in-process task released the state it kept from pass 1 to pass 2 when the build failed in between: each
+                    // run of the compiler is its own process, so there is nothing to do.
+                    result = true;
+                }
+                else
+                {
+                    core = CreateCore(ci);
+                    core.SaveState = SavedStateManager.Load(ci.SavedStateFile);
+
+                    result = core.DoExecute();
+                    if (result)
+                    {
+                        core.SaveStateBeforeFinishing();
+                    }
                 }
             }
             catch (Exception e)
             {
                 result = false;
-                core.LogError_XamlInternalError(e, null);
+                if (core != null)
+                {
+                    core.LogError_XamlInternalError(e, null);
+                }
+                else
+                {
+                    LogError($"{Properties.XamlCompilerResources.XamlInternlError}: {e.Message}");
+                    Log.LogDiagnosticMessage(e.ToString());
+                }
             }
             finally
             {
-                // Always write results (including error log entries) so that
-                // OutputDeserializer can report proper diagnostics to MSBuild.
+                // Always write results (including error log entries), so that the CompileXaml task can report proper diagnostics to MSBuild
                 try
                 {
                     SaveResults(core, parsedOptions.JsonOutputFile);
                 }
                 catch (Exception saveEx)
                 {
-                    // If we can't write output.json, fall back to writing errors
+                    // If we can't write the output file, fall back to writing errors
                     // to stderr so they're still visible in the build output.
                     Console.Error.WriteLine($"XamlCompiler: Failed to write output file: {saveEx.Message}");
                     foreach (var entry in Log.Entries)
@@ -107,12 +136,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
             return result ? 0 : 1;
         }
 
+        private void LogError(string message)
+        {
+            Log.LogError(null, "WMC9999", null, null, 0, 0, 0, 0, message);
+        }
+
         private CompileXamlInternal CreateCore(CompilerInputs compilerInputs)
         {
             CompileXamlInternal core = new CompileXamlInternal();
             core.Log = Log;
-            core.TaskFileService = new BuildTaskFileService(core.LanguageSourceExtension);
             core.PopulateFromCompilerInputs(compilerInputs);
+            core.IsDesignTimeBuild = compilerInputs.IsDesignTimeBuild || string.Equals(compilerInputs.CompileMode, "DesignTimeBuild", StringComparison.OrdinalIgnoreCase);
+
+            List<FileOverlay> overlays = DeserializeFileOverlays(compilerInputs.FileOverlaysPath);
+            core.TaskFileService = overlays != null
+                ? new OverlayTaskFileService(core.LanguageSourceExtension, overlays)
+                : new BuildTaskFileService(core.LanguageSourceExtension);
             return core;
         }
 
@@ -124,19 +163,76 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
             }
         }
 
+        private List<FileOverlay> DeserializeFileOverlays(string overlaysJsonFile)
+        {
+            if (string.IsNullOrEmpty(overlaysJsonFile))
+            {
+                return null;
+            }
+
+            // The task creates the file with FileOptions.DeleteOnClose and keeps it open while the compiler runs
+            using (FileStream jsonFileStream = new FileStream(overlaysJsonFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            {
+                List<FileOverlay> overlays = JsonSerializer.Deserialize(jsonFileStream, CompilerJsonContext.Default.ListFileOverlay) ?? new List<FileOverlay>();
+                Log.LogDiagnosticMessage($"Using {overlays.Count} XAML file(s) open in the IDE.");
+                return overlays;
+            }
+        }
+
         private void SaveResults(CompileXamlInternal core, string outputFile)
         {
             CompilerOutputs co = new CompilerOutputs();
-            co.GeneratedCodeFiles = core.GeneratedCodeFiles;
-            co.GeneratedXamlFiles = core.GeneratedXamlFiles;
-            co.GeneratedXamlPagesFiles = core.GeneratedXamlPagesFiles;
-            co.GeneratedXbfFiles = core.GeneratedXbfFiles;
+            co.ContractVersion = CompilerContract.Version;
+            co.GeneratedCodeFiles = core?.GeneratedCodeFiles ?? new List<string>();
+            co.GeneratedXamlFiles = core?.GeneratedXamlFiles ?? new List<string>();
+            co.GeneratedXamlPagesFiles = core?.GeneratedXamlPagesFiles ?? new List<string>();
+            co.GeneratedXbfFiles = core?.GeneratedXbfFiles ?? new List<string>();
             co.MSBuildLogEntries = Log.Entries;
 
-            using (FileStream jsonFileStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
+            AtomicFile.Write(outputFile, jsonFileStream => JsonSerializer.Serialize(jsonFileStream, co, CompilerJsonContext.Default.CompilerOutputs));
+        }
+    }
+
+    // Reads the XAML files that are open in the IDE from the state the CompileXaml task got from the IDE host object (see
+    // FileOverlay), instead of from the disk: the compiler sees the unsaved edits, like the in-process task used to.
+    internal sealed class OverlayTaskFileService : BuildTaskFileService
+    {
+        private readonly Dictionary<string, FileOverlay> _overlays = new Dictionary<string, FileOverlay>(StringComparer.OrdinalIgnoreCase);
+
+        public OverlayTaskFileService(string languageExtension, IEnumerable<FileOverlay> overlays)
+            : base(languageExtension)
+        {
+            foreach (FileOverlay overlay in overlays)
             {
-                JsonSerializer.Serialize(jsonFileStream, co, CompilerJsonContext.Default.CompilerOutputs);
+                if (!string.IsNullOrEmpty(overlay?.Path))
+                {
+                    _overlays[Path.GetFullPath(overlay.Path)] = overlay;
+                }
             }
+        }
+
+        public override TextReader GetFileContents(string srcFile)
+        {
+            if (TryGetOverlay(srcFile, out FileOverlay overlay) && overlay.Contents != null)
+            {
+                return new StringReader(overlay.Contents);
+            }
+            return base.GetFileContents(srcFile);
+        }
+
+        public override DateTime GetLastChangeTime(string srcFile)
+        {
+            if (TryGetOverlay(srcFile, out FileOverlay overlay) && overlay.LastChangeFileTime != 0)
+            {
+                return DateTime.FromFileTime(overlay.LastChangeFileTime);
+            }
+            return base.GetLastChangeTime(srcFile);
+        }
+
+        private bool TryGetOverlay(string srcFile, out FileOverlay overlay)
+        {
+            overlay = null;
+            return !string.IsNullOrEmpty(srcFile) && _overlays.TryGetValue(Path.GetFullPath(srcFile), out overlay);
         }
     }
 }

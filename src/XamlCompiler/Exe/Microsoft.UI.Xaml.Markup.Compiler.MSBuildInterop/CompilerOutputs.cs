@@ -10,6 +10,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
 {
     public sealed class CompilerOutputs
     {
+        // The version of this contract the compiler implements: see CompilerContract
+        public int ContractVersion { get; set; }
+
         public IList<string> GeneratedCodeFiles { get; set; }
 
         public IList<string> GeneratedXamlFiles { get; set; }

@@ -2898,12 +2898,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                 bool isMsCorLib = asmName.Equals("mscorlib.dll", StringComparison.OrdinalIgnoreCase);
 
-                // Only consider nuget based assemblies as system assemblies in design time builds, to push these including .Net
-                // which ships as a Nuget onto systemExtraList, which is omitted from the initial lookup assemblies we look at
-                // in DirectUISchemaContext.GetXamlTypeFromUsing() as a saving perf tactic from dev11.
-                // For real builds, we will not do that, and treat libraries referenced as nugets as nonSystem assemblies, such that if they
-                // expose TypeMetadatProviders they get parsed and get code to hook them generated in XamlTypeInfo.
-                if (item.IsSystemReference|| isMsCorLib || (this.IsDesignTimeBuild && item.IsNuGetReference))
+                // Libraries referenced as NuGet packages are non-system assemblies, such that if they expose TypeMetadataProviders they
+                // get parsed and get code to hook them generated in XamlTypeInfo. Design-time builds treat them the same way: they used
+                // to push them onto systemExtraList as a perf tactic, but then the types they define (e.g. Windows.UI.Color, from the
+                // Windows SDK projection) couldn't be resolved, and every design-time build failed on them without saving its state.
+                if (item.IsSystemReference || isMsCorLib)
                 {
                     if (loadByDefault)
                         systemList.Add(item.ItemSpec);
