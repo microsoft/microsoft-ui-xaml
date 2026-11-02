@@ -122,6 +122,13 @@ void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
 #if !defined(MUX_TIP_REAL)
     Log::Result(TestResults::Skipped, L"The public TiP stub has no running tests to observe.");
 #else
+    // Older Windows builds lack the TiP exports, so the product never starts a sample there.
+    if (!GetProcAddress(GetModuleHandleW(L"kernelbase.dll"), "TestCreate"))
+    {
+        Log::Result(TestResults::Skipped, L"TiP is not available on this OS.");
+        return;
+    }
+
     struct ReleaseState
     {
         Event destroyed;
