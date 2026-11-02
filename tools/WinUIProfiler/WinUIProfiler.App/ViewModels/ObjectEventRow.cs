@@ -6,9 +6,9 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.App.ViewModels;
 
-// An event in the selected element's history in the Elements tab, with the fields that hold the element's address and
-// the frame the event belongs to.
-public sealed class ElementEventRow(ProfilerEvent profilerEvent, IReadOnlyList<string> fields, long? frame)
+// An event in the selected object's history in the Objects tab, with the fields that hold the object's address and the
+// frame the event belongs to.
+public sealed class ObjectEventRow(ProfilerEvent profilerEvent, IReadOnlyList<string> fields, long? frame)
 {
     public string Time { get; } = profilerEvent.RelativeMilliseconds.ToString("N3", CultureInfo.CurrentCulture);
     public string Frame { get; } = frame?.ToString("N0", CultureInfo.CurrentCulture) ?? "-";

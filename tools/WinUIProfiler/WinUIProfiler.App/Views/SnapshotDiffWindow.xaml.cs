@@ -46,7 +46,7 @@ public sealed partial class SnapshotDiffWindow : Window
     private SnapshotDiffData? data;
     private bool closed, changingExpansion, synchronizing;
 
-    public event EventHandler<SnapshotElement>? ElementRequested;
+    public event EventHandler<SnapshotObject>? ObjectRequested;
 
     public SnapshotDiffWindow(SnapshotHistoryEntry baseline, SnapshotHistoryEntry comparison)
     {
@@ -228,14 +228,23 @@ public sealed partial class SnapshotDiffWindow : Window
 
     private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args) => Populate(args.Node);
 
-    // Double-clicking a XAML node asks the main window to show its element's history in the Elements tab: as it was in
-    // the later snapshot, or in the earlier one for a removed node.
+    // Double-clicking a node asks the main window to show the history of its element (a XAML node) or its visual (a
+    // composition node) in the Objects tab, as it was in the later snapshot, or in the earlier one for a removed node.
     private void XamlTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
     {
         if (data is null || SnapshotTreeExpansion.NodeAt(XamlTree, args.OriginalSource)?.Content is not SnapshotDiffTreeItem { Difference: { } node }) return;
         args.Handled = true;
-        ElementRequested?.Invoke(this, node.After is { } later
-            ? SnapshotElement.From(data.After.Document, later) : SnapshotElement.From(data.Before.Document, node.Before!));
+        ObjectRequested?.Invoke(this, node.After is { } later
+            ? SnapshotObject.FromXaml(data.After.Document, later) : SnapshotObject.FromXaml(data.Before.Document, node.Before!));
+    }
+
+    private void CompositionTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
+    {
+        if (data is null || SnapshotTreeExpansion.NodeAt(CompositionTree, args.OriginalSource)?.Content is not SnapshotDiffTreeItem { Difference: { } node }) return;
+        args.Handled = true;
+        ObjectRequested?.Invoke(this, node.After is { } later
+            ? SnapshotObject.FromComposition(data.After.Document, later)
+            : SnapshotObject.FromComposition(data.Before.Document, node.Before!));
     }
 
     private void ChangesOnly_Click(object sender, RoutedEventArgs args)

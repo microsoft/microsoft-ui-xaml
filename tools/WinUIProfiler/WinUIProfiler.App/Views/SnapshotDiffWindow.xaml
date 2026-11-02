@@ -119,7 +119,7 @@
                               SelectionMode="Single" CanDragItems="False" CanReorderItems="False"
                               ItemTemplate="{StaticResource DiffTreeTemplate}"
                               Expanding="Tree_Expanding" SelectionChanged="Tree_SelectionChanged"
-                              ItemInvoked="Tree_ItemInvoked" />
+                              ItemInvoked="Tree_ItemInvoked" DoubleTapped="CompositionTree_DoubleTapped" />
                 </Grid>
             </Grid>
             <Grid Grid.Row="2" ColumnSpacing="12">

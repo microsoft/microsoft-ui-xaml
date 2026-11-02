@@ -13,19 +13,19 @@ using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.App.Views;
 
-// The Elements tab: the UI elements of a session file and the history of the selected one, the events that mention it.
-// Like the Frames tab it reads the file, so it shows a session being recorded and a saved one the same way. It reads
-// only while it is shown.
-public sealed partial class ElementsView : UserControl
+// The Objects tab: the UI elements and composition visuals of a session file and the history of the selected one, the
+// events that mention it. Like the Frames tab it reads the file, so it shows a session being recorded and a saved one the
+// same way. It reads only while it is shown.
+public sealed partial class ObjectsView : UserControl
 {
     private const int PageSize = 100;
 
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
     private readonly DispatcherQueueTimer refreshTimer;
     private readonly DispatcherQueueTimer searchTimer;
-    private readonly Dictionary<long, ElementRow> rows = [];
-    private List<ElementRow> all = [];
-    private ObservableCollection<ElementRow> shownRows = [];
+    private readonly Dictionary<long, ObjectRow> rows = [];
+    private List<ObjectRow> all = [];
+    private ObservableCollection<ObjectRow> shownRows = [];
     private SessionSource? source;
     private string? path;
     // Counts the files shown, so a read of an earlier one, or of this one before it was reopened, is dropped.
@@ -35,15 +35,17 @@ public sealed partial class ElementsView : UserControl
     private bool reading;
     private bool readAgain;
     private string? search;
-    private ElementRow? selected;
-    // An element to select once the list is read.
+    // The kind the list shows, or null for both.
+    private ObjectKind? kindFilter;
+    private ObjectRow? selected;
+    // An object to select once the list is read.
     private long? pending;
     private int offset;
-    // The element and offset of the history page shown.
+    // The object and offset of the history page shown.
     private (long ObjectId, int Offset)? shownPage;
     private CancellationTokenSource? historyRead;
 
-    public ElementsView()
+    public ObjectsView()
     {
         InitializeComponent();
         refreshTimer = DispatcherQueue.CreateTimer();
@@ -52,14 +54,17 @@ public sealed partial class ElementsView : UserControl
         searchTimer = DispatcherQueue.CreateTimer();
         searchTimer.Interval = TimeSpan.FromMilliseconds(300);
         searchTimer.IsRepeating = false;
-        searchTimer.Tick += (_, _) => ApplySearch();
-        ElementList.ItemsSource = shownRows;
+        searchTimer.Tick += (_, _) => ApplyFilter();
+        ObjectList.ItemsSource = shownRows;
+        // Hooked up after the first selection, which shows both kinds.
+        KindFilter.SelectedIndex = 0;
+        KindFilter.SelectionChanged += (_, _) => ApplyFilter();
         Loaded += (_, _) =>
         {
             UpdateTimer();
             if (selected is not null)
             {
-                ElementList.ScrollIntoView(selected);
+                ObjectList.ScrollIntoView(selected);
             }
 
             _ = RefreshAsync();
@@ -68,7 +73,7 @@ public sealed partial class ElementsView : UserControl
         Show(null);
     }
 
-    public ObservableCollection<ElementEventRow> History { get; } = [];
+    public ObservableCollection<ObjectEventRow> History { get; } = [];
 
     // The window that owns the file picker.
     public WindowId Owner { get; set; }
@@ -93,8 +98,8 @@ public sealed partial class ElementsView : UserControl
         }
     }
 
-    // Selects an element by ID, reading the file first if the element is newer than the last read.
-    public void ShowElement(long objectId)
+    // Selects an object by ID, reading the file first if the object is newer than the last read.
+    public void ShowObject(long objectId)
     {
         NotFound.IsOpen = false;
         pending = objectId;
@@ -108,8 +113,8 @@ public sealed partial class ElementsView : UserControl
         }
     }
 
-    // Selects the element a snapshot node was when the snapshot was taken.
-    public async void ShowSnapshotElement(SnapshotElement node)
+    // Selects the object a snapshot node was when the snapshot was taken.
+    public async void ShowSnapshotObject(SnapshotObject node)
     {
         NotFound.IsOpen = false;
         if (path is not { } file)
@@ -123,7 +128,9 @@ public sealed partial class ElementsView : UserControl
             var (info, objectId) = await Task.Run(() =>
             {
                 var info = SessionFile.ReadInfo(file);
-                return (info, info.ProcessId == node.ProcessId ? SessionFile.FindSnapshotElement(file, node.Addresses, node.Qpc) : null);
+                return (info, info.ProcessId != node.ProcessId ? null
+                    : node.Kind == ObjectKind.Visual ? SessionFile.FindSnapshotVisual(file, node.Addresses[0], node.Qpc)
+                    : SessionFile.FindSnapshotElement(file, node.Addresses, node.Qpc));
             });
             if (file != path)
             {
@@ -136,11 +143,12 @@ public sealed partial class ElementsView : UserControl
             }
             else if (objectId is { } id)
             {
-                ShowElement(id);
+                ShowObject(id);
             }
             else
             {
-                ShowNotFound(Format("SnapshotElementNotFoundFormat", node.Description));
+                ShowNotFound(Format(node.Kind == ObjectKind.Visual ? "SnapshotVisualNotFoundFormat" : "SnapshotElementNotFoundFormat",
+                    node.Description));
             }
         }
         catch (Exception error) when (error is not OutOfMemoryException)
@@ -192,7 +200,7 @@ public sealed partial class ElementsView : UserControl
         NotFound.IsOpen = false;
         FileSummary.Text = path is null ? Text("FramesNoFile") : Path.GetFileName(path);
         ToolTipService.SetToolTip(FileSummary, path);
-        SelectElement(null);
+        SelectObject(null);
         _ = RefreshAsync();
     }
 
@@ -214,7 +222,7 @@ public sealed partial class ElementsView : UserControl
         {
             var current = shown;
             var stamp = readStamp;
-            var (info, elements) = await Task.Run(() =>
+            var (info, objects) = await Task.Run(() =>
             {
                 var info = SessionFile.ReadInfo(file);
                 return (info, stamp == (info.StoredEvents, info.CompleteFromSeq) ? null : SessionFile.ReadObjects(file));
@@ -224,19 +232,20 @@ public sealed partial class ElementsView : UserControl
                 return;
             }
 
-            if (elements is not null)
+            if (objects is not null)
             {
                 readStamp = (info.StoredEvents, info.CompleteFromSeq);
-                Merge(elements, trimmed: stamp is { } last && last.CompleteFromSeq != info.CompleteFromSeq);
+                Merge(objects, trimmed: stamp is { } last && last.CompleteFromSeq != info.CompleteFromSeq);
             }
 
-            FileSummary.Text = Format(info.CompleteFromSeq is null ? "ElementsFileFormat" : "ElementsFileTrimmedFormat",
-                Path.GetFileName(file), all.Count);
+            var visuals = all.Count(row => row.IsVisual);
+            FileSummary.Text = Format(info.CompleteFromSeq is null ? "ObjectsFileFormat" : "ObjectsFileTrimmedFormat",
+                Path.GetFileName(file), all.Count - visuals, visuals);
             ReadError.IsOpen = false;
             if (!readAgain && pending is { } id && !rows.ContainsKey(id))
             {
                 pending = null;
-                ShowNotFound(Text("ElementNotFound"));
+                ShowNotFound(Text("ObjectNotFound"));
             }
 
             ShowPending();
@@ -256,23 +265,23 @@ public sealed partial class ElementsView : UserControl
         }
     }
 
-    // Updates the rows in place, so the list keeps its scroll position and selection. Elements are in the order they were
+    // Updates the rows in place, so the list keeps its scroll position and selection. Objects are in the order they were
     // first seen, which only trimming changes.
-    private void Merge(IReadOnlyList<SessionObject> elements, bool trimmed)
+    private void Merge(IReadOnlyList<SessionObject> objects, bool trimmed)
     {
-        var next = new List<ElementRow>(elements.Count);
+        var next = new List<ObjectRow>(objects.Count);
         var seen = new HashSet<long>();
-        foreach (var element in elements)
+        foreach (var item in objects)
         {
-            seen.Add(element.ObjectId);
-            if (!rows.TryGetValue(element.ObjectId, out var row))
+            seen.Add(item.ObjectId);
+            if (!rows.TryGetValue(item.ObjectId, out var row))
             {
-                rows.Add(element.ObjectId, row = new(element));
+                rows.Add(item.ObjectId, row = new(item));
             }
-            else if (row.Element != element)
+            else if (row.Item != item)
             {
-                var grew = row.Element.Events != element.Events;
-                row.Update(element);
+                var grew = row.Item.Events != item.Events;
+                row.Update(item);
                 if (row == selected)
                 {
                     UpdateTitle();
@@ -322,24 +331,32 @@ public sealed partial class ElementsView : UserControl
 
         if (keep is not null && selected != keep && wanted.Contains(keep))
         {
-            ElementList.SelectedItem = keep;
+            ObjectList.SelectedItem = keep;
         }
     }
 
-    private bool Matches(ElementRow row) => search is not { } text || row.Matches(text);
+    private bool Matches(ObjectRow row) =>
+        (kindFilter is not { } kind || row.Item.Kind == kind) && (search is not { } text || row.Matches(text));
 
-    private void ApplySearch()
+    private void ApplyFilter()
     {
         search = string.IsNullOrWhiteSpace(SearchBox.Text) ? null : SearchBox.Text.Trim();
+        kindFilter = KindFilter.SelectedIndex switch
+        {
+            1 => ObjectKind.Element,
+            2 => ObjectKind.Visual,
+            _ => null,
+        };
         var keep = selected;
-        ElementList.ItemsSource = shownRows = [.. all.Where(Matches)];
+        ObjectList.ItemsSource = shownRows = [.. all.Where(Matches)];
         if (keep is not null && shownRows.Contains(keep))
         {
-            ElementList.SelectedItem = keep;
-            ElementList.ScrollIntoView(keep);
+            ObjectList.SelectedItem = keep;
+            ObjectList.ScrollIntoView(keep);
         }
     }
 
+    // Selects the pending object, clearing the search and the kind filter if they hide it.
     private void ShowPending()
     {
         if (pending is not { } id || !rows.TryGetValue(id, out var row))
@@ -352,11 +369,19 @@ public sealed partial class ElementsView : UserControl
         {
             searchTimer.Stop();
             SearchBox.Text = "";
-            ApplySearch();
+            if (KindFilter.SelectedIndex == 0)
+            {
+                ApplyFilter();
+            }
+            else
+            {
+                // Its SelectionChanged applies the filter.
+                KindFilter.SelectedIndex = 0;
+            }
         }
 
-        ElementList.SelectedItem = row;
-        ElementList.ScrollIntoView(row);
+        ObjectList.SelectedItem = row;
+        ObjectList.ScrollIntoView(row);
     }
 
     private void ShowNotFound(string message)
@@ -365,15 +390,15 @@ public sealed partial class ElementsView : UserControl
         NotFound.IsOpen = true;
     }
 
-    private void ElementList_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    private void ObjectList_SelectionChanged(object sender, SelectionChangedEventArgs args)
     {
-        if (ElementList.SelectedItem != selected)
+        if (ObjectList.SelectedItem != selected)
         {
-            SelectElement(ElementList.SelectedItem as ElementRow);
+            SelectObject(ObjectList.SelectedItem as ObjectRow);
         }
     }
 
-    private void SelectElement(ElementRow? row)
+    private void SelectObject(ObjectRow? row)
     {
         selected = row;
         UpdateTitle();
@@ -382,14 +407,14 @@ public sealed partial class ElementsView : UserControl
 
     private void UpdateTitle()
     {
-        var element = selected?.Element;
-        ElementTitle.Text = element is null ? Text("SelectElementPrompt") : Format("ElementTitleFormat",
-            ElementRow.Describe(element.Type, element.Name), element.ObjectId, selected!.Address, element.FirstMilliseconds,
-            element.LastMilliseconds);
-        ToolTipService.SetToolTip(ElementTitle, element is null ? null : ElementTitle.Text);
+        var item = selected?.Item;
+        ObjectTitle.Text = item is null ? Text("SelectObjectPrompt") : Format("ObjectTitleFormat", selected!.KindText,
+            ObjectRow.Describe(item.Kind, item.Type, item.Name), item.ObjectId, selected.Address, item.FirstMilliseconds,
+            item.LastMilliseconds);
+        ToolTipService.SetToolTip(ObjectTitle, item is null ? null : ObjectTitle.Text);
     }
 
-    // Shows a page of the selected element's history. When it grew, a full page stays as it is, since events are only
+    // Shows a page of the selected object's history. When it grew, a full page stays as it is, since events are only
     // added after it, and a last page is read again keeping the selection.
     private async void ShowHistory(int start, bool grew = false)
     {
@@ -407,7 +432,7 @@ public sealed partial class ElementsView : UserControl
 
         using var cancellation = new CancellationTokenSource();
         historyRead = cancellation;
-        var objectId = row.Element.ObjectId;
+        var objectId = row.Item.ObjectId;
         // Only the page that is shown, not one still being read, can be kept.
         var pageIsFull = grew && shownPage == (objectId, start) && History.Count == PageSize;
         var keep = grew ? HistoryList.SelectedIndex : -1;
@@ -418,12 +443,12 @@ public sealed partial class ElementsView : UserControl
                 var count = SessionFile.CountTimeline(file, objectId);
                 if (pageIsFull)
                 {
-                    return (count, start, (List<ElementEventRow>?)null);
+                    return (count, start, (List<ObjectEventRow>?)null);
                 }
 
                 // Past the end, after trimming, the last page is shown.
                 var first = start >= count && count > 0 ? (int)((count - 1) / PageSize * PageSize) : start;
-                var events = new List<ElementEventRow>(PageSize);
+                var events = new List<ObjectEventRow>(PageSize);
                 SessionFile.ReadTimeline(file, objectId, first, PageSize,
                     (profilerEvent, fields, frame) => events.Add(new(profilerEvent, fields, frame)), cancellation.Token);
                 return (count, first, events);
@@ -481,7 +506,7 @@ public sealed partial class ElementsView : UserControl
     }
 
     private void HistoryList_SelectionChanged(object sender, SelectionChangedEventArgs args) =>
-        EventDetails.Text = (HistoryList.SelectedItem as ElementEventRow)?.Details ?? Text("SelectEventPrompt");
+        EventDetails.Text = (HistoryList.SelectedItem as ObjectEventRow)?.Details ?? Text("SelectEventPrompt");
 
     private async void Open_Click(object sender, RoutedEventArgs args)
     {

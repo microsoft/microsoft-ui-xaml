@@ -79,8 +79,8 @@ public sealed partial class FramesView : UserControl
         }
     }
 
-    // Asks to show a UI element in the Elements tab.
-    public event EventHandler<long>? ElementRequested;
+    // Asks to show a UI element or visual in the Objects tab.
+    public event EventHandler<ObjectMention>? ObjectRequested;
 
     private void Source_Changed(object? sender, EventArgs args)
     {
@@ -346,12 +346,12 @@ public sealed partial class FramesView : UserControl
     {
         var row = EventList.SelectedItem as FrameEventRow;
         EventDetails.Text = row?.Details ?? Text("SelectEventPrompt");
-        ElementLinks.ItemsSource = row?.Elements;
-        ElementLinksPanel.Visibility = row?.Elements.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ObjectLinks.ItemsSource = row?.Objects;
+        ObjectLinksPanel.Visibility = row?.Objects.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void ElementLink_Click(object sender, RoutedEventArgs args) =>
-        ElementRequested?.Invoke(this, (long)((FrameworkElement)sender).Tag);
+    private void ObjectLink_Click(object sender, RoutedEventArgs args) =>
+        ObjectRequested?.Invoke(this, (ObjectMention)((FrameworkElement)sender).Tag);
 
     private async void Open_Click(object sender, RoutedEventArgs args)
     {
