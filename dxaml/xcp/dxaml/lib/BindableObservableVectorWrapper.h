@@ -77,6 +77,9 @@ namespace DirectUI
             _In_ xaml_interop::IBindableObservableVector *pObservableVector,
             _Outptr_ wfc::IVector<IInspectable *> **ppVector);
 
+        // True while a multi-item change is being expanded into per-item notifications.
+        bool IsProjectingRangeChange() const { return m_rangeView.has_value(); }
+
     protected:
 
         _Check_return_ HRESULT InitializeInstance(
@@ -100,11 +103,16 @@ namespace DirectUI
     private:
 
         _Check_return_ HRESULT ProcessCollectionChange(_In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
+        _Check_return_ HRESULT ProcessCollectionItemsChange(
+            xaml_interop::NotifyCollectionChangedAction action,
+            _In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
         _Check_return_ HRESULT ProcessCollectionMove(_In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
         _Check_return_ HRESULT ProcessCollectionRangeChange(
             INT index,
             _In_opt_ xaml_interop::IBindableVector *pOldItems,
-            _In_opt_ xaml_interop::IBindableVector *pNewItems);
+            UINT oldCount,
+            _In_opt_ xaml_interop::IBindableVector *pNewItems,
+            UINT newCount);
         _Check_return_ HRESULT ProcessVectorChange(_In_ IInspectable *pArgs);
         _Check_return_ HRESULT CheckProjectedSourceUnchanged() const;
         _Check_return_ HRESULT CheckProjectionReentrancy() const;

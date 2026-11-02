@@ -134,6 +134,38 @@ IFACEMETHODIMP BindableObservableVectorWrapper::IndexOf(
     *found = false;
     IFC_RETURN(CheckProjectedSourceUnchanged());
 
+    if (m_rangeView)
+    {
+        // Use the source's own equality, as outside a range change; for example, a .NET source
+        // finds an equal object or NaN that the comparison below would miss.
+        unsigned sourceIndex = 0;
+        boolean sourceFound = false;
+        unsigned oldItemIndex = 0;
+        boolean oldItemFound = false;
+        IFC_RETURN(BindableVectorWrapper::IndexOf(value, &sourceIndex, &sourceFound));
+        IFC_RETURN(CheckProjectedSourceUnchanged());
+        if (m_rangeOldItems)
+        {
+            IFC_RETURN(m_rangeOldItems->IndexOf(value, &oldItemIndex, &oldItemFound));
+            IFC_RETURN(CheckProjectedSourceUnchanged());
+        }
+
+        UINT projectedIndex = 0;
+        switch (m_rangeView->ResolveIndexOf(!!sourceFound, sourceIndex, !!oldItemFound, oldItemIndex, &projectedIndex))
+        {
+        case Components::CollectionRangeChangeView::IndexOfResult::Found:
+            *index = projectedIndex;
+            *found = true;
+            return S_OK;
+
+        case Components::CollectionRangeChangeView::IndexOfResult::NotFound:
+            return S_OK;
+
+        case Components::CollectionRangeChangeView::IndexOfResult::Ambiguous:
+            break;
+        }
+    }
+
     for (unsigned current = 0; current < GetProjectedSize(); ++current)
     {
         ctl::ComPtr<IInspectable> item;
@@ -393,73 +425,15 @@ BindableObservableVectorWrapper::ProcessCollectionChange(_In_ INotifyCollectionC
 
     HRESULT hr = S_OK;
     xaml_interop::NotifyCollectionChangedAction action;
-    INT index = 0;
-    UINT oldCount = 0;
-    UINT newCount = 0;
-    ctl::ComPtr<IBindableVector> oldItems;
-    ctl::ComPtr<IBindableVector> newItems;
 
     IFC(pArgs->get_Action(&action));
 
-    // Single-item changes keep their original one-notification forwarding. A multi-item
-    // change is expanded into one notification per item, because each vector notification
-    // describes exactly one item.
     switch (action)
     {
     case wxaml_interop::NotifyCollectionChangedAction_Add:
-        IFC(pArgs->get_NewStartingIndex(&index));
-        IFC(pArgs->get_NewItems(&newItems));
-        if (newItems)
-        {
-            IFC(newItems->get_Size(&newCount));
-        }
-        if (newItems && newCount != 1)
-        {
-            IFC(ProcessCollectionRangeChange(index, nullptr, newItems.Get()));
-        }
-        else
-        {
-            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index));
-        }
-        break;
-
     case wxaml_interop::NotifyCollectionChangedAction_Remove:
-        IFC(pArgs->get_OldStartingIndex(&index));
-        IFC(pArgs->get_OldItems(&oldItems));
-        if (oldItems)
-        {
-            IFC(oldItems->get_Size(&oldCount));
-        }
-        if (oldItems && oldCount != 1)
-        {
-            IFC(ProcessCollectionRangeChange(index, oldItems.Get(), nullptr));
-        }
-        else
-        {
-            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index));
-        }
-        break;
-
     case wxaml_interop::NotifyCollectionChangedAction_Replace:
-        IFC(pArgs->get_NewStartingIndex(&index));
-        IFC(pArgs->get_OldItems(&oldItems));
-        IFC(pArgs->get_NewItems(&newItems));
-        if (oldItems)
-        {
-            IFC(oldItems->get_Size(&oldCount));
-        }
-        if (newItems)
-        {
-            IFC(newItems->get_Size(&newCount));
-        }
-        if ((oldItems || newItems) && (oldCount != 1 || newCount != 1))
-        {
-            IFC(ProcessCollectionRangeChange(index, oldItems.Get(), newItems.Get()));
-        }
-        else
-        {
-            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index));
-        }
+        IFC(ProcessCollectionItemsChange(action, pArgs));
         break;
 
     case wxaml_interop::NotifyCollectionChangedAction_Move:
@@ -586,30 +560,109 @@ Cleanup:
 
 _Check_return_
 HRESULT
+BindableObservableVectorWrapper::ProcessCollectionItemsChange(
+    xaml_interop::NotifyCollectionChangedAction action,
+    _In_ INotifyCollectionChangedEventArgs *pArgs)
+{
+    // App code run while reading the payload, or a notification handler, can replace
+    // ItemsSource and release the owner's adapter.
+    const ctl::ComPtr<wfc::IVector<IInspectable *>> keepAlive(this);
+
+    INT index = 0;
+    UINT oldCount = 0;
+    UINT newCount = 0;
+    ctl::ComPtr<IBindableVector> oldItems;
+    ctl::ComPtr<IBindableVector> newItems;
+    bool sourceChanged = false;
+
+    {
+        // That app code can also change the source. The nested change is not forwarded;
+        // this change is reconciled with a Reset instead, as for Move.
+        m_preparingProjection = true;
+        auto endPreparation = wil::scope_exit([this]()
+        {
+            m_preparingProjection = false;
+            m_sourceChangedDuringProjection = false;
+        });
+
+        if (action == wxaml_interop::NotifyCollectionChangedAction_Remove)
+        {
+            IFC_RETURN(pArgs->get_OldStartingIndex(&index));
+        }
+        else
+        {
+            IFC_RETURN(pArgs->get_NewStartingIndex(&index));
+        }
+        if (action != wxaml_interop::NotifyCollectionChangedAction_Add)
+        {
+            IFC_RETURN(pArgs->get_OldItems(&oldItems));
+            if (oldItems)
+            {
+                IFC_RETURN(oldItems->get_Size(&oldCount));
+            }
+        }
+        if (action != wxaml_interop::NotifyCollectionChangedAction_Remove)
+        {
+            IFC_RETURN(pArgs->get_NewItems(&newItems));
+            if (newItems)
+            {
+                IFC_RETURN(newItems->get_Size(&newCount));
+            }
+        }
+
+        sourceChanged = m_sourceChangedDuringProjection;
+    }
+
+    if (sourceChanged)
+    {
+        return RaiseVectorChanged(wfc::CollectionChange_Reset, 0);
+    }
+
+    // Single-item changes keep their original one-notification forwarding.
+    switch (action)
+    {
+    case wxaml_interop::NotifyCollectionChangedAction_Add:
+        if (!newItems || newCount == 1)
+        {
+            return RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index);
+        }
+        break;
+
+    case wxaml_interop::NotifyCollectionChangedAction_Remove:
+        if (!oldItems || oldCount == 1)
+        {
+            return RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index);
+        }
+        break;
+
+    default:
+        if ((!oldItems && !newItems) || (oldCount == 1 && newCount == 1))
+        {
+            return RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index);
+        }
+        break;
+    }
+
+    // A multi-item change is expanded into one notification per item, because each vector
+    // notification describes exactly one item.
+    return ProcessCollectionRangeChange(index, oldItems.Get(), oldCount, newItems.Get(), newCount);
+}
+
+_Check_return_
+HRESULT
 BindableObservableVectorWrapper::ProcessCollectionRangeChange(
     INT index,
     _In_opt_ IBindableVector *pOldItems,
-    _In_opt_ IBindableVector *pNewItems)
+    UINT oldCount,
+    _In_opt_ IBindableVector *pNewItems,
+    UINT newCount)
 {
-    // A notification handler can replace ItemsSource and release the owner's adapter.
-    const ctl::ComPtr<wfc::IVector<IInspectable *>> keepAlive(this);
-
     HRESULT hr = S_OK;
     bool resetRequired = false;
-    UINT oldCount = 0;
-    UINT newCount = 0;
     UINT sourceSize = 0;
 
     m_preparingProjection = true;
 
-    if (pOldItems)
-    {
-        IFC(pOldItems->get_Size(&oldCount));
-    }
-    if (pNewItems)
-    {
-        IFC(pNewItems->get_Size(&newCount));
-    }
     IFC(BindableVectorWrapper::get_Size(&sourceSize));
 
     // Without a valid range, or after a nested change, the intermediate states cannot be

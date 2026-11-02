@@ -81,6 +81,49 @@ namespace DirectUI { namespace Components {
             ++m_appliedCount;
         }
 
+        enum class IndexOfResult
+        {
+            Found,
+            NotFound,
+            // The first match is a new item not yet inserted or an old item already removed,
+            // so a later equal item could still be visible.
+            Ambiguous,
+        };
+
+        // Maps the first matches reported by the source's and the old items' own IndexOf
+        // (which apply their own equality) to the view, which lists the source items before
+        // the change, then the pending old items, then the source items after the change.
+        IndexOfResult ResolveIndexOf(
+            bool sourceFound,
+            std::uint32_t sourceIndex,
+            bool oldItemFound,
+            std::uint32_t oldItemIndex,
+            std::uint32_t* index) const
+        {
+            *index = 0;
+            const auto appliedEnd = m_index + m_appliedCount;
+            if (sourceFound && sourceIndex < appliedEnd)
+            {
+                *index = sourceIndex;
+                return IndexOfResult::Found;
+            }
+            if (oldItemFound && oldItemIndex >= m_consumedOldCount)
+            {
+                *index = appliedEnd + oldItemIndex - m_consumedOldCount;
+                return IndexOfResult::Found;
+            }
+            if ((sourceFound && sourceIndex < m_index + m_newCount) || oldItemFound)
+            {
+                return IndexOfResult::Ambiguous;
+            }
+            if (sourceFound)
+            {
+                *index = sourceIndex - m_newCount + m_appliedCount + GetPendingOldCount();
+                return IndexOfResult::Found;
+            }
+            return IndexOfResult::NotFound;
+        }
+
     private:
         std::uint32_t GetPendingOldCount() const
         {

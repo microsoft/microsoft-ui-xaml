@@ -551,13 +551,20 @@ GroupedDataCollectionView::NotifyOfItemChange(
     Trace(szTrace);
 #endif
 
+    // An uncached count is recalculated on the next read; adjusting it would wrap the marker.
     switch (change)
     {
     case wfc::CollectionChange_ItemInserted:
-        m_nNumberOfItemsInAllGroups++;
+        if (m_nNumberOfItemsInAllGroups != cNumberOfItemsNotCached)
+        {
+            m_nNumberOfItemsInAllGroups++;
+        }
         break;
     case wfc::CollectionChange_ItemRemoved:
-        m_nNumberOfItemsInAllGroups--;
+        if (m_nNumberOfItemsInAllGroups != cNumberOfItemsNotCached)
+        {
+            m_nNumberOfItemsInAllGroups--;
+        }
         break;
     case wfc::CollectionChange_Reset:
         m_nNumberOfItemsInAllGroups = cNumberOfItemsNotCached;    // need to do a slow calc next time we request it

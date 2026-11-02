@@ -5,11 +5,32 @@
 #include "ItemCollection.g.h"
 #include "ItemsControl.g.h"
 #include "CollectionViewManager.h"
+#include "BindableObservableVectorWrapper.h"
 #include <OptionalChangeState.h>
 
 using namespace DirectUI;
 using namespace xaml_interop;
 using namespace xaml;
+
+namespace
+{
+    // Whether the adapter over an IBindableVector + INotifyCollectionChanged source is expanding
+    // a multi-item change, during which enumeration must follow its projected Size and GetAt.
+    bool IsAdapterProjectingRangeChange(
+        _In_ wfc::IIterable<IInspectable*>* source,
+        _In_ wfc::IVector<IInspectable*>* itemsView)
+    {
+        // CollectionViewManager::GetVectorFromSource uses an IObservableVector<IInspectable*> source
+        // as is and wraps any other such source in a BindableObservableVectorWrapper.
+        if (ctl::is<wfc::IObservableVector<IInspectable*>>(source))
+        {
+            return false;
+        }
+
+        ASSERT(!ctl::are_equal(source, itemsView));
+        return static_cast<BindableObservableVectorWrapper*>(itemsView)->IsProjectingRangeChange();
+    }
+}
 
 ItemCollection::ItemCollection()
     : m_bInItemChanging(FALSE)
@@ -62,10 +83,13 @@ ItemCollection::First(
 {
     if(ItemsSourceActive())
     {
-        if (OptionalChangeState::IsCollectionMoveNotificationsEnabled() &&
-            m_tpItemsView &&
+        // The adapter projects the intermediate states of an opted-in Move or a multi-item change,
+        // so enumeration agrees with Size and GetAt. Otherwise, enumerate the source directly.
+        if (m_tpItemsView &&
             ctl::is<IBindableVector>(m_tpItemsSource.Get()) &&
-            ctl::is<INotifyCollectionChanged>(m_tpItemsSource.Get()))
+            ctl::is<INotifyCollectionChanged>(m_tpItemsSource.Get()) &&
+            (OptionalChangeState::IsCollectionMoveNotificationsEnabled() ||
+                IsAdapterProjectingRangeChange(m_tpItemsSource.Get(), m_tpItemsView.Get())))
         {
             ctl::ComPtr<wfc::IIterable<IInspectable*>> iterable;
             IFC_RETURN(m_tpItemsView.As(&iterable));
