@@ -28,6 +28,7 @@ public:
     void OnApplyTemplate() override;
 
     void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+    void OnNavigationViewItemBaseParentChanged() override;
 
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -113,6 +114,11 @@ private:
     bool IsOutOfControlBounds(const winrt::Point& point);
 
     void UpdateRepeaterItemsSource();
+    winrt::IInspectable GetChildrenSource();
+    winrt::ItemsSourceView GetChildrenItemsSourceView();
+    bool IsInNavigationViewMenu();
+    void UpdateNavigationViewForChildren();
+    void SelectPreselectedChildren();
     void OnChildrenChanged(bool isCollectionChange);
     void InvalidateTopNavigationItemWidth(bool isCollectionChange = false);
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
@@ -160,6 +166,7 @@ private:
     tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{ this };
     tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{ this };
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
+    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
     tracker_ref<winrt::Grid> m_flyoutContentGrid{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
 
