@@ -164,6 +164,8 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
+    ExpireLockedColumnHolds();
+
     // Detach the old vector so replaced Columns do not leak subscriptions or owners.
     if (m_columnsVectorChangedToken.value)
     {
@@ -223,6 +225,8 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
+    ExpireLockedColumnHolds();
+
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
     const auto index = args.Index();

@@ -116,6 +116,8 @@ struct LockedColumnHold
 {
     winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
     double width{ 0.0 };
+    // What the Auto columns took when the hold was latched; growth past it can make the hold stale.
+    double autoTotal{ 0.0 };
 };
 
 // One in-flight resize drag. The gripper owns the gesture; this is only the host's anchor for it,
@@ -321,6 +323,9 @@ public:
     // measure pass re-resolves column widths (ResolveColumnWidths then re-pins frozen columns and
     // refreshes gridline visuals from the resolved widths).
     void OnColumnWidthChanged(const winrt::TableViewColumn& column);
+
+    // Internal - ends the locked-column holds; called when an input they were latched against changes.
+    void ExpireLockedColumnHolds();
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
