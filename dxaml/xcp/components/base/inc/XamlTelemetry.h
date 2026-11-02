@@ -172,7 +172,6 @@ public:
     DEFINE_ELEMENT_ACTIVITY(Arrange, WINEVENT_LEVEL_INFO, LayoutKeyword);
 
     // Layout transitions: the subject is the element the transition targets.
-#ifdef XAMLPROFILER_ENABLED
     // RealizeTransition stays a point event: its retail Begin/End brackets a whole
     // pass while the element identity is per-iteration inside the loop.
     static void RealizeTransition(CDependencyObject* object)
@@ -180,7 +179,6 @@ public:
         TRACE_ELEMENT_EVENT("RealizeTransition", object, nullptr, WINEVENT_LEVEL_INFO, 0,
             TraceLoggingOpcode(WINEVENT_OPCODE_INFO));
     }
-#endif
     DEFINE_ELEMENT_ACTIVITY(CancelTransitions, WINEVENT_LEVEL_INFO, RenderingKeyword);
     DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition, WINEVENT_LEVEL_VERBOSE, AnimationKeyword);
 

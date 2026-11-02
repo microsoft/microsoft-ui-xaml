@@ -35,7 +35,7 @@ TraceLogging is an alternative way of writing ETW events that has been used by c
 
 When converting an existing manifest event, preserve its payload field names and event level unless an intentional schema or filtering change is required. Explicit `TraceLoggingProviderEnabled` checks must use the same level as the event write.
 
-Layout, focus, virtualization, navigation, hit-testing and PasswordBox events use the normal `XamlTelemetry` TraceLogging provider in all build configurations. Each operation is emitted once, with its existing payload plus typed element/object identities. Profiler-only tree and memory events remain guarded by `XAMLPROFILER_ENABLED`; per-element `RealizeTransition` markers also remain guarded because the existing manifest Begin/End events bracket the whole pass, not each element.
+Layout, focus, virtualization, navigation, hit-testing and PasswordBox events use the normal `XamlTelemetry` TraceLogging provider in all build configurations. Each operation is emitted once, with its existing payload plus typed element/object identities. Profiler tree and memory instrumentation is also compiled in all configurations; event emission is controlled by runtime ETW enablement. Per-element `RealizeTransition` markers remain separate from the existing manifest Begin/End events because those bracket the whole pass, not each element.
 
 WIL TraceLogging documentation has detailed documentation for TraceLogging. This document covers the basics.
 

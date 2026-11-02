@@ -31,9 +31,7 @@
 #include <TimeMgr.h>
 #include <FloatUtil.h>
 #include <RuntimeEnabledFeatures.h>
-#ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
-#endif // XAMLPROFILER_ENABLED
 #include <DependencyLocator.h>
 #include <XamlLightTargetMap.h>
 #include <XamlLightCollection.h>
@@ -425,12 +423,10 @@ void HWCompTreeNodeWinRT::InsertWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
 
     // Notify the XAML Profiler of this intra-comp-node spine edge so an out-of-process
     // consumer can reconstruct the full WUC visual tree (prepend -> primary -> content, etc).
-#ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(parentVisual, childVisual, reinterpret_cast<uint64_t>(this), -1 /* index */);
     }
-#endif // XAMLPROFILER_ENABLED
 }
 
 void HWCompTreeNodeWinRT::RemoveWUCSpineVisual(_In_ WUComp::IVisual* parentVisual, _In_ WUComp::IVisual* childVisual)
@@ -441,12 +437,10 @@ void HWCompTreeNodeWinRT::RemoveWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
     if (childCollection != nullptr)
     {
         IFCFAILFAST(childCollection->Remove(childVisual));
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(parentVisual, childVisual);
         }
-#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -599,19 +593,15 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
 
         // Transfer the current visual over to the end of the new container's children
         IFCFAILFAST(originalChildrenCollection->Remove(visual));
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(oldParent, visual.get());
         }
-#endif // XAMLPROFILER_ENABLED
         IFCFAILFAST(newChildrenCollection->InsertAtTop(visual));
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
         }
-#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -2703,12 +2693,10 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         xref_ptr<WUComp::IVisualCollection> childCollection;
         GetVisualCollectionFromWUCSpineVisual(GetBottomMostNonContentVisual(), childCollection.ReleaseAndGetAddressOf());
         IFCFAILFAST(childCollection->InsertAtBottom(m_dmanipHitTestVisual.Get()));
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
         }
-#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -2719,12 +2707,10 @@ void HWCompTreeNodeWinRT::CleanupDManipHitTestVisual()
         xref_ptr<WUComp::IVisualCollection> childCollection;
         GetVisualCollectionFromWUCSpineVisual(GetBottomMostNonContentVisual(), childCollection.ReleaseAndGetAddressOf());
         IFCFAILFAST(childCollection->Remove(m_dmanipHitTestVisual.Get()));
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
         }
-#endif // XAMLPROFILER_ENABLED
         m_dmanipHitTestVisual = nullptr;
     }
 }
@@ -3299,12 +3285,10 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             // hand in visual from multiple places in the tree when it's actually in only one place. Ignore the E_INVALIDARGs that
             // we get from DComp.
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
-#ifdef XAMLPROFILER_ENABLED
             if (WucVisualTreeProfiler::IsEnabled())
             {
                 WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
             }
-#endif // XAMLPROFILER_ENABLED
         }
         if (currentHandInVisual != nullptr)
         {
@@ -3323,12 +3307,10 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             // LTEs can render one UIElement in multiple places, which causes us to insert the same WUC hand in visual in multiple
             // places in the tree. DComp will return E_INVALIDARG in this case, which we'll ignore.
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
-#ifdef XAMLPROFILER_ENABLED
             if (WucVisualTreeProfiler::IsEnabled())
             {
                 WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
             }
-#endif // XAMLPROFILER_ENABLED
         }
         m_handInVisual = currentHandInVisual;
     }
@@ -3363,12 +3345,10 @@ void HWCompTreeNodeWinRT::CleanupHandInVisual()
         // hand in visual from multiple places in the tree when it's actually in only one place. Ignore the E_INVALIDARGs that
         // we get from DComp.
         IFCFAILFAST_ALLOW_INVALIDARG(hr);
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
         }
-#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -3500,7 +3480,6 @@ void HWCompTreeNodeWinRT::InsertChildSynchronous(
     // reconstructs the comp tree from these events would miss synchronously-inserted
     // nodes and become inconsistent with the real m_children structure.
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-#ifdef XAMLPROFILER_ENABLED
     if (XamlProfilerTracing::IsEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(child)))
@@ -3509,7 +3488,6 @@ void HWCompTreeNodeWinRT::InsertChildSynchronous(
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(child));
     }
-#endif // XAMLPROFILER_ENABLED
 }
 
 void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
@@ -3622,12 +3600,10 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
 
     // Notify the XAML Profiler of this inter-comp-node edge. The child WUC visual is owned by the
     // child comp node, so pass the child comp node's pointer as the owner id.
-#ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
     }
-#endif // XAMLPROFILER_ENABLED
 }
 
 _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
@@ -3645,12 +3621,10 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
     GetVisualCollectionFromWUCSpineVisual(GetBottomMostVisual(), childCollection.ReleaseAndGetAddressOf());
 
     IFCFAILFAST(childCollection->InsertAtBottom(wucChild));
-#ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }
@@ -3668,12 +3642,10 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::RemoveChildInternal(_In_ HWCompNode 
         xref_ptr<WUComp::IVisual> visualToRemove = child->GetWUCVisualInMainTree();
 
         IFCFAILFAST(childCollection->Remove(visualToRemove));
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostVisual(), visualToRemove.get());
         }
-#endif // XAMLPROFILER_ENABLED
 
         // If this is an inline popup nested inside a windowed popup, we just removed the inline popup's placeholder
         // visual from the main tree. We also need to remove the inline popup real visual from the windowed popup's
@@ -3779,7 +3751,6 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
         // out-of-process profiler reconstructing the comp tree would never learn that
         // this node left the tree and would keep it forever.
         // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-#ifdef XAMLPROFILER_ENABLED
         if (XamlProfilerTracing::IsEnabled() &&
             !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(parentCompNode)) &&
             !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)))
@@ -3788,7 +3759,6 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
                 reinterpret_cast<uint64_t>(parentCompNode),
                 reinterpret_cast<uint64_t>(this));
         }
-#endif // XAMLPROFILER_ENABLED
     }
 
     // 2. After reparenting the comp node children, reset the children collection.
@@ -3802,12 +3772,10 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
     if (SUCCEEDED(hr))
     {
         IFCFAILFAST(childrenCollection->RemoveAll());
-#ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildrenCleared(GetContainerVisualForChildren());
         }
-#endif // XAMLPROFILER_ENABLED
     }
     else if (hr != RO_E_CLOSED || !GetContext()->IsTearingDownTree())
     {

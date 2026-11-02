@@ -19,11 +19,7 @@
 // WUComp::IVisual internally. Pass any interface pointer of the visual - the emitted id is
 // normalized to the IVisual* identity to match DCompTreeHelper's "wucVisual" attribute.
 //
-// Compiled into chk/Debug builds only (XAMLPROFILER_ENABLED defined alongside DBG when
-// Configuration==Debug). In retail this header is empty and WucVisualTreeProfiler.cpp is
-// excluded from the build; every call site #includes this header inside its own
-// #ifdef XAMLPROFILER_ENABLED (SwipeTestHooks convention).
-#ifdef XAMLPROFILER_ENABLED
+// Available in all build configurations; runtime ETW enablement controls tracing.
 namespace WucVisualTreeProfiler
 {
     // Cheap cached check: true only when a session is subscribed to the XamlProfilerTracing
@@ -88,5 +84,3 @@ namespace WucVisualTreeProfiler
     // True if compNodeId was marked via SuppressCompNode. Used to gate emissions.
     bool IsCompNodeSuppressed(uint64_t compNodeId);
 }
-
-#endif // XAMLPROFILER_ENABLED

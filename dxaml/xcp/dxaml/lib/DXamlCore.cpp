@@ -1721,7 +1721,6 @@ DXamlCore::GetPeerPrivate(
                 // existed (lazy-peer elements traced a PeerHandle of 0 at enter time). The
                 // handle is computed the same way every other profiler event computes it, so
                 // the value matches and the consumer's "first non-zero wins" stamping just works.
-#ifdef XAMLPROFILER_ENABLED
                 if (XamlProfilerTracing::IsEnabled())
                 {
                     const uint64_t peerHandle = XamlProfilerGetPeerHandle(pCoreDO);
@@ -1730,7 +1729,6 @@ DXamlCore::GetPeerPrivate(
                         XamlProfilerTracing::PeerAssociated(reinterpret_cast<uint64_t>(pCoreDO), peerHandle);
                     }
                 }
-#endif // XAMLPROFILER_ENABLED
 
                 IFC(CoreImports::DependencyObject_ShouldCreatePeerWithStrongRef(pCoreDO, &fForceStrong));
 

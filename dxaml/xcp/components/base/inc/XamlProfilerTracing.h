@@ -5,11 +5,8 @@
 
 #include <TraceLoggingInterop.h>
 
-// XamlProfiler instrumentation is compiled when XAMLPROFILER_ENABLED is
-// defined by the build's XamlProfilerEnabled setting. This can include
-// fre/Release builds. Call sites are compile-time guarded, and event
-// emission is controlled by runtime ETW enablement.
-#ifdef XAMLPROFILER_ENABLED
+// XamlProfiler instrumentation is compiled in all configurations.
+// Event emission is controlled by runtime ETW enablement.
 
 class CDependencyObject;
 
@@ -323,5 +320,3 @@ public:
     // change (Microsoft-Windows-DxgKrnl VidMmProcessUsageChange and VidMmProcessBudgetChange), with
     // the same values IDXGIAdapter3::QueryVideoMemoryInfo returns.
 };
-
-#endif // XAMLPROFILER_ENABLED

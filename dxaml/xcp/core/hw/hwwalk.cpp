@@ -14,9 +14,7 @@
 #include <ImageDecodeBoundsFinder.h>
 #include <VisualContentRenderer.h>
 #include <HWCompNodeWinRT.h>
-#ifdef XAMLPROFILER_ENABLED
 #include <WucVisualTreeProfiler.h>
-#endif // XAMLPROFILER_ENABLED
 #include <HWRedirectedCompTreeNodeWinRT.h>
 #include <HWWindowedPopupCompTreeNodeWinRT.h>
 #include "MediaPlayerPresenter.h"
@@ -3511,12 +3509,10 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCurrentContainer(
     // Notify the XAML Profiler of this sprite/leaf visual edge. The parent container visual is
     // itself a comp node's child collection visual (announced via the comp node's spine events),
     // so the owner comp node can be derived from the parent id on the consumer side.
-#ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }
@@ -3532,12 +3528,10 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCollection(
     IFC_RETURN(visualCollection->InsertAbove(visual, m_pCurrentSpriteVisualNoRef));
     SetLastSpriteVisual(visual);
 
-#ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
         WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }

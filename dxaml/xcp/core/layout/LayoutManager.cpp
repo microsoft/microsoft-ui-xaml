@@ -891,10 +891,8 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
     // fill the groups dictionary with layoutslots
     for(const auto& element: m_elementsWithDeferredTransitions)
     {
-#ifdef XAMLPROFILER_ENABLED
         if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO))
             XamlTelemetry::RealizeTransition(element.get());
-#endif
         LayoutTransitionStorage* pStorage = element->GetLayoutTransitionStorage();
         IFCEXPECT(pStorage);
         ASSERT(!pStorage->m_registeredTransitions.empty()); // should have unregistered with deferredtransitions though.
