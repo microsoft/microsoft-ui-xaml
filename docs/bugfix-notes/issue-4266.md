@@ -50,6 +50,8 @@ In `StringValueConverter::Convert`, when there is no ICPP, check whether the sou
   - Any non-ICPP `IPropertyValue` that reports `PropertyType_Boolean` changes, including one an app implements itself. That is the point of the fix.
 - **`ConvertValueToString` is not touched.** That helper prints a bool as `1`/`0` (:952-960). It is used by automation (dxaml\xcp\dxaml\lib\FrameworkElement_partial.cpp:506-508) and diagnostics. Reusing it here would have shown `1`/`0` in bindings, and changing it would change those other callers.
 - **Only the forward direction changes.** For a TwoWay binding, `DynamicValueConverter::ConvertBack` asks for the same (Boolean, String) converter (dxaml\xcp\dxaml\lib\DynamicValueConverter.cpp:124), and `StringValueConverter::ConvertBack` still returns E_FAIL (dxaml\xcp\dxaml\lib\DefaultValueConverter.h:474-481). So string-to-bool write-back fails the same way it did before.
+- **Text is not localized.** `True`/`False` is fixed text, like .NET's `Boolean.ToString()`. The converter never gets a culture: the `culture` parameter is commented out on every `Convert` in this file, including `StringValueConverter::Convert` (DefaultValueConverter.cpp:731).
+- **`bool?` works the same way.** A non-null `bool?` arrives as the same kind of Boolean `IPropertyValue` box, so it takes the same branch.
 - **Errors.** `get_Type` and `GetBoolean` failures propagate with `IFC`, the same as `ConvertHelper` does with `get_Type` (:116). A box that says it is Boolean and then fails `GetBoolean` would be broken anyway.
 
 ## Test
@@ -69,7 +71,7 @@ In `StringValueConverter::Convert`, when there is no ICPP, check whether the sou
 Results (VM, amd64chk, `-HostingMode WPF`):
 
 - With the fix: `*BindingIntegrationTests*` 80/80 pass.
-- Negative check (MUX built without the product change): the new test fails with `Values (True, Windows.Foundation.IReference`1<Boolean>)`.
+- Negative check (MUX built with the new branch turned off, and `DisableVerifyExceptions` in the test so every check runs): all six bool checks fail, each with the class name, for example `Values (True, Windows.Foundation.IReference`1<Boolean>)`. That includes the ContentPresenter case. The `Point` case still passes.
 
 ## Out of scope
 
