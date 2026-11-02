@@ -35,7 +35,7 @@ TraceLogging is an alternative way of writing ETW events that has been used by c
 
 When converting an existing manifest event, preserve its payload field names and event level unless an intentional schema or filtering change is required. Explicit `TraceLoggingProviderEnabled` checks must use the same level as the event write.
 
-When profiling is enabled, PasswordBox temporarily emits both manifest events 399 (`SendInputScopeToRichEditInfo`) and 400 (`SetIhmKeyboardSkinInfo`) and their corresponding TraceLogging events to preserve existing test consumers. Remove these compatibility emissions only after those consumers support TraceLogging.
+Layout, focus, virtualization, navigation, hit-testing and PasswordBox events use the normal `XamlTelemetry` TraceLogging provider in all build configurations. Each operation is emitted once, with its existing payload plus typed element/object identities. Profiler-only tree and memory events remain guarded by `XAMLPROFILER_ENABLED`; per-element `RealizeTransition` markers also remain guarded because the existing manifest Begin/End events bracket the whole pass, not each element.
 
 WIL TraceLogging documentation has detailed documentation for TraceLogging. This document covers the basics.
 

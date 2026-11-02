@@ -37,7 +37,7 @@ Nothing is ever read back out of the target process by the profiler; the tap
 
 ## 2. The one ETW provider
 
-All events go out on a single TraceLogging provider, defined in
+Profiler-only events go out on a TraceLogging provider, defined in
 `dxaml/xcp/components/base/inc/XamlProfilerTracing.h`:
 
 - **Name:** `Microsoft-Windows-XAML-Profiler`
@@ -49,6 +49,12 @@ Because TraceLogging is **self-describing**, adding a field or a whole new event
 never changes the GUID and never breaks an older consumer — old consumers ignore
 fields they don't know, new consumers reading a missing slot get a safe default.
 No `.wprp`/manifest change is required for new payload fields.
+
+The asynchronous comp-child removal path reuses the normal `Microsoft-Windows-XAML`
+`CompTreeRemoveChild` TraceLogging event instead of emitting a duplicate profiler
+event. Its `Parent` and `Child` fields are comp-node identities; the additional
+`IsProfilerSuppressed` flag keeps pick-overlay edges out of the profiler's tree.
+The listener also enables the normal provider's DComp keyword (`0x10000`).
 
 ---
 

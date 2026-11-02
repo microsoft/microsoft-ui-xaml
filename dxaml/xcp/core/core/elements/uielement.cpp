@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "MetadataAPI.h"
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
@@ -110,7 +111,23 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
     return 0;
 }
 
-XamlElementTracing::Identity XamlElementTracing::GetIdentity(
+uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
+{
+    if (obj == nullptr)
+    {
+        return 0;
+    }
+#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
+    return XcpDebugGetAllocationSize(obj);
+#elif !defined(NO_XCP_NEW_AND_DELETE)
+    return static_cast<uint64_t>(XcpAllocation::OSMemoryGetBlockSize(obj));
+#else
+    return 0;
+#endif
+}
+#endif // XAMLPROFILER_ENABLED
+
+XamlTelemetry::Identity XamlTelemetry::GetIdentity(
     _In_opt_ CDependencyObject* object,
     _In_opt_ CDependencyObject* relatedUIElement)
 {
@@ -132,22 +149,6 @@ XamlElementTracing::Identity XamlElementTracing::GetIdentity(
     }
     return identity;
 }
-
-uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
-{
-    if (obj == nullptr)
-    {
-        return 0;
-    }
-#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
-    return XcpDebugGetAllocationSize(obj);
-#elif !defined(NO_XCP_NEW_AND_DELETE)
-    return static_cast<uint64_t>(XcpAllocation::OSMemoryGetBlockSize(obj));
-#else
-    return 0;
-#endif
-}
-#endif // XAMLPROFILER_ENABLED
 
 // Uncomment to get generic UIElement debug traces
 // #define UIE_DBG
@@ -13395,11 +13396,7 @@ CUIElement::BoundsTestEntry(
 {
     HitTestParams myParams(hitTestParams);
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestBegin(this);
-#else
-    TraceHitTestBegin();
-#endif
+    XamlTelemetry::HitTestBegin(this);
 
     // TODO: HitTest: Consider leaving layout stale and only updating layout during Tick
     IFC_RETURN(UpdateLayout());
@@ -13409,27 +13406,16 @@ CUIElement::BoundsTestEntry(
 
     IFC_RETURN(BoundsTestInternal(target, pCallback, &hitTestParams, canHitDisabledElements, canHitInvisibleElements, nullptr /* pResult */));
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestEnd(this);
-#else
-    TraceHitTestEnd();
-#endif
+    XamlTelemetry::HitTestEnd(this);
 
     // TODO: HitTest: put the stats on CCoreServices or something
-#ifdef XAMLPROFILER_ENABLED
-    if (XamlElementTracing::IsEnabled())
+    if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::InputKeyword))
     {
-        XamlElementTracing::OuterBoundsStats(this, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
-        XamlElementTracing::InnerBoundsStats(this, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
-        XamlElementTracing::ContentBoundsStats(this, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
-        XamlElementTracing::ChildBoundsStats(this, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
+        XamlTelemetry::OuterBoundsStats(this, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
+        XamlTelemetry::InnerBoundsStats(this, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
+        XamlTelemetry::ContentBoundsStats(this, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
+        XamlTelemetry::ChildBoundsStats(this, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
     }
-#else
-    TraceOuterBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
-    TraceInnerBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
-    TraceContentBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
-    TraceChildBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
-#endif
 
     return S_OK;
 }

@@ -35,6 +35,10 @@ public sealed class ProfilerEventRouter
             case "CompPeerUnlinked":      HandleCompPeerUnlinked(e); break;
             case "CompNodeChildInserted": HandleCompNodeChildInserted(e); break;
             case "CompNodeChildRemoved":  HandleCompNodeChildRemoved(e); break;
+            case "CompTreeRemoveChild":
+                if (!e.Bool(2))
+                    HandleCompNodeChildRemoved(e);
+                break;
             case "WucVisualChildInserted":   HandleWucVisualChildInserted(e); break;
             case "WucVisualChildRemoved":    HandleWucVisualChildRemoved(e); break;
             case "WucVisualChildrenCleared": HandleWucVisualChildrenCleared(e); break;
