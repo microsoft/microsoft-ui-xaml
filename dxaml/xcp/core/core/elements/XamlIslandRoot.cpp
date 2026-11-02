@@ -1076,6 +1076,7 @@ void CXamlIslandRoot::OnIslandActualSizeChanged()
         if (m_contentRoot != nullptr)
         {
             m_contentRoot->AddPendingXamlRootChangedEvent(CContentRoot::ChangeType::Size);
+            IFCFAILFAST(m_contentRoot->GetAKExport().ExitAccessKeyMode());
         }
         else
         {

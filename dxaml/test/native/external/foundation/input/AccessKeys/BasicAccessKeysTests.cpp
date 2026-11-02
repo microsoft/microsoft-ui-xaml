@@ -1200,15 +1200,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void BasicAccessKeysTests::WindowResizeEndsAKSequence()
         {
-            TestCleanupWrapper cleanup;
+            TestCleanupWrapper cleanup([]()
+            {
+                TestServices::WindowHelper->MaximizeDesktopWindow();
+                TestServices::WindowHelper->WaitForIdle();
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            TestServices::WindowHelper->SetDesktopWindowSize(600, 500);
+            TestServices::WindowHelper->WaitForIdle();
 
             xaml_controls::StackPanel^ rootPanel;
             xaml_controls::Button^ button = nullptr;
 
+            auto accessKeyShownEvent = std::make_shared<Event>();
+            auto accessKeyShownRegistration = CreateSafeEventRegistration(xaml_controls::Button, AccessKeyDisplayRequested);
             std::shared_ptr<Event> accessKeyHiddenEvent = std::make_shared<Event>();
             auto accessKeyHiddenRegistration = CreateSafeEventRegistration(xaml_controls::Button, AccessKeyDisplayDismissed);
-
-            wf::Rect windowBounds;
 
             RunOnUIThread([&]()
             {
@@ -1219,6 +1227,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TestServices::WindowHelper->WindowContent = rootPanel;
                 button = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button1"));
+                accessKeyShownRegistration.Attach(button, [accessKeyShownEvent]()
+                {
+                    accessKeyShownEvent->Set();
+                });
                 accessKeyHiddenRegistration.Attach(button, [&]()
                 {
                     LOG_OUTPUT(L"AccessKeyHidden event fired!");
@@ -1228,29 +1240,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             AccessKeyTestHelper::TryMovingFocusToXamlForInit();
 
-            RunOnUIThread([&]()
-            {
-                windowBounds = TestServices::WindowHelper->WindowBounds;
-                LOG_OUTPUT(L"Window size was (%.2f, %.2f).",
-                    windowBounds.Width,
-                    windowBounds.Height);
-
-            });
-            TestServices::WindowHelper->WaitForIdle();
+            const auto hwnd = ::GetAncestor(reinterpret_cast<HWND>(TestServices::WindowHelper->GetUIAWindowHandle()), GA_ROOT);
+            RECT before = {};
+            VERIFY_IS_TRUE(::GetWindowRect(hwnd, &before));
 
             LOG_OUTPUT(L"Entering access key mode");
             TestServices::KeyboardHelper->Alt();
+            accessKeyShownEvent->WaitForDefault();
             TestServices::WindowHelper->WaitForIdle();
+            VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
 
-            RunOnUIThread([&]()
-            {
-                ::Windows::Foundation::Size newSize(windowBounds.Width / 2, windowBounds.Height / 2);
-
-                LOG_OUTPUT(L"Resizing Window to (%.2f, %.2f).",
-                    windowBounds.Width/2,
-                    windowBounds.Height/2);
-                TestServices::WindowHelper->SetWindowSizeOverride(newSize);
-            });
+            const auto width = (before.right - before.left) / 2;
+            const auto height = (before.bottom - before.top) / 2;
+            TestServices::WindowHelper->SetDesktopWindowSize(width, height);
+            RECT after = {};
+            VERIFY_IS_TRUE(::GetWindowRect(hwnd, &after));
+            VERIFY_ARE_EQUAL(width, after.right - after.left);
+            VERIFY_ARE_EQUAL(height, after.bottom - after.top);
 
             accessKeyHiddenEvent->WaitForDefault();
         }
