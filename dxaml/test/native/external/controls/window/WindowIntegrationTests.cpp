@@ -1108,6 +1108,107 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
+    void WindowIntegrationTests::WindowVisibleAfterClose()
+    {
+        TestCleanupWrapper cleanup;
+
+        // Reads Window.Visible, recording a thrown exception as a failure instead of letting it escape.
+        auto tryGetVisible = [](xaml::Window^ window, bool* threw) -> bool
+        {
+            try
+            {
+                return window->Visible;
+            }
+            catch (Platform::Exception^ ex)
+            {
+                LOG_OUTPUT(L"Window.Visible threw hr=0x%08x", ex->HResult);
+                *threw = true;
+                return false;
+            }
+        };
+
+        enum class CloseState { BeforeActivation, Activated, Minimized };
+        for (const auto state : { CloseState::BeforeActivation, CloseState::Activated, CloseState::Minimized })
+        {
+            LOG_OUTPUT(L"Close state=%d", static_cast<int>(state));
+            xaml::Window^ window = nullptr;
+            auto windowCleanup = wil::scope_exit([&]()
+            {
+                // Only reached if a verification failed before the window was closed.
+                if (window) { RunOnUIThread([&]() { window->Close(); }); }
+            });
+            auto visibilityChangedRegistration = CreateSafeEventRegistration(xaml::Window, VisibilityChanged);
+            int closeVisibilityChangedCount = 0;
+            bool handlerThrew = false;
+            bool handlerVisible = false;
+            bool closing = false;
+
+            RunOnUIThread([&]()
+            {
+                window = ref new xaml::Window();
+                window->Content = ref new xaml_controls::Grid();
+                visibilityChangedRegistration.Attach(window,
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowVisibilityChangedEventArgs^>(
+                        [&](Platform::Object^ sender, xaml::WindowVisibilityChangedEventArgs^ args)
+                {
+                    if (closing)
+                    {
+                        ++closeVisibilityChangedCount;
+                        VERIFY_IS_FALSE(args->Visible);
+                        handlerVisible = tryGetVisible(safe_cast<xaml::Window^>(sender), &handlerThrew);
+                    }
+                }));
+
+                if (state != CloseState::BeforeActivation)
+                {
+                    window->Activate();
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            if (state == CloseState::Minimized)
+            {
+                RunOnUIThread([&]()
+                {
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    HWND windowHandle = nullptr;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window)->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                    ::ShowWindow(windowHandle, SW_MINIMIZE);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+
+            RunOnUIThread([&]()
+            {
+                bool threw = false;
+                VERIFY_ARE_EQUAL(state == CloseState::Activated, tryGetVisible(window, &threw));
+                VERIFY_IS_FALSE(threw);
+
+                closing = true;
+                window->Close();
+                auto closedWindow = window;
+                window = nullptr;
+
+                VERIFY_IS_FALSE(tryGetVisible(closedWindow, &threw));
+                VERIFY_IS_FALSE(threw, L"Window.Visible should return false, not throw, after the window is closed");
+
+                // Close raises VisibilityChanged(false) unless the window is minimized or hidden. The handler must
+                // see Visible == false. (A never-activated window also gets this event, so its count isn't checked.)
+                if (state == CloseState::Activated)
+                {
+                    VERIFY_ARE_EQUAL(1, closeVisibilityChangedCount);
+                }
+                else if (state == CloseState::Minimized)
+                {
+                    VERIFY_ARE_EQUAL(0, closeVisibilityChangedCount);
+                }
+                VERIFY_IS_FALSE(handlerThrew, L"Window.Visible should not throw inside the close-time VisibilityChanged handler");
+                VERIFY_IS_FALSE(handlerVisible);
+            });
+        }
+    }
+
     void WindowIntegrationTests::WindowWidthHeightAfterClose()
     {
         TestCleanupWrapper cleanup;

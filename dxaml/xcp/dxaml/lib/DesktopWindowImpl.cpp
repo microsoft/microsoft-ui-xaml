@@ -258,11 +258,11 @@ _Check_return_ HRESULT DesktopWindowImpl::get_BoundsImpl(_Out_ wf::Rect* pValue)
 }
 
 // WinUI Deskstop Visible tracks minimized and restored window states.
+// A closed window reports false rather than throwing, matching the VisibilityChanged(false) raised by Close.
 _Check_return_ HRESULT DesktopWindowImpl::get_VisibleImpl(_Out_ BOOLEAN* pValue)
 {
-    IFC_RETURN(CheckIsWindowClosed());
-
-    *pValue = !IsIconic(m_hwnd.get()) && IsWindowVisible(m_hwnd.get());
+    // Check m_bIsClosed first: it's set before the close-time VisibilityChanged and before the HWND is destroyed.
+    *pValue = !m_bIsClosed && !IsIconic(m_hwnd.get()) && IsWindowVisible(m_hwnd.get());
 
     return S_OK;
 }

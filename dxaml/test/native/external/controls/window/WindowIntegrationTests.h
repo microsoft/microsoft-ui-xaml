@@ -98,6 +98,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowVisibleAfterClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window.Visible returns false instead of throwing after close, including from the close-time VisibilityChanged handler.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseValidatesArguments)
             TEST_METHOD_PROPERTY(L"Description", L"Validates preserved pending requests, invalid arguments, and exact finite Width/Height round-tripping after close, including the largest finite double.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
