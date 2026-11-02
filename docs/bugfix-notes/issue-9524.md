@@ -6,8 +6,8 @@ After `Window.Close()`, reading `Window.Visible` throws `E_INVALID_OPERATION` (t
 There's no public "is closed" property, so apps can't check the window state before reading `Visible`.
 They have to track the closed state themselves or catch the exception.
 
-It also throws inside the close-time `VisibilityChanged` handler. `Close` raises `VisibilityChanged(false)`,
-but if the handler reads `sender.Visible` to check, it gets an exception instead of `false`.
+It also throws inside the close-time `VisibilityChanged` handler. `Close` raises `VisibilityChanged(false)`
+(unless the window is already minimized or hidden), but if the handler reads `sender.Visible` to check, it gets an exception instead of `false`.
 
 ## Root cause
 
