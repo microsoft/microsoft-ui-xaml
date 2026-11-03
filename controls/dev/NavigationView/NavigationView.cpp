@@ -2058,6 +2058,12 @@ void NavigationView::ApplyBackButtonHitTarget(const winrt::Button& backButton)
             return;
         }
         backButton.ClearValue(property);
+        // A visual state value equal to NavigationView's own only shows once NavigationView's value is cleared.
+        if (IsAnimatedValue(backButton, property))
+        {
+            ClearBackButtonHitTarget(backButton);
+            return;
+        }
     }
 
     const auto backplate = GetBackButtonBackplate(backButton);
@@ -2124,9 +2130,10 @@ void NavigationView::ApplyBackButtonHitTarget(const winrt::Button& backButton)
     {
         backButton.MinWidth(m_backButtonHitTargetMinWidth);
     }
+    // A visual state value equal to the style's only shows once NavigationView's value is written.
     for (const auto& property : geometryProperties)
     {
-        if (!IsBackButtonValueAvailable(property))
+        if (!IsBackButtonValueAvailable(property) || IsAnimatedValue(backButton, property))
         {
             ClearBackButtonHitTarget(backButton);
             return;
