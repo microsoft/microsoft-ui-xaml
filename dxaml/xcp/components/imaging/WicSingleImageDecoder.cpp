@@ -29,10 +29,11 @@ static uint32_t GetScaleDistance(UINT actual, UINT requested)
     return (actual >= requested) ? (actual - requested) : 2 * (requested - actual);
 }
 
-// An .ico holds one image per size, and WIC does not expose them in size order. Use the image closest to the
-// requested size instead of frame 0.
+// An .ico holds one image per size, and WIC does not expose them in size order. Replace frame 0 with the image
+// closest to the requested size. The images are inspected on a separate decoder, so the decoder that produced
+// frame 0 is used exactly as before if frame 0 is kept.
 static _Check_return_ HRESULT GetIcoFrameForSize(
-    _In_ IWICBitmapDecoder* bitmapDecoder,
+    _In_ EncodedImageData& encodedImageData,
     const XSIZE& requestedSize,
     _Inout_ wrl::ComPtr<IWICBitmapFrameDecode>& bitmapFrameDecode
     )
@@ -40,22 +41,24 @@ static _Check_return_ HRESULT GetIcoFrameForSize(
     const UINT requestedWidth = static_cast<UINT>(requestedSize.Width);
     const UINT requestedHeight = static_cast<UINT>(requestedSize.Height);
 
+    wrl::ComPtr<IWICBitmapDecoder> bitmapDecoder;
+    IFC_RETURN(encodedImageData.CreateWicBitmapDecoder(bitmapDecoder));
+
     UINT frameCount = 0;
     IFC_RETURN(bitmapDecoder->GetFrameCount(&frameCount));
 
-    UINT width = 0;
-    UINT height = 0;
-    IFC_RETURN(bitmapFrameDecode->GetSize(&width, &height));
-    uint32_t bestDistance = GetScaleDistance(width, requestedWidth) + GetScaleDistance(height, requestedHeight);
-
     wrl::ComPtr<IWICBitmapFrameDecode> bestFrame;
+    UINT bestIndex = 0;
     UINT bestWidth = 0;
     UINT bestHeight = 0;
+    uint32_t bestDistance = UINT32_MAX;
 
-    for (UINT i = 1; i < frameCount && bestDistance != 0; ++i)
+    for (UINT i = 0; i < frameCount && bestDistance != 0; ++i)
     {
-        // Skip an image WIC cannot read rather than failing a decode that frame 0 alone would have satisfied.
+        // Skip an image WIC cannot read.
         wrl::ComPtr<IWICBitmapFrameDecode> candidate;
+        UINT width = 0;
+        UINT height = 0;
         if (FAILED(bitmapDecoder->GetFrame(i, &candidate)) || FAILED(candidate->GetSize(&width, &height)))
         {
             continue;
@@ -65,6 +68,7 @@ static _Check_return_ HRESULT GetIcoFrameForSize(
         if (distance < bestDistance)
         {
             bestFrame = std::move(candidate);
+            bestIndex = i;
             bestWidth = width;
             bestHeight = height;
             bestDistance = distance;
@@ -73,15 +77,13 @@ static _Check_return_ HRESULT GetIcoFrameForSize(
 
     // WIC can list an image it then fails to decode: a small PNG image next to BMP images fails CopyPixels with
     // WINCODEC_ERR_INSUFFICIENTBUFFER. Keep frame 0 unless the chosen image decodes.
-    if (bestFrame != nullptr)
+    if (bestFrame != nullptr && bestIndex != 0)
     {
         wrl::ComPtr<IWICFormatConverter> converter;
         std::vector<uint8_t> pixels(static_cast<size_t>(bestWidth) * bestHeight * 4);
-        if (SUCCEEDED(ImagingUtility::CreateDefaultConverter(GUID_WICPixelFormat32bppPBGRA, bestFrame, converter)) &&
-            SUCCEEDED(converter->CopyPixels(nullptr, bestWidth * 4, static_cast<UINT>(pixels.size()), pixels.data())))
-        {
-            bitmapFrameDecode = std::move(bestFrame);
-        }
+        IFC_RETURN(ImagingUtility::CreateDefaultConverter(GUID_WICPixelFormat32bppPBGRA, bestFrame, converter));
+        IFC_RETURN(converter->CopyPixels(nullptr, bestWidth * 4, static_cast<UINT>(pixels.size()), pixels.data()));
+        bitmapFrameDecode = std::move(bestFrame);
     }
 
     return S_OK;
@@ -113,8 +115,9 @@ _Check_return_ HRESULT WicSingleImageDecoder::DecodeFrame(
     if ((imageMetadata.containerFormat == GUID_ContainerFormatIco) &&
         (decodeParams.GetDecodeWidth() != 0 || decodeParams.GetDecodeHeight() != 0))
     {
-        IFC_RETURN(GetIcoFrameForSize(
-            spBitmapDecoder.Get(),
+        // Best effort: if picking another image fails, frame 0 is decoded as before.
+        IGNOREHR(GetIcoFrameForSize(
+            encodedImageData,
             ImagingUtility::CalculateScaledSize(imageMetadata, decodeParams),
             spBitmapFrameDecode));
     }
