@@ -195,12 +195,15 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetRealizationWindowFromVisibl
         // Increment the current cache buffer per side.  Cap it at the max cache buffer per side.
         if (shouldProcessCache)
         {
+            const auto previousCacheBufferPerSide = m_windowState.currentCacheBufferPerSide;
             m_windowState.currentCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
             m_windowState.currentCacheBufferPerSide = std::min(m_windowState.currentCacheBufferPerSide, maxCacheBufferPerSide);
 
-            // The realization window might change and we might need to correct for estimation errors.
-            // In this case, we should also shift the window by the correction amount.
-            m_windowState.allowWindowShiftOnEstimationErrorCorrection = TRUE;
+            if (m_windowState.currentCacheBufferPerSide != previousCacheBufferPerSide)
+            {
+                // Only a changed cache buffer may need a corresponding viewport correction.
+                m_windowState.allowWindowShiftOnEstimationErrorCorrection = TRUE;
+            }
         }
 
         switch(panningOrientation)
