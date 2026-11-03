@@ -2480,6 +2480,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             return;
         }
         UnselectPrevItem(prevItem, nextItem);
+        if (!nextItem)
+        {
+            ClearSelectionModelForNullSelectedItem();
+        }
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         UpdateSelectionModelSelectionForSelectedItem(nextItem);
 
@@ -3632,6 +3636,35 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
         });
         m_shouldIgnoreNextSelectionChange = true;
         ChangeSelectStatusForItem(prevItem, false /*selected*/);
+    }
+}
+
+void NavigationView::ClearSelectionModelForNullSelectedItem()
+{
+    // UnselectPrevItem only deselects the model through the previous item's realized container. Without one (e.g. a data
+    // item under a collapsed parent after a PaneDisplayMode change) the model keeps the old path and its ancestors keep
+    // IsChildSelected, so a later expand/collapse or re-prepared container would bring the indicator back.
+    auto const staleIndexPath = m_selectionModel.SelectedIndex();
+    if (!staleIndexPath || staleIndexPath.GetSize() == 0)
+    {
+        return;
+    }
+
+    UpdateIsChildSelected(staleIndexPath, nullptr);
+
+    // IsChildSelected writes can run app code; only drop the path if it's still the stale one.
+    auto const currentIndexPath = m_selectionModel.SelectedIndex();
+    if (!SelectedItem() && currentIndexPath && currentIndexPath.CompareTo(staleIndexPath) == 0)
+    {
+        auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange]()
+        {
+            if (setIgnoreNextSelectionChangeToFalse)
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            }
+        });
+        m_shouldIgnoreNextSelectionChange = true;
+        m_selectionModel.DeselectAt(staleIndexPath);
     }
 }
 
@@ -5709,6 +5742,12 @@ void NavigationView::ChangeIsExpandedNavigationViewItem(const winrt::NavigationV
 
 winrt::NavigationViewItem NavigationView::FindLowestLevelContainerToDisplaySelectionIndicator()
 {
+    // SelectedItem = null can leave the selection model's old path in place (see UpdateIsChildSelectedForPreparedContainer).
+    if (!SelectedItem())
+    {
+        return nullptr;
+    }
+
     auto indexIntoIndex = 1;
     auto const selectedIndex = m_selectionModel.SelectedIndex();
     if (selectedIndex && selectedIndex.GetSize() > 1)
