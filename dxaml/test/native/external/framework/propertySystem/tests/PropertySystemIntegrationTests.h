@@ -143,33 +143,33 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         BEGIN_TEST_METHOD(VerifyThreadException_DependencyObject)
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThreadException_MultiParentShareableDO)
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThreadException_ShareableDO)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThreadException_NoParentShareableDO)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThreadException_DataBinding)
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThreadException_ContentControlContent)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThreadException_CustomDependencyProperty)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Uses multiple UWP views
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetNullableProperty)

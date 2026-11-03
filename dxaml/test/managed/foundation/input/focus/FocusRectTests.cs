@@ -1278,7 +1278,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates that round focus rectangles work")]
-        [TestProperty("Hosting:Mode", "WPF")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
         public void ValidateRoundedFocusRect()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(

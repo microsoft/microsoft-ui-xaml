@@ -32,7 +32,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestSourceInfo)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and get source info.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // issue with adding Canvas to island and Enter does not gets called
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // issue with adding Canvas to island and Enter does not gets called
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestSourceInfoOnEmptyElements)
@@ -84,7 +84,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifySourceInfoDesignModeV2)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
             END_TEST_METHOD()

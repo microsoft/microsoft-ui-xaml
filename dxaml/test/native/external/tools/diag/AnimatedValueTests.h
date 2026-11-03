@@ -126,7 +126,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestCanModifyExistingVsmTriggersInExistingVisualState)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can modify adaptive triggers in vsm")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
@@ -144,7 +144,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
              BEGIN_TEST_METHOD(CanModifyVsmTriggersInUnnamedState)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can modify adaptive triggers in an unnamed visual state")
                  TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
              END_TEST_METHOD()
@@ -156,7 +156,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestCanRemoveTriggerPreState)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can remove a trigger from VisualState.Triggers before entering the state")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
@@ -229,7 +229,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestAddRemoveVisualStateName)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can add a name to a VisualState and call GoToState and then remove it")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()

@@ -30,7 +30,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(VisualTreeHelperHitTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Test VisualTreeHelper.FindElementsInHostCoordinates in LTR/RTL at different scale levels.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Crash in test code
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Crash in test code
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TouchFuzzyHitTest)
