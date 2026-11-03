@@ -1,0 +1,155 @@
+{
+  "$schema": "../config.schema.json",
+  "schemaVersion": 1,
+  "name": "store-local",
+  "harness": {
+    "artifactsRoot": "../.artifacts"
+  },
+  "repositories": {
+    "app": {
+      "path": "Q:\\Repo\\SFC.Client.SFUI",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Universal%20Store/_git/SFC.Client.SFUI",
+      "branch": "user/akanpatel/profiler_harness",
+      "baseRef": "HEAD",
+      "allowDirty": false
+    },
+    "profiler": {
+      "path": "Q:\\Repo\\microsoft-ui-xaml",
+      "remoteUrl": "https://github.com/microsoft/microsoft-ui-xaml.git",
+      "branch": "user/akanpatel2206/profiler_harness",
+      "baseRef": "main",
+      "allowDirty": true
+    }
+  },
+  "target": {
+    "kind": "local",
+    "stageRoot": "../.artifacts/local-target"
+  },
+  "agents": {
+    "default": "agency"
+  },
+  "application": {
+    "buildCommands": [
+      {
+        "file": "pwsh",
+        "arguments": [
+          "-NoLogo",
+          "-NoProfile",
+          "-File",
+          "{harnessRoot}\\scripts\\Ensure-DotNetSdk.ps1",
+          "-RepoRoot",
+          "{appRepo}"
+        ],
+        "workingDirectory": "{appRepo}",
+        "timeoutSeconds": 1800
+      },
+      {
+        "file": "pwsh",
+        "arguments": [
+          "-NoLogo",
+          "-NoProfile",
+          "-File",
+          "{appRepo}\\.github\\skills\\store-naot-build\\scripts\\Build-NativeAot.ps1",
+          "-RepoRoot",
+          "{appRepo}",
+          "-BuildOnly",
+          "-TargetFramework",
+          "net10.0-windows10.0.28000.0"
+        ],
+        "workingDirectory": "{appRepo}",
+        "timeoutSeconds": 7200
+      }
+    ],
+    "deployCommands": {
+      "local": [
+        {
+          "file": "pwsh",
+          "arguments": [
+            "-NoLogo",
+            "-NoProfile",
+            "-File",
+            "{harnessRoot}\\scripts\\Prepare-StorePayload.ps1",
+            "-RepoRoot",
+            "{appRepo}",
+            "-OutputRoot",
+            "{artifactsRoot}\\payloads\\store-local",
+            "-StorePackageScript",
+            "{harnessRoot}\\scripts\\StorePackage.ps1"
+          ],
+          "workingDirectory": "{appRepo}",
+          "timeoutSeconds": 1800
+        },
+        {
+          "file": "pwsh",
+          "arguments": [
+            "-NoLogo",
+            "-NoProfile",
+            "-File",
+            "{harnessRoot}\\scripts\\StorePackage.ps1",
+            "-Action",
+            "Deploy",
+            "-RepoRoot",
+            "{artifactsRoot}\\payloads\\store-local",
+            "-Configuration",
+            "Release",
+            "-Platform",
+            "x64",
+            "-TargetFramework",
+            "net10.0-windows10.0.28000.0",
+            "-StatePath",
+            "{artifactsRoot}\\state\\store-original-package.json"
+          ],
+          "workingDirectory": "{appRepo}",
+          "timeoutSeconds": 900
+        }
+      ],
+      "hyperv": [],
+      "ixp": []
+    },
+    "cleanupCommands": [
+      {
+        "file": "pwsh",
+        "arguments": [
+          "-NoLogo",
+          "-NoProfile",
+          "-File",
+          "{harnessRoot}\\scripts\\StorePackage.ps1",
+          "-Action",
+          "Stop",
+          "-RepoRoot",
+          "{appRepo}",
+          "-StatePath",
+          "{artifactsRoot}\\state\\store-original-package.json"
+        ],
+        "workingDirectory": "{appRepo}",
+        "timeoutSeconds": 300
+      }
+    ],
+    "launch": {
+      "kind": "packaged",
+      "target": "Microsoft.WindowsStore_8wekyb3d8bbwe!App",
+      "arguments": "",
+      "workingDirectory": null
+    }
+  },
+  "profiler": {
+    "configuration": "Release",
+    "platform": "x64",
+    "buildTimeoutSeconds": 7200
+  },
+  "profiling": {
+    "firstFrameTimeoutSeconds": 90,
+    "scenarioTimeoutSeconds": 240,
+    "settleMilliseconds": 3000,
+    "frameBudgetMilliseconds": 16.7
+  },
+  "automation": {
+    "scenarioPath": "store-search-netflix-safe.json"
+  },
+  "optimization": {
+    "maxAttempts": 5,
+    "primaryMetric": "p95DrawMilliseconds",
+    "direction": "lower",
+    "minimumImprovementPercent": 5
+  }
+}

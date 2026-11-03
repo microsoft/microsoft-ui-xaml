@@ -1,0 +1,142 @@
+{
+  "$schema": "../config.schema.json",
+  "schemaVersion": 1,
+  "name": "store-ixp-current-preview",
+  "harness": {
+    "artifactsRoot": "../.artifacts"
+  },
+  "repositories": {
+    "app": {
+      "path": "Q:\\Repo\\SFC.Client.SFUI",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Universal%20Store/_git/SFC.Client.SFUI",
+      "branch": "user/akanpatel/profiler_harness",
+      "baseRef": "HEAD",
+      "allowDirty": false
+    },
+    "profiler": {
+      "path": "Q:\\Repo\\microsoft-ui-xaml",
+      "remoteUrl": "https://github.com/microsoft/microsoft-ui-xaml.git",
+      "branch": "user/akanpatel2206/profiler_harness",
+      "baseRef": "main",
+      "allowDirty": true
+    }
+  },
+  "target": {
+    "kind": "ixp",
+    "stageRoot": "C:\\WinUIProfilerHarness",
+    "ixp": {
+      "name": "WinUIProfilerHarness-ge-current-directwex-latest",
+      "ensureCreated": false,
+      "branch": "rs_prerelease",
+      "connectionMode": "psremote",
+      "minimumOsBuild": 27200,
+      "flavor": "Desktop",
+      "arch": "amd64",
+      "savePath": "C:\\VMs\\WinUIProfilerHarness",
+      "switchName": "Default Switch",
+      "memoryInGb": 16,
+      "processorCount": 8,
+      "enableCdKeys": true,
+      "tools": [
+        "AgentTools",
+        "DevRegistrySettings",
+        "SoftGpu",
+        "VSRedist",
+        "WinGet"
+      ],
+      "winGetApps": [
+        "OpenJS.NodeJS.LTS"
+      ]
+    }
+  },
+  "agents": {
+    "default": "agency"
+  },
+  "application": {
+    "buildCommands": [
+      {
+        "file": "pwsh",
+        "arguments": [
+          "-NoLogo",
+          "-NoProfile",
+          "-File",
+          "{harnessRoot}\\scripts\\Ensure-DotNetSdk.ps1",
+          "-RepoRoot",
+          "{appRepo}"
+        ],
+        "workingDirectory": "{appRepo}",
+        "timeoutSeconds": 1800
+      },
+      {
+        "file": "pwsh",
+        "arguments": [
+          "-NoLogo",
+          "-NoProfile",
+          "-File",
+          "{appRepo}\\.github\\skills\\store-naot-build\\scripts\\Build-NativeAot.ps1",
+          "-RepoRoot",
+          "{appRepo}",
+          "-BuildOnly",
+          "-TargetFramework",
+          "net10.0-windows10.0.28000.0"
+        ],
+        "workingDirectory": "{appRepo}",
+        "timeoutSeconds": 7200
+      }
+    ],
+    "deployCommands": {
+      "local": [],
+      "hyperv": [],
+      "ixp": [
+        {
+          "file": "pwsh",
+          "arguments": [
+            "-NoLogo",
+            "-NoProfile",
+            "-File",
+            "{harnessRoot}\\scripts\\Prepare-StorePayload.ps1",
+            "-RepoRoot",
+            "{appRepo}",
+            "-OutputRoot",
+            "{artifactsRoot}\\payloads\\store-ixp",
+            "-StorePackageScript",
+            "{harnessRoot}\\scripts\\StorePackage.ps1"
+          ],
+          "workingDirectory": "{appRepo}",
+          "timeoutSeconds": 1800
+        }
+      ]
+    },
+    "payloadPath": "{artifactsRoot}\\payloads\\store-ixp",
+    "targetInstallScripts": {
+      "ixp": "& '{targetAppRoot}\\StorePackage.ps1' -Action Deploy -RepoRoot '{targetAppRoot}' -StatePath '{stageRoot}\\state\\store-original-package.json' -AllowMissingOriginalPackage | ConvertTo-Json -Depth 10"
+    },
+    "cleanupCommands": [],
+    "launch": {
+      "kind": "packaged",
+      "target": "Microsoft.WindowsStore_8wekyb3d8bbwe!App",
+      "arguments": "",
+      "workingDirectory": null
+    }
+  },
+  "profiler": {
+    "configuration": "Release",
+    "platform": "x64",
+    "buildTimeoutSeconds": 7200
+  },
+  "profiling": {
+    "firstFrameTimeoutSeconds": 90,
+    "scenarioTimeoutSeconds": 240,
+    "settleMilliseconds": 3000,
+    "frameBudgetMilliseconds": 16.7
+  },
+  "automation": {
+    "scenarioPath": "store-search-netflix-safe.json"
+  },
+  "optimization": {
+    "maxAttempts": 5,
+    "primaryMetric": "p95DrawMilliseconds",
+    "direction": "lower",
+    "minimumImprovementPercent": 5
+  }
+}

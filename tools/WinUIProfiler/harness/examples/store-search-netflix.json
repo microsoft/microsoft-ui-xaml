@@ -1,0 +1,60 @@
+{
+  "$schema": "../automation.schema.json",
+  "schemaVersion": 1,
+  "name": "store-search-netflix",
+  "description": "Launch Microsoft Store, search for Netflix, open the result, and invoke Get.",
+  "steps": [
+    {
+      "action": "waitForWindow",
+      "selector": {
+        "name": "Microsoft Store",
+        "controlType": "Window",
+        "match": "contains"
+      },
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "setText",
+      "selector": {
+        "name": "Search",
+        "controlType": "Edit",
+        "match": "contains"
+      },
+      "text": "Netflix",
+      "timeoutSeconds": 30
+    },
+    {
+      "action": "sendKeys",
+      "keys": "{ENTER}"
+    },
+    {
+      "action": "waitForElement",
+      "selector": {
+        "name": "Netflix",
+        "match": "contains",
+        "index": 0
+      },
+      "timeoutSeconds": 60
+    },
+    {
+      "action": "click",
+      "selector": {
+        "name": "Netflix",
+        "match": "contains",
+        "index": 0
+      },
+      "timeoutSeconds": 30
+    },
+    {
+      "action": "click",
+      "selector": {
+        "name": "Get",
+        "controlType": "Button",
+        "match": "exact",
+        "index": 0
+      },
+      "timeoutSeconds": 60
+    }
+  ]
+}
+
