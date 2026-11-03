@@ -570,9 +570,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 // A secondary press from another pointer replaces the mouse press without starting a new one.
                 pen.PressBarrel(start);
                 pen.Release();
-                pen.LeaveRange();
                 Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                // Check while the pen still hovers: its PointerExited would refresh the visual state.
                 VerifyNavigationViewDragStateReset();
+                pen.LeaveRange();
             }
             finally
             {
