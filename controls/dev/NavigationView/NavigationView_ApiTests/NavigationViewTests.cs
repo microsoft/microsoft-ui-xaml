@@ -3830,6 +3830,145 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 7"));
         }
 
+        // Regression tests for GitHub issue #8266: a data-bound child selected through SelectedItem before its
+        // container was selected stayed in the SelectionModel after SelectedItem = null, so its parent kept
+        // IsChildSelected and the selection indicator stayed lit.
+        [TestMethod]
+        public void VerifyClearingSelectedItemClearsSelectedRootItem()
+        {
+            VerifyClearingSelectedItemClearsSelection("RootItem");
+        }
+
+        [TestMethod]
+        public void VerifyClearingSelectedItemClearsCollapsedDataBoundChildSelection()
+        {
+            VerifyClearingSelectedItemClearsSelection("CollapsedChild");
+        }
+
+        [TestMethod]
+        public void VerifyClearingSelectedItemClearsChildSelectedWhileExpanding()
+        {
+            VerifyClearingSelectedItemClearsSelection("ChildSelectedWhileExpanding");
+        }
+
+        private void VerifyClearingSelectedItemClearsSelection(string scenario)
+        {
+            NavigationView navView = null;
+            Category parentItem = null;
+            Category childItem = null;
+            Category otherItem = null;
+            NavigationViewItem parentContainer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                childItem = new("Child", "Child", "Icon", null, true);
+                parentItem = new("Parent", "Parent", "Icon", new ObservableCollection<Category> { childItem }, true);
+                otherItem = new("Other", "Other", "Icon", null, true);
+
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 800,
+                    Height = 600,
+                    Content = new Grid { Height = 600 },
+                    MenuItemsSource = new ObservableCollection<Category> { parentItem, otherItem },
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+</DataTemplate>")
+                };
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parentContainer = (NavigationViewItem)navView.ContainerFromMenuItem(parentItem);
+                Verify.IsNotNull(parentContainer);
+
+                if (scenario == "RootItem")
+                {
+                    navView.SelectedItem = otherItem;
+                }
+                else if (scenario == "CollapsedChild")
+                {
+                    navView.SelectedItem = childItem;
+                }
+                else
+                {
+                    // The issue's app selects a child from Expanding while the parent is being invoked.
+                    bool redirected = false;
+                    navView.Expanding += (sender, args) =>
+                    {
+                        if (!redirected && args.ExpandingItem == parentItem)
+                        {
+                            redirected = true;
+                            navView.SelectedItem = childItem;
+                        }
+                    };
+                    var provider = FrameworkElementAutomationPeer.CreatePeerForElement(parentContainer) as IInvokeProvider;
+                    Verify.IsNotNull(provider);
+                    provider.Invoke();
+                    Verify.IsTrue(redirected, "Expanding should have been raised for the invoked parent.");
+                }
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            string expectedLitItem = scenario == "RootItem" ? "Other" : scenario == "CollapsedChild" ? "Parent" : "Child";
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(scenario == "RootItem" ? otherItem : childItem, navView.SelectedItem);
+                Verify.AreEqual(scenario != "RootItem", parentContainer.IsChildSelected, "Precondition: parent IsChildSelected");
+                if (scenario == "ChildSelectedWhileExpanding")
+                {
+                    Verify.IsTrue(parentContainer.IsExpanded, "Precondition: parent expanded");
+                    var childContainer = navView.ContainerFromMenuItem(childItem) as NavigationViewItem;
+                    Log.Comment($"Child container realized={childContainer != null}, IsSelected={childContainer?.IsSelected}");
+                }
+            });
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, expectedLitItem), $"Precondition: selection indicator on {expectedLitItem}");
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.SelectedItem = null;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(navView.SelectedItem);
+                Verify.IsFalse(parentContainer.IsChildSelected, "Parent IsChildSelected should be cleared with the selection.");
+            });
+            foreach (var content in new[] { "Parent", "Child", "Other" })
+            {
+                Verify.IsFalse(ItemHasSelectionIndicator(navView, content), $"No selection indicator should be lit on {content} after SelectedItem = null.");
+            }
+
+            // Toggling the parent must not bring back an indicator for the cleared selection.
+            RunOnUIThread.Execute(() =>
+            {
+                parentContainer.IsExpanded = !parentContainer.IsExpanded;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+            foreach (var content in new[] { "Parent", "Child", "Other" })
+            {
+                Verify.IsFalse(ItemHasSelectionIndicator(navView, content), $"No selection indicator should be lit on {content} after toggling the parent.");
+            }
+        }
+
+        // IdleSynchronizer does not wait for Low priority work such as NavigationView's deferred SelectionChanged.
+        static void DrainLowPriorityDispatcherWork(NavigationView navView)
+        {
+            IdleSynchronizer.Wait();
+            var drained = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                navView.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => drained.Set());
+            });
+            Verify.IsTrue(drained.WaitOne(TimeSpan.FromSeconds(5)), "Low priority dispatcher work should drain.");
+            IdleSynchronizer.Wait();
+        }
+
         static ItemsRepeater GetRepeater(DependencyObject parent)
         {
             static ItemsRepeater GetNavigationViewRepeaterHelper(DependencyObject root)
