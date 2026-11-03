@@ -1384,26 +1384,38 @@ void TableView::ApplyGridLinesToHeader()
 
     const auto headerCells = host.Children();
     const uint32_t headerCellCount = headerCells.Size();
+    uint32_t firstVisibleHeaderCell = headerCellCount;
     uint32_t lastVisibleHeaderCell = headerCellCount;
-    for (uint32_t i = headerCellCount; i > 0; --i)
+    for (uint32_t i = 0; i < headerCellCount; ++i)
     {
-        if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::FrameworkElement>())
+        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::FrameworkElement>())
         {
             const auto column = headerCell.Tag().try_as<winrt::TableViewColumn>();
             if (headerCell.Visibility() == winrt::Visibility::Visible &&
                 column &&
                 column.ActualWidth() > 0.0)
             {
-                lastVisibleHeaderCell = i - 1;
-                break;
+                if (firstVisibleHeaderCell == headerCellCount)
+                {
+                    firstVisibleHeaderCell = i;
+                }
+                lastVisibleHeaderCell = i;
             }
         }
     }
 
+    const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
     for (uint32_t i = 0; i < headerCellCount; ++i)
     {
         if (auto header = headerCells.GetAt(i).try_as<winrt::TableViewColumnHeader>())
         {
+            const bool leadingEdge = i == firstVisibleHeaderCell;
+            const bool trailingEdge = m_suppressTrailingGridLine && i == lastVisibleHeaderCell;
+            const wchar_t* edgeState = leadingEdge && trailingEdge ? L"SingleHeader" :
+                leadingEdge ? (isRtl ? L"RightEdgeHeader" : L"LeftEdgeHeader") :
+                trailingEdge ? (isRtl ? L"LeftEdgeHeader" : L"RightEdgeHeader") : L"InteriorHeader";
+            winrt::VisualStateManager::GoToState(header, edgeState, false);
+
             if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
                 gridLine.Visibility(
@@ -1689,9 +1701,10 @@ void TableView::RefreshTerminalGridLines()
     const bool suppressBottom = bottomResult.value_or(m_suppressBottomGridLine);
     m_suppressBottomGridLine = suppressBottom;
 
+    // The leading header can change without moving the terminal column or its gridline.
+    ApplyGridLinesToHeader();
     if (trailingChanged || terminalColumnChanged)
     {
-        ApplyGridLinesToHeader();
         RefreshGridLinesOnRealizedRows();
     }
 

@@ -97,14 +97,15 @@ TableView
 
 TableViewRow
 └─ Grid
-   ├─ Border PART_RootBorder                      row background
+   ├─ Border PART_RootBorder                      rounded row background, no content to clip
+   ├─ Border (layout padding and gridline reserve)
    │  └─ Grid
-   │     ├─ ContentPresenter PART_CellForegroundPresenter   foreground for Selected* states
-   │     │  └─ Grid
-   │     │     ├─ TableViewCellsPanel PART_CellsHost         one TableViewCell per column
-   │     │     └─ Border PART_RowExpanderGutter > FontIcon PART_RowExpanderIcon
-   │     └─ Rectangle PART_SelectionIndicator     leading-edge pill, Opacity 0 unless Selected*
-   └─ Border PART_GridLineBorder                  1px bottom gridline, not hit-testable
+   │     └─ ContentPresenter PART_CellForegroundPresenter   foreground for Selected* states
+   │        └─ Grid
+   │           ├─ TableViewCellsPanel PART_CellsHost         one TableViewCell per column
+   │           └─ Border PART_RowExpanderGutter > FontIcon PART_RowExpanderIcon
+   ├─ Border PART_GridLineBorder                  1px bottom gridline, not hit-testable
+   └─ Border PART_SelectionIndicator              rounded whole-row outline, Opacity 0 unless Selected*
 ```
 
 `RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from `TableViewColumn.GenerateElement(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
@@ -290,9 +291,11 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
 | `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
+| `BorderBrush`, `BorderThickness` | Outer frame. Transparent in Light/Dark; system-color in High Contrast. The default 1px inset is retained for stable layout and opt-in visible borders. |
 | `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
-| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
+| `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
+| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`Normal`), `TabularSurface*` brushes. |
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
@@ -300,9 +303,9 @@ Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme 
 |---|---|---|---|
 | `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
 | `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
-| `TabularSurfaceOuterBorderBrush` | Control border | `CardStrokeColorDefault` | `SystemColorWindowTextColor` |
+| `TabularSurfaceOuterBorderBrush` | Control border | Transparent | `SystemColorWindowTextColor` |
 
-A sortable header's `CommonStates` change only the fill, so an app foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Row `CornerRadius` feeds only the focus visual, keeping the row stack rectangular. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
 
 **Later:** per-element `RowStyle` (on `TableViewRow`) and `CellStyle` (on the `TableViewCell` wrapper), as in WPF, rather than a monolithic `TableStyle`, so standard `Style` machinery applies without a property explosion.
 
@@ -312,7 +315,7 @@ A sortable header's `CommonStates` change only the fill, so an app foreground su
 |---|---|
 | `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional). |
 | `TableViewRow` | Resolved: `PART_CellsHost` (`Panel`, required), `PART_GridLineBorder` and `PART_RowExpanderGutter` (optional). State: `PART_RootBorder`, `PART_CellForegroundPresenter`, `PART_SelectionIndicator`, `PART_RowExpanderIcon`. |
-| `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Root`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
+| `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Background`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
 | `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`. State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
 
 The scrollers are found as the nearest `ScrollViewer` ancestors of the header host and repeater, not by name. Row states are `CommonStates` (including four `Selected*` states), `RowExpansionStates`, `RowExpandabilityStates` and `RowHierarchyStates`, `Row`-prefixed so they cannot collide with an app's `Expanded`/`Collapsed`.

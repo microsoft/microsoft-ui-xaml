@@ -100,6 +100,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <!-- Without a fill the padding takes no pointer input, killing the tooltip and click-to-sort there. -->
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundBrush}" />
         <Setter Property="FontSize" Value="{ThemeResource TableViewHeaderFontSize}" />
         <Setter Property="FontWeight" Value="{ThemeResource TableViewHeaderFontWeight}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -109,7 +110,7 @@
                 <ControlTemplate TargetType="controls:TableViewColumnHeader">
                     <!-- CornerRadius is set only while keyboard-focused: a rounded root clips. -->
                     <Grid x:Name="PART_Root"
-                          Background="{TemplateBinding Background}"
+                          Background="Transparent"
                           CornerRadius="{TemplateBinding CornerRadius}">
                         <!-- See TableViewRow: state groups must sit on the template root. -->
                         <VisualStateManager.VisualStateGroups>
@@ -117,17 +118,36 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="HeaderEdgeStates">
+                                <VisualState x:Name="InteriorHeader" />
+                                <VisualState x:Name="LeftEdgeHeader">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Background.CornerRadius" Value="{ThemeResource TableViewHeaderLeftCornerRadius}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="RightEdgeHeader">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Background.CornerRadius" Value="{ThemeResource TableViewHeaderRightCornerRadius}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SingleHeader">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Background.CornerRadius" Value="{ThemeResource TableViewHeaderSingleCornerRadius}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -162,6 +182,12 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
+                        <!-- Round the fill, not the content or the resize hit targets. -->
+                        <Border x:Name="PART_Background"
+                                Background="{TemplateBinding Background}"
+                                IsHitTestVisible="False"
+                                AutomationProperties.AccessibilityView="Raw" />
 
                         <ContentPresenter x:Name="PART_ContentPresenter"
                                           Content="{TemplateBinding Content}"
@@ -330,7 +356,7 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Fill">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
@@ -377,7 +403,8 @@
                                 Grid.Row="0"
                                 Grid.Column="0"
                                 Background="{TemplateBinding Background}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+                        <Border BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                         <Grid>
                             <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper
@@ -417,21 +444,6 @@
                                     </Border>
                                 </Grid>
                             </ContentPresenter>
-
-                            <!-- Fluent selection indicator: overlays the leading edge, Opacity 0 by
-                                 default; the Selected* states animate it to 1. Not hit-testable, so it
-                                 cannot steal a press from the cell underneath it. -->
-                            <Rectangle x:Name="PART_SelectionIndicator"
-                                       Width="3"
-                                       Height="16"
-                                       RadiusX="1.5"
-                                       RadiusY="1.5"
-                                       Fill="{ThemeResource TabularSurfaceSelectionIndicatorBrush}"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       Margin="2,0,0,0"
-                                       IsHitTestVisible="False"
-                                       Opacity="0" />
                         </Grid>
                         </Border>
                         <Border x:Name="PART_GridLineBorder"
@@ -440,6 +452,14 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 IsHitTestVisible="False" />
+                        <!-- Paint above the gridlines without changing cell layout or hit testing. -->
+                        <Border x:Name="PART_SelectionIndicator"
+                                BorderBrush="{ThemeResource TabularSurfaceSelectionIndicatorBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0"
+                                AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

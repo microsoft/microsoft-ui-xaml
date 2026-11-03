@@ -181,9 +181,16 @@ Override the named `TabularSurface*` brush keys to customize colors. To restyle 
 beyond their brushes (typography, padding, the template), set `ColumnHeaderStyle`. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
 
+The outer border is transparent by default in Light/Dark and uses `SystemColorWindowTextColor` in
+High Contrast. Its `BorderThickness` remains 1, so changing themes or restoring a visible border does
+not shift content. Set `BorderBrush` or override `TabularSurfaceOuterBorderBrush` to customize it;
+no replacement template is needed.
+
 Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
 independently to customize the disabled-selected indicator and disabled row text.
 By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
+The default indicator is a 1px whole-row outline with the row's `CornerRadius`, painted above gridlines.
+It does not change cell layout or pointer hit testing, and remains distinct from the system keyboard-focus visual.
 
 The default group header's item count inherits the header `Foreground` and is dimmed by
 `TabularSurfaceGroupHeaderCountOpacity` (1.0 in High Contrast). A disabled header shows the count
@@ -562,7 +569,7 @@ Selection is suppressed while a cell edit is open, because row navigation is: an
 These are understood and deliberately not addressed by single selection:
 
 - **Pointer selection is not blocked during an open edit.** Keyboard navigation is suppressed while editing, but clicking another row moves `SelectedItem` and the highlight immediately. If the resulting commit is then vetoed by validation, the editor stays open on the previous row while the selection has already moved. Whether selection should be blocked, deferred, or allowed to diverge from the edit target is an open decision.
-- **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
+- **The selection indicator scrolls with the row.** `PART_SelectionIndicator` outlines the horizontally scrolling row content, so the outline's leading and trailing edges can scroll out of view. Pinning the outline to the viewport would require a separate non-scrolling selection layer.
 - **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Hovered, pressed and selected cells also turn off High Contrast text backplates (`HighContrastAdjustment="None"` on `PART_CellForegroundPresenter`, which cell content inherits), because the control paints its own high-contrast highlight pair; such app-coloured text therefore gets no automatic backplate either. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
@@ -651,12 +658,25 @@ The realized column header: a templated `ContentControl`, one per column in `PAR
 </tabular:TableView.ColumnHeaderStyle>
 ```
 
-The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
+The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `Normal`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header uses `TabularSurfaceHeaderForegroundBrush` (secondary text in Light/Dark, window text in High Contrast), independently of the body foreground; override it or set a `ColumnHeaderStyle`/`HeaderStyle` foreground to customize header text. The header band is transparent in Light/Dark. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
+
+`TabularControlsResources` also exposes `StrongTableViewColumnHeaderStyle`, the supported semibold + primary-text alternative.
+It changes only `FontWeight` and `Foreground`, retaining the default template, density, focus, and interaction states.
+Use it for all headers in a table, or assign it to one column's `HeaderStyle`:
+
+```xml
+<tabular:TableView ColumnHeaderStyle="{StaticResource StrongTableViewColumnHeaderStyle}" />
+```
+
+Omit `ColumnHeaderStyle` for the regular + secondary-text default. Apps can further customize the strong variant
+with a style `BasedOn="{StaticResource StrongTableViewColumnHeaderStyle}"`; a column's `HeaderStyle` still takes
+precedence over the table's `ColumnHeaderStyle`. High Contrast and disabled-state foregrounds remain system-controlled.
 
 Template parts. All are optional; a missing part disables only its feature:
 
 | Part | Type | Purpose |
 |---|---|---|
+| `PART_Background` | `Border` | Decorative fill, separate from content and resize hit targets. Rounded only at exposed top corners; all corners adjoining header gridlines remain square. |
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
 | `PART_GridLine` | `Border` | Vertical separator. Always shown, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
@@ -669,6 +689,7 @@ Visual states:
 | `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort, and change only the fill (`TabularSurfaceHeaderBackgroundPointerOverBrush` / `...PressedBrush`). `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
 | `HighContrastStates` | `HighContrastNormal`, `HighContrastPointerOver`, `HighContrastPressed` | Entered alongside `PointerOver`/`Pressed` only under High Contrast: text and glyph switch to `TabularSurfaceHeaderForeground*Brush` and drop the text backplate. |
 | `SortStates` | `Unsorted`, `SortAscending`, `SortDescending` | Show or hide the sort glyph; the glyph is hidden until the column is sorted. |
+| `HeaderEdgeStates` | `InteriorHeader`, `LeftEdgeHeader`, `RightEdgeHeader`, `SingleHeader` | Follow visible columns, trailing separator suppression, and flow direction. Set the fill's corner radius using the `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens. |
 
 The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
 
@@ -814,7 +835,7 @@ Template parts:
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
-| `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
+| `PART_SelectionIndicator` | `Border` | **Required by the default state definitions.** Rounded whole-row selection outline; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `BorderBrush`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
 Visual states:
 
@@ -823,6 +844,8 @@ Visual states:
 | `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled`, `Selected`, `SelectedPointerOver`, `SelectedPressed`, `SelectedDisabled` |
 
 Selected states share the one group rather than living in a second, overlapping one: they animate the same `PART_RootBorder.Background`, so two groups would make the result depend on `GoToState` call order. Encoding both dimensions in the state name is the pattern `TreeViewItem` and `ItemContainer` use.
+
+Hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TabularSurfaceSelectionIndicatorBrush`; `SelectedDisabled` uses `TabularSurfaceSelectionIndicatorDisabledBrush`.
 
 Properties:
 
