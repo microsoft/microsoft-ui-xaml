@@ -314,6 +314,8 @@ namespace Private.Infrastructure
 
         // XamlOptionalChanges test hooks
         HRESULT ResetOptionalChanges();
+
+        HRESULT ShrinkXamlIslandVisibleBounds([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot, [in] BOOLEAN enabled);
    }
 
     [version(NTDDI_WINTHRESHOLD)]

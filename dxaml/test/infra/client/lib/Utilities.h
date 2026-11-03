@@ -183,6 +183,7 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(ResetAtlasSizeHint)();
 
         IFACEMETHOD(ShrinkApplicationViewVisibleBounds)(_In_ BOOLEAN enabled);
+        IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ BOOLEAN enabled) override;
 
         IFACEMETHOD(GetPopupOverlayElement)(_In_ xaml_primitives::IPopup* popup, _Outptr_ xaml::IFrameworkElement** overlayElement);
 

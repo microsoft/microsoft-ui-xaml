@@ -68,6 +68,9 @@ public:
 
     wf::Size GetSize();
 
+    bool ShouldShrinkVisibleBoundsForTesting() const { return m_shouldShrinkVisibleBoundsForTesting; }
+    void SetShouldShrinkVisibleBoundsForTesting(bool value) { m_shouldShrinkVisibleBoundsForTesting = value; }
+
     bool IsVisible() const;
 
     _Check_return_ HRESULT SetScreenOffsetOverride(_In_ wf::Point screenOffset);
@@ -307,6 +310,7 @@ private:
     xref_ptr<CUIAHostWindow> m_uiaWindow;
 
     bool m_screenOffsetOverrideIsValid = false;
+    bool m_shouldShrinkVisibleBoundsForTesting = false;
     wf::Point m_screenOffsetOverride = {};
 
     Microsoft::WRL::ComPtr<xaml_hosting::IFocusController> m_xamlFocusController;

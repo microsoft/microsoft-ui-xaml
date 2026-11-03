@@ -1163,6 +1163,18 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 
+    HRESULT Utilities::ShrinkXamlIslandVisibleBounds(_In_ xaml::IXamlRoot* xamlRoot, _In_ BOOLEAN enabled)
+    {
+        COM_START
+        {
+            RunOnUIThread([&]()
+            {
+                LogThrow_IfFailed(WindowHelper::GetTestHooks()->ShrinkXamlIslandVisibleBounds(xamlRoot, !!enabled));
+            });
+        }
+        COM_END
+    }
+
     HRESULT Utilities::GetPopupOverlayElement(
         _In_ xaml_primitives::IPopup* popup,
         _Outptr_ xaml::IFrameworkElement** overlayElement
@@ -2575,4 +2587,3 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 } } // namespace Private::Infrastructure
-

@@ -364,4 +364,6 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD_(size_t, GetAllocationCount)() = 0;
     IFACEMETHOD_(size_t, GetAllocationSize)() = 0;
     IFACEMETHOD_(size_t, GetDeallocationCount)() = 0;
+
+    IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled) = 0;
 };
