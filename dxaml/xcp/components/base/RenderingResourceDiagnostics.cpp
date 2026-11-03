@@ -2,11 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <atomic>
 #include <iterator>
 
-namespace GraphicsResourceCounters
+namespace RenderingResourceDiagnostics
 {
     namespace
     {
@@ -45,7 +46,6 @@ namespace GraphicsResourceCounters
             return index >= static_cast<uint32_t>(ResourceKind::DCompSurfaceWrapper);
         }
 
-#if GRAPHICS_RESOURCE_COUNTERS_ENABLED
         struct Counters
         {
             std::atomic<uint64_t> created{0};
@@ -54,12 +54,20 @@ namespace GraphicsResourceCounters
         };
 
         Counters g_counters[ResourceKindCount];
-#endif
     }
 
-#if GRAPHICS_RESOURCE_COUNTERS_ENABLED
-    void RecordCreated(ResourceKind kind) noexcept
+    bool IsEnabled() noexcept
     {
+        return XamlProfilerTracing::IsAllocationProfilingEnabled();
+    }
+
+    bool LogResourceCreated(ResourceKind kind) noexcept
+    {
+        if (!IsEnabled())
+        {
+            return false;
+        }
+
         const auto index = static_cast<uint32_t>(kind);
         auto& counters = g_counters[index];
         counters.created.fetch_add(1, std::memory_order_relaxed);
@@ -67,9 +75,11 @@ namespace GraphicsResourceCounters
         {
             counters.live.fetch_add(1, std::memory_order_relaxed);
         }
+        XamlProfilerTracing::GraphicsResourceCreated(index, ResourceNames[index], HasLifetime(index));
+        return true;
     }
 
-    void RecordDestroyed(ResourceKind kind) noexcept
+    void LogResourceDestroyed(ResourceKind kind) noexcept
     {
         const auto index = static_cast<uint32_t>(kind);
         ASSERT(HasLifetime(index));
@@ -77,8 +87,11 @@ namespace GraphicsResourceCounters
         counters.destroyed.fetch_add(1, std::memory_order_relaxed);
         ASSERT(counters.live.load(std::memory_order_relaxed) != 0);
         counters.live.fetch_sub(1, std::memory_order_relaxed);
+        if (IsEnabled())
+        {
+            XamlProfilerTracing::GraphicsResourceDestroyed(index, ResourceNames[index], HasLifetime(index));
+        }
     }
-#endif
 
     bool TryGetSnapshot(uint32_t index, Snapshot& snapshot) noexcept
     {
@@ -90,13 +103,14 @@ namespace GraphicsResourceCounters
 
         snapshot.name = ResourceNames[index];
         snapshot.hasLifetime = HasLifetime(index);
-#if GRAPHICS_RESOURCE_COUNTERS_ENABLED
-        snapshot.enabled = true;
-        const auto& counters = g_counters[index];
-        snapshot.created = counters.created.load(std::memory_order_relaxed);
-        snapshot.destroyed = counters.destroyed.load(std::memory_order_relaxed);
-        snapshot.live = counters.live.load(std::memory_order_relaxed);
-#endif
+        snapshot.enabled = IsEnabled();
+        if (snapshot.enabled)
+        {
+            const auto& counters = g_counters[index];
+            snapshot.created = counters.created.load(std::memory_order_relaxed);
+            snapshot.destroyed = counters.destroyed.load(std::memory_order_relaxed);
+            snapshot.live = counters.live.load(std::memory_order_relaxed);
+        }
         return true;
     }
 }

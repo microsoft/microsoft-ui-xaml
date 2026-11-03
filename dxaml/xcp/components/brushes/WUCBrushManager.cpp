@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include "WUCBrushManager.h"
 #include <DCompSurface.h>
 #include <HWTextureMgr.h>
@@ -211,9 +211,11 @@ wrl::ComPtr<WUComp::ICompositionMaskBrush> WUCBrushManager::GetMaskBrush(
 
     if (maskBrush == nullptr)
     {
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::MaskBrush,
-            m_compositor2->CreateMaskBrush(&maskBrush)));
+        IFCFAILFAST(m_compositor2->CreateMaskBrush(&maskBrush));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush);
+        }
     }
 
     if (nineGrid != nullptr)
@@ -314,9 +316,11 @@ wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush
 
     if (nineGridBrush == nullptr)
     {
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::NineGridBrush,
-            m_compositor2->CreateNineGridBrush(&nineGridBrush)));
+        IFCFAILFAST(m_compositor2->CreateNineGridBrush(&nineGridBrush));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
+        }
     }
 
     float inverseRealizationScaleX = (maskRealizationScaleX == 0 ? 0 : 1.0f / maskRealizationScaleX);
@@ -350,9 +354,11 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetSurfaceBrush(
 
     if (surfaceBrush == nullptr)
     {
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SurfaceBrush,
-            m_compositor->CreateSurfaceBrush(&surfaceBrush)));
+        IFCFAILFAST(m_compositor->CreateSurfaceBrush(&surfaceBrush));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+        }
 
         // Reset the default alignment properties to what we need them to be
         IFCFAILFAST(surfaceBrush->put_HorizontalAlignmentRatio(0));
@@ -420,9 +426,11 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetColorBrush(_In_ CSoli
                 if (transition.m_wucBrush == nullptr)
                 {
                     wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-                    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-                        GraphicsResourceCounters::ResourceKind::ColorBrush,
-                        m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
+                    IFCFAILFAST(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+                    if (RenderingResourceDiagnostics::IsEnabled())
+                    {
+                        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                    }
                     transition.m_wucBrush = colorBrush;
                 }
 

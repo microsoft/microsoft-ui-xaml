@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"
@@ -129,12 +129,18 @@ Cleanup:
 
 CD2DSolidColorBrush::CD2DSolidColorBrush()
 {
-    GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DSolidColorBrushWrapper);
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrushWrapper);
+    }
 }
 
 CD2DSolidColorBrush::~CD2DSolidColorBrush()
 {
-    GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DSolidColorBrushWrapper);
+    if (m_graphicsResourceTracked)
+    {
+        RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrushWrapper);
+    }
 }
 
 BrushType CD2DSolidColorBrush::GetType()
@@ -185,12 +191,18 @@ Cleanup:
 
 CD2DBitmapBrush::CD2DBitmapBrush()
 {
-    GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DBitmapBrushWrapper);
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DBitmapBrushWrapper);
+    }
 }
 
 CD2DBitmapBrush::~CD2DBitmapBrush()
 {
-    GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DBitmapBrushWrapper);
+    if (m_graphicsResourceTracked)
+    {
+        RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::D2DBitmapBrushWrapper);
+    }
 }
 
 BrushType CD2DBitmapBrush::GetType()
@@ -224,12 +236,18 @@ Cleanup:
 
 CD2DLinearGradientBrush::CD2DLinearGradientBrush()
 {
-    GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DLinearGradientBrushWrapper);
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DLinearGradientBrushWrapper);
+    }
 }
 
 CD2DLinearGradientBrush::~CD2DLinearGradientBrush()
 {
-    GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DLinearGradientBrushWrapper);
+    if (m_graphicsResourceTracked)
+    {
+        RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::D2DLinearGradientBrushWrapper);
+    }
 }
 
 BrushType CD2DLinearGradientBrush::GetType()
@@ -265,12 +283,18 @@ Cleanup:
 
 CD2DRadialGradientBrush::CD2DRadialGradientBrush()
 {
-    GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DRadialGradientBrushWrapper);
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DRadialGradientBrushWrapper);
+    }
 }
 
 CD2DRadialGradientBrush::~CD2DRadialGradientBrush()
 {
-    GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DRadialGradientBrushWrapper);
+    if (m_graphicsResourceTracked)
+    {
+        RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::D2DRadialGradientBrushWrapper);
+    }
 }
 
 BrushType CD2DRadialGradientBrush::GetType()

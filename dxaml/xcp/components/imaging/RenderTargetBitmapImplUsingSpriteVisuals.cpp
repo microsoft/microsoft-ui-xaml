@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include <wincodec.h>
 #include <NamespaceAliases.h>
 #include <uielement.h>
@@ -140,9 +140,11 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     // Create the property visual here and use the calculated transform to adjust the
     // visual for scaling quality and so it is oriented at 0,0 in the texture.
     ctl::ComPtr<WUComp::IContainerVisual> propertyContainerVisual;
-    IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::ContainerVisual,
-        compositor->CreateContainerVisual(propertyContainerVisual.ReleaseAndGetAddressOf())));
+    IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(compositor->CreateContainerVisual(propertyContainerVisual.ReleaseAndGetAddressOf()));
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+    }
 
     ctl::ComPtr<WUComp::IVisual> propertyVisual;
     IFCFAILFAST(propertyContainerVisual.As(&propertyVisual));

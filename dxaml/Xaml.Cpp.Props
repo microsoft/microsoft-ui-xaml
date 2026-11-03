@@ -105,7 +105,6 @@
   <PropertyGroup>
     <XamlProfilerEnabled>false</XamlProfilerEnabled>
     <XamlProfilerEnabled Condition="'$(Configuration)'=='Debug'">true</XamlProfilerEnabled>
-    <GraphicsResourceCountersEnabled Condition="'$(GraphicsResourceCountersEnabled)'==''">false</GraphicsResourceCountersEnabled>
   </PropertyGroup>
 
 </Project>

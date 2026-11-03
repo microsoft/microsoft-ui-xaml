@@ -65,6 +65,18 @@ public:
         return g_profilerEnabled.load(std::memory_order_relaxed);
     }
 
+    DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,
+        uint32_t, ResourceKind,
+        PCWSTR,   ResourceName,
+        bool,     HasLifetime,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceDestroyed,
+        uint32_t, ResourceKind,
+        PCWSTR,   ResourceName,
+        bool,     HasLifetime,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
 #ifdef XAMLPROFILER_ENABLED
 
     DEFINE_TRACELOGGING_EVENT_PARAM6(ChildAdded,

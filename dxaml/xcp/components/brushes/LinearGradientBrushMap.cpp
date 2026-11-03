@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include "LinearGradientBrushMap.h"
 
 #include <microsoft.ui.composition.h>
@@ -16,9 +16,11 @@ wrl::ComPtr<WUComp::ICompositionBrush> LinearGradientBrushMap::GetBrush(
     if (!m_map.ContainsKey(elementSize))
     {
         wrl::ComPtr<WUComp::ICompositionLinearGradientBrush> linearGradientBrush;
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::LinearGradientBrush,
-            compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf())));
+        IFCFAILFAST(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+        }
 
         wrl::ComPtr<WUComp::ICompositionBrush> gradientAsCBrush;
         IFCFAILFAST(linearGradientBrush.As(&gradientAsCBrush));

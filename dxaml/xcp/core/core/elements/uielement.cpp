@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include "MetadataAPI.h"
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
@@ -7458,17 +7458,21 @@ _Check_return_ HRESULT CUIElement::EnsureHandOffVisual(
         if (createLayerVisual)
         {
             ctl::ComPtr<WUComp::ILayerVisual> layerHandOffVisual;
-            IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::LayerVisual,
-                GetDCompTreeHost()->GetCompositor2()->CreateLayerVisual(&layerHandOffVisual)));
+            IFC_RETURN(GetDCompTreeHost()->GetCompositor2()->CreateLayerVisual(&layerHandOffVisual));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual);
+            }
             IFCFAILFAST(layerHandOffVisual.As(&spHandOffVisual));
         }
         else
         {
             ctl::ComPtr<ixp::IContainerVisual> handOffVisual;
-            IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::ContainerVisual,
-                GetDCompTreeHost()->GetCompositor()->CreateContainerVisual(handOffVisual.ReleaseAndGetAddressOf())));
+            IFC_RETURN(GetDCompTreeHost()->GetCompositor()->CreateContainerVisual(handOffVisual.ReleaseAndGetAddressOf()));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            }
             IFCFAILFAST(handOffVisual.As(&spHandOffVisual));
 
         }

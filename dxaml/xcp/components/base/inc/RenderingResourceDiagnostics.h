@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace GraphicsResourceCounters
+namespace RenderingResourceDiagnostics
 {
     // Values identify persisted XamlResourceSnapshot graphics slots; append new kinds.
     enum class ResourceKind : uint32_t
@@ -53,30 +53,11 @@ namespace GraphicsResourceCounters
     // Independent atomic observations, not a transactionally consistent state cut.
     bool TryGetSnapshot(uint32_t index, Snapshot& snapshot) noexcept;
 
-#if GRAPHICS_RESOURCE_COUNTERS_ENABLED
-    void RecordCreated(ResourceKind kind) noexcept;
-    void RecordDestroyed(ResourceKind kind) noexcept;
-#else
-    inline void RecordCreated(ResourceKind) noexcept
-    {
-    }
+    bool IsEnabled() noexcept;
 
-    inline void RecordDestroyed(ResourceKind) noexcept
-    {
-    }
-#endif
+    // Wrappers retain the result so only observed creations have a matching destruction.
+    bool LogResourceCreated(ResourceKind kind) noexcept;
 
-    template<typename TResult>
-    inline TResult RecordCreation(ResourceKind kind, TResult result) noexcept
-    {
-#if GRAPHICS_RESOURCE_COUNTERS_ENABLED
-        if (result >= 0)
-        {
-            RecordCreated(kind);
-        }
-#else
-        (void)kind;
-#endif
-        return result;
-    }
+    // Finish an observed lifetime even if profiling was disabled after creation.
+    void LogResourceDestroyed(ResourceKind kind) noexcept;
 }

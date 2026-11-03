@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include "RevealFocusSource.h"
 #include "corep.h"
 #include "WindowRenderTarget.h"
@@ -102,9 +102,11 @@ Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> RevealFocusSource::BuildRevealFocu
     }
     else
     {
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SpriteVisual,
-            compositor->CreateSpriteVisual(&spriteVisual)));
+        IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
 
         // Remove existing targets from the lights
         for (const auto& light : m_lights.m_vector)
@@ -400,9 +402,11 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> RevealFocusSource::Creat
     IFCFAILFAST(compositor->CreateEffectFactory(effect, &effectFactory));
 
     wrl::ComPtr<WUComp::ICompositionEffectBrush> compEffectBrush;
-    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::EffectBrush,
-        effectFactory->CreateBrush(&compEffectBrush)));
+    IFCFAILFAST(effectFactory->CreateBrush(&compEffectBrush));
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush);
+    }
 
     return compEffectBrush;
 }
@@ -430,9 +434,11 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> RevealFocusSource::Crea
 
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
 
-    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::SurfaceBrush,
-        compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush)));
+    IFCFAILFAST(compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush));
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+    }
     // TODO 15394150: is this necessary to stretch?
     IFCFAILFAST(surfaceBrush->put_Stretch(WUComp::CompositionStretch_Fill));
     return surfaceBrush;
@@ -456,9 +462,11 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionBrush> RevealFocusSource::CreateEffec
     }
     else
     {
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::NineGridBrush,
-            compositor2->CreateNineGridBrush(&nineGrid)));
+        IFCFAILFAST(compositor2->CreateNineGridBrush(&nineGrid));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
+        }
         IFCFAILFAST(nineGrid->put_IsCenterHollow(true));
     }
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include <DCompTreeHost.h>
 #include <core.h> // Remove in the future when possible
 #include <corep.h> // Remove in the future when possible
@@ -130,9 +130,11 @@ _Check_return_ HRESULT AlphaMask::Impl::Ensure(_In_ CUIElement* pUIElement)
     if (!IsPresent())
     {
         wrl::ComPtr<WUComp::ICompositor> spCompositor = GetDCompTreeHostNoRef(pUIElement)->GetCompositor();
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SurfaceBrush,
-            spCompositor->CreateSurfaceBrush(m_spCompositionSurfaceBrush.ReleaseAndGetAddressOf())));
+        IFCFAILFAST(spCompositor->CreateSurfaceBrush(m_spCompositionSurfaceBrush.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+        }
 
         // It is not safe to assume we can create a DComp surface at this time as it's possible the D3D device
         // and main SurfaceFactory were released.  This can happen if the app is using the ReleaseGraphicsDeviceOnSuspend

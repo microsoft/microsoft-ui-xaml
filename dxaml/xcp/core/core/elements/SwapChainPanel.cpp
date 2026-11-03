@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 
 #include "SwapChainPanelOwner.h"
 #include "RootScale.h"
@@ -594,9 +594,11 @@ wrl::ComPtr<ixp::ISpriteVisual> CSwapChainPanel::GetOrEnsureSwapChainVisual()
 
     if (m_swapChainVisual == nullptr)
     {
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SpriteVisual,
-            GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&m_swapChainVisual)));
+        IFCFAILFAST(GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&m_swapChainVisual));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
     }
     return m_swapChainVisual;
 }

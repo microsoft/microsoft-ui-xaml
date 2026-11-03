@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 
 #include "palgfx.h"
 #ifdef XAMLPROFILER_ENABLED
@@ -1085,9 +1085,11 @@ HWCompMediaNode::SetMedia(
         }
         else
         {
-            IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::SurfaceBrush,
-                compositorNoRef->CreateSurfaceBrush(&surfaceBrush)));
+            IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1150,9 +1152,11 @@ _Check_return_ HRESULT HWCompMediaNode::EnsureVisual(_In_opt_ DCompTreeHost* pDC
     if (pDCompTreeHost && !m_spriteVisual)
     {
         ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
-        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SpriteVisual,
-            compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf())));
+        IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
     }
     return S_OK;
 }
@@ -1273,9 +1277,11 @@ HWCompSwapChainNode::SetSwapChain(
         }
         else
         {
-            IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::ColorBrush,
-                compositorNoRef->CreateColorBrush(&colorBrush)));
+            IFC_RETURN(compositorNoRef->CreateColorBrush(&colorBrush));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x00000000)));
             IFC_RETURN(colorBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1295,9 +1301,11 @@ HWCompSwapChainNode::SetSwapChain(
         }
         else
         {
-            IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::SurfaceBrush,
-                compositorNoRef->CreateSurfaceBrush(&surfaceBrush)));
+            IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1398,9 +1406,11 @@ _Check_return_ HRESULT HWCompSwapChainNode::EnsureVisual(_In_opt_ DCompTreeHost*
         else
         {
             ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
-            IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::SpriteVisual,
-                compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf())));
+            IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
         }
     }
     return S_OK;

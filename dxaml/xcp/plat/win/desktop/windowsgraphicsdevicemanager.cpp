@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 
 #include "d3d11device.h"
 #include "D2DAccelerated.h"
@@ -307,12 +307,14 @@ WindowsGraphicsDeviceManager::DrawDummyText()
         ));
 
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> whiteBrush;
-    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::D2DSolidColorBrush,
-        deviceContext->CreateSolidColorBrush(
-            D2D1::ColorF(D2D1::ColorF::White),
-            &whiteBrush
-            )));
+    IFC_RETURN(deviceContext->CreateSolidColorBrush(
+                    D2D1::ColorF(D2D1::ColorF::White),
+                    &whiteBrush
+                    ));
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
+    }
 
     deviceContext->BeginDraw();
 

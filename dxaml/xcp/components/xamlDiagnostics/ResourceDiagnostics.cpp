@@ -4,7 +4,7 @@
 #include "precomp.h"
 #include <ResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 
 namespace ResourceDiagnostics
 {
@@ -21,11 +21,11 @@ namespace ResourceDiagnostics
         snapshot->OutstandingAllocCount = allocations.outstandingAllocCount;
         snapshot->OutstandingAllocSize = allocations.outstandingAllocSize;
 
-        static_assert(GraphicsResourceCounters::ResourceKindCount <= XamlResourceSnapshotGraphicsCapacity);
-        for (UINT32 index = 0; index < GraphicsResourceCounters::ResourceKindCount; ++index)
+        static_assert(RenderingResourceDiagnostics::ResourceKindCount <= XamlResourceSnapshotGraphicsCapacity);
+        for (UINT32 index = 0; index < RenderingResourceDiagnostics::ResourceKindCount; ++index)
         {
-            GraphicsResourceCounters::Snapshot counters{};
-            VERIFY(GraphicsResourceCounters::TryGetSnapshot(index, counters));
+            RenderingResourceDiagnostics::Snapshot counters{};
+            VERIFY(RenderingResourceDiagnostics::TryGetSnapshot(index, counters));
             snapshot->Resources[index].TotalCreated = counters.created;
             snapshot->Resources[index].TotalDestroyed = counters.destroyed;
             snapshot->Resources[index].LiveCount = counters.live;

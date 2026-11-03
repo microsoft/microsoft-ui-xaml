@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include <GraphicsResourceCounters.h>
+#include <RenderingResourceDiagnostics.h>
 #include "DCompTreeHost.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
@@ -594,17 +594,19 @@ DCompTreeHost::EnsureResources() noexcept
         if (pD3D11DeviceInternal->ShouldAttemptToUseA8Textures())
         {
             IDCompositionSurface *p8BitSupportCheckSurface = NULL;
-            HRESULT createTextureHR = GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::CompositionSurface,
-                m_pCompositionHelper->GetSurfaceFactory()->CreateSurface(
-                    1, // width
-                    1, // height
-                    DXGI_FORMAT_A8_UNORM, // 8-bit
-                    DXGI_ALPHA_MODE_PREMULTIPLIED,
-                    &p8BitSupportCheckSurface
-                    ));
+            HRESULT createTextureHR = m_pCompositionHelper->GetSurfaceFactory()->CreateSurface(
+                1, // width
+                1, // height
+                DXGI_FORMAT_A8_UNORM, // 8-bit
+                DXGI_ALPHA_MODE_PREMULTIPLIED,
+                &p8BitSupportCheckSurface
+                );
             if (SUCCEEDED(createTextureHR))
             {
+                if (RenderingResourceDiagnostics::IsEnabled())
+                {
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
+                }
                 m_hasNative8BitSurfaceSupport = TRUE;
                 ReleaseInterface(p8BitSupportCheckSurface);
             }
@@ -789,9 +791,11 @@ DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
                     RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(), &contentStatics));
 
                 wrl::ComPtr<ixp::IContainerVisual> containerRootVisual;
-                IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-                    GraphicsResourceCounters::ResourceKind::ContainerVisual,
-                    m_spCompositor->CreateContainerVisual(&containerRootVisual)));
+                IFCFAILFAST(m_spCompositor->CreateContainerVisual(&containerRootVisual));
+                if (RenderingResourceDiagnostics::IsEnabled())
+                {
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                }
 
                 wrl::ComPtr<ixp::IVisual> rootVisual;
                 IFCFAILFAST(containerRootVisual.As(&rootVisual));
@@ -831,9 +835,11 @@ DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
 _Check_return_ HRESULT
 DCompTreeHost::SetTargetHelper()
 {
-    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::ContainerVisual,
-        GetCompositor()->CreateContainerVisual(m_hwndVisual.ReleaseAndGetAddressOf())));
+    IFCFAILFAST(GetCompositor()->CreateContainerVisual(m_hwndVisual.ReleaseAndGetAddressOf()));
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+    }
 
     // Mark this visual as a standard visual root to differentiate it from the root of Xaml Islands.
     // This is necessary because using lifted IXP we now put standard visual roots into a composition
@@ -854,14 +860,18 @@ DCompTreeHost::SetTargetHelper()
         IFCFAILFAST(m_hwndVisual->get_Children(childCollection.ReleaseAndGetAddressOf()));
 
         wrl::ComPtr<WUComp::IContainerVisual> containerVisual;
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::ContainerVisual,
-            GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf())));
+        IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual1));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual1.Get()));
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::ContainerVisual,
-            GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf())));
+        IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual2));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual2.Get()));
     }
@@ -923,17 +933,21 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         if (renderData.m_disconnectedRootVisual == nullptr && renderData.m_islandRootVisual != nullptr)
         {
             wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-            IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::ColorBrush,
-                GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
+            IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
             wrl::ComPtr<WUComp::ICompositionBrush> brush;
             IFCFAILFAST(colorBrush.As(&brush));
 
             ComPtr<WUComp::ISpriteVisual> spriteVisual;
-            IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::SpriteVisual,
-                GetCompositor()->CreateSpriteVisual(&spriteVisual)));
+            IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
             IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
             IFCFAILFAST(spriteVisual.As(&renderData.m_disconnectedRootVisual));
 
@@ -952,16 +966,20 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
     {
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::ColorBrush,
-            GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
+        IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+        }
         IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
         IFCFAILFAST(colorBrush.As(&brush));
 
         ComPtr<WUComp::ISpriteVisual> spriteVisual;
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SpriteVisual,
-            GetCompositor()->CreateSpriteVisual(&spriteVisual)));
+        IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
         IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
         IFCFAILFAST(spriteVisual.As(&m_disconnectedHWndVisual));
 
@@ -1283,9 +1301,11 @@ DCompTreeHost::NotifyUWPWindowLayoutComplete(CWindowRenderTarget &renderTarget)
 _Check_return_ HRESULT DCompTreeHost::CreateContainerVisual(_Outptr_ WUComp::IContainerVisual **ppContainerVisual)
 {
     xref_ptr<WUComp::IContainerVisual> spContainerVisual;
-    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::ContainerVisual,
-        GetCompositor()->CreateContainerVisual(spContainerVisual.ReleaseAndGetAddressOf())));
+    IFC_RETURN(GetCompositor()->CreateContainerVisual(spContainerVisual.ReleaseAndGetAddressOf()));
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+    }
 
     if (VisualDebugTagsEnabled())
     {
@@ -1669,9 +1689,11 @@ void DCompTreeHost::UpdateUIThreadCounters(
 
     wrl::ComPtr<WUComp::ICompositionBrush> brush;
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
-    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-        GraphicsResourceCounters::ResourceKind::SurfaceBrush,
-        GetCompositor()->CreateSurfaceBrush(&surfaceBrush)))
+    IFCFAILFAST(GetCompositor()->CreateSurfaceBrush(&surfaceBrush))
+    if (RenderingResourceDiagnostics::IsEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+    }
     IFCFAILFAST(surfaceBrush->put_HorizontalAlignmentRatio(0));
     IFCFAILFAST(surfaceBrush->put_VerticalAlignmentRatio(0));
     IFCFAILFAST(surfaceBrush->put_Stretch(WUComp::CompositionStretch::CompositionStretch_Fill));
@@ -1747,9 +1769,11 @@ void DCompTreeHost::ShowUIThreadCounters()
                 ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
                 IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
                 IFCFAILFAST(contentIslandExperimental->put_Root(nullptr));
-                IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-                    GraphicsResourceCounters::ResourceKind::ContainerVisual,
-                    GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf())));
+                IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
+                if (RenderingResourceDiagnostics::IsEnabled())
+                {
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                }
 
                 // mark this as our FrameCount/Root host.
                 wrl::ComPtr<WUComp::ICompositionObject> compositionObject;
@@ -1774,9 +1798,11 @@ void DCompTreeHost::ShowUIThreadCounters()
     if (hostVisual)
     {
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
-        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
-            GraphicsResourceCounters::ResourceKind::SpriteVisual,
-            GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf())));
+        IFCFAILFAST(GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf()));
+        if (RenderingResourceDiagnostics::IsEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
         IFCFAILFAST(spriteVisual.As(&m_frameRateVisual));
 
         wrl::ComPtr<WUComp::IVisualCollection> childCollection;
@@ -1942,12 +1968,14 @@ DCompTreeHost::CreateFrameRateSurface(
 
         if (m_pFrameRateScratchBrush == NULL)
         {
-            IFC(GraphicsResourceCounters::RecordCreation(
-                GraphicsResourceCounters::ResourceKind::D2DSolidColorBrush,
-                pD2DDeviceContext->CreateSolidColorBrush(
-                    D2D1::ColorF(D2D1::ColorF::White),
-                    &m_pFrameRateScratchBrush
-                    )));
+            IFC(pD2DDeviceContext->CreateSolidColorBrush(
+                D2D1::ColorF(D2D1::ColorF::White),
+                &m_pFrameRateScratchBrush
+                ));
+            if (RenderingResourceDiagnostics::IsEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
+            }
         }
 
         // Clear to black.
