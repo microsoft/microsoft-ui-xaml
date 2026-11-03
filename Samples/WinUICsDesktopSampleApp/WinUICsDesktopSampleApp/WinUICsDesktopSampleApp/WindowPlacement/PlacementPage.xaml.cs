@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -72,7 +73,6 @@ namespace WinUICsDesktopSampleApp.WindowPlacement
                 configure();
                 Log.Write($"{window.Title}: Activate(), PlacementId=\"{window.PlacementId}\"");
                 window.Activate();
-                Log.Write($"{window.Title}: {PlacementDiagnostics.Describe(window).Replace("\n", "; ")}");
             }
             catch
             {
@@ -97,33 +97,6 @@ namespace WinUICsDesktopSampleApp.WindowPlacement
 
         private void OnCloseAll(object sender, RoutedEventArgs e) => Run("Close all", CloseTestWindows);
 
-        private void OnReadStore(object sender, RoutedEventArgs e) =>
-            Run("Read saved records", () => StoreText.Text = PlacementDiagnostics.ReadSavedRecords());
-
-        private async void OnDeleteSavedRecords(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                XamlRoot = this.XamlRoot,
-                Title = "Delete saved records?",
-                Content = "Delete all saved window placements for this sample? " +
-                    "Open test windows will save new records when they close.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Close,
-            };
-
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                Run("Delete saved records", () =>
-                {
-                    PlacementDiagnostics.DeleteSavedRecords();
-                    StoreText.Text = PlacementDiagnostics.ReadSavedRecords();
-                    Log.Write("Deleted all saved placement records.");
-                });
-            }
-        }
-
         private void Run(string action, Action callback)
         {
             ErrorText.Text = "";
@@ -146,5 +119,24 @@ namespace WinUICsDesktopSampleApp.WindowPlacement
             package.SetText(string.Join(Environment.NewLine, Log.Items.Reverse()));
             Clipboard.SetContent(package);
         }
+    }
+
+    public static class Log
+    {
+        public static ObservableCollection<string> Items { get; } = new ObservableCollection<string>();
+
+        public static void Write(string message)
+        {
+            string line = $"{DateTime.Now:HH:mm:ss.fff}  {message}";
+            Debug.WriteLine(line);
+            Items.Insert(0, line);
+            if (Items.Count > 500)
+            {
+                Items.RemoveAt(Items.Count - 1);
+            }
+        }
+
+        public static void Error(string action, Exception ex) =>
+            Write($"ERROR {action}: 0x{ex.HResult:X8} {ex.Message.Trim()}");
     }
 }

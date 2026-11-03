@@ -7,7 +7,7 @@
 #include "Microsoft.Windows.Storage.h"
 #include "StaticStore.h"
 #include <appmodel.h>
-#include <windows.storage.h>
+#include <type_traits>
 
 #define WINUI_PLACEMENTEX
 #include <PlacementEx\User32Utils.h>
@@ -22,13 +22,57 @@ namespace
     using PropertyMap = wfc::IMap<HSTRING, IInspectable*>;
     namespace storage = ABI::Microsoft::Windows::Storage;
 
-    constexpr int c_recordVersion = 1;
+    constexpr uint32_t c_recordVersion = 1;
+    constexpr uint32_t c_maxRecordSize = 8192;
+    constexpr uint32_t c_maxDpi = 9600;
 
+    // These values are stored in version 1 records. Keep their numeric values stable.
+    enum class SavedWindowState : uint32_t
+    {
+        Normal = 0,
+        Maximized = 1,
+        MinimizedFromNormal = 2,
+        Snapped = 3,
+        MinimizedFromMaximized = 4,
+        MinimizedFromSnapped = 5,
+    };
+
+    // WARNING: This layout is part of the existing version 1 placement format and must not change.
+    // Existing saved records depend on its field order, types, and offsets.
+    // This is a private little-endian binary format, to save data for PlacementEx.
+    // The full UTF-16 placement id string follows this fixed header, without a terminating null.
+    struct PlacementRecord
+    {
+        uint32_t version;
+        FILETIME savedAt;       // 8 bytes
+        GUID virtualDesktopId;  // 16 bytes
+        RECT normalRect;
+        RECT workArea;
+        RECT snapRect;
+        uint32_t dpi;
+        SavedWindowState state;
+        wchar_t deviceName[32];
+        uint32_t idLength;
+        // ID string is stored immediately after this header, without a terminating null.
+    };
+    static_assert(std::is_trivially_copyable_v<PlacementRecord>);
+    static_assert(sizeof(SavedWindowState) == 4);
+    static_assert(sizeof(wchar_t) == 2);
+    static_assert(sizeof(PlacementRecord) == 152);
+    static_assert(offsetof(PlacementRecord, savedAt) == 4);
+    static_assert(offsetof(PlacementRecord, normalRect) == 28);
+    static_assert(offsetof(PlacementRecord, state) == 80);
+    static_assert(offsetof(PlacementRecord, deviceName) == 84);
+    static_assert(offsetof(PlacementRecord, idLength) == 148);
+
+    // Computes a fixed-length key for the given placement id.
+    // We use this key instead of the placement id string because the APIs we call are case-insensitive
+    // and we want placement id to be case-sensitive.
     void GetPlacementKey(HSTRING id, wchar_t (&key)[19])
     {
-        // Keep keys short without relying on settings to compare raw ids case-sensitively.
-        // The private format uses 64-bit FNV-1a over UTF-16LE bytes, without a terminating null.
-        // Keep this mapping stable across runs and versions so existing records remain reachable.
+        // WARNING: This key algorithm and its constants are part of the existing placement format
+        // and must not change. Changing them would make existing saved records unreachable.
+        // It uses 64-bit FNV-1a over UTF-16LE bytes, without a terminating null.
         UINT32 length = 0;
         const auto text = WindowsGetStringRawBuffer(id, &length);
         uint64_t hash = 14695981039346656037ull;
@@ -41,42 +85,6 @@ namespace
         StringCchPrintfW(key, ARRAYSIZE(key), L"P_%016llx", hash);
     }
 
-    bool ReadValue(
-        PropertyMap* fields,
-        PCWSTR name,
-        wf::PropertyType type,
-        wrl::ComPtr<wf::IPropertyValue>& value)
-    {
-        wrl::ComPtr<IInspectable> boxed;
-        wf::PropertyType actual{};
-
-        return SUCCEEDED(fields->Lookup(wrl_wrappers::HStringReference(name).Get(), &boxed)) &&
-               boxed &&
-               SUCCEEDED(boxed.As(&value)) &&
-               SUCCEEDED(value->get_Type(&actual)) &&
-               actual == type;
-    }
-
-    bool ReadInt32(PropertyMap* fields, PCWSTR name, INT32& result)
-    {
-        wrl::ComPtr<wf::IPropertyValue> value;
-
-        return ReadValue(fields, name, wf::PropertyType_Int32, value) &&
-               SUCCEEDED(value->GetInt32(&result));
-    }
-
-    bool ReadString(PropertyMap* fields, PCWSTR name, wrl_wrappers::HString& result)
-    {
-        wrl::ComPtr<wf::IPropertyValue> value;
-
-        return ReadValue(fields, name, wf::PropertyType_String, value) &&
-               SUCCEEDED(value->GetString(result.GetAddressOf()));
-    }
-
-    constexpr PCWSTR c_normalFields[] = { L"NormalX", L"NormalY", L"NormalWidth", L"NormalHeight" };
-    constexpr PCWSTR c_workAreaFields[] = { L"WorkAreaX", L"WorkAreaY", L"WorkAreaWidth", L"WorkAreaHeight" };
-    constexpr PCWSTR c_snapFields[] = { L"SnapX", L"SnapY", L"SnapWidth", L"SnapHeight" };
-
     bool IsValidRect(const RECT& rect)
     {
         const int64_t width = static_cast<int64_t>(rect.right) - rect.left;
@@ -85,147 +93,133 @@ namespace
         return width > 0 && width <= 65535 && height > 0 && height <= 65535;
     }
 
-    bool ReadRect(PropertyMap* fields, const PCWSTR (&names)[4], RECT& rect)
+    UINT GetShowCommand(SavedWindowState state)
     {
-        INT32 x, y, width, height;
-        if (!ReadInt32(fields, names[0], x) ||
-            !ReadInt32(fields, names[1], y) ||
-            !ReadInt32(fields, names[2], width) ||
-            !ReadInt32(fields, names[3], height) ||
-            width <= 0 || width > 65535 ||
-            height <= 0 || height > 65535 ||
-            static_cast<int64_t>(x) + width > INT32_MAX ||
-            static_cast<int64_t>(y) + height > INT32_MAX)
+        if (state == SavedWindowState::Maximized)
         {
-            return false;
+            return SW_MAXIMIZE;
         }
 
-        rect = { x, y, x + width, y + height };
+        if (state == SavedWindowState::MinimizedFromNormal ||
+            state == SavedWindowState::MinimizedFromMaximized ||
+            state == SavedWindowState::MinimizedFromSnapped)
+        {
+            return SW_MINIMIZE;
+        }
 
-        return true;
+        return SW_NORMAL;
     }
 
-    bool ReadPlacement(PropertyMap* fields, HSTRING id, PlacementEx& placement)
+    HRESULT ReadPlacement(
+        IInspectable* boxed,
+        HSTRING placementId,
+        PlacementEx& placement,
+        WindowPlacement::PlacementResult& result)
     {
-        INT32 version, dpi, state;
-        wrl_wrappers::HString savedId;
-        INT32 comparison = 0;
+        wrl::ComPtr<wf::IPropertyValue> value;
+        IFC_RETURN(boxed->QueryInterface(IID_PPV_ARGS(&value)));
 
-        // The hash only selects a slot; the full id check prevents restoring a colliding id's placement.
-        if (!ReadInt32(fields, L"Version", version) ||
-            version != c_recordVersion ||
-            !ReadString(fields, L"PlacementId", savedId) ||
-            FAILED(WindowsCompareStringOrdinal(id, savedId.Get(), &comparison)) ||
-            comparison != 0 ||
-            !ReadRect(fields, c_normalFields, placement.normalRect) ||
-            !ReadRect(fields, c_workAreaFields, placement.workArea) ||
-            !ReadInt32(fields, L"Dpi", dpi) ||
-            dpi < 96 || dpi > 9600 ||
-            !ReadInt32(fields, L"State", state) ||
-            state < 0 || state > 5)
+        wf::PropertyType type{};
+        IFC_RETURN(value->get_Type(&type));
+        IFCEXPECTRC_RETURN(type == wf::PropertyType_UInt8Array, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+
+        UINT32 size = 0;
+        wil::unique_cotaskmem_ptr<BYTE[]> bytes;
+        IFC_RETURN(value->GetUInt8Array(&size, wil::out_param(bytes)));
+        IFCEXPECTRC_RETURN(size >= sizeof(PlacementRecord) && size <= c_maxRecordSize, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+
+        PlacementRecord record{};
+        memcpy(&record, bytes.get(), sizeof(record));
+
+        UINT32 placementIdLength = 0;
+        const WCHAR* placementIdStr = WindowsGetStringRawBuffer(placementId, &placementIdLength);
+        // Check the byte count before comparing the full id. The hash only selects a slot;
+        // the exact UTF-16 comparison prevents restoring a colliding id's placement.
+        IFCEXPECTRC_RETURN(record.version == c_recordVersion, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN(record.idLength > 0 && record.idLength <= MAX_PATH, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN(record.idLength == (size - sizeof(record)) / sizeof(wchar_t), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN((size - sizeof(record)) % sizeof(wchar_t) == 0, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        if (record.idLength != placementIdLength ||
+            memcmp(bytes.get() + sizeof(record), placementIdStr, placementIdLength * sizeof(wchar_t)) != 0)
         {
-            return false;
+            result |= WindowPlacement::PlacementResult::HashCollision;
+            IFC_RETURN(HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        }
+        IFCEXPECTRC_RETURN(IsValidRect(record.normalRect), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN(IsValidRect(record.workArea), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN(record.dpi >= 96 && record.dpi <= c_maxDpi, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN(record.state <= SavedWindowState::MinimizedFromSnapped, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+
+        const WCHAR* nameEnd = wmemchr(record.deviceName, L'\0', ARRAYSIZE(record.deviceName));
+        IFCEXPECTRC_RETURN(nameEnd, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        // Require unused characters after the display name's terminating null to be zero,
+        // matching the format produced by Save.
+        for (auto ch = nameEnd; ch != std::end(record.deviceName); ++ch)
+        {
+            IFCEXPECTRC_RETURN(*ch == L'\0', HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
         }
 
-        placement.dpi = dpi;
-        placement.showCmd = state == 1 ?
-            SW_MAXIMIZE :
-            (state == 2 || state == 4 || state == 5) ? SW_MINIMIZE : SW_NORMAL;
+        placement.normalRect = record.normalRect;
+        placement.workArea = record.workArea;
+        placement.dpi = record.dpi;
+        const auto state = record.state;
+        placement.showCmd = GetShowCommand(state);
 
-        if (state == 3)
+        if (state == SavedWindowState::Snapped)
         {
             placement.flags |= PlacementFlags::Arranged;
         }
 
-        if (state == 4)
+        if (state == SavedWindowState::MinimizedFromMaximized)
         {
             placement.flags |= PlacementFlags::RestoreToMaximized;
         }
 
-        if (state == 5)
+        if (state == SavedWindowState::MinimizedFromSnapped)
         {
             placement.flags |= PlacementFlags::RestoreToArranged;
         }
 
-        bool hasSnap = state == 3 || state == 5;
-        for (auto name : c_snapFields)
-        {
-            boolean present = false;
-            if (FAILED(fields->HasKey(wrl_wrappers::HStringReference(name).Get(), &present)))
-            {
-                return false;
-            }
-
-            hasSnap = hasSnap || present;
-        }
-
+        const RECT emptyRect{};
+        const bool hasSnap = state == SavedWindowState::Snapped ||
+                             state == SavedWindowState::MinimizedFromSnapped ||
+                             !EqualRect(&record.snapRect, &emptyRect);
         if (hasSnap)
         {
             RECT intersection{};
-            if (!ReadRect(fields, c_snapFields, placement.arrangeRect) ||
-                !IntersectRect(&intersection, &placement.arrangeRect, &placement.workArea))
-            {
-                return false;
-            }
+            IFCEXPECTRC_RETURN(IsValidRect(record.snapRect), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+            IFCEXPECTRC_RETURN(IntersectRect(&intersection, &record.snapRect, &placement.workArea), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+            placement.arrangeRect = record.snapRect;
         }
 
-        boolean hasName = false;
-        if (FAILED(fields->HasKey(wrl_wrappers::HStringReference(L"DisplayDeviceName").Get(), &hasName)))
+        memcpy(placement.deviceName, record.deviceName, sizeof(record.deviceName));
+        // savedAt is metadata only. virtualDesktopId is reserved and is not restored yet.
+
+        IFCEXPECTRC_RETURN(placement.IsValid(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+
+        return S_OK;
+    }
+
+    bool HasHashCollision(PropertyMap* settings, HSTRING key, HSTRING placementId)
+    {
+        // Collision reporting is best effort. A missing or unreadable record must not block saving.
+        boolean hasRecord = false;
+        if (FAILED(settings->HasKey(key, &hasRecord)) || !hasRecord)
         {
             return false;
         }
 
-        if (hasName)
+        wrl::ComPtr<IInspectable> existing;
+        if (FAILED(settings->Lookup(key, &existing)) || !existing)
         {
-            wrl_wrappers::HString name;
-            if (!ReadString(fields, L"DisplayDeviceName", name))
-            {
-                return false;
-            }
-
-            UINT32 length = 0;
-            const auto text = WindowsGetStringRawBuffer(name.Get(), &length);
-            if (length >= ARRAYSIZE(placement.deviceName) || wmemchr(text, L'\0', length))
-            {
-                return false;
-            }
-
-            memcpy(placement.deviceName, text, length * sizeof(wchar_t));
+            return false;
         }
 
-        return placement.IsValid();
-    }
-
-    HRESULT WriteInt32(PropertyMap* fields, PCWSTR name, INT32 value)
-    {
-        wrl::ComPtr<IInspectable> boxed;
-        IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateInt32(value, &boxed));
-
-        boolean replaced;
-        IFC_RETURN(fields->Insert(wrl_wrappers::HStringReference(name).Get(), boxed.Get(), &replaced));
-
-        return S_OK;
-    }
-
-    HRESULT WriteString(PropertyMap* fields, PCWSTR name, HSTRING value)
-    {
-        wrl::ComPtr<IInspectable> boxed;
-        IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateString(value, &boxed));
-
-        boolean replaced;
-        IFC_RETURN(fields->Insert(wrl_wrappers::HStringReference(name).Get(), boxed.Get(), &replaced));
-
-        return S_OK;
-    }
-
-    HRESULT WriteRect(PropertyMap* fields, const PCWSTR (&names)[4], const RECT& rect)
-    {
-        IFC_RETURN(WriteInt32(fields, names[0], rect.left));
-        IFC_RETURN(WriteInt32(fields, names[1], rect.top));
-        IFC_RETURN(WriteInt32(fields, names[2], rect.right - rect.left));
-        IFC_RETURN(WriteInt32(fields, names[3], rect.bottom - rect.top));
-
-        return S_OK;
+        using PlacementResult = WindowPlacement::PlacementResult;
+        PlacementResult result = PlacementResult::None;
+        PlacementEx placement;
+        IGNOREHR(ReadPlacement(existing.Get(), placementId, placement, result));
+        return (result & PlacementResult::HashCollision) != PlacementResult::None;
     }
 }
 
@@ -238,6 +232,7 @@ HRESULT WindowPlacement::GetId(HSTRING* value)
 
 HRESULT WindowPlacement::SetId(HSTRING value)
 {
+    IFCEXPECTRC_RETURN(WindowsGetStringLen(value) <= MAX_PATH, E_INVALIDARG);
     IFC_RETURN(m_id.Set(value));
 
     if (!WindowsIsStringEmpty(value))
@@ -283,46 +278,60 @@ HRESULT WindowPlacement::EnsureStorage()
     wrl::ComPtr<PropertyMap> map;
     IFC_RETURN(values.As(&map));
 
-    // Instance activation is not reliable during synchronous shutdown messages.
-    // Prepare the reusable composite before WM_DESTROY/WM_ENDSESSION.
-    wrl::ComPtr<IInspectable> composite;
-    IFC_RETURN(RoActivateInstance(
-        wrl_wrappers::HStringReference(RuntimeClass_Windows_Storage_ApplicationDataCompositeValue).Get(),
-        &composite));
-    IFC_RETURN(composite.As(&m_record));
-
     m_settings = std::move(map);
 
     return S_OK;
 }
 
-bool WindowPlacement::TryRestore(HWND hwnd)
+HRESULT WindowPlacement::TryLoadAndApply(HWND hwnd, _Out_ PlacementResult* result)
 {
+    IFCPTR_RETURN(result);
+    *result = PlacementResult::None;
+
     if (WindowsIsStringEmpty(m_id.Get()))
     {
-        return false;
+        // An empty string means placement is disabled, but this is not an error.
+        return S_OK;
     }
 
-    IGNOREHR(EnsureStorage());
+    IFC_RETURN(EnsureStorage());
     if (!m_settings)
     {
-        return false;
+        PCWSTR message = L"Window.PlacementId is set, but this app does not have package identity. WinUI automatic window placement requires package identity.";
+        ::RoOriginateError(
+            HRESULT_FROM_WIN32(APPMODEL_ERROR_NO_PACKAGE),
+            wrl_wrappers::HStringReference(message).Get());
+        ::OutputDebugStringW(message);
+        ::OutputDebugStringW(L"\n");
+        // Placement is best effort. Clear the WinRT error details after notifying the debugger.
+        ::RoClearError();
+        return S_OK;
     }
 
     wrl::ComPtr<IInspectable> record;
-    wrl::ComPtr<PropertyMap> fields;
     PlacementEx placement;
     wchar_t key[19]{};
     GetPlacementKey(m_id.Get(), key);
-    
-    // Ignore missing, unreadable, or invalid records so the caller can use fallback placement.
-    if (FAILED(m_settings->Lookup(wrl_wrappers::HStringReference(key).Get(), &record)) ||
-        !record ||
-        FAILED(record.As(&fields)) ||
-        !ReadPlacement(fields.Get(), m_id.Get(), placement))
+
+    // A missing record is normal, so do not use a failing Lookup to detect it.
+    const auto keyString = wrl_wrappers::HStringReference(key);
+    boolean hasRecord = false;
+    IFC_RETURN(m_settings->HasKey(keyString.Get(), &hasRecord));
+    if (!hasRecord)
     {
-        return false;
+        return S_OK;
     }
+
+    const HRESULT lookupResult = m_settings->Lookup(keyString.Get(), &record);
+    if (lookupResult == E_BOUNDS)
+    {
+        // Another window can remove the record between HasKey and Lookup.
+        return S_OK;
+    }
+
+    IFC_RETURN(lookupResult);
+    IFCEXPECTRC_RETURN(record.Get(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    IFC_RETURN(ReadPlacement(record.Get(), m_id.Get(), placement, *result));
 
     // Reopen minimized windows at their restore target, including snap bounds when available.
     // PlacementEx needs Arranged, not just RestoreToArranged, to apply those bounds now.
@@ -340,11 +349,18 @@ bool WindowPlacement::TryRestore(HWND hwnd)
     }
 
     // Apply the restored bounds and window state to the HWND.
-    return PlacementEx::SetPlacement(hwnd, &placement);
+    IFCEXPECTRC_RETURN(PlacementEx::SetPlacement(hwnd, &placement), E_FAIL);
+
+    *result |= PlacementResult::LoadedAndApplied;
+
+    return S_OK;
 }
 
-HRESULT WindowPlacement::Save(HWND hwnd)
+HRESULT WindowPlacement::Save(HWND hwnd, _Out_ PlacementResult* result)
 {
+    IFCPTR_RETURN(result);
+    *result = PlacementResult::None;
+
     // An empty id opts out. Storage is unavailable without package identity or if setup failed.
     // Saving is best effort; skip it rather than interfere with window shutdown.
     if (WindowsIsStringEmpty(m_id.Get()) || !m_settings)
@@ -354,58 +370,88 @@ HRESULT WindowPlacement::Save(HWND hwnd)
 
     PlacementEx placement;
     // Keep the earlier record if capture fails or returns bounds/DPI that the reader would reject.
-    // Full-screen placement is also excluded: phase 1 only saves windowed placement.
-    if (!PlacementEx::GetPlacement(hwnd, &placement) ||
-        !placement.IsValid() ||
-        placement.HasFlag(PlacementFlags::FullScreen) ||
-        !IsValidRect(placement.normalRect) ||
-        !IsValidRect(placement.workArea) ||
-        placement.dpi > 9600)
+    IFCEXPECTRC_RETURN(PlacementEx::GetPlacement(hwnd, &placement), E_FAIL);
+
+    // Full-screen placement is also excluded: phase 1 only saves overlapped-window placement.
+    if (placement.HasFlag(PlacementFlags::FullScreen))
     {
         return S_OK;
     }
+
+    IFCEXPECTRC_RETURN(placement.IsValid(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    IFCEXPECTRC_RETURN(IsValidRect(placement.normalRect), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    IFCEXPECTRC_RETURN(IsValidRect(placement.workArea), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    IFCEXPECTRC_RETURN(placement.dpi <= c_maxDpi, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
 
     const bool minimized = PlacementEx::IsMinimizeShowCmd(placement.showCmd);
     const bool arranged = placement.HasFlag(PlacementFlags::Arranged) ||
                           placement.HasFlag(PlacementFlags::RestoreToArranged);
-    const INT32 state = minimized ?
-        (placement.HasFlag(PlacementFlags::RestoreToMaximized) ? 4 : arranged ? 5 : 2) :
-        placement.showCmd == SW_MAXIMIZE ? 1 : arranged ? 3 : 0;
+    SavedWindowState state;
+    if (minimized && placement.HasFlag(PlacementFlags::RestoreToMaximized))
+    {
+        state = SavedWindowState::MinimizedFromMaximized;
+    }
+    else if (minimized)
+    {
+        state = arranged ? SavedWindowState::MinimizedFromSnapped : SavedWindowState::MinimizedFromNormal;
+    }
+    else if (placement.showCmd == SW_MAXIMIZE)
+    {
+        state = SavedWindowState::Maximized;
+    }
+    else
+    {
+        state = arranged ? SavedWindowState::Snapped : SavedWindowState::Normal;
+    }
 
     // Reject invalid snap bounds or bounds that do not overlap the saved work area.
     // Keep the earlier record; a minimized snapped window can report offscreen frame bounds.
     RECT intersection{};
-    if (arranged &&
-        (!IsValidRect(placement.arrangeRect) ||
-         !IntersectRect(&intersection, &placement.arrangeRect, &placement.workArea)))
-    {
-        return S_OK;
-    }
-
-    // Clear the reused composite so an earlier snapped save cannot leave stale snap fields.
-    IFC_RETURN(m_record->Clear());
-    IFC_RETURN(WriteInt32(m_record.Get(), L"Version", c_recordVersion));
-    IFC_RETURN(WriteString(m_record.Get(), L"PlacementId", m_id.Get()));
-    IFC_RETURN(WriteRect(m_record.Get(), c_normalFields, placement.normalRect));
-    IFC_RETURN(WriteRect(m_record.Get(), c_workAreaFields, placement.workArea));
-    IFC_RETURN(WriteInt32(m_record.Get(), L"Dpi", placement.dpi));
-    IFC_RETURN(WriteInt32(m_record.Get(), L"State", state));
-    IFC_RETURN(WriteString(
-        m_record.Get(),
-        L"DisplayDeviceName",
-        wrl_wrappers::HStringReference(placement.deviceName).Get()));
-
     if (arranged)
     {
-        IFC_RETURN(WriteRect(m_record.Get(), c_snapFields, placement.arrangeRect));
+        IFCEXPECTRC_RETURN(IsValidRect(placement.arrangeRect), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        IFCEXPECTRC_RETURN(IntersectRect(&intersection, &placement.arrangeRect, &placement.workArea), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     }
+
+    UINT32 idLength = 0;
+    const wchar_t* idText = WindowsGetStringRawBuffer(m_id.Get(), &idLength);
+    // A byte-array setting is limited to 8 KB. Do not truncate an id or replace a valid earlier
+    // record if the full id cannot fit alongside the header.
+    IFCEXPECTRC_RETURN(idLength <= (c_maxRecordSize - sizeof(PlacementRecord)) / sizeof(wchar_t),
+        HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW));
+
+    PlacementRecord record{};
+    record.version = c_recordVersion;
+    record.idLength = idLength;
+    GetSystemTimeAsFileTime(&record.savedAt);
+    record.normalRect = placement.normalRect;
+    record.workArea = placement.workArea;
+    record.snapRect = arranged ? placement.arrangeRect : RECT{};
+    record.dpi = placement.dpi;
+    record.state = state;
+    IFC_RETURN(StringCchCopyW(record.deviceName, ARRAYSIZE(record.deviceName), placement.deviceName));
+
+    const UINT32 size = static_cast<UINT32>(sizeof(record) + idLength * sizeof(wchar_t));
+    std::unique_ptr<BYTE[]> bytes(new (std::nothrow) BYTE[size]);
+    IFCPTR_RETURN(bytes.get());
+    memcpy(bytes.get(), &record, sizeof(record));
+    memcpy(bytes.get() + sizeof(record), idText, idLength * sizeof(wchar_t));
+
+    wrl::ComPtr<IInspectable> boxed;
+    IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateUInt8Array(size, bytes.get(), &boxed));
 
     boolean replaced;
     wchar_t key[19]{};
     GetPlacementKey(m_id.Get(), key);
+    const auto keyString = wrl_wrappers::HStringReference(key);
+    const bool collision = HasHashCollision(m_settings.Get(), keyString.Get(), m_id.Get());
 
-    // Publish the complete composite once, rather than inserting a partially filled record.
-    IFC_RETURN(m_settings->Insert(wrl_wrappers::HStringReference(key).Get(), m_record.Get(), &replaced));
+    // Publish the complete binary record with one insertion.
+    IFC_RETURN(m_settings->Insert(keyString.Get(), boxed.Get(), &replaced));
+    if (collision)
+    {
+        *result |= PlacementResult::HashCollision;
+    }
 
     return S_OK;
 }

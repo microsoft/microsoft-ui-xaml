@@ -80,7 +80,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementMaximizedRestoreTracksNormalSize)
-            TEST_METHOD_PROPERTY(L"Description", L"Width and Height keep the restored client size when switching directly from restored maximized placement to FullScreen or CompactOverlay.")
+            TEST_METHOD_PROPERTY(L"Description", L"Width and Height getters retain their values when switching from restored maximized placement to FullScreen or CompactOverlay, including after deferred size updates.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -139,6 +139,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowPlacementFallbackKeepsLatestSizeAfterAppWindowShow)
+            TEST_METHOD_PROPERTY(L"Description", L"With an empty PlacementId, activation preserves a dimension changed after AppWindow.Show and applies the other pending dimension.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(WindowPlacementRequiresActivate)
             TEST_METHOD_PROPERTY(L"Description", L"Unshown and AppWindow-only windows do not overwrite saved placements.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
@@ -159,13 +164,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowPlacementBinaryRecord)
+            TEST_METHOD_PROPERTY(L"Description", L"Binary records retain the full id, capture save time, and reserve an unused virtual desktop id.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(WindowPlacementRejectsInvalidRecords)
             TEST_METHOD_PROPERTY(L"Description", L"Rejects malformed, mismatched and future-version records and falls back to requested dimensions.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementRecordCompatibility)
-            TEST_METHOD_PROPERTY(L"Description", L"Ignores unknown fields and replaces malformed or future-version records only when saving.")
+            TEST_METHOD_PROPERTY(L"Description", L"Ignores reserved metadata and replaces old, malformed or future-version records only when saving.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementReportsHashCollision)
+            TEST_METHOD_PROPERTY(L"Description", L"Reports hash collisions, skips the other ID's record when loading, and replaces it when saving.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -181,6 +196,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(WindowPlacementReentrantActivate)
             TEST_METHOD_PROPERTY(L"Description", L"Nested Activate preserves restored bounds and state and allows saving after activation completes.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementActivatedCanOverrideSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Without a PlacementId, Width and Height set in the first Activated handler resize the client area, with or without nested Activate.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -229,7 +249,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(WindowPlacementCapturesMinimizedSnappedBounds)
+        BEGIN_TEST_METHOD(WindowPlacementDocumentsMinimizedSnappedCaptureLimitations)
             TEST_METHOD_PROPERTY(L"Description", L"restore-minimized-snapped (capture limitation): Documents native capture gaps and preserves earlier records when capture is rejected.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()

@@ -509,7 +509,7 @@ _Check_return_ HRESULT DesktopWindowImpl::put_PlacementIdImpl(_In_opt_ HSTRING v
     return S_OK;
 }
 
-bool DesktopWindowImpl::SupportsAutomaticWindowPlacement()
+bool DesktopWindowImpl::HasOverlappedPresenter()
 {
     // Check the live presenter: apps can switch presenters between activation and close.
     if (!m_appWindowForChangedEvent)
@@ -528,8 +528,8 @@ bool DesktopWindowImpl::SupportsAutomaticWindowPlacement()
 
 void DesktopWindowImpl::RefreshWindowPlacementEligibility()
 {
-    if ((m_placementState != PlacementState::Activated &&
-         m_placementState != PlacementState::ActivatedWithUnsupportedPresenter) ||
+    if ((m_placementState != PlacementState::ReadyToSave &&
+         m_placementState != PlacementState::SavingDisabledForPresenter) ||
         !m_appWindowForChangedEvent)
     {
         return;
@@ -541,7 +541,7 @@ void DesktopWindowImpl::RefreshWindowPlacementEligibility()
         presenter && SUCCEEDED(presenter->get_Kind(&kind)))
     {
         m_placementState = kind == ixp::AppWindowPresenterKind_Overlapped ?
-            PlacementState::Activated : PlacementState::ActivatedWithUnsupportedPresenter;
+            PlacementState::ReadyToSave : PlacementState::SavingDisabledForPresenter;
     }
     // AppWindow clears Presenter before WM_DESTROY. Preserve the last known eligibility.
 }
@@ -554,14 +554,19 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyInitialWindowPlacement()
     // 1. Custom placement (phase 2).
     // 2. Cascade from a matching visible window (phase 2).
     // 3. Saved placement.
-    if (TryApplySavedWindowPlacement())
+    const bool placementApplied = TryApplySavedWindowPlacement();
+    if (m_bIsClosed)
     {
-        if (!m_bIsClosed)
-        {
-            // It's possible that the app set a new Width/Height during TryApplySavedWindowPlacement
-            // during a Window.SizeChanged event handler.  If it did, apply the pending client size now.
-            IFC_RETURN(ApplyPendingClientSizeIfNeeded());
-        }
+        return S_OK;
+    }
+
+    // WinUI has finished trying to apply saved placement. Callbacks can now resize the window,
+    // even if native activation has not finished.
+    m_placementState = PlacementState::InitialPlacementAttempted;
+    if (placementApplied)
+    {
+        // Apply Width/Height requests made by the app's SizeChanged handler while applying saved placement.
+        IFC_RETURN(ApplyPendingClientSizeIfNeeded());
 
         return S_OK;
     }
@@ -575,20 +580,49 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyInitialWindowPlacement()
 
 bool DesktopWindowImpl::TryApplySavedWindowPlacement()
 {
-    if (!SupportsAutomaticWindowPlacement())
+    // For now we only support applying saved window placement during Window.Activate()
+    ASSERT(m_placementState == PlacementState::ApplyingInitialPlacement);
+
+    if (!HasOverlappedPresenter())
     {
         return false;
     }
 
     // Saved placement overrides Width/Height set before activation.
-    // Clear the pending dimensions before restoring: event handlers may set new values that we must keep.
+    // Clear the pending dimensions before applying saved placement: event handlers may set new values that we must keep.
     const auto width = m_pendingClientWidthDips;
     const auto height = m_pendingClientHeightDips;
     m_pendingClientWidthDips.reset();
     m_pendingClientHeightDips.reset();
 
-    const bool applied = m_windowPlacement.TryRestore(m_hwnd.get());
-    if (!applied && !m_bIsClosed)
+    // Keep Width/Height requests from SizeChanged handlers pending while WinUI applies saved placement.
+    // PlacementEx can apply saved placement in several steps. Applying a size request during an
+    // intermediate SizeChanged would let a later SetWindowPlacement overwrite that request.
+    //
+    // Applying saved placement is best effort. If it is not applied, preserve pending Width/Height
+    // requests so the caller can apply them.
+    using PlacementResult = WindowPlacement::PlacementResult;
+    PlacementResult result = PlacementResult::None;
+    const HRESULT loadAndApplyResult = m_windowPlacement.TryLoadAndApply(m_hwnd.get(), &result);
+    if (FAILED(loadAndApplyResult))
+    {
+        HRESULT diagnosticResult = loadAndApplyResult;
+        PCWSTR message = L"WinUI could not restore the saved window placement.";
+        if ((result & PlacementResult::HashCollision) != PlacementResult::None)
+        {
+            diagnosticResult = HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS);
+            message = L"WinUI detected a window placement ID hash collision. The saved placement for another ID was not restored.";
+        }
+        ::RoOriginateError(
+            diagnosticResult,
+            wrl_wrappers::HStringReference(message).Get());
+        // Applying saved placement is best effort. Clear the WinRT error details after notifying the debugger.
+        ::RoClearError();
+        TRACE_HR_NORETURN(loadAndApplyResult);
+    }
+
+    const bool loadedAndApplied = (result & PlacementResult::LoadedAndApplied) != PlacementResult::None;
+    if (!loadedAndApplied && !m_bIsClosed)
     {
         if (!m_pendingClientWidthDips)
         {
@@ -600,11 +634,15 @@ bool DesktopWindowImpl::TryApplySavedWindowPlacement()
         }
     }
 
-    if (applied && !m_bIsClosed)
+    if (loadedAndApplied && !m_bIsClosed)
     {
-        // Restoring a window as maximized can skip the resize notification that
+        // Saved placement can maximize the window without sending the resize notification that
         // updates our cached unmaximized size. Update the cache now so Width and Height
         // stay correct if the app switches to FullScreen or CompactOverlay.
+        //
+        // TODO (#12512): These values could be stale, if for example, during the TryLoadAndApply operation above,
+        // the app ran code in a SizeChanged or WM_SIZE handler that switched to FullScreen mode.  This would make
+        // the Width/Height getters return stale values.
         bool useRestoredClientSize = false;
         wf::Size restoredClientSize{};
         SIZE chromePx{};
@@ -625,8 +663,9 @@ bool DesktopWindowImpl::TryApplySavedWindowPlacement()
         }
     }
 
-    // A restore callback can close the window; treat that as handled so callers skip fallback sizing.
-    return applied || m_bIsClosed;
+    // An app callback while applying saved placement can close the window. Treat that as handled
+    // so callers do not try to resize the closed window.
+    return loadedAndApplied || m_bIsClosed;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::SaveWindowPlacement()
@@ -635,9 +674,28 @@ _Check_return_ HRESULT DesktopWindowImpl::SaveWindowPlacement()
 
     RefreshWindowPlacementEligibility();
     if (m_placementState == PlacementState::SavingOnDestroy ||
-        m_placementState == PlacementState::Activated)
+        m_placementState == PlacementState::ReadyToSave)
     {
-        IFC_RETURN(m_windowPlacement.Save(m_hwnd.get()));
+        using PlacementResult = WindowPlacement::PlacementResult;
+        PlacementResult result = PlacementResult::None;
+        const HRESULT hr = m_windowPlacement.Save(m_hwnd.get(), &result);
+        const bool collision = (result & PlacementResult::HashCollision) != PlacementResult::None;
+        if (FAILED(hr) || collision)
+        {
+            HRESULT diagnosticResult = hr;
+            PCWSTR message = L"WinUI could not save the window placement.";
+            if (collision)
+            {
+                diagnosticResult = HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS);
+                message = L"WinUI detected a window placement ID hash collision. The saved placement for another ID was replaced.";
+            }
+            ::RoOriginateError(
+                diagnosticResult,
+                wrl_wrappers::HStringReference(message).Get());
+            // Saving is best effort. Clear the WinRT error details after notifying the debugger.
+            ::RoClearError();
+        }
+        IFC_RETURN(hr);
     }
 
     return S_OK;
@@ -647,22 +705,26 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
 {
     IFC_RETURN(CheckIsWindowClosed());
 
-    const bool firstPlacementActivation =
+    const bool applyInitialPlacement =
         AreNewWindowingApisEnabled() &&
-        m_placementState == PlacementState::NotActivated;
-    auto placementActivationGuard = wil::scope_exit([&]()
+        m_placementState == PlacementState::NotStarted;
+    auto initialPlacementGuard = wil::scope_exit([&]()
     {
-        if (firstPlacementActivation && m_placementState == PlacementState::Activating)
+        if (applyInitialPlacement &&
+            (m_placementState == PlacementState::ApplyingInitialPlacement ||
+             m_placementState == PlacementState::InitialPlacementAttempted))
         {
-            m_placementState = PlacementState::NotActivated;
+            // Reset an incomplete attempt after an error or an early return, such as a callback closing
+            // the window. If the window is still open, a later call can try initial placement again.
+            m_placementState = PlacementState::NotStarted;
         }
     });
 
-    if (firstPlacementActivation)
+    if (applyInitialPlacement)
     {
         // Native activation also occurs through AppWindow.Show. Only Window.Activate opts into saving.
-        // A nested Activate must neither restore again nor enable saving before this call finishes.
-        m_placementState = PlacementState::Activating;
+        // A nested Activate must not apply initial placement again or enable saving before this call finishes.
+        m_placementState = PlacementState::ApplyingInitialPlacement;
         IFC_RETURN(ApplyInitialWindowPlacement());
 
         if (m_bIsClosed)
@@ -694,9 +756,9 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
     // attaching DesktopWindowXamlSource.
     ::SetActiveWindow(m_hwnd.get());
 
-    if (firstPlacementActivation && !m_bIsClosed)
+    if (applyInitialPlacement && !m_bIsClosed)
     {
-        m_placementState = PlacementState::ActivatedWithUnsupportedPresenter;
+        m_placementState = PlacementState::SavingDisabledForPresenter;
         RefreshWindowPlacementEligibility();
     }
 
@@ -950,12 +1012,13 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyOrDeferClientSizeInDips(std::opti
         m_hasExplicitClientHeight = true;
     }
 
-    // If we can't honor the size right now - either the window hasn't been shown yet, or the current
-    // presenter (FullScreen/CompactOverlay) doesn't support Width/Height - remember the requested
-    // client size and apply it later: on first activation (ApplyPendingClientSizeIfNeeded from ActivateImpl),
-    // or when the presenter changes back to Default/Overlapped (OnAppWindowChanged). This mimics how
-    // SetWindowPlacement remembers rcNormalPosition while maximized/minimized.
-    if (m_bInitialWindowActivation || !AppWindowPresenterSupportsSizing())
+    // Before the first native activation, keep sizes pending unless Window.Activate has already
+    // attempted initial placement. Also defer while WinUI applies saved placement, even if AppWindow.Show
+    // already activated the window. FullScreen/CompactOverlay requests remain pending until
+    // the presenter changes back to one that supports Width/Height.
+    if (m_placementState == PlacementState::ApplyingInitialPlacement ||
+        (m_bInitialWindowActivation && m_placementState != PlacementState::InitialPlacementAttempted) ||
+        !AppWindowPresenterSupportsSizing())
     {
         if (width)
         {
@@ -968,7 +1031,20 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyOrDeferClientSizeInDips(std::opti
         return S_OK;
     }
 
-    return ApplyRestoredClientSizeInDips(width, height);
+    // Reset pending values for any dimension we're setting directly. Do this before resizing because
+    // it's possible the app has a SizeChanged handler that needs to set pending width/height again.
+    // (e.g. it goes FullScreen and then sets Window.Width)
+    if (width)
+    {
+        m_pendingClientWidthDips.reset();
+    }
+    if (height)
+    {
+        m_pendingClientHeightDips.reset();
+    }
+
+    IFC_RETURN(ApplyRestoredClientSizeInDips(width, height));
+    return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::ValidateWidthHeightValue(DOUBLE value)
@@ -1333,11 +1409,11 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyPendingClientSizeIfNeeded()
         return S_OK;
     }
 
-    // Leave the request pending if the current presenter can't honor Width/Height (e.g.
-    // FullScreen/CompactOverlay). We'll re-apply it when the presenter changes back to one that
-    // does (OnAppWindowChanged), mimicking how the OS restores rcNormalPosition when the window
-    // leaves the maximized/minimized state.
-    if (!AppWindowPresenterSupportsSizing())
+    // A presenter change while WinUI applies saved placement must leave these requests pending.
+    // FullScreen/CompactOverlay requests also stay pending until the presenter changes
+    // back to one that supports Width/Height (OnAppWindowChanged).
+    if (m_placementState == PlacementState::ApplyingInitialPlacement ||
+        !AppWindowPresenterSupportsSizing())
     {
         return S_OK;
     }
@@ -2222,7 +2298,7 @@ void DesktopWindowImpl::Shutdown()
 
     // AppWindow clears its presenter before forwarding WM_DESTROY to us.
     if (AreNewWindowingApisEnabled() &&
-        m_placementState == PlacementState::Activated)
+        m_placementState == PlacementState::ReadyToSave)
     {
         m_placementState = PlacementState::SavingOnDestroy;
     }

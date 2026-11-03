@@ -39,7 +39,7 @@
       <!-- This winmd isn't merged into any other winmd -->
       <Merge>false</Merge>
     </MRTWinMDs>
-    <StorageWinMD Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.Storage.winmd">
+    <StorageWinMD Include="$(WinAppSDKFoundationWinmdPath)\Microsoft.Windows.Storage.winmd">
       <ImplementationDll>Microsoft.WindowsAppRuntime.dll</ImplementationDll>
       <Merge>false</Merge>
     </StorageWinMD>

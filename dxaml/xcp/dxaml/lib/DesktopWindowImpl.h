@@ -139,7 +139,7 @@ namespace DirectUI
     private:
         _Check_return_ HRESULT ApplyInitialWindowPlacement();
         bool TryApplySavedWindowPlacement();
-        bool SupportsAutomaticWindowPlacement();
+        bool HasOverlappedPresenter();
         void RefreshWindowPlacementEligibility();
         _Check_return_ HRESULT SaveWindowPlacement();
 
@@ -237,16 +237,19 @@ namespace DirectUI
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
 
+        // Tracks initial placement progress, presenter eligibility, and saving during window destruction.
+        // This is separate from native activation and normal/maximized window state.
         enum class PlacementState
         {
-            NotActivated,
-            Activating,
-            Activated,
-            ActivatedWithUnsupportedPresenter,
+            NotStarted,
+            ApplyingInitialPlacement,
+            InitialPlacementAttempted,
+            ReadyToSave,
+            SavingDisabledForPresenter,
             SavingOnDestroy,
         };
         WindowPlacement m_windowPlacement;
-        PlacementState m_placementState = PlacementState::NotActivated;
+        PlacementState m_placementState = PlacementState::NotStarted;
 
         // --------------------------------------------------
         // Window sizing support

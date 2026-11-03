@@ -21,7 +21,8 @@
       IxpWinMDs to create IXP class entries (multiple dlls host Microsoft.UI.* types).
       As a workaround, those entries are copied from the IXP transport package appx manifest. -->
       <_WinMdsForClassRegistration Include="@(ExternalWinMDs)" Exclude="@(StorageWinMD)" Condition="'%(ExternalWinMDs.Merge)'=='false'"/>
-      <!-- Foundation owns Storage's shipped registrations; our private test setup needs its own copy. -->
+      <!-- We don't want to _ship_ the activation registrations for Storage APIs, they live in the WinAppSDK Foundation repo.
+        But we do need to include them for our private test setup.  In that case, IncludeStorageExtensions is true. -->
       <_WinMdsForClassRegistration Include="@(StorageWinMD)" Condition="'$(IncludeStorageExtensions)' == 'true'"/>
       <_WinMdsForClassRegistration Include="@(AdditionalWinMDsForClassRegistration)"/>
 

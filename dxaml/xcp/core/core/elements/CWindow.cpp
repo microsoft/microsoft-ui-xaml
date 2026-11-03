@@ -78,7 +78,7 @@ _Check_return_ HRESULT CWindow::SetValue(_In_ const SetValueParams& args)
             IFC_RETURN(value.Promote(&runtimeValue));
             IFC_RETURN(window->put_PlacementId(runtimeValue.GetHSTRING()));
         }
-        return S_OK;
+        return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
 
     // Window_SystemBackdrop is a private property that can only be set by the parser.  Any put or
     // get operations at the DXaml layer do not call in to the core layer.

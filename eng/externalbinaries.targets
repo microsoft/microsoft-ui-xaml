@@ -2,8 +2,8 @@
 <Project>
   <ItemGroup>
     <ExternalBinaries Include="$(LiftedMRTRuntimesPath)\Microsoft.Windows.ApplicationModel.Resources.dll" />
-    <ExternalBinaries Include="$(LiftedMRTRuntimesPath)\Microsoft.WindowsAppRuntime.dll" />
     <ExternalBinaries Include="$(LiftedMRTRuntimesPath)\MRM.dll" />
+    <ExternalBinaries Include="$(WinAppSDKFoundationRuntimesPath)\Microsoft.WindowsAppRuntime.dll" />
     <ExternalBinaries Include="@(WinUIDetailsBinaries)"/>
     <ExternalBinaries Include="$(FrameworkUdkNativePath)\Microsoft.Internal.FrameworkUdk.dll" />
   </ItemGroup>

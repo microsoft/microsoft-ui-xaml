@@ -14,7 +14,7 @@
             <StackPanel Spacing="12" Padding="0,0,12,0">
                 <TextBlock Text="Automatic window placement" Style="{StaticResource TitleTextBlockStyle}" TextWrapping="Wrap" />
                 <TextBlock TextWrapping="Wrap"
-                           Text="WinUI saves a window when it closes and restores it on the first Activate(). Reuse the same PlacementId to reopen it. An empty ID disables persistence." />
+                           Text="For windows with a nonempty PlacementId and the Overlapped presenter, WinUI saves position, size, and state on close and applies saved placement on the first Window.Activate(). Reuse the same ID to restore that placement next time. An empty ID disables persistence." />
                 <TextBlock x:Name="StatusText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
                 <TextBox x:Name="PlacementIdBox" Header="PlacementId for the next window" Text="Doc" />
                 <CheckBox x:Name="SetSizeCheck" Content="Set fallback Width/Height before Activate()" IsChecked="True" />
@@ -42,14 +42,6 @@
                 </StackPanel>
                 <Button Content="Close all test windows" Click="OnCloseAll" />
                 <TextBlock x:Name="ErrorText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
-                <Expander Header="Saved records (private diagnostic format)" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="8">
-                        <Button Content="Refresh saved records" Click="OnReadStore" />
-                        <Button x:Name="DeleteSavedRecordsButton" Content="Delete saved records" Click="OnDeleteSavedRecords" />
-                        <TextBlock x:Name="StoreText" FontFamily="Consolas" FontSize="12"
-                                   TextWrapping="Wrap" IsTextSelectionEnabled="True" />
-                    </StackPanel>
-                </Expander>
             </StackPanel>
         </ScrollViewer>
 

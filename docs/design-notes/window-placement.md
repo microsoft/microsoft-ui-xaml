@@ -28,6 +28,7 @@ We're working on the implementation in multiple phases, though there's no guaran
    - App can be unpackaged (have no package identity)
    - Supports window cascading.
    - Supports AppWindow FullScreen presenter.
+   - Allow more mixing of Window APIs with AppWindow and HWND, and harden against reentrancy scenarios: https://github.com/microsoft/microsoft-ui-xaml/issues/12512
 3. Phase 3: Roundouts as needed.
    - WinUI automatically evict old placement entries
    - App can easily change monitor fallback logic
@@ -37,12 +38,18 @@ We're working on the implementation in multiple phases, though there's no guaran
 
 To enable in an app with package identity, just set `Window.PlacementId` and call `Activate`.
 
+If the app has no package identity, WinUI skips automatic placement and reports the reason through
+`RoOriginateError` and `OutputDebugString`. The window still opens normally.
+
 ```cs
 window w = new Window() { PlacementId="MyWindow" };
 
 // During activate, WinUI looks up the saved position, size, state for "MyWindow" and applies it.
 w.Activate(); 
 ```
+
+A placement id can contain at most `MAX_PATH` (260) UTF-16 code units. If you set a longer id,
+WinUI returns `E_INVALIDARG` and leaves the previous id unchanged. WinUI does not truncate ids.
 
 The first `Window.Activate` opts the window into automatic placement and attempts to restore its saved
 placement. Later `Activate` calls don't restore it again. WinUI doesn't restore, track, or save placement
@@ -63,52 +70,44 @@ After `Window.Activate`, later `AppWindow.Show` or hide calls don't rerun placem
 
 ## Where and how data is saved
 
-WinUI uses `Microsoft.Windows.Storage.ApplicationData.GetDefault().LocalSettings`, in the
-`Microsoft.UI.Xaml.WindowPlacement` container. ApplicationData scopes the settings to the current
-user and package. This is a private format, not a public API; apps should not edit the records.
+WinUI uses `Microsoft.Windows.Storage.ApplicationData.GetDefault().LocalSettings`, in a container
+named `Microsoft.UI.Xaml.WindowPlacement`. ApplicationData scopes the settings to the current
+user and package. It stores in the registry.  This is a private format, not a public API.
 
-Each key is `P_` followed by 16 lowercase hexadecimal digits: the 64-bit FNV-1a hash of the id's
-exact UTF-16LE bytes, without a terminating null. This keeps keys short without relying on
-case-sensitive settings keys. WinUI also compares the full id using ordinal comparison:
-colliding ids can replace each other's records, but cannot restore each other's placement.
+Each key is `P_` followed by 16 lowercase hexadecimal digits representing a hash of the placement ID.
+This keeps keys short and also allows us to  have case-sensitive IDs (the keys are case insensitive).
+WinUI also stores and compares the full ID string, so we detect if a hash collision happens.
+If WinUI does hit a hash collision, it calls `RoOriginateError` with a hash-collision message and continues.
+Restoring skips the other ID's record; saving replaces it with the current ID's placement.
+
+Internally, `TryLoadAndApply` and `Save` return an HRESULT and `PlacementResult` flags. The HRESULT reports
+failures. `LoadedAndApplied` means the saved placement was loaded and applied. `HashCollision` means the
+stored ID differs from the requested ID. The flags support bitwise combinations, but a colliding record is never applied.
 
 ### Version 1 record
 
-Each value is a `Windows.Storage.ApplicationDataCompositeValue` with the following boxed fields.
-All rectangles use physical screen pixels, not workspace coordinates or DIPs.
+Each value is a boxed `UInt8Array`: a 152-byte fixed header followed by the exact placement id string.
+All integers and UTF-16 code units use little-endian byte order. Rectangles contain four signed
+32-bit edges (`left`, `top`, `right`, `bottom`) in physical screen pixels, not workspace coordinates
+or DIPs.
 
-| Field | Type | Meaning |
-|---|---|---|
-| `Version` | Int32 | `1`. |
-| `PlacementId` | String | The exact, case-sensitive id. |
-| `NormalX`, `NormalY`, `NormalWidth`, `NormalHeight` | Int32 | Normal outer bounds, including invisible resize borders. |
-| `WorkAreaX`, `WorkAreaY`, `WorkAreaWidth`, `WorkAreaHeight` | Int32 | The saved display's usable area. |
-| `Dpi` | Int32 | Window DPI at capture. |
-| `State` | Int32 | `0` Normal, `1` Maximized, `2` Minimized, `3` Snapped, `4` MinimizedFromMaximized, `5` MinimizedFromSnapped. |
-| `SnapX`, `SnapY`, `SnapWidth`, `SnapHeight` | Int32 | Snapped visible bounds, excluding invisible resize borders. Required for states 3 and 5. |
-| `DisplayDeviceName` | String | Optional GDI display name. WinUI writes it but accepts records without it. |
+| Byte offset | Field | Type | Meaning |
+|---|---|---|---|
+| 0 | `Version` | UInt32 | `1`. |
+| 4 | `SavedAt` | FILETIME (8 bytes) | UTC save time, in 100-nanosecond intervals since January 1, 1601. |
+| 12 | `VirtualDesktopId` | GUID (16 bytes) | Reserved. WinUI writes all zeros and ignores this field when restoring. |
+| 28 | `NormalRect` | RECT (16 bytes) | Normal outer bounds, including invisible resize borders. |
+| 44 | `WorkArea` | RECT (16 bytes) | The saved display's usable area. |
+| 60 | `SnapRect` | RECT (16 bytes) | Snapped visible bounds, excluding invisible resize borders. All zeros when not snapped. |
+| 76 | `Dpi` | UInt32 | Window DPI at capture. |
+| 80 | `State` | UInt32 | `0` Normal, `1` Maximized, `2` Minimized, `3` Snapped, `4` MinimizedFromMaximized, `5` MinimizedFromSnapped. |
+| 84 | `DisplayDeviceName` | WCHAR[32] (64 bytes) | Null-terminated GDI display name with zero padding. An empty name is allowed. |
+| 148 | `IdLength` | UInt32 | Placement id length in UTF-16 code units. |
+| 152 | `PlacementId` | UTF-16LE | The exact, case-sensitive id, with no terminating null. |
 
-Phase 1: WinUI does not store virtual-desktop ids, timestamps, presenter kinds, visibility, activation,
-or Z-order. It derives sizing policy from the destination HWND.
-
-### Validation and compatibility
-
-WinUI ignores records with an unsupported version, a different id, missing required fields, or
-incorrect boxed types. It ignores field order and unknown fields. WinUI also requires:
-
-- Rectangle dimensions of 1-65535 pixels and endpoints that fit in Int32.
-- DPI of 96-9600 and normal bounds that intersect the saved work area.
-- A complete snap rectangle intersecting that work area if any snap field exists or the state is 3 or 5.
-- A display name, if present, of at most 31 UTF-16 code units with no embedded null.
-
-WinUI falls back to requested dimensions, then existing bounds, when it cannot read a valid record.
-Keep version 1 for new optional fields only if existing readers can safely ignore them. Use a new
-version for changes to required fields, types, units, or meanings.
-
-WinUI replaces the whole record with one insertion after filling every field. It does not preserve
-unknown fields; a successful save can replace an unsupported version with version 1. ApplicationData
-size and storage limits apply. When windows or processes share an id, the last successful write wins.
-Phase 1 has no cross-instance coordination, record-count limit, or automatic eviction.
+`SavedAt` is metadata only; WinUI does not use it to evict records or decide whether to restore.
+Phase 1 does not capture or restore virtual-desktop ids. It also does not store presenter kinds,
+visibility, activation, or Z-order. It derives sizing policy from the destination HWND.
 
 ## Implementation guide
 
@@ -120,12 +119,35 @@ The WinUI files below live in `dxaml\xcp\dxaml\lib`; PlacementEx is under `exter
 | `WindowPlacement.h/.cpp` | Own the id and storage objects; load, validate, apply, and save placement through PlacementEx. |
 | `PlacementEx` | Handle monitor selection, DPI, work-area adjustment, and native placement calls. |
 
+## Open issues and reentrancy
+
+There's more work to harden against reentrancy and Window/AppWindow/win32 interop scenarios,
+tracked by [#12512](https://github.com/microsoft/microsoft-ui-xaml/issues/12512).
+
+**Reentrancy from DesktopWindowImpl::TryApplySavedWindowPlacement to PlacementEx.**
+
+See the TODOs in `DesktopWindowImpl::TryApplySavedWindowPlacement`.
+
+**PlacementEx's downlevel restore path can show the window too early.**
+
+During `Window.Activate`,
+WinUI asks PlacementEx to restore the saved position and size before WinUI shows the window.
+When `ApplyWindowAction` is unavailable or fails, PlacementEx uses its downlevel path, which calls
+`SetWindowPlacement`. That call can show the window and raise `Window.VisibilityChanged` before
+`Window.Activate` reaches its own call to ShowWindow. If the app hides the window in that VisibilityChanged event handler,
+the later show in `Window.Activate` can make it visible again.
+
+WinUI passes `KeepHidden` to PlacementEx,
+but the downlevel path only hides the window again at
+the end of restoration. It does not prevent the earlier visibility event. We still need to avoid
+this extra show and preserve the app's decision to hide the window.
+
 ## Tests
 
 - Automated tests: `WindowIntegrationTests_Placement.cpp` 
 - Manual tests app: `WinUICsDesktopSampleApp`
 
-`WindowPlacementCapturesMinimizedSnappedBounds` documents the current capture limitation.
+`WindowPlacementDocumentsMinimizedSnappedCaptureLimitations` documents the current capture limitation.
 `WindowPlacementRestoreMinimizedSnapped` tests restoration from an edited saved record with complete
 snap data. It does not demonstrate support for capturing the snap, minimize, then close sequence.
 
@@ -205,9 +227,9 @@ WinUI keeps snapped placement and normal restore bounds separately, so a saved s
 does not become the window's normal size.
 
 > **Known limitation: snapping disabled.** When Windows' window-arrangement setting
-> (`SPI_GETWINARRANGING`) is off, the fallback path restores normal bounds, as tested on
-> Windows 10. The `ApplyWindowAction` path still restores the saved snap, as tested on
-> Windows 11. Phase 1 leaves this difference unchanged.
+> (`SPI_GETWINARRANGING`) is off, PlacementEx's downlevel `SetWindowPlacement` path restores
+> normal bounds, as tested on Windows 10. The `ApplyWindowAction` path still restores the
+> saved snap, as tested on Windows 11. Phase 1 leaves this difference unchanged.
 
 1. Open window in normal state with Windows snapping enabled
 2. Move and resize window to different bounds, fully inside the work area
@@ -234,8 +256,8 @@ Actual behavior on the tested Windows versions:
 
 | OS | On close | On re-open |
 |---|---|---|
-| Windows 10 | The minimized snap bounds do not overlap the work area. WinUI skips saving and preserves any earlier record. | WinUI uses the earlier record, if any; otherwise, it uses normal initial-placement fallback. |
-| Windows 11 | Native capture no longer reports the window as snapped. WinUI saves the normal restore bounds as `MinimizedFromNormal`, replacing any earlier record. | The window opens in normal state at its normal restore bounds, not snapped. |
+| Windows 10 | The minimized snap bounds do not overlap the work area. WinUI doesn't save its placement. | WinUI uses the previous saved placement, if any; otherwise, it uses normal initial-placement fallback. |
+| Windows 11 | PlacementEx doesn't report the window as snapped. WinUI saves the normal restore bounds as `MinimizedFromNormal`, replacing any saved placement. | The window opens in normal state at its normal restore bounds, not snapped. |
 
 Neither result guarantees restoring the last snapped layout. Closing and reopening a snapped window
 without minimizing it remains supported; see `restore-snapped`.
@@ -246,8 +268,9 @@ WinUI prioritizes a usable on-screen window over an exact off-screen position. I
 saved bounds to fit the current work area when size constraints allow.
 
 > **Known limitation: `IsResizable=false`.** The `ApplyWindowAction` path, as tested on
-> Windows 11, preserves the destination window's current size. The fallback path, as tested
-> on Windows 10, can resize it to the saved dimensions, subject to native tracking limits.
+> Windows 11, preserves the destination window's current size. PlacementEx's downlevel
+> `SetWindowPlacement` path, as tested on Windows 10, can resize it to the saved dimensions,
+> subject to native tracking limits.
 > Fixed-size windows may extend beyond the work area. Phase 1 leaves this difference unchanged.
 
 1. Open a resizable window in normal state

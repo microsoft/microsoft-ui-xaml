@@ -79,7 +79,16 @@ namespace WinUICsDesktopSampleApp.WindowPlacement
         {
             if (!m_closed)
             {
-                m_status.Text = PlacementDiagnostics.Describe(this);
+                var appWindow = AppWindow;
+                string state = appWindow.Presenter is OverlappedPresenter overlapped
+                    ? overlapped.State.ToString()
+                    : appWindow.Presenter.Kind.ToString();
+
+                m_status.Text = $"PlacementId: \"{PlacementId}\"\n" +
+                    $"Presenter/state: {state}\n" +
+                    $"Position (pixels): {appWindow.Position.X}, {appWindow.Position.Y}\n" +
+                    $"Outer size (pixels): {appWindow.Size.Width} x {appWindow.Size.Height}\n" +
+                    $"Window Width/Height (DIPs): {Width:0.#} x {Height:0.#}";
                 Log.Write($"{Title}: {m_status.Text.Replace("\n", "; ")}");
             }
         }

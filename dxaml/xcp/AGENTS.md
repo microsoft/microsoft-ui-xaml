@@ -4,3 +4,4 @@ and return if it's a failure.
 
 - Prefer `IFC_RETURN` where applicable.  Covert `IFC` to `IFC_RETURN` opportunistically, only if you're already changing that function.
 - Instead of using `return <expr>;` to return an HRESULT, prefer to `IFC_RETURN(<expr>)` first and then `return S_OK;`.
+- Don't use `S_FALSE`
