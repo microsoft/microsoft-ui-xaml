@@ -84,8 +84,9 @@ Run the event compatibility regression checks from this directory:
 dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
 ```
 
-These check object timelines across TraceLogging and retained manifest events,
-and the migrated performance regions' Start/Stop opcode selectors.
+These check object timelines across new TraceLogging and legacy manifest events,
+and verify that migrated performance regions distinguish Start/Stop without
+also matching legacy manifest events.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -359,8 +360,9 @@ While saving events, the writer also indexes the UI elements they mention
 (`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
 mentions with their events. The TraceLogging events of
 Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, along
-with Microsoft-Windows-XAML's retained `VirtualizationIsEnabledByLayout`
-manifest observation when it has the version-1 element-data layout. None
+with older traces' `VirtualizationIsEnabledByLayout` manifest observation
+when it has the version-1 element-data layout. New traces emit this observation
+only as TraceLogging. None
 creates or destroys an object, so an element's lifetime in the file is from
 the first to the last event that mentions it. Other manifest events are not
 indexed because they use the same field names for other objects too: `BeginStoryboard`'s

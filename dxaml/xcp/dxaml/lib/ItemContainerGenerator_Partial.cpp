@@ -1351,7 +1351,11 @@ ItemContainerGenerator::Generator::GenerateNext(
     _Out_ BOOLEAN* isNewlyRealized,
     _Outptr_ xaml::IDependencyObject** returnValue)
 {
-    XamlTelemetry::GenerateContainerBegin();
+    const bool traceGenerateContainer = XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::LayoutKeyword);
+    if (traceGenerateContainer)
+    {
+        XamlTelemetry::GenerateContainerBegin();
+    }
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spContainer;
     ctl::ComPtr<IGeneratorHost> spHost;
@@ -1484,7 +1488,7 @@ ItemContainerGenerator::Generator::GenerateNext(
     IFC(spContainer.CopyTo(returnValue));
 
 Cleanup:
-    if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::LayoutKeyword))
+    if (traceGenerateContainer)
     {
         auto coreContainer = spContainer ? spContainer.Cast<DependencyObject>()->GetHandle() : nullptr;
         ctl::ComPtr<xaml::IUIElement> hostElement;

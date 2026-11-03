@@ -192,6 +192,16 @@ public:
     DEFINE_ELEMENT_ACTIVITY(UpdateLogicalScrollData, WINEVENT_LEVEL_INFO, LayoutKeyword);
     DEFINE_ELEMENT_ACTIVITY(GetElementCount, WINEVENT_LEVEL_VERBOSE, CoreKeyword);
 
+    static void VirtualizationIsEnabledByLayout(
+        CDependencyObject* object, bool IsEnabled, PCWSTR Name, PCWSTR ClassType, PCWSTR PropertyType)
+    {
+        TRACE_ELEMENT_EVENT("VirtualizationIsEnabledByLayout", object, nullptr, WINEVENT_LEVEL_INFO, ControlsKeyword,
+            TraceLoggingBoolean(IsEnabled, "IsEnabled"),
+            TraceLoggingValue(Name, "Name"),
+            TraceLoggingValue(ClassType, "ClassType"),
+            TraceLoggingValue(PropertyType, "PropertyType"));
+    }
+
     // Hub section count (Hub_Partial.cpp): the subject is the Hub whose section count changed.
     static void HubSectionCount(CDependencyObject* object, uint32_t SectionCount)
     {

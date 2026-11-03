@@ -4,7 +4,6 @@
 #pragma once
 
 #include <TraceLoggingInterop.h>
-#include <atomic>
 #include <cstdint>
 #include <evntrace.h>
 
@@ -50,22 +49,13 @@ uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 
 class XamlProfilerTracing final : public TelemetryBase
 {
-    inline static std::atomic<bool> g_profilerEnabled{false};
-
     #pragma warning (suppress : 6387)
     IMPLEMENT_TELEMETRY_CLASS(XamlProfilerTracing, XamlProfilerLogging);
 
 public:
 
-    static void EnableAllocationProfiling(bool enabled) noexcept
-    {
-        g_profilerEnabled.store(enabled, std::memory_order_relaxed);
-    }
-
-    static bool IsAllocationProfilingEnabled() noexcept
-    {
-        return g_profilerEnabled.load(std::memory_order_relaxed);
-    }
+    static void EnableAllocationProfiling(bool enabled) noexcept;
+    static bool IsAllocationProfilingEnabled() noexcept;
 
     DEFINE_TRACELOGGING_EVENT_PARAM2(PeerAssociated,
         uint64_t, ElementId,

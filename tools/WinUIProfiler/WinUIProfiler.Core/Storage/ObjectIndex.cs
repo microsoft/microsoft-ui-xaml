@@ -10,7 +10,7 @@ namespace WinUIProfiler.Engine.Storage;
 // the session writer's thread inside its transactions, so a mention is saved and trimmed together with its event.
 //
 // TraceLogging events on Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are read, and none of them
-// creates or destroys an object. The retained VirtualizationIsEnabledByLayout manifest event also names a UI element.
+// creates or destroys an object. Older traces' VirtualizationIsEnabledByLayout manifest event also names a UI element.
 // Other manifest events use the same field names for other objects too: BeginStoryboard's
 // ElementId is the storyboard, and the ParentId of Microsoft-Windows-XAML-Diagnostics' PeerCreated is a framework peer.
 // An address is known to be a UI element once it appears in a field that only ever holds a CUIElement* (tree, child,

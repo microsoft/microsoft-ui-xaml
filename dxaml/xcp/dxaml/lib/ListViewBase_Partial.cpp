@@ -752,7 +752,7 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
     // Trace whether the layout configuration allows virtualization.
-    if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+    if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::ControlsKeyword))
     {
         BOOLEAN isVirtualizationActive = TRUE;
         ctl::ComPtr<IPanel> spItemsPanel;
@@ -785,9 +785,9 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
 
-            TraceVirtualizationIsEnabledByLayoutInfo1(
-                isVirtualizationActive,
-                reinterpret_cast<UINT64>(GetHandle()),
+            XamlTelemetry::VirtualizationIsEnabledByLayout(
+                GetHandle(),
+                !!isVirtualizationActive,
                 GetHandle()->m_strName.GetBuffer(),
                 GetHandle()->GetClassName().GetBuffer(),
                 (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL");
