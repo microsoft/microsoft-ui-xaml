@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Storage;
@@ -125,20 +126,22 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         Notify();
     }
 
-    // Reads process's events from the trace at etlPath into a new session file in sessionDirectory. Completes once the
-    // reading has started; State then follows it to TraceFinished, TraceStopped or TraceFailed.
-    public Task OpenTraceAsync(string etlPath, TraceProcess process, string sessionDirectory)
+    // Reads process's events, and those of the marker providers, from the trace at etlPath into a new session file in
+    // sessionDirectory. Completes once the reading has started; State then follows it to TraceFinished, TraceStopped or
+    // TraceFailed.
+    public Task OpenTraceAsync(string etlPath, TraceProcess process, string sessionDirectory, IReadOnlyCollection<MarkerProvider> markers)
     {
         if (!CanConnect)
         {
             throw new InvalidOperationException("Disconnect the current target before reading a trace.");
         }
 
-        connecting = OpenTraceCoreAsync(etlPath, process, sessionDirectory);
+        connecting = OpenTraceCoreAsync(etlPath, process, sessionDirectory, markers);
         return connecting;
     }
 
-    private async Task OpenTraceCoreAsync(string etlPath, TraceProcess process, string sessionDirectory)
+    private async Task OpenTraceCoreAsync(string etlPath, TraceProcess process, string sessionDirectory,
+        IReadOnlyCollection<MarkerProvider> markers)
     {
         IsBusy = true;
         state = "TraceOpening";
@@ -155,7 +158,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         Notify();
         try
         {
-            var started = await Task.Run(() => TraceReplay.Start(etlPath, process.ProcessId, process.Name, sessionDirectory));
+            var started = await Task.Run(() => TraceReplay.Start(etlPath, process.ProcessId, process.Name, sessionDirectory,
+                SessionWriter.DefaultLimitBytes, markers));
             replay = started;
             started.Changed += Replay_Changed;
             _ = CompleteReplayAsync(started);

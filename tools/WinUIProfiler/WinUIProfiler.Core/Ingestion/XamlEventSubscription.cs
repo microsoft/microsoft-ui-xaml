@@ -6,16 +6,20 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's events from the XAML providers, and the kernel's GPU memory and window focus events for it, from
-// a TraceEvent source (an .etl file or a live session). TraceLogging events carry their own field names and types.
-// Manifest events are decoded with the manifest Windows registers for their provider: system XAML's for
-// Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for DxgKrnl
-// and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared event whose
-// fields differ, so it is decoded here.
+// Delivers one process's events from the XAML providers and the marker providers, and the kernel's GPU memory and window
+// focus events for it, from a TraceEvent source (an .etl file or a live session). TraceLogging events carry their own
+// field names and types. Manifest events are decoded with the manifest Windows registers for their provider: system
+// XAML's for Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's
+// for DxgKrnl and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared
+// event whose fields differ, so it is decoded here. A marker provider's events are decoded the same ways, or with the
+// manifest an EventSource writes into the trace.
 internal static class XamlEventSubscription
 {
     // WINEVENT_CHANNEL_TRACELOGGING (winmeta.h). Manifest events on the same providers use other channels.
     private const int TraceLoggingChannel = 11;
+
+    // The ID of the events an EventSource writes its manifest in; they describe its other events and are not delivered.
+    private const int EventSourceManifest = 0xFFFE;
 
     // Microsoft-Windows-DxgKrnl VidMmProcessBudgetChange and VidMmProcessUsageChange: a process's GPU memory budget
     // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
@@ -30,20 +34,30 @@ internal static class XamlEventSubscription
     // drew (TraceFrameInfo in xcpcore.cpp). System XAML's manifest describes four UInt32 fields instead.
     private const int FrameInfo = 64;
 
-    internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink)
+    internal static void Subscribe(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProvider> markers,
+        Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        Match(source, processId, (data, provider, owner) => sink(Capture(data, provider, owner)));
+        Match(source, processId, markers, (data, provider, marker, owner) => sink(Capture(data, provider, marker, owner)));
     }
 
-    // Calls match for each event Subscribe delivers, with its provider and the process it belongs to, without copying
-    // it. TraceEvent reuses the event object after the call.
-    internal static void Match(TraceEventDispatcher source, int? processId, Action<TraceEvent, XamlProvider, int> match)
+    // Calls match for each event Subscribe delivers, with its provider (and for a marker event, the marker provider) and
+    // the process it belongs to, without copying it. TraceEvent reuses the event object after the call. A marker provider
+    // that is a XAML provider, DxgKrnl or Win32k is not read again.
+    internal static void Match(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProvider> markers,
+        Action<TraceEvent, XamlProvider, MarkerProvider?, int> match)
     {
         ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(markers);
         ArgumentNullException.ThrowIfNull(match);
 
-        IgnoreOtherProviders(source);
+        var markerIds = new Dictionary<Guid, MarkerProvider>();
+        foreach (var marker in markers.Where(marker => !XamlProviders.IsBuiltIn(marker.Id)))
+        {
+            markerIds.TryAdd(marker.Id, marker);
+        }
+
+        IgnoreOtherProviders(source, markerIds);
         source.Dynamic.All += data =>
         {
             if (data.ProviderGuid == XamlProviders.DxgKrnl)
@@ -53,7 +67,7 @@ internal static class XamlEventSubscription
                 if ((int)data.ID is VidMmProcessBudgetChange or VidMmProcessUsageChange &&
                     PayloadProcessId(data) is { } owner && (processId is null || owner == processId))
                 {
-                    match(data, XamlProvider.DxgKrnl, owner);
+                    match(data, XamlProvider.DxgKrnl, null, owner);
                 }
 
                 return;
@@ -64,15 +78,21 @@ internal static class XamlEventSubscription
                 // Matched to the process by the event header's process ID.
                 if ((int)data.ID == FocusChange && (processId is null || data.ProcessID == processId))
                 {
-                    match(data, XamlProvider.Win32k, data.ProcessID);
+                    match(data, XamlProvider.Win32k, null, data.ProcessID);
                 }
 
                 return;
             }
 
+            MarkerProvider? marker = null;
             if (!XamlProviders.TryGet(data.ProviderGuid, out var provider))
             {
-                return;
+                if (!markerIds.TryGetValue(data.ProviderGuid, out marker) || (int)data.ID == EventSourceManifest)
+                {
+                    return;
+                }
+
+                provider = XamlProvider.Marker;
             }
 
             if (processId is { } targetProcessId && data.ProcessID != targetProcessId)
@@ -80,7 +100,7 @@ internal static class XamlEventSubscription
                 return;
             }
 
-            match(data, provider, data.ProcessID);
+            match(data, provider, marker, data.ProcessID);
         };
     }
 
@@ -95,7 +115,7 @@ internal static class XamlEventSubscription
     //   provider is that GUID and whose ID is that sum.
     // - AllEvents still sees the events of a template that does nothing; TraceReplay and ListProcesses count on it.
     // If either of the first two changes, each type goes to TDH as it did without this handler.
-    private static void IgnoreOtherProviders(TraceEventDispatcher source)
+    private static void IgnoreOtherProviders(TraceEventDispatcher source, IReadOnlyDictionary<Guid, MarkerProvider> markers)
     {
         var services = (ITraceParserServices)source;
         var ignored = new HashSet<(Guid, ushort)>();
@@ -106,7 +126,7 @@ internal static class XamlEventSubscription
             {
                 var classic = unknown.IsClassicProvider;
                 var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
-                if (provider == XamlProviders.DxgKrnl || provider == XamlProviders.Win32k || XamlProviders.TryGet(provider, out _))
+                if (XamlProviders.IsBuiltIn(provider) || markers.ContainsKey(provider))
                 {
                     return false;
                 }
@@ -161,13 +181,13 @@ internal static class XamlEventSubscription
         }
     }
 
-    internal static ProfilerEvent Capture(TraceEvent data, XamlProvider provider, int processId)
+    internal static ProfilerEvent Capture(TraceEvent data, XamlProvider provider, MarkerProvider? marker, int processId)
     {
 #pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
         var timestampQpc = data.TimeStampQPC;
 #pragma warning restore CS0618
         return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider,
-            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider));
+            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider), marker);
     }
 
     private static EventField[] CopyFields(TraceEvent data, XamlProvider provider)

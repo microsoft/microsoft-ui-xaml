@@ -10,7 +10,8 @@ using WinUIProfiler.Engine.Events;
 namespace WinUIProfiler.Engine.Storage;
 
 // ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording; negative
-// when it was created earlier (attach), null when unknown (a recorded trace).
+// when it was created earlier (attach, or a recorded trace, whose recording starts at the process's first stored event),
+// null when unknown (a recorded trace without the kernel's process start event for it).
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
     long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,
@@ -61,6 +62,10 @@ public sealed record FrameListItem(long ListIndex, FrameListItemType ItemType, S
 // or from the start of the recording.
 public sealed record LaunchFrame(long FrameNumber, double Milliseconds, bool FromProcessStart);
 
+// The first frame drawn on the first UI thread: its number and when its last tick ended, in milliseconds from the start of
+// the recording.
+public sealed record DrawnFrame(int ThreadId, long FrameNumber, double EndMilliseconds);
+
 // Reads a session file written by SessionWriter, also while it is still being written.
 public static class SessionFile
 {
@@ -76,6 +81,57 @@ public static class SessionFile
         ArgumentNullException.ThrowIfNull(sink);
         return ReadEvents(path, "SELECT Qpc, ThreadId, TypeId, Payload FROM Events ORDER BY Seq", [],
             (profilerEvent, _) => sink(profilerEvent), cancellationToken);
+    }
+
+    // Delivers the stored events of some types after a Seq (null for all), in Seq order, and returns the last Seq stored
+    // (null when there is none), to pass next time. A type is a provider's ETW ID and an event name, which matches
+    // case-insensitively.
+    public static long? ReadEvents(string path, IReadOnlyCollection<(Guid ProviderId, string Name)> eventTypes, long? afterSeq,
+        Action<ProfilerEvent> sink, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(eventTypes);
+        ArgumentNullException.ThrowIfNull(sink);
+        long? lastSeq = null;
+        ReadEvents(path, (connection, transaction, types) =>
+            {
+                // The same snapshot as the events read, so the next read starts right after them.
+                using (var last = Command(connection, transaction, "SELECT MAX(Seq) FROM Events"))
+                {
+                    lastSeq = last.ExecuteScalar() is long seq ? seq : null;
+                }
+
+                var ids = types.Where(type => eventTypes.Any(wanted => wanted.ProviderId == type.Value.ProviderId &&
+                        string.Equals(wanted.Name, type.Value.Name, StringComparison.OrdinalIgnoreCase)))
+                    .Select(type => type.Key.ToString(CultureInfo.InvariantCulture)).ToArray();
+                return $"""
+                    SELECT Qpc, ThreadId, TypeId, Payload FROM Events
+                    WHERE {(ids.Length == 0 ? "0" : $"TypeId IN ({string.Join(',', ids)})")} AND Seq > $after
+                    ORDER BY Seq
+                    """;
+            }, [("$after", afterSeq ?? 0)], (profilerEvent, _) => sink(profilerEvent), cancellationToken);
+        return lastSeq;
+    }
+
+    // The first frame drawn on the UI thread with the first stored frame, as the Frames tab's launch line shows; null
+    // while there is none.
+    public static DrawnFrame? ReadFirstDrawnFrame(string path)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        var (_, frequency, startQpc) = ReadSession(connection, transaction);
+        using var command = Command(connection, transaction, """
+            WITH Thread AS (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1)
+            SELECT f.ThreadId, f.FrameNumber, f.EndQpc
+            FROM Frames f JOIN Thread t ON t.ThreadId = f.ThreadId
+            WHERE f.EndQpc IS NOT NULL
+                AND f.FrameNumber < (SELECT MAX(p.FrameNumber) FROM Frames p WHERE p.ThreadId = f.ThreadId)
+            ORDER BY f.FrameId
+            LIMIT 1
+            """);
+        using var reader = command.ExecuteReader();
+        return reader.Read() && startQpc is { } start
+            ? new(reader.GetInt32(0), reader.GetInt64(1), (reader.GetInt64(2) - start) * 1000.0 / frequency)
+            : null;
     }
 
     // The objects with stored events, in the order they were first seen: all, those of one kind, or the one with an ID or
@@ -420,16 +476,24 @@ public static class SessionFile
     // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and then any others, which the sink reads from the
     // reader along with each event.
     private static long ReadEvents(string path, string query, (string Name, object? Value)[] parameters,
-        Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken)
+        Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken) =>
+        ReadEvents(path, (_, _, _) => query, parameters, sink, cancellationToken);
+
+    // The same, with a query that depends on the file's event types, read in the same snapshot as the events.
+    private static long ReadEvents(string path,
+        Func<SqliteConnection, SqliteTransaction, IReadOnlyDictionary<long, StoredType>, string> query,
+        (string Name, object? Value)[] parameters, Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken)
     {
         using var connection = Open(path);
         // One read transaction, so a file still being written is read as one consistent snapshot: every stored event's
         // type is among the types read.
         using var transaction = connection.BeginTransaction(deferred: true);
         var (info, frequency, startQpc) = ReadSession(connection, transaction);
-        var types = new Dictionary<long, (XamlProvider Provider, bool TraceLogging, string Name, int Opcode, string[] Names, FieldType[] Types)>();
+        // Files written before marker providers were added have no events from them.
+        var marker = HasColumn(connection, transaction, "EventTypes", "ProviderId") ? "ProviderName, ProviderId" : "NULL, NULL";
+        var types = new Dictionary<long, StoredType>();
         using (var command = Command(connection, transaction,
-            "SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging FROM EventTypes"))
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -442,13 +506,17 @@ public static class SessionFile
                     throw new InvalidDataException("An event type's field names and types do not match.");
                 }
 
-                types[reader.GetInt64(0)] = (Enum.Parse<XamlProvider>(reader.GetString(1)), reader.GetBoolean(6), reader.GetString(2),
+                var provider = Enum.Parse<XamlProvider>(reader.GetString(1));
+                var markerProvider = provider == XamlProvider.Marker
+                    ? new MarkerProvider(reader.GetString(7), Guid.Parse(reader.GetString(8)))
+                    : null;
+                types[reader.GetInt64(0)] = new(provider, markerProvider, reader.GetBoolean(6), reader.GetString(2),
                     reader.GetInt32(3), names, fieldTypes);
             }
         }
 
         long delivered = 0;
-        using (var command = Command(connection, transaction, query, parameters))
+        using (var command = Command(connection, transaction, query(connection, transaction, types), parameters))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -458,14 +526,25 @@ public static class SessionFile
                 startQpc ??= qpc;
                 var type = types[reader.GetInt64(2)];
                 sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, info.ProcessId, reader.GetInt32(1), type.Provider,
-                    type.TraceLogging, type.Name, type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types)),
-                    reader);
+                    type.TraceLogging, type.Name, type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types),
+                    type.Marker), reader);
                 delivered++;
             }
         }
 
         return delivered;
     }
+
+    // An EventTypes row.
+    private sealed record StoredType(XamlProvider Provider, MarkerProvider? Marker, bool TraceLogging, string Name, int Opcode,
+        string[] Names, FieldType[] Types)
+    {
+        public Guid ProviderId => Marker?.Id ?? XamlProviders.IdOf(Provider);
+    }
+
+    private static bool HasColumn(SqliteConnection connection, SqliteTransaction? transaction, string table, string column) =>
+        Sql.Scalar(connection, $"SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name = $column", transaction,
+            ("$column", column)) > 0;
 
     // The mentions column of EventDetails: one object per mention, with the name of the field that holds the address.
     private static IReadOnlyList<ObjectMention> Mentions(string json)
@@ -545,11 +624,14 @@ public static class SessionFile
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = """
+        // Files written before ProcessStartQpc was added are otherwise the same.
+        var processStartQpc = HasColumn(connection, transaction, "SessionInfo", "ProcessStartQpc") ? "ProcessStartQpc" : "NULL";
+        command.CommandText = $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
                 (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects WHERE Kind = 'Element'),
-                (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, StartedQpc, (SELECT COUNT(*) FROM Objects WHERE Kind = 'Visual')
+                (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, StartedQpc, (SELECT COUNT(*) FROM Objects WHERE Kind = 'Visual'),
+                {processStartQpc}
             FROM SessionInfo
             """;
         using var reader = command.ExecuteReader();
@@ -561,10 +643,13 @@ public static class SessionFile
         var frequency = reader.IsDBNull(12) ? Stopwatch.Frequency : reader.GetInt64(12);
         long? startQpc = reader.IsDBNull(13) ? null : reader.GetInt64(13);
         var startedUtc = ParseUtc(reader.GetString(5));
-        // StartedQpc was read with StartedUtc, so the process creation time maps onto the events' QPC clock.
-        double? processStart = startQpc is { } start && !reader.IsDBNull(17) && !reader.IsDBNull(18)
-            ? (reader.GetInt64(18) - start) * 1000.0 / frequency - (startedUtc - ParseUtc(reader.GetString(17))).TotalMilliseconds
-            : null;
+        // A recorded trace has the process start on the events' clock. For a live session, StartedQpc was read with
+        // StartedUtc, so the process creation time maps onto the events' QPC clock.
+        double? processStart = startQpc is not { } start ? null
+            : !reader.IsDBNull(20) ? (reader.GetInt64(20) - start) * 1000.0 / frequency
+            : !reader.IsDBNull(17) && !reader.IsDBNull(18)
+                ? (reader.GetInt64(18) - start) * 1000.0 / frequency - (startedUtc - ParseUtc(reader.GetString(17))).TotalMilliseconds
+                : null;
         var info = new SessionFileInfo(reader.GetInt32(0), NullableString(reader, 1), reader.GetString(2), NullableString(reader, 3),
             Enum.Parse<SessionCoverage>(reader.GetString(4)), startedUtc,
             reader.IsDBNull(6) ? null : ParseUtc(reader.GetString(6)), NullableString(reader, 7),
