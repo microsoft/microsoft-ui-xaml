@@ -3611,7 +3611,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var childContainer = navView.ContainerFromMenuItem(childCategory) as NavigationViewItem;
+                var parentContainer = (NavigationViewItem)overflowRepeater.TryGetElement(0);
+                var childRepeater = VisualTreeUtils.FindVisualChildByName(parentContainer, "NavigationViewItemMenuItemsHost") as ItemsRepeater;
+                Log.Comment($"  overflow parent IsExpanded={parentContainer.IsExpanded}, child repeater={(childRepeater != null)}, visibility={childRepeater?.Visibility}");
+                var childContainer = childRepeater?.TryGetElement(0) as NavigationViewItem;
                 Verify.IsNotNull(childContainer, "The child of the overflow parent should be realized");
                 (FrameworkElementAutomationPeer.CreatePeerForElement(childContainer) as IInvokeProvider).Invoke();
             });
