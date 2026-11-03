@@ -1114,6 +1114,16 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
         }
     }
 
+    // A press already being routed can reach an item that was just disabled, for example from an
+    // application PointerCaptureLost handler while another pointer's capture ended. Don't accept it,
+    // and keep the CanDrag helper later in the route from arming on the disabled item.
+    if (!IsEnabled())
+    {
+        ResetTrackedPointerId();
+        args.Handled(true);
+        return;
+    }
+
     auto pointerProperties = args.GetCurrentPoint(*this).Properties();
     if (!pointerProperties.IsLeftButtonPressed())
     {
