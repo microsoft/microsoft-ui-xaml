@@ -255,6 +255,7 @@ public sealed partial class MainWindow : Window
             SnapshotButton.IsEnabled = model.State == "Connected" && !model.IsBusy &&
                 !initialSnapshotPending && snapshotOperation is null;
             CompareSnapshotsButton.IsEnabled = Snapshots.Count >= 2;
+            SnapshotStatus.Visibility = snapshotOperation is null ? Visibility.Collapsed : Visibility.Visible;
             SnapshotStatus.Text = snapshotOperation is not null ? Text("SnapshotCapturing") :
                 snapshot is null ? "" : Format("SnapshotSavedFormat", snapshot.XamlNodes, snapshot.CompositionNodes, snapshot.Path);
             AutomationProperties.SetItemStatus(SnapshotStatus, JsonSerializer.Serialize(new
@@ -272,6 +273,10 @@ public sealed partial class MainWindow : Window
             ConnectionStatus.Message = model.TracePath is null ? model.Detail : TraceMessage(trace, model.Recording?.CompleteFromSeconds);
             ConnectionStatus.Severity = model.State is "Failed" or "TraceFailed" ? InfoBarSeverity.Error :
                 model.State is "Connected" or "TraceFinished" ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
+            // A connection's lines show only while it starts or when something is wrong. A trace's lines are the reading's
+            // progress and result, such as how much was read and from when the file is complete, so they stay shown.
+            ConnectionStatus.Visibility = model.TracePath is not null || model.IsBusy || model.State == "Failed"
+                ? Visibility.Visible : Visibility.Collapsed;
             AutomationProperties.SetItemStatus(ConnectionStatus, model.State);
             // The status bar stays open, so screen readers aren't told when it changes.
             var traceEnd = model.State is "TraceFinished" or "TraceStopped" or "TraceFailed";
@@ -286,6 +291,7 @@ public sealed partial class MainWindow : Window
             TraceProgress.Visibility = reading ? Visibility.Visible : Visibility.Collapsed;
             TraceProgress.IsIndeterminate = reading && (model.State != "TraceReading" || trace?.Progress is null);
             TraceProgress.Value = trace?.Progress ?? 0;
+            ConnectionIdentity.Visibility = model.TracePath is null ? Visibility.Collapsed : Visibility.Visible;
             if (model.TracePath is { } tracePath && model.TraceTarget is { } target)
             {
                 SetLine(ConnectionIdentity, target.Name is { } name
@@ -323,6 +329,8 @@ public sealed partial class MainWindow : Window
             Error.IsOpen = model.ErrorMessage.Length > 0;
             Error.Message = model.ErrorMessage;
             var etw = model.Etw;
+            EtwSummary.Visibility = model.TracePath is not null || model.EtwError is not null ||
+                etw is { LostEvents: > 0 } or { DroppedEvents: > 0 } ? Visibility.Visible : Visibility.Collapsed;
             if (trace is not null)
             {
                 // Nothing read from a trace is dropped: the reader waits while the pipeline is full.
@@ -348,6 +356,7 @@ public sealed partial class MainWindow : Window
             }
 
             var recording = model.Recording;
+            RecordingSummary.Visibility = model.TracePath is null && model.RecordingError is null ? Visibility.Collapsed : Visibility.Visible;
             if (model.RecordingError is { } recordingError)
             {
                 SetLine(RecordingSummary, recordingError, recordingError);
