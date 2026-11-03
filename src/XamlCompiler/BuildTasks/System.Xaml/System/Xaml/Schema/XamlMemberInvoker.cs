@@ -24,9 +24,6 @@ namespace System.Xaml.Schema
         private static object[] s_emptyObjectArray = new object[0];
 
         private XamlMember _member;
-#if !NET10_0_OR_GREATER // Only used by ShouldSerializeValue
-        private NullableReference<MethodInfo> _shouldSerializeMethod;
-#endif
 
         protected XamlMemberInvoker()
         {
@@ -140,52 +137,8 @@ namespace System.Xaml.Schema
         // Returns true/false if ShouldSerialize method was invoked, null if no method was found
         public virtual ShouldSerializeResult ShouldSerializeValue(object instance)
         {
-#if NET10_0_OR_GREATER
             // The XAML compiler never writes or reads object graphs (XamlObjectWriter/XamlObjectReader), and this needs runtime reflection.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("XamlMemberInvoker.ShouldSerializeValue");
-#else
-            if (IsUnknown)
-            {
-                return ShouldSerializeResult.Default;
-            }
-
-            // Look up the ShouldSerializeMethod
-            if (!_shouldSerializeMethod.IsSet)
-            {
-                Type declaringType = _member.UnderlyingMember.DeclaringType;
-                string methodName = KnownStrings.ShouldSerialize + _member.Name;
-                BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static;
-                Type[] args;
-                if (_member.IsAttachable)
-                {
-                    args = new Type[] { _member.TargetType.UnderlyingType ?? typeof(object) };
-                }
-                else
-                {
-                    flags |= BindingFlags.Instance;
-                    args = Type.EmptyTypes;
-                }
-                _shouldSerializeMethod.Value = declaringType.GetMethod(methodName, flags, null, args, null);
-            }
-
-            // Invoke the method if we found one
-            MethodInfo shouldSerializeMethod = _shouldSerializeMethod.Value;
-            if (shouldSerializeMethod != null)
-            {
-                bool result;
-                if (_member.IsAttachable)
-                {
-                    result = (bool)shouldSerializeMethod.Invoke(null, new object[] { instance });
-                }
-                else
-                {
-                    result = (bool)shouldSerializeMethod.Invoke(instance, null);
-                }
-
-                return result ? ShouldSerializeResult.True : ShouldSerializeResult.False;
-            }
-            return ShouldSerializeResult.Default;
-#endif
         }
 
         // vvvvv---- Unused members.  Servicing policy is to retain these anyway.  -----vvvvv

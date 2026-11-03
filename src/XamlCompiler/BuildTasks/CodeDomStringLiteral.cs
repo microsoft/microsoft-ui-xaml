@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#if NET10_0_OR_GREATER
 using System;
 using System.Globalization;
 using System.Text;
@@ -242,4 +241,3 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
     }
 }
-#endif

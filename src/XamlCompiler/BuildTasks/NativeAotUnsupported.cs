@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#if NET10_0_OR_GREATER
 using System;
 using System.Globalization;
 
@@ -9,8 +8,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 {
     /// <summary>
     /// The exception thrown by the members of the shared sources (mostly the runtime half of the System.Xaml fork: object
-    /// writing/reading, invokers, value serializers and type converters, markup extension evaluation) that are compiled out
-    /// of the Native AOT build of the XAML compiler.
+    /// writing/reading, invokers, value serializers and type converters, markup extension evaluation) whose implementation
+    /// was removed from the XAML compiler, which is a Native AOT binary.
     /// </summary>
     /// <remarks>
     /// Those members create, invoke or convert runtime objects through reflection or code generation, which isn't
@@ -29,4 +28,3 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
     }
 }
-#endif

@@ -134,44 +134,8 @@ namespace System.Windows.Markup
         // return false if a public static field or property with the same name cannot be found.
         private bool GetFieldOrPropertyValue(Type type, string name, out object value)
         {
-#if NET10_0_OR_GREATER
             // Markup extensions are never evaluated by the XAML compiler (it doesn't create objects), and this needs runtime reflection.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("StaticExtension.ProvideValue");
-#else
-            FieldInfo field = null;
-            Type temp = type;
-
-            do
-            {
-                field = temp.GetField(name, BindingFlags.Public | BindingFlags.Static);
-                if (field != null)
-                {
-                    value = field.GetValue(null);
-                    return true;
-                }
-
-                temp = temp.BaseType;
-            } while(temp != null);
-
-
-            PropertyInfo prop = null;
-            temp = type;
-
-            do
-            {
-                prop = temp.GetProperty(name, BindingFlags.Public | BindingFlags.Static);
-                if (prop != null)
-                {
-                    value = prop.GetValue(null,null);
-                    return true;
-                }
-
-                temp = temp.BaseType;
-            } while(temp != null);
-
-            value = null;
-            return false;
-#endif
         }
 
         /// <summary>

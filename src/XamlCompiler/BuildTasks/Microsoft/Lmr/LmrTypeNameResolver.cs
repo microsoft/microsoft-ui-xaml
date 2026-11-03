@@ -4,12 +4,10 @@
 using System;
 using System.Globalization;
 using System.Reflection;
-#if NET9_0_OR_GREATER
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection.Metadata;
-#endif
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 {
@@ -34,7 +32,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             Func<Assembly, string, bool, Type> typeResolver,
             bool throwOnError)
         {
-#if NET9_0_OR_GREATER
             if (typeName == null)
             {
                 throw new ArgumentNullException(nameof(typeName));
@@ -64,12 +61,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
 
             return new Resolver(assemblyResolver, typeResolver, throwOnError).Resolve(parsed);
-#else
-            return Type.GetType(typeName, assemblyResolver, typeResolver, throwOnError);
-#endif
         }
 
-#if NET9_0_OR_GREATER
         private readonly struct Resolver
         {
             private readonly Func<AssemblyName, Assembly> _assemblyResolver;
@@ -218,6 +211,5 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 return type;
             }
         }
-#endif
     }
 }

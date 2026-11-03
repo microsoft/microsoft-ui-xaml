@@ -1199,19 +1199,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 assemblies.Add(mscorlib);
             }
-#if NET10_0_OR_GREATER
             else if (isSystemAssembly && s_typeUniverse.IsSystemAssemblyLoaded)
             {
-                // The type universe is kept from pass 1 to pass 2 when the compiler runs in the build process (see CompileXaml.Execute),
-                // so in pass 2 mscorlib can be already loaded without being one of the references (C++ projects). It must still be
-                // in the system assemblies, see DirectUISystem.LoadCoreDirectUIAssemblies.
+                // The type universe is static (it used to be kept from pass 1 to pass 2 by the in-process compiler task), so mscorlib
+                // can be already loaded without being one of the references (C++ projects). It must still be in the system
+                // assemblies, see DirectUISystem.LoadCoreDirectUIAssemblies.
                 mscorlib = s_typeUniverse.GetSystemAssembly();
                 if (!assemblies.Contains(mscorlib))
                 {
                     assemblies.Add(mscorlib);
                 }
             }
-#endif
 
             return assemblies;
         }
@@ -2585,7 +2583,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                             // Convert the markup string into a literal (e.g. if there's a quote in the current markup string, the literalized string will have a
                             // backslash to escape it so the compiler won't complain after spitting it out in codegen).
-#if NET10_0_OR_GREATER
                             // The same literals as the CodeDom providers below (see CodeDomStringLiteral)
                             switch (Language.Name)
                             {
@@ -2600,31 +2597,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                                     LogError(new ErrorXPropertyUsageNotSupported(domPropertyObject, Language));
                                     return false;
                             }
-#else
-                            using (var writer = new StringWriter())
-                            {
-                                System.CodeDom.Compiler.CodeDomProvider codeDomProvider = null;
-                                switch (Language.Name)
-                                {
-                                    case ProgrammingLanguage.CSharp:
-                                        codeDomProvider = new Microsoft.CSharp.CSharpCodeProvider();
-                                        break;
-                                    case ProgrammingLanguage.VB:
-                                        codeDomProvider = new Microsoft.VisualBasic.VBCodeProvider();
-                                        break;
-                                    default:
-                                        // The cpp codedom provider was deprecated by VS in version dev15.
-                                        LogError(new ErrorXPropertyUsageNotSupported(domPropertyObject, Language));
-                                        return false;
-                                }
-                                // The providers are created directly instead of by language name, which looks them up by reflection (not supported by Native AOT)
-                                using (var provider = codeDomProvider)
-                                {
-                                    provider.GenerateCodeFromExpression(new System.CodeDom.CodePrimitiveExpression(modifiedDefaultValueMarkup), writer, null);
-                                    storedProp.DefaultValueMarkup = writer.ToString();
-                                }
-                            }
-#endif
                         }
                         else
                         {

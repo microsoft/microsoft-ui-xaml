@@ -143,12 +143,8 @@ namespace System.Xaml
 #if !TARGETTING35SP1
                 if (settings.AccessLevel != null)
                 {
-#if NET10_0_OR_GREATER
-                    // PartialTrustTolerantRuntime (which needs Reflection.Emit) isn't compiled in the Native AOT build
+                    // Partial trust support needed Reflection.Emit, and the XAML compiler never writes object graphs
                     throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("XamlObjectWriterSettings.AccessLevel");
-#else
-                    result = new PartialTrustTolerantRuntime(runtimeSettings, settings.AccessLevel, schemaContext);
-#endif
                 }
             }
             if (result == null)

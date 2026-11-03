@@ -60,7 +60,6 @@
     <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\TypeExtension.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\StaticExtensionConverter.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\TypeExtensionConverter.cs" />
-    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ReflectionHelper.cs" />
     <Compile Include="$(SystemXamlPathRoot)\MS\Internal\Xaml\Parser\SpecialBracketCharacters.cs" />
     <Compile Include="$(SystemXamlPathRoot)\MS\Internal\SafeSecurityHelper.cs" />
     <Compile Include="$(SystemXamlPathRoot)\MS\internal\SecurityCriticalDataForSet.cs" />
@@ -149,8 +148,6 @@
     <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\TypeListConverter.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\TypeTypeConverter.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\ClrObjectRuntime.cs" />
-    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\DynamicMethodRuntime.cs" />
-    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\PartialTrustTolerantRuntime.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\XamlRuntimeSettings.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\BuiltInValueConverter.cs" />
     <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\ClrNamespaceUriParser.cs" />

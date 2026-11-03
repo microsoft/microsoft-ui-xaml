@@ -36,10 +36,6 @@ namespace System.Xaml.Schema
         ///           is initialized.
         ///           Can be used to instantiate object bypassing ctor access checks.
         /// </SecurityNote>
-#if !NET10_0_OR_GREATER // Only used by DefaultCtorXamlActivator
-        [SecurityCritical]
-        private Action<object> _constructorDelegate;
-#endif
 
         /// <SecurityNote>
         /// Critical: Used to determine whether it's safe to instantiate this object via _constructorDelegate,
@@ -335,7 +331,6 @@ namespace System.Xaml.Schema
             }
         }
 
-#if NET10_0_OR_GREATER
         // The default constructor activator creates instances of user types through constructor delegates (runtime
         // reflection). The XAML compiler never creates instances of the types it compiles against, so in its Native AOT
         // build this only throws.
@@ -346,119 +341,6 @@ namespace System.Xaml.Schema
                 throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("XamlTypeInvoker.CreateInstance");
             }
         }
-#else
-        private static class DefaultCtorXamlActivator
-        {
-            private static ThreeValuedBool s_securityFailureWithCtorDelegate;
-            private static ConstructorInfo s_actionCtor =
-                typeof(Action<object>).GetConstructor(new Type[] { typeof(Object), typeof(IntPtr) });
-
-
-            public static object CreateInstance(XamlTypeInvoker type)
-            {
-                if (!EnsureConstructorDelegate(type))
-                {
-                    return null;
-                }
-                object inst = CallCtorDelegate(type);
-                return inst;
-            }
-
-            /// <SecurityNote>
-            /// Critical: Calls critical method FormatterServices.GetUninitializedObject
-            /// Safe: Never leaks the uninitialized object, always calls constructor first.
-            /// </SecurityNote>
-#if TARGETTING35SP1
-            [SecurityTreatAsSafe, SecurityCritical]
-#else
-            [SecuritySafeCritical]
-#endif
-            private static object CallCtorDelegate(XamlTypeInvoker type)
-            {
-#if NET8_0_OR_GREATER
-                object inst = RuntimeHelpers.GetUninitializedObject(type._xamlType.UnderlyingType);
-#else
-                object inst = FormatterServices.GetUninitializedObject(type._xamlType.UnderlyingType);
-#endif
-                InvokeDelegate(type._constructorDelegate, inst);
-                return inst;
-            }
-
-            /// <SecurityNote>
-            /// Must NOT be critical: we don't want to accidentally satisfy SecurityCritical or
-            /// LinkDemand from the target of the invocation.
-            /// </SecurityNote>
-            private static void InvokeDelegate(Action<object> action, object argument)
-            {
-                action.Invoke(argument);
-            }
-
-            /// <SecurityNote>
-            /// Critical: sets critical field XamlType.ConstructorDelegate
-            /// Safe: gets the value from reflection. Doesn't set it if it's non-public
-            ///       (so it can't be accidentally reused on a partial-trust callstack).
-            /// </SecurityNote>
-#if TARGETTING35SP1
-            [SecurityTreatAsSafe, SecurityCritical]
-#else
-            [SecuritySafeCritical]
-#endif
-            // returns true if a delegate is available, false if not
-            private static bool EnsureConstructorDelegate(XamlTypeInvoker type)
-            {
-                if (type._constructorDelegate != null)
-                {
-                    return true;
-                }
-                if (!type.IsPublic)
-                {
-                    return false;
-                }
-                if (s_securityFailureWithCtorDelegate == ThreeValuedBool.NotSet)
-                {
-                    s_securityFailureWithCtorDelegate =
-                        !AppDomain.CurrentDomain.PermissionSet.IsUnrestricted() ? ThreeValuedBool.True : ThreeValuedBool.False;
-                }
-                if (s_securityFailureWithCtorDelegate == ThreeValuedBool.True)
-                {
-                    return false;
-                }
-
-                try
-                {
-                    Type underlyingType = type._xamlType.UnderlyingType.UnderlyingSystemType;
-                    // Look up public ctors only, for equivalence with Activator.CreateInstance
-                    ConstructorInfo tConstInfo = underlyingType.GetConstructor(Type.EmptyTypes);
-                    if (tConstInfo == null)
-                    {
-                        // Throwing MissingMethodException for equivalence with Activator.CreateInstance
-                        throw new MissingMethodException(SR.Get(SRID.NoDefaultConstructor, underlyingType.FullName));
-                    }
-                    if ((tConstInfo.IsSecurityCritical && !tConstInfo.IsSecuritySafeCritical) ||
-                        (tConstInfo.Attributes & MethodAttributes.HasSecurity) == MethodAttributes.HasSecurity ||
-                        (underlyingType.Attributes & TypeAttributes.HasSecurity) == TypeAttributes.HasSecurity)
-                    {
-                        // We don't want to bypass security checks for a critical or demanding ctor,
-                        // so just treat it as if it were non-public
-                        type._isPublic = ThreeValuedBool.False;
-                        return false;
-                    }
-                    IntPtr constPtr = tConstInfo.MethodHandle.GetFunctionPointer();
-                    // This requires Reflection Permission
-                    Action<object> ctorDelegate = ctorDelegate =
-                        (Action<object>)s_actionCtor.Invoke(new object[] { null, constPtr });
-                    type._constructorDelegate = ctorDelegate;
-                    return true;
-
-                }
-                catch (SecurityException)
-                {
-                    s_securityFailureWithCtorDelegate = ThreeValuedBool.True;
-                    return false;
-                }
-            }
-        }
-#endif
 
         private class UnknownTypeInvoker : XamlTypeInvoker
         {

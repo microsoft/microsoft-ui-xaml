@@ -126,7 +126,6 @@ namespace XAMLCompiler.BuildTasks.Antlr4.Runtime {
         f`Misc/NotNullAttribute.cs`,
         f`Misc/NullableAttribute.cs`,
         f`Misc/ParseCanceledException.cs`,
-        f`Misc/RuleDependencyChecker.cs`,
         f`Misc/Utils.cs`,
         f`NoViableAltException.cs`,
         f`Parser.cs`,

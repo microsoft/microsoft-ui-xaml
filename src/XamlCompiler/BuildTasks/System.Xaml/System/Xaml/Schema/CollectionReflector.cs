@@ -249,18 +249,8 @@ namespace System.Xaml.Schema
 
         internal static MethodInfo GetIsReadOnlyMethod(Type collectionType, Type itemType)
         {
-#if NET10_0_OR_GREATER
             // Only used to add items to collection instances (XamlTypeInvoker), which the XAML compiler never does; this needs runtime code generation.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("CollectionReflector.GetIsReadOnlyMethod");
-#else
-            Type genericICollection = typeof(ICollection<>).MakeGenericType(itemType);
-            if (genericICollection.IsAssignableFrom(collectionType))
-            {
-                MethodInfo isReadOnlyMethod = genericICollection.GetProperty(KnownStrings.IsReadOnly).GetGetMethod();
-                return isReadOnlyMethod;
-            }
-            return null;
-#endif
         }
 
         private static MethodInfo LookupEnumeratorMethod(Type type)

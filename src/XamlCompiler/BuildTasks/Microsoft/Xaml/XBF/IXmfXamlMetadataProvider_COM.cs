@@ -12,9 +12,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 {
     // On net10.0 (Native AOT) these are plain managed interfaces: the COM ABI exposed to GenXbf.dll is declared with
     // source-generated COM interop in XbfNativeInterfaces.cs, and implemented in XbfNativeComClasses.cs.
-#if !NET10_0_OR_GREATER
-    [ComImport, Guid("d0aa6fc8-087f-46cf-b36a-7e68f8295ceb"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
     internal interface IXbfMember
     {
         bool IsAttachable {[return: MarshalAs(UnmanagedType.U1)] get; }
@@ -28,9 +25,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
         void SetValue([MarshalAs(UnmanagedType.IInspectable)] object instance, [MarshalAs(UnmanagedType.IInspectable)] object value);
     }
 
-#if !NET10_0_OR_GREATER
-    [ComImport, Guid("a50fc345-4c61-411b-8a68-13da7b7c4ee4"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
     internal interface IXbfType
     {
         IXbfType BaseType {[return: MarshalAs(UnmanagedType.Interface)] get; }
@@ -57,9 +51,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
         void RunInitializer();
     }
 
-#if !NET10_0_OR_GREATER
-    [ComImport, Guid("ef46679c-4ec5-447a-bd26-e04f1d2c2551"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
     internal interface IXbfMetadataProvider
     {
         IXbfType GetXamlType(Type type);

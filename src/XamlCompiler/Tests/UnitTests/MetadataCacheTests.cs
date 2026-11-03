@@ -24,7 +24,7 @@ namespace UnitTests
             _directory = Path.Combine(Path.GetTempPath(), "XamlCompilerMetadataTests", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(_directory);
             _universe = new XamlTypeUniverse(false);
-            // mscorlib, which is also the universe's system assembly, on .NET Framework; System.Private.CoreLib on .NET
+            // The runtime's core library (System.Private.CoreLib)
             _coreLibrary = _universe.LoadAssemblyFromFile(typeof(object).Assembly.Location);
         }
 

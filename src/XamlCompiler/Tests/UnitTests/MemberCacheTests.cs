@@ -76,12 +76,11 @@ namespace UnitTests
             _fixture = _universe.LoadAssemblyFromFile(typeof(MemberCacheTests).Assembly.Location);
         }
 
-        // Loads the runtime's core library: mscorlib, which is also the universe's system assembly, on .NET Framework
+        // Loads the runtime's core library (System.Private.CoreLib)
         private static Assembly LoadCoreLibrary(XamlTypeUniverse universe)
         {
             Assembly coreLibrary = universe.LoadAssemblyFromFile(typeof(object).Assembly.Location);
-            // System.Private.CoreLib on .NET, where this assembly references the core types through System.Runtime, which
-            // forwards them to System.Private.CoreLib
+            // This assembly references the core types through System.Runtime, which forwards them to System.Private.CoreLib
             universe.LoadAssemblyFromFile(Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "System.Runtime.dll"));
             return coreLibrary;
         }

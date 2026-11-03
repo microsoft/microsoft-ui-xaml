@@ -130,7 +130,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Misc\NotNullAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\NullableAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\ParseCanceledException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Misc\RuleDependencyChecker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NoViableAltException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser.cs" />

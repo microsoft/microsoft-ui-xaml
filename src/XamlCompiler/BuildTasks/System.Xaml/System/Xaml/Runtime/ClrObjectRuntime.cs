@@ -110,30 +110,8 @@ namespace MS.Internal.Xaml.Runtime
 
         protected MethodInfo GetFactoryMethod(Type type, string methodName, object[] args, BindingFlags flags)
         {
-#if NET10_0_OR_GREATER
             // The XAML compiler never writes or reads object graphs (XamlObjectWriter/XamlObjectReader), and this needs runtime reflection.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ClrObjectRuntime.GetFactoryMethod");
-#else
-            MethodInfo factory = null;
-            if (args == null || args.Length == 0)
-            {
-                factory = type.GetMethod(methodName, flags, null, Type.EmptyTypes, null);
-            }
-            if (factory == null)
-            {
-                // We go down this path even if there are no args, because we might match a params array
-                MemberInfo[] members = type.GetMember(methodName, MemberTypes.Method, flags);
-                MethodBase[] methods = members as MethodBase[];
-                if (methods == null)
-                {
-                    methods = new MethodBase[members.Length];
-                    Array.Copy(members, methods, members.Length);
-                }
-                // This method throws if it can't find a match, so factory will never be null
-                factory = (MethodInfo)BindToMethod(flags, methods, args);
-            }
-            return factory;
-#endif
         }
 
         protected MethodBase BindToMethod(BindingFlags bindingFlags, MethodBase[] candidates, object[] args)
@@ -361,51 +339,8 @@ namespace MS.Internal.Xaml.Runtime
 
         public override IEnumerable<DictionaryEntry> GetDictionaryItems(object dictionary, XamlType dictionaryType)
         {
-#if NET10_0_OR_GREATER
             // The XAML compiler never writes or reads object graphs (XamlObjectWriter/XamlObjectReader), and this needs runtime reflection.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ClrObjectRuntime.GetDictionaryItems");
-#else
-            IEnumerator enumerator = GetItems(dictionary, dictionaryType);
-            try
-            {
-                // Dictionaries are required to either give us an either:
-                // - an IDictionaryEnumerator,
-                // - an IEnumerator<KeyValuePair<K,V>>, or 
-                // - an IEnumerator that returns DictionaryEntrys
-                IDictionaryEnumerator dictionaryEnumerator = enumerator as IDictionaryEnumerator;
-                if (dictionaryEnumerator != null)
-                {
-                    return DictionaryEntriesFromIDictionaryEnumerator(dictionaryEnumerator);
-                }
-
-                // Without a type parameter known at compile time, there's no way to access the
-                // members of a generic type other than reflection. So we need this hackery to
-                // convert from K,V to object,object.
-                Type keyType = dictionaryType.KeyType.UnderlyingType;
-                Type itemType = dictionaryType.ItemType.UnderlyingType;
-                Type genericKVP = typeof(KeyValuePair<,>).MakeGenericType(keyType, itemType);
-                Type genericIEnumerator = typeof(IEnumerator<>).MakeGenericType(genericKVP);
-                if (genericIEnumerator.IsAssignableFrom(enumerator.GetType()))
-                {
-                    var openMethod = typeof(ClrObjectRuntime).GetMethod(
-                        "DictionaryEntriesFromIEnumeratorKvp", BindingFlags.Static | BindingFlags.NonPublic);
-                    var method = openMethod.MakeGenericMethod(new Type[] { keyType, itemType });
-                    return (IEnumerable<DictionaryEntry>)method.Invoke(null, new object[] { enumerator });
-                }
-                else
-                {
-                    return DictionaryEntriesFromIEnumerator(enumerator);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (CriticalExceptions.IsCriticalException(ex))
-                {
-                    throw;
-                }
-                throw CreateException(SR.Get(SRID.GetItemsException, dictionaryType), ex);
-            }
-#endif
         }
 
         public override int AttachedPropertyCount(object instance)

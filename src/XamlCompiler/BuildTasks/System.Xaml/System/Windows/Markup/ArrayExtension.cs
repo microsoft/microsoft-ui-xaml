@@ -112,31 +112,8 @@ namespace System.Windows.Markup
         /// </returns>
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-#if NET10_0_OR_GREATER
             // Markup extensions are never evaluated by the XAML compiler (it doesn't create objects), and this needs runtime reflection.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ArrayExtension.ProvideValue");
-#else
-            if (_arrayType == null)
-            {
-                throw new InvalidOperationException(SR.Get(SRID.MarkupExtensionArrayType));
-            }
-            
-            object retArray = null;
-
-            try
-            {
-                retArray = _arrayList.ToArray(_arrayType);
-            }
-            catch (System.InvalidCastException)
-            {
-                // If an element was added to the ArrayExtension that does not agree with the
-                // ArrayType, then an InvalidCastException will occur.  Generate a more
-                // meaningful error for this case.
-                throw new InvalidOperationException(SR.Get(SRID.MarkupExtensionArrayBadType, _arrayType.Name));
-            }
-
-            return retArray;
-#endif
         }
 
         private ArrayList _arrayList = new ArrayList();

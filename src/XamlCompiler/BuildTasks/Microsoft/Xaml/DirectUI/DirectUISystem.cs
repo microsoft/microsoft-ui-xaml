@@ -220,16 +220,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             // This is needed for processing code types Int32, String, etc... when parsing C++ based XAML.
             if (!msCorLibFound)
             {
-#if NET10_0_OR_GREATER
                 // The universe always provides mscorlib (see CompileXamlInternal.DoesMscorlibNeedToBeLoaded). The one the compiler is running on
                 // is never used as a fallback, because it would not be metadata-only like the rest of the types (and Native AOT has no such
                 // assembly to wrap).
                 throw new InvalidOperationException("The reference assemblies don't include mscorlib.");
-#else
-                // if mscorlib was not found in the reference assemblies then add the one running in the compler
-                DirectUIAssembly mscorlib = DirectUIAssembly.Wrap(typeof(string).Assembly);
-                this.DirectUIBaseAssemblies.Add(mscorlib);
-#endif
             }
         }
 

@@ -41,18 +41,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 try
                 {
-#if NET
                     File.Move(source, destination, overwrite: true);
-#else
-                    if (File.Exists(destination))
-                    {
-                        File.Replace(source, destination, null, ignoreMetadataErrors: true);
-                    }
-                    else
-                    {
-                        File.Move(source, destination);
-                    }
-#endif
                     return;
                 }
                 catch (Exception e) when ((e is IOException || e is UnauthorizedAccessException) && attempt < MoveAttempts)

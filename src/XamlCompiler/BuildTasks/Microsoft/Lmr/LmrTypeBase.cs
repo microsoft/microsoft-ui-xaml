@@ -191,7 +191,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
         public sealed override Type GetInterface(string name, bool ignoreCase)
         {
-#if NET10_0_OR_GREATER
             // The trim analyzer can't verify that the interface returned by GetInterfaceCore (an LMR type, whose "members" are
             // metadata rows, so the annotation is meaningless for it) satisfies the annotation of the return value of
             // Type.GetInterface: interfaces come from arrays or from metadata, which carry no annotation (dotnet/runtime has
@@ -203,9 +202,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture,
                 "Type.GetInterface isn't supported on '{0}' in the Native AOT build of the XAML compiler: use LmrReflection.GetInterfaceLmr instead.",
                 this));
-#else
-            return GetInterfaceCore(name, ignoreCase);
-#endif
         }
 
         internal abstract Type GetInterfaceCore(string name, bool ignoreCase);

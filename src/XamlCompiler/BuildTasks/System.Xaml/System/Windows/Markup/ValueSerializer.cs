@@ -116,58 +116,8 @@ namespace System.Windows.Markup
         /// <returns>The value serializer associated with the given type</returns>
         public static ValueSerializer GetSerializerFor(Type type)
         {
-#if NET10_0_OR_GREATER
             // Needs TypeDescriptor and type converters (runtime reflection), and the XAML compiler doesn't serialize values.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ValueSerializer.GetSerializerFor(Type)");
-#else
-            if (type == null)
-                throw new ArgumentNullException("type");
-
-            object value = _valueSerializers[type];
-            if (value != null)
-                // This uses _valueSerializersLock's instance as a sentinal for null  (as opposed to not attempted yet).
-                return value == _valueSerializersLock ? null : value as ValueSerializer;
-
-            AttributeCollection attributes = TypeDescriptor.GetAttributes(type);
-            ValueSerializerAttribute attribute = attributes[typeof(ValueSerializerAttribute)] as ValueSerializerAttribute;
-            ValueSerializer result = null;
-
-            if (attribute != null)
-                result = (ValueSerializer)Activator.CreateInstance(attribute.ValueSerializerType);
-
-            if (result == null)
-            {
-                if (type == typeof(string))
-                {
-                    result = new StringValueSerializer();
-                }
-                else
-                {
-                    // Try to use the type converter
-                    TypeConverter converter = TypeConverterHelper.GetTypeConverter(type);
-
-                    // DateTime is a special-case.  We can't use the DateTimeConverter, because it doesn't
-                    // support anything other than user culture and invariant culture, and we need to specify
-                    // en-us culture.
-                    if (converter.GetType() == typeof(DateTimeConverter2))
-                    {
-                        result = new DateTimeValueSerializer();
-                    }
-                    else if (converter.CanConvertTo(typeof(string)) && converter.CanConvertFrom(typeof(string)) &&
-                             !(converter is ReferenceConverter))
-                    {
-                        result = new TypeConverterValueSerializer(converter);
-                    }
-                }
-            }
-            lock (_valueSerializersLock)
-            {
-                // This uses _valueSerializersLock's instance as a sentinal for null (as opposed to not attempted yet).
-                _valueSerializers[type] = result == null ? _valueSerializersLock : result;
-            }
-
-            return result;
-#endif
         }
 
         /// <summary>
@@ -178,35 +128,8 @@ namespace System.Windows.Markup
         /// <returns>A value serializer associated with the given property</returns>
         public static ValueSerializer GetSerializerFor(PropertyDescriptor descriptor)
         {
-#if NET10_0_OR_GREATER
             // Needs TypeDescriptor and type converters (runtime reflection), and the XAML compiler doesn't serialize values.
             throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ValueSerializer.GetSerializerFor(PropertyDescriptor)");
-#else
-            ValueSerializer result;
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException("descriptor");
-            }
-            
-            #pragma warning suppress 6506 // descriptor is obviously not null
-            ValueSerializerAttribute serializerAttribute = descriptor.Attributes[typeof(ValueSerializerAttribute)] as ValueSerializerAttribute;
-            if (serializerAttribute != null)
-            {
-                result = (ValueSerializer)Activator.CreateInstance(serializerAttribute.ValueSerializerType);
-            }
-            else
-            {
-                result = GetSerializerFor(descriptor.PropertyType);
-                if (result == null || result is TypeConverterValueSerializer)
-                {
-                    TypeConverter converter = descriptor.Converter;
-                    if (converter!=null && converter.CanConvertTo(typeof(string)) && converter.CanConvertFrom(typeof(string)) &&
-                        !(converter is ReferenceConverter))
-                        result = new TypeConverterValueSerializer(converter);
-                }
-            }
-            return result;
-#endif
         }
 
         /// <summary>

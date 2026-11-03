@@ -191,11 +191,7 @@ namespace System.Xaml.Schema
 
         internal static Type GetTypeFromFullTypeName(string fullName)
         {
-#if NET10_0_OR_GREATER
             return KnownRuntimeTypes.GetType(fullName);
-#else
-            return Type.GetType(fullName);
-#endif
         }
 
         // ======================================================
