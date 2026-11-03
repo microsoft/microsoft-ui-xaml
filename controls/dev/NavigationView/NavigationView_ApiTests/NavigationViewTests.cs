@@ -3529,6 +3529,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 CheckNoOtherSelectionIndicatorIsLit(navView, null, step, failures);
             };
 
+            // The deferred selection change for the container-less null selection must not light the collapsed parent either.
+            checkNothingSelected("Top, selection cleared");
+
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
             {
                 RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
