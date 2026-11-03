@@ -1,16 +1,163 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
 public sealed record EtlReadResult(long EventsDelivered, int EventsLost, TimeSpan SessionDuration);
 
+// A process with XAML events in a trace. Name is its executable's name without .exe, from the trace's kernel process
+// events; null when the trace has none, as in a trace recorded with logman. The times are the trace times of its first
+// and last event.
+public sealed record TraceProcess(int ProcessId, string? Name, long XamlEvents, long ProfilerEvents, long GpuMemoryEvents,
+    double FirstMilliseconds, double LastMilliseconds)
+{
+    public long Events => XamlEvents + ProfilerEvents + GpuMemoryEvents;
+}
+
+public sealed record TraceContents(IReadOnlyList<TraceProcess> Processes, int EventsLost, TimeSpan Duration);
+
 // Reads a recorded .etl through the same subscription a live session will use.
 public static class OfflineEtlSource
 {
+    private const int MaxFrequencyEvents = 100_000;
+
+    // The frequency of the clock that timed the trace's events, or null when it can't be worked out. TraceEvent converts
+    // timestamps with the frequency in the trace's header but doesn't expose it: an event's milliseconds are
+    // (timestamp - trace start) * 1000 / frequency, whatever clock the trace used. So the frequency is the ratio of the
+    // change in timestamp to the change in milliseconds between events at least a millisecond apart. TraceEvent learns
+    // the trace's start from its header event, so two ratios in a row must agree. Reads the first milliseconds of the
+    // trace without decoding any event.
+    public static long? ReadQpcFrequency(string path)
+    {
+        try
+        {
+            using var source = new ETWTraceEventSource(path);
+            (long Qpc, double Milliseconds)? previous = null;
+            double estimate = 0, frequency = 0;
+            var read = 0;
+            source.AllEvents += data =>
+            {
+                // TraceEvent times an event stamped before the trace started at its start, 0 ms.
+                var milliseconds = data.TimeStampRelativeMSec;
+                if (frequency == 0 && milliseconds > 0)
+                {
+#pragma warning disable CS0618 // The raw timestamp is what the frequency converts.
+                    var qpc = data.TimeStampQPC;
+#pragma warning restore CS0618
+                    if (previous is not { } last)
+                    {
+                        previous = (qpc, milliseconds);
+                    }
+                    else if (Math.Abs(milliseconds - last.Milliseconds) >= 1)
+                    {
+                        var ratio = Math.Round((qpc - last.Qpc) * 1000.0 / (milliseconds - last.Milliseconds));
+                        if (ratio > 0 && Math.Abs(ratio - estimate) <= ratio / 1_000_000)
+                        {
+                            frequency = ratio;
+                            source.StopProcessing();
+                        }
+
+                        estimate = ratio;
+                        previous = (qpc, milliseconds);
+                    }
+                }
+
+                if (++read == MaxFrequencyEvents)
+                {
+                    source.StopProcessing();
+                }
+            };
+            source.Process();
+            return frequency is > 0 and < long.MaxValue ? (long)frequency : null;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not read the clock frequency of '{path}': {error.Message}");
+            return null;
+        }
+    }
+
+    // The processes with XAML events, most events first. Reads the whole trace without copying any event's fields.
+    // Duration is the trace's length from its header, or the time of its last event when that is later, as when the
+    // header has no end time because the recording was not stopped cleanly.
+    public static TraceContents ListProcesses(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("The .etl file was not found.", path);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        using var source = new ETWTraceEventSource(path);
+        // A process ID can be reused within a trace, so a process takes the name its ID had at its first event.
+        var names = new Dictionary<int, string>();
+        void OnProcess(ProcessTraceData data)
+        {
+            if (ExecutableName(data) is { } name)
+            {
+                names[data.ProcessID] = name;
+            }
+        }
+
+        source.Kernel.ProcessStartGroup += OnProcess;
+        source.Kernel.ProcessEndGroup += OnProcess;
+        var tallies = new Dictionary<int, ProcessTally>();
+        var order = new List<ProcessTally>();
+        XamlEventSubscription.Match(source, null, (data, provider, processId) =>
+        {
+            var time = data.TimeStampRelativeMSec;
+            if (!tallies.TryGetValue(processId, out var tally))
+            {
+                tallies[processId] = tally = new(processId, names.GetValueOrDefault(processId), time);
+                order.Add(tally);
+            }
+
+            tally.Count(provider, time);
+        });
+        var lastMilliseconds = 0.0;
+        source.AllEvents += data =>
+        {
+            var time = data.TimeStampRelativeMSec;
+            if (time > lastMilliseconds)
+            {
+                lastMilliseconds = time;
+            }
+
+            // Process clears a StopProcessing call made before it starts, so the token is checked as events are read.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                source.StopProcessing();
+            }
+        };
+
+        source.Process();
+        cancellationToken.ThrowIfCancellationRequested();
+        // Every process that uses the GPU has GPU memory events; only those with XAML events are listed. The sort is
+        // stable, so processes with as many events stay in the order they first appear.
+        var processes = order
+            .Where(tally => tally.XamlEvents + tally.ProfilerEvents > 0)
+            .Select(tally => new TraceProcess(tally.ProcessId, tally.Name ?? names.GetValueOrDefault(tally.ProcessId),
+                tally.XamlEvents, tally.ProfilerEvents, tally.GpuMemoryEvents, tally.FirstMilliseconds, tally.LastMilliseconds))
+            .OrderByDescending(process => process.Events)
+            .ToList();
+        var header = source.SessionDuration.TotalMilliseconds;
+        var length = double.IsFinite(header) && header > 0 ? Math.Max(header, lastMilliseconds) : lastMilliseconds;
+        return new(processes, source.EventsLost,
+            length < TimeSpan.MaxValue.TotalMilliseconds ? TimeSpan.FromMilliseconds(length) : TimeSpan.MaxValue);
+    }
+
+    private static string? ExecutableName(ProcessTraceData data)
+    {
+        var name = Path.GetFileNameWithoutExtension(data.ImageFileName);
+        return string.IsNullOrEmpty(name) ? null : name;
+    }
+
     // A null processId reads every process.
     public static EtlReadResult Read(string path, int? processId, Action<ProfilerEvent> sink,
         CancellationToken cancellationToken = default)
@@ -36,5 +183,36 @@ public static class OfflineEtlSource
 
         cancellationToken.ThrowIfCancellationRequested();
         return new(delivered, source.EventsLost, source.SessionDuration);
+    }
+
+    private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
+    {
+        public int ProcessId { get; } = processId;
+        public string? Name { get; } = name;
+        public double FirstMilliseconds { get; private set; } = firstMilliseconds;
+        public double LastMilliseconds { get; private set; } = firstMilliseconds;
+        public long XamlEvents { get; private set; }
+        public long ProfilerEvents { get; private set; }
+        public long GpuMemoryEvents { get; private set; }
+
+        // Grouped as EventCounter groups them.
+        public void Count(XamlProvider provider, double milliseconds)
+        {
+            switch (provider)
+            {
+                case XamlProvider.XamlProfiler:
+                    ProfilerEvents++;
+                    break;
+                case XamlProvider.DxgKrnl:
+                    GpuMemoryEvents++;
+                    break;
+                default:
+                    XamlEvents++;
+                    break;
+            }
+
+            FirstMilliseconds = Math.Min(FirstMilliseconds, milliseconds);
+            LastMilliseconds = Math.Max(LastMilliseconds, milliseconds);
+        }
     }
 }
