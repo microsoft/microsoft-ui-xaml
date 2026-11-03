@@ -1363,15 +1363,6 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
             sourceUri.GetBuffer(),
             sourceLine,
             sourceColumn);
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -1984,15 +1975,6 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
             static_cast<bool>(params.fIsLive));
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
 #endif // XAMLPROFILER_ENABLED
 
