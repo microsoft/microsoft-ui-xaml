@@ -223,7 +223,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+             {#>
                 Bindings->DisconnectUnloadedObject(<#=element.ConnectionId#>);
 <#+             }#>
-<#+             FieldDefinition fieldInfo = element.FieldDefinition; #>
+<#+             FieldDefinition fieldInfo = element.HasFieldDefinition ? GetFieldDeclaration(element) : null;#>
 <#+             if(fieldInfo != null) #>
 <#+             { #>
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
@@ -241,15 +241,24 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
     }
 <#+ }#>
 
+<#+ private FieldDefinition GetFieldDeclaration(ConnectionIdElement element)#>
+<#+ {#>
+<#+     return Model.CodeInfo.FieldDeclarations.Single(field => field.FieldName == element.FieldDefinition.FieldName);#>
+<#+ }#>
+
 <#+ private void Output_ConnectionId_Case(ConnectionIdElement element)#>
 <#+ {#>
 <#+     string objectName = element.ElementCodeName;#>
+<#+     FieldDefinition fieldInfo = element.HasFieldDefinition ? GetFieldDeclaration(element) : null;#>
+<#+     bool fieldUsesTarget = fieldInfo != null && element.Type.IsString() && fieldInfo.FieldXamlType.IsObject();#>
 <#+     Output_PushDeprecated(element.Type.IsDeprecated()); #>
 <#+     Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
+<#+     if (!fieldUsesTarget || element.EventAssignments.Any()) {#>
                 auto targetElement = <#=element.Type.IsString() ? "target ? " : ""#>target.as<<#=element.Type#>>()<#=element.Type.IsString() ? " : ::winrt::hstring{}" : ""#>;
-<#+     if (element.HasFieldDefinition) {#>
-<#+         objectName = $"{element.FieldDefinition.FieldName}()"; #>
-                this-><#=element.FieldDefinition.FieldName#>(targetElement);
+<#+     }#>
+<#+     if (fieldInfo != null) {#>
+<#+         objectName = $"{fieldInfo.FieldName}()";#>
+                this-><#=fieldInfo.FieldName#>(<#=fieldUsesTarget ? "target" : "targetElement"#>);
 <#+     }#>
 <#+     if (element.EventAssignments.Any()) { #>
                 auto weakThis = ::winrt::make_weak<class_type>(*this);

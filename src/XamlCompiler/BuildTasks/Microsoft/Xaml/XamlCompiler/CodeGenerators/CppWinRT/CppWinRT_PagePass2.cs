@@ -335,7 +335,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(element.ConnectionId));
 this.Write(");\r\n");
 
              }
-             FieldDefinition fieldInfo = element.FieldDefinition; 
+             FieldDefinition fieldInfo = element.HasFieldDefinition ? GetFieldDeclaration(element) : null;
              if(fieldInfo != null) 
              { 
                  Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); 
@@ -358,11 +358,18 @@ this.Write("            default:\r\n            {\r\n                throw hresu
         "nt(L\"Invalid connectionId.\");\r\n            }\r\n        }\r\n    }\r\n");
 
  }
+ private FieldDefinition GetFieldDeclaration(ConnectionIdElement element)
+ {
+     return Model.CodeInfo.FieldDeclarations.Single(field => field.FieldName == element.FieldDefinition.FieldName);
+ }
  private void Output_ConnectionId_Case(ConnectionIdElement element)
  {
      string objectName = element.ElementCodeName;
+     FieldDefinition fieldInfo = element.HasFieldDefinition ? GetFieldDeclaration(element) : null;
+     bool fieldUsesTarget = fieldInfo != null && element.Type.IsString() && fieldInfo.FieldXamlType.IsObject();
      Output_PushDeprecated(element.Type.IsDeprecated()); 
      Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); 
+     if (!fieldUsesTarget || element.EventAssignments.Any()) {
 this.Write("                auto targetElement = ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(element.Type.IsString() ? "target ? " : ""));
@@ -377,13 +384,18 @@ this.Write(this.ToStringHelper.ToStringWithCulture(element.Type.IsString() ? " :
 
 this.Write(";\r\n");
 
-     if (element.HasFieldDefinition) {
-         objectName = $"{element.FieldDefinition.FieldName}()"; 
+     }
+     if (fieldInfo != null) {
+         objectName = $"{fieldInfo.FieldName}()";
 this.Write("                this->");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(element.FieldDefinition.FieldName));
+this.Write(this.ToStringHelper.ToStringWithCulture(fieldInfo.FieldName));
 
-this.Write("(targetElement);\r\n");
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(fieldUsesTarget ? "target" : "targetElement"));
+
+this.Write(");\r\n");
 
      }
      if (element.EventAssignments.Any()) { 
