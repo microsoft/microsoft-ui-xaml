@@ -2876,30 +2876,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
                 var normalStyle = GetBackButton(stockNavView).Style;
 
-                var template = (ControlTemplate)XamlReader.Load(
-                    @"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='NavigationView'>
-                        <Grid>
-                          <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name='TestStates'>
-                              <VisualState x:Name='TestDefault' />
-                              <VisualState x:Name='TestWide'>
-                                <VisualState.Setters>
-                                  <Setter Target='NavigationViewBackButton.Margin' Value='8,2,0,2' />
-                                </VisualState.Setters>
-                              </VisualState>
-                            </VisualStateGroup>
-                          </VisualStateManager.VisualStateGroups>
-                          <Grid HorizontalAlignment='Left' VerticalAlignment='Top'>
-                            <Button x:Name='NavigationViewBackButton' Width='40' VerticalAlignment='Top' />
-                          </Grid>
-                        </Grid>
-                      </ControlTemplate>");
-                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
-                navView.Template = template;
-                // Without the stock parts DisplayMode stays at its default (Minimal), where an open pane hides the back button.
-                navView.IsPaneOpen = false;
-                Content = navView;
-                Content.UpdateLayout();
+                Func<NavigationView> createNavView = () =>
+                {
+                    var template = (ControlTemplate)XamlReader.Load(
+                        @"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='NavigationView'>
+                            <Grid>
+                              <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name='TestStates'>
+                                  <VisualState x:Name='TestDefault' />
+                                  <VisualState x:Name='TestWide'>
+                                    <VisualState.Setters>
+                                      <Setter Target='NavigationViewBackButton.Margin' Value='8,2,0,2' />
+                                    </VisualState.Setters>
+                                  </VisualState>
+                                  <VisualState x:Name='TestStyleMargin'>
+                                    <VisualState.Setters>
+                                      <Setter Target='NavigationViewBackButton.Margin' Value='4,2,4,2' />
+                                    </VisualState.Setters>
+                                  </VisualState>
+                                  <VisualState x:Name='TestMinWidth'>
+                                    <VisualState.Setters>
+                                      <Setter Target='NavigationViewBackButton.MinWidth' Value='44' />
+                                    </VisualState.Setters>
+                                  </VisualState>
+                                </VisualStateGroup>
+                              </VisualStateManager.VisualStateGroups>
+                              <Grid HorizontalAlignment='Left' VerticalAlignment='Top'>
+                                <Button x:Name='NavigationViewBackButton' Width='40' VerticalAlignment='Top' />
+                              </Grid>
+                            </Grid>
+                          </ControlTemplate>");
+                    var view = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
+                    view.Template = template;
+                    // Without the stock parts DisplayMode stays at its default (Minimal), where an open pane hides the back button.
+                    view.IsPaneOpen = false;
+                    Content = view;
+                    Content.UpdateLayout();
+                    return view;
+                };
+                var navView = createNavView();
                 var backButton = GetBackButton(navView);
                 backButton.Style = normalStyle;
                 Content.UpdateLayout();
@@ -2921,6 +2936,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
                 Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width");
                 Verify.AreEqual(38.0, backButton.ActualHeight, "Back button hit target height");
+
+                Log.Comment("A state that sets the style's own Margin (4,2) is active before the back button gets its style");
+                navView = createNavView();
+                backButton = GetBackButton(navView);
+                VisualStateManager.GoToState(navView, "TestStyleMargin", false);
+                backButton.Style = normalStyle;
+                Content.UpdateLayout();
+                // Whether or not NavigationView enlarges here, the backplate must stay where the style puts it.
+                var visual = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
+                VerifyElementOffset(navView, visual, 4.0, 2.0, "Back button visual");
+                Verify.AreEqual(40.0, visual.ActualWidth, "Back button visual width");
+                Verify.AreEqual(36.0, visual.ActualHeight, "Back button visual height");
+                if (backButton.ReadLocalValue(FrameworkElement.MinWidthProperty) == DependencyProperty.UnsetValue)
+                {
+                    Log.Comment("Not enlarged");
+                    VerifyElementOffset(navView, backButton, 4.0, 2.0, "Back button");
+                    VerifyNoHitTargetValues(backButton, null);
+                }
+                else
+                {
+                    Log.Comment("Enlarged");
+                    VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
+                    Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width");
+                    Verify.AreEqual(38.0, backButton.ActualHeight, "Back button hit target height");
+                }
+
+                Log.Comment("A state sets MinWidth to the value NavigationView wrote (44), then Width changes");
+                navView = createNavView();
+                backButton = GetBackButton(navView);
+                backButton.Style = normalStyle;
+                Content.UpdateLayout();
+                Verify.AreEqual(44.0, backButton.MinWidth, "NavigationView MinWidth");
+                VisualStateManager.GoToState(navView, "TestMinWidth", false);
+                backButton.Width = 60;
+                Content.UpdateLayout();
+                Verify.AreEqual(44.0, backButton.MinWidth, "Visual state MinWidth kept");
+                VerifyElementOffset(navView, backButton, 4.0, 2.0, "Back button");
+                Verify.AreEqual(60.0, backButton.ActualWidth, "Back button width");
+                VerifyNoHitTargetValues(backButton, null);
+
+                Log.Comment("Back to a state without the setter");
+                VisualStateManager.GoToState(navView, "TestDefault", false);
+                Content.UpdateLayout();
+                VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
+                Verify.AreEqual(64.0, backButton.ActualWidth, "Back button hit target width");
             });
         }
 
