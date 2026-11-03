@@ -177,6 +177,7 @@
                 <ListView x:Name="FrameList" x:Uid="FrameList" Grid.Row="3" SelectionMode="Single"
                           ItemTemplateSelector="{StaticResource FrameItemTemplates}"
                           ItemContainerStyleSelector="{StaticResource FrameItemStyles}"
+                          ContainerContentChanging="FrameList_ContainerContentChanging"
                           SelectionChanged="FrameList_SelectionChanged" />
                 <TextBlock x:Name="EmptyText" Grid.Row="3" Margin="12,8" TextWrapping="Wrap" Visibility="Collapsed"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

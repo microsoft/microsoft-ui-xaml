@@ -182,7 +182,8 @@ public sealed partial class FramesView : UserControl
                 var info = SessionFile.ReadInfo(file);
                 var changed = SessionFile.ReadChangedFrames(file, after);
                 // While the file grows, only up to the ticks just read, so a region's tick is listed when the region is.
-                return (info, changed, reader.Read(file, live ? changed.LastSeq : null));
+                // Before the first tick, that is nothing.
+                return (info, changed, reader.Read(file, live ? changed.LastSeq ?? 0 : null));
             });
             if (current != shown)
             {
@@ -311,7 +312,7 @@ public sealed partial class FramesView : UserControl
         // The tick may be listed already, without the region's tint.
         if (FrameList.ContainerFromItem(tick) is ListViewItem container)
         {
-            container.Style = ((StyleSelector)Resources["FrameItemStyles"]).SelectStyle(tick, container);
+            container.Style = Styles.SelectStyle(tick, container);
         }
     }
 
@@ -425,6 +426,18 @@ public sealed partial class FramesView : UserControl
     }
 
     private void FrameList_SelectionChanged(object sender, SelectionChangedEventArgs args) => SelectRow(FrameList.SelectedItem);
+
+    // The list skips its style selector for a container whose Style the app set, such as a tick whose region arrived after
+    // the tick was listed. So the style is applied again each time a container gets a row.
+    private void FrameList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (!args.InRecycleQueue)
+        {
+            args.ItemContainer.Style = Styles.SelectStyle(args.Item, args.ItemContainer);
+        }
+    }
+
+    private StyleSelector Styles => (StyleSelector)Resources["FrameItemStyles"];
 
     private void Buckets_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args) => ShowEvents(0);
 
