@@ -23,6 +23,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ($Action -ne "Status") {
+    . (Join-Path $PSScriptRoot "Assert-GuestExecution.ps1")
+}
 $packageName = "Microsoft.WindowsStore"
 $packagePublisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
 $securityManagerPath = "HKLM:\SOFTWARE\Microsoft\SecurityManager"
@@ -503,14 +506,14 @@ function Restore-InternalDevUnlock {
 }
 
 function Remove-RegisteredStorePackages {
-    $packages = @(Get-AppxPackage -AllUsers -Name $packageName -ErrorAction SilentlyContinue)
+    $packages = @(Get-AppxPackage -Name $packageName -ErrorAction Stop)
     foreach ($package in $packages) {
-        Remove-AppxPackage -Package $package.PackageFullName -AllUsers -ErrorAction Stop
+        Remove-AppxPackage -Package $package.PackageFullName -ErrorAction Stop
     }
 
     $deadline = [DateTime]::UtcNow.AddSeconds(60)
     do {
-        $remaining = @(Get-AppxPackage -AllUsers -Name $packageName -ErrorAction SilentlyContinue)
+        $remaining = @(Get-AppxPackage -Name $packageName -ErrorAction Stop)
         if ($remaining.Count -eq 0) {
             return
         }

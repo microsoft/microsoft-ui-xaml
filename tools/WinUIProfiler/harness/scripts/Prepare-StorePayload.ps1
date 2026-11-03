@@ -18,6 +18,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Assert-GuestExecution.ps1")
 $publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
 $certificateFriendlyName = "WinUI Profiler Harness Store Sideload"
 
@@ -91,6 +92,8 @@ $destinationPackages = Join-Path $fullOutputRoot $relativePackages
 [IO.Directory]::CreateDirectory((Split-Path -Parent $destinationPackages)) | Out-Null
 Copy-Item -LiteralPath $sourcePackages -Destination $destinationPackages -Recurse -Force
 Copy-Item -LiteralPath $StorePackageScript -Destination (Join-Path $fullOutputRoot "StorePackage.ps1") -Force
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot "Assert-GuestExecution.ps1") `
+    -Destination (Join-Path $fullOutputRoot "Assert-GuestExecution.ps1") -Force
 
 $destinationMsix = Get-ChildItem -LiteralPath $destinationPackages -Filter "*.msix" -File -Recurse |
     Sort-Object LastWriteTimeUtc -Descending |

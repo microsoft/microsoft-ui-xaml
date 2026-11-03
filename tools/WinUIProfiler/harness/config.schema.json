@@ -19,7 +19,7 @@
   ],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "name": { "type": "string", "minLength": 1 },
     "harness": {
       "type": "object",
@@ -41,21 +41,24 @@
     "target": {
       "type": "object",
       "additionalProperties": false,
-      "required": [ "kind", "stageRoot" ],
+      "required": [ "kind", "stageRoot", "vmId", "guestMachineGuid", "guestComputerName", "checkpointName" ],
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "hyperv" } } }, "then": { "required": [ "hyperv" ] } },
+        { "if": { "properties": { "kind": { "const": "ixp" } } }, "then": { "required": [ "ixp" ] } }
+      ],
       "properties": {
-        "kind": { "enum": [ "local", "hyperv", "ixp" ] },
-        "stageRoot": { "type": "string", "minLength": 1 },
+        "kind": { "enum": [ "hyperv", "ixp" ] },
+        "stageRoot": { "type": "string", "pattern": "^[A-Za-z]:\\\\WinUIProfilerHarness(?:-[A-Za-z0-9_-]+)?$" },
+        "vmId": { "$ref": "#/$defs/identifier" },
+        "guestMachineGuid": { "$ref": "#/$defs/identifier" },
+        "guestComputerName": { "type": "string", "minLength": 1 },
+        "checkpointName": { "type": "string", "minLength": 1 },
         "hyperv": {
           "type": "object",
           "additionalProperties": false,
+          "required": [ "name", "userNameEnvironmentVariable", "passwordEnvironmentVariable" ],
           "properties": {
             "name": { "type": "string" },
-            "sourceVhdPath": { "type": "string" },
-            "vmVhdPath": { "type": "string" },
-            "generation": { "type": "integer", "enum": [ 1, 2 ] },
-            "memoryStartupBytes": { "type": "integer", "minimum": 1073741824 },
-            "processorCount": { "type": "integer", "minimum": 1 },
-            "switchName": { "type": "string" },
             "userNameEnvironmentVariable": { "type": "string" },
             "passwordEnvironmentVariable": { "type": "string" }
           }
@@ -63,28 +66,17 @@
         "ixp": {
           "type": "object",
           "additionalProperties": false,
+          "required": [ "name", "branch" ],
           "properties": {
             "name": { "type": "string" },
-            "ensureCreated": { "type": "boolean" },
-            "allowOffline": { "type": "boolean" },
+            "ensureCreated": { "const": false },
             "branch": { "type": "string" },
             "connectionMode": {
               "type": "string",
-              "enum": ["auto", "background", "psremote"],
-              "default": "auto"
+              "const": "psremote",
+              "default": "psremote"
             },
-            "minimumOsBuild": { "type": "integer", "minimum": 1 },
-            "flavor": { "type": "string" },
-            "arch": { "type": "string" },
-            "savePath": { "type": "string" },
-            "switchName": { "type": "string" },
-            "memoryInGb": { "type": "number", "minimum": 1 },
-            "processorCount": { "type": "integer", "minimum": 1 },
-            "tools": { "type": "array", "items": { "type": "string" } },
-            "winGetApps": { "type": "array", "items": { "type": "string" } },
-            "enableCdKeys": { "type": "boolean" },
-            "velocityKeysToEnable": { "type": "array", "items": { "type": "string" } },
-            "velocityKeysToDisable": { "type": "array", "items": { "type": "string" } }
+            "minimumOsBuild": { "type": "integer", "minimum": 1 }
           }
         }
       }
@@ -94,15 +86,15 @@
       "additionalProperties": false,
       "required": [ "default" ],
       "properties": {
-        "default": { "enum": [ "agency", "github" ] },
-        "agencySourcePath": { "type": "string", "minLength": 1 }
+        "default": { "enum": [ "agency", "github" ] }
       }
     },
     "application": {
       "type": "object",
       "additionalProperties": false,
-      "required": [ "launch", "buildCommands", "deployCommands" ],
+      "required": [ "launch", "buildCommands", "deployCommands", "resetScript" ],
       "properties": {
+        "resetScript": { "type": "string", "minLength": 1 },
         "buildCommands": {
           "type": "array",
           "items": { "$ref": "#/$defs/command" }
@@ -111,14 +103,9 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "local": { "type": "array", "items": { "$ref": "#/$defs/command" } },
             "hyperv": { "type": "array", "items": { "$ref": "#/$defs/command" } },
             "ixp": { "type": "array", "items": { "$ref": "#/$defs/command" } }
           }
-        },
-        "cleanupCommands": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/command" }
         },
         "payloadPath": { "type": "string" },
         "targetInstallScripts": {
@@ -148,16 +135,16 @@
       "properties": {
         "configuration": { "enum": [ "Debug", "Release" ] },
         "platform": { "enum": [ "x64", "ARM64" ] },
-        "buildTimeoutSeconds": { "type": "integer", "minimum": 1 }
+        "buildTimeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 2147483 }
       }
     },
     "profiling": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "firstFrameTimeoutSeconds": { "type": "integer", "minimum": 1 },
-        "scenarioTimeoutSeconds": { "type": "integer", "minimum": 1 },
-        "settleMilliseconds": { "type": "integer", "minimum": 0 },
+        "firstFrameTimeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 600 },
+        "scenarioTimeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+        "settleMilliseconds": { "type": "integer", "minimum": 0, "maximum": 300000 },
         "frameBudgetMilliseconds": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
@@ -175,6 +162,7 @@
       "required": [ "maxAttempts", "primaryMetric", "direction", "minimumImprovementPercent" ],
       "properties": {
         "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "samplesPerVersion": { "type": "integer", "minimum": 3, "maximum": 10, "default": 3 },
         "primaryMetric": { "type": "string", "minLength": 1 },
         "direction": { "enum": [ "lower", "higher" ] },
         "minimumImprovementPercent": { "type": "number", "minimum": 0 }
@@ -182,6 +170,11 @@
     }
   },
   "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+      "not": { "const": "00000000-0000-0000-0000-000000000000" }
+    },
     "repository": {
       "type": "object",
       "additionalProperties": false,
@@ -191,7 +184,7 @@
         "remoteUrl": { "type": "string", "minLength": 1 },
         "branch": {
           "type": "string",
-          "pattern": "^user/[^/]+/profiler_harness$"
+          "pattern": "^user/[A-Za-z0-9_.-]+/profiler_harness$"
         },
         "baseRef": { "type": "string" },
         "allowDirty": { "type": "boolean" }
@@ -200,12 +193,13 @@
     "command": {
       "type": "object",
       "additionalProperties": false,
-      "required": [ "file" ],
+      "required": [ "file", "scope" ],
       "properties": {
+        "scope": { "const": "guest" },
         "file": { "type": "string", "minLength": 1 },
         "arguments": { "type": "array", "items": { "type": "string" } },
         "workingDirectory": { "type": "string" },
-        "timeoutSeconds": { "type": "integer", "minimum": 1 },
+        "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 2147483 },
         "environment": {
           "type": "object",
           "additionalProperties": { "type": "string" }

@@ -61,35 +61,6 @@ function Resolve-HarnessPath {
     return [IO.Path]::GetFullPath((Join-Path $BaseDirectory $expanded))
 }
 
-function Resolve-HarnessAgencySource {
-    [CmdletBinding()]
-    param(
-        [AllowNull()][string]$ConfiguredPath,
-        [Parameter(Mandatory)][string]$BaseDirectory
-    )
-
-    if (-not [string]::IsNullOrWhiteSpace($ConfiguredPath)) {
-        $resolved = Resolve-HarnessPath $ConfiguredPath $BaseDirectory
-        $executable = if (Test-Path -LiteralPath $resolved -PathType Leaf) {
-            $resolved
-        }
-        else {
-            Join-Path $resolved "agency.exe"
-        }
-        if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
-            throw "Configured Agency source '$resolved' does not contain agency.exe."
-        }
-        return Split-Path -Parent $executable
-    }
-
-    $command = Get-Command agency -CommandType Application -ErrorAction SilentlyContinue |
-        Select-Object -First 1
-    if ($null -eq $command -or -not (Test-Path -LiteralPath $command.Source -PathType Leaf)) {
-        return $null
-    }
-    return Split-Path -Parent $command.Source
-}
-
 function Expand-HarnessTokens {
     param(
         [AllowNull()]$Value,
@@ -100,7 +71,7 @@ function Expand-HarnessTokens {
         return $null
     }
 
-    $expanded = [Environment]::ExpandEnvironmentVariables([string]$Value)
+    $expanded = [string]$Value
     foreach ($entry in $Tokens.GetEnumerator()) {
         $expanded = $expanded.Replace("{$($entry.Key)}", [string]$entry.Value, [StringComparison]::OrdinalIgnoreCase)
     }
@@ -124,12 +95,29 @@ function Write-HarnessJson {
         [Parameter(Mandatory)]$Value
     )
 
+    Assert-HarnessHostArtifactPath $Path
     $directory = Split-Path -Parent $Path
     if ($directory) {
         [IO.Directory]::CreateDirectory($directory) | Out-Null
     }
     $json = $Value | ConvertTo-Json -Depth 100
     [IO.File]::WriteAllText($Path, $json, [Text.UTF8Encoding]::new($false))
+}
+
+function Assert-HarnessHostArtifactPath {
+    param([Parameter(Mandatory)][string]$Path)
+
+    $root = [IO.Path]::GetFullPath((Join-Path $script:HarnessRoot ".artifacts")).TrimEnd('\')
+    $fullPath = [IO.Path]::GetFullPath($Path)
+    if ($fullPath -ne $root -and -not $fullPath.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Host output must remain inside the harness .artifacts directory. Refusing '$Path'."
+    }
+    for ($item = $fullPath; $item; $item = Split-Path -Parent $item) {
+        if ((Test-Path -LiteralPath $item) -and
+            ((Get-Item -LiteralPath $item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Host output cannot traverse a symlink/junction: '$item'."
+        }
+    }
 }
 
 function Read-HarnessJson {
@@ -148,6 +136,9 @@ function Test-HarnessCommandDefinition {
     }
 
     Get-RequiredProperty $Definition "file" $Path | Out-Null
+    if ([string](Get-RequiredProperty $Definition "scope" $Path) -ne "guest") {
+        throw "Configuration property '$Path.scope must be guest'; host commands are disabled."
+    }
     $arguments = Get-OptionalProperty $Definition "arguments" @()
     if ($arguments -is [string]) {
         throw "Configuration property '$Path.arguments' must be an array."
@@ -158,8 +149,8 @@ function Test-ProfilerHarnessConfiguration {
     [CmdletBinding()]
     param([Parameter(Mandatory)]$Configuration)
 
-    if ([int](Get-RequiredProperty $Configuration "schemaVersion" "config") -ne 1) {
-        throw "Only profiler harness schemaVersion 1 is supported."
+    if ([int](Get-RequiredProperty $Configuration "schemaVersion" "config") -ne 2) {
+        throw "Only profiler harness schemaVersion 2 is supported. Migrate legacy host commands before running."
     }
 
     Get-RequiredProperty $Configuration "name" "config" | Out-Null
@@ -171,17 +162,32 @@ function Test-ProfilerHarnessConfiguration {
         $repo = $entry[1]
         Get-RequiredProperty $repo "path" "config.repositories.$role" | Out-Null
         $branch = [string](Get-RequiredProperty $repo "branch" "config.repositories.$role")
-        if ($branch -notmatch '^user/[^/]+/profiler_harness$') {
+        if ($branch -notmatch '^user/[A-Za-z0-9_.-]+/profiler_harness$') {
             throw "config.repositories.$role.branch must match user/<alias>/profiler_harness."
         }
     }
 
     $target = Get-RequiredProperty $Configuration "target" "config"
     $kind = [string](Get-RequiredProperty $target "kind" "config.target")
-    if ($kind -notin @("local", "hyperv", "ixp")) {
-        throw "config.target.kind must be local, hyperv, or ixp."
+    if ($kind -notin @("hyperv", "ixp")) {
+        throw "Devbox execution is disabled. config.target.kind must be hyperv or ixp."
     }
     Get-RequiredProperty $target "stageRoot" "config.target" | Out-Null
+    if ($kind -ne "local") {
+        foreach ($property in @("vmId", "guestMachineGuid")) {
+            $identifier = [Guid]::Empty
+            if (-not [Guid]::TryParse([string](Get-RequiredProperty $target $property "config.target"), [ref]$identifier) -or
+                $identifier -eq [Guid]::Empty) {
+                throw "config.target.$property must be a nonempty GUID obtained from the chosen VM."
+            }
+        }
+        Get-RequiredProperty $target "guestComputerName" "config.target" | Out-Null
+        Get-RequiredProperty $target "checkpointName" "config.target" | Out-Null
+        $stageRoot = [string]$target.stageRoot
+        if ($stageRoot -notmatch '^[A-Za-z]:\\WinUIProfilerHarness(?:-[A-Za-z0-9_-]+)?$') {
+            throw "config.target.stageRoot must be a dedicated local guest directory such as C:\WinUIProfilerHarness."
+        }
+    }
     if ($kind -eq "hyperv") {
         $hyperv = Get-RequiredProperty $target "hyperv" "config.target"
         Get-RequiredProperty $hyperv "name" "config.target.hyperv" | Out-Null
@@ -192,9 +198,12 @@ function Test-ProfilerHarnessConfiguration {
         $ixp = Get-RequiredProperty $target "ixp" "config.target"
         Get-RequiredProperty $ixp "name" "config.target.ixp" | Out-Null
         Get-RequiredProperty $ixp "branch" "config.target.ixp" | Out-Null
-        $connectionMode = [string](Get-OptionalProperty $ixp "connectionMode" "auto")
-        if ($connectionMode -notin @("auto", "background", "psremote")) {
-            throw "config.target.ixp.connectionMode must be auto, background, or psremote."
+        $connectionMode = [string](Get-OptionalProperty $ixp "connectionMode" "psremote")
+        if ($connectionMode -ne "psremote") {
+            throw "config.target.ixp.connectionMode must be psremote; ambient TShell/background connections are disabled."
+        }
+        if ([bool](Get-OptionalProperty $ixp "ensureCreated" $false)) {
+            throw "Automatic IXP creation is disabled. Use the manual provisioning script separately."
         }
         $minimumOsBuild = Get-OptionalProperty $ixp "minimumOsBuild"
         if ($null -ne $minimumOsBuild -and [int]$minimumOsBuild -lt 1) {
@@ -203,6 +212,7 @@ function Test-ProfilerHarnessConfiguration {
     }
 
     $appConfig = Get-RequiredProperty $Configuration "application" "config"
+    Get-RequiredProperty $appConfig "resetScript" "config.application" | Out-Null
     $launch = Get-RequiredProperty $appConfig "launch" "config.application"
     $launchKind = [string](Get-RequiredProperty $launch "kind" "config.application.launch")
     if ($launchKind -notin @("packaged", "unpackaged", "attach")) {
@@ -215,6 +225,10 @@ function Test-ProfilerHarnessConfiguration {
     if ($attempts -lt 1 -or $attempts -gt 5) {
         throw "config.optimization.maxAttempts must be between 1 and 5."
     }
+    $samples = [int](Get-OptionalProperty $Configuration.optimization "samplesPerVersion" 3)
+    if ($samples -lt 3 -or $samples -gt 10) {
+        throw "config.optimization.samplesPerVersion must be between 3 and 10."
+    }
     $budget = [double](Get-OptionalProperty $profiling "frameBudgetMilliseconds" 16.7)
     if ($budget -le 0) {
         throw "config.profiling.frameBudgetMilliseconds must be positive."
@@ -225,14 +239,11 @@ function Test-ProfilerHarnessConfiguration {
     }
     $deploy = Get-OptionalProperty $appConfig "deployCommands"
     if ($null -ne $deploy) {
-        foreach ($provider in @("local", "hyperv", "ixp")) {
+        foreach ($provider in @("hyperv", "ixp")) {
             foreach ($command in @(Get-OptionalProperty $deploy $provider @())) {
                 Test-HarnessCommandDefinition $command "config.application.deployCommands.$provider"
             }
         }
-    }
-    foreach ($command in @(Get-OptionalProperty $appConfig "cleanupCommands" @())) {
-        Test-HarnessCommandDefinition $command "config.application.cleanupCommands"
     }
     $targetInstallScripts = Get-OptionalProperty $appConfig "targetInstallScripts"
     if ($null -ne $targetInstallScripts) {
@@ -244,6 +255,16 @@ function Test-ProfilerHarnessConfiguration {
         }
     }
 
+    $schemaConfig = @{}
+    foreach ($property in $Configuration.PSObject.Properties) {
+        if ($property.Name -notin @("__configPath", "__configDirectory")) {
+            $schemaConfig[$property.Name] = $property.Value
+        }
+    }
+    if (-not (Test-Json -Json ($schemaConfig | ConvertTo-Json -Depth 100) `
+        -SchemaFile (Join-Path $script:HarnessRoot "config.schema.json") -ErrorAction Stop)) {
+        throw "Configuration does not satisfy the schema 2 contract."
+    }
     return $true
 }
 
@@ -275,6 +296,18 @@ function Invoke-HarnessProcess {
         [switch]$AllowFailure
     )
 
+    if (-not $DryRun -and $File -ne "git") {
+        throw "Host process execution is disabled for '$File'. Run builds, tools, and agents in the selected VM."
+    }
+    if ($File -eq "git") {
+        $operation = if ($Arguments.Count -ge 3 -and $Arguments[0] -eq "-C") { $Arguments[2] } else { $Arguments[0] }
+        if ($operation -notin @("status", "rev-parse", "ls-files")) {
+            throw "Host Git operation '$operation' is disabled. Clones, branches and worktrees belong in the VM."
+        }
+        $Arguments = @("--no-pager", "-c", "core.hooksPath=NUL", "-c", "core.fsmonitor=false",
+            "-c", "protocol.ext.allow=never") + $Arguments
+    }
+    if ($LogBasePath) { Assert-HarnessHostArtifactPath $LogBasePath }
     if ($DryRun) {
         return [pscustomobject]@{
             file = $File
@@ -323,7 +356,7 @@ function Invoke-HarnessProcess {
         $stderrTask = $process.StandardError.ReadToEndAsync()
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
             $timedOut = $true
-            try { $process.Kill($true) } catch { }
+            try { $process.Kill($true) } catch { Write-Warning "Stopping the timed-out Git process failed: $($_.Exception.Message)" }
             if (-not $process.WaitForExit(30000)) {
                 throw "Failed to stop timed-out command '$File'."
             }
@@ -373,44 +406,7 @@ function Resolve-HarnessDotNet {
         [switch]$DryRun
     )
 
-    $candidates = [Collections.Generic.List[string]]::new()
-    foreach ($root in @($env:ProgramW6432, $env:ProgramFiles, $env:DOTNET_ROOT)) {
-        if (-not [string]::IsNullOrWhiteSpace($root)) {
-            $candidates.Add((Join-Path $root "dotnet\dotnet.exe"))
-            $candidates.Add((Join-Path $root "dotnet.exe"))
-        }
-    }
-    $command = Get-Command "dotnet" -ErrorAction SilentlyContinue
-    if ($null -ne $command -and -not [string]::IsNullOrWhiteSpace($command.Source)) {
-        $candidates.Add($command.Source)
-    }
-
-    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    $existing = @(
-        $candidates |
-            Where-Object {
-                -not [string]::IsNullOrWhiteSpace($_) -and
-                $seen.Add($_) -and
-                (Test-Path -LiteralPath $_ -PathType Leaf)
-            }
-    )
-    if ($DryRun) {
-        if ($existing.Count -gt 0) {
-            return $existing[0]
-        }
-        return "dotnet"
-    }
-
-    $sdkPattern = "(?m)^$([Regex]::Escape($RequiredSdkVersion))\s+\["
-    foreach ($candidate in $existing) {
-        $result = Invoke-HarnessProcess -File $candidate -Arguments @("--list-sdks") `
-            -TimeoutSeconds 30 -AllowFailure
-        if ($result.exitCode -eq 0 -and $result.stdout -match $sdkPattern) {
-            return $candidate
-        }
-    }
-
-    throw "The profiler requires .NET SDK $RequiredSdkVersion, but no dotnet installation containing it was found."
+    throw "SDK resolution is guest-only. Use Ensure-DotNetSdk.ps1 inside the approved VM."
 }
 
 function Invoke-HarnessCommand {
@@ -421,30 +417,48 @@ function Invoke-HarnessCommand {
         [switch]$AllowFailure
     )
 
-    $file = Expand-HarnessTokens (Get-RequiredProperty $Definition "file" $Name) $Context.Tokens
+    Assert-HarnessVmTarget $Context
+    Test-HarnessCommandDefinition $Definition $Name
+    $tokens = Get-HarnessGuestTokens $Context
+    $file = Expand-HarnessTokens (Get-RequiredProperty $Definition "file" $Name) $tokens
     $arguments = @(
         ConvertTo-StringArray (Get-OptionalProperty $Definition "arguments" @()) |
-            ForEach-Object { Expand-HarnessTokens $_ $Context.Tokens }
+            ForEach-Object { Expand-HarnessTokens $_ $tokens }
     )
-    $workingDirectory = Expand-HarnessTokens (Get-OptionalProperty $Definition "workingDirectory" $Context.Tokens.appRepo) $Context.Tokens
+    $workingDirectory = Expand-HarnessTokens (Get-OptionalProperty $Definition "workingDirectory" $tokens.appRepo) $tokens
+    Assert-HarnessGuestPath $Context $workingDirectory
     $timeout = [int](Get-OptionalProperty $Definition "timeoutSeconds" 3600)
     $environment = @{}
     $environmentObject = Get-OptionalProperty $Definition "environment"
     if ($null -ne $environmentObject) {
         foreach ($property in $environmentObject.PSObject.Properties) {
-            $environment[$property.Name] = Expand-HarnessTokens $property.Value $Context.Tokens
+            if ($property.Name -like "PROFILER_HARNESS_*") {
+                throw "Guest execution identity environment variables cannot be overridden by commands."
+            }
+            $environment[$property.Name] = Expand-HarnessTokens $property.Value $tokens
         }
     }
     $safeName = $Name -replace '[^A-Za-z0-9_.-]', '-'
-    return Invoke-HarnessProcess `
-        -File $file `
-        -Arguments $arguments `
-        -WorkingDirectory $workingDirectory `
-        -Environment $environment `
-        -TimeoutSeconds $timeout `
-        -LogBasePath (Join-Path $Context.RunDirectory "logs\$safeName") `
-        -DryRun:$Context.DryRun `
-        -AllowFailure:$AllowFailure
+    $definitionJson = @{ file = $file; arguments = $arguments; workingDirectory = $workingDirectory; environment = $environment } |
+        ConvertTo-Json -Depth 20 -Compress
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($definitionJson))
+    $script = @"
+`$ErrorActionPreference = 'Stop'
+`$command = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$encoded')) | ConvertFrom-Json
+foreach (`$property in `$command.environment.PSObject.Properties) {
+    [Environment]::SetEnvironmentVariable(`$property.Name, [string]`$property.Value, 'Process')
+}
+Set-Location -LiteralPath `$command.workingDirectory
+`$arguments = @(`$command.arguments)
+& `$command.file @arguments
+if (`$LASTEXITCODE -ne 0) { throw "Guest command failed with exit code `$LASTEXITCODE." }
+"@
+    $result = Invoke-HarnessTargetPowerShell $Context $script $timeout
+    [IO.File]::WriteAllText((Join-Path $Context.RunDirectory "$safeName.log"), $result.stdout + $result.stderr)
+    if ($result.exitCode -ne 0 -and -not $AllowFailure) {
+        throw "Guest command '$Name' failed. $($result.stderr)"
+    }
+    return $result
 }
 
 function Invoke-Git {
@@ -475,13 +489,8 @@ function Initialize-HarnessRepository {
 
     $path = $Context.Tokens["${Role}Repo"]
     if (-not (Test-Path -LiteralPath $path -PathType Container)) {
-        $remote = [string](Get-RequiredProperty $Definition "remoteUrl" "config.repositories.$Role")
-        if ($Context.DryRun) {
-            return
-        }
-        [IO.Directory]::CreateDirectory((Split-Path -Parent $path)) | Out-Null
-        Invoke-HarnessProcess -File "git" -Arguments @("clone", $remote, $path) -TimeoutSeconds 3600 `
-            -LogBasePath (Join-Path $Context.RunDirectory "logs\clone-$Role") | Out-Null
+        Get-RequiredProperty $Definition "remoteUrl" "config.repositories.$Role" | Out-Null
+        return
     }
 
     if (-not (Test-Path -LiteralPath (Join-Path $path ".git"))) {
@@ -496,38 +505,26 @@ function Initialize-HarnessRepository {
     if (-not $Context.DryRun -and -not $allowDirty) {
         $status = Invoke-Git $path @("status", "--porcelain", "--untracked-files=no") $Context "status-$Role"
         if ($status.stdout.Trim()) {
-            throw "Repository '$path' has tracked changes. Commit, stash, or set allowDirty explicitly before branch preparation."
+            throw "Repository '$path' has tracked changes. Review them or set allowDirty explicitly before guest source staging."
         }
     }
 
-    $desired = [string](Get-RequiredProperty $Definition "branch" "config.repositories.$Role")
-    if ($Context.DryRun) {
-        return
-    }
-    $current = Invoke-Git $path @("symbolic-ref", "--short", "-q", "HEAD") $Context "branch-$Role" -AllowFailure
-    if ($current.exitCode -eq 0 -and $current.stdout.Trim() -eq $desired) {
-        return
-    }
-
-    $local = Invoke-Git $path @("show-ref", "--verify", "--quiet", "refs/heads/$desired") $Context "local-branch-$Role" -AllowFailure
-    if ($local.exitCode -eq 0) {
-        Invoke-Git $path @("switch", $desired) $Context "switch-$Role" | Out-Null
-        return
-    }
-
-    $remote = Invoke-Git $path @("show-ref", "--verify", "--quiet", "refs/remotes/origin/$desired") $Context "remote-branch-$Role" -AllowFailure
-    if ($remote.exitCode -eq 0) {
-        Invoke-Git $path @("switch", "--track", "-c", $desired, "origin/$desired") $Context "track-$Role" | Out-Null
-        return
-    }
-
-    $baseRef = [string](Get-OptionalProperty $Definition "baseRef" "HEAD")
-    Invoke-Git $path @("switch", "-c", $desired, $baseRef) $Context "create-$Role" | Out-Null
+    # Topic branches are created in guest source copies, never checked out over host files.
 }
 
 function Get-HyperVCredential {
     param([Parameter(Mandatory)]$Context)
 
+    if ([string]$Context.Config.target.kind -eq "ixp") {
+        Connect-HarnessIxpDevice $Context
+        $name = [string]$Context.Config.target.ixp.name
+        $userName = [string](Get-IxpDeviceLocalAdminName -ForDevice $name)
+        $password = Get-IxpDeviceLocalAdminPassword -ForDevice $name -AsSecureString
+        if ([string]::IsNullOrWhiteSpace($userName) -or $null -eq $password) {
+            throw "IXP guest credentials are unavailable. Configure them manually before running."
+        }
+        return [PSCredential]::new($userName, $password)
+    }
     $hyperv = Get-RequiredProperty $Context.Config.target "hyperv" "config.target"
     $userVariable = [string](Get-RequiredProperty $hyperv "userNameEnvironmentVariable" "config.target.hyperv")
     $passwordVariable = [string](Get-RequiredProperty $hyperv "passwordEnvironmentVariable" "config.target.hyperv")
@@ -540,57 +537,12 @@ function Get-HyperVCredential {
     return [PSCredential]::new($userName, $secure)
 }
 
-function New-HarnessIxpDirectSession {
-    param([Parameter(Mandatory)]$Context)
-
-    $name = [string](Get-RequiredProperty $Context.Config.target.ixp "name" "config.target.ixp")
-    $userName = [string](Get-IxpDeviceLocalAdminName -ForDevice $name)
-    $password = Get-IxpDeviceLocalAdminPassword -ForDevice $name -AsSecureString
-    if ([string]::IsNullOrWhiteSpace($userName) -or $null -eq $password) {
-        throw "Ixp credentials for '$name' could not be resolved for PowerShell Direct transfer."
-    }
-    return New-PSSession -VMName $name -Credential ([PSCredential]::new($userName, $password))
-}
-
-function Test-HarnessIxpUsesPowerShellDirect {
-    param([Parameter(Mandatory)]$Context)
-
-    $connectionMode = [string](Get-OptionalProperty $Context.Config.target.ixp "connectionMode" "auto")
-    return $connectionMode -eq "psremote" -or
-        ($connectionMode -eq "auto" -and (Test-DeviceConnected -PSRemote))
-}
-
 function Connect-HarnessIxpDevice {
     param([Parameter(Mandatory)]$Context)
 
-    Import-Module IXPTools -Global -ErrorAction Stop
-    $settings = $Context.Config.target.ixp
-    $name = [string](Get-RequiredProperty $settings "name" "config.target.ixp")
-    $connectionMode = [string](Get-OptionalProperty $settings "connectionMode" "auto")
-    $connectArguments = @{
-        Name = $name
-        Quiet = $true
-        SkipTShellUpdate = $true
-    }
-    switch ($connectionMode) {
-        "psremote" {
-            connectd @connectArguments -PSRemote | Out-Null
-        }
-        "background" {
-            connectd @connectArguments -Background | Out-Null
-        }
-        "auto" {
-            try {
-                connectd @connectArguments -PSRemote | Out-Null
-            }
-            catch {
-                connectd @connectArguments -Background | Out-Null
-            }
-        }
-    }
-    $probe = cmdx -PassThru cmd /c "echo IXP_READY"
-    if ($probe.ExitCode -ne 0 -or $probe.StdOut -notmatch "IXP_READY") {
-        throw "Ixp device '$name' did not pass its liveness probe."
+    Assert-HarnessVmTarget $Context
+    if (-not (Get-Module IXPTools)) {
+        throw "IXPTools must be initialized manually in this session. Import can build host dependencies; the harness will not import it."
     }
 }
 
@@ -600,129 +552,113 @@ function Get-HarnessIxpCreationParameters {
         [Parameter(Mandatory)][string]$ConfigDirectory
     )
 
-    $parameters = @{
-        Name = [string]$Settings.name
-        Branch = [string]$Settings.branch
-        Latest = $true
-        Wait = $true
-        Force = $true
-        NoUI = $true
-        Flavor = [string](Get-OptionalProperty $Settings "flavor" "Desktop")
-        Arch = [string](Get-OptionalProperty $Settings "arch" "amd64")
+    throw "Automatic IXP creation is disabled. Use the manual provisioning script separately."
+}
+
+function Assert-HarnessVmTarget {
+    param([Parameter(Mandatory)]$Context)
+
+    $kind = [string]$Context.Config.target.kind
+    if ($kind -notin @("hyperv", "ixp")) {
+        throw "Devbox execution is disabled. Select an isolated Hyper-V or IXP VM; there is no local fallback."
     }
-    $savePath = Get-OptionalProperty $Settings "savePath"
-    if ($savePath) { $parameters.SavePath = Resolve-HarnessPath ([string]$savePath) $ConfigDirectory }
-    $switchName = Get-OptionalProperty $Settings "switchName"
-    if ($switchName) { $parameters.VirtualSwitchName = [string]$switchName }
-    $memory = Get-OptionalProperty $Settings "memoryInGb"
-    if ($null -ne $memory) { $parameters.VmMemInGb = [double]$memory }
-    $processors = Get-OptionalProperty $Settings "processorCount"
-    if ($null -ne $processors) { $parameters.VmNumProcessors = [int]$processors }
-    $tools = @(ConvertTo-StringArray (Get-OptionalProperty $Settings "tools" @()))
-    if ($tools.Count -gt 0) { $parameters.Tool = $tools }
-    $apps = @(ConvertTo-StringArray (Get-OptionalProperty $Settings "winGetApps" @()))
-    if ($apps.Count -gt 0) { $parameters.WinGetApps = $apps }
-    if ([bool](Get-OptionalProperty $Settings "allowOffline" $false)) {
-        $parameters.AllowOffline = $true
+}
+
+function Assert-HarnessGuestPath {
+    param([Parameter(Mandatory)]$Context, [Parameter(Mandatory)][string]$Path)
+
+    $root = [IO.Path]::GetFullPath([string]$Context.Config.target.stageRoot).TrimEnd('\') + '\'
+    if ($Path -notmatch '^[A-Za-z]:\\' -or $Path -match "['`r`n]" -or $Path.Substring(2).Contains(':') -or
+        -not [IO.Path]::GetFullPath($Path).StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "'$Path' must be a child of the dedicated guest staging directory '$root'."
     }
-    if ([bool](Get-OptionalProperty $Settings "enableCdKeys" $false)) {
-        $parameters.EnableCDKeys = $true
+}
+
+function Get-HarnessGuestTokens {
+    param([Parameter(Mandatory)]$Context)
+
+    $tokens = $Context.Tokens.Clone()
+    $tokens.appRepo = $Context.GuestAppRepo
+    $tokens.profilerRepo = $Context.GuestProfilerRepo
+    $tokens.harnessRoot = $Context.GuestHarnessRoot
+    $tokens.configDirectory = Join-Path $Context.GuestHarnessRoot "examples"
+    $tokens.artifactsRoot = Join-Path $tokens.stageRoot "artifacts"
+    $tokens.runDirectory = $tokens.targetRunRoot
+    return $tokens
+}
+
+function Get-HarnessVm {
+    param([Parameter(Mandatory)]$Context)
+
+    Assert-HarnessVmTarget $Context
+    Import-Module Hyper-V -ErrorAction Stop
+    $settings = Get-RequiredProperty $Context.Config.target ([string]$Context.Config.target.kind) "config.target"
+    $matches = @(Get-VM -Name ([string]$settings.name) -ErrorAction Stop)
+    if ($matches.Count -ne 1) { throw "VM name must resolve to exactly one existing VM." }
+    $vm = $matches[0]
+    if ($vm.Id -ne [Guid]$Context.Config.target.vmId -or $vm.State -ne "Running") {
+        throw "The named VM must match config.target.vmId and already be running. No VM is created, started, or replaced automatically."
     }
-    $velocityKeysToEnable = @(ConvertTo-StringArray (Get-OptionalProperty $Settings "velocityKeysToEnable" @()))
-    if ($velocityKeysToEnable.Count -gt 0) {
-        $parameters.VelocityKeysToEnable = $velocityKeysToEnable
+    $checkpoints = @(Get-VMSnapshot -VM $vm -Name ([string]$Context.Config.target.checkpointName) -ErrorAction Stop)
+    if ($checkpoints.Count -ne 1 -or $checkpoints[0].Name -ne [string]$Context.Config.target.checkpointName) {
+        throw "The approved clean checkpoint must exist exactly once on the selected VM."
     }
-    $velocityKeysToDisable = @(ConvertTo-StringArray (Get-OptionalProperty $Settings "velocityKeysToDisable" @()))
-    if ($velocityKeysToDisable.Count -gt 0) {
-        $parameters.VelocityKeysToDisable = $velocityKeysToDisable
+    return $vm
+}
+
+function New-HarnessTargetSession {
+    param([Parameter(Mandatory)]$Context)
+
+    $vm = Get-HarnessVm $Context
+    $session = New-PSSession -VMId $vm.Id -Credential (Get-HyperVCredential $Context) -ErrorAction Stop
+    try {
+        $identity = Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
+            [pscustomobject]@{
+                machineGuid = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Cryptography' -Name MachineGuid -ErrorAction Stop).MachineGuid
+                computerName = $env:COMPUTERNAME
+                isHyperVGuest = Test-Path 'HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters'
+            }
+        }
+        if (-not $identity.isHyperVGuest -or
+            [Guid]$identity.machineGuid -ne [Guid]$Context.Config.target.guestMachineGuid -or
+            [Guid]$identity.machineGuid -eq [Guid]$Context.HostMachineGuid -or
+            $identity.computerName -ne [string]$Context.Config.target.guestComputerName) {
+            throw "Guest identity does not match the approved VM, or resolves to the host. Execution refused."
+        }
+        return $session
     }
-    return $parameters
+    catch {
+        Remove-PSSession $session
+        throw
+    }
 }
 
 function Initialize-HarnessTarget {
     param([Parameter(Mandatory)]$Context)
 
-    $kind = [string]$Context.Config.target.kind
-    if ($kind -eq "local" -or $Context.DryRun) {
-        return
+    Assert-HarnessVmTarget $Context
+    if ($Context.DryRun) { return }
+    $session = New-HarnessTargetSession $Context
+    try {
+        $readiness = Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
+            [pscustomobject]@{
+                powerShell7 = $null -ne (Get-Command pwsh -ErrorAction SilentlyContinue)
+                interactiveUser = (Get-CimInstance Win32_ComputerSystem).UserName
+                credentialUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+                build = [int](Get-CimInstance Win32_OperatingSystem).BuildNumber
+            }
+        }
+        if (-not $readiness.powerShell7 -or [string]::IsNullOrWhiteSpace($readiness.interactiveUser) -or
+            $readiness.interactiveUser -ne $readiness.credentialUser) {
+            throw "Complete guest PowerShell 7 installation and interactive sign-in as the configured guest credential before running."
+        }
+        if ([string]$Context.Config.target.kind -eq "ixp") {
+            $minimum = [int](Get-OptionalProperty $Context.Config.target.ixp "minimumOsBuild" 1)
+            if ($readiness.build -lt $minimum) { throw "Guest OS build $($readiness.build) is below the configured minimum $minimum." }
+        }
     }
-
-    if ($kind -eq "hyperv") {
-        Import-Module Hyper-V -ErrorAction Stop
-        $settings = $Context.Config.target.hyperv
-        $name = [string]$settings.name
-        $vm = Get-VM -Name $name -ErrorAction SilentlyContinue
-        if ($null -eq $vm) {
-            $sourceVhd = Resolve-HarnessPath ([string](Get-RequiredProperty $settings "sourceVhdPath" "config.target.hyperv")) $Context.Config.__configDirectory
-            $vmVhd = Resolve-HarnessPath ([string](Get-RequiredProperty $settings "vmVhdPath" "config.target.hyperv")) $Context.Config.__configDirectory
-            if (-not (Test-Path -LiteralPath $sourceVhd -PathType Leaf)) {
-                throw "Hyper-V source VHD '$sourceVhd' does not exist."
-            }
-            [IO.Directory]::CreateDirectory((Split-Path -Parent $vmVhd)) | Out-Null
-            Copy-Item -LiteralPath $sourceVhd -Destination $vmVhd
-            $memory = [int64](Get-OptionalProperty $settings "memoryStartupBytes" 8589934592)
-            $generation = [int](Get-OptionalProperty $settings "generation" 2)
-            $switchName = [string](Get-OptionalProperty $settings "switchName" "")
-            $parameters = @{
-                Name = $name
-                Generation = $generation
-                VHDPath = $vmVhd
-                MemoryStartupBytes = $memory
-            }
-            if ($switchName) {
-                $parameters.SwitchName = $switchName
-            }
-            $vm = New-VM @parameters
-            Set-VMProcessor -VM $vm -Count ([int](Get-OptionalProperty $settings "processorCount" 4))
-        }
-        if ($vm.State -ne "Running") {
-            Start-VM -VM $vm | Out-Null
-        }
-        $credential = Get-HyperVCredential $Context
-        $deadline = [DateTime]::UtcNow.AddMinutes(5)
-        do {
-            try {
-                $session = New-PSSession -VMName $name -Credential $credential -ErrorAction Stop
-                Remove-PSSession $session
-                return
-            }
-            catch {
-                Start-Sleep -Seconds 5
-            }
-        } while ([DateTime]::UtcNow -lt $deadline)
-        throw "Hyper-V VM '$name' did not become available through PowerShell Direct."
-    }
-
-    if ($kind -eq "ixp") {
-        Import-Module IXPTools -Global -ErrorAction Stop
-        $settings = $Context.Config.target.ixp
-        $name = [string]$settings.name
-        $device = Get-IxpDevice -Name $name -ErrorAction SilentlyContinue
-        if ($null -eq $device) {
-            if (-not [bool](Get-OptionalProperty $settings "ensureCreated" $true)) {
-                throw "Ixp device '$name' does not exist and config.target.ixp.ensureCreated is false."
-            }
-            $parameters = Get-HarnessIxpCreationParameters $settings $Context.Config.__configDirectory
-            New-TestMachine @parameters | Out-Null
-        }
-        Connect-HarnessIxpDevice $Context
-        $minimumOsBuild = Get-OptionalProperty $settings "minimumOsBuild"
-        if ($null -ne $minimumOsBuild) {
-            $buildProbe = Invoke-HarnessTargetPowerShell $Context `
-                'Write-Output ("HARNESS_OS_BUILD=" + (Get-CimInstance Win32_OperatingSystem).BuildNumber)' 60
-            if ($buildProbe.exitCode -ne 0) {
-                throw "Could not determine the OS build for Ixp device '$name'. $($buildProbe.stderr)"
-            }
-            $match = [regex]::Match([string]$buildProbe.stdout, 'HARNESS_OS_BUILD=(\d+)')
-            if (-not $match.Success) {
-                throw "Could not parse the OS build for Ixp device '$name' from '$($buildProbe.stdout)'."
-            }
-            $actualOsBuild = [int]$match.Groups[1].Value
-            if ($actualOsBuild -lt [int]$minimumOsBuild) {
-                throw "Ixp device '$name' is Windows build $actualOsBuild; this configuration requires build $minimumOsBuild or newer."
-            }
-        }
-        return
+    finally {
+        Remove-PSSession $session
     }
 }
 
@@ -734,55 +670,90 @@ function Invoke-HarnessTargetPowerShell {
         [switch]$AsUser
     )
 
+    Assert-HarnessVmTarget $Context
+    if ($AsUser) {
+        throw "Interactive execution must use the guest capture task; generic commands run as the approved guest credential."
+    }
     if ($Context.DryRun) {
         return [pscustomobject]@{ exitCode = 0; stdout = ""; stderr = ""; dryRun = $true }
     }
 
-    $kind = [string]$Context.Config.target.kind
-    $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($Script))
-    if ($kind -eq "local") {
-        return Invoke-HarnessProcess -File "pwsh" -Arguments @("-NoLogo", "-NoProfile", "-EncodedCommand", $encoded) `
-            -TimeoutSeconds $TimeoutSeconds
+    $guard = @"
+`$env:PROFILER_HARNESS_HOST_MACHINE_GUID = '$($Context.HostMachineGuid)'
+`$env:PROFILER_HARNESS_GUEST_MACHINE_GUID = '$($Context.Config.target.guestMachineGuid)'
+`$ErrorActionPreference = 'Stop'
+`$global:LASTEXITCODE = 0
+for (`$item = '$($Context.Config.target.stageRoot)'; `$item; `$item = Split-Path -Parent `$item) {
+    if ((Test-Path -LiteralPath `$item) -and
+        ((Get-Item -LiteralPath `$item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw "Guest staging root traverses a reparse point: '`$item'."
     }
-    if ($kind -eq "hyperv") {
-        $credential = Get-HyperVCredential $Context
-        $session = New-PSSession -VMName ([string]$Context.Config.target.hyperv.name) -Credential $credential
-        try {
-            if ($AsUser) {
-                throw "Interactive Hyper-V execution uses Invoke-HarnessCapture, not the generic PowerShell runner."
+}
+if (Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=4') {
+    throw 'Disconnect mapped network drives from this isolated guest before execution.'
+}
+"@
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($guard + "`r`n" + $Script))
+    $session = New-HarnessTargetSession $Context
+    $job = $null
+    $guestLogs = Join-Path $Context.Tokens.targetRunRoot "command-logs"
+    Assert-HarnessGuestPath $Context $guestLogs
+    try {
+        $job = Invoke-Command -Session $session -AsJob -ErrorAction Stop -ScriptBlock {
+            param($Payload, $Logs, $Timeout)
+            $ErrorActionPreference = "Stop"
+            for ($item = $Logs; $item; $item = Split-Path -Parent $item) {
+                if ((Test-Path -LiteralPath $item) -and
+                    ((Get-Item -LiteralPath $item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                    throw "Guest log path traverses a reparse point: '$item'."
+                }
             }
-            $result = Invoke-Command -Session $session -ScriptBlock {
-                param($Payload)
-                $bytes = [Convert]::FromBase64String($Payload)
-                $text = [Text.Encoding]::Unicode.GetString($bytes)
-                & ([ScriptBlock]::Create($text))
-            } -ArgumentList $encoded
-            return [pscustomobject]@{ exitCode = 0; stdout = ($result | Out-String); stderr = ""; dryRun = $false }
+            New-Item -ItemType Directory -Force -Path $Logs | Out-Null
+            $log = Join-Path $Logs ([Guid]::NewGuid().ToString("N"))
+            $pwsh = Get-Command pwsh -CommandType Application -ErrorAction Stop
+            $process = Start-Process -FilePath $pwsh.Source `
+                -ArgumentList @("-NoLogo", "-NoProfile", "-EncodedCommand", $Payload) `
+                -RedirectStandardOutput "$log.stdout.log" -RedirectStandardError "$log.stderr.log" `
+                -PassThru -NoNewWindow
+            $null = $process.Handle
+            $timedOut = -not $process.WaitForExit($Timeout * 1000)
+            try {
+                if ($timedOut) {
+                    Stop-Process -Id $process.Id -Force -ErrorAction Stop
+                    if (-not $process.WaitForExit(30000)) { throw "Timed-out guest PowerShell did not stop." }
+                }
+                $process.WaitForExit()
+                $process.Refresh()
+                [pscustomobject]@{
+                    exitCode = $process.ExitCode
+                    stdout = [IO.File]::ReadAllText("$log.stdout.log")
+                    stderr = [IO.File]::ReadAllText("$log.stderr.log")
+                    timedOut = $timedOut
+                    guestLogPath = $log
+                }
+            }
+            finally { $process.Dispose() }
+        } -ArgumentList $encoded, $guestLogs, $TimeoutSeconds
+        $jobTimedOut = $null -eq (Wait-Job -Job $job -Timeout ($TimeoutSeconds + 60))
+        $remoteErrors = @()
+        $result = Receive-Job -Job $job -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
+        $logPath = Join-Path $Context.RunDirectory "guest-command-$([Guid]::NewGuid().ToString('N')).log"
+        Assert-HarnessHostArtifactPath $logPath
+        [IO.File]::WriteAllText($logPath, ($result | ConvertTo-Json -Depth 10) + ($remoteErrors | Out-String))
+        if ($jobTimedOut) {
+            throw "Guest execution timed out. Guest logs are in '$guestLogs'; inspect remaining guest child processes manually."
         }
-        finally {
-            Remove-PSSession $session
+        if ($remoteErrors.Count -gt 0 -or $job.State -ne "Completed" -or $null -eq $result) {
+            throw "Guest command failed. Output/errors are preserved at '$logPath'. $($remoteErrors | Out-String)"
         }
+        if ($result.timedOut -or $result.exitCode -ne 0) {
+            throw "Guest command failed/timed out with exit code $($result.exitCode). Evidence: '$logPath'. $($result.stderr)"
+        }
+        return [pscustomobject]@{ exitCode = $result.exitCode; stdout = [string]$result.stdout; stderr = [string]$result.stderr; dryRun = $false }
     }
-    if ($kind -eq "ixp") {
-        Connect-HarnessIxpDevice $Context
-        if ($AsUser) {
-            $result = execd -AsUser -FileName "powershell.exe" `
-                -Arguments @("-NoProfile", "-EncodedCommand", $encoded) `
-                -Timeout $TimeoutSeconds -HideOutput
-            return [pscustomobject]@{
-                exitCode = [int]$result.ExitCode
-                stdout = [string]$result.StdOut
-                stderr = [string]$result.StdErr
-                dryRun = $false
-            }
-        }
-        $result = cmdx -PassThru -Timeout $TimeoutSeconds powershell.exe -NoProfile -EncodedCommand $encoded
-        return [pscustomobject]@{
-            exitCode = [int]$result.ExitCode
-            stdout = [string]$result.StdOut
-            stderr = [string]$result.StdErr
-            dryRun = $false
-        }
+    finally {
+        if ($null -ne $job) { Remove-Job -Job $job -Force }
+        Remove-PSSession $session
     }
 }
 
@@ -794,7 +765,9 @@ function Copy-HarnessDirectoryToTarget {
         [Parameter(Mandatory)][string]$Name
     )
 
-    if ($Context.DryRun -or [string]$Context.Config.target.kind -eq "local") {
+    Assert-HarnessVmTarget $Context
+    Assert-HarnessGuestPath $Context $Destination
+    if ($Context.DryRun) {
         return
     }
     if (-not (Test-Path -LiteralPath $Source -PathType Container)) {
@@ -805,50 +778,34 @@ function Copy-HarnessDirectoryToTarget {
     if (Test-Path -LiteralPath $archive) {
         Remove-Item -LiteralPath $archive -Force
     }
-    Compress-Archive -Path (Join-Path $Source "*") -DestinationPath $archive -CompressionLevel Fastest
+    [IO.Compression.ZipFile]::CreateFromDirectory($Source, $archive, [IO.Compression.CompressionLevel]::Fastest, $false)
     $targetArchive = "$Destination.zip"
-    $kind = [string]$Context.Config.target.kind
-    if ($kind -eq "hyperv") {
-        $credential = Get-HyperVCredential $Context
-        $session = New-PSSession -VMName ([string]$Context.Config.target.hyperv.name) -Credential $credential
-        try {
-            Invoke-Command -Session $session -ScriptBlock {
-                param($Path)
-                New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path) | Out-Null
-            } -ArgumentList $targetArchive
-            Copy-Item -LiteralPath $archive -Destination $targetArchive -ToSession $session -Force
-        }
-        finally {
-            Remove-PSSession $session
-        }
+    $session = New-HarnessTargetSession $Context
+    try {
+        Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
+            param($Path)
+            $parent = Split-Path -Parent $Path
+            for ($item = $parent; $item; $item = Split-Path -Parent $item) {
+                if ((Test-Path -LiteralPath $item) -and
+                    ((Get-Item -LiteralPath $item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                    throw "Refusing a guest deployment path containing a reparse point: '$item'."
+                }
+            }
+            New-Item -ItemType Directory -Force -Path $parent | Out-Null
+        } -ArgumentList $targetArchive
+        Copy-Item -LiteralPath $archive -Destination $targetArchive -ToSession $session -Force
     }
-    elseif ($kind -eq "ixp") {
-        Connect-HarnessIxpDevice $Context
-        if (Test-HarnessIxpUsesPowerShellDirect $Context) {
-            $session = New-HarnessIxpDirectSession $Context
-            try {
-                Invoke-Command -Session $session -ScriptBlock {
-                    param($Path)
-                    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path) | Out-Null
-                } -ArgumentList $targetArchive
-                Copy-Item -LiteralPath $archive -Destination $targetArchive -ToSession $session -Force
-            }
-            finally {
-                Remove-PSSession $session
-            }
-        }
-        else {
-            $parent = Split-Path -Parent $targetArchive
-            cmdx cmd /c "mkdir `"$parent`" 2>nul" | Out-Null
-            putd $archive $parent
-            $uploadedArchive = Join-Path $parent (Split-Path -Leaf $archive)
-            if (-not $uploadedArchive.Equals($targetArchive, [StringComparison]::OrdinalIgnoreCase)) {
-                cmdx cmd /c "move /y `"$uploadedArchive`" `"$targetArchive`"" | Out-Null
-            }
-        }
+    finally {
+        Remove-PSSession $session
     }
     $script = @"
 `$ErrorActionPreference = 'Stop'
+for (`$item = '$Destination'; `$item; `$item = Split-Path -Parent `$item) {
+    if ((Test-Path -LiteralPath `$item) -and
+        ((Get-Item -LiteralPath `$item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw "Refusing a guest destination containing a reparse point: '`$item'."
+    }
+}
 if (Test-Path -LiteralPath '$Destination') { Remove-Item -LiteralPath '$Destination' -Recurse -Force }
 New-Item -ItemType Directory -Force -Path '$Destination' | Out-Null
 Expand-Archive -LiteralPath '$targetArchive' -DestinationPath '$Destination' -Force
@@ -868,13 +825,25 @@ function Copy-HarnessDirectoryFromTarget {
         [Parameter(Mandatory)][string]$Name
     )
 
-    if ([string]$Context.Config.target.kind -eq "local") {
-        return
-    }
+    Assert-HarnessVmTarget $Context
+    Assert-HarnessGuestPath $Context $Source
+    Assert-HarnessHostArtifactPath $Destination
+    if ($Context.DryRun) { return }
     [IO.Directory]::CreateDirectory($Destination) | Out-Null
     $targetArchive = "$Source.zip"
     $script = @"
 `$ErrorActionPreference = 'Stop'
+foreach (`$path in @('$Source', '$targetArchive')) {
+    for (`$item = `$path; `$item; `$item = Split-Path -Parent `$item) {
+        if ((Test-Path -LiteralPath `$item) -and
+            ((Get-Item -LiteralPath `$item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Evidence source traverses a reparse point: '`$item'."
+        }
+    }
+}
+if (Get-ChildItem -LiteralPath '$Source' -Recurse -Force | Where-Object { `$_.Attributes -band [IO.FileAttributes]::ReparsePoint }) {
+    throw 'Guest evidence contains a reparse point.'
+}
 if (Test-Path -LiteralPath '$targetArchive') { Remove-Item -LiteralPath '$targetArchive' -Force }
 Compress-Archive -Path '$Source\*' -DestinationPath '$targetArchive' -CompressionLevel Fastest
 "@
@@ -883,77 +852,47 @@ Compress-Archive -Path '$Source\*' -DestinationPath '$targetArchive' -Compressio
         throw "Packaging target results failed. $($result.stderr)"
     }
     $localArchive = Join-Path $Context.RunDirectory "$Name-results.zip"
-    $kind = [string]$Context.Config.target.kind
-    if ($kind -eq "hyperv") {
-        $credential = Get-HyperVCredential $Context
-        $session = New-PSSession -VMName ([string]$Context.Config.target.hyperv.name) -Credential $credential
-        try {
-            Copy-Item -LiteralPath $targetArchive -Destination $localArchive -FromSession $session -Force
-        }
-        finally {
-            Remove-PSSession $session
+    $session = New-HarnessTargetSession $Context
+    try {
+        Copy-Item -LiteralPath $targetArchive -Destination $localArchive -FromSession $session -Force
+    }
+    finally {
+        Remove-PSSession $session
+    }
+    $zip = [IO.Compression.ZipFile]::OpenRead($localArchive)
+    try {
+        foreach ($entry in $zip.Entries) {
+            Assert-HarnessEvidenceEntry $Destination $entry.FullName
         }
     }
-    elseif ($kind -eq "ixp") {
-        Connect-HarnessIxpDevice $Context
-        if (Test-HarnessIxpUsesPowerShellDirect $Context) {
-            $session = New-HarnessIxpDirectSession $Context
-            try {
-                Copy-Item -LiteralPath $targetArchive -Destination $localArchive -FromSession $session -Force
-            }
-            finally {
-                Remove-PSSession $session
-            }
-        }
-        else {
-            $localParent = Split-Path -Parent $localArchive
-            getd $targetArchive $localParent
-            $downloadedArchive = Join-Path $localParent (Split-Path -Leaf $targetArchive)
-            if (-not $downloadedArchive.Equals($localArchive, [StringComparison]::OrdinalIgnoreCase)) {
-                Move-Item -LiteralPath $downloadedArchive -Destination $localArchive -Force
-            }
-        }
+    finally {
+        $zip.Dispose()
     }
     Expand-Archive -LiteralPath $localArchive -DestinationPath $Destination -Force
+}
+
+function Assert-HarnessEvidenceEntry {
+    param([Parameter(Mandatory)][string]$Destination, [Parameter(Mandatory)][string]$EntryName)
+    Assert-HarnessHostArtifactPath $Destination
+    $path = [IO.Path]::GetFullPath((Join-Path $Destination $EntryName))
+    Assert-HarnessHostArtifactPath $path
+    if (-not $path.StartsWith([IO.Path]::GetFullPath($Destination).TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase) -or
+        $path.Substring(2).Contains(':') -or
+        ([IO.Path]::GetFileName($EntryName) -and [IO.Path]::GetExtension($path) -notin
+            @(".json", ".md", ".txt", ".log", ".db", ".sqlite", ".sqlite3", ".db-wal", ".db-shm", ".sqlite-wal", ".sqlite-shm", ".etl"))) {
+        throw "Refusing executable or out-of-directory guest evidence '$EntryName'."
+    }
 }
 
 function Ensure-HarnessAgents {
     param([Parameter(Mandatory)]$Context)
 
-    $portableAgencyRoot = ""
-    if ([string]$Context.Config.target.kind -ne "local") {
-        $agents = Get-RequiredProperty $Context.Config "agents" "config"
-        $agencySource = Resolve-HarnessAgencySource `
-            -ConfiguredPath ([string](Get-OptionalProperty $agents "agencySourcePath" "")) `
-            -BaseDirectory ([string]$Context.Config.__configDirectory)
-        if ($null -ne $agencySource) {
-            $portableAgencyRoot = Join-Path $Context.Tokens.targetAgentRoot "agency"
-            Copy-HarnessDirectoryToTarget $Context $agencySource $portableAgencyRoot "agency"
-        }
-    }
-
-    $portableAgencyLiteral = "'$($portableAgencyRoot.Replace("'", "''"))'"
-    $script = "`$portableAgencyRoot = $portableAgencyLiteral`r`n" + @'
+    Assert-HarnessVmTarget $Context
+    $script = @'
 $ErrorActionPreference = "Stop"
 function Refresh-Path {
     $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
         [Environment]::GetEnvironmentVariable("Path", "User")
-}
-if ($portableAgencyRoot) {
-    $agencyExecutable = Join-Path $portableAgencyRoot "agency.exe"
-    if (-not (Test-Path -LiteralPath $agencyExecutable -PathType Leaf)) {
-        throw "Portable Agency deployment is missing '$agencyExecutable'."
-    }
-    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    if (@($userPath -split ";" | Where-Object { $_ }) -notcontains $portableAgencyRoot) {
-        $updatedUserPath = if ([string]::IsNullOrWhiteSpace($userPath)) {
-            $portableAgencyRoot
-        }
-        else {
-            "$portableAgencyRoot;$userPath"
-        }
-        [Environment]::SetEnvironmentVariable("Path", $updatedUserPath, "User")
-    }
 }
 Refresh-Path
 if (-not (Get-Command agency -ErrorAction SilentlyContinue)) {
@@ -992,8 +931,7 @@ if ($LASTEXITCODE -ne 0) { throw "agency --version failed." }
 copilot --version
 if ($LASTEXITCODE -ne 0) { throw "copilot --version failed." }
 '@
-    $asUser = [string]$Context.Config.target.kind -eq "ixp"
-    $result = Invoke-HarnessTargetPowerShell $Context $script 1800 -AsUser:$asUser
+    $result = Invoke-HarnessTargetPowerShell $Context $script 1800
     if ($result.exitCode -ne 0) {
         throw "Agent readiness failed. $($result.stderr) $($result.stdout)"
     }
@@ -1023,21 +961,160 @@ function Save-HarnessDeploymentState {
 
 function Get-HarnessDeploymentState {
     param([Parameter(Mandatory)]$Context)
+    if ($Context.DryRun) {
+        return [pscustomobject]@{
+            payloadDirectory = Join-Path $Context.Tokens.targetProfilerRoot "ConnectionPayloads"
+            driverExecutable = Join-Path $Context.Tokens.targetDriverRoot "ProfilerHarness.Driver.exe"
+        }
+    }
     $path = Get-HarnessDeploymentStatePath $Context
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "No deployment state exists for this configuration and target. Run profiler-build-deploy first."
     }
-    return Read-HarnessJson $path
+    $state = Read-HarnessJson $path
+    if ([Guid](Get-OptionalProperty $state "vmId" ([Guid]::Empty)) -ne [Guid]$Context.Config.target.vmId -or
+        [Guid](Get-OptionalProperty $state "guestMachineGuid" ([Guid]::Empty)) -ne [Guid]$Context.Config.target.guestMachineGuid) {
+        throw "Deployment state belongs to a different VM/guest. Run profiler-build-deploy for this approved target."
+    }
+    return $state
+}
+
+function Initialize-HarnessGuestRepository {
+    param(
+        [Parameter(Mandatory)]$Context,
+        [Parameter(Mandatory)][ValidateSet("app", "profiler")][string]$Role
+    )
+
+    Assert-HarnessVmTarget $Context
+    if ($Context.DryRun) { return }
+    $source = $Context.Tokens["${Role}Repo"]
+    $destination = if ($Role -eq "app") { $Context.GuestAppRepo } else { $Context.GuestProfilerRepo }
+    $branch = [string]$Context.Config.repositories.$Role.branch
+    if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+        $remote = ([string](Get-RequiredProperty $Context.Config.repositories.$Role "remoteUrl" "config.repositories.$Role")).Replace("'", "''")
+        $baseRef = ([string](Get-OptionalProperty $Context.Config.repositories.$Role "baseRef" "HEAD")).Replace("'", "''")
+        Invoke-HarnessTargetPowerShell $Context @"
+if (Test-Path -LiteralPath '$destination') { throw 'Guest clone destination already exists. Inspect it manually; it will not be replaced.' }
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent '$destination') | Out-Null
+git -c core.hooksPath=NUL -c protocol.ext.allow=never clone --recurse-submodules -- '$remote' '$destination'
+if (`$LASTEXITCODE -ne 0) { throw 'Guest clone failed. Authenticate in the guest and verify repository access.' }
+git -C '$destination' -c core.hooksPath=NUL checkout -b '$branch' '$baseRef'
+if (`$LASTEXITCODE -ne 0) { throw 'Guest topic branch creation failed.' }
+"@ 3600 | Out-Null
+    }
+    else {
+        Copy-HarnessSourceToTarget $Context $source $destination "source-$Role"
+    }
+    if ($Role -eq "profiler") {
+        Copy-HarnessSourceToTarget $Context $script:HarnessRoot $Context.GuestHarnessRoot "harness-source"
+    }
+    Invoke-HarnessTargetPowerShell $Context @"
+Set-Location -LiteralPath '$destination'
+if (-not (Test-Path -LiteralPath '.git')) {
+    git init --initial-branch '$branch'
+    if (`$LASTEXITCODE -ne 0) { throw 'Guest repository initialization failed.' }
+}
+git -c core.hooksPath=NUL add --all
+if (`$LASTEXITCODE -ne 0) { throw 'Guest source staging failed.' }
+git -c core.hooksPath=NUL -c user.name=ProfilerHarness -c user.email=profiler-harness@localhost commit --allow-empty -m 'Harness source snapshot' -m 'Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>'
+if (`$LASTEXITCODE -ne 0) { throw 'Guest source snapshot commit failed.' }
+"@ 600 | Out-Null
+}
+
+function Copy-HarnessSourceToTarget {
+    param(
+        [Parameter(Mandatory)]$Context,
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][string]$Destination,
+        [Parameter(Mandatory)][string]$Name
+    )
+    $source = [IO.Path]::GetFullPath($Source).TrimEnd('\')
+    $staging = Join-Path $Context.RunDirectory $Name
+    Assert-HarnessHostArtifactPath $staging
+    [IO.Directory]::CreateDirectory($staging) | Out-Null
+    try {
+        $index = Invoke-Git $source @("ls-files", "--stage", "--recurse-submodules", "-z") $Context "$Name-index"
+        foreach ($entry in @($index.stdout -split '\x00' | Where-Object { $_ -match '^160000 ' })) {
+            $submodule = Join-Path $source ($entry -split "`t", 2)[1]
+            if (-not (Test-Path -LiteralPath (Join-Path $submodule ".git"))) {
+                throw "Submodule '$submodule' is uninitialized. Initialize it manually before staging source."
+            }
+        }
+        $tracked = Invoke-Git $source @("ls-files", "--cached", "--recurse-submodules", "-z") $Context "$Name-tracked"
+        $untracked = Invoke-Git $source @("ls-files", "--others", "--exclude-standard", "-z") $Context "$Name-untracked"
+        $files = @(($tracked.stdout + $untracked.stdout) -split '\x00' | Where-Object { $_ } | Sort-Object -Unique)
+        foreach ($relative in $files) {
+            $path = [IO.Path]::GetFullPath((Join-Path $source $relative))
+            if (-not $path.StartsWith([IO.Path]::GetFullPath($source).TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Source path escapes the repository: '$relative'."
+            }
+            if (-not (Test-Path -LiteralPath $path)) { continue }
+            for ($item = $path; $item -and $item -ne $source; $item = Split-Path -Parent $item) {
+                if ((Get-Item -LiteralPath $item -Force -ErrorAction Stop).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                    throw "Source staging refuses symlinks/junctions: '$item'."
+                }
+            }
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                throw "Source '$relative' is unavailable. Initialize submodules manually before staging."
+            }
+            $copy = Join-Path $staging $relative
+            [IO.Directory]::CreateDirectory((Split-Path -Parent $copy)) | Out-Null
+            Copy-Item -LiteralPath $path -Destination $copy
+        }
+        Copy-HarnessDirectoryToTarget $Context $staging $Destination $Name
+    }
+    finally {
+        Remove-Item -LiteralPath $staging -Recurse -Force
+    }
+}
+
+function Copy-HarnessGuestDirectory {
+    param(
+        [Parameter(Mandatory)]$Context,
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][string]$Destination
+    )
+    Assert-HarnessGuestPath $Context $Source
+    Assert-HarnessGuestPath $Context $Destination
+    $sourceRoot = [IO.Path]::GetFullPath($Source).TrimEnd('\')
+    $destinationRoot = [IO.Path]::GetFullPath($Destination).TrimEnd('\')
+    if ($sourceRoot -eq $destinationRoot -or $sourceRoot.StartsWith($destinationRoot + '\', [StringComparison]::OrdinalIgnoreCase) -or
+        $destinationRoot.StartsWith($sourceRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Guest deployment source and destination must not overlap."
+    }
+    $script = @"
+if (-not (Test-Path -LiteralPath '$Source' -PathType Container)) { throw 'Guest build output is missing.' }
+foreach (`$path in @('$Source', '$Destination')) {
+    for (`$item = `$path; `$item; `$item = Split-Path -Parent `$item) {
+        if ((Test-Path -LiteralPath `$item) -and
+            ((Get-Item -LiteralPath `$item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Refusing a guest build/deployment path containing a reparse point: '`$item'."
+        }
+    }
+}
+if (Get-ChildItem -LiteralPath '$Source' -Recurse -Force | Where-Object { `$_.Attributes -band [IO.FileAttributes]::ReparsePoint }) {
+    throw 'Guest build output contains a reparse point.'
+}
+if (Test-Path -LiteralPath '$Destination') { Remove-Item -LiteralPath '$Destination' -Recurse -Force }
+New-Item -ItemType Directory -Path '$Destination' | Out-Null
+Copy-Item -Path '$Source\*' -Destination '$Destination' -Recurse -Force
+"@
+    Invoke-HarnessTargetPowerShell $Context $script 1800 | Out-Null
 }
 
 function Invoke-AppBuildDeploy {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]$Context,
-        [switch]$SkipBuild
+        [switch]$SkipBuild,
+        [switch]$SkipSourceStaging
     )
 
     $application = $Context.Config.application
+    Assert-HarnessVmTarget $Context
+    if (-not $SkipBuild -and -not $SkipSourceStaging) {
+        Initialize-HarnessGuestRepository $Context "app"
+    }
     if (-not $SkipBuild) {
         $index = 0
         foreach ($command in @(Get-OptionalProperty $application "buildCommands" @())) {
@@ -1056,30 +1133,19 @@ function Invoke-AppBuildDeploy {
     }
 
     $payloadPath = Get-OptionalProperty $application "payloadPath"
-    if ($payloadPath -and [string]$Context.Config.target.kind -ne "local") {
-        $resolved = Expand-HarnessTokens $payloadPath $Context.Tokens
-        Copy-HarnessDirectoryToTarget $Context $resolved $Context.Tokens.targetAppRoot "app"
+    if ($payloadPath) {
+        $guestTokens = Get-HarnessGuestTokens $Context
+        $resolved = Expand-HarnessTokens $payloadPath $guestTokens
+        Copy-HarnessGuestDirectory $Context $resolved $Context.Tokens.targetAppRoot
         $installScripts = Get-OptionalProperty $application "targetInstallScripts"
         $installScript = Get-OptionalProperty $installScripts ([string]$Context.Config.target.kind)
         if ($installScript) {
-            $expandedScript = Expand-HarnessTokens ([string]$installScript) $Context.Tokens
-            $asUser = [string]$Context.Config.target.kind -eq "ixp"
-            $result = Invoke-HarnessTargetPowerShell $Context $expandedScript 1800 -AsUser:$asUser
+            $expandedScript = Expand-HarnessTokens ([string]$installScript) $guestTokens
+            $result = Invoke-HarnessTargetPowerShell $Context $expandedScript 1800
             if ($result.exitCode -ne 0) {
                 throw "Target-side app installation failed. $($result.stderr) $($result.stdout)"
             }
         }
-    }
-}
-
-function Invoke-AppCleanup {
-    param([Parameter(Mandatory)]$Context)
-
-    $commands = @(Get-OptionalProperty $Context.Config.application "cleanupCommands" @())
-    $index = 0
-    foreach ($command in $commands) {
-        Invoke-HarnessCommand $command $Context "app-cleanup-$index" -AllowFailure | Out-Null
-        $index++
     }
 }
 
@@ -1093,71 +1159,73 @@ function Invoke-ProfilerBuildDeploy {
     $profiler = Get-RequiredProperty $Context.Config "profiler" "config"
     $configuration = [string](Get-OptionalProperty $profiler "configuration" "Release")
     $platform = [string](Get-OptionalProperty $profiler "platform" "x64")
-    $profilerRepo = $Context.Tokens.profilerRepo
+    Assert-HarnessVmTarget $Context
+    if ($configuration -notin @("Debug", "Release") -or $platform -notin @("x64", "ARM64")) {
+        throw "Unsupported profiler configuration or platform."
+    }
+    if (-not $SkipBuild) { Initialize-HarnessGuestRepository $Context "profiler" }
+    $profilerRepo = $Context.GuestProfilerRepo
     $profilerRoot = Join-Path $profilerRepo "tools\WinUIProfiler"
     $buildScript = Join-Path $profilerRoot "scripts\Build-App.ps1"
-    $driverProject = Join-Path $script:HarnessRoot "Driver\ProfilerHarness.Driver.csproj"
-    $driverOutput = Join-Path $Context.ArtifactsRoot "driver\$configuration\win-$($platform.ToLowerInvariant())"
+    $driverProject = Join-Path $Context.GuestHarnessRoot "Driver\ProfilerHarness.Driver.csproj"
+    $driverOutput = Join-Path $Context.Tokens.stageRoot "artifacts\driver\$configuration\win-$($platform.ToLowerInvariant())"
     if (-not $SkipBuild) {
-        $profilerGlobalJson = Read-HarnessJson (Join-Path $profilerRoot "global.json")
-        $requiredSdkVersion = [string](Get-RequiredProperty $profilerGlobalJson.sdk "version" "profiler global.json sdk")
-        $dotnet = Resolve-HarnessDotNet -RequiredSdkVersion $requiredSdkVersion -DryRun:$Context.DryRun
-        Invoke-HarnessProcess -File "pwsh" `
-            -Arguments @("-NoLogo", "-NoProfile", "-File", $buildScript, "-Configuration", $configuration, "-Platform", $platform) `
-            -WorkingDirectory $profilerRepo `
-            -TimeoutSeconds ([int](Get-OptionalProperty $profiler "buildTimeoutSeconds" 7200)) `
-            -LogBasePath (Join-Path $Context.RunDirectory "logs\profiler-build") `
-            -DryRun:$Context.DryRun | Out-Null
-        Invoke-HarnessProcess -File $dotnet `
-            -Arguments @(
-                "publish", $driverProject,
-                "--configuration", $configuration,
-                "--runtime", "win-$($platform.ToLowerInvariant())",
-                "--self-contained", "true",
-                "--output", $driverOutput,
-                "-p:PublishSingleFile=false"
-            ) `
-            -WorkingDirectory $profilerRepo `
-            -TimeoutSeconds 3600 `
-            -LogBasePath (Join-Path $Context.RunDirectory "logs\driver-publish") `
-            -DryRun:$Context.DryRun | Out-Null
+        $sdkScript = Join-Path $Context.GuestHarnessRoot "scripts\Ensure-DotNetSdk.ps1"
+        $sdkSetup = @"
+`$sdk = & '$sdkScript' -RepoRoot '$profilerRoot'
+`$env:DOTNET_ROOT = `$sdk.dotnetRoot
+`$env:DOTNET_ROOT_X64 = `$sdk.dotnetRoot
+`$env:PATH = "`$(`$sdk.dotnetRoot);`$env:PATH"
+"@
+        Invoke-HarnessCommand ([pscustomobject]@{
+            scope = "guest"
+            file = "pwsh"
+            arguments = @("-NoLogo", "-NoProfile", "-Command",
+                "$sdkSetup`r`n& '$buildScript' -Configuration '$configuration' -Platform '$platform'; if (`$LASTEXITCODE -ne 0) { throw 'Profiler build failed.' }")
+            workingDirectory = $profilerRoot
+            timeoutSeconds = [int](Get-OptionalProperty $profiler "buildTimeoutSeconds" 7200)
+        }) $Context "profiler-build" | Out-Null
+        Invoke-HarnessCommand ([pscustomobject]@{
+            scope = "guest"
+            file = "pwsh"
+            arguments = @(
+                "-NoLogo", "-NoProfile", "-Command",
+                "$sdkSetup`r`n& (Join-Path `$sdk.dotnetRoot 'dotnet.exe') publish '$driverProject' --configuration '$configuration' --runtime 'win-$($platform.ToLowerInvariant())' --self-contained true --output '$driverOutput' -p:PublishSingleFile=false; if (`$LASTEXITCODE -ne 0) { throw 'Driver publish failed.' }"
+            )
+            workingDirectory = Join-Path $Context.GuestHarnessRoot "Driver"
+            timeoutSeconds = 3600
+        }) $Context "driver-publish" | Out-Null
     }
 
     $outputMarker = Join-Path $profilerRoot "WinUIProfiler.App\obj\ProfilerAppOutput.$platform.$configuration.txt"
     if ($Context.DryRun) {
-        $profilerOutput = Join-Path $Context.ArtifactsRoot "dry-run\profiler"
+        $profilerOutput = Join-Path $Context.Tokens.stageRoot "artifacts\dry-run\profiler"
     }
     else {
-        if (-not (Test-Path -LiteralPath $outputMarker -PathType Leaf)) {
-            throw "Profiler output marker '$outputMarker' does not exist. Run without -SkipBuild."
-        }
-        $profilerOutput = (Get-Content -LiteralPath $outputMarker -Raw -Encoding UTF8).Trim()
-        if (-not (Test-Path -LiteralPath $profilerOutput -PathType Container)) {
-            throw "Profiler output '$profilerOutput' from '$outputMarker' does not exist."
-        }
-        if (-not (Test-Path -LiteralPath $driverOutput -PathType Container)) {
-            throw "Harness driver output '$driverOutput' does not exist."
-        }
+        $probe = Invoke-HarnessTargetPowerShell $Context @"
+if (-not (Test-Path -LiteralPath '$outputMarker' -PathType Leaf)) { throw 'Guest profiler output marker is missing. Build in the VM first.' }
+`$output = (Get-Content -LiteralPath '$outputMarker' -Raw -Encoding UTF8).Trim()
+if (-not (Test-Path -LiteralPath `$output -PathType Container) -or
+    -not (Test-Path -LiteralPath '$driverOutput' -PathType Container)) { throw 'Guest profiler/driver output is missing.' }
+Write-Output `$output
+"@ 60
+        $profilerOutput = $probe.stdout.Trim()
     }
 
     $targetKind = [string]$Context.Config.target.kind
-    if ($targetKind -eq "local") {
-        $targetProfiler = $profilerOutput
-        $targetDriver = $driverOutput
-    }
-    else {
-        Copy-HarnessDirectoryToTarget $Context $profilerOutput $Context.Tokens.targetProfilerRoot "profiler"
-        Copy-HarnessDirectoryToTarget $Context $driverOutput $Context.Tokens.targetDriverRoot "driver"
-        $targetProfiler = $Context.Tokens.targetProfilerRoot
-        $targetDriver = $Context.Tokens.targetDriverRoot
-    }
+    Copy-HarnessGuestDirectory $Context $profilerOutput $Context.Tokens.targetProfilerRoot
+    Copy-HarnessGuestDirectory $Context $driverOutput $Context.Tokens.targetDriverRoot
+    $targetProfiler = $Context.Tokens.targetProfilerRoot
+    $targetDriver = $Context.Tokens.targetDriverRoot
 
     $state = [pscustomobject]@{
-        schemaVersion = 1
+        schemaVersion = 2
         generatedUtc = [DateTime]::UtcNow.ToString("O")
         targetKind = $targetKind
-        profilerHostOutput = $profilerOutput
-        driverHostOutput = $driverOutput
+        vmId = [string]$Context.Config.target.vmId
+        guestMachineGuid = [string]$Context.Config.target.guestMachineGuid
+        profilerGuestOutput = $profilerOutput
+        driverGuestOutput = $driverOutput
         targetProfilerRoot = $targetProfiler
         targetDriverRoot = $targetDriver
         payloadDirectory = Join-Path $targetProfiler "ConnectionPayloads"
@@ -1230,11 +1298,15 @@ function Invoke-HarnessAgent {
         [switch]$OnTarget
     )
 
+    if (-not $OnTarget) {
+        throw "Agents may run only inside the selected VM. A host worktree is not an isolation boundary."
+    }
+    Assert-HarnessVmTarget $Context
+    Assert-HarnessGuestPath $Context $WorkingDirectory
     $common = @(
         "-p", $Prompt,
         "-s",
         "--output-format", "text",
-        "--allow-all-tools",
         "--deny-tool", "task_complete",
         "--disable-builtin-mcps",
         "--no-custom-instructions",
@@ -1242,6 +1314,12 @@ function Invoke-HarnessAgent {
         "--no-color",
         "-C", $WorkingDirectory
     )
+    if ($Editing) {
+        $common += "--allow-all-tools"
+    }
+    else {
+        foreach ($tool in @("view", "glob", "rg")) { $common += @("--allow-tool", $tool) }
+    }
     if ($Engine -eq "github") {
         $common = @("--trust-folder") + $common
     }
@@ -1257,7 +1335,7 @@ function Invoke-HarnessAgent {
         ) + $common
     }
     else { $common }
-    if ($OnTarget -and [string]$Context.Config.target.kind -ne "local") {
+    if ($OnTarget) {
         $promptBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Prompt))
         $workingBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($WorkingDirectory))
         $remoteArguments = @($arguments)
@@ -1284,8 +1362,6 @@ foreach (`$name in @(
 )) {
     Remove-Item -LiteralPath "Env:`$name" -ErrorAction SilentlyContinue
 }
-`$env:COPILOT_HOME = Join-Path ([IO.Path]::GetTempPath()) 'WinUIProfilerHarness\copilot-home-$sessionId'
-New-Item -ItemType Directory -Force -Path `$env:COPILOT_HOME | Out-Null
 "@
         }
         else { "" }
@@ -1293,6 +1369,12 @@ New-Item -ItemType Directory -Force -Path `$env:COPILOT_HOME | Out-Null
 `$ErrorActionPreference = 'Stop'
 `$prompt = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$promptBase64'))
 `$workingDirectory = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$workingBase64'))
+for (`$item = `$workingDirectory; `$item; `$item = Split-Path -Parent `$item) {
+    if ((Test-Path -LiteralPath `$item) -and
+        ((Get-Item -LiteralPath `$item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw "Guest agent working directory traverses a reparse point: '`$item'."
+    }
+}
 New-Item -ItemType Directory -Force -Path `$workingDirectory | Out-Null
 `$argumentJson = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$argumentsBase64'))
 `$arguments = @(`$argumentJson | ConvertFrom-Json)
@@ -1303,59 +1385,16 @@ for (`$index = 0; `$index -lt `$arguments.Count; `$index++) {
 $agencyEnvironmentScript
 `$output = & '$file' @arguments 2>&1 | Out-String
 `$exitCode = `$LASTEXITCODE
-[Console]::Out.Write(`$output)
+Write-Output `$output
 if (`$exitCode -ne 0) { throw "Agent '$Engine' failed with exit code `$exitCode." }
 "@
-        $asUser = [string]$Context.Config.target.kind -eq "ixp"
-        $result = Invoke-HarnessTargetPowerShell $Context $script 1800 -AsUser:$asUser
+        $result = Invoke-HarnessTargetPowerShell $Context $script 1800
         if ($result.exitCode -ne 0) {
             throw "Target agent '$Engine' failed. $($result.stderr) $($result.stdout)"
         }
         return $result
     }
 
-    $environment = @{
-        GIT_CONFIG_COUNT = "1"
-        GIT_CONFIG_KEY_0 = "remote.origin.pushurl"
-        GIT_CONFIG_VALUE_0 = "DISABLED_BY_PROFILER_HARNESS"
-    }
-    if ($Engine -eq "agency") {
-        foreach ($environmentName in @(
-            "AGENCY_ENGINE",
-            "AGENCY_LOG_SESSION_DIR",
-            "AGENCY_OPERATION_ID",
-            "AGENCY_REPO_DIR",
-            "AGENCY_SESSION_ID",
-            "AGENCY_SESSION_SUBPROCESS",
-            "COPILOT_AGENT_SESSION_ID",
-            "COPILOT_CLI_BINARY_VERSION",
-            "COPILOT_CLI_RESOLVED_DIST_DIR",
-            "COPILOT_CUSTOM_INSTRUCTIONS_DIRS",
-            "COPILOT_LOADER_PID"
-        )) {
-            $environment[$environmentName] = $null
-        }
-        $environment["COPILOT_HOME"] = Join-Path $Context.RunDirectory "copilot-home-$sessionId"
-        New-Item -ItemType Directory -Force -Path $environment["COPILOT_HOME"] | Out-Null
-    }
-    $processFile = $file
-    $processArguments = $arguments
-    if ($Engine -eq "github" -and -not $Context.DryRun) {
-        $copilotCommand = Get-Command "copilot" -ErrorAction Stop
-        if ($copilotCommand.CommandType -eq [Management.Automation.CommandTypes]::ExternalScript) {
-            $processFile = (Get-Command "pwsh" -CommandType Application -ErrorAction Stop).Source
-            $processArguments = @("-NoLogo", "-NoProfile", "-File", $copilotCommand.Source) + $arguments
-        }
-        elseif ($copilotCommand.CommandType -eq [Management.Automation.CommandTypes]::Application) {
-            $processFile = $copilotCommand.Source
-        }
-        else {
-            throw "Unsupported GitHub Copilot command type '$($copilotCommand.CommandType)'."
-        }
-    }
-    return Invoke-HarnessProcess -File $processFile -Arguments $processArguments -WorkingDirectory $WorkingDirectory `
-        -Environment $environment -TimeoutSeconds 1800 `
-        -LogBasePath (Join-Path $Context.RunDirectory "logs\agent-$Name") -DryRun:$Context.DryRun
 }
 
 function Invoke-CreateAutomationTest {
@@ -1376,6 +1415,10 @@ function Invoke-CreateAutomationTest {
     elseif (-not [IO.Path]::IsPathFullyQualified($OutputPath)) {
         $OutputPath = Resolve-HarnessPath $OutputPath $Context.Config.__configDirectory
     }
+    if (-not [IO.Path]::GetFullPath($OutputPath).StartsWith($Context.ArtifactsRoot.TrimEnd('\') + '\',
+        [StringComparison]::OrdinalIgnoreCase) -or [IO.Path]::GetExtension($OutputPath) -ne ".json") {
+        throw "Generated scenarios must be JSON files inside the harness artifacts directory; host source/binary paths cannot be overwritten."
+    }
 
     $schemaPath = Join-Path $script:HarnessRoot "automation.schema.json"
     $schema = Get-Content -LiteralPath $schemaPath -Raw -Encoding UTF8
@@ -1391,12 +1434,7 @@ $Prompt
 Schema:
 $schema
 "@
-    $agentWorkingDirectory = if ([string]$Context.Config.target.kind -eq "local") {
-        $script:HarnessRoot
-    }
-    else {
-        $Context.Tokens.targetRunRoot
-    }
+    $agentWorkingDirectory = $Context.Tokens.targetRunRoot
     $result = Invoke-HarnessAgent $Context $Engine $agentPrompt $agentWorkingDirectory "create-automation" -OnTarget
     if ($Context.DryRun) {
         return $OutputPath
@@ -1421,12 +1459,14 @@ function New-CaptureRequest {
     $launch = $Context.Config.application.launch
     $profiling = $Context.Config.profiling
     $request = [pscustomobject]@{
-        schemaVersion = 1
+        schemaVersion = 2
+        hostMachineGuid = [string]$Context.HostMachineGuid
+        guestMachineGuid = [string]$Context.Config.target.guestMachineGuid
         launch = [pscustomobject]@{
             kind = [string]$launch.kind
-            target = Expand-HarnessTokens ([string]$launch.target) $Context.Tokens
-            arguments = Expand-HarnessTokens ([string](Get-OptionalProperty $launch "arguments" "")) $Context.Tokens
-            workingDirectory = Expand-HarnessTokens (Get-OptionalProperty $launch "workingDirectory") $Context.Tokens
+            target = Expand-HarnessTokens ([string]$launch.target) (Get-HarnessGuestTokens $Context)
+            arguments = Expand-HarnessTokens ([string](Get-OptionalProperty $launch "arguments" "")) (Get-HarnessGuestTokens $Context)
+            workingDirectory = Expand-HarnessTokens (Get-OptionalProperty $launch "workingDirectory") (Get-HarnessGuestTokens $Context)
         }
         payloadDirectory = [string]$Deployment.payloadDirectory
         sessionDirectory = $SessionDirectory
@@ -1451,35 +1491,41 @@ function Invoke-HyperVCapture {
         [Parameter(Mandatory)][int]$TimeoutSeconds
     )
 
+    Assert-HarnessVmTarget $Context
+    if ($Context.DryRun) { return }
+    Assert-HarnessGuestPath $Context $Driver
+    Assert-HarnessGuestPath $Context $RequestPath
+    Assert-HarnessGuestPath $Context $ResultPath
     $credential = Get-HyperVCredential $Context
-    $session = New-PSSession -VMName ([string]$Context.Config.target.hyperv.name) -Credential $credential
+    $session = New-HarnessTargetSession $Context
     $taskName = "ProfilerHarness-$([Guid]::NewGuid().ToString('N'))"
     try {
         $userName = $credential.UserName
         $argument = "capture --request `"$RequestPath`""
-        Invoke-Command -Session $session -ScriptBlock {
-            param($Name, $Executable, $Arguments, $UserName)
+        Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
+            param($Name, $Executable, $Arguments, $UserName, $Request, $Result)
+            foreach ($path in @($Executable, $Request, $Result)) {
+                for ($item = $path; $item; $item = Split-Path -Parent $item) {
+                    if ((Test-Path -LiteralPath $item) -and
+                        ((Get-Item -LiteralPath $item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                        throw "Guest capture path traverses a reparse point: '$item'."
+                    }
+                }
+            }
             $action = New-ScheduledTaskAction -Execute $Executable -Argument $Arguments
             $principal = New-ScheduledTaskPrincipal -UserId $UserName -LogonType Interactive -RunLevel Highest
             Register-ScheduledTask -TaskName $Name -Action $action -Principal $principal -Force | Out-Null
             Start-ScheduledTask -TaskName $Name
-        } -ArgumentList $taskName, $Driver, $argument, $userName
+        } -ArgumentList $taskName, $Driver, $argument, $userName, $RequestPath, $ResultPath
         $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
         do {
-            $exists = Invoke-Command -Session $session -ScriptBlock { param($Path) Test-Path -LiteralPath $Path } -ArgumentList $ResultPath
+            $exists = Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock { param($Path) Test-Path -LiteralPath $Path } -ArgumentList $ResultPath
             if ($exists) { return }
             Start-Sleep -Seconds 2
         } while ([DateTime]::UtcNow -lt $deadline)
         throw "Interactive capture task '$taskName' did not produce '$ResultPath' within $TimeoutSeconds seconds. Ensure the VM user is logged on."
     }
     finally {
-        try {
-            Invoke-Command -Session $session -ScriptBlock {
-                param($Name)
-                Unregister-ScheduledTask -TaskName $Name -Confirm:$false -ErrorAction SilentlyContinue
-            } -ArgumentList $taskName
-        }
-        catch { }
         Remove-PSSession $session
     }
 }
@@ -1520,6 +1566,28 @@ function Resolve-HarnessCaptureResult {
             }
             throw "Profiler capture failed with status '$status'. Evidence was preserved at '$ResultPath'. Error: $structuredError$executionError"
         }
+        if ($null -ne $ExecutionFailure) { throw $ExecutionFailure }
+        $validity = Get-RequiredProperty $result "captureValidity" "capture"
+        $etwAvailable = Get-RequiredProperty $validity "etwAvailable" "capture.captureValidity"
+        if ($etwAvailable -isnot [bool] -or -not $etwAvailable -or
+            [int](Get-RequiredProperty $validity "lostEvents" "capture.captureValidity") -ne 0 -or
+            [int64](Get-RequiredProperty $validity "droppedEvents" "capture.captureValidity") -ne 0 -or
+            (Get-OptionalProperty $validity "etwError") -or (Get-OptionalProperty $validity "recordingError")) {
+            throw "Capture diagnostics are incomplete or lost events. Evidence was preserved at '$ResultPath'."
+        }
+        foreach ($name in @("beforeSnapshot", "afterSnapshot")) {
+            $snapshot = Get-RequiredProperty $result $name "capture"
+            $snapshotPath = [string](Get-RequiredProperty $snapshot "path" "capture.$name")
+            if ([int](Get-RequiredProperty $snapshot "roots" "capture.$name") -lt 1 -or
+                ([int](Get-OptionalProperty $snapshot "xamlNodes" 0) + [int](Get-OptionalProperty $snapshot "compositionNodes" 0)) -lt 1) {
+                throw "Snapshot '$name' has no captured roots or nodes. Private diagnostics readiness is not established."
+            }
+            $localSnapshot = Join-Path (Split-Path -Parent $ResultPath) ("snapshots\" + [IO.Path]::GetFileName($snapshotPath))
+            if (-not (Test-Path -LiteralPath $localSnapshot -PathType Leaf)) {
+                throw "Snapshot evidence '$localSnapshot' is missing. Capture is not complete."
+            }
+            Read-HarnessJson $localSnapshot | Out-Null
+        }
     }
 
     return $ResultPath
@@ -1533,37 +1601,16 @@ function Invoke-HarnessCapture {
         [string]$Name = "capture"
     )
 
+    Assert-HarnessVmTarget $Context
     $scenarioFullPath = Resolve-HarnessPath $ScenarioPath $Context.Config.__configDirectory
     $scenario = Read-HarnessJson $scenarioFullPath
     Test-AutomationScenario $scenario | Out-Null
     $deployment = Get-HarnessDeploymentState $Context
+    Assert-HarnessGuestPath $Context ([string]$deployment.payloadDirectory)
     $captureRoot = Join-Path $Context.RunDirectory $Name
     [IO.Directory]::CreateDirectory($captureRoot) | Out-Null
 
     $kind = [string]$Context.Config.target.kind
-    if ($kind -eq "local") {
-        $requestPath = Join-Path $captureRoot "capture-request.json"
-        $resultPath = Join-Path $captureRoot "capture-result.json"
-        $sessionDirectory = Join-Path $captureRoot "session"
-        $snapshotDirectory = Join-Path $captureRoot "snapshots"
-        New-CaptureRequest $Context $deployment $scenarioFullPath $requestPath $resultPath $sessionDirectory $snapshotDirectory | Out-Null
-        $timeout = [int](Get-OptionalProperty $Context.Config.profiling "firstFrameTimeoutSeconds" 60) +
-            [int](Get-OptionalProperty $Context.Config.profiling "scenarioTimeoutSeconds" 180) + 180
-        $executionFailure = $null
-        try {
-            Invoke-HarnessProcess -File ([string]$deployment.driverExecutable) `
-                -Arguments @("capture", "--request", $requestPath) `
-                -WorkingDirectory ([string]$deployment.targetDriverRoot) `
-                -TimeoutSeconds $timeout `
-                -LogBasePath (Join-Path $captureRoot "driver") `
-                -DryRun:$Context.DryRun | Out-Null
-        }
-        catch {
-            $executionFailure = $_
-        }
-        return Resolve-HarnessCaptureResult $resultPath $Context.DryRun $executionFailure
-    }
-
     $targetCaptureRoot = Join-Path $Context.Tokens.targetRunRoot $Name
     $targetScenario = Join-Path $targetCaptureRoot "scenario.json"
     $targetRequest = Join-Path $targetCaptureRoot "capture-request.json"
@@ -1576,22 +1623,14 @@ function Invoke-HarnessCapture {
     New-CaptureRequest $Context $deployment $targetScenario (Join-Path $requestStaging "capture-request.json") `
         $targetResult $targetSession $targetSnapshots | Out-Null
     Copy-HarnessDirectoryToTarget $Context $requestStaging $targetCaptureRoot "$Name-request"
+    $resetScript = Expand-HarnessTokens ([string]$Context.Config.application.resetScript) (Get-HarnessGuestTokens $Context)
+    Invoke-HarnessTargetPowerShell $Context $resetScript 300 | Out-Null
 
     $timeout = [int](Get-OptionalProperty $Context.Config.profiling "firstFrameTimeoutSeconds" 60) +
         [int](Get-OptionalProperty $Context.Config.profiling "scenarioTimeoutSeconds" 180) + 180
     $executionFailure = $null
     try {
-        if ($kind -eq "hyperv") {
-            Invoke-HyperVCapture $Context ([string]$deployment.driverExecutable) $targetRequest $targetResult $timeout
-        }
-        elseif ($kind -eq "ixp") {
-            Connect-HarnessIxpDevice $Context
-            $result = execd -AsUser -FileName ([string]$deployment.driverExecutable) `
-                -Arguments @("capture", "--request", $targetRequest) -Timeout $timeout -HideOutput
-            if ([int]$result.ExitCode -ne 0) {
-                throw "Ixp capture failed with exit code $($result.ExitCode). $($result.StdErr)"
-            }
-        }
+        Invoke-HyperVCapture $Context ([string]$deployment.driverExecutable) $targetRequest $targetResult $timeout
     }
     catch {
         $executionFailure = $_
@@ -1611,7 +1650,11 @@ function Get-PrimaryMetricValue {
     if ($null -eq $property -or $null -eq $property.Value) {
         throw "Capture result does not contain metric '$Metric'."
     }
-    return [double]$property.Value
+    $value = [double]$property.Value
+    if ([double]::IsNaN($value) -or [double]::IsInfinity($value)) {
+        throw "Capture metric '$Metric' must be finite."
+    }
+    return $value
 }
 
 function Test-HarnessCaptureValidity {
@@ -1619,8 +1662,9 @@ function Test-HarnessCaptureValidity {
 
     $validity = Get-OptionalProperty $Capture "captureValidity"
     $metrics = Get-OptionalProperty $Capture "metrics"
+    $etwAvailable = Get-OptionalProperty $validity "etwAvailable" $false
     return [string](Get-OptionalProperty $Capture "status" "") -eq "succeeded" -and
-        [bool](Get-OptionalProperty $validity "etwAvailable" $false) -and
+        $etwAvailable -is [bool] -and $etwAvailable -and
         [int](Get-OptionalProperty $validity "lostEvents" 0) -eq 0 -and
         [int64](Get-OptionalProperty $validity "droppedEvents" 0) -eq 0 -and
         [string]::IsNullOrWhiteSpace([string](Get-OptionalProperty $validity "etwError" "")) -and
@@ -1639,6 +1683,12 @@ function Test-HarnessImprovement {
     $metric = [string](Get-OptionalProperty $Optimization "primaryMetric" "p95DrawMilliseconds")
     $direction = [string](Get-OptionalProperty $Optimization "direction" "lower")
     $minimum = [double](Get-OptionalProperty $Optimization "minimumImprovementPercent" 5)
+    if ($direction -notin @("lower", "higher")) {
+        throw "Optimization direction must be lower or higher."
+    }
+    if ($minimum -lt 0 -or [double]::IsNaN($minimum) -or [double]::IsInfinity($minimum)) {
+        throw "The minimum improvement percentage must be finite and nonnegative."
+    }
     $baselineValue = Get-PrimaryMetricValue $Baseline $metric
     $candidateValue = Get-PrimaryMetricValue $Candidate $metric
     if ($baselineValue -eq 0) {
@@ -1664,7 +1714,40 @@ function Test-HarnessImprovement {
         baselineCaptureValid = $baselineValid
         candidateCaptureValid = $candidateValid
         captureValid = $valid
-        improved = $valid -and $percent -ge $minimum
+        improved = $valid -and $percent -gt 0 -and $percent -ge $minimum
+    }
+}
+
+function Test-HarnessRepeatedImprovement {
+    param(
+        [Parameter(Mandatory)][object[]]$Baseline,
+        [Parameter(Mandatory)][object[]]$Candidate,
+        [Parameter(Mandatory)]$Optimization
+    )
+    if ($Baseline.Count -lt 3 -or $Baseline.Count -ne $Candidate.Count) {
+        throw "Improvement requires at least three equally sized baseline/candidate capture sets."
+    }
+    $comparisons = @(
+        for ($index = 0; $index -lt $Baseline.Count; $index++) {
+            Test-HarnessImprovement $Baseline[$index] $Candidate[$index] $Optimization
+        }
+    )
+    return [pscustomobject]@{
+        samplesPerVersion = $Baseline.Count
+        comparisons = $comparisons
+        improved = @($comparisons | Where-Object { -not $_.improved }).Count -eq 0
+    }
+}
+
+function Invoke-HarnessCaptureSeries {
+    param(
+        [Parameter(Mandatory)]$Context,
+        [Parameter(Mandatory)][string]$ScenarioPath,
+        [Parameter(Mandatory)][string]$Name
+    )
+    $count = [int](Get-OptionalProperty $Context.Config.optimization "samplesPerVersion" 3)
+    for ($index = 1; $index -le $count; $index++) {
+        Invoke-HarnessCapture $Context $ScenarioPath "$Name-$index"
     }
 }
 
@@ -1674,23 +1757,16 @@ function New-HarnessAttemptWorktree {
         [Parameter(Mandatory)][int]$Attempt
     )
 
-    $repo = $Context.Tokens.appRepo
-    $root = Join-Path $script:HarnessRoot ".worktrees"
-    [IO.Directory]::CreateDirectory($root) | Out-Null
-    $path = Join-Path $root "$($Context.Config.name)-$($Context.RunId)-$Attempt"
-    $branch = "profiler-harness/$($Context.RunId)/attempt-$Attempt"
-    Invoke-Git $repo @("worktree", "add", "-b", $branch, $path, "HEAD") $Context "worktree-$Attempt" | Out-Null
-    return [pscustomobject]@{ path = $path; branch = $branch }
-}
-
-function Remove-HarnessAttemptWorktree {
-    param(
-        [Parameter(Mandatory)]$Context,
-        [Parameter(Mandatory)]$Worktree
-    )
-    if ($Context.DryRun) { return }
-    Invoke-Git $Context.Tokens.appRepo @("worktree", "remove", "--force", $Worktree.path) $Context "remove-worktree" -AllowFailure | Out-Null
-    Invoke-Git $Context.Tokens.appRepo @("branch", "-D", $Worktree.branch) $Context "remove-attempt-branch" -AllowFailure | Out-Null
+    Assert-HarnessVmTarget $Context
+    $repo = $Context.GuestAppRepo
+    $root = Join-Path $Context.Tokens.stageRoot "worktrees"
+    $path = Join-Path $root "$($Context.RunId)-$Attempt"
+    Invoke-HarnessTargetPowerShell $Context @"
+New-Item -ItemType Directory -Force -Path '$root' | Out-Null
+git -C '$repo' -c core.hooksPath=NUL worktree add --detach '$path' HEAD
+if (`$LASTEXITCODE -ne 0) { throw 'Guest attempt worktree creation failed.' }
+"@ 300 | Out-Null
+    return [pscustomobject]@{ path = $path }
 }
 
 function Get-FileSha256 {
@@ -1715,20 +1791,18 @@ function Invoke-HarnessAnalysis {
     )
 
     $analysisPath = Join-Path $Context.RunDirectory "$CaptureName-analysis.md"
-    if ([string]$Context.Config.target.kind -eq "local") {
-        $agentCapturePath = $CapturePath
-        $workingDirectory = Split-Path -Parent $CapturePath
-    }
-    else {
-        $workingDirectory = Join-Path $Context.Tokens.targetRunRoot $CaptureName
-        $agentCapturePath = Join-Path $workingDirectory "capture-result.json"
-    }
+    Assert-HarnessVmTarget $Context
+    $workingDirectory = $Context.Tokens.targetRunRoot
+    $agentCapturePath = Join-Path (Join-Path $workingDirectory $CaptureName) "capture-result.json"
     $prompt = @"
 Analyze this WinUI Profiler capture and return an actionable Markdown report only:
 $agentCapturePath
 
-Read the before/after snapshot JSON paths recorded in capture-result.json. Use frame timings,
-event counts, XAML/composition node deltas, and correlation data. Rank distinct improvement
+Read the before/after snapshot JSON paths recorded in capture-result.json and the adjacent
+session-evidence.json export of the SQLite session's frames and object event spans. Compare
+all baseline-* capture directories in this run. Event spans are not proof of allocation/destruction
+or a complete object lifetime. Use frame timings, event counts, XAML/composition node deltas,
+and correlation data. Rank distinct improvement
 hypotheses by evidence and expected impact. For each hypothesis, cite the concrete evidence,
 identify likely source areas to inspect, and state what metric should improve. Do not edit files,
 run the scenario, or claim causality that the evidence does not establish.
@@ -1755,15 +1829,18 @@ function Invoke-ProfileAndApplyChanges {
     $optimization = Get-RequiredProperty $Context.Config "optimization" "config"
     $maxAttempts = [int](Get-OptionalProperty $optimization "maxAttempts" 5)
     $maxProposalRounds = $maxAttempts * 3
-    $baselinePath = Invoke-HarnessCapture $Context $ScenarioPath "baseline"
+    Initialize-HarnessRepository $Context.Config.repositories.app "app" $Context
+    Invoke-AppBuildDeploy $Context
+    $baselinePaths = @(Invoke-HarnessCaptureSeries $Context $ScenarioPath "baseline")
     if ($Context.DryRun) {
         return
     }
-    $baseline = Read-HarnessJson $baselinePath
-    if (-not (Test-HarnessCaptureValidity $baseline)) {
+    $baselinePath = $baselinePaths[0]
+    $baseline = @($baselinePaths | ForEach-Object { Read-HarnessJson $_ })
+    if (@($baseline | Where-Object { -not (Test-HarnessCaptureValidity $_) }).Count -gt 0) {
         throw "The baseline capture is not valid for optimization. Inspect '$baselinePath' for ETW, recording, or frame evidence errors."
     }
-    $analysisPath = Invoke-HarnessAnalysis $Context $baselinePath "baseline" $Engine
+    $analysisPath = Invoke-HarnessAnalysis $Context $baselinePath "baseline-1" $Engine
     $attemptRecords = [Collections.Generic.List[object]]::new()
     $signatures = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     $proposalRound = 0
@@ -1771,16 +1848,18 @@ function Invoke-ProfileAndApplyChanges {
 
     while ($attempt -lt $maxAttempts -and $proposalRound -lt $maxProposalRounds) {
         $proposalRound++
-        $worktree = New-HarnessAttemptWorktree $Context ($attempt + 1)
+        $worktree = New-HarnessAttemptWorktree $Context $proposalRound
         $attemptContext = $null
         try {
             $history = if ($attemptRecords.Count -eq 0) { "None." } else {
                 ($attemptRecords | ConvertTo-Json -Depth 20)
             }
             $evidenceRoot = Join-Path $worktree.path ".profiler-harness-evidence"
-            [IO.Directory]::CreateDirectory($evidenceRoot) | Out-Null
-            Copy-Item -LiteralPath $baselinePath -Destination (Join-Path $evidenceRoot "capture-result.json")
-            Copy-Item -LiteralPath $analysisPath -Destination (Join-Path $evidenceRoot "analysis.md")
+            $evidenceStaging = Join-Path $Context.RunDirectory "attempt-$proposalRound-evidence"
+            [IO.Directory]::CreateDirectory($evidenceStaging) | Out-Null
+            Copy-Item -LiteralPath $baselinePath -Destination (Join-Path $evidenceStaging "capture-result.json")
+            Copy-Item -LiteralPath $analysisPath -Destination (Join-Path $evidenceStaging "analysis.md")
+            Copy-HarnessDirectoryToTarget $Context $evidenceStaging $evidenceRoot "attempt-$proposalRound-evidence"
             $prompt = @"
 You are applying one focused WinUI performance improvement in an isolated Git worktree.
 Read these profiler evidence files inside the worktree:
@@ -1795,16 +1874,21 @@ Do not commit, push, change branches, modify generated binaries, or edit outside
 Preserve behavior. Update a focused test only when the change introduces testable behavior.
 At the end, summarize the hypothesis and files changed.
 "@
-            $agentResult = Invoke-HarnessAgent $Context $Engine $prompt $worktree.path "attempt-$proposalRound" -Editing
+            $agentResult = Invoke-HarnessAgent $Context $Engine $prompt $worktree.path "attempt-$proposalRound" -Editing -OnTarget
             [IO.File]::WriteAllText((Join-Path $Context.RunDirectory "attempt-$proposalRound-agent.md"), $agentResult.stdout,
                 [Text.UTF8Encoding]::new($false))
-            Remove-Item -LiteralPath $evidenceRoot -Recurse -Force
-            Invoke-HarnessProcess -File "git" -Arguments @("-C", $worktree.path, "add", "-N", "--", ".") `
-                -WorkingDirectory $worktree.path -TimeoutSeconds 300 -AllowFailure | Out-Null
             $diffPath = Join-Path $Context.RunDirectory "attempt-$proposalRound.patch"
-            $diff = Invoke-HarnessProcess -File "git" -Arguments @("-C", $worktree.path, "diff", "--binary", "--no-ext-diff") `
-                -WorkingDirectory $worktree.path -TimeoutSeconds 300
+            $diff = Invoke-HarnessTargetPowerShell $Context @"
+Remove-Item -LiteralPath '$evidenceRoot' -Recurse -Force
+git -C '$($worktree.path)' -c core.hooksPath=NUL add -N -- .
+if (`$LASTEXITCODE -ne 0) { throw 'Guest diff staging failed.' }
+git -C '$($worktree.path)' -c core.hooksPath=NUL diff --binary --no-ext-diff --no-textconv HEAD
+if (`$LASTEXITCODE -ne 0) { throw 'Guest diff extraction failed.' }
+"@ 300
             [IO.File]::WriteAllText($diffPath, $diff.stdout, [Text.UTF8Encoding]::new($false))
+            if ($diff.stdout -match '(?m)^GIT binary patch$|^Binary files .* differ$') {
+                throw "An agent proposed a binary patch. Stop for manual review; only source changes are accepted."
+            }
             if (-not $diff.stdout.Trim()) {
                 $attemptRecords.Add([pscustomobject]@{
                     attempt = $null
@@ -1828,19 +1912,22 @@ At the end, summarize the hypothesis and files changed.
 
             $attempt++
             $attemptContext = New-HarnessContext $Context.Config $Context.DryRun $Engine
-            $attemptContext.Tokens.appRepo = $worktree.path
+            $attemptContext.GuestAppRepo = $worktree.path
             try {
-                Invoke-AppBuildDeploy $attemptContext
-                $candidatePath = Invoke-HarnessCapture $attemptContext $ScenarioPath "candidate-$attempt"
-                $candidate = Read-HarnessJson $candidatePath
-                $evaluation = Test-HarnessImprovement $baseline $candidate $optimization
+                Invoke-AppBuildDeploy $attemptContext -SkipSourceStaging
+                $candidatePaths = @(Invoke-HarnessCaptureSeries $attemptContext $ScenarioPath "candidate-$attempt")
+                $candidate = @($candidatePaths | ForEach-Object { Read-HarnessJson $_ })
+                $evaluation = Test-HarnessRepeatedImprovement $baseline $candidate $optimization
+                if (@($evaluation.comparisons | Where-Object { -not $_.captureValid }).Count -gt 0) {
+                    throw "Candidate capture evidence is invalid. Stop and inspect the VM before another deployment."
+                }
                 $record = [pscustomobject]@{
                     attempt = $attempt
                     proposalRound = $proposalRound
                     status = if ($evaluation.improved) { "verified-improvement" } else { "no-improvement" }
                     signature = $signature
                     patchPath = $diffPath
-                    captureResult = $candidatePath
+                    captureResults = $candidatePaths
                     evaluation = $evaluation
                     summary = $agentResult.stdout
                 }
@@ -1857,33 +1944,27 @@ At the end, summarize the hypothesis and files changed.
                     error = $_.Exception.ToString()
                     summary = $agentResult.stdout
                 }
+                $attemptRecords.Add($record)
+                Write-HarnessJson (Join-Path $Context.RunDirectory "manual-intervention-required.json") $record
+                throw
             }
             $attemptRecords.Add($record)
             Write-HarnessJson (Join-Path $Context.RunDirectory "attempts.json") $attemptRecords
             if ($record.status -eq "verified-improvement") {
-                Invoke-HarnessProcess -File "git" -Arguments @("-C", $Context.Tokens.appRepo, "apply", "--check", $diffPath) `
-                    -WorkingDirectory $Context.Tokens.appRepo -TimeoutSeconds 300 | Out-Null
-                Invoke-HarnessProcess -File "git" -Arguments @("-C", $Context.Tokens.appRepo, "apply", $diffPath) `
-                    -WorkingDirectory $Context.Tokens.appRepo -TimeoutSeconds 300 | Out-Null
                 Write-HarnessJson (Join-Path $Context.RunDirectory "successful-attempt.json") $record
+                Write-HarnessJson (Join-Path $Context.RunDirectory "manual-intervention-required.json") ([pscustomobject]@{
+                    reason = "Candidate improved consistently across repeated captures. Review the patch manually; it has NOT been applied on the devbox."
+                    patchPath = $diffPath
+                    checkpointName = $Context.Config.target.checkpointName
+                })
                 return
             }
         }
         finally {
-            if ($null -ne $attemptContext) {
-                Invoke-AppCleanup $attemptContext
-            }
-            Remove-HarnessAttemptWorktree $Context $worktree
+            Write-HarnessJson (Join-Path $Context.RunDirectory "attempts.json") $attemptRecords
         }
     }
 
-    $restorationError = $null
-    try {
-        Invoke-AppBuildDeploy $Context
-    }
-    catch {
-        $restorationError = $_.Exception.ToString()
-    }
     $reason = if ($attempt -ge $maxAttempts) {
         "No verified improvement after $attempt distinct attempt(s)."
     }
@@ -1897,7 +1978,8 @@ At the end, summarize the hypothesis and files changed.
         proposalRounds = $proposalRound
         distinctAttempts = $attempt
         attempts = $attemptRecords
-        baselineRestorationError = $restorationError
+        checkpointName = $Context.Config.target.checkpointName
+        recovery = "Inspect the guest, then restore the approved VM checkpoint manually. No package reinstall or rollback was attempted."
     })
 }
 
@@ -1911,6 +1993,7 @@ function New-HarnessContext {
     $configDirectory = [string]$Configuration.__configDirectory
     $artifactsRootSetting = [string](Get-OptionalProperty $Configuration.harness "artifactsRoot" ".artifacts")
     $artifactsRoot = Resolve-HarnessPath $artifactsRootSetting $configDirectory
+    Assert-HarnessHostArtifactPath $artifactsRoot
     [IO.Directory]::CreateDirectory($artifactsRoot) | Out-Null
     $runId = "{0}-{1}-{2}" -f ([DateTime]::UtcNow.ToString("yyyyMMdd-HHmmss")),
         (($Configuration.name -replace '[^A-Za-z0-9_.-]', '-')),
@@ -1920,9 +2003,6 @@ function New-HarnessContext {
     $appRepo = Resolve-HarnessPath ([string]$Configuration.repositories.app.path) $configDirectory
     $profilerRepo = Resolve-HarnessPath ([string]$Configuration.repositories.profiler.path) $configDirectory
     $stageRoot = [string]$Configuration.target.stageRoot
-    if ([string]$Configuration.target.kind -eq "local") {
-        $stageRoot = Resolve-HarnessPath $stageRoot $configDirectory
-    }
     $tokens = @{
         harnessRoot = $script:HarnessRoot
         configDirectory = $configDirectory
@@ -1945,13 +2025,19 @@ function New-HarnessContext {
         Tokens = $tokens
         DryRun = $DryRun
         Engine = $Engine
+        HostMachineGuid = [string](Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Cryptography" -Name MachineGuid -ErrorAction Stop).MachineGuid
+        GuestAppRepo = Join-Path $stageRoot "source\app"
+        GuestProfilerRepo = Join-Path $stageRoot "source\profiler"
+        GuestHarnessRoot = Join-Path $stageRoot "source\profiler\tools\WinUIProfiler\harness"
     }
     Write-HarnessJson (Join-Path $runDirectory "run.json") ([pscustomobject]@{
-        schemaVersion = 1
+        schemaVersion = 2
         runId = $runId
         createdUtc = [DateTime]::UtcNow.ToString("O")
         configPath = $Configuration.__configPath
         targetKind = $Configuration.target.kind
+        vmId = $Configuration.target.vmId
+        guestMachineGuid = $Configuration.target.guestMachineGuid
         engine = $Engine
         dryRun = $DryRun
     })
@@ -1970,10 +2056,46 @@ function Invoke-SystemReady {
         Initialize-HarnessRepository $Context.Config.repositories.app "app" $Context
         Initialize-HarnessRepository $Context.Config.repositories.profiler "profiler" $Context
     }
-    Initialize-HarnessTarget $Context
     Ensure-HarnessAgents $Context
-    Invoke-AppBuildDeploy $Context -SkipBuild:$SkipBuild
     Invoke-ProfilerBuildDeploy $Context -SkipBuild:$SkipBuild | Out-Null
+    Invoke-AppBuildDeploy $Context -SkipBuild:$SkipBuild
+    if (-not $Context.DryRun) {
+        $scenarioPath = Join-Path $Context.RunDirectory "readiness-scenario.json"
+        Write-HarnessJson $scenarioPath ([pscustomobject]@{
+            schemaVersion = 1
+            name = "readiness-first-frame-and-diagnostics"
+            steps = @([pscustomobject]@{ action = "wait"; milliseconds = 0 })
+        })
+        $capturePath = Invoke-HarnessCapture $Context $scenarioPath "readiness"
+        Write-HarnessJson (Join-Path $Context.RunDirectory "system-readiness.json") ([pscustomobject]@{
+            harnessReady = $true
+            vmId = $Context.Config.target.vmId
+            guestMachineGuid = $Context.Config.target.guestMachineGuid
+            launchAndDiagnosticsEvidence = $capturePath
+        })
+    }
+}
+
+function Get-HarnessPrerequisites {
+    return @(
+        "Choose IXP VM, local Hyper-V VM (default), or devbox. Devbox execution is disabled.",
+        "Provision/boot an isolated VM manually; do not share host drives, credentials, or writable host repositories.",
+        "For IXP, use scripts\Initialize-IxpVm.ps1 separately. Initialize IXPTools manually; the harness never imports it.",
+        "Complete guest setup, PowerShell 7, interactive sign-in, and repository-specific build prerequisites inside the guest.",
+        "Record the Hyper-V VM ID, guest MachineGuid and computer name; verify they are not the devbox identity.",
+        "Create a clean post-setup checkpoint and configure its name. Failed deployments require manual checkpoint recovery.",
+        "Configure repository paths, user/<alias>/profiler_harness branches, and guest-only command scopes using schemaVersion 2.",
+        "Review each build/deploy/reset command. The reset script must restore the same scenario state before every capture.",
+        "Authenticate Agency and standalone GitHub Copilot independently in the guest; never copy host tokens.",
+        "Verify app launch, loaded runtime compatibility, first-frame evidence, and private snapshot support before scenarios.",
+        "Approve VM execution explicitly. Proposed patches are returned for manual review, never applied on the devbox."
+    )
+}
+
+function Show-HarnessPrerequisites {
+    $steps = @(Get-HarnessPrerequisites)
+    Write-Host "Harness prerequisites (complete in order before execution):"
+    for ($index = 0; $index -lt $steps.Count; $index++) { Write-Host ("{0}. {1}" -f ($index + 1), $steps[$index]) }
 }
 
 function Invoke-ProfilerHarness {
@@ -1986,9 +2108,13 @@ function Invoke-ProfilerHarness {
         [ValidateSet("agency", "github")][string]$Engine,
         [switch]$DryRun,
         [switch]$SkipRepositoryPreparation,
-        [switch]$SkipBuild
+        [switch]$SkipBuild,
+        [ValidateSet("local", "hyperv", "ixp")][string]$TargetKind,
+        [switch]$PrerequisitesConfirmed,
+        [switch]$ApproveVmExecution
     )
 
+    if ($Stage -ne "validate") { Show-HarnessPrerequisites }
     $config = Read-ProfilerHarnessConfiguration $ConfigPath
     if ($Stage -eq "validate") {
         [pscustomobject]@{
@@ -1999,23 +2125,48 @@ function Invoke-ProfilerHarness {
         }
         return
     }
+    if (-not $TargetKind) {
+        $answer = Read-Host "Select target: hyperv (local VM), ixp (IXP VM), or local (devbox; blocked) [hyperv]"
+        $TargetKind = if ([string]::IsNullOrWhiteSpace($answer)) { "hyperv" } else { $answer.Trim().ToLowerInvariant() }
+    }
+    if ($TargetKind -notin @("hyperv", "ixp")) { throw "Devbox execution is disabled. Select hyperv or ixp." }
+    if ($TargetKind -ne [string]$config.target.kind) {
+        throw "Selected target '$TargetKind' does not match the configuration. Update the VM configuration; no fallback or target substitution is allowed."
+    }
+    if (-not $DryRun) {
+        if (-not $PrerequisitesConfirmed) {
+            $checks = @(Get-HarnessPrerequisites)[1..8]
+            foreach ($check in $checks) {
+                if ($TargetKind -ne "ixp" -and $check.StartsWith("For IXP,")) { continue }
+                if ((Read-Host "Confirm $check is complete [yes/y]") -notin @("yes", "y")) {
+                    throw "Prerequisite '$check' was not confirmed. No execution started."
+                }
+            }
+        }
+        $name = [string]$config.target.$TargetKind.name
+        if (-not $ApproveVmExecution -and (Read-Host "Type EXECUTE $name to authorize guest builds, installs and profiling") -cne "EXECUTE $name") {
+            throw "VM execution was not approved."
+        }
+    }
     $context = New-HarnessContext $config $DryRun.IsPresent $Engine
-    switch ($Stage) {
+    try {
+        Initialize-HarnessTarget $context
+        switch ($Stage) {
         "system-ready" {
             Invoke-SystemReady $context -SkipRepositoryPreparation:$SkipRepositoryPreparation -SkipBuild:$SkipBuild
         }
         "app-build-deploy" {
             if (-not $SkipRepositoryPreparation) {
                 Initialize-HarnessRepository $config.repositories.app "app" $context
+                Initialize-HarnessRepository $config.repositories.profiler "profiler" $context
             }
-            Initialize-HarnessTarget $context
+            if (-not $SkipBuild) { Initialize-HarnessGuestRepository $context "profiler" }
             Invoke-AppBuildDeploy $context -SkipBuild:$SkipBuild
         }
         "profiler-build-deploy" {
             if (-not $SkipRepositoryPreparation) {
                 Initialize-HarnessRepository $config.repositories.profiler "profiler" $context
             }
-            Initialize-HarnessTarget $context
             Invoke-ProfilerBuildDeploy $context -SkipBuild:$SkipBuild | Out-Null
         }
         "create-automation-test" {
@@ -2048,12 +2199,25 @@ function Invoke-ProfilerHarness {
             Invoke-ProfileAndApplyChanges @parameters
         }
     }
+    }
+    catch {
+        Write-HarnessJson (Join-Path $context.RunDirectory "stage-failure.json") ([pscustomobject]@{
+            stage = $Stage
+            error = $_.Exception.ToString()
+            vmId = $config.target.vmId
+            checkpointName = $config.target.checkpointName
+            recovery = "Stop. Inspect the VM and restore its checkpoint manually if required. No host fallback, DLL replacement, package reinstall, or automatic rollback was attempted."
+        })
+        throw
+    }
     [pscustomobject]@{
-        completed = $true
+        completed = -not $context.DryRun -and $Stage -ne "profile-and-apply-changes"
+        planned = $context.DryRun
         stage = $Stage
         runId = $context.RunId
         runDirectory = $context.RunDirectory
         dryRun = $context.DryRun
+        manualReviewRequired = $Stage -eq "profile-and-apply-changes"
     }
 }
 

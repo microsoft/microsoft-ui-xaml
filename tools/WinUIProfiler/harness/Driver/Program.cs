@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows.Automation;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Target;
@@ -102,6 +103,15 @@ internal static class Program
                 .Where(frame => frame.Drawn && !baselineFrames.Contains(frame.FrameId))
                 .ToArray();
             var metrics = CaptureMetrics.From(scenarioFrames, request.FrameBudgetMilliseconds, before, after);
+            await WriteJsonAsync(
+                Path.Combine(Path.GetDirectoryName(request.ResultPath)!, "session-evidence.json"),
+                new
+                {
+                    Session = SessionFile.ReadInfo(recordingPath),
+                    Frames = allFrames,
+                    Objects = SessionFile.ReadObjects(recordingPath),
+                    ObjectSpanMeaning = "First/last stored events, not proof of allocation/destruction or complete object lifetime."
+                }).ConfigureAwait(false);
             var etw = connection.Etw;
             result = new(
                 SchemaVersion: 1,
@@ -263,13 +273,27 @@ internal sealed record CaptureRequest(
     int FirstFrameTimeoutSeconds,
     int ScenarioTimeoutSeconds,
     int SettleMilliseconds,
-    double FrameBudgetMilliseconds)
+    double FrameBudgetMilliseconds,
+    string HostMachineGuid,
+    string GuestMachineGuid)
 {
     public void Validate()
     {
-        if (SchemaVersion != 1)
+        if (SchemaVersion != 2)
         {
-            throw new InvalidDataException("Only capture request schemaVersion 1 is supported.");
+            throw new InvalidDataException("Only capture request schemaVersion 2 is supported.");
+        }
+        if (!Guid.TryParse(HostMachineGuid, out var hostId) || hostId == Guid.Empty ||
+            !Guid.TryParse(GuestMachineGuid, out var guestId) || guestId == Guid.Empty || hostId == guestId)
+        {
+            throw new InvalidDataException("Capture requires distinct, approved host and guest identities.");
+        }
+        using var machine = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography");
+        using var guest = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters");
+        if (guest is null || !Guid.TryParse(machine?.GetValue("MachineGuid") as string, out var machineId) ||
+            machineId != guestId || machineId == hostId)
+        {
+            throw new InvalidOperationException("Capture refused outside the approved VM. Devbox profiling is disabled.");
         }
         Launch.Validate();
         RequireAbsoluteDirectory(PayloadDirectory, nameof(PayloadDirectory), mustExist: true);

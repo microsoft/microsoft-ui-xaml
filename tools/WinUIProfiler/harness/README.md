@@ -1,160 +1,115 @@
 # WinUI Profiler optimization harness
 
-This harness is a deterministic controller around the existing WinUI Profiler. It prepares an app repository and profiler repository, builds and deploys both, creates portable UI Automation scenarios, captures first-frame and post-scenario snapshots, and runs at most five distinct optimization attempts.
+**VM-only execution.** The devbox is a source/evidence controller, not a build or deployment target. Builds, SDK installation, package signing/registration, agent execution, UI Automation, and profiling belong in an explicitly approved, identity-pinned VM. Proposed patches return for manual review; they are never applied automatically on the devbox.
 
-The controller owns branching, commands, attempt limits, duplicate rejection, evidence, and success criteria. Agency or GitHub Copilot can propose a scenario or edit an isolated app worktree, but a proposal is accepted only after the configured build, deployment, capture, and metric comparison succeed.
-
-The stage architecture, complete harness flow, and exact invocation commands are in [WinUIProfiler-Harness-Architecture-and-Invocation-Guide.docx](WinUIProfiler-Harness-Architecture-and-Invocation-Guide.docx). Detailed requirement traceability and implementation status are in [WinUIProfiler-Harness-Architecture-and-Runbook.docx](WinUIProfiler-Harness-Architecture-and-Runbook.docx).
-
-## Layout
-
-- `Invoke-ProfilerHarness.ps1`: single command-line entry point.
-- `ProfilerHarness.psm1`: deterministic workflow and local/Hyper-V/Ixp providers.
-- `Driver`: headless profiler and UI Automation executable.
-- `skills`: the five reusable skill boundaries requested by the harness design.
-- `examples/store.local.json`: local Microsoft Store configuration using `user/akanpatel/profiler_harness` and `user/akanpatel2206/profiler_harness`.
-- `examples/store.ixp.json`: preferred create-if-missing Ixp configuration for a dedicated `ge_current` VM over PSRemote.
-- `examples/store.ixp.preview.json`: reuse-only configuration for the diagnosed `rs_prerelease` preview VM.
-- `.artifacts`: ignored run logs, deployment state, captures, sessions, snapshots, patches, and reports.
+Schema 2 deliberately rejects the old local execution contract. Do not follow deployment commands in the historical DOCX guides: they predate these restrictions. These changes require execution validation in an isolated VM; source review is not evidence that provisioning, builds, or captures have passed.
 
 ## Prerequisites
 
-- PowerShell 7 and Git.
-- .NET 10 SDK and the WinUI Profiler build prerequisites. Driver publishing reads the exact SDK version from `tools\WinUIProfiler\global.json` and selects an installation that contains it, even when an initialized MUX shell has placed the repository-local .NET 9 host first on `PATH`.
-- The target user must have an active interactive desktop session for UI Automation.
-- Local Store builds require an elevated PowerShell session, Developer Mode, Visual Studio 2026 Enterprise, and the Store repository's NativeAOT build prerequisites. The Store example reads its `global.json` and installs the exact missing .NET SDK side-by-side under `%LOCALAPPDATA%\Microsoft\dotnet` with Microsoft's `dotnet-install.ps1`.
-- Local Store deployment temporarily replaces the inbox Store package for all users. The first deployment enables `HKLM\SOFTWARE\Microsoft\SecurityManager\InternalDevUnlock` and stops before changing any package so Windows can be rebooted once.
-- Store payload preparation signs a copied MSIX with a dedicated self-signed harness certificate. Deployment imports that certificate into `LocalMachine\TrustedPeople`, installs the signed package, and records enough state to remove the certificate during restoration.
-- Hyper-V targets require a configured source VHD and credentials supplied only through environment variables.
-- Ixp targets require IxpTools. The harness keeps `connectd`, transfer, execution, and result collection in the same PowerShell process. `connectionMode` supports `auto`, `background`, and `psremote`.
-- Creating a missing Ixp VM normally requires authoritative build media through the Windows build share or a working IxpTools ESGraph/Drop path. The canonical `ge_current` example enables `New-TestMachine -AllowOffline` so IxpTools can fall back to already-cached VHDs and tools.
-- For remote targets, the harness deploys the signed Agency installation already available on the host. It auto-detects `Get-Command agency`; set `agents.agencySourcePath` to an Agency installation directory or `agency.exe` when an override is needed. If neither is available, the harness falls back to Microsoft `InstallTool.ps1`, which can require interactive authentication.
-- Standalone GitHub Copilot CLI is installed separately through `npm install --global @github/copilot`.
-- When an Ixp target does not have npm, the harness installs `OpenJS.NodeJS.LTS` silently through WinGet before installing standalone GitHub Copilot CLI.
-- First use of either agent may require interactive sign-in. Credentials and tokens do not belong in harness JSON.
+The entry point displays the list before execution, asks for **IXP VM, local Hyper-V VM (default), or devbox**, then confirms prerequisites individually. Devbox selection is blocked, not a fallback.
 
-## Start with validation and a dry run
+1. Choose the application, its existing source repository path or clone URL, and the manually supplied alias for `user/<alias>/profiler_harness`.
+2. Supply the profiler repository path/URL and topic branch. Read both repositories' README/build requirements before configuring commands.
+3. Provision and boot an isolated VM manually on the chosen virtualization host. Hyper-V must already be available; do not automatically enable host features or change host networking. Do not expose writable host drives/repositories or host credentials to the guest.
+4. For IXP, complete the manual process below first. IXPTools initialization can build host dependencies; the harness never imports it or creates/replaces a VM.
+5. Complete guest Windows setup, PowerShell 7, Git, Visual Studio C++/MSBuild/Windows SDK requirements, and application-specific prerequisites. Profiler SDK selection uses its `global.json` inside the guest, not the devbox's initialized build environment.
+6. Sign in interactively inside the guest as the same account used for PowerShell Direct, app registration, and capture. Record `Get-VM`'s VM ID, the guest's `HKLM:\SOFTWARE\Microsoft\Cryptography` MachineGuid, and guest computer name. Configure all three; the guest must differ from the devbox identity.
+7. Take a clean **post-setup** checkpoint before agent/app/profiler installations. Configure its exact name and agree on manual recovery. A pre-boot checkpoint alone is not a ready desktop.
+8. Configure and review every build/deploy command with `scope: "guest"` and a working directory inside `C:\WinUIProfilerHarness`. Review signing, package, registry, and certificate changes as VM mutations, not harmless deployment.
+9. Supply an app-specific `application.resetScript` that restores equivalent scenario state before every sample. Merely stopping a process does not reset caches, search state, downloads, purchases, or persistent data. The examples intentionally throw until a reset is configured.
+10. Install/authenticate Agency and standalone GitHub Copilot independently in the guest. The readiness stage can install missing tools there, but interactive sign-in is manual. Never copy host tokens or put passwords in JSON. For plain Hyper-V, configure environment variable **names** for guest credentials.
+11. Verify target runtime/private diagnostic compatibility. The profiler's own pinned runtime does not replace or establish compatibility of the app's loaded WinUI runtime. Readiness must demonstrate app launch, a recorded first drawn frame, and complete before/after snapshots before scenarios run.
+12. Approve guest execution explicitly. Any readiness/build/deploy/capture failure stops for manual inspection; do not retry by reinstalling a baseline, switching to the devbox, or replacing host DLLs.
+
+### Manual IXP provisioning
+
+The standalone wizard defaults to **checklist-only**. It does not load the harness or execute app/profiler work. These commands are instructions for manual use on the approved virtualization host, not authorization to run them automatically:
 
 ```powershell
-cd Q:\Repo\microsoft-ui-xaml
+# Checklist only: no IXP import or VM creation.
+& .\tools\WinUIProfiler\harness\scripts\Initialize-IxpVm.ps1
 
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage validate `
-  -Config .\tools\WinUIProfiler\harness\examples\store.local.json
+# Explicitly requested manual provisioning, with interactive approvals.
+& .\tools\WinUIProfiler\harness\scripts\Initialize-IxpVm.ps1 -Provision
+```
 
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
+The wizard walks through elevation/Hyper-V, switch selection, RAM/CPU/disk capacity, separately approved IXP dependency initialization/defaults, authorized media or cached-media fallback, and new VM/storage names. It requires at least 4 GB guest RAM, 4 GB remaining free host RAM, and 160 GB free storage. `yes`, `YES`, `y`, and `Y` approve prerequisite prompts; final `CREATE <VM name>` authorization remains exact.
+
+Creation uses no force replacement, unattended setup, automatic start, TShell, kernel debugging, CD keys, or optional-feature requests. Inspect IXPTools' own summary and abort on unwanted installs or replacement. Saved/default IXP tools may still affect native provisioning; empty tool arrays are not a verified isolation guarantee. Offline fallback may still access the network.
+
+The result records the VM ID and verified pre-boot checkpoint with `harnessReady: false`. Boot and complete guest setup manually, then create the post-setup checkpoint required by the harness. Partial provisioning is retained for inspection, not automatically deleted or retried.
+
+For an IXP harness run, initialize IXPTools **manually in the same elevated PowerShell session** after reviewing its bootstrap side effects, and invoke the entry point with `&`, not a fresh `pwsh` process. Only verified PowerShell Direct sessions are used; ambient `connectd`, `cmdx`, `putd/getd`, and `execd -AsUser` are not execution routes.
+
+## Configuration and invocation
+
+Use `examples\store.hyperv.json` or `examples\store.ixp.json`. `store.ixp.preview.json` is a reuse-only compatibility investigation example, not proof that its guest can launch/profile the app. Replace illustrative GUIDs, guest names, paths, aliases, checkpoint names, and the throwing reset script before execution. The schema rejects legacy provisioning options, local deployment commands, automatic cleanup commands, and host Agency source paths. Provisioning parameters belong only in the separate manual wizard.
+
+The dedicated guest staging root must be `C:\WinUIProfilerHarness` or a suffixed variant such as `C:\WinUIProfilerHarness-Store`. Host output is constrained to harness `.artifacts` with reparse-point checks. Command tokens resolve to guest paths:
+
+| Token | Guest location |
+|---|---|
+| `{appRepo}` | `source\app`, or a guest candidate worktree |
+| `{profilerRepo}` | `source\profiler` |
+| `{harnessRoot}` | Current harness source staged inside the guest profiler repository |
+| `{artifactsRoot}` | Guest staging `artifacts` |
+| `{runDirectory}` | Guest run directory |
+| `{targetAppRoot}`, `{targetProfilerRoot}`, `{targetDriverRoot}` | Guest deployment directories |
+
+Existing repositories are read as tracked/nonignored source snapshots without host branch checkout or credential metadata. Uninitialized submodules/reparse points are refused. Missing repositories are cloned in the VM using guest authentication. Topic branches are created there; `baseRef` applies to new clones, whereas existing dirty snapshots preserve reviewed source changes when `allowDirty` is explicit.
+
+After prerequisites are complete, the following is a **manual invocation**, not a command to execute during source hardening:
+
+```powershell
+& .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
   -Stage system-ready `
-  -Config .\tools\WinUIProfiler\harness\examples\store.local.json `
-  -DryRun
+  -Config .\tools\WinUIProfiler\harness\examples\store.hyperv.json
 ```
 
-The real readiness run prepares both topic branches, verifies or installs both agents, builds/deploys Store, builds WinUI Profiler, publishes the self-contained headless driver, and records deployment state:
+Interactive target selection defaults to Hyper-V and must match the JSON target. Real execution requires prerequisite confirmations followed by `EXECUTE <VM name>`. Explicit unattended authorization requires all three: `-TargetKind hyperv|ixp`, `-PrerequisitesConfirmed`, and `-ApproveVmExecution`; these switches do not bypass VM identity, state, checkpoint, or guest-account checks.
+
+`-Stage validate` reads configuration only. `-DryRun -TargetKind hyperv|ixp` records a plan without launching processes, connecting to a guest, building, or installing; it reports `planned`, not completed readiness. Neither is permission to run tests on the devbox.
+
+## Reusable stages
+
+| Stage/skill | Contract |
+|---|---|
+| `system-ready` | Verify existing VM/guest identity and desktop, prepare guest agent tools, build/deploy profiler then app, and record launch/first-frame/private-snapshot evidence. |
+| `app-build-deploy` | Run app-specific guest commands; package, sign, and register only in the guest. Reusable for candidates. |
+| `profiler-build-deploy` | Resolve the guest SDK, build the profiler, publish the driver, and copy complete outputs guest-to-guest. State is pinned to VM/guest IDs. |
+| `create-automation-test` | Run the selected nonediting guest engine, validate its bounded JSON DSL, and save only under host `.artifacts`. |
+| `capture` | Reset app state, wait for the first recorded drawn frame, snapshot, execute the scenario, snapshot again, and preserve evidence. |
+| `profile-and-apply-changes` | Build/capture/compare guest candidates; export a source patch for manual review, never apply it on the devbox. |
+
+The five skill wrappers expose the same target/prerequisite/consent parameters. `-SkipBuild` reuses **guest** outputs only, never host binaries. No stage automatically starts, restores, or replaces a VM.
+
+Example scenario generation, for manual use after readiness:
 
 ```powershell
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage system-ready `
-  -Config .\tools\WinUIProfiler\harness\examples\store.local.json
-```
-
-The Store example runs the repository's checked-in `Build-NativeAot.ps1 -BuildOnly` workflow, signs a copied MSIX, and deploys that signed package while avoiding unattended Visual Studio/DTE prompts. Signing makes the package trusted and installable; it does not enable or authorize the Windows App SDK system composition engine. On the first run, `system-ready` can stop with a reboot-required message after enabling `InternalDevUnlock`; rerun the identical command after reboot.
-
-The checked-in Ixp configuration creates or reuses the dedicated `WinUIProfilerHarness-ge-current-latest` VM from the latest usable `ge_current` Desktop build. It enables CD keys during VM creation:
-
-```powershell
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage validate `
-  -Config .\tools\WinUIProfiler\harness\examples\store.ixp.json
-
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage system-ready `
-  -Config .\tools\WinUIProfiler\harness\examples\store.ixp.json
-```
-
-On the current DevBox, configuration validation passes and offline mode is enabled. IxpTools can create the VM offline only when a matching `ge_current` VHD and required tools already exist in its local cache. If creation reports that no offline media is available, restore `\\ntdev\release` or ESGraph/Drop access once to populate the cache, then rerun the identical `system-ready` command.
-
-IxpTools requires a one-time interactive defaults setup before an unattended `-Force` run. If `system-ready` reports `We need to prompt for required information`, open an elevated `pwsh` window and run:
-
-```powershell
-newvm -SetDefaults
-```
-
-Use `C:\VMs\WinUIProfilerHarness` for the save path, `Desktop` for the flavor, and `Default Switch` for the virtual switch. Choose the region/mirror, VHD cache, local-admin password, kernel-debugging, and default-tool settings appropriate for your environment. The checked-in harness configuration overrides the VM name, branch, memory, processor count, tools, WinGet apps, CD-key state, and offline behavior. After setup completes, rerun the same `store.ixp.json` `system-ready` command.
-
-Use `store.ixp.preview.json` only to reproduce the diagnosed blocker on `WinUIProfilerHarness-ge-current-directwex-latest`. This configuration is reuse-only and rejects a guest older than build 27200:
-
-```powershell
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage validate `
-  -Config .\tools\WinUIProfiler\harness\examples\store.ixp.preview.json
-```
-
-The preview VM completes `system-ready`, signed Store deployment, profiler deployment, and agent readiness. Store launch and capture are blocked on that VM because its OS reports composition change `62917618` disabled, the OS compositor reports no switcher support, and `TrySetProcessEngine(System)` returns `selected=false`. The preferred `store.ixp.json` configuration now uses `ge_current` instead. The harness preserves failed launch evidence instead of reporting success.
-
-The first Ixp Store deployment can likewise stop after enabling `InternalDevUnlock` in the guest. Reboot that VM, then rerun the same command. A clean Ixp image does not need an inbox Store package; restoration removes the harness package and restores the previous registry state.
-
-Remote Agency deployment copies only the tool installation, never the host's credentials or tokens. The first Agency or GitHub Copilot use in a new guest can still require an interactive sign-in.
-
-Restore the supported Store package after local profiling:
-
-```powershell
-pwsh .\tools\WinUIProfiler\harness\scripts\StorePackage.ps1 `
-  -Action Restore `
-  -RepoRoot Q:\Repo\SFC.Client.SFUI `
-  -StatePath .\tools\WinUIProfiler\harness\.artifacts\state\store-original-package.json
-```
-
-Restoration uses Windows' supported `wsreset.exe -i` recovery path, waits for Store registration, removes any harness-added signing certificate, and restores the prior `InternalDevUnlock` registry value.
-
-## Create or run an automation scenario
-
-Generate a validated scenario with either engine:
-
-```powershell
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
+& .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
   -Stage create-automation-test `
-  -Config .\tools\WinUIProfiler\harness\examples\store.local.json `
+  -Config .\tools\WinUIProfiler\harness\examples\store.hyperv.json `
   -Engine agency `
-  -ScenarioPrompt "Launch Store, search for Netflix, and open the result without installing or purchasing anything." `
-  -ScenarioPath .\tools\WinUIProfiler\harness\examples\generated-store-scenario.json
+  -ScenarioPrompt "Search Store for Netflix and open the result without installing or purchasing." `
+  -ScenarioPath .\tools\WinUIProfiler\harness\.artifacts\generated-store-scenario.json
 ```
 
-Capture only:
+Review selectors before capture. The DSL can automate third-party apps exposing UI Automation, but **private WinUI profiling is not supported merely because UI Automation works**. The target must pass the private-diagnostics readiness probe. Scenarios do not execute arbitrary scripts or launch processes; installation/purchase actions require intentional scenario selection.
 
-```powershell
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage capture `
-  -Config .\tools\WinUIProfiler\harness\examples\store.local.json
-```
+## Comparison, evidence, and recovery
 
-The driver waits for a recorded drawn frame rather than sleeping, takes the initial snapshot, executes the validated UI Automation DSL, settles, takes the final snapshot, and writes `capture-result.json` with snapshot paths, the SQLite session path, frame metrics, object counts, and ETW loss information.
+Optimization rebuilds the baseline in the guest, captures 3-10 reset samples per version (default 3), and analyzes all baseline directories. `session-evidence.json` exposes recorded frames and object event spans for nonediting agents; first/last observed events are not proof of allocation/destruction or complete lifetime. Snapshot correlation links, original SQLite files, and loss/error information remain available.
 
-## Run the bounded optimization loop
+Candidate edits happen in guest worktrees, not host worktrees. Binary, empty, and duplicate patches are rejected. At most five distinct candidates are validated; unusable proposals have a separate cap of three times the attempt limit. Every paired baseline/candidate sample must meet the configured threshold with valid frame/ETW evidence. This conservative gate is not a claim of statistical significance.
 
-```powershell
-pwsh .\tools\WinUIProfiler\harness\Invoke-ProfilerHarness.ps1 `
-  -Stage profile-and-apply-changes `
-  -Config .\tools\WinUIProfiler\harness\examples\store.local.json `
-  -Engine agency
-```
+On consistent improvement, write `successful-attempt.json`, the patch, analysis, and a manual-review decision, then stop. Otherwise stop at the attempt/proposal limit. Build, deployment, timeout, or capture failures halt immediately, preserve evidence, and require manual intervention. Guest command stdout/stderr are logged separately, and a timed-out command's PowerShell process is stopped by its specific PID; descendant processes can remain. There is no automatic host `git apply`, candidate cleanup, baseline reinstall, or checkpoint restore. Guest tasks/worktrees and remaining guest processes require manual inspection.
 
-Each proposal is made in a temporary Git worktree. Empty and duplicate patches are rejected without consuming one of the five distinct validation attempts. Proposal generation is separately capped at three times the configured attempt count, so repeated unusable advice cannot loop forever. A distinct patch is built, deployed, and profiled. A patch is applied to the configured app topic branch only when the configured primary metric improves by the configured threshold and the capture has no lost or dropped events. The controller then stops for manual review. After five distinct unsuccessful suggestions, or after the bounded proposal budget cannot produce that many distinct changes, it writes `manual-intervention-required.json` and stops.
+Host `.artifacts` contains logs, request/result JSON, SQLite data, snapshots, reports, and inert source patches. Guest ZIP entries are validated before extraction and restricted to evidence types; binaries/scripts/packages and path traversal are refused. Host DLLs are not deployment destinations.
 
-## Target configuration
+Store scripts are guest-guarded before signing, SDK installation, policy/trust changes, or package operations. Store removal is current-user, not `-AllUsers`, but developer/capability policies and `LocalMachine\TrustedPeople` still affect the whole **guest**. A developer-unlock prerequisite may require a manual guest reboot. Do not reboot or repair the devbox as a workaround.
 
-`target.kind` selects:
+`StorePackage.ps1 -Action Restore`/`wsreset` and recorded registry/package metadata are **not transactional rollback** and cannot guarantee restoring original all-user registrations. Use the approved clean VM checkpoint for manual recovery.
 
-- `local`: build, deploy, launch, automate, and profile on the current machine.
-- `hyperv`: create/reuse a VM, copy payloads with PowerShell Direct, and launch the driver through an interactive scheduled task. Set `userNameEnvironmentVariable` and `passwordEnvironmentVariable`; never put credentials in JSON.
-- `ixp`: create/reuse a named Ixp VM with explicit branch/media settings, transfer with `putd/getd`, and launch visible UI with `execd -AsUser`. Set `ensureCreated` to `false` for a reuse-only configuration.
+## Validation boundary
 
-Remote app deployment is app-specific. Configure `application.payloadPath` and provider deployment commands for the app's package format. `store.ixp.json` stages the NativeAOT Store package, copies it into the isolated guest, and registers it for the interactive user.
-
-## Safety and evidence
-
-- Repository preparation refuses tracked changes unless `allowDirty` is explicitly set.
-- Branches must be named `user/<alias>/profiler_harness`.
-- Agent processes receive a disabled Git push URL and are told not to commit or push.
-- Attempt edits happen outside the main app worktree.
-- JSON scenarios cannot execute arbitrary scripts.
-- Partial snapshots are never treated as complete by WinUI Profiler.
-- Run folders preserve command stdout/stderr, configuration identity, SQLite sessions, snapshots, patches, evaluations, and the final decision.
+`Tests\Harness.Tests.ps1` refuses execution outside a guest with approved distinct host/guest identity environment variables. The suite includes package-signing/build-tool cases and must run only in an explicitly authorized disposable VM. Do not remove its guard to run it on the devbox. VM execution validation, profiler/driver builds, and agent CLI permission/authentication compatibility must be completed before treating this harness as ready.

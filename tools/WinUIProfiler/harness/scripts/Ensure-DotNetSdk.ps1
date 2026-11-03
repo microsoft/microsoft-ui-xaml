@@ -9,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Assert-GuestExecution.ps1")
 
 $repoPath = [IO.Path]::GetFullPath($RepoRoot)
 $globalJsonPath = Join-Path $repoPath "global.json"

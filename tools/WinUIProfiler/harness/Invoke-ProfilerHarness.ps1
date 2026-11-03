@@ -22,7 +22,12 @@ param(
 
     [switch]$DryRun,
     [switch]$SkipRepositoryPreparation,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+
+    [ValidateSet("local", "hyperv", "ixp")]
+    [string]$TargetKind,
+    [switch]$PrerequisitesConfirmed,
+    [switch]$ApproveVmExecution
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,7 +39,10 @@ $parameters = @{
     DryRun = $DryRun
     SkipRepositoryPreparation = $SkipRepositoryPreparation
     SkipBuild = $SkipBuild
+    PrerequisitesConfirmed = $PrerequisitesConfirmed
+    ApproveVmExecution = $ApproveVmExecution
 }
+if ($PSBoundParameters.ContainsKey("TargetKind")) { $parameters.TargetKind = $TargetKind }
 if ($PSBoundParameters.ContainsKey("ScenarioPrompt")) { $parameters.ScenarioPrompt = $ScenarioPrompt }
 if ($PSBoundParameters.ContainsKey("ScenarioPath")) { $parameters.ScenarioPath = $ScenarioPath }
 if ($PSBoundParameters.ContainsKey("Engine")) { $parameters.Engine = $Engine }

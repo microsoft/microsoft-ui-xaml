@@ -1,6 +1,6 @@
 {
   "$schema": "../config.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "store-ixp-ge-current",
   "harness": {
     "artifactsRoot": "../.artifacts"
@@ -24,38 +24,26 @@
   "target": {
     "kind": "ixp",
     "stageRoot": "C:\\WinUIProfilerHarness",
+    "vmId": "11111111-1111-1111-1111-111111111111",
+    "guestMachineGuid": "22222222-2222-2222-2222-222222222222",
+    "guestComputerName": "REPLACE-GUEST-NAME",
+    "checkpointName": "ProfilerHarness-Clean-GuestSetup",
     "ixp": {
       "name": "WinUIProfilerHarness-ge-current-latest",
-      "ensureCreated": true,
-      "allowOffline": true,
+      "ensureCreated": false,
       "branch": "ge_current",
       "connectionMode": "psremote",
-      "minimumOsBuild": 27200,
-      "flavor": "Desktop",
-      "arch": "amd64",
-      "savePath": "C:\\VMs\\WinUIProfilerHarness",
-      "switchName": "Default Switch",
-      "memoryInGb": 16,
-      "processorCount": 8,
-      "enableCdKeys": true,
-      "tools": [
-        "AgentTools",
-        "DevRegistrySettings",
-        "SoftGpu",
-        "VSRedist",
-        "WinGet"
-      ],
-      "winGetApps": [
-        "OpenJS.NodeJS.LTS"
-      ]
+      "minimumOsBuild": 27200
     }
   },
   "agents": {
     "default": "agency"
   },
   "application": {
+    "resetScript": "throw 'Configure and review an application-specific scenario reset in the guest before capture; no reset is supplied by this example.'",
     "buildCommands": [
       {
+        "scope": "guest",
         "file": "pwsh",
         "arguments": [
           "-NoLogo",
@@ -69,6 +57,7 @@
         "timeoutSeconds": 1800
       },
       {
+        "scope": "guest",
         "file": "pwsh",
         "arguments": [
           "-NoLogo",
@@ -86,10 +75,10 @@
       }
     ],
     "deployCommands": {
-      "local": [],
       "hyperv": [],
       "ixp": [
         {
+          "scope": "guest",
           "file": "pwsh",
           "arguments": [
             "-NoLogo",
@@ -112,7 +101,6 @@
     "targetInstallScripts": {
       "ixp": "& '{targetAppRoot}\\StorePackage.ps1' -Action Deploy -RepoRoot '{targetAppRoot}' -StatePath '{stageRoot}\\state\\store-original-package.json' -AllowMissingOriginalPackage | ConvertTo-Json -Depth 10"
     },
-    "cleanupCommands": [],
     "launch": {
       "kind": "packaged",
       "target": "Microsoft.WindowsStore_8wekyb3d8bbwe!App",
@@ -136,6 +124,7 @@
   },
   "optimization": {
     "maxAttempts": 5,
+    "samplesPerVersion": 3,
     "primaryMetric": "p95DrawMilliseconds",
     "direction": "lower",
     "minimumImprovementPercent": 5
