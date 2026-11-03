@@ -76,6 +76,7 @@
       <PreprocessorDefinitions Condition="'$(XamlConsumesWinRT)'=='true'">%(PreprocessorDefinitions) $(XamlPreprocessorDefinitionsForWinRt) $(ProjectPreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(XamlConsumesWinRT)'!='true'">%(PreprocessorDefinitions) $(XamlPreprocessorDefinitionsForNonWinRt) $(ProjectPreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">%(PreprocessorDefinitions) _USE_32BIT_TIME_T;</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(GraphicsResourceCountersEnabled)'=='true'">%(PreprocessorDefinitions);GRAPHICS_RESOURCE_COUNTERS_ENABLED=1;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(_MSDeployUserAgent)'!=''">%(PreprocessorDefinitions) IS_LAB_BUILD;</PreprocessorDefinitions>
       <PreprocessorDefinitions>
         %(PreprocessorDefinitions)

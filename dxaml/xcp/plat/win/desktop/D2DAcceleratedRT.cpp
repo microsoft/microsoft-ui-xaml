@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"
@@ -31,11 +32,13 @@ private:
         )
     {
         SetInterface(m_pD2DBitmap, pBitmap);
+        GraphicsResourceCounters::RecordCreated(GraphicsResourceCounters::ResourceKind::D2DBitmapWrapper);
     }
 
     ~CD2DBitmap() override
     {
         ReleaseInterface(m_pD2DBitmap);
+        GraphicsResourceCounters::RecordDestroyed(GraphicsResourceCounters::ResourceKind::D2DBitmapWrapper);
     }
 
 public:
@@ -257,11 +260,13 @@ CD2DRenderTarget<T>::CreateSolidColorBrush(
     // uiColor may include alpha, but D2D1::ColorF will just read the rgb. So combine the alpha in uiColor with rOpacity.
     rOpacity *= static_cast<XFLOAT>((uiColor >> 24) & 0xff) / 255.0f;
 
-    IFC(m_pD2DDeviceContext->CreateSolidColorBrush(
-        D2D1::ColorF(uiColor),
-        D2D1::BrushProperties(rOpacity),
-        &pD2DBrush
-        ));
+    IFC(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::D2DSolidColorBrush,
+        m_pD2DDeviceContext->CreateSolidColorBrush(
+            D2D1::ColorF(uiColor),
+            D2D1::BrushProperties(rOpacity),
+            &pD2DBrush
+            )));
 
     IFC(CD2DSolidColorBrush::Create(pD2DBrush, &pPALBrush));
 
@@ -417,12 +422,14 @@ CD2DRenderTarget<T>::CreateSharedBitmapBrush(
     CD2DBitmap *pD2DBitmap = static_cast<CD2DBitmap *>(pInputBitmap);
     ID2D1BitmapBrush *pD2DBrush = NULL;
 
-    IFC(m_pD2DDeviceContext->CreateBitmapBrush(
-        pD2DBitmap->GetBitmap(),
-        D2D1::BitmapBrushProperties(),
-        D2D1::BrushProperties(rOpacity),
-        &pD2DBrush
-        ));
+    IFC(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::D2DBitmapBrush,
+        m_pD2DDeviceContext->CreateBitmapBrush(
+            pD2DBitmap->GetBitmap(),
+            D2D1::BitmapBrushProperties(),
+            D2D1::BrushProperties(rOpacity),
+            &pD2DBrush
+            )));
 
     IFC(CD2DBitmapBrush::Create(pD2DBrush, &pPALBrush));
 
@@ -474,12 +481,14 @@ CD2DRenderTarget<T>::CreateLinearGradientBrush(
         &pGradientStopCollection
         ));
 
-    IFC(m_pD2DDeviceContext->CreateLinearGradientBrush(
-        &linearGradientBrushProperties,
-        &brushProperties,
-        pGradientStopCollection,
-        &pD2DBrush
-        ));
+    IFC(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::D2DLinearGradientBrush,
+        m_pD2DDeviceContext->CreateLinearGradientBrush(
+            &linearGradientBrushProperties,
+            &brushProperties,
+            pGradientStopCollection,
+            &pD2DBrush
+            )));
 
     IFC(CD2DLinearGradientBrush::Create(pD2DBrush, &pPALBrush));
 
@@ -535,12 +544,14 @@ CD2DRenderTarget<T>::CreateRadialGradientBrush(
         &pGradientStopCollection
         ));
 
-    IFC(m_pD2DDeviceContext->CreateRadialGradientBrush(
-        &radialGradientBrushProperties,
-        &brushProperties,
-        pGradientStopCollection,
-        &pD2DBrush
-        ));
+    IFC(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::D2DRadialGradientBrush,
+        m_pD2DDeviceContext->CreateRadialGradientBrush(
+            &radialGradientBrushProperties,
+            &brushProperties,
+            pGradientStopCollection,
+            &pD2DBrush
+            )));
 
     IFC(CD2DRadialGradientBrush::Create(pD2DBrush, &pPALBrush));
 

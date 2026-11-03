@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 
 #include "ConnectedAnimation.h"
 #include "ConnectedAnimationRoot.h"
@@ -819,7 +820,9 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
 
     Microsoft::WRL::ComPtr<WUComp::ICompositorWithVisualSurface> compositorVisualSurface;
     IFC_RETURN(pDCompTreeHostNoRef->GetCompositor()->QueryInterface(IID_PPV_ARGS(&compositorVisualSurface)));
-    IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&visualSurface));
+    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::VisualSurface,
+        compositorVisualSurface->CreateVisualSurface(&visualSurface)));
 
     // Assign our source visual to it and set its properties.
     {
@@ -869,7 +872,9 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
         Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
         Microsoft::WRL::ComPtr<WUComp::ICompositionSurface> surface;
         IFC_RETURN(visualSurface.As(&surface));
-        IFC_RETURN(pDCompTreeHostNoRef->GetCompositor()->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::SurfaceBrush,
+            pDCompTreeHostNoRef->GetCompositor()->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush)));
         IFC_RETURN(surfaceBrush.As(&info.surfaceBrush));
         surfaceBrush->put_Stretch(createClipped ? WUComp::CompositionStretch_None : WUComp::CompositionStretch_Fill);
         // We need to account for parent flip if necessary
@@ -1031,7 +1036,9 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
 
     // Use the factory to create a brush and set our two source parameters.
     Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> crossfadeEffectBrush;
-    IFC_RETURN(effectFactory->CreateBrush(&crossfadeEffectBrush));
+    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::EffectBrush,
+        effectFactory->CreateBrush(&crossfadeEffectBrush)));
     IFC_RETURN(crossfadeEffectBrush->SetSourceParameter(wrl_wrappers::HStringReference(L"source1").Get(), m_source.surfaceBrush.Get()));
     IFC_RETURN(crossfadeEffectBrush->SetSourceParameter(wrl_wrappers::HStringReference(L"source2").Get(), m_destination.surfaceBrush.Get()));
 
@@ -1062,7 +1069,9 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
     Microsoft::WRL::ComPtr<WUComp::IVisual> visual;
     {
         Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> tempVisual;
-        IFC_RETURN(compositorNoRef->CreateSpriteVisual(&tempVisual));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::SpriteVisual,
+            compositorNoRef->CreateSpriteVisual(&tempVisual)));
         IFC_RETURN(tempVisual.As(&visual));
         wfn::Vector2 visualSize = { m_source.unclippedRect.Width, m_source.unclippedRect.Height };
         IFC_RETURN(visual->put_Size(visualSize));
@@ -1076,7 +1085,9 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
     {
         Microsoft::WRL::ComPtr<WUComp::ICompositorWithVisualSurface> compositorVisualSurface;
         IFC_RETURN(compositorNoRef->QueryInterface(IID_PPV_ARGS(&compositorVisualSurface)));
-        IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&visualSurface));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::VisualSurface,
+            compositorVisualSurface->CreateVisualSurface(&visualSurface)));
         IFC_RETURN(visualSurface->put_SourceVisual(visual.Get()));
 
         wfn::Vector2 realizationSize = { m_source.clippedRect.Width, m_source.clippedRect.Height };
@@ -1097,7 +1108,9 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
     {
         Microsoft::WRL::ComPtr<WUComp::ICompositionSurface> surface;
         IFC_RETURN(visualSurface.As(&surface));
-        IFC_RETURN(compositorNoRef->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::SurfaceBrush,
+            compositorNoRef->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush)));
         surfaceBrush->put_Stretch(WUComp::CompositionStretch_None);
 
         // Replace our current brush with this new one.

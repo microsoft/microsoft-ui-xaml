@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include "CueStyler.h"
 #include <MuxActivationFactory.h>
 #include "TextBlock.g.h"
@@ -746,7 +747,9 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
         // inside it.
         wrl::ComPtr<WUComp::IContainerVisual> containerVisual;
         wrl::ComPtr<WUComp::IVisual> containerVisualAsVisual;
-        IFC_RETURN(m_compositor->CreateContainerVisual(&containerVisual));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ContainerVisual,
+            m_compositor->CreateContainerVisual(&containerVisual)));
         IFCFAILFAST(containerVisual.As(&containerVisualAsVisual));
         IFC_RETURN(static_cast<CUIElement*>(underTextBlock->GetHandle())->SetHandInVisual(containerVisualAsVisual.Get()));
 
@@ -811,7 +814,9 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
     wrl::ComPtr<WUComp::ICompositionVisualSurface> captionCVS;
     wrl::ComPtr<WUComp::ICompositorWithVisualSurface> compositorVisualSurface;
     IFC_RETURN(m_compositor->QueryInterface(IID_PPV_ARGS(&compositorVisualSurface)));
-    IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&captionCVS));
+    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::VisualSurface,
+        compositorVisualSurface->CreateVisualSurface(&captionCVS)));
 
     // Get wrapper containers so they can be configured for CVS rendering (at TopWrapper)
     ctl::ComPtr<xaml::IUIElement> spUIE;
@@ -832,13 +837,17 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> captionSurfaceBrush;
     wrl::ComPtr<WUComp::ICompositionSurface> captionCompositionSurface;
     IFCFAILFAST(captionCVS.As(&captionCompositionSurface));
-    IFCFAILFAST(m_compositor->CreateSurfaceBrushWithSurface(captionCompositionSurface.Get(), &captionSurfaceBrush));
+    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::SurfaceBrush,
+        m_compositor->CreateSurfaceBrushWithSurface(captionCompositionSurface.Get(), &captionSurfaceBrush)));
     captionSurfaceBrush->put_Stretch(WUComp::CompositionStretch::CompositionStretch_Fill);
     wrl::ComPtr<WUComp::ICompositionBrush> captionCompositionBrush;
     IFCFAILFAST(captionSurfaceBrush.As(&captionCompositionBrush));
     wrl::ComPtr<WUComp::ISpriteVisual> renderCaptionVisual;
     wrl::ComPtr<WUComp::IVisual> renderCaptionVisualAsVisual;
-    IFC_RETURN(m_compositor->CreateSpriteVisual(&renderCaptionVisual));
+    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::SpriteVisual,
+        m_compositor->CreateSpriteVisual(&renderCaptionVisual)));
     IFCFAILFAST(renderCaptionVisual.As(&renderCaptionVisualAsVisual));
     IFC_RETURN(renderCaptionVisualAsVisual->put_Size(topWrapperVisualSize));
     IFC_RETURN(renderCaptionVisual->put_Brush(captionCompositionBrush.Get()));
@@ -903,7 +912,9 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
 wrl::ComPtr<WUComp::ICompositionBrush> CCueStyler::CreateMaskBrush(_In_ WUComp::ICompositionBrush* surfaceBrush, _In_ WUComp::ICompositionBrush* colorBrush)
 {
     wrl::ComPtr<WUComp::ICompositionMaskBrush> maskBrush;
-    IFCFAILFAST(m_compositor2->CreateMaskBrush(maskBrush.ReleaseAndGetAddressOf()));
+    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::MaskBrush,
+        m_compositor2->CreateMaskBrush(maskBrush.ReleaseAndGetAddressOf())));
     IFCFAILFAST(maskBrush->put_Mask(surfaceBrush));
     IFCFAILFAST(maskBrush->put_Source(colorBrush));
 
@@ -917,7 +928,9 @@ _Check_return_ HRESULT CCueStyler::ApplyRaisedStyle(_In_ WUComp::ICompositionBru
     if (!m_whiteBrush60)
     {
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-        IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ColorBrush,
+            m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x99ffffff)));
         IFCFAILFAST(colorBrush.As(&m_whiteBrush60));
     }
@@ -925,7 +938,9 @@ _Check_return_ HRESULT CCueStyler::ApplyRaisedStyle(_In_ WUComp::ICompositionBru
     if (!m_blackBrush)
     {
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-        IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ColorBrush,
+            m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0xff000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush));
     }
@@ -968,7 +983,9 @@ _Check_return_ HRESULT CCueStyler::ApplyDepressedStyle(_In_ WUComp::IComposition
     if (!m_blackBrush20)
     {
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-        IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ColorBrush,
+            m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x33000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush20));
     }
@@ -976,7 +993,9 @@ _Check_return_ HRESULT CCueStyler::ApplyDepressedStyle(_In_ WUComp::IComposition
     if (!m_blackBrush)
     {
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-        IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ColorBrush,
+            m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0xff000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush));
     }
@@ -1017,7 +1036,9 @@ _Check_return_ HRESULT CCueStyler::ApplyUniformStyle(_In_ WUComp::ICompositionBr
     if (!m_blackBrush)
     {
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
-        IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::ColorBrush,
+            m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf())));
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0xff000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush));
     }
@@ -1140,7 +1161,9 @@ _Check_return_ HRESULT CCueStyler::CreateVisualAndAdd(
     _In_ WUComp::IVisualCollection* children)
 {
     wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
-    IFC_RETURN(m_compositor->CreateSpriteVisual(&spriteVisual));
+    IFC_RETURN(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::SpriteVisual,
+        m_compositor->CreateSpriteVisual(&spriteVisual)));
     IFC_RETURN(spriteVisual->put_Brush(brush));
 
     wrl::ComPtr<WUComp::IVisual> visual;

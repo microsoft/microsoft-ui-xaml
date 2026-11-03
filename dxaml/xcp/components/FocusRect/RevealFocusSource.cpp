@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <GraphicsResourceCounters.h>
 #include "RevealFocusSource.h"
 #include "corep.h"
 #include "WindowRenderTarget.h"
@@ -101,7 +102,9 @@ Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> RevealFocusSource::BuildRevealFocu
     }
     else
     {
-        IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::SpriteVisual,
+            compositor->CreateSpriteVisual(&spriteVisual)));
 
         // Remove existing targets from the lights
         for (const auto& light : m_lights.m_vector)
@@ -397,7 +400,9 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> RevealFocusSource::Creat
     IFCFAILFAST(compositor->CreateEffectFactory(effect, &effectFactory));
 
     wrl::ComPtr<WUComp::ICompositionEffectBrush> compEffectBrush;
-    IFCFAILFAST(effectFactory->CreateBrush(&compEffectBrush));
+    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::EffectBrush,
+        effectFactory->CreateBrush(&compEffectBrush)));
 
     return compEffectBrush;
 }
@@ -425,7 +430,9 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> RevealFocusSource::Crea
 
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
 
-    IFCFAILFAST(compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush));
+    IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+        GraphicsResourceCounters::ResourceKind::SurfaceBrush,
+        compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush)));
     // TODO 15394150: is this necessary to stretch?
     IFCFAILFAST(surfaceBrush->put_Stretch(WUComp::CompositionStretch_Fill));
     return surfaceBrush;
@@ -449,7 +456,9 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionBrush> RevealFocusSource::CreateEffec
     }
     else
     {
-        IFCFAILFAST(compositor2->CreateNineGridBrush(&nineGrid));
+        IFCFAILFAST(GraphicsResourceCounters::RecordCreation(
+            GraphicsResourceCounters::ResourceKind::NineGridBrush,
+            compositor2->CreateNineGridBrush(&nineGrid)));
         IFCFAILFAST(nineGrid->put_IsCenterHollow(true));
     }
 
