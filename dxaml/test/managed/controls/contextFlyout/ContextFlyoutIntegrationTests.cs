@@ -641,6 +641,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                 Grid root = null;
 
                 ListView list = null;
+                int dragItemsStartingCount = 0;
                 Flyout listFlyout = null;
                 bool listFlyoutOpened = false;
                 bool listFlyoutClosed = false;
@@ -666,6 +667,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
                 UIExecutor.Execute(() =>
                 {
+                    list.DragItemsStarting += (s, e) => dragItemsStartingCount++;
+
                     listFlyout.Opened += (s, e) =>
                     {
                         Verify.AreEqual(item2, listFlyout.Target, "List flyout Target was not Item2!");
@@ -700,6 +703,10 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                     TestServices.InputHelper.PressHoldAndPanFromCenter(item1, 0, 100, DRAG_VELOCITY_FACTOR, HOLD_DURATION);
                 }
                 TestServices.WindowHelper.WaitForIdle();
+                if (canDrag)
+                {
+                    Verify.AreEqual(1, dragItemsStartingCount, "The first hold/pan must start one drag.");
+                }
                 Verify.IsTrue(itemFlyoutOpened, "Item flyout did not open!");
                 Verify.IsTrue(itemFlyoutClosed, "Item flyout did not close!");
 
@@ -713,6 +720,10 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                     TestServices.InputHelper.PressHoldAndPanFromCenter(item2, 0, 100, DRAG_VELOCITY_FACTOR, HOLD_DURATION);
                 }
                 TestServices.WindowHelper.WaitForIdle();
+                if (canDrag)
+                {
+                    Verify.AreEqual(2, dragItemsStartingCount, "The second hold/pan must start another drag.");
+                }
                 Verify.IsTrue(listFlyoutOpened, "List flyout did not open!");
                 Verify.IsTrue(listFlyoutClosed, "List flyout did not close!");
 
@@ -721,6 +732,10 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                 itemFlyoutClosed = false;
                 TestServices.InputHelper.PressHoldAndPanFromCenter(item1, 100, -100, DRAG_VELOCITY_FACTOR, HOLD_DURATION);
                 TestServices.WindowHelper.WaitForIdle();
+                if (canDrag)
+                {
+                    Verify.AreEqual(3, dragItemsStartingCount, "Dragging into the flyout layer must start another drag.");
+                }
                 Verify.IsTrue(itemFlyoutOpened, "Item flyout did not open!");
                 Verify.IsTrue(itemFlyoutClosed, "Item flyout did not close!");
 
