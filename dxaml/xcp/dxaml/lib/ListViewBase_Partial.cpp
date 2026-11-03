@@ -2914,9 +2914,11 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
 
         focusIndex = selectedIndex;
     }
-    else if (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
-             focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous)
+    else if (m_lastFocusedElementType == ElementType::Item &&
+             (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
+              focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous))
     {
+        // The default item index is not focus history; preserve initial and restored group-header targets.
         focusIndex = GetLastFocusedIndex();
     }
 
