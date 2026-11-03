@@ -589,6 +589,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        // Known limitation (#3290 review F3): on the test VMs the pen press still captured the item
+        // with and without the replace-pointer revalidation, so the capture-owner probe can't tell
+        // whether the disable happened before the press was accepted. Kept for investigation.
+        [TestProperty("Ignore", "True")]
         public void NavigationViewItemDisabledByCaptureLostRejectsPenPress()
         {
             using var inputController = InputController.Activate(PointerInputType.Mouse);
