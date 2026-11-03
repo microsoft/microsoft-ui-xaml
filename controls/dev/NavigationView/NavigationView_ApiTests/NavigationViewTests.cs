@@ -3851,13 +3851,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyClearingSelectedItemClearsSelection("ChildSelectedWhileExpanding");
         }
 
-        private void VerifyClearingSelectedItemClearsSelection(string scenario)
+        private (NavigationView navView, Category parentItem, Category childItem, Category otherItem) SetupDataBoundHierarchyNavigationView()
         {
             NavigationView navView = null;
             Category parentItem = null;
             Category childItem = null;
             Category otherItem = null;
-            NavigationViewItem parentContainer = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -3880,6 +3879,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content = navView;
             });
             IdleSynchronizer.Wait();
+
+            return (navView, parentItem, childItem, otherItem);
+        }
+
+        [TestMethod]
+        public void VerifyClearingSelectedItemKeepsSelectionMadeFromIsChildSelectedCallback()
+        {
+            var (navView, parentItem, childItem, otherItem) = SetupDataBoundHierarchyNavigationView();
+            NavigationViewItem parentContainer = null;
+            var selectionChangedItems = new List<object>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parentContainer = (NavigationViewItem)navView.ContainerFromMenuItem(parentItem);
+                navView.SelectedItem = childItem;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(parentContainer.IsChildSelected, "Precondition: parent IsChildSelected");
+
+                // Clearing the leftover child selection resets the parent's IsChildSelected, which runs app code.
+                bool redirected = false;
+                parentContainer.RegisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, (sender, dp) =>
+                {
+                    if (!redirected && !parentContainer.IsChildSelected)
+                    {
+                        redirected = true;
+                        navView.SelectedItem = otherItem;
+                    }
+                });
+                navView.SelectionChanged += (sender, args) => selectionChangedItems.Add(args.SelectedItem);
+
+                navView.SelectedItem = null;
+                Verify.IsTrue(redirected, "The IsChildSelected callback should have run while clearing the selection.");
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(otherItem, navView.SelectedItem, "The callback's selection should win.");
+                Verify.IsFalse(parentContainer.IsChildSelected);
+                Verify.AreEqual(1, selectionChangedItems.Count, "Only the callback's selection should raise SelectionChanged.");
+                Verify.AreEqual(otherItem, selectionChangedItems[selectionChangedItems.Count - 1], "SelectionChanged should not end with the cleared selection.");
+            });
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Other"), "Selection indicator should be on Other.");
+            // The Parent -> Other indicator animation keeps both indicators visible until its composition batch completes.
+            var timeout = DateTime.Now + TimeSpan.FromSeconds(5);
+            while (ItemHasSelectionIndicator(navView, "Parent") && DateTime.Now < timeout)
+            {
+                Thread.Sleep(100);
+                IdleSynchronizer.Wait();
+            }
+            Verify.IsFalse(ItemHasSelectionIndicator(navView, "Parent"), "No selection indicator should be lit on Parent after the indicator animation.");
+        }
+
+        private void VerifyClearingSelectedItemClearsSelection(string scenario)
+        {
+            var (navView, parentItem, childItem, otherItem) = SetupDataBoundHierarchyNavigationView();
+            NavigationViewItem parentContainer = null;
 
             RunOnUIThread.Execute(() =>
             {
