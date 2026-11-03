@@ -215,6 +215,8 @@ public:
 
     CDependencyObject* GetRootNoRef() const;
 
+    CDependencyObject* GetElementOwnerNoRef() const;
+
     CDependencyObject* GetDONoRef() const { return m_pDO; }
 
 protected:
@@ -242,7 +244,7 @@ protected:
     CAutomationPeer* m_pAPEventsSource          = nullptr;
 
     // m_pDO usually refers to the element peer of the AutomationPeer, but not always. In some cases m_pDO points to the parent.
-    // See comment in CAutomationPeer::GetRootNoRef
+    // See comment in CAutomationPeer::GetElementOwnerNoRef
     CDependencyObject* m_pDO                    = nullptr;
 
     // Property Change Values
