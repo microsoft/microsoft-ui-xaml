@@ -30,6 +30,7 @@ namespace OptionalChangeState
     constexpr int BitIndex_DeferContextFlyoutInit = 3;
     constexpr int BitIndex_GamepadKeyRouting = 4;
     constexpr int BitIndex_CollectionMoveNotifications = 5;
+    constexpr int BitIndex_NotifySetterApplied = 6;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -65,5 +66,10 @@ namespace OptionalChangeState
     inline bool IsCollectionMoveNotificationsEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_CollectionMoveNotifications);
+    }
+
+    inline bool IsNotifySetterAppliedEnabled()
+    {
+        return IsOptionalChangeEnabled(BitIndex_NotifySetterApplied);
     }
 }

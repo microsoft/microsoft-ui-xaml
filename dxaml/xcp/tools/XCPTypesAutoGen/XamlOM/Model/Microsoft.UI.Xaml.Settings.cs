@@ -26,6 +26,8 @@ namespace Microsoft.UI.Xaml.Settings
         GamepadKeyRouting = 63117108,
         [Version(2)]
         CollectionMoveNotifications = 1503,
+        [Version(2)]
+        NotifySetterApplied = 1504,
     }
 
     // Provides static methods to opt in to or out of individual breaking or

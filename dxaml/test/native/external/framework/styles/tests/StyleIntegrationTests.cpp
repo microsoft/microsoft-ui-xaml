@@ -4390,6 +4390,71 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void StyleIntegrationTests::DefaultStyleValueSurvivesExplicitStyleRemoval()
+    {
+        TestCleanupWrapper cleanup;
+        DefaultStyleControl^ control = nullptr;
+        bool retainOriginalStyle = false;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"RetainOriginalStyle", retainOriginalStyle));
+        LOG_OUTPUT(L"Retain original Style: %s", retainOriginalStyle ? L"true" : L"false");
+        LOG_OUTPUT(L"Unconditional NotifySetterApplied: %s",
+            xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::NotifySetterApplied)
+                ? L"true" : L"false");
+
+        auto verifyEffectiveWidth = [&](double expectedWidth)
+        {
+            auto probe = ref new ContentControl();
+            probe->Style = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            const double actualWidth = probe->Width;
+            VERIFY_ARE_EQUAL(expectedWidth, actualWidth,
+                WEX::Common::String().Format(
+                    L"The effective setter value must still be a usable Style (expectedWidth=%g, actualWidth=%g)",
+                    expectedWidth, actualWidth));
+        };
+
+        RunOnUIThread([&]()
+        {
+            control = ref new DefaultStyleControl();
+            control->DefaultStyleResourceUri = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            m_rootCanvas->Children->Append(control);
+            m_rootCanvas->UpdateLayout();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            Style^ retainedStyle = nullptr;
+            if (retainOriginalStyle)
+            {
+                retainedStyle = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            }
+            verifyEffectiveWidth(37.0);
+
+            auto replacementValue = ref new Style();
+            replacementValue->TargetType = Control::typeid;
+            auto widthSetter = ref new Setter();
+            widthSetter->Property = FrameworkElement::WidthProperty;
+            widthSetter->Value = 73.0;
+            replacementValue->Setters->Append(widthSetter);
+
+            auto overridingStyle = ref new Style();
+            overridingStyle->TargetType = DefaultStyleControl::typeid;
+            auto tagSetter = ref new Setter();
+            tagSetter->Property = CustomControl::AttachedTagProperty;
+            tagSetter->Value = replacementValue;
+            overridingStyle->Setters->Append(tagSetter);
+            control->Style = overridingStyle;
+            verifyEffectiveWidth(73.0);
+
+            LOG_OUTPUT(L"Removing the explicit Style should not crash");
+            control->ClearValue(FrameworkElement::StyleProperty);
+            LOG_OUTPUT(L"Verify that removing the Style restores the correct default-style value");
+            verifyEffectiveWidth(37.0);
+            retainedStyle = nullptr;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
     void StyleIntegrationTests::VerifyImplicitStyleInvalidationInThemeDictionaries()
     {
         TestCleanupWrapper cleanup;

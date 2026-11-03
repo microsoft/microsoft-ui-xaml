@@ -846,50 +846,26 @@ CFrameworkElement::OnStyleChanged(
 
         for (auto i = 0U; i < newStylePropertyCount; i++)
         {
-#if 1
             IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
             const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
 
-            // Skip NotifySetterApplied only when this style's value is overridden by a real
-            // Style layer (the FrameworkElement's Style property or implicit style). That layer
-            // is permanent for the duration of this style application, so the deferred
-            // Setter.Value can never become effective and there's no need to realize/peg it.
-            //
-            // We must NOT skip for transient sources like Local or Animation, since
-            // those can be cleared (ClearValue, animation ending) and would then expose this
-            // style's value, which must already be realized at that point.
-            //
-            // IsPropertySetByStyle returns true for both BuiltInStyle and Style sources, so
-            // it must be read BEFORE InvalidateProperty, otherwise the newly-applied
-            // BuiltInStyle would itself satisfy IsPropertySetByStyle and be misreported as a
-            // "Style" override.
-            bool canSkipNotify = OptionalChangeState::IsOptimizeApplyStylesEnabled() &&
+            // Preserve conditional notification unless unconditional notification is opted into.
+            // IsPropertySetByStyle conflates BuiltInStyle and Style, so it can also identify an
+            // effective default-style setter as overridden (for example, with duplicate setters).
+            const bool canSkipNotify = !OptionalChangeState::IsNotifySetterAppliedEnabled() &&
+                OptionalChangeState::IsOptimizeApplyStylesEnabled() &&
                 baseValueSource != BaseValueSourceUnknown &&
                 baseValueSource < BaseValueSourceStyle &&
                 IsPropertySetByStyle(pDP);
 
             IGNOREHR(InvalidateProperty(pDP, baseValueSource));
+
+            // Applying the value can create its peer. Notify afterward so the style can keep
+            // that peer alive even when the value is subsequently overridden.
             if (!canSkipNotify)
             {
                 IFC(pNewStyle->NotifySetterApplied(i));
             }
-#else
-            IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
-            const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
-
-            IGNOREHR(InvalidateProperty(pDP, baseValueSource));
-
-            // Let the style know that the property setter has been applied.
-            // If the value has a new peer after InvalidateProperty, an optimized style will add a
-            // peer reference to it to ensure the life of the peer through the lifetime of the style.
-            //
-            // Notify every applied setter unconditionally. Skipping this notification when a
-            // higher-priority style layer appears to own the property is unsafe: IsPropertySetByStyle
-            // conflates the BuiltInStyle and Style layers, so we cannot reliably prove which setters
-            // are safe to skip, and a skipped setter's value can be left unrealized and fall back to
-            // a default when the higher-priority layer is later invalidated.
-            IFC(pNewStyle->NotifySetterApplied(i));
-#endif
         }
 
         if (pNewStyle->HasMutableSetters() || shouldStoreSourceInfo)

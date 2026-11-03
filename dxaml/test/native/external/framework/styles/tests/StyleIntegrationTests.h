@@ -351,6 +351,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DefaultStyleValueSurvivesExplicitStyleRemoval)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that the winning duplicate default-style value remains usable after an explicit Style "
+                L"override is removed, with and without retaining the original value.")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges",
+                L"{OptimizeApplyStyles:true|NotifySetterApplied:true,OptimizeApplyStyles:true|NotifySetterApplied:false}")
+            TEST_METHOD_PROPERTY(L"Data:RetainOriginalStyle", L"{true,false}")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root and its ThemeDictionaries contains an implicit style")

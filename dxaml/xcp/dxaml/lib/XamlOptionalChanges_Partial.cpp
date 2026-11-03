@@ -48,6 +48,8 @@ static int GetBitIndex(xaml_settings::XamlChangeId id)
         return OptionalChangeState::BitIndex_GamepadKeyRouting;
     case xaml_settings::XamlChangeId_CollectionMoveNotifications:
         return OptionalChangeState::BitIndex_CollectionMoveNotifications;
+    case xaml_settings::XamlChangeId_NotifySetterApplied:
+        return OptionalChangeState::BitIndex_NotifySetterApplied;
     default:
         return -1;
     }
