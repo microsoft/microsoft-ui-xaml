@@ -44,7 +44,7 @@ since UI items can only be added the VisualTree once, and we need them to be pre
 
 For left mode, the following control template parts are used:
 
-* `RootSplitView`: Renders the content and left pane
+* `RootSplitView`: Renders the content and left pane. NavigationView clips it horizontally to its own width (unless the template/app set a `Clip` on it), so SplitView's pane transitions can't slide the content outside the control.
 * `PaneContentGrid`: Used for layouting of left pane, also needed for the animation
 * `ItemsContainerRow`: Used for sizing of menu items/footer items
 * `ContentPaneTopPadding`: Used for height adjustments

@@ -264,6 +264,8 @@ private:
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void OnRootSplitViewSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void UpdateRootSplitViewClip(winrt::Size const& size);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
     void UpdateOpenPaneLength(double width);
@@ -358,6 +360,7 @@ private:
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
+    tracker_ref<winrt::RectangleGeometry> m_rootSplitViewClip{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
     tracker_ref<winrt::RowDefinition> m_itemsContainerRow{ this };
     tracker_ref<winrt::FrameworkElement> m_menuItemsScrollViewer{ this };
@@ -429,6 +432,7 @@ private:
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_itemsContainerSizeChangedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_rootSplitViewSizeChangedRevoker{};
     winrt::AutoSuggestBox::QuerySubmitted_revoker m_autoSuggestBoxQuerySubmittedRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
