@@ -537,6 +537,8 @@
   <!--
     PublishAot only takes effect on publish, which needs a RuntimeIdentifier, so build the native binaries through nested publishes
     of the current target framework. This runs before the binplace targets, which pick up the native binaries and their symbols.
+    The native binaries are always optimized: without it (Debug flavors), ILC generates code that makes XAML compilation several
+    times slower, and every build of the repository with XAML runs it. The IL build (XamlCompiler.dll) is the one to debug.
   -->
   <Target Name="PublishNativeXamlCompiler"
           AfterTargets="Build"
@@ -544,7 +546,7 @@
           Condition=" '$(RuntimeIdentifier)' == '' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
-             Properties="TargetFramework=$(TargetFramework);RuntimeIdentifier=%(_NativeXamlCompilerRid.Identity);OutDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\build\;PublishDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\;_IsPublishing=true" />
+             Properties="TargetFramework=$(TargetFramework);RuntimeIdentifier=%(_NativeXamlCompilerRid.Identity);OutDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\build\;PublishDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\;_IsPublishing=true;Optimize=true" />
     <ItemGroup>
       <BinplaceItem Include="$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).exe">
         <Destination>$(TargetDestination)\%(_NativeXamlCompilerRid.Identity)</Destination>
