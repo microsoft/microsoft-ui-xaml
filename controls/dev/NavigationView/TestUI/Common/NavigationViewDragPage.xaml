@@ -54,6 +54,8 @@
             <TextBlock x:Name="ItemWidth" Text="0"/>
             <TextBlock x:Name="ItemRasterizationScale" Text="0"/>
             <TextBlock x:Name="PressCaptureOwner" Text="None"/>
+            <TextBlock x:Name="PressItemEnabled" Text="Not read"/>
+            <TextBlock x:Name="CaptureLostDisableCount" Text="0"/>
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="DisableDragItem" Content="Disable item" Click="DisableDragItem_Click"/>
                 <Button x:Name="EnableDragItem" Content="Enable item" Click="EnableDragItem_Click"/>

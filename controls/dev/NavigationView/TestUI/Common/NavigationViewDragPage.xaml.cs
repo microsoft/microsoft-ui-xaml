@@ -19,6 +19,7 @@ namespace MUXControlsTestApp
         private int invocationCount;
         private int retemplateCount;
         private int hoverMoveCount;
+        private int captureLostDisableCount;
         private DragOperationDeferral dragDeferral;
 
         public NavigationViewDragPage()
@@ -27,6 +28,7 @@ namespace MUXControlsTestApp
             Unloaded += (sender, args) => CompletePendingDragDeferral();
             DragItem.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
             {
+                PressItemEnabled.Text = DragItem.IsEnabled.ToString();
                 if (RetemplateOnPress.IsChecked == true)
                 {
                     var template = DragItem.Template;
@@ -42,6 +44,7 @@ namespace MUXControlsTestApp
                 if (DisableOnCaptureLost.IsChecked == true)
                 {
                     PressCaptureOwner.Text = "None";
+                    CaptureLostDisableCount.Text = (++captureLostDisableCount).ToString();
                     DragItem.IsEnabled = false;
                 }
             }), true);

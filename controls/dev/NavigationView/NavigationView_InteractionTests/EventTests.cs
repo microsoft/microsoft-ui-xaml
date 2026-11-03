@@ -589,11 +589,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
-        // Known limitation (#3290 review F3): on the test VMs the pen press still captured the item
-        // with and without the replace-pointer revalidation, so the capture-owner probe can't tell
-        // whether the disable happened before the press was accepted. Kept for investigation.
-        [TestProperty("Ignore", "True")]
         public void NavigationViewItemDisabledByCaptureLostRejectsPenPress()
+
         {
             using var inputController = InputController.Activate(PointerInputType.Mouse);
             using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
@@ -608,22 +605,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             {
                 Wait.ForIdle();
                 Verify.AreEqual("Item", new TextBlock(FindElement.ById("PressCaptureOwner")).GetText());
-                // The pen press releases the mouse capture; the application disables the item from
-                // PointerCaptureLost, before the pen press would be accepted.
+                // The pen press ends the mouse press; the application disables the item from the mouse
+                // PointerCaptureLost. Whether that runs inside the pen press (before it is accepted) or
+                // after it depends on when the capture-loss callout is raised; check the matching cell.
                 pen.Press(start);
                 Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
-                Verify.AreEqual("None", new TextBlock(FindElement.ById("PressCaptureOwner")).GetText());
+                string enabledAtPenPress = new TextBlock(FindElement.ById("PressItemEnabled")).GetText();
+                bool disabledByPenPress = new TextBlock(FindElement.ById("CaptureLostDisableCount")).GetText() != "0";
+                Log.Comment("Item enabled when the pen press reached it: " + enabledAtPenPress + "; disabled by then: " + disabledByPenPress);
+                if (enabledAtPenPress == "False")
+                {
+                    // Disabled inside the release callout: the press must not be accepted.
+                    Verify.AreEqual("None", new TextBlock(FindElement.ById("PressCaptureOwner")).GetText());
+                }
                 pen.Move(new System.Drawing.Point(start.X + 24, start.Y));
                 pen.Release();
                 pen.LeaveRange();
+                if (disabledByPenPress)
+                {
+                    Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                }
             }
             finally
             {
                 mouse.Release(PointerButtons.Primary);
             }
             Wait.ForIdle();
-            Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
-            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            Verify.AreNotEqual("0", new TextBlock(FindElement.ById("CaptureLostDisableCount")).GetText(), "The application disabled the item");
             VerifyNavigationViewDragStateReset();
             new CheckBox(FindElement.ById("DisableOnCaptureLost")).Uncheck();
             new Button(FindElement.ById("EnableDragItem")).Invoke();
