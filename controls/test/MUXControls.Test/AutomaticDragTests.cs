@@ -683,6 +683,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual("0", ReadText("ListCaptureCount"));
         }
 
+        [TestMethod]
+        public void TouchDragStartingHandlerCanDisableDrag()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var touch = new SyntheticTouch();
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            var target = FindElement.ById("DropHandle").GetClickablePoint();
+
+            // Clearing CanDrag inside the touch DragStarting handler deletes the drag helper while
+            // it is still in OnTouchDragStarted.
+            new CheckBox(FindElement.ById("DisableInDragStarting")).Check();
+            Wait.ForIdle();
+            TouchHoldAndDrag(touch, start, target);
+            Verify.AreEqual("Touch", ReadText("LastPointerDevice"));
+            Verify.AreEqual("1", ReadText("DragCount"));
+            Verify.AreEqual("1", ReadText("DragStartingDisableCount"));
+
+            // A new helper starts the next touch drag.
+            new CheckBox(FindElement.ById("DisableInDragStarting")).Uncheck();
+            new CheckBox(FindElement.ById("Draggable")).Check();
+            Wait.ForIdle();
+            TouchHoldAndDrag(touch, start, target);
+            Verify.AreEqual("2", ReadText("DragCount"));
+        }
+
         private static void TouchHoldAndDrag(SyntheticTouch touch, System.Drawing.Point start, System.Drawing.Point target)
         {
             touch.Press(0, start);

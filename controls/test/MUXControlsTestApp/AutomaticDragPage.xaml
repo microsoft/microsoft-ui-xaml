@@ -21,6 +21,7 @@
             <Button x:Name="ToggleDragDuringPress" Content="Disable and reenable drag" Click="ToggleDragDuringPress_Click"/>
             <CheckBox x:Name="UseListView" Content="ListView source" Checked="UseListView_Changed" Unchecked="UseListView_Changed"/>
             <CheckBox x:Name="ChildReleasesTouchCapture" Content="Child captures touch, then gives it up"/>
+            <CheckBox x:Name="DisableInDragStarting" Content="Disable drag in DragStarting"/>
         </StackPanel>
         <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
             <Grid>
@@ -91,6 +92,7 @@
                 <TextBlock x:Name="PenCaptureLostCount" Text="0"/>
                 <TextBlock x:Name="HoldingStartedCount" Text="0"/>
                 <TextBlock x:Name="TouchPressCount" Text="0"/>
+                <TextBlock x:Name="DragStartingDisableCount" Text="0"/>
             </StackPanel>
         </StackPanel>
         <Button x:Name="Snapshot" Content="Read capture state" Click="Snapshot_Click"/>
