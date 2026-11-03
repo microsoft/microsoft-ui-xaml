@@ -41,7 +41,8 @@ namespace
     {
         std::shared_ptr<CPointerState> pointerState;
         IFC_RETURN(GetPointerState(pointerId, &pointerState));
-        *isDown = pointerState && pointerState->IsPointerDown();
+        // A canceled contact can still report down (core never clears it on a canceled move).
+        *isDown = pointerState && pointerState->IsPointerDown() && !pointerState->IsPointerCanceled();
         return S_OK;
     }
 }
@@ -491,6 +492,27 @@ AutomaticDragHelper::HandlePointerCaptureLostEventArgs(
         IFC_RETURN(m_spPointer->get_PointerId(&touchPointerId));
         if (pointerId != touchPointerId)
         {
+            return S_OK;
+        }
+
+        // A canceled contact ends the candidate whatever element reports it: without a capture
+        // owner, core raises the capture loss from the element under the finger.
+        bool isCanceled = false;
+        ctl::ComPtr<ixp::IPointerPoint> pointerPoint;
+        if (SUCCEEDED(pArgs->GetCurrentPoint(m_pOwnerNoRef, &pointerPoint)) && pointerPoint)
+        {
+            ctl::ComPtr<ixp::IPointerPointProperties> properties;
+            BOOLEAN canceled = FALSE;
+            IFC_RETURN(pointerPoint->get_Properties(&properties));
+            IFC_RETURN(properties->get_IsCanceled(&canceled));
+            isCanceled = !!canceled;
+        }
+        if (isCanceled)
+        {
+            m_spPointerPoint = nullptr;
+            m_spPointer = nullptr;
+            m_isHoldingCompleted = false;
+            IFC_RETURN(UnregisterEvents());
             return S_OK;
         }
 

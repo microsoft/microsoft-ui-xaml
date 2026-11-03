@@ -35,6 +35,7 @@ namespace MUXControlsTestApp
         private int childCaptureLostCount;
         private int holdingStartedCount;
         private int touchPressCount;
+        private int dragStartingDisableCount;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int index);
@@ -205,6 +206,13 @@ namespace MUXControlsTestApp
                 args.Data.SetText("AutomaticDragSource");
                 args.AllowedOperations = DataPackageOperation.Copy;
                 args.Cancel = CancelDrag.IsChecked == true;
+                if (DisableInDragStarting.IsChecked == true)
+                {
+                    // Removes the drag helper while it is still inside its DragStarting callout.
+                    DragStartingDisableCount.Text = (++dragStartingDisableCount).ToString();
+                    DragSource.CanDrag = false;
+                    Draggable.IsChecked = false;
+                }
             };
             DragSource.DropCompleted += (sender, args) =>
             {
