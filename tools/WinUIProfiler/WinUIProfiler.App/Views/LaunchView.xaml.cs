@@ -32,6 +32,8 @@ public sealed partial class LaunchView : UserControl
     private int shown;
     private bool reading;
     private bool readAgain;
+    // The read under way, cancelled when another file, or this one with another configuration, is shown.
+    private CancellationTokenSource? timelineRead;
 
     public LaunchView()
     {
@@ -39,7 +41,7 @@ public sealed partial class LaunchView : UserControl
         refreshTimer = DispatcherQueue.CreateTimer();
         refreshTimer.Interval = TimeSpan.FromSeconds(1);
         refreshTimer.Tick += (_, _) => _ = RefreshAsync();
-        LoadConfig();
+        Reload();
     }
 
     public ObservableCollection<LaunchMilestoneRow> Milestones { get; } = [];
@@ -64,9 +66,9 @@ public sealed partial class LaunchView : UserControl
         }
     }
 
-    // Reads the marker configuration again and shows the timeline with it: the user's file when it exists, otherwise the
-    // default, which is also used when the user's file is not valid, with the error shown, so a mistake in it never stops
-    // a connection. Returns it, so a new connection records its providers.
+    // Reads the marker configuration again: the user's file when it exists, otherwise the default, which is also used when
+    // the user's file is not valid, with the error shown, so a mistake in it never stops a connection. Returns it, so a new
+    // connection records its providers; the timeline shown stays until the connection's file is shown, with it.
     public MarkerConfig LoadConfig()
     {
         try
@@ -81,8 +83,14 @@ public sealed partial class LaunchView : UserControl
         }
 
         SetLine(ConfigSummary, config.FilePath is { } file ? Format("MarkersFileFormat", file) : Text("MarkersDefault"));
-        Show(path);
         return config;
+    }
+
+    // Reads the marker configuration again and shows the file's timeline with it.
+    private void Reload()
+    {
+        LoadConfig();
+        Show(path);
     }
 
     private void Source_Changed(object? sender, EventArgs args)
@@ -114,6 +122,7 @@ public sealed partial class LaunchView : UserControl
     {
         path = sessionPath;
         shown++;
+        timelineRead?.Cancel();
         reader = path is null ? null : new LaunchTimelineReader(path, config);
         Milestones.Clear();
         ReadError.IsOpen = false;
@@ -138,14 +147,19 @@ public sealed partial class LaunchView : UserControl
 
         reading = true;
         var generation = shown;
+        using var cancellation = new CancellationTokenSource();
+        timelineRead = cancellation;
         try
         {
-            var timeline = await Task.Run(() => current.Read());
+            var timeline = await Task.Run(() => current.Read(cancellation.Token), cancellation.Token);
             if (generation == shown)
             {
                 ShowTimeline(timeline);
                 ReadError.IsOpen = false;
             }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
@@ -157,6 +171,7 @@ public sealed partial class LaunchView : UserControl
         }
         finally
         {
+            timelineRead = null;
             reading = false;
             if (readAgain)
             {
@@ -252,7 +267,7 @@ public sealed partial class LaunchView : UserControl
         ConfigError.IsOpen = true;
     }
 
-    private void Reload_Click(object sender, RoutedEventArgs args) => LoadConfig();
+    private void Reload_Click(object sender, RoutedEventArgs args) => Reload();
 
     // Opens the user's configuration, created from the default the first time, in the app that opens JSON files, or in
     // Notepad when there is none. Reload reads it again once it is saved.
@@ -269,7 +284,7 @@ public sealed partial class LaunchView : UserControl
             return;
         }
 
-        LoadConfig();
+        Reload();
         try
         {
             try
@@ -278,7 +293,9 @@ public sealed partial class LaunchView : UserControl
             }
             catch (Win32Exception)
             {
-                Process.Start(new ProcessStartInfo("notepad.exe") { ArgumentList = { file } })?.Dispose();
+                // System32's, not one found first on the search path.
+                Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "notepad.exe")) { ArgumentList = { file } })
+                    ?.Dispose();
             }
         }
         catch (Exception error) when (error is not OutOfMemoryException)

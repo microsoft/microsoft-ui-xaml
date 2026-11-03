@@ -83,21 +83,29 @@ public static class SessionFile
             (profilerEvent, _) => sink(profilerEvent), cancellationToken);
     }
 
-    // Delivers the stored events of some types after a Seq (null for all), in Seq order, and returns the last Seq stored
-    // (null when there is none), to pass next time. A type is a provider's ETW ID and an event name, which matches
-    // case-insensitively.
-    public static long? ReadEvents(string path, IReadOnlyCollection<(Guid ProviderId, string Name)> eventTypes, long? afterSeq,
-        Action<ProfilerEvent> sink, CancellationToken cancellationToken = default)
+    // Delivers the stored events of some types after a Seq (null for all), in Seq order. Returns the last Seq stored (null
+    // when there is none), to pass next time, and the file's CompleteFromSeq as the events were read: when it is more than
+    // one after the Seq passed, events after that Seq were deleted, to stay within the size limit, before they were read. A
+    // type is a provider's ETW ID and an event name, which matches case-insensitively.
+    public static (long? LastSeq, long? CompleteFromSeq) ReadEvents(string path,
+        IReadOnlyCollection<(Guid ProviderId, string Name)> eventTypes, long? afterSeq, Action<ProfilerEvent> sink,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(eventTypes);
         ArgumentNullException.ThrowIfNull(sink);
         long? lastSeq = null;
+        long? completeFromSeq = null;
         ReadEvents(path, (connection, transaction, types) =>
             {
-                // The same snapshot as the events read, so the next read starts right after them.
-                using (var last = Command(connection, transaction, "SELECT MAX(Seq) FROM Events"))
+                // The same snapshot as the events read, so the next read starts right after them, and a deletion is seen
+                // along with the events it left.
+                using (var command = Command(connection, transaction,
+                    "SELECT (SELECT MAX(Seq) FROM Events), (SELECT CompleteFromSeq FROM SessionInfo)"))
                 {
-                    lastSeq = last.ExecuteScalar() is long seq ? seq : null;
+                    using var reader = command.ExecuteReader();
+                    reader.Read();
+                    lastSeq = reader.IsDBNull(0) ? null : reader.GetInt64(0);
+                    completeFromSeq = reader.IsDBNull(1) ? null : reader.GetInt64(1);
                 }
 
                 var ids = types.Where(type => eventTypes.Any(wanted => wanted.ProviderId == type.Value.ProviderId &&
@@ -109,16 +117,22 @@ public static class SessionFile
                     ORDER BY Seq
                     """;
             }, [("$after", afterSeq ?? 0)], (profilerEvent, _) => sink(profilerEvent), cancellationToken);
-        return lastSeq;
+        return (lastSeq, completeFromSeq);
     }
 
     // The first frame drawn on the UI thread with the first stored frame, as the Frames tab's launch line shows; null
-    // while there is none.
+    // while there is none, and once the file has deleted its oldest events to stay within its size limit, since the first
+    // frames may have been among them (the Frames tab then shows no launch line either).
     public static DrawnFrame? ReadFirstDrawnFrame(string path)
     {
         using var connection = Open(path);
         using var transaction = connection.BeginTransaction(deferred: true);
-        var (_, frequency, startQpc) = ReadSession(connection, transaction);
+        var (info, frequency, startQpc) = ReadSession(connection, transaction);
+        if (info.CompleteFromSeq is not null)
+        {
+            return null;
+        }
+
         using var command = Command(connection, transaction, """
             WITH Thread AS (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1)
             SELECT f.ThreadId, f.FrameNumber, f.EndQpc

@@ -712,9 +712,11 @@ milestones.
 - Attached to a running process, the recording starts after the launch: the
   tab says when, from the process's creation, and the milestones before it,
   and the first frame drawn, are missing.
-- When the session file deletes its oldest events to stay within its size
-  limit before the tab reads them, milestones among them may be missing, and
-  the tab says so.
+- When the session file has deleted its oldest events to stay within its size
+  limit before the tab read them, as when **Reload** reads a long recording
+  again, milestones among them may be missing or show a later event, and the
+  tab says so. The first frame drawn is then not reached unless the tab found
+  it before, as the Frames tab shows no launch frames for such a file.
 - Only the target's events are recorded, so the timeline starts at the
   process's creation: what came before it, such as the click that launched the
   app, is not in it.
@@ -731,8 +733,8 @@ launch scenarios. **Edit markers** in the Launch tab creates the file from the
 default the first time and opens it; once it is saved, **Reload** reads it
 again and shows its milestones. When the file is not valid, the tab says why
 and uses the default, so a mistake in it never stops a connection. The CLI
-reads another file with `--markers`, and stops with exit code 3 when the file
-is not valid.
+does the same, with a warning; it reads another file with `--markers`, and
+stops with exit code 3 when that file is not valid.
 
 The configuration's providers are recorded for the same process as the XAML
 providers, live at their level and keywords, and from a trace as the trace has

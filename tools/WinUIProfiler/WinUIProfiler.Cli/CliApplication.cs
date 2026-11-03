@@ -61,13 +61,16 @@ internal static class CliApplication
           process.
 
           --markers names the marker configuration file: the marker providers read from a trace,
-          and the launch milestones. Without it, %LOCALAPPDATA%\WinUIProfiler\markers.json is used
-          when it exists, otherwise the default configuration. See "Launch timeline" in the README.
+          and the launch milestones; the command stops when it is not valid. Without it,
+          %LOCALAPPDATA%\WinUIProfiler\markers.json is used when it exists and is valid (otherwise a
+          warning says why), or else the default configuration. See "Launch timeline" in the README.
         """;
 
+    // Markers is the marker configuration, read for the commands that need it.
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
         string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket,
-        string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show, string? MarkersPath)
+        string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show, string? MarkersPath,
+        MarkerConfig? Markers = null)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -90,6 +93,13 @@ internal static class CliApplication
 
         try
         {
+            // A trace's marker providers are read from it; launch also needs the milestones. Read before any file is
+            // written, so a configuration error leaves none behind.
+            if (options.Command == "launch" || !options.IsSessionFile)
+            {
+                options = options with { Markers = LoadMarkers(options.MarkersPath, error) };
+            }
+
             return options.Command switch
             {
                 "processes" => Processes(options, output, cancellationToken),
@@ -274,7 +284,7 @@ internal static class CliApplication
     {
         if (!options.IsSessionFile)
         {
-            var result = OfflineEtlSource.Read(options.InputPath, processId, MarkerProviders(MarkerConfig.Load(options.MarkersPath)),
+            var result = OfflineEtlSource.Read(options.InputPath, processId, MarkerProviders(options.Markers!),
                 sink, null, cancellationToken);
             return new(result.EventsDelivered, result.EventsLost, result.SessionDuration);
         }
@@ -394,8 +404,7 @@ internal static class CliApplication
 
     private static int Record(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
     {
-        // Loaded first, so a configuration error leaves no session file behind.
-        var markers = MarkerProviders(MarkerConfig.Load(options.MarkersPath));
+        var markers = MarkerProviders(options.Markers!);
         // The trace's clock frequency is stored before any event, as the app stores it, so the file's times never depend
         // on how long the process ran.
         var writer = SessionWriter.Create(options.OutputPath!,
@@ -436,7 +445,7 @@ internal static class CliApplication
 
     private static int Launch(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
     {
-        var config = MarkerConfig.Load(options.MarkersPath);
+        var config = options.Markers!;
         if (options.IsSessionFile)
         {
             var info = SessionFile.ReadInfo(options.InputPath);
@@ -490,12 +499,14 @@ internal static class CliApplication
         }
     }
 
+    // The same in any culture, as the other commands' numbers.
     private static void WriteLaunch(LaunchTimeline timeline, MarkerConfig config, TextWriter output)
     {
         var session = timeline.Session;
-        output.WriteLine($"Launch of {session.ProcessName ?? "the process"} (process {session.ProcessId}), " + (timeline.Origin == LaunchOrigin.ProcessCreated
+        output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"Launch of {session.ProcessName ?? "the process"} (process {session.ProcessId}), ") + (timeline.Origin == LaunchOrigin.ProcessCreated
             ? "in ms from the process's creation" + (timeline.RecordingStartMilliseconds is { } recordingStart
-                ? $"; the recording started {Math.Abs(recordingStart):F3} ms {(recordingStart < 0 ? "before" : "after")} it."
+                ? $"; the recording started {Milliseconds(Math.Abs(recordingStart))} ms {(recordingStart < 0 ? "before" : "after")} it."
                 : ".")
             : "in ms from the start of the recording, since when the process was created is not known."));
         output.WriteLine($"Marker configuration: {config.FilePath ?? "the default"}.");
@@ -512,9 +523,10 @@ internal static class CliApplication
             output.WriteLine($"{"Milestone".PadRight(width)}  {"Time (ms)",12} {"+Prev (ms)",12} {"Thread",7} {"Count",6}  Event");
             foreach (var milestone in timeline.Milestones)
             {
-                output.WriteLine($"{milestone.Label.PadRight(width)}  {milestone.Milliseconds,12:F3} " +
+                output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"{milestone.Label.PadRight(width)}  {Milliseconds(milestone.Milliseconds),12} " +
                     $"{Milliseconds(milestone.SincePreviousMilliseconds),12} {milestone.ThreadId?.ToString(CultureInfo.InvariantCulture) ?? "-",7} " +
-                    $"{milestone.Count,6}  {milestone.Definition.EventDescription ?? "built in"}");
+                    $"{milestone.Count,6}  {milestone.Definition.EventDescription ?? "built in"}"));
             }
         }
 
@@ -535,8 +547,28 @@ internal static class CliApplication
             {
                 LaunchNotes.Attached => "the profiler connected to the running process, so the first frame drawn and the milestones before the recording started are missing.",
                 LaunchNotes.NoProcessStart => "when the process was created is not known; a trace has it when it has the kernel's process events.",
-                _ => "the session file deleted its oldest events to stay within its size limit, so milestones among them may be missing."
+                _ => "the session file deleted its oldest events to stay within its size limit before they were read, so milestones among them may be missing or show a later event."
             });
+        }
+    }
+
+    // The configuration a path names, which must be valid. Without one, the user's, unless it is not valid: then, as in the
+    // app, a warning says why and the default is used, so a mistake in it never stops a command.
+    private static MarkerConfig LoadMarkers(string? path, TextWriter error)
+    {
+        if (path is not null)
+        {
+            return MarkerConfig.Load(path);
+        }
+
+        try
+        {
+            return MarkerConfig.Load();
+        }
+        catch (MarkerConfigException exception)
+        {
+            error.WriteLine($"Using the default marker configuration instead of the user's: {exception.Message}");
+            return MarkerConfig.Default;
         }
     }
 

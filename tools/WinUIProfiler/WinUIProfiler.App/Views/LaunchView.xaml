@@ -57,7 +57,7 @@
             <TextBlock Grid.Column="5" x:Uid="MilestoneHeaderThread" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
             <TextBlock Grid.Column="6" x:Uid="MilestoneHeaderCount" Style="{StaticResource HeaderTextStyle}" TextAlignment="Right" />
         </Grid>
-        <ListView x:Name="MilestoneList" x:Uid="MilestoneList" Grid.Row="6" SelectionMode="Single"
+        <ListView x:Name="MilestoneList" x:Uid="MilestoneList" Grid.Row="6" SelectionMode="None"
                   ItemsSource="{x:Bind Milestones}" ItemContainerStyle="{StaticResource CompactItemStyle}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="vm:LaunchMilestoneRow">

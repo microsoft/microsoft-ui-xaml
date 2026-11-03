@@ -17,7 +17,7 @@
   // A milestone is built in ("builtin": ProcessCreated or FirstFrameDrawn), or the first "event" from a "provider" (one
   // above, or a XAML provider such as Microsoft.UI.Xaml) whose fields have the values in "where", if given. "label" names
   // it; with "labelFrom" instead, the first event with each value of that field is a milestone named by the value.
-  // "process" (an executable name, without .exe) shows the milestone for that app only.
+  // "process" (an executable name, with or without .exe) shows the milestone for that app only.
   "milestones": [
     { "builtin": "ProcessCreated", "label": "Process created" },
     // WinUI's event at the end of the first UI thread frame, whether or not it drew.

@@ -27,8 +27,9 @@ public enum LaunchNotes
     Attached = 1,
     // The process's creation is not known, as in a recorded trace without the kernel's process events.
     NoProcessStart = 2,
-    // The session file deleted its oldest events to stay within its size limit before they were read, so milestones
-    // among them may be missing.
+    // The session file deleted its oldest events to stay within its size limit before they were read, so milestones among
+    // them may be missing or show a later event. The first frame drawn is then not reached unless it was found before, as
+    // the Frames tab shows no launch frames for such a file.
     Trimmed = 4
 }
 
@@ -46,13 +47,14 @@ public sealed record LaunchTimeline(SessionFileInfo Session, LaunchOrigin Origin
     IReadOnlyList<LaunchMilestone> Milestones, IReadOnlyList<MilestoneDefinition> NotReached, LaunchNotes Notes);
 
 // Finds a session file's launch milestones. Each Read reads only the events stored since the one before, so calling it
-// again follows a session that is still being recorded. Milestones found stay found when the session file later deletes
-// their events to stay within its size limit. Not thread-safe.
+// again follows a session that is still being recorded; a Read that is cancelled or fails can be repeated. A reader keeps
+// the milestones it found when the session file later deletes their events to stay within its size limit; a new reader
+// of the file may not find them, and notes it (LaunchNotes.Trimmed). Not thread-safe.
 public sealed class LaunchTimelineReader
 {
     private readonly string path;
     // The first event of each milestone found so far, by the index of its definition and its label.
-    private readonly Dictionary<(int Definition, string Label), Reached> reached = [];
+    private Dictionary<(int Definition, string Label), Reached> reached = [];
     private DrawnFrame? firstFrame;
     private long? lastSeq;
     private bool trimmed;
@@ -74,20 +76,27 @@ public sealed class LaunchTimelineReader
             .Select((definition, index) => (Definition: definition, Index: index))
             .Where(entry => entry.Definition.AppliesTo(session.ProcessName))
             .ToArray();
-        if (session.CompleteFromSeq is { } completeFrom && completeFrom > (lastSeq ?? 0) + 1)
-        {
-            trimmed = true;
-        }
-
         var eventTypes = definitions
             .Where(entry => entry.Definition.Provider is not null)
             .Select(entry => (entry.Definition.Provider!.Id, entry.Definition.Event!))
             .Distinct()
             .ToArray();
-        lastSeq = SessionFile.ReadEvents(path, eventTypes, lastSeq, profilerEvent => Add(profilerEvent, definitions),
-            cancellationToken) ?? lastSeq;
+        // Kept only once the read completes, so a read that is cancelled or fails can be repeated.
+        var found = new Dictionary<(int Definition, string Label), Reached>(reached);
+        var read = SessionFile.ReadEvents(path, eventTypes, lastSeq, profilerEvent => Add(found, profilerEvent, definitions),
+            cancellationToken);
         var attached = session.Coverage == SessionCoverage.Connection;
-        if (firstFrame is null && !attached && definitions.Any(entry => entry.Definition.BuiltIn == BuiltInMilestone.FirstFrameDrawn))
+        var firstFrameWanted = !attached && definitions.Any(entry => entry.Definition.BuiltIn == BuiltInMilestone.FirstFrameDrawn);
+        // The file deleted its oldest events by the time of this read: events not read yet were among them, or, while the
+        // first frame drawn is not found, its frames may have been.
+        if (read.CompleteFromSeq is { } completeFrom && (completeFrom > (lastSeq ?? 0) + 1 || (firstFrameWanted && firstFrame is null)))
+        {
+            trimmed = true;
+        }
+
+        reached = found;
+        lastSeq = read.LastSeq ?? lastSeq;
+        if (firstFrameWanted && firstFrame is null && !trimmed)
         {
             firstFrame = SessionFile.ReadFirstDrawnFrame(path);
         }
@@ -156,7 +165,8 @@ public sealed class LaunchTimelineReader
             session.Coverage == SessionCoverage.Trace ? null : -origin, ordered, notReached, notes);
     }
 
-    private void Add(ProfilerEvent profilerEvent, (MilestoneDefinition Definition, int Index)[] definitions)
+    private static void Add(Dictionary<(int Definition, string Label), Reached> found, ProfilerEvent profilerEvent,
+        (MilestoneDefinition Definition, int Index)[] definitions)
     {
         foreach (var (definition, index) in definitions)
         {
@@ -178,7 +188,7 @@ public sealed class LaunchTimelineReader
             // Events are stored in the order they arrived, which can differ a little from time order.
             var key = (index, label!);
             var time = profilerEvent.RelativeMilliseconds;
-            reached[key] = reached.TryGetValue(key, out var first)
+            found[key] = found.TryGetValue(key, out var first)
                 ? time < first.Milliseconds ? new(time, profilerEvent.ThreadId, first.Count + 1) : first with { Count = first.Count + 1 }
                 : new(time, profilerEvent.ThreadId, 1);
         }
