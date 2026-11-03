@@ -14,9 +14,7 @@
     <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
     <TargetDestination>$(MarkupCompilerDestinationPath).Executable\$(TargetFramework)</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn);0419;1570;1572;1573;1574;1591;3021;0618;0672;0436;0108;SYSLIB0003;SYSLIB0005;SYSLIB0012;SYSLIB0021;CA2002;CA1060;CA1063;CA2229;CA1001;CA1033;CA1416;CA2101;CA2213;CA2231</NoWarn>
-    <!-- USE_CLR_V4 is only for the LMR code -->
-    <DefineConstants>$(DefineConstants);USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
+    <NoWarn>$(NoWarn);3021;0618;0672;0108;SYSLIB0005;SYSLIB0012;CA2002;CA1063;CA1033;CA1416;CA2213;CA2231</NoWarn>
     <BuildTasksDir>$(MSBuildThisFileDirectory)..\BuildTasks\</BuildTasksDir>
     <SystemXamlPathRoot>$(BuildTasksDir)System.Xaml</SystemXamlPathRoot>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -463,11 +461,10 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
+    <!-- CompilerErrorCollection, used by the preprocessed T4 templates of the code generators (see T4Base) -->
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
     <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
-    <!-- Compile-time only: the legacy CAS code paths in System.Xaml that need it are never executed -->
-    <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
   </ItemGroup>
   <ItemGroup>
     <!-- Never compiled against: it is embedded as a resource, see below -->

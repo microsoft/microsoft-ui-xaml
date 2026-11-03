@@ -146,15 +146,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\AtomicReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\BitSet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Collections.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\CollectionDebuggerView.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\ConcurrentDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\Funcs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\IStructuralComparable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\IStructuralEquatable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\SerializableAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\SplitOrderedList.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\Tuple.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\Tuples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\DictionaryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\ListExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Runtime.cs" />

@@ -467,40 +467,5 @@ namespace System.Xaml
     }
 
 
-#if TARGETTING35SP1   
-    public delegate T Initializer<T>();
-
-    public struct Lazy<T> where T : class
-    {
-        private Initializer<T> m_init;
-        private T m_value;
-        public bool IsValueCreated
-        {
-            get { return m_value != null; }
-        }
-        public Lazy(Initializer<T> init)
-        {
-            m_init = init;
-            m_value = null;
-        }
-
-        public T Value
-        {
-            get
-            {
-                if (m_value == null)
-                {
-                    T newValue = m_init();
-                    if (Interlocked.CompareExchange(ref m_value, newValue, null) != null &&
-                            newValue is IDisposable)
-                    {
-                        ((IDisposable)newValue).Dispose();
-                    }
-                }
-            return m_value;
-            }
-        }
-    }
-#endif
 
 }

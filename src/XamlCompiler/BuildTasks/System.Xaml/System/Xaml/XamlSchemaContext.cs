@@ -11,9 +11,7 @@ using System.Text;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-#if !TARGETTING35SP1
 using System.Collections.Concurrent;
-#endif
 
 using System.Xaml;
 using System.Xaml.Schema;
@@ -1422,11 +1420,7 @@ namespace System.Xaml
             /// Safe: We only use the event to track what assemblies are loaded in to the AppDomain.
             ///       This is not privileged info, as it is available via AppDomain.GetAssemblies().
             /// </SecurityNote>
-#if TARGETTING35SP1
-            [SecurityTreatAsSafe, SecurityCritical]
-#else
             [SecuritySafeCritical]
-#endif
             public void Hook()
             {
                 AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
@@ -1436,11 +1430,7 @@ namespace System.Xaml
             /// Critical: Accesses Critical event AppDomain.AssemblyLoad.
             /// Safe: We just remove a handler that we ourselves added.
             /// </SecurityNote>
-#if TARGETTING35SP1
-            [SecurityTreatAsSafe, SecurityCritical]
-#else
             [SecuritySafeCritical]
-#endif
             public void Unhook()
             {
                 AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;

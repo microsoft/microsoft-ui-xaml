@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Security;
-using System.Security.Permissions;
 using System.Xml;
 using MS.Internal.Xaml.Context;
 using System.Xaml.MS.Impl;
@@ -82,12 +81,7 @@ namespace System.Xaml
         /// <SecurityNote>
         /// Critical: calls Critical method Exception.GetObjectData
         /// </SecurityNote>
-#if TARGETTING35SP1
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-        [SecurityTreatAsSafe, SecurityCritical]
-#else
         [SecurityCritical]
-#endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
@@ -167,12 +161,7 @@ namespace System.Xaml
         /// <SecurityNote>
         /// Critical: calls Critical method Exception.GetObjectData
         /// </SecurityNote>
-#if TARGETTING35SP1
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-        [SecurityTreatAsSafe, SecurityCritical]
-#else
         [SecurityCritical]
-#endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
