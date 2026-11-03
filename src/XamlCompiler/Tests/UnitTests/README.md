@@ -105,17 +105,30 @@ by `src\XamlCompiler\runtests-native.cmd` (see below).
   types through reflection (see `ProxyHelper`, which loads `XamlCompiler.dll`).
 - The test process runs with invariant globalization, like the native compiler.
 - `runtests-net10.cmd` is an obsolete alias of `runtests.cmd`.
-## Native AOT compiler
+## CompileXaml task
+
+`TaskTests` runs the CompileXaml MSBuild task (`Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj`,
+staged from the package layout XamlCompiler.sln builds) against a stand-in compiler,
+`FakeXamlCompiler\FakeXamlCompiler.csproj`, with a fake build engine and fake Visual Studio host
+objects (both the legacy and the free-threaded file manager interfaces). `ContractTests` checks
+that the task (DataContractJsonSerializer) and the compiler (System.Text.Json source generator)
+agree on every member of the JSON contract (`src\XamlCompiler\Contracts`).
+
+## End to end (Native AOT compiler)
 
 `src\XamlCompiler\runtests-native.cmd` (`Tests\RunNativeCompilerTests.ps1`)
-builds the regression projects with the Native AOT compiler
-(`UseNativeXamlCompiler=true`) and runs `CodegenTests` against the masters. With
-`-Differential`, it also builds them with the default compiler (the in-process
-.NET Framework task) first and
-requires the native compiler to generate byte-identical files. With `-Samples`,
-it does the same differential comparison for real sample apps from `Samples\`
-(see the script header for the list and the requirements).
-
+builds the regression projects with the Native AOT compiler and the CompileXaml task
+that XamlCompiler.sln built (or the compiler given with `-ExePath`) and runs
+`CodegenTests` against the masters. With `-Differential -ReferencePackage <dir>`, it
+also builds them with the XAML compiler of another package layout first (e.g.
+`BuildOutput\packaging\<configuration>` of another build, or an extracted WinUI
+package, including the older ones with the in-process .NET Framework compiler) and
+requires byte-identical generated files. With `-Samples`, it also builds real sample
+apps from `Samples\` (compared the same way with `-ReferencePackage`). With
+`-DesignTime`, it checks the design-time (IntelliSense) builds of a C# and a
+C++/WinRT project: they must not change the outputs of the last real build, must
+generate the IntelliSense files of the next real build, and must report XAML errors
+as warnings. See the script header for the details and the requirements.
 ## Primitive and array metadata regressions
 
 `Schema_CppWinRTArray*` and `Schema_ArrayTypeNamesPreserveOtherLanguages` cover

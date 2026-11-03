@@ -121,7 +121,6 @@ namespace Win8Xaml.CompilerProxies
         static Assembly _xamlCompilerAssembly;
         static string _xamlCompilerAssemblyPath = null;
         static string _winuiWinmdPath = null;
-        static string buildTaskPath = null;
         Type _type;
 
         private static string _sdkPath = null;
