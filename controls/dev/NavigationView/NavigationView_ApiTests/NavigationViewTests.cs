@@ -3896,6 +3896,164 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return hasSelectionIndicator;
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the content of an expanded NavigationView does not render outside the NavigationView while the pane-closing transition slides it (GitHub #10983).")]
+        public void VerifyContentDoesNotRenderOutsideNavigationViewDuringPaneCloseTransition()
+        {
+            NavigationView navView = null;
+            Grid contentMarker = null;
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                contentMarker = new Grid() { Background = new SolidColorBrush(Colors.Red) };
+                navView = new NavigationView()
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 500.0,
+                    Height = 400.0,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Content = contentMarker,
+                };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Home", Icon = new SymbolIcon(Symbol.Home) });
+
+                host = new Grid() { Width = 900.0, Height = 400.0, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+                host.Children.Add(navView);
+                Content = host;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode, "Expanded mode uses the CompactInline SplitView");
+                Verify.IsTrue(navView.IsPaneOpen, "Pane starts open");
+
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                Verify.AreEqual(SplitViewDisplayMode.CompactInline, splitView.DisplayMode, "RootSplitView.DisplayMode");
+                Verify.IsFalse(splitView.IsPaneOpen, "RootSplitView.IsPaneOpen");
+
+                // The OpenInlineLeft -> ClosedCompactLeft transition starts with ContentTransform.TranslateX = OpenPaneLengthMinusCompactLength.
+                VerifySplitViewContentStaysInsideSplitViewWhileSliding(splitView, splitView.TemplateSettings.OpenPaneLengthMinusCompactLength, contentMarker, host);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the content of an Inline right-placed SplitView does not render outside the SplitView while the pane-closing transition slides it (GitHub #10983).")]
+        public void VerifySplitViewContentDoesNotRenderOutsideSplitViewDuringPaneCloseTransition()
+        {
+            SplitView splitView = null;
+            Grid contentMarker = null;
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                contentMarker = new Grid() { Background = new SolidColorBrush(Colors.Red) };
+                splitView = new SplitView()
+                {
+                    DisplayMode = SplitViewDisplayMode.Inline,
+                    PanePlacement = SplitViewPanePlacement.Right,
+                    OpenPaneLength = 200.0,
+                    IsPaneOpen = true,
+                    Width = 500.0,
+                    Height = 300.0,
+                    Margin = new Thickness(300.0, 0.0, 0.0, 0.0),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Pane = new Grid() { Background = new SolidColorBrush(Colors.Blue) },
+                    Content = contentMarker,
+                };
+
+                host = new Grid() { Width = 900.0, Height = 300.0, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+                host.Children.Add(splitView);
+                Content = host;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                splitView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(splitView.IsPaneOpen, "SplitView.IsPaneOpen");
+
+                // The OpenInlineRight -> Closed transition starts with ContentTransform.TranslateX = NegativeOpenPaneLength.
+                VerifySplitViewContentStaysInsideSplitViewWhileSliding(splitView, splitView.TemplateSettings.NegativeOpenPaneLength, contentMarker, host);
+            });
+        }
+
+        // Puts ContentRoot where the SplitView pane transition puts it on its first frame and hit-tests just
+        // outside (bug) and just inside (control) the SplitView edge the content slides past. Hit testing honors clips.
+        private static void VerifySplitViewContentStaysInsideSplitViewWhileSliding(SplitView splitView, double translateX, FrameworkElement contentMarker, UIElement hitTestRoot)
+        {
+            var contentRoot = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(splitView, "ContentRoot");
+            var contentTransform = (CompositeTransform)contentRoot.RenderTransform;
+            Verify.AreEqual(0.0, contentTransform.TranslateX, "ContentTransform.TranslateX is at rest after the transition");
+
+            var splitViewOrigin = splitView.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+            double splitViewLeft = splitViewOrigin.X;
+            double splitViewRight = splitViewOrigin.X + splitView.ActualWidth;
+            double probeY = splitViewOrigin.Y + splitView.ActualHeight / 2;
+            double markerLeftAtRest = contentMarker.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+
+            contentTransform.TranslateX = translateX;
+            try
+            {
+                double markerLeft = contentMarker.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                double markerRight = markerLeft + contentMarker.ActualWidth;
+                Log.Comment($"translateX={translateX} splitView=[{splitViewLeft}, {splitViewRight}] content=[{markerLeft}, {markerRight}]");
+                Verify.IsLessThan(Math.Abs(markerLeft - (markerLeftAtRest + translateX)), 0.5, "Precondition: ContentTransform moves the content");
+
+                double outsideX;
+                double insideX;
+                if (translateX > 0)
+                {
+                    Verify.IsGreaterThan(markerRight, splitViewRight + 20.0, "Precondition: the sliding content extends past the SplitView's right edge");
+                    outsideX = splitViewRight + 10.0;
+                    insideX = splitViewRight - 10.0;
+                }
+                else
+                {
+                    Verify.IsLessThan(markerLeft, splitViewLeft - 20.0, "Precondition: the sliding content extends past the SplitView's left edge");
+                    outsideX = splitViewLeft - 10.0;
+                    insideX = splitViewLeft + 10.0;
+                }
+
+                Verify.IsTrue(IsHitByPoint(contentMarker, new global::Windows.Foundation.Point(insideX, probeY), hitTestRoot),
+                    "Control: the content is hit just inside the SplitView edge");
+                Verify.IsFalse(IsHitByPoint(contentMarker, new global::Windows.Foundation.Point(outsideX, probeY), hitTestRoot),
+                    "The sliding content must be clipped to the SplitView bounds (#10983)");
+            }
+            finally
+            {
+                contentTransform.TranslateX = 0.0;
+            }
+        }
+
+        private static bool IsHitByPoint(UIElement element, global::Windows.Foundation.Point point, UIElement hitTestRoot)
+        {
+            foreach (var hit in VisualTreeHelper.FindElementsInHostCoordinates(point, hitTestRoot))
+            {
+                if (hit == element)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         static void SelectItem(NavigationView navView, object item, ManualResetEvent selectionChangedEvent = null)
         {
             IdleSynchronizer.Wait();
