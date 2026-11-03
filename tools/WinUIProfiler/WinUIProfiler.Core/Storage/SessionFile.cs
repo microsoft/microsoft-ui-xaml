@@ -11,11 +11,12 @@ namespace WinUIProfiler.Engine.Storage;
 
 // ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording; negative
 // when it was created earlier (attach, or a recorded trace, whose recording starts at the process's first stored event),
-// null when unknown (a recorded trace without the kernel's process start event for it).
+// null when unknown (a recorded trace without the kernel's process start event for it). LauncherProcessId is the process
+// that created it, when known (SessionStart); the stored events of that process have its ID.
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
     long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,
-    double? ProcessStartMilliseconds);
+    double? ProcessStartMilliseconds, int? LauncherProcessId = null, string? LauncherName = null);
 
 // The kinds of objects the session file indexes (SessionSchema's Objects.Kind).
 public enum ObjectKind
@@ -534,9 +535,11 @@ public static class SessionFile
     {
         // Files written before marker providers were added have no events from them.
         var marker = HasColumn(connection, transaction, "EventTypes", "ProviderId") ? "ProviderName, ProviderId" : "NULL, NULL";
+        // Files written before launcher events were added have none.
+        var launcher = HasColumn(connection, transaction, "EventTypes", "Launcher") ? "Launcher" : "0";
         var types = new Dictionary<long, StoredType>();
         using (var command = Command(connection, transaction,
-            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker} FROM EventTypes"))
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -554,10 +557,12 @@ public static class SessionFile
                     ? new MarkerProvider(reader.GetString(7), Guid.Parse(reader.GetString(8)))
                     : null;
                 types[reader.GetInt64(0)] = new(provider, markerProvider, reader.GetBoolean(6), reader.GetString(2),
-                    reader.GetInt32(3), names, fieldTypes);
+                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9));
             }
         }
 
+        // A launcher event in a file that doesn't name the launcher has process ID 0, which is never the target's.
+        var launcherProcessId = info.LauncherProcessId ?? 0;
         long delivered = 0;
         using (var command = Command(connection, transaction, query(connection, transaction, types), parameters))
         {
@@ -568,9 +573,9 @@ public static class SessionFile
                 var qpc = reader.GetInt64(0);
                 startQpc ??= qpc;
                 var type = types[reader.GetInt64(2)];
-                sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, info.ProcessId, reader.GetInt32(1), type.Provider,
-                    type.TraceLogging, type.Name, type.Opcode, EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types),
-                    type.Marker), reader);
+                sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, type.Launcher ? launcherProcessId : info.ProcessId,
+                    reader.GetInt32(1), type.Provider, type.TraceLogging, type.Name, type.Opcode,
+                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker), reader);
                 delivered++;
             }
         }
@@ -580,7 +585,7 @@ public static class SessionFile
 
     // An EventTypes row.
     private sealed record StoredType(XamlProvider Provider, MarkerProvider? Marker, bool TraceLogging, string Name, int Opcode,
-        string[] Names, FieldType[] Types)
+        string[] Names, FieldType[] Types, bool Launcher)
     {
         public Guid ProviderId => Marker?.Id ?? XamlProviders.IdOf(Provider);
     }
@@ -669,12 +674,13 @@ public static class SessionFile
         command.Transaction = transaction;
         // Files written before ProcessStartQpc was added are otherwise the same.
         var processStartQpc = HasColumn(connection, transaction, "SessionInfo", "ProcessStartQpc") ? "ProcessStartQpc" : "NULL";
+        var launcher = HasColumn(connection, transaction, "SessionInfo", "LauncherProcessId") ? "LauncherProcessId, LauncherName" : "NULL, NULL";
         command.CommandText = $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
                 (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects WHERE Kind = 'Element'),
                 (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, StartedQpc, (SELECT COUNT(*) FROM Objects WHERE Kind = 'Visual'),
-                {processStartQpc}
+                {processStartQpc}, {launcher}
             FROM SessionInfo
             """;
         using var reader = command.ExecuteReader();
@@ -698,7 +704,7 @@ public static class SessionFile
             reader.IsDBNull(6) ? null : ParseUtc(reader.GetString(6)), NullableString(reader, 7),
             reader.GetInt64(14), reader.IsDBNull(8) ? null : reader.GetInt64(8), reader.IsDBNull(9) ? null : reader.GetInt32(9),
             reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(19),
-            reader.GetInt64(16), processStart);
+            reader.GetInt64(16), processStart, reader.IsDBNull(21) ? null : reader.GetInt32(21), NullableString(reader, 22));
         return (info, frequency, startQpc);
     }
 
