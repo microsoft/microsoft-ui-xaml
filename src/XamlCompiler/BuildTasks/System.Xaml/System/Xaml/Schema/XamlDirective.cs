@@ -97,11 +97,6 @@ namespace System.Xaml
             return true;
         }
 
-        protected sealed override XamlMemberInvoker LookupInvoker()
-        {
-            return XamlMemberInvoker.DirectiveInvoker;
-        }
-
         protected sealed override ICustomAttributeProvider LookupCustomAttributeProvider()
         {
             return null;

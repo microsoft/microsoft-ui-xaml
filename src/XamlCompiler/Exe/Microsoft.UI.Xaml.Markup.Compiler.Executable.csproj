@@ -58,8 +58,8 @@
     <!--
       Regression guard: this build has no trim/AOT/single-file warning at all, neither from the analyzers nor from ILC, so keep any
       new one an error even when warnings in general aren't (e.g. /p:TreatWarningsAsErrors=false). Reflection over the types of the
-      compiled projects goes through LmrReflection (see LmrTypeBase and KnownRuntimeTypes), and the runtime-only parts of the shared
-      sources throw (see NativeAotUnsupported). The analyzer IDs are the ones this build had to fix.
+      compiled projects goes through LmrReflection (see LmrTypeBase and KnownRuntimeTypes), and the System.Xaml fork only has its
+      schema and parser (no object writer/reader, invokers or value conversion). The analyzer IDs are the ones this build had to fix.
     -->
     <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
     <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2046;IL2055;IL2057;IL2060;IL2067;IL2070;IL2072;IL2073;IL2075;IL2080;IL2085;IL2092;IL2093;IL2094;IL2111;IL3000;IL3001;IL3002;IL3003;IL3050;IL3051;CA1420</WarningsAsErrors>

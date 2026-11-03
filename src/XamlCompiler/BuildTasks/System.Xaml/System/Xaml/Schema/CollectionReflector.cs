@@ -16,7 +16,6 @@ namespace System.Xaml.Schema
     {
         private static Type[] s_typeOfObjectArray;
         private static Type[] s_typeOfTwoObjectArray;
-        private static MethodInfo s_getEnumeratorMethod;
         private static MethodInfo s_listAddMethod;
         private static MethodInfo s_dictionaryAddMethod;
 
@@ -235,24 +234,6 @@ namespace System.Xaml.Schema
             return GetMethod(type, KnownStrings.Add, new Type[] { contentType });
         }
 
-        internal static MethodInfo GetEnumeratorMethod(Type type)
-        {
-            if (typeof(IEnumerable).IsAssignableFrom(type))
-            {
-                return IEnumerableGetEnumeratorMethod;
-            }
-            else
-            {
-                return LookupEnumeratorMethod(type);
-            }
-        }
-
-        internal static MethodInfo GetIsReadOnlyMethod(Type collectionType, Type itemType)
-        {
-            // Only used to add items to collection instances (XamlTypeInvoker), which the XAML compiler never does; this needs runtime code generation.
-            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("CollectionReflector.GetIsReadOnlyMethod");
-        }
-
         private static MethodInfo LookupEnumeratorMethod(Type type)
         {
             MethodInfo result = GetMethod(type, KnownStrings.GetEnumerator, Type.EmptyTypes);
@@ -375,18 +356,6 @@ namespace System.Xaml.Schema
                     s_typeOfTwoObjectArray = new Type[] { typeof(object), typeof(object) };
                 }
                 return s_typeOfTwoObjectArray;
-            }
-        }
-
-        private static MethodInfo IEnumerableGetEnumeratorMethod
-        {
-            get
-            {
-                if (s_getEnumeratorMethod == null)
-                {
-                    s_getEnumeratorMethod = typeof(IEnumerable).GetMethod(KnownStrings.GetEnumerator);
-                }
-                return s_getEnumeratorMethod;
             }
         }
 

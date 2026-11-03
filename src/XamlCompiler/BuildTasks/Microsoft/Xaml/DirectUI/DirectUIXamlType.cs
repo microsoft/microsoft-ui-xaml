@@ -812,7 +812,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             XamlMember member = base.LookupAttachableMember(name);
             if (member != null)
             {
-                member = new DirectUIXamlMember(member.Name, member.Invoker, this.SchemaContext, this.ApiInformation);
+                member = new DirectUIXamlMember(member.Name, member.Getter, member.Setter, this.SchemaContext, this.ApiInformation);
             }
             return member;
         }

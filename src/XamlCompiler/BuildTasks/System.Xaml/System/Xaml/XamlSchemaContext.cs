@@ -588,7 +588,7 @@ namespace System.Xaml
             XamlType xamlType = null;
             if (!MasterTypeList.TryGetValue(type, out xamlType))
             {
-                xamlType = new XamlType(alias, type, this, null, null);
+                xamlType = new XamlType(alias, type, this, null);
                 xamlType = TryAdd(MasterTypeList, type, xamlType);
             }
             return xamlType;

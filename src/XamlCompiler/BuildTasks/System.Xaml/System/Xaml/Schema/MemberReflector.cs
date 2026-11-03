@@ -16,16 +16,11 @@ namespace System.Xaml.Schema
 {
     internal class MemberReflector : Reflector
     {
-        // VisibilityInvalid indicates the value hasn't been looked up yet
-        private const DesignerSerializationVisibility VisibilityInvalid = (DesignerSerializationVisibility)int.MaxValue;
-        // VisibilityNone indicates the value was looked up, and wasn't present
-        private const DesignerSerializationVisibility VisibilityNone = (DesignerSerializationVisibility)(int.MaxValue - 1);
         private static MemberReflector s_UnknownReflector;
 
         // Lazy init: check NullableReference.IsSet to determine if these fields have been initialized
         private NullableReference<string> _constructorArgument;
         private NullableReference<XamlValueConverter<XamlDeferringLoader>> _deferringLoader;
-        private NullableReference<object> _defaultValue;
 
         /// <SecurityNote>
         /// Critical: We cache visibility check based on this member, so it must be idempotent
@@ -40,17 +35,14 @@ namespace System.Xaml.Schema
         private NullableReference<MethodInfo> _setter;
 
         private NullableReference<XamlValueConverter<TypeConverter>> _typeConverter;
-        private NullableReference<XamlValueConverter<ValueSerializer>> _valueSerializer;
 
         // Lazy init: set to VisibilityInvalid when uninitialized
-        private DesignerSerializationVisibility _designerSerializationVisibility;
 
         // Thread safety: see notes regarding bitflags in TypeReflector.cs
         private int _memberBits;
 
         internal MemberReflector()
         {
-            _designerSerializationVisibility = VisibilityInvalid;
         }
 
         internal MemberReflector(bool isEvent)
@@ -85,14 +77,12 @@ namespace System.Xaml.Schema
         {
             this.Type = type;
             _typeConverter.Value = typeConverter;
-            _designerSerializationVisibility = DesignerSerializationVisibility.Visible;
             _memberBits = (int)BoolMemberBits.Directive | (int)BoolMemberBits.AllValid;
 
             // Explicitly set all the nullable references so that IsSet is true
             _deferringLoader.Value = null;
             _getter.Value = null;
             _setter.Value = null;
-            _valueSerializer.Value = null;
         }
 
         /// <SecurityNote>
@@ -107,7 +97,6 @@ namespace System.Xaml.Schema
                 if (s_UnknownReflector == null)
                 {
                     s_UnknownReflector = new MemberReflector();
-                    s_UnknownReflector._designerSerializationVisibility = DesignerSerializationVisibility.Visible;
                     s_UnknownReflector._memberBits = (int)BoolMemberBits.Default |
                         (int)BoolMemberBits.Unknown | (int)BoolMemberBits.AllValid;
 
@@ -116,10 +105,8 @@ namespace System.Xaml.Schema
                     s_UnknownReflector._getter.Value = null;
                     s_UnknownReflector._setter.Value = null;
                     s_UnknownReflector._typeConverter.Value = null;
-                    s_UnknownReflector._valueSerializer.Value = null;
 
                     s_UnknownReflector.DependsOn = XamlType.EmptyList<XamlMember>.Value;
-                    s_UnknownReflector.Invoker = XamlMemberInvoker.UnknownInvoker;
                     s_UnknownReflector.Type = XamlLanguage.Object;
                 }
                 return s_UnknownReflector;
@@ -144,23 +131,6 @@ namespace System.Xaml.Schema
 
         internal bool MarkupExtensionBracketCharactersArgumentIsSet { get; set; }
 
-        internal object DefaultValue
-        {
-            get { return _defaultValue.IsNotPresent ? null : _defaultValue.Value; }
-            set { _defaultValue.Value = value; }
-        }
-
-        internal bool DefaultValueIsNotPresent
-        {
-            get { return _defaultValue.IsNotPresent; }
-            set { _defaultValue.IsNotPresent = value; }
-        }
-
-        internal bool DefaultValueIsSet
-        {
-            get { return _defaultValue.IsSet; }
-        }
-
         internal XamlValueConverter<XamlDeferringLoader> DeferringLoader
         {
             get { return _deferringLoader.Value; }
@@ -170,17 +140,6 @@ namespace System.Xaml.Schema
         internal bool DeferringLoaderIsSet { get { return _deferringLoader.IsSet; } }
 
         internal IList<XamlMember> DependsOn { get; set; }
-
-        internal DesignerSerializationVisibility? SerializationVisibility
-        {
-            get { return (_designerSerializationVisibility != VisibilityNone) ? _designerSerializationVisibility : (DesignerSerializationVisibility?)null; }
-            set { _designerSerializationVisibility = value.GetValueOrDefault(VisibilityNone); }
-        }
-
-        internal bool DesignerSerializationVisibilityIsSet
-        {
-            get { return _designerSerializationVisibility != VisibilityInvalid; }
-        }
 
         /// <SecurityNote>
         /// Critical: Accesses critical field _getter
@@ -203,8 +162,6 @@ namespace System.Xaml.Schema
             [SecuritySafeCritical]
             get { return _getter.IsSet; }
         }
-
-        internal XamlMemberInvoker Invoker { get; set; }
 
         // No need to check valid flag, this is set at creation
         internal bool IsUnknown { get { return (_memberBits & (int)BoolMemberBits.Unknown) != 0; } }
@@ -244,14 +201,6 @@ namespace System.Xaml.Schema
         internal bool TypeConverterIsSet { get { return _typeConverter.IsSet; } }
 
         internal MemberInfo UnderlyingMember { get; set; }
-
-        internal XamlValueConverter<ValueSerializer> ValueSerializer
-        {
-            get { return _valueSerializer.Value; }
-            set { _valueSerializer.Value = value; }
-        }
-
-        internal bool ValueSerializerIsSet { get { return _valueSerializer.IsSet; } }
 
         internal bool? GetFlag(BoolMemberBits flag)
         {

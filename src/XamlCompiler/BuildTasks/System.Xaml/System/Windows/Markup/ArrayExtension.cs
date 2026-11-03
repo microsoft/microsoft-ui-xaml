@@ -103,19 +103,6 @@ namespace System.Windows.Markup
             get { return _arrayList; }
         }
 
-        /// <summary>
-        ///  Return an array that is sized to the number of objects added to the ArrayExtension.
-        /// </summary>
-        /// <param name="serviceProvider">Object that can provide services for the markup extension.</param>
-        /// <returns>
-        ///  The Array containing all the objects added to this extension.
-        /// </returns>
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            // Markup extensions are never evaluated by the XAML compiler (it doesn't create objects), and this needs runtime reflection.
-            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ArrayExtension.ProvideValue");
-        }
-
         private ArrayList _arrayList = new ArrayList();
         private Type      _arrayType;
 

@@ -77,7 +77,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             Add(entries, typeof(MarkupExtension));
             Add(entries, typeof(INameScope));
             Add(entries, typeof(System.Xml.Serialization.IXmlSerializable));
-            Add(entries, typeof(PositionalParameterDescriptor));
             Add(entries, typeof(char));
             Add(entries, typeof(float));
             Add(entries, typeof(byte));

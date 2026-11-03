@@ -99,9 +99,6 @@ namespace System.Xaml
             new Lazy<XamlType>(() => GetXamlType(typeof(INameScope)));
         private static Lazy<XamlType> s_iXmlSerializable =
             new Lazy<XamlType>(() => GetXamlType(typeof(System.Xml.Serialization.IXmlSerializable)), true);
-        // This isn't a language built-in, but we use it in ObjectWriter
-        private static Lazy<XamlType> s_positionalParameterDescriptor =
-            new Lazy<XamlType>(() => GetXamlType(typeof(PositionalParameterDescriptor)), true);
 
         private static Lazy<XamlType> s_char =
             new Lazy<XamlType>(() => GetXamlType(typeof(Char)), true);
@@ -248,7 +245,6 @@ namespace System.Xaml
 
         internal static XamlType MarkupExtension { get { return s_markupExtension.Value; } }
         internal static XamlType INameScope { get { return s_iNameScope.Value; } }
-        internal static XamlType PositionalParameterDescriptor { get { return s_positionalParameterDescriptor.Value; } }
         // Careful: accessing this faults in System.Xml
         internal static XamlType IXmlSerializable { get { return s_iXmlSerializable.Value; } }
 

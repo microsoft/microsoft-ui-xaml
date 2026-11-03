@@ -21,28 +21,5 @@ namespace System.Windows.Markup
         [ConstructorArgument("name")]
         public string Name { get; set; }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException("serviceProvider");
-            }
-            IXamlNameResolver nameResolver = serviceProvider.GetService(typeof(IXamlNameResolver)) as IXamlNameResolver;
-            if (nameResolver == null)
-            {
-                throw new InvalidOperationException(SR.Get(SRID.MissingNameResolver));
-            }
-            if (String.IsNullOrEmpty(Name))
-            {
-                throw new InvalidOperationException(SR.Get(SRID.MustHaveName));
-            }
-            object obj = nameResolver.Resolve(Name);
-            if (obj == null)
-            {
-                string[] names = new string[] { Name };
-                obj = nameResolver.GetFixupToken(names, true);
-            }
-            return obj;
-        }
     }
 }

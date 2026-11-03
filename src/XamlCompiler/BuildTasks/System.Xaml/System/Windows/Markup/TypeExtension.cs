@@ -60,57 +60,6 @@ namespace System.Windows.Markup
         }
 
         /// <summary>
-        ///  Return an object that should be set on the targetObject's targetProperty
-        ///  for this markup extension.  TypeExtension resolves a string into a Type
-        ///  and returns it.
-        /// </summary>
-        /// <param name="serviceProvider">Object that can provide services for the markup extension.</param>
-        /// <returns>
-        ///  The object to set on this property.
-        /// </returns>
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            // If a type was supplied, no context nor type name are needed
-
-            if (_type != null)
-            {
-                return _type;
-            }
-
-            // Validate the initialization
-            
-            if (_typeName == null)
-            {
-                throw new InvalidOperationException(SR.Get(SRID.MarkupExtensionTypeName));
-            }
-
-            // Get the IXamlTypeResolver from the service provider
-
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException("serviceProvider");
-            }            
-
-            IXamlTypeResolver xamlTypeResolver = serviceProvider.GetService(typeof(IXamlTypeResolver)) as IXamlTypeResolver;
-            if( xamlTypeResolver == null )
-            {
-                throw new InvalidOperationException( SR.Get(SRID.MarkupExtensionNoContext, GetType().Name, "IXamlTypeResolver" ));
-            }
-
-            // Get the type
-            
-            _type = xamlTypeResolver.Resolve(_typeName);
-
-            if (_type == null)
-            {
-                throw new InvalidOperationException(SR.Get(SRID.MarkupExtensionTypeNameBad, _typeName));
-            }
-            
-            return _type;
-            // we could cash the result of type as _type, but it might cause some problems, and in theory we shouldn't need to
-        }
-
-        /// <summary>
         ///  The typename represented by this markup extension.  The name has the format
         ///  Prefix:Typename, where Prefix is the xml namespace prefix for this type.
         /// </summary>

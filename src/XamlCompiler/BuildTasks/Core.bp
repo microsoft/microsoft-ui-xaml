@@ -216,7 +216,6 @@ namespace XAMLCompiler.BuildTasks.Core {
         f`Microsoft/Xaml/XamlDom/XamlDomObject.cs`,
         f`Microsoft/Xaml/XamlDom/XamlDomReader.cs`,
         f`Microsoft/Xaml/XamlDom/XamlDomReaderSettings.cs`,
-        f`Microsoft/Xaml/XamlDom/XamlDomServices.cs`,
         f`Microsoft/Xaml/XamlDom/XamlDomValue.cs`,
         f`Microsoft/Xaml/XamlDom/XamlDomWriter.cs`,
         f`Microsoft/Xaml/XamlDom/XamlNodeCollection.cs`,

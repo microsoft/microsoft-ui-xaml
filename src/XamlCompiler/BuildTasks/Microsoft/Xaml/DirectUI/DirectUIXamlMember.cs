@@ -50,11 +50,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             this.ApiInformation = declaringType.ApiInformation;
         }
 
-        public DirectUIXamlMember(string attachablePropertyName, XamlMemberInvoker invoker, XamlSchemaContext schemaContext, ApiInformation apiInformation)
-            : base(attachablePropertyName, invoker.UnderlyingGetter, invoker.UnderlyingSetter, schemaContext, invoker)
+        public DirectUIXamlMember(string attachablePropertyName, MethodInfo getter, MethodInfo setter, XamlSchemaContext schemaContext, ApiInformation apiInformation)
+            : base(attachablePropertyName, getter, setter, schemaContext)
         {
-            _attachablePropertyGetter = invoker.UnderlyingGetter;
-            _attachablePropertySetter = invoker.UnderlyingSetter;
+            _attachablePropertyGetter = getter;
+            _attachablePropertySetter = setter;
             this.ApiInformation = apiInformation;
         }
 
