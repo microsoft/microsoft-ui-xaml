@@ -16,6 +16,14 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
   </ItemGroup>
 
+  <!-- Merged WinUI generation needs the Resources reference projection, which does not flow transitively. -->
+  <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
+    <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
   <!-- CsWinRT 3.0 uses a reference projection here, separate from implementation code. -->
   <PropertyGroup Condition="'$(UseCsWinRT3)'=='true'">
     <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
