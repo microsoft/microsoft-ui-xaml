@@ -115,6 +115,7 @@ private:
     void CompletePendingSelectionChange();
     void UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
+    void ClearSelectionModelSelection();
 
     // Item/container info functions
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);

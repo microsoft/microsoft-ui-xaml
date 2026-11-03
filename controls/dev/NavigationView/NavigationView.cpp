@@ -2449,6 +2449,16 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         UpdateSelectionModelSelectionForSelectedItem(nextItem);
 
+        if (!nextItem)
+        {
+            ClearSelectionModelSelection();
+            // An IsChildSelected callback selected another item, which has already been handled.
+            if (SelectedItem())
+            {
+                return;
+            }
+        }
+
         {
             auto scopeGuard = gsl::finally([this]()
             {
@@ -2560,6 +2570,37 @@ void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::I
             });
         m_shouldIgnoreNextSelectionChange = true;
         UpdateSelectionModelSelection(indexPath);
+    }
+}
+
+// Deselecting the previous container only updates the SelectionModel when that container was selected.
+// A data item selected before its container existed leaves its index path behind, which would keep
+// IsChildSelected on its ancestors and the selection indicator on them after SelectedItem is cleared.
+void NavigationView::ClearSelectionModelSelection()
+{
+    if (!m_appliedTemplate || !m_selectionModel)
+    {
+        return;
+    }
+
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
+    if (!selectedIndex || selectedIndex.GetSize() == 0)
+    {
+        return;
+    }
+
+    UpdateIsChildSelected(selectedIndex, nullptr);
+
+    // IsChildSelected callbacks can run app code that changes the selection.
+    if (!SelectedItem())
+    {
+        if (auto const currentIndex = m_selectionModel.SelectedIndex())
+        {
+            if (currentIndex.CompareTo(selectedIndex) == 0)
+            {
+                m_selectionModel.DeselectAt(selectedIndex);
+            }
+        }
     }
 }
 

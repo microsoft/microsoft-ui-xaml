@@ -56,6 +56,10 @@ Keyboard navigation and item invocation are both handled by the NavigationView.
 3. New selected NavigationViewItem gets selected
 4. Update UI (SelectionIndicator, Flyouts)
 
+Setting SelectedItem to null also removes any IndexPath left in the SelectionModel (and the
+IsChildSelected flags of its ancestors), for example when the selected data item's container was
+never selected because it did not exist when the item was selected.
+
 
 ### Compact pane length change
 1. The NavigationView gets notified it compact pane length changes
