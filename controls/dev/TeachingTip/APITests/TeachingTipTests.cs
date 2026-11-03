@@ -2981,6 +2981,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForTipState(tip, isOpen: false);
         }
 
+        // Scenario (issue #8095 review, Copilot 4453497564): an OPEN tip whose IsOpen is a OneWay binding lives as a UIElement
+        //           item of an ItemsRepeater whose ItemsSource is an app IList. Its static target is removed, so the deferred
+        //           unload check scans the tip's ancestry and calls the app's IList indexer (ItemsSourceView.GetAt). Inside
+        //           that callout the app clears the IsOpen source.
+        // Expected: the tip closes and the IsOpen binding survives (no local write onto a tip the app already closed).
+        // A failure means: the check wrote IsOpen from a value read before it called out to app code.
+        [TestMethod]
+        public void UnloadCheckRereadsStateAfterAppCodeInItsContainerChecks()
+        {
+            const string what = "the app clears the IsOpen source inside the check";
+            TeachingTip tip = null;
+            StackPanel host = null;
+            Button target = null;
+            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton source = null;
+            CalloutList items = null;
+            int calloutCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new StackPanel();
+                target = new Button() { Content = "Target" };
+                host.Children.Add(target);
+                source = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton() { Content = "IsOpen source" };
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                tip.SetBinding(TeachingTip.IsOpenProperty, new Microsoft.UI.Xaml.Data.Binding()
+                {
+                    Source = source,
+                    Path = new PropertyPath("IsChecked"),
+                    Mode = Microsoft.UI.Xaml.Data.BindingMode.OneWay
+                });
+                items = new CalloutList(tip);
+                items.OnArmedGet = () =>
+                {
+                    calloutCount++;
+                    source.IsChecked = false;
+                };
+                var root = new StackPanel();
+                root.Children.Add(source);
+                root.Children.Add(host);
+                root.Children.Add(new ItemsRepeater() { ItemsSource = items });
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => source.IsChecked = true);
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open through its binding");
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Arm the callout on the next Rendering, after layout and before the tip's deferred check (registered later,
+                // when the target's Unloaded is raised), so only the check's GetAt call runs the app code.
+                EventHandler<object> arm = null;
+                arm = (s, e) =>
+                {
+                    CompositionTarget.Rendering -= arm;
+                    items.Armed = true;
+                };
+                CompositionTarget.Rendering += arm;
+                host.Children.Remove(target);
+            });
+            WaitForFrames(3);
+            bool settled = WaitForTipState(tip, isOpen: false);
+            bool bindingAlive = false, tipOpen = false;
+            RunOnUIThread.Execute(() =>
+            {
+                items.Armed = false;
+                bindingAlive = tip.GetBindingExpression(TeachingTip.IsOpenProperty) != null;
+                tipOpen = tip.IsOpen;
+            });
+            Verify.AreEqual(1, calloutCount, "Precondition: the app code ran once, inside the deferred check: " + what);
+            Verify.IsTrue(bindingAlive, $"The IsOpen binding should survive: {what} (tip.IsOpen={tipOpen})");
+            Verify.IsTrue(settled, $"The tip should be closed: {what} (tip.IsOpen={tipOpen})");
+            RunOnUIThread.Execute(() => source.IsChecked = true);
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The binding should still open the tip");
+            RunOnUIThread.Execute(() => source.IsChecked = false);
+            WaitForTipState(tip, isOpen: false);
+        }
         // Scenario (issue #8095 review, Copilot): an OPEN tip targets a static Button; the Button is removed, and the app's
         //           Unloaded handler on it (registered after the tip's) retargets the tip to an already loaded element that
         //           an ItemsRepeater generated for a string item, all before the next Rendering tick.
@@ -3819,6 +3895,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // String list with key/index mapping, so ItemsRepeater keeps elements in its unique-id reset pool on Reset.
+        // App IList whose indexer runs app code once when armed (to run code inside a framework callout such as
+        // ItemsSourceView.GetAt).
+        private partial class CalloutList : global::System.Collections.IList
+        {
+            private readonly global::System.Collections.ArrayList _items = new global::System.Collections.ArrayList();
+
+            public CalloutList(params object[] items)
+            {
+                _items.AddRange(items);
+            }
+
+            public bool Armed { get; set; }
+            public Action OnArmedGet { get; set; }
+
+            public object this[int index]
+            {
+                get
+                {
+                    if (Armed)
+                    {
+                        Armed = false;
+                        OnArmedGet?.Invoke();
+                    }
+                    return _items[index];
+                }
+                set => _items[index] = value;
+            }
+
+            public bool IsFixedSize => false;
+            public bool IsReadOnly => false;
+            public int Count => _items.Count;
+            public bool IsSynchronized => false;
+            public object SyncRoot => this;
+            public int Add(object value) => _items.Add(value);
+            public void Clear() => _items.Clear();
+            public bool Contains(object value) => _items.Contains(value);
+            public int IndexOf(object value) => _items.IndexOf(value);
+            public void Insert(int index, object value) => _items.Insert(index, value);
+            public void Remove(object value) => _items.Remove(value);
+            public void RemoveAt(int index) => _items.RemoveAt(index);
+            public void CopyTo(Array array, int index) => _items.CopyTo(array, index);
+            public global::System.Collections.IEnumerator GetEnumerator() => _items.GetEnumerator();
+        }
+
         private partial class KeyedStringCollection : global::System.Collections.ObjectModel.ObservableCollection<string>, IKeyIndexMapping
         {
             public string KeyFromIndex(int index) => this[index];
