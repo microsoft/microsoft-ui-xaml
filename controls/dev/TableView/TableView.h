@@ -363,32 +363,14 @@ public:
     // Up/Down move between while the user has not drilled into cells.
     bool FocusRowContainer(int32_t rowIndex, std::optional<double> alignRatio = std::nullopt);
 
-    // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
-    // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
-    // row the user left, while a move that started inside the table keeps the row it names.
-    // Otherwise falls back to the viewport edge row.
-    winrt::TableViewRow ResolveFocusEntryRow(
-        winrt::TableViewRow const& row,
-        winrt::DependencyObject const& oldFocusedElement,
-        winrt::FocusNavigationDirection direction = winrt::FocusNavigationDirection::None);
-
     // No side effects; the caller arms the level it redirects to.
     struct FocusEntryTarget
     {
         winrt::TableViewRow Row{ nullptr };
         winrt::UIElement Element{ nullptr };
         bool CellLevel{ false };
+        bool Remembered{ false };
     };
-    FocusEntryTarget ResolveFocusEntryTarget(
-        winrt::TableViewRow const& row,
-        winrt::DependencyObject const& oldFocusedElement,
-        winrt::FocusNavigationDirection direction);
-
-    // Tab from another band onto a row or group header outside the viewport lands on the
-    // viewport edge row or group header instead. Returns true when focus was redirected.
-    bool TryRedirectBandEntryToViewport(
-        winrt::UIElement const& target,
-        winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
 
     static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
     winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const;
@@ -406,8 +388,6 @@ public:
 
     void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
 
-    winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
-
     winrt::hstring GetContainerIdentityInternal(winrt::UIElement const& container)
     {
         return TryGetContainerIdentity(container);
@@ -415,11 +395,7 @@ public:
 
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
-    bool IsCellCursorActiveInternal() const noexcept { return m_cellCursorActive; }
     void SetCellCursorActiveInternal(bool active);
-
-    // Shared header/body column cursor, in visible-column coordinates.
-    int32_t CurrentColumnCursorInternal() const noexcept { return m_currentCellColumn; }
 
     void OnRowCellFocusChanged(winrt::TableViewRow const& row);
 
@@ -431,6 +407,13 @@ public:
         winrt::UIElement const& element,
         int32_t visibleColumnIndex,
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
+
+    // Actionable headers and cells are the only header/body keyboard focus targets.
+    bool IsColumnUserSortableInternal(winrt::TableViewColumn const& column);
+    bool IsHeaderCellActionableInternal(winrt::FrameworkElement const& header);
+    bool IsColumnCellEditableInternal(winrt::TableViewColumn const& column);
+    void RefreshCellFocusLevelsInternal();
+    void RefreshHeaderTabStopsInternal();
 
     // True when handled (menu shown, or suppressed: editing, nested or stale target); false lets the
     // request bubble to the native ContextFlyout chain.
@@ -636,7 +619,6 @@ private:
     enum class HeaderRelease { All, DetachedColumns, Column };
     void ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope = HeaderRelease::All, const winrt::TableViewColumn& column = nullptr);
     void MoveHeaderFocusOffRemovedColumn(const winrt::Panel& host, const winrt::FrameworkElement& removedCell, const winrt::TableViewColumn& removedColumn, winrt::FocusState focusState);
-    bool FocusBodyAfterHeaderRemoval(winrt::FocusState focusState);
     void RebuildHeadersCore();
     winrt::Style CompatibleHeaderStyle(const winrt::Style& style);
     winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
@@ -1324,6 +1306,7 @@ private:
     bool TryLandReshapeFocus();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
     bool IsBodyFocusInContainer(winrt::UIElement const& container) const;
+    bool IsInUnrealizedBodyContainer(winrt::DependencyObject const& element) const;
     // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
     void BeginPendingBodyFocus(
         int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio, winrt::IInspectable const& item = nullptr);
@@ -1474,7 +1457,7 @@ private:
         const winrt::KeyRoutedEventArgs& args);
 
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
-    // Header-band arrows and clamping; Tab is the only cross-band move.
+    // Header-row arrows and clamping; Tab leaves the table.
     bool TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args);
     bool TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args);
     // Moves focus to a visible header by visible-column index; step 0 means exact only.
@@ -1482,15 +1465,25 @@ private:
     // Visible-column index of the header that currently has focus, or -1 when focus is elsewhere.
     int32_t GetFocusedVisibleHeaderIndex() const;
     // Header entry resolves to the remembered column, or the nearest focusable header around it.
-    int32_t ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const;
-    // Redirects header Tab entry from the first header to the remembered column.
-    void OnHeaderHostGettingFocus(
+    int32_t ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells);
+    // The table is one tab stop: Tab/Shift+Tab entry from outside lands on the header row, else the
+    // body; focus aimed at a non-actionable header is redirected or cancelled.
+    void OnTableGettingFocus(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+    bool TryRedirectTableEntry(const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+    bool TrySetBodyEntryTarget(const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+    FocusEntryTarget ResolveBodyEntryTarget(bool last);
+    bool FocusBodyEntryTarget(bool select, winrt::FocusState focusState = winrt::FocusState::Keyboard);
+    void QueueFocusTableEntry(winrt::DependencyObject const& expected, bool bodyOnly);
+    void MoveFocusOffCollapsingHeaders();
+    winrt::FocusManager::GettingFocus_revoker m_headerCollapseFocusRevoker{};
+    winrt::FrameworkElement FindOwnHeaderCell(winrt::DependencyObject const& element) const;
+    int32_t FindActionableHeaderIndex(const std::vector<winrt::FrameworkElement>& cells, int32_t visibleIndex, int32_t step);
+    winrt::UIElement::GettingFocus_revoker m_tableGettingFocusRevoker{};
     void OnHeaderHostGotFocus(
         const winrt::IInspectable& sender,
         const winrt::RoutedEventArgs& args);
-    winrt::UIElement::GettingFocus_revoker m_headerHostGettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_headerHostGotFocusRevoker{};
     // Enter / Space on a focused, sortable column header: the keyboard path to sorting.
     bool TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args);
@@ -1539,6 +1532,19 @@ private:
 
     // Two-level ARIA treegrid body cursor: row level or cell level.
     bool m_cellCursorActive{ false };
+    // Up/Down at cell level keep this column across rows where it lands on a neighbor or the row.
+    int32_t m_cellIntentColumn{ -1 };
+    int32_t m_cellIntentRow{ -1 };
+    // Horizontal offset before row-level Right drilled in, so Left can undo it in one step.
+    double m_drillInOffset{ -1.0 };
+    int32_t m_drillInRow{ -1 };
+    // The popped-out row's own focus bring-into-view arrives later and would undo the restore.
+    winrt::weak_ref<winrt::UIElement> m_drillRestoreRow{};
+    double m_drillRestoreOffset{ -1.0 };
+    // Selection changes counted, so entry can tell a selection made after the remembered row.
+    uint32_t m_selectionSequence{ 0 };
+    uint32_t m_rememberedSelectionSequence{ 0 };
+    winrt::weak_ref<winrt::DependencyObject> m_lastFocusedWithin{ nullptr };
     // True while Enter has moved focus into hosted cell content; Escape restores grid navigation
     // after hosted controls, such as ComboBox, handle their own Escape.
     bool m_cellInteractionActive{ false };
@@ -1556,10 +1562,10 @@ private:
     // Focus is exactly on one of this table's rows, group headers or cells, not on hosted content.
     bool IsFocusExactlyOnBodyItem() const;
     bool IsFocusInsideEditingElement() const;
-    bool RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const;
 
     // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
     bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);
+    bool ScrollBodyHorizontallyInternal(bool forward, bool toEdge = false, winrt::UIElement const& keepInView = nullptr);
     bool TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEventArgs& args);
     // Enter from a focused cell moves into interactive display content; Escape moves back out.
     bool TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs& args);

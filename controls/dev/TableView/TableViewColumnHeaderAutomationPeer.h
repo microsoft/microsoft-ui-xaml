@@ -23,6 +23,9 @@ public:
     hstring GetClassNameCore();
     hstring GetNameCore();
     bool IsEnabledCore();
+    // Only an actionable header takes keyboard focus; see TableView::IsHeaderCellActionableInternal.
+    bool IsKeyboardFocusableCore();
+    void SetFocusCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
     hstring GetAutomationIdCore();
     // Reports the column's current sort state, so a screen-reader user can tell a sorted header

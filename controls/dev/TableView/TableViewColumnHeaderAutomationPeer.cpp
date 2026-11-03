@@ -239,6 +239,29 @@ bool TableViewColumnHeaderAutomationPeer::IsEnabledCore()
     return true;
 }
 
+bool TableViewColumnHeaderAutomationPeer::IsKeyboardFocusableCore()
+{
+    auto const owner = m_table.get();
+    auto const header = GetHeaderElement();
+    return owner && header && winrt::get_self<TableView>(owner)->IsHeaderCellActionableInternal(header);
+}
+
+// Only an actionable header takes focus; a lagging inactive stamp is dropped first.
+void TableViewColumnHeaderAutomationPeer::SetFocusCore()
+{
+    auto const owner = m_table.get();
+    auto const header = GetHeaderElement();
+    if (!owner || !header || !winrt::get_self<TableView>(owner)->IsHeaderCellActionableInternal(header))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+    header.ClearValue(winrt::UIElement::IsTabStopProperty());
+    if (!header.Focus(winrt::FocusState::Programmatic) || header.FocusState() == winrt::FocusState::Unfocused)
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+}
+
 void TableViewColumnHeaderAutomationPeer::Invoke()
 {
     if (!IsEnabled())
@@ -410,13 +433,14 @@ bool TableViewColumnHeaderAutomationPeer::IsTableViewOwned()
 bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 {
     auto const column = m_column.get();
-    if (!column || !column.CanSort() || !IsVisibleColumn(column))
+    if (!column || !IsVisibleColumn(column))
     {
         return false;
     }
 
+    // A column without a sort key cannot sort, so it does not advertise Invoke.
     auto const owner = m_table.get();
-    return owner && owner.IsLoaded() && owner.CanUserSortColumns();
+    return owner && owner.IsLoaded() && winrt::get_self<TableView>(owner)->IsColumnUserSortableInternal(column);
 }
 
 // The static opt-in only; whether the gripper is usable right now is CanResize's job.

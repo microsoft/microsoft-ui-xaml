@@ -634,6 +634,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        internal static bool SetPageCheckBox(string automationId, bool isChecked)
+        {
+            var checkBox = FindElement.ById<CheckBox>(automationId);
+            if (checkBox == null) { Verify.Fail(automationId + " was not found."); return false; }
+            if (isChecked) { checkBox.Check(); } else { checkBox.Uncheck(); }
+            Wait.ForIdle();
+            return true;
+        }
+
         // Selects a Pivot item by invoking the page's GoTo<Item>Button, found by AutomationId rather than by header
         // name. Returns false if the button could not be found; the caller decides whether that fails the test.
         internal static bool SelectPivotItem(string pivotItem)

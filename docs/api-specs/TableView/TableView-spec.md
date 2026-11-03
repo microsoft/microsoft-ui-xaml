@@ -261,9 +261,11 @@ Orders.Clear();
 
 ### Keyboard navigation & accessibility
 
-TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row; Left and Right move the cell cursor within the focused row. Home and End move to the first or last cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last cell in the table. Enter and Space on a column header sort that column.
+TableView supports cell focus on actionable cells. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row (the nearest actionable cell, else the row); Left and Right move the cell cursor among the actionable cells of the focused row. Home and End move to the first or last actionable cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last row of the table. Enter and Space on a column header sort that column.
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
+
+The keyboard focus model is described in the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model).
 
 ```xaml
 <tabular:TableView

@@ -626,6 +626,23 @@ TableView::TableView()
         });
     AddHandler(winrt::UIElement::PreviewKeyDownEvent(), winrt::box_value(m_previewKeyDownHandler), false /* handledEventsToo */);
 
+    m_tableGettingFocusRevoker = GettingFocus(winrt::auto_revoke,
+        [weakThis](winrt::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                try
+                {
+                    strongThis->OnTableGettingFocus(sender, args);
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Resolving the focus target failed (HRESULT 0x%08X).",
+                        static_cast<unsigned int>(winrt::to_hresult()));
+                }
+            }
+        });
+
     // handledEventsToo: rows and headers mark their presses handled, and a press anywhere in the
     // table is the user taking focus over from a pending re-shape restore.
     AddHandler(
@@ -635,6 +652,9 @@ TableView::TableView()
             {
                 if (auto strongThis = weakThis.get())
                 {
+                    strongThis->m_cellIntentColumn = -1;
+                    strongThis->m_drillInOffset = -1.0;
+                    strongThis->m_drillRestoreOffset = -1.0;
                     strongThis->CancelReshapeFocusRestoreForUserInput();
                 }
             })),
@@ -871,9 +891,8 @@ try
             m_headerHostLoadedToken = {};
         }
 
-        // Auto-revoke would also release these on reassignment below, but the old band must not
+        // Auto-revoke would also release this on reassignment below, but the old band must not
         // raise focus events into a control whose template has already been swapped.
-        m_headerHostGettingFocusRevoker.revoke();
         m_headerHostGotFocusRevoker.revoke();
     }
     m_headerContextRequestedRevoker.revoke();
@@ -920,21 +939,8 @@ try
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
     {
-        // One tab stop for the header band, matching Explorer and WinUI list controls: Tab crosses
-        // bands, arrows stay inside. Apply it at PART_HeaderHost, not TableViewCellsPanel; the panel
-        // is shared layout, while the focus policy belongs to the two host bands.
+        // Keeps XAML's tab walk from stopping on each header; the table is the single tab stop.
         headerHost.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
-
-        // Redirect band entry from the first header to the remembered column.
-        m_headerHostGettingFocusRevoker = headerHost.GettingFocus(winrt::auto_revoke,
-            [weakThis](winrt::IInspectable const& sender,
-                winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
-            {
-                if (auto strongThis = weakThis.get())
-                {
-                    strongThis->OnHeaderHostGettingFocus(sender, args);
-                }
-            });
 
         // Update the shared column cursor whenever a header actually takes focus.
         m_headerHostGotFocusRevoker = headerHost.GotFocus(winrt::auto_revoke,
@@ -1105,6 +1111,15 @@ catch (...)
 
 void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    // Header template content exists only after the first layout. App sort-key overrides can throw.
+    try
+    {
+        RefreshHeaderTabStopsInternal();
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Refreshing header tab stops failed.");
+    }
     if (m_headerScroller.get())
     {
         return; // already resolved
@@ -1320,6 +1335,11 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     if (args.OldValue() == args.NewValue())
     {
         return;
+    }
+
+    if (!ShouldShowColumnHeaders())
+    {
+        MoveFocusOffCollapsingHeaders();
     }
 
     UpdateHeaderVisibility();
@@ -2499,6 +2519,7 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
 // dependency-property change callback, where moving focus re-enters focus/layout processing.
 void TableView::OnColumnIsReadOnlyChanged(winrt::TableViewColumn const& column)
 {
+    RefreshCellFocusLevelsInternal();
     if (!column || !IsEditing())
     {
         return;
@@ -2510,8 +2531,46 @@ void TableView::OnColumnIsReadOnlyChanged(winrt::TableViewColumn const& column)
     }
 }
 
+// Read-only state decides which cells are actionable, so the cell tab stops are restamped. A focused
+// cell that stopped being actionable hands focus to its row.
+void TableView::RefreshCellFocusLevelsInternal()
+{
+    ForEachRealizedRow([](winrt::TableViewRow const& row)
+    {
+        auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        rowImpl->SetCellLevelInternal(rowImpl->IsCellLevelInternal());
+    });
+
+    if (auto const queue = DispatcherQueue())
+    {
+        queue.TryEnqueue([weakThis = get_weak()]()
+            {
+                auto const strongThis = weakThis.get();
+                int32_t rowIndex = -1;
+                int32_t column = -1;
+                try
+                {
+                    if (strongThis && strongThis->TryGetFocusedCell(rowIndex, column, true /* requireExactCell */))
+                    {
+                        auto const row = strongThis->GetRealizedRowAt(rowIndex);
+                        auto const rowImpl = row ? winrt::get_self<TableViewRow>(row) : nullptr;
+                        if (rowImpl && !rowImpl->IsCellActionableInternal(rowImpl->GetVisibleCellInternal(column)))
+                        {
+                            strongThis->FocusRowContainerInternal(row);
+                        }
+                    }
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Moving focus off an inactive cell failed.");
+                }
+            });
+    }
+}
+
 void TableView::OnIsReadOnlyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
+    RefreshCellFocusLevelsInternal();
     // Turning the control read-only must close an open cell, or the user keeps an editor - and a
     // committable value - on a control that now reports it cannot be edited. Forced, because
     // read-only is a control-level statement a handler must not veto. Uses the no-focus teardown:
@@ -2983,21 +3042,6 @@ void TableView::MoveHeaderFocusOffRemovedColumn(
     }
 }
 
-// The body element focus enters on from outside: the current row or cell, else the viewport edge.
-bool TableView::FocusBodyAfterHeaderRemoval(winrt::FocusState focusState)
-{
-    winrt::UIElement target{ nullptr };
-    if (auto const edgeRow = FindViewportEdgeRowInternal(false))
-    {
-        target = ResolveFocusEntryTarget(edgeRow, nullptr, winrt::FocusNavigationDirection::None).Element;
-    }
-    if (!target)
-    {
-        target = FindViewportEdgeElementInternal(false, true /* includeGroupHeaders */);
-    }
-    return target && target.Focus(focusState);
-}
-
 void TableView::RebuildHeaders()
 {
     // App code run while the old headers are released (focus, tooltip and content changes) can ask
@@ -3269,35 +3313,33 @@ void TableView::RebuildHeadersCore()
     ApplyGridLinesToHeader();
     RefreshResizeGripperAvailability();
 
+    RefreshHeaderTabStopsInternal();
     headerFocusMoveRevoker.revoke();
-    if (focusedHeaderColumn && !headerFocusMovedAway)
+    if ((focusedHeaderColumn || focusBody) && !headerFocusMovedAway)
     {
-        RestoreHeaderFocus(focusedHeaderColumn, focusedHeaderState);
-    }
-    else if (focusBody && !headerFocusMovedAway)
-    {
-        // Focus parks only when no other header could take it, so headers built now replaced the
-        // removed columns; keep focus in the header band before falling back to the body.
-        winrt::TableViewColumn firstHeaderColumn{ nullptr };
-        if (auto const columns = Columns())
+        // The focused header if still actionable, else the first actionable header, else the body.
+        winrt::TableViewColumn target{ nullptr };
+        winrt::TableViewColumn first{ nullptr };
+        for (auto const& child : host.Children())
         {
-            for (auto const& column : columns)
+            auto const cell = child.try_as<winrt::FrameworkElement>();
+            if (!cell || !IsHeaderCellActionableInternal(cell))
             {
-                if (column && column.Visibility() == winrt::Visibility::Visible &&
-                    winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
-                {
-                    firstHeaderColumn = column;
-                    break;
-                }
+                continue;
             }
+            auto const column = cell.Tag().try_as<winrt::TableViewColumn>();
+            first = first ? first : column;
+            target = column == focusedHeaderColumn ? column : target;
         }
-        if (firstHeaderColumn)
+        target = target ? target : first;
+        const auto state = focusedHeaderColumn ? focusedHeaderState : removedFocusState;
+        if (target)
         {
-            RestoreHeaderFocus(firstHeaderColumn, removedFocusState);
+            RestoreHeaderFocus(target, state);
         }
         else
         {
-            FocusBodyAfterHeaderRemoval(removedFocusState);
+            FocusBodyEntryTarget(false /* select */, state);
         }
     }
 }

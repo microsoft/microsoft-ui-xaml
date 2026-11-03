@@ -41,6 +41,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string RemoveColumnButton = "RemoveColumnButton";
         internal const string ToggleScorePinButton = "ToggleScorePinButton";
         internal const string FilterSourceButton = "FilterSourceButton";
+        internal const string SingleGroupedRowFilterButton = "SingleGroupedRowFilterButton";
         internal const string ExpandAllGroupsButton = "ExpandAllGroupsButton";
         internal const string CollapseAllGroupsButton = "CollapseAllGroupsButton";
         internal const string DelayedUnloadButton = "DelayedUnloadButton";
@@ -49,6 +50,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
+        internal const string IsReadOnlyCheckBox = "IsReadOnlyCheckBox";
+        internal const string CanUserResizeColumnsCheckBox = "CanUserResizeColumnsCheckBox";
+        internal const string HideColumnHeadersCheckBox = "HideColumnHeadersCheckBox";
+        internal const string EmptyBasicCheckBox = "EmptyBasicCheckBox";
+        internal const string EmptyStateButton = "EmptyStateButton";
+        internal const string EmptyStateImportButton = "EmptyStateImportButton";
+        internal const string ScrollFixturesCheckBox = "ScrollFixturesCheckBox";
+        internal const string CellHyperlink = "CellHyperlink";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
         internal const string ResetHierarchyButton = "ResetHierarchy";

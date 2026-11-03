@@ -91,6 +91,12 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnFocusNeutralSortBasicByAgeClick" />
+            <Button Content="Filter to one grouped row"
+                    AutomationProperties.Name="SingleGroupedRowFilterButton"
+                    AutomationProperties.AutomationId="SingleGroupedRowFilterButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnSingleGroupedRowFilterClick" />
             <Button Content="Filter Source (focus-neutral)"
                     AutomationProperties.Name="FocusNeutralFilterSourceButton"
                     AutomationProperties.AutomationId="FocusNeutralFilterSourceButton"
@@ -129,6 +135,31 @@
                     AutomationProperties.AutomationId="navigateToVirtualization"
                     IsTabStop="False"
                     AllowFocusOnInteraction="False" />
+            <CheckBox Content="CanUserResizeColumns"
+                      AutomationProperties.Name="CanUserResizeColumnsCheckBox"
+                      AutomationProperties.AutomationId="CanUserResizeColumnsCheckBox"
+                      IsChecked="True"
+                      IsTabStop="False"
+                      Checked="OnCanUserResizeColumnsToggled"
+                      Unchecked="OnCanUserResizeColumnsToggled" />
+            <CheckBox Content="Hide column headers"
+                      AutomationProperties.Name="HideColumnHeadersCheckBox"
+                      AutomationProperties.AutomationId="HideColumnHeadersCheckBox"
+                      IsTabStop="False"
+                      Checked="OnHideColumnHeadersToggled"
+                      Unchecked="OnHideColumnHeadersToggled" />
+            <CheckBox Content="Empty basic table"
+                      AutomationProperties.Name="EmptyBasicCheckBox"
+                      AutomationProperties.AutomationId="EmptyBasicCheckBox"
+                      IsTabStop="False"
+                      Checked="OnEmptyBasicToggled"
+                      Unchecked="OnEmptyBasicToggled" />
+            <CheckBox Content="Scroll fixtures"
+                      AutomationProperties.Name="ScrollFixturesCheckBox"
+                      AutomationProperties.AutomationId="ScrollFixturesCheckBox"
+                      IsTabStop="False"
+                      Checked="OnScrollFixturesToggled"
+                      Unchecked="OnScrollFixturesToggled" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -145,6 +176,18 @@
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
+                    <controls:TableView.EmptyTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Add a person"
+                                        AutomationProperties.Name="EmptyStateButton"
+                                        AutomationProperties.AutomationId="EmptyStateButton" />
+                                <Button Content="Import"
+                                        AutomationProperties.Name="EmptyStateImportButton"
+                                        AutomationProperties.AutomationId="EmptyStateImportButton" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </controls:TableView.EmptyTemplate>
                     <controls:TableViewTextColumn Header="Name"
                                                   Width="160"
                                                   MinWidth="60"
@@ -199,6 +242,7 @@
 
             <Grid x:Name="RtlTableHost" Visibility="Collapsed">
                 <controls:TableView x:Name="RtlTableView"
+                                    IsReadOnly="False"
                                     AutomationProperties.Name="RtlTableView"
                                     AutomationProperties.AutomationId="RtlTableView"
                                     FlowDirection="RightToLeft"
@@ -212,7 +256,7 @@
                                                   Width="180"
                                                   MinWidth="60"
                                                   Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlCity" Width="220" Binding="{Binding City}" />
+                    <controls:TableViewTextColumn Header="RtlCity" Width="220" CanSort="False" Binding="{Binding City}" />
                     <controls:TableViewTextColumn Header="RtlAge" Width="220" Binding="{Binding Age}" />
                 </controls:TableView>
             </Grid>
@@ -254,6 +298,7 @@
             <Grid x:Name="ScrollingTableHost" Visibility="Collapsed">
                 <StackPanel Orientation="Vertical" Spacing="4">
                 <controls:TableView x:Name="ScrollingTableView"
+                                    IsReadOnly="False"
                                     AutomationProperties.Name="ScrollingTableView"
                                     AutomationProperties.AutomationId="ScrollingTableView"
                                     Height="300"
@@ -330,6 +375,7 @@
                 </controls:TableView>
 
                 <controls:TableView x:Name="HierarchyRtlTable"
+                                    IsReadOnly="False"
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     AutomationProperties.Name="HierarchyRtlTable"

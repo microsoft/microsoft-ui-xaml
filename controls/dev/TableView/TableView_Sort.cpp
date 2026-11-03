@@ -184,6 +184,11 @@ winrt::TableViewSource TableView::ShapingSourceInternal() const
     return m_activeSource.get();
 }
 
+bool TableView::IsColumnUserSortableInternal(const winrt::TableViewColumn& column)
+{
+    return column && CanUserSortColumns() && CanSortColumn(column);
+}
+
 bool TableView::IsSortClearStillValid() const
 {
     return !m_sortedColumns.empty();

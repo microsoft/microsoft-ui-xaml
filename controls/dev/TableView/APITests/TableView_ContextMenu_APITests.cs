@@ -541,8 +541,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A row menu opened from a cell request focuses that cell and leaves the selection unchanged.")]
-        public void RowMenuFromCellRequestFocusesCell()
+        [TestProperty("Description", "A row menu opened from a request on an inactive cell focuses that cell's row and leaves the selection unchanged.")]
+        public void RowMenuFromInactiveCellRequestFocusesRow()
         {
             var f = LoadFixture();
             SelectRow(f, 1);
@@ -553,8 +553,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreSame(CellOf(f, 5, OfficeCol), f.Recorder.Opened[0].FocusAtOpening,
-                    $"Focus must be on the row 5 Office cell when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
+                // A read-only cell with no tooltip, control or menu is not a focus target.
+                Verify.AreSame(RowOf(f, 5), f.Recorder.Opened[0].FocusAtOpening,
+                    $"Focus must be on row 5 when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
                 Verify.AreSame(f.P(1), f.Table.SelectedItem, "Selection must be unchanged.");
             });
             CloseMenus(f);

@@ -73,6 +73,38 @@ namespace TableViewDetails
         return std::nullopt;
     }
 
+    // A neutralized control-owned ToolTip (disabled, no content) stays attached, so its presence
+    // alone does not mean the element shows a tooltip.
+    inline bool HasEffectiveToolTip(const winrt::DependencyObject& element)
+    {
+        auto const value = element ? winrt::ToolTipService::GetToolTip(element) : nullptr;
+        if (!value)
+        {
+            return false;
+        }
+
+        if (auto const text = TryGetString(value))
+        {
+            return !text->empty();
+        }
+
+        if (auto const toolTip = value.try_as<winrt::ToolTip>())
+        {
+            if (!toolTip.IsEnabled())
+            {
+                return false;
+            }
+            auto const content = toolTip.Content();
+            if (auto const text = TryGetString(content))
+            {
+                return !text->empty();
+            }
+            return content != nullptr;
+        }
+
+        return true;
+    }
+
     inline void RetractPublishedHelpText(const winrt::FrameworkElement& element, CellToolTipRecord& record)
     {
         if (!record.PublishedHelpText.empty() &&
