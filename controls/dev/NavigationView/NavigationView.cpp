@@ -915,7 +915,7 @@ void NavigationView::OnFlyoutClosing(const winrt::IInspectable& sender, const wi
         m_moveTopNavOverflowItemOnFlyoutClose = false;
 
         auto const selectedIndex = m_selectionModel.SelectedIndex();
-        if (selectedIndex.GetSize() > 0)
+        if (selectedIndex && selectedIndex.GetSize() > 0)
         {
             if (auto const firstContainer = GetContainerForIndex(selectedIndex.GetAt(1), false /*infooter*/))
             {
@@ -3665,6 +3665,8 @@ void NavigationView::ClearSelectionModelForNullSelectedItem()
         });
         m_shouldIgnoreNextSelectionChange = true;
         m_selectionModel.DeselectAt(staleIndexPath);
+        // A deferred move of an overflow item (see OnFlyoutClosing) would act on the path that was just dropped.
+        m_moveTopNavOverflowItemOnFlyoutClose = false;
     }
 }
 
