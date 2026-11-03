@@ -39,6 +39,7 @@ namespace MUXControlsTestApp
             NavigateToAnimationPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewAnimationPage), 0); };
             NavigateToIsPaneOpenPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewIsPaneOpenPage), 0); };
             NavigateToMinimalPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewMinimalPage), 0); };
+            NavigateToStackPanelHostPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewStackPanelHostPage), 0); };
             NavigateToCustomThemeResourcesPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewCustomThemeResourcesPage), 0); };
             NavigationViewBlankPage1.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewBlankPage1), 0); };
             NavigationViewMenuItemStretchPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewMenuItemStretchPage), 0); };

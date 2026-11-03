@@ -1328,6 +1328,113 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        [TestProperty("Description", "#8291: NavigationView in a vertical StackPanel, Settings hidden. Click the parent, close and reopen the pane with the toggle button, then collapse/expand with clicks; the item state and layout must match the state before the toggle.")]
+        public void VerifyExpandedItemAfterPaneToggleInStackPanelHost()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation StackPanel Host Test" }))
+            {
+                int readCount = 0;
+
+                // Click the chevron in the item's top row, like the issue. The item's bounds include its children
+                // while it is expanded, so clicking its center would hit a child.
+                void ClickPancakesChevron()
+                {
+                    ElementCache.Clear();
+                    var pancakes = FindElement.ByName("Pancakes");
+                    InputHelper.LeftClick(pancakes, pancakes.BoundingRectangle.Width - 25, 20);
+                }
+
+                Dictionary<string, string> GetState()
+                {
+                    readCount++;
+                    new Button(FindElement.ById("GetLayoutState")).Invoke();
+                    Wait.ForIdle();
+                    var text = new TextBlock(FindElement.ById("LayoutState")).DocumentText;
+                    Log.Comment($"State #{readCount}: " + text);
+                    return text.Split(';').Select(p => p.Split('=')).ToDictionary(p => p[0], p => p.Length > 1 ? p[1] : "");
+                }
+
+                // Expand/collapse and pane animations move items for a while, so wait until two reads agree.
+                Dictionary<string, string> GetStableState()
+                {
+                    var previous = GetState();
+                    for (int i = 0; i < 20; i++)
+                    {
+                        Task.Delay(500).Wait();
+                        Wait.ForIdle();
+                        var current = GetState();
+                        if (current.Count == previous.Count && !current.Except(previous).Any())
+                        {
+                            return current;
+                        }
+                        previous = current;
+                    }
+                    Verify.Fail("Layout state did not settle");
+                    return previous;
+                }
+
+                Dictionary<string, string> WaitForPane(bool open)
+                {
+                    var expected = open ? "True" : "False";
+                    var state = GetState();
+                    for (int i = 0; i < 20 && state["IsPaneOpen"] != expected; i++)
+                    {
+                        Task.Delay(250).Wait();
+                        state = GetState();
+                    }
+                    Verify.AreEqual(expected, state["IsPaneOpen"], "Pane open state");
+                    return GetStableState();
+                }
+
+                var collapsed = GetStableState();
+
+                Log.Comment("Step 2: click Pancakes to expand it.");
+                ClickPancakesChevron();
+                Wait.ForIdle();
+                var expanded = GetStableState();
+                Verify.AreEqual("True", expanded["IsExpanded"], "Pancakes should be expanded by the click");
+
+                Log.Comment("Step 4: close the pane with the toggle button.");
+                var toggleButton = new Button(FindElement.ById("TogglePaneButton"));
+                toggleButton.Click();
+                Wait.ForIdle();
+                WaitForPane(open: false);
+
+                Log.Comment("Step 5: reopen the pane with the toggle button.");
+                toggleButton.Click();
+                Wait.ForIdle();
+                var reopened = WaitForPane(open: true);
+
+                Log.Comment("Step 6: the expanded state is restored.");
+                Verify.AreEqual("True", reopened["IsExpanded"], "Reopening the pane should restore the expanded state");
+                Verify.AreEqual(expanded["CreateTop"], reopened["CreateTop"], "Create should be below the restored children");
+                Verify.AreEqual(expanded["Chevron"], reopened["Chevron"], "Chevron after reopening");
+                Verify.AreEqual(expanded["PresenterWidth"], reopened["PresenterWidth"], "Parent width after reopening");
+
+                Log.Comment("Steps 9-10: click Pancakes to collapse it.");
+                ElementCache.Clear();
+                ClickPancakesChevron();
+                Wait.ForIdle();
+                var collapsedAgain = GetStableState();
+                Verify.AreEqual("False", collapsedAgain["IsExpanded"], "Pancakes should be collapsed by the click");
+                Verify.AreEqual(collapsed["CreateTop"], collapsedAgain["CreateTop"], "Collapsing should give back the children's space");
+                Verify.AreEqual(collapsed["Chevron"], collapsedAgain["Chevron"], "Chevron after collapsing");
+                Verify.AreEqual(collapsed["NavViewHeight"], collapsedAgain["NavViewHeight"], "NavigationView height after collapsing");
+
+                Log.Comment("Steps 7-8: click Pancakes to expand it again.");
+                ClickPancakesChevron();
+                Wait.ForIdle();
+                var expandedAgain = GetStableState();
+                Verify.AreEqual("True", expandedAgain["IsExpanded"], "Pancakes should be expanded by the click");
+                Verify.AreEqual(expanded["CreateTop"], expandedAgain["CreateTop"], "Create should be below the children");
+                Verify.AreEqual(expanded["Chevron"], expandedAgain["Chevron"], "Chevron after expanding again");
+                Verify.AreEqual(expanded["PresenterWidth"], expandedAgain["PresenterWidth"], "Parent width after expanding again");
+                Verify.AreEqual(expanded["NavViewHeight"], expandedAgain["NavViewHeight"], "NavigationView height after expanding again");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void VerifyChangingFooterMenuItemVisibilityAdjustsPaneLayout()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
