@@ -9,8 +9,9 @@ namespace WinUIProfiler.Engine.Storage;
 // The UI elements and composition visuals the events mention, and for each object the events that mention it. Runs on
 // the session writer's thread inside its transactions, so a mention is saved and trimmed together with its event.
 //
-// Only TraceLogging events on Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are read, and none of them
-// creates or destroys an object. Manifest events use the same field names for other objects too: BeginStoryboard's
+// TraceLogging events on Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are read, and none of them
+// creates or destroys an object. The retained VirtualizationIsEnabledByLayout manifest event also names a UI element.
+// Other manifest events use the same field names for other objects too: BeginStoryboard's
 // ElementId is the storyboard, and the ParentId of Microsoft-Windows-XAML-Diagnostics' PeerCreated is a framework peer.
 // An address is known to be a UI element once it appears in a field that only ever holds a CUIElement* (tree, child,
 // popup, layout, template, visual state, render and composition-link events).
@@ -314,6 +315,12 @@ internal sealed class ObjectIndex : IDisposable
                     fields.Add((i, role));
                 }
             }
+        }
+        else if (profilerEvent is { TraceLogging: false, Provider: XamlProvider.Xaml,
+            Name: "VirtualizationIsEnabledByLayout", Opcode: 0 } &&
+            names.SequenceEqual(new[] { "IsEnabled", "ElementId", "Name", "ClassType", "PropertyType" }))
+        {
+            fields.Add((Array.IndexOf(names, "ElementId"), Role.UIElement));
         }
 
         // Only the start form of DependencyObject_Enter carries the type and name.
