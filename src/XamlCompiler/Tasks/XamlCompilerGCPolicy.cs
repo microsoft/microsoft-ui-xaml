@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.UI.Xaml.Markup.Compiler.IO
+namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
 {
     /// <summary>Chooses the GC startup settings of the native XAML compiler, without changing the MSBuild process environment.</summary>
     internal static class XamlCompilerGCPolicy

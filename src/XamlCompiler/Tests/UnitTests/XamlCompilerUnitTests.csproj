@@ -47,6 +47,23 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
   </ItemGroup>
   <ItemGroup>
+    <!--
+      The CompileXaml task under test (TaskTests.cs), as packaged by Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj (built by
+      XamlCompiler.sln, like the compiler): not a ProjectReference, which would build the Native AOT compiler as part of the tests.
+    -->
+    <Reference Include="Microsoft.UI.Xaml.Markup.Compiler.Tasks">
+      <HintPath>$(ToolsPackageLocation)\Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <!-- The free-threaded IDE host object interface the tests implement, embedded like in the task (see IdeHostFileManager) -->
+    <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" Version="[$(MicrosoftVisualStudioProjectSystemVersion)]" />
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
+      <HintPath>$(NugetPackageDirectory)\Microsoft.VisualStudio.ProjectSystem\$(MicrosoftVisualStudioProjectSystemVersion)\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="XamlCompilerProxies\XamlCompilerProxies.csproj">
       <!-- Tests/Directory.Build.props defaults ProjectReference Private=false for non-exe projects, but the tests load it at runtime -->
       <Private>true</Private>
@@ -66,6 +83,12 @@
       <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="LibManagedDllSatellite\LibManagedDllSatellite.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ExcludeAssets>all</ExcludeAssets>
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="FakeXamlCompiler\FakeXamlCompiler.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ExcludeAssets>all</ExcludeAssets>
@@ -144,6 +167,13 @@
       <_XamlCompilerToolDependencies Include="$(CompilerSourceDir)*.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_XamlCompilerToolDependencies)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <!-- The stand-in compiler the CompileXaml task tests run (see TaskTests) -->
+    <ItemGroup>
+      <_FakeXamlCompilerFile Include="$(LibManagedOutputRoot)FakeXamlCompiler\FakeXamlCompiler\FakeXamlCompiler.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_FakeXamlCompilerFile)" DestinationFolder="$(OutDir)FakeXamlCompiler\" SkipUnchangedFiles="true" />
+    <!-- Also where the task looks for the compiler when it isn't given one: next to the task assembly, like in the package -->
+    <Copy SourceFiles="@(_FakeXamlCompilerFile)" DestinationFiles="@(_FakeXamlCompilerFile->'$(OutDir)win-x64\%(Filename)%(Extension)'->Replace('\FakeXamlCompiler.exe', '\XamlCompiler.exe'))" SkipUnchangedFiles="true" />
 
     <!-- The reference closures of the user assemblies the tests compile against (see TestHelper) -->
     <PropertyGroup>
@@ -171,6 +201,9 @@
       <_RequiredPayloadOutput Include="$(OutDir)UnitTests.dll" />
       <_RequiredPayloadOutput Include="$(OutDir)Win8Xaml.CompilerProxies.dll" />
       <_RequiredPayloadOutput Include="$(OutDir)XamlCompiler.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)FakeXamlCompiler\FakeXamlCompiler.exe" />
+      <_RequiredPayloadOutput Include="$(OutDir)win-x64\XamlCompiler.exe" />
       <_RequiredPayloadOutput Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
       <_RequiredPayloadOutput Include="$(OutDir)Microsoft.UI.winmd" />
       <_RequiredPayloadOutput Include="$(OutDir)LibManagedDll.dll" />

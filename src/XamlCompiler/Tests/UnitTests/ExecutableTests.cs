@@ -47,11 +47,10 @@ namespace UnitTests
             }
         }
 
-        // A type of the JSON contract: compiled into the compiler executable, or in the assembly next to it
+        // A type of the JSON contract, as compiled into the compiler executable
         private static Type GetContractType(string name)
         {
-            return Compiler.GetType(ContractNamespace + name)
-                ?? Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(ProxyHelper.XamlCompilerPath), "Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll")).GetType(ContractNamespace + name, true);
+            return Compiler.GetType(ContractNamespace + name, true);
         }
 
         private static int CurrentContractVersion => (int)GetContractType("CompilerContract").GetField("Version").GetValue(null);

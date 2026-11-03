@@ -46,7 +46,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
                     string fullpath = item.GetMetadata("FullPath");
                     string itemSpec = item.ItemSpec;
 
-                    string defaultXamlLink = CompileXamlInternal.GetDefaultXamlLinkMetadata(fullpath, itemSpec, projectFolderFullpath, IncludeFolderList);
+                    string defaultXamlLink = XamlHelper.GetDefaultXamlLinkMetadata(fullpath, itemSpec, projectFolderFullpath, IncludeFolderList);
 
                     if (defaultXamlLink != null)
                     {

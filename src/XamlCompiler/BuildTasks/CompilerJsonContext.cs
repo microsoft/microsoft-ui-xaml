@@ -7,8 +7,8 @@ using Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop;
 namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
 {
     // Source-generated serialization for the compiler's input and output files, so that no reflection is needed (required
-    // by Native AOT). The default options are used on purpose: the files are produced and consumed by InputSerializer and
-    // OutputDeserializer, which use the reflection-based serializer with the same (default) options.
+    // by Native AOT). The default options are used on purpose: the files are produced and consumed by the CompileXaml task
+    // with DataContractJsonSerializer, which handles the contract types the same way (see CompilerContract).
     [JsonSerializable(typeof(CompilerInputs))]
     [JsonSerializable(typeof(CompilerOutputs))]
     [JsonSerializable(typeof(System.Collections.Generic.List<FileOverlay>))]

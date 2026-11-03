@@ -2,6 +2,6 @@
 <Project>
   <PropertyGroup>
     <UseWinUITools>true</UseWinUITools>
-    <XamlCompilerTaskPath>$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\tools\net472\Microsoft.UI.Xaml.Markup.Compiler.dll</XamlCompilerTaskPath>
+    <XamlCompilerTaskPath>$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\tools\Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll</XamlCompilerTaskPath>
   </PropertyGroup>
 </Project>
