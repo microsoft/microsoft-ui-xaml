@@ -53,11 +53,6 @@
       </AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(TestInProductionIsReal)' == 'true'">
-    <ClCompile>
-      <PreprocessorDefinitions>MUX_TIP_REAL=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="activation\abi_tests\ActivationABITests.h" />
     <ClInclude Include="settings\XamlOptionalChangesTests.h" />
@@ -273,5 +268,4 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
-  <Import Project="$(TestInProductionTargetsFile)" Condition="'$(TestInProductionIsReal)' == 'true'" />
 </Project>
