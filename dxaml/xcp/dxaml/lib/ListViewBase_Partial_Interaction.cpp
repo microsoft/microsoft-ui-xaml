@@ -1384,6 +1384,12 @@ _Check_return_ HRESULT ListViewBase::ShouldKeepFocusEntryTargetInPlace(
     _Out_ bool* keepInPlace)
 {
     *keepInPlace = false;
+    auto contentRoot = VisualTree::GetContentRootForElement(GetHandle());
+    if (contentRoot && contentRoot->GetInputManager().GetLastInputDeviceType() == InputDeviceType::GamepadOrRemote)
+    {
+        // Gamepad and remote navigation retain the usual focus padding, even for fully visible items.
+        return S_OK;
+    }
     if (itemIndex >= 0 && itemIndex == m_indexScrolledForFocusEntry)
     {
         // This list scrolled the item into view for this focus entry; the focus change still applies its padding.
