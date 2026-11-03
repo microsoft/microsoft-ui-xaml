@@ -21,6 +21,7 @@ internal static class CliApplication
           WinUIProfiler.Cli objects <session.sqlite> [--kind element|visual] [--type <text>] [--name <text>]
           WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other] [--filter <text>]]
+          WinUIProfiler.Cli interesting <session.sqlite>
 
           processes  Counts the events of each process with XAML events, to find the target PID.
                      A session file shows its process.
@@ -32,14 +33,16 @@ internal static class CliApplication
           objects    Lists the UI elements and composition visuals in a session file. --kind keeps one kind;
                      --type and --name filter them (a visual's name is its owner element's).
           timeline   Prints the events that mention one object, marking the field that holds it.
-          frames     Lists the frames per UI thread. --frame prints one frame's events: --bucket keeps
+          frames     Lists the ticks per UI thread, one row each. --frame prints one tick's events: --bucket keeps
                      one bucket; --filter keeps events whose name or a field value contains <text>
                      (a number matches a field with exactly that value).
+          interesting  Lists the regions of interest (see the README) in file order, with what started each
+                     one, and the ticks, layout passes, operations, navigations and focus changes in them.
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
-          and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls) and the kernel's
-          GPU memory usage and budget events (DxgKrnl) of the process. A trace needs --pid; a
-          session file holds one process.
+          and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), the kernel's
+          GPU memory usage and budget events (DxgKrnl) and its window focus events (Win32k) of the
+          process. A trace needs --pid; a session file holds one process.
         """;
 
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
@@ -75,6 +78,7 @@ internal static class CliApplication
                 "objects" => Objects(options, output),
                 "timeline" => Timeline(options, output, cancellationToken),
                 "frames" => Frames(options, output, cancellationToken),
+                "interesting" => Interesting(options, output, cancellationToken),
                 _ => Dump(options, output, cancellationToken)
             };
         }
@@ -92,7 +96,8 @@ internal static class CliApplication
 
     private static Options Parse(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "objects" or "timeline" or "frames"))
+        if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "objects" or "timeline" or "frames" or
+            "interesting"))
         {
             throw new ArgumentException("Expected a command and a trace or session file path.");
         }
@@ -166,7 +171,7 @@ internal static class CliApplication
 
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
             typeFilter, objectId, address, frameId, bucket, eventFilter, kind);
-        if (options.Command is "objects" or "timeline" or "frames" && !options.IsSessionFile)
+        if (options.Command is "objects" or "timeline" or "frames" or "interesting" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
         }
@@ -233,10 +238,12 @@ internal static class CliApplication
             perProvider[(int)profilerEvent.Provider]++;
         }, cancellationToken);
 
-        // In a trace, every process that uses the GPU has GPU memory events; only those with XAML events are listed.
+        // In a trace, every process that uses the GPU has GPU memory events, and every process with windows has focus
+        // events; only those with XAML events are listed.
         output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
         foreach (var (processId, perProvider) in counts
-            .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl])
+            .Where(entry => options.IsSessionFile ||
+                entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] + entry.Value[(int)XamlProvider.Win32k])
             .OrderByDescending(entry => entry.Value.Sum()))
         {
             output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
@@ -390,37 +397,62 @@ internal static class CliApplication
         var frames = SessionFile.ReadFrames(options.InputPath, options.FrameId);
         if (options.FrameId is not { } frameId)
         {
-            output.WriteLine($"{"ID",7} {"Thread",7} {"Frame",7} {"Ticks",6} {"Start (ms)",12} {"Span (ms)",10} {"Draw (ms)",10} " +
-                $"{"Tick time",10} {"Events",7} {"Xaml",6} {"Comp",6} {"Other",6}");
-            foreach (var frame in frames.OrderBy(frame => frame.ThreadId).ThenBy(frame => frame.FrameNumber))
+            output.WriteLine($"{"ID",7} {"Thread",7} {"Frame",7} {"Start (ms)",12} {"End (ms)",12} {"Tick (ms)",10} {"Drew",5} " +
+                $"{"Events",7} {"Xaml",6} {"Comp",6} {"Other",6}");
+            foreach (var frame in frames.OrderBy(frame => frame.ThreadId).ThenBy(frame => frame.FrameId))
             {
-                output.WriteLine($"{frame.FrameId,7} {frame.ThreadId,7} {frame.FrameNumber,7} {frame.Ticks,6} " +
-                    $"{Milliseconds(frame.StartMilliseconds),12} {Milliseconds(frame.EndMilliseconds - frame.StartMilliseconds),10} " +
-                    $"{Milliseconds(frame.EndMilliseconds - frame.LastTickStartMilliseconds),10} {Milliseconds(frame.TickMilliseconds),10} " +
-                    $"{frame.Events,7} {frame.Xaml,6} {frame.Composition,6} {frame.Other,6}{(frame.Drawn ? "" : "  (latest; may not have drawn)")}");
+                output.WriteLine($"{frame.FrameId,7} {frame.ThreadId,7} {frame.FrameNumber,7} {Milliseconds(frame.StartMilliseconds),12} " +
+                    $"{Milliseconds(frame.EndMilliseconds),12} {Milliseconds(frame.TickMilliseconds),10} {Drew(frame.Drawn),5} " +
+                    $"{frame.Events,7} {frame.Xaml,6} {frame.Composition,6} {frame.Other,6}");
             }
 
-            output.WriteLine($"{frames.Count} frames on {frames.Select(frame => frame.ThreadId).Distinct().Count()} UI thread(s).");
+            output.WriteLine($"{frames.Count} ticks on {frames.Select(frame => frame.ThreadId).Distinct().Count()} UI thread(s); " +
+                $"{frames.Count(frame => frame.Drawn == true)} drew a frame. Drew is ? for a thread's latest tick.");
             return 0;
         }
 
         if (frames.Count == 0)
         {
-            output.WriteLine($"No frame with ID {frameId}.");
+            output.WriteLine($"No tick with ID {frameId}.");
             return 0;
         }
 
         var selected = frames[0];
-        output.WriteLine($"Frame {selected.FrameNumber} on thread {selected.ThreadId}: {selected.Ticks} tick(s), {selected.Events} events " +
+        output.WriteLine($"Frame {selected.FrameNumber} on thread {selected.ThreadId}, tick from {Milliseconds(selected.StartMilliseconds)} ms " +
+            $"to {Milliseconds(selected.EndMilliseconds)} ms, drew: {Drew(selected.Drawn)}. {selected.Events} events " +
             $"({selected.Xaml} Xaml, {selected.Composition} Composition, {selected.Other} Other)");
         SessionFile.ReadFrameEvents(options.InputPath, frameId, options.Bucket, options.EventFilter, 0, -1,
             (profilerEvent, bucket, _) => output.WriteLine(FormatEvent(profilerEvent, bucket)), cancellationToken);
         return 0;
     }
 
+    private static string Drew(bool? drawn) => drawn switch
+    {
+        true => "yes",
+        false => "no",
+        null => "?"
+    };
+
+    private static int Interesting(Options options, TextWriter output, CancellationToken cancellationToken)
+    {
+        // In file order, a region before the rows that start with it.
+        var rows = new InterestingRows().Read(options.InputPath, cancellationToken: cancellationToken)
+            .OrderBy(row => row.StartSeq).ThenBy(row => row.Type != InterestingRowType.Region).ToList();
+        output.WriteLine($"{"Start (ms)",12} {"Stop (ms)",12} {"Duration",10} {"Thread",7} {"Frame",7}  Type");
+        foreach (var row in rows)
+        {
+            output.WriteLine($"{Milliseconds(row.StartMilliseconds),12} {Milliseconds(row.StopMilliseconds),12} " +
+                $"{Milliseconds(row.DurationMilliseconds),10} {row.ThreadId,7} {row.FrameNumber?.ToString(CultureInfo.InvariantCulture) ?? "",7}  " +
+                $"{row.Name}{(row.Trigger is null ? "" : $" ({row.Trigger})")}");
+        }
+
+        output.WriteLine($"{rows.Count} interesting rows, {rows.Count(row => row.Type == InterestingRowType.Region)} region(s) of interest.");
+        return 0;
+    }
+
     private static void WriteSessionInfo(SessionFileInfo info, TextWriter output)
     {
-        output.WriteLine($"Stored: {info.StoredEvents} events, {info.UIElements} UI elements, {info.Visuals} visuals, {info.Frames} frames; " +
+        output.WriteLine($"Stored: {info.StoredEvents} events, {info.UIElements} UI elements, {info.Visuals} visuals, {info.Frames} ticks; " +
             $"source {info.Source}, coverage {info.Coverage}; " +
             $"ended: {info.EndReason ?? "not recorded (still recording, or stopped unexpectedly)"}.");
         if (info.CompleteFromSeq is { } completeFrom)
@@ -436,6 +468,7 @@ internal static class CliApplication
         XamlProvider.XamlProfiler => "XAML-Prof",
         XamlProvider.MicrosoftUIXaml => "MUX",
         XamlProvider.MicrosoftUIXamlControls => "MUXC",
+        XamlProvider.Win32k => "Win32k",
         _ => "DxgKrnl"
     };
 

@@ -32,12 +32,14 @@ public sealed record SessionObject(long ObjectId, ObjectKind Kind, long Address,
 // whose parent's children were cleared, the field is "child of" the parent's field.
 public sealed record ObjectMention(long ObjectId, ObjectKind Kind, string Field, string? Type, string? Name);
 
-// A frame on a UI thread and its stored events by bucket (timing as in SessionSchema). Drawn is false for each thread's
-// latest frame, which may still be in progress. Times are milliseconds from the start of the recording; null when no
-// tick with this number is stored.
-public sealed record SessionFrame(long FrameId, int ThreadId, long FrameNumber, int Ticks, bool Drawn, double? StartMilliseconds,
-    double? LastTickStartMilliseconds, double? EndMilliseconds, double TickMilliseconds, long Events, long Xaml, long Composition,
-    long Other);
+// A tick on a UI thread and its stored events by bucket. Drawn is whether the tick drew: whether the thread's next tick
+// has a higher frame number; null for the thread's latest tick. Times are milliseconds from the start of the recording;
+// null when not stored (see SessionSchema). LastSeq is the tick's latest event: its stop, once it ended.
+public sealed record SessionFrame(long FrameId, int ThreadId, long FrameNumber, bool? Drawn, double? StartMilliseconds,
+    double? EndMilliseconds, long Events, long Xaml, long Composition, long Other, long LastSeq)
+{
+    public double? TickMilliseconds => EndMilliseconds - StartMilliseconds;
+}
 
 // Reads a session file written by SessionWriter, also while it is still being written.
 public static class SessionFile
@@ -231,18 +233,18 @@ public static class SessionFile
         return found;
     }
 
-    // The frames with stored events, in the order they were first seen: all, or the one with an ID.
+    // The ticks with stored events, in the order they were first seen: all, or the one with an ID.
     public static IReadOnlyList<SessionFrame> ReadFrames(string path, long? frameId = null) =>
         QueryFrames(path, frameId, null).Frames;
 
-    // The frames that changed after a read that saw events up to a Seq (null for all frames), in the order they were
-    // first seen, and the Seq to pass next time. Trimming is not a change; it changes CompleteFromSeq instead.
+    // The ticks that changed after a read that saw events up to a Seq (null for all ticks), in the order they were first
+    // seen, and the Seq to pass next time. Trimming is not a change; it changes CompleteFromSeq instead.
     public static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadChangedFrames(string path, long? afterSeq) =>
         QueryFrames(path, null, afterSeq);
 
-    // A frame's ticks and events only change with an event attributed to it, and whether it drew changes when a later
-    // frame appears on its thread. So the frames that changed after a Seq are, on each thread with events after it, the
-    // frames from the one below the lowest of those on.
+    // A tick's events only change with an event attributed to it, and whether it drew is known when the next tick on its
+    // thread appears. So the ticks that changed after a Seq are, on each thread with events after it, the ticks from the
+    // one before the first of those on.
     private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) QueryFrames(string path, long? frameId, long? afterSeq)
     {
         using var connection = Open(path);
@@ -251,24 +253,22 @@ public static class SessionFile
         var start = startQpc.GetValueOrDefault();
         using var command = Command(connection, transaction, """
             WITH Changed AS (
-                    SELECT f.ThreadId, MIN(f.FrameNumber) AS FrameNumber
+                    SELECT f.ThreadId, MIN(f.FrameId) AS FrameId
                     FROM FrameEvents r JOIN Frames f ON f.FrameId = r.FrameId
                     WHERE r.Seq > $after
                     GROUP BY f.ThreadId),
-                Since AS (
-                    SELECT c.ThreadId, COALESCE((SELECT MAX(p.FrameNumber) FROM Frames p
-                        WHERE p.ThreadId = c.ThreadId AND p.FrameNumber < c.FrameNumber), c.FrameNumber) AS FrameNumber
-                    FROM Changed c),
-                Latest AS (SELECT ThreadId, MAX(FrameNumber) AS FrameNumber FROM Frames GROUP BY ThreadId)
-            SELECT f.FrameId, f.ThreadId, f.FrameNumber, f.Ticks, f.StartQpc, f.LastTickStartQpc, f.EndQpc, f.TickTimeQpc,
-                f.FrameNumber < t.FrameNumber, COUNT(*), SUM(r.Bucket = 'Xaml'), SUM(r.Bucket = 'Composition'), SUM(r.Bucket = 'Other')
-            FROM Frames f
-                JOIN FrameEvents r ON r.FrameId = f.FrameId
-                JOIN Latest t ON t.ThreadId = f.ThreadId
-            WHERE ($id IS NULL OR f.FrameId = $id) AND ($after IS NULL OR f.FrameId IN (
-                SELECT p.FrameId FROM Frames p JOIN Since s ON s.ThreadId = p.ThreadId AND p.FrameNumber >= s.FrameNumber))
-            GROUP BY f.FrameId
-            ORDER BY f.FrameId
+                Ticks AS (
+                    SELECT FrameId, ThreadId, FrameNumber, StartQpc, EndQpc,
+                        LEAD(FrameNumber) OVER (PARTITION BY ThreadId ORDER BY FrameId) > FrameNumber AS Drawn,
+                        LEAD(FrameId) OVER (PARTITION BY ThreadId ORDER BY FrameId) AS NextId
+                    FROM Frames)
+            SELECT t.FrameId, t.ThreadId, t.FrameNumber, t.Drawn, t.StartQpc, t.EndQpc, COUNT(*), SUM(r.Bucket = 'Xaml'),
+                SUM(r.Bucket = 'Composition'), SUM(r.Bucket = 'Other'), MAX(r.Seq)
+            FROM Ticks t JOIN FrameEvents r ON r.FrameId = t.FrameId
+            WHERE ($id IS NULL OR t.FrameId = $id) AND ($after IS NULL OR EXISTS (
+                SELECT 1 FROM Changed c WHERE c.ThreadId = t.ThreadId AND (t.FrameId >= c.FrameId OR t.NextId = c.FrameId)))
+            GROUP BY t.FrameId
+            ORDER BY t.FrameId
             """, ("$id", frameId), ("$after", afterSeq));
         var frames = new List<SessionFrame>();
         using (var reader = command.ExecuteReader())
@@ -276,9 +276,9 @@ public static class SessionFile
             double? Milliseconds(int ordinal) => reader.IsDBNull(ordinal) ? null : (reader.GetInt64(ordinal) - start) * 1000.0 / frequency;
             while (reader.Read())
             {
-                frames.Add(new(reader.GetInt64(0), reader.GetInt32(1), reader.GetInt64(2), reader.GetInt32(3), reader.GetBoolean(8),
-                    Milliseconds(4), Milliseconds(5), Milliseconds(6), reader.GetInt64(7) * 1000.0 / frequency, reader.GetInt64(9),
-                    reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(12)));
+                frames.Add(new(reader.GetInt64(0), reader.GetInt32(1), reader.GetInt64(2), reader.IsDBNull(3) ? null : reader.GetBoolean(3),
+                    Milliseconds(4), Milliseconds(5), reader.GetInt64(6), reader.GetInt64(7), reader.GetInt64(8), reader.GetInt64(9),
+                    reader.GetInt64(10)));
             }
         }
 
@@ -286,38 +286,82 @@ public static class SessionFile
         return (frames, last.ExecuteScalar() is long seq ? seq : null);
     }
 
-    // Delivers a frame's events in Seq order with each event's bucket and the objects it mentions: optionally one
-    // bucket's, those matching a filter (see FrameEventsQuery), and a page of them (count -1 for all).
+    // Delivers a tick's events in Seq order with each event's bucket and the objects it mentions: optionally one
+    // bucket's, those matching a filter (see EventsQuery), and a page of them (count -1 for all).
     public static long ReadFrameEvents(string path, long frameId, string? bucket, string? filter, int offset, int count,
-        Action<ProfilerEvent, string, IReadOnlyList<ObjectMention>> sink, CancellationToken cancellationToken = default)
+        Action<ProfilerEvent, string, IReadOnlyList<ObjectMention>> sink, CancellationToken cancellationToken = default) =>
+        ReadScopedEvents(path, FrameScope(frameId), bucket, filter, offset, count, sink, cancellationToken);
+
+    // How many of a tick's events ReadFrameEvents would deliver without a page.
+    public static long CountFrameEvents(string path, long frameId, string? bucket, string? filter) =>
+        CountScopedEvents(path, FrameScope(frameId), bucket, filter);
+
+    // Delivers one thread's events from firstSeq to lastSeq, as ReadFrameEvents does a tick's: the events of an
+    // InterestingRow. An event that belongs to no tick, such as one on a thread that never ticks, is in bucket Other.
+    public static long ReadSpanEvents(string path, int threadId, long firstSeq, long lastSeq, string? bucket, string? filter,
+        int offset, int count, Action<ProfilerEvent, string, IReadOnlyList<ObjectMention>> sink,
+        CancellationToken cancellationToken = default) =>
+        ReadScopedEvents(path, SpanScope(threadId, firstSeq, lastSeq), bucket, filter, offset, count, sink, cancellationToken);
+
+    // How many events ReadSpanEvents would deliver without a page.
+    public static long CountSpanEvents(string path, int threadId, long firstSeq, long lastSeq, string? bucket, string? filter) =>
+        CountScopedEvents(path, SpanScope(threadId, firstSeq, lastSeq), bucket, filter);
+
+    // Delivers, in Seq order and with their Seq, the events after afterSeq (null for all) and up to throughSeq (null for
+    // all) that InterestingRows reads.
+    internal static long ReadInterestingEvents(string path, long? afterSeq, long? throughSeq, Action<long, ProfilerEvent> sink,
+        CancellationToken cancellationToken) =>
+        ReadEvents(path, $"""
+            SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, e.Seq
+            FROM Events e
+            WHERE e.Seq > $after AND e.Seq <= $through AND e.TypeId IN (
+                SELECT TypeId FROM EventTypes
+                WHERE (Provider = '{XamlProvider.Xaml}' AND Name IN ({string.Join(", ", InterestingRows.XamlEventNames.Select(name => $"'{name}'"))}))
+                    OR Provider = '{XamlProvider.Win32k}')
+            ORDER BY e.Seq
+            """, [("$after", afterSeq ?? 0), ("$through", throughSeq ?? long.MaxValue)],
+            (profilerEvent, reader) => sink(reader.GetInt64(4), profilerEvent), cancellationToken);
+
+    // Where a query's events come from, which of them it keeps, the expression of their bucket and the column they are
+    // ordered by. Every scope names the Events table e.
+    private sealed record EventScope(string From, string Where, string Bucket, string Order, (string Name, object? Value)[] Parameters);
+
+    private static EventScope FrameScope(long frameId) =>
+        new("FrameEvents r JOIN Events e ON e.Seq = r.Seq", "r.FrameId = $id", "r.Bucket", "r.Seq", [("$id", frameId)]);
+
+    private static EventScope SpanScope(int threadId, long firstSeq, long lastSeq) =>
+        new("Events e LEFT JOIN FrameEvents r ON r.Seq = e.Seq", "e.Seq BETWEEN $first AND $last AND e.ThreadId = $thread",
+            "COALESCE(r.Bucket, 'Other')", "e.Seq", [("$first", firstSeq), ("$last", lastSeq), ("$thread", threadId)]);
+
+    private static long ReadScopedEvents(string path, EventScope scope, string? bucket, string? filter, int offset, int count,
+        Action<ProfilerEvent, string, IReadOnlyList<ObjectMention>> sink, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
+        var (where, parameters) = EventsQuery(scope, bucket, filter);
         return ReadEvents(path, (connection, transaction) => $"""
-            SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, r.Bucket,
+            SELECT e.Qpc, e.ThreadId, e.TypeId, e.Payload, {scope.Bucket},
                 (SELECT json_group_array(json_array(m.ObjectId, m.Field, o.Type, o.Name, {KindColumn(connection, transaction)}))
                 FROM ObjectEvents m JOIN Objects o ON o.ObjectId = m.ObjectId
-                WHERE m.Seq = r.Seq)
+                WHERE m.Seq = {scope.Order})
             {where}
-            ORDER BY r.Seq
+            ORDER BY {scope.Order}
             LIMIT $count OFFSET $offset
             """, [.. parameters, ("$count", count), ("$offset", offset)],
             (profilerEvent, reader) => sink(profilerEvent, reader.GetString(4), Mentions(profilerEvent, reader.GetString(5))),
             cancellationToken);
     }
 
-    // How many of a frame's events ReadFrameEvents would deliver without a page.
-    public static long CountFrameEvents(string path, long frameId, string? bucket, string? filter)
+    private static long CountScopedEvents(string path, EventScope scope, string? bucket, string? filter)
     {
         using var connection = Open(path);
-        var (where, parameters) = FrameEventsQuery(frameId, bucket, filter);
+        var (where, parameters) = EventsQuery(scope, bucket, filter);
         using var command = Command(connection, null, $"SELECT COUNT(*) {where}", parameters);
         return (long)command.ExecuteScalar()!;
     }
 
     // A filter keeps the events whose name contains its text, case-insensitively. Text also matches string field values
     // that contain it; a number (decimal, or hex with 0x) matches numeric fields with exactly that value instead.
-    private static (string Where, (string Name, object? Value)[] Parameters) FrameEventsQuery(long frameId, string? bucket,
+    private static (string Where, (string Name, object? Value)[] Parameters) EventsQuery(EventScope scope, string? bucket,
         string? filter)
     {
         filter = string.IsNullOrWhiteSpace(filter) ? null : filter.Trim();
@@ -326,14 +370,14 @@ public static class SessionFile
                 ? ulong.TryParse(filter.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex)
                     ? unchecked((long)hex) : null
                 : long.TryParse(filter, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
-        return ("""
-            FROM FrameEvents r JOIN Events e ON e.Seq = r.Seq JOIN EventTypes t ON t.TypeId = e.TypeId
-            WHERE r.FrameId = $id AND ($bucket IS NULL OR r.Bucket = $bucket)
+        return ($"""
+            FROM {scope.From} JOIN EventTypes t ON t.TypeId = e.TypeId
+            WHERE {scope.Where} AND ($bucket IS NULL OR {scope.Bucket} = $bucket)
                 AND ($like IS NULL OR t.Name LIKE $like ESCAPE '\' OR EXISTS (
                     SELECT 1 FROM json_each(e.Payload) v
                     WHERE ($number IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
                         OR (v.type IN ('integer', 'real') AND v.value = $number)))
-            """, [("$id", frameId), ("$bucket", bucket),
+            """, [.. scope.Parameters, ("$bucket", bucket),
                 ("$like", filter is null ? null : $"%{filter.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_")}%"),
                 ("$number", number)]);
     }

@@ -56,16 +56,13 @@ internal static class SessionSchema
             Field INTEGER NOT NULL,    -- index of the field in the event; -1 - i when field i holds its parent (cleared children)
             PRIMARY KEY (Seq, ObjectId, Field)) WITHOUT ROWID;
         CREATE INDEX ObjectTimeline ON ObjectEvents (ObjectId, Seq);
-        CREATE TABLE Frames (          -- drawn frames per UI thread (FrameIndex)
+        CREATE TABLE Frames (          -- UI-thread ticks (FrameIndex)
             FrameId INTEGER PRIMARY KEY,
             ThreadId INTEGER NOT NULL,
-            FrameNumber INTEGER NOT NULL, -- the UI thread's frame counter, which advances when a tick draws
-            Ticks INTEGER NOT NULL,    -- CoreServices_Frame ticks that carried this number; the last one drew
-            StartQpc INTEGER,          -- start of its first tick
-            LastTickStartQpc INTEGER,  -- start of its last tick: the one that drew, once the frame is drawn
-            EndQpc INTEGER,            -- end of its last tick
-            TickTimeQpc INTEGER NOT NULL); -- time spent in its ticks, in QPC units (excludes the gaps between ticks)
-        CREATE TABLE FrameEvents (     -- the frame each UI-thread event belongs to
+            FrameNumber INTEGER NOT NULL, -- the UI thread's frame counter, which advances after a tick that draws
+            StartQpc INTEGER,          -- null when the tick started before the recording, or trimming deleted its start
+            EndQpc INTEGER);           -- null while the tick runs
+        CREATE TABLE FrameEvents (     -- the tick each UI-thread event belongs to
             Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
             FrameId INTEGER NOT NULL REFERENCES Frames (FrameId),
             Bucket TEXT NOT NULL);     -- Xaml, Composition or Other
