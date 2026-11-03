@@ -48,6 +48,10 @@ static _Check_return_ HRESULT GetIcoFrameForSize(
     IFC_RETURN(bitmapFrameDecode->GetSize(&width, &height));
     uint32_t bestDistance = GetScaleDistance(width, requestedWidth) + GetScaleDistance(height, requestedHeight);
 
+    wrl::ComPtr<IWICBitmapFrameDecode> bestFrame;
+    UINT bestWidth = 0;
+    UINT bestHeight = 0;
+
     for (UINT i = 1; i < frameCount && bestDistance != 0; ++i)
     {
         // Skip an image WIC cannot read rather than failing a decode that frame 0 alone would have satisfied.
@@ -60,8 +64,23 @@ static _Check_return_ HRESULT GetIcoFrameForSize(
         const uint32_t distance = GetScaleDistance(width, requestedWidth) + GetScaleDistance(height, requestedHeight);
         if (distance < bestDistance)
         {
-            bitmapFrameDecode = std::move(candidate);
+            bestFrame = std::move(candidate);
+            bestWidth = width;
+            bestHeight = height;
             bestDistance = distance;
+        }
+    }
+
+    // WIC can list an image it then fails to decode: a small PNG image next to BMP images fails CopyPixels with
+    // WINCODEC_ERR_INSUFFICIENTBUFFER. Keep frame 0 unless the chosen image decodes.
+    if (bestFrame != nullptr)
+    {
+        wrl::ComPtr<IWICFormatConverter> converter;
+        std::vector<uint8_t> pixels(static_cast<size_t>(bestWidth) * bestHeight * 4);
+        if (SUCCEEDED(ImagingUtility::CreateDefaultConverter(GUID_WICPixelFormat32bppPBGRA, bestFrame, converter)) &&
+            SUCCEEDED(converter->CopyPixels(nullptr, bestWidth * 4, static_cast<UINT>(pixels.size()), pixels.data())))
+        {
+            bitmapFrameDecode = std::move(bestFrame);
         }
     }
 

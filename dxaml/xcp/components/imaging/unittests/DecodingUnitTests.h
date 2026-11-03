@@ -42,6 +42,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Decoding an .ico to a size uses the image that best fits that size.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(IcoUndecodableImage)
+                TEST_METHOD_PROPERTY(L"Description", L"An .ico image that WIC cannot decode falls back to frame 0.")
+            END_TEST_METHOD()
+
         private:
             static void ValidateImage(
                 const WEX::Common::String& fileName,
@@ -49,10 +53,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
                 uint32_t expectedCrc32
                 );
 
-            static void ValidateIcoDecode(
+            static uint32_t DecodeSolidIco(
+                const wchar_t* fileName,
                 uint32_t decodeWidth,
-                uint32_t decodeHeight,
-                uint32_t expectedPixel
+                uint32_t decodeHeight
                 );
         };
     }}

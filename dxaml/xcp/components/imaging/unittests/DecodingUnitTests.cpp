@@ -101,10 +101,18 @@ void DecodingUnitTests::IcoDecodeSize()
 {
     // MultiSizeIcon.ico holds solid 16x16 green, 32x32 blue and 48x48 red images. WIC does not expose them
     // in size order, so frame 0 is not the image that fits the requested size.
-    ValidateIcoDecode(16, 16, 0xff00ff00); // the 16x16 image
-    ValidateIcoDecode(17, 16, 0xff00ff00); // still the 16x16 image; DecodeToRenderSize can round one side up
-    ValidateIcoDecode(24, 24, 0xff0000ff); // shrinking 32x32 is preferred over stretching 16x16
-    ValidateIcoDecode(64, 64, 0xffff0000); // nothing is that large, so the largest image is used
+    VERIFY_ARE_EQUAL(0xff00ff00, DecodeSolidIco(L"MultiSizeIcon.ico", 16, 16)); // the 16x16 image
+    VERIFY_ARE_EQUAL(0xff00ff00, DecodeSolidIco(L"MultiSizeIcon.ico", 17, 16)); // DecodeToRenderSize can round one side up
+    VERIFY_ARE_EQUAL(0xff0000ff, DecodeSolidIco(L"MultiSizeIcon.ico", 24, 24)); // shrinking 32x32 beats stretching 16x16
+    VERIFY_ARE_EQUAL(0xffff0000, DecodeSolidIco(L"MultiSizeIcon.ico", 64, 64)); // nothing is that large, so the largest
+}
+
+void DecodingUnitTests::IcoUndecodableImage()
+{
+    // MultiSizeIconSmallPng.ico holds a solid 16x16 green PNG image next to 32x32 blue and 48x48 red BMP images.
+    // WIC lists the PNG image but fails to decode it, so the decode keeps frame 0 instead of failing.
+    const uint32_t frame0Pixel = DecodeSolidIco(L"MultiSizeIconSmallPng.ico", 0, 0);
+    VERIFY_ARE_EQUAL(frame0Pixel, DecodeSolidIco(L"MultiSizeIconSmallPng.ico", 16, 16));
 }
 
 void DecodingUnitTests::ValidateImage(
@@ -141,13 +149,13 @@ void DecodingUnitTests::ValidateImage(
         expectedCrc32));
 }
 
-void DecodingUnitTests::ValidateIcoDecode(
+uint32_t DecodingUnitTests::DecodeSolidIco(
+    const wchar_t* fileName,
     uint32_t decodeWidth,
-    uint32_t decodeHeight,
-    uint32_t expectedPixel
+    uint32_t decodeHeight
     )
 {
-    auto spEncodedImageData = GetFileEncodedData(GetImageResourcesPath() + L"MultiSizeIcon.ico");
+    auto spEncodedImageData = GetFileEncodedData(GetImageResourcesPath() + fileName);
 
     auto spWicImageDecoder = WicService::GetInstance().CreateDefaultDecoder(spEncodedImageData->GetMetadata());
 
@@ -169,23 +177,28 @@ void DecodingUnitTests::ValidateIcoDecode(
         *spDecodeParams,
         softwareBitmap));
 
-    VERIFY_ARE_EQUAL(decodeWidth, softwareBitmap->GetWidth());
-    VERIFY_ARE_EQUAL(decodeHeight, softwareBitmap->GetHeight());
+    if (decodeWidth != 0)
+    {
+        VERIFY_ARE_EQUAL(decodeWidth, softwareBitmap->GetWidth());
+        VERIFY_ARE_EQUAL(decodeHeight, softwareBitmap->GetHeight());
+    }
 
     // Each image is a single color, so every decoded pixel identifies the image it came from.
+    const uint32_t firstPixel = *static_cast<const uint32_t*>(softwareBitmap->GetBuffer());
     uint32_t mismatchedPixels = 0;
     auto row = static_cast<const uint8_t*>(softwareBitmap->GetBuffer());
-    for (uint32_t y = 0; y < decodeHeight; ++y, row += softwareBitmap->GetStride())
+    for (uint32_t y = 0; y < softwareBitmap->GetHeight(); ++y, row += softwareBitmap->GetStride())
     {
         auto pixels = reinterpret_cast<const uint32_t*>(row);
-        for (uint32_t x = 0; x < decodeWidth; ++x)
+        for (uint32_t x = 0; x < softwareBitmap->GetWidth(); ++x)
         {
-            mismatchedPixels += (pixels[x] != expectedPixel) ? 1 : 0;
+            mismatchedPixels += (pixels[x] != firstPixel) ? 1 : 0;
         }
     }
 
-    LOG_OUTPUT(L"Decode size %ux%u: first pixel 0x%08x, expected 0x%08x", decodeWidth, decodeHeight, *reinterpret_cast<const uint32_t*>(softwareBitmap->GetBuffer()), expectedPixel);
+    LOG_OUTPUT(L"%s at %ux%u: pixel 0x%08x", fileName, decodeWidth, decodeHeight, firstPixel);
     VERIFY_ARE_EQUAL(0u, mismatchedPixels);
+    return firstPixel;
 }
 
 
