@@ -607,8 +607,7 @@ LaunchPanel.LoadConfig().Providers);
         session.BeginRecording();
         try
         {
-            await model.OpenTraceAsync(path, process, SessionsDirectory,
-                [.. LaunchPanel.LoadConfig().Providers.Select(settings => settings.Provider)]);
+            await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
         catch (Exception error)
         {

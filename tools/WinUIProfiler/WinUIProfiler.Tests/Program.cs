@@ -317,7 +317,7 @@ try
         }
     }
 
-    writer.SetProcessStart(Qpc(-5), "Contoso");
+    writer.SetProcessStart(new(Qpc(-5), "Contoso", 100, "explorer"));
     Store(Frame(0, 1, true), Frame(40, 1, false), Frame(60, 2, true),
         new(Qpc(100), 100, 200, 1, XamlProvider.Marker, true, "Ready", 0, [], contoso));
     var following = new LaunchTimelineReader(launchPath, config);

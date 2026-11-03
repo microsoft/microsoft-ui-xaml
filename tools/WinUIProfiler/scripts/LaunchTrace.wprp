@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  WinUI Profiler's WPR profile for a trace of an app's launch: the XAML providers, the kernel's process events, which
+  give the process's creation and the process that launched it, and the providers of the default marker configuration
+  (WinUIProfiler.Core\Launch\markers.json). From an elevated prompt:
+
+    wpr -start scripts\LaunchTrace.wprp -filemode
+    (launch the app)
+    wpr -stop launch.etl
+
+  To record an app's own provider too, add an EventProvider with its GUID and its EventProviderId below. See "Launch
+  timeline" in the README.
+-->
+<WindowsPerformanceRecorder Version="1.0" Author="WinUI Profiler">
+  <Profiles>
+    <SystemCollector Id="SC_Kernel" Name="NT Kernel Logger">
+      <BufferSize Value="1024" />
+      <Buffers Value="64" />
+    </SystemCollector>
+    <EventCollector Id="EC_Launch" Name="WinUIProfilerLaunch">
+      <BufferSize Value="1024" />
+      <Buffers Value="128" />
+    </EventCollector>
+    <SystemProvider Id="SP_Process">
+      <Keywords>
+        <Keyword Value="ProcessThread" />
+      </Keywords>
+    </SystemProvider>
+    <!-- The XAML providers and the GPU memory events, as in the README's providers.txt. -->
+    <EventProvider Id="EP_Xaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5" />
+    <EventProvider Id="EP_XamlDiagnostics" Name="59E7A714-73A4-4147-B47E-0957048C75C4" Level="5" />
+    <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5" />
+    <EventProvider Id="EP_MuxXaml" Name="2DC72F6E-E4D1-5F58-3245-09A4243799DD" Level="5" />
+    <EventProvider Id="EP_MuxControls" Name="21E0AE07-56A7-55B5-12F9-011E6BC08CCA" Level="5" />
+    <EventProvider Id="EP_DxgKrnl" Name="802EC45A-1E99-4B83-9920-87C98277BA9D" Level="5">
+      <Keywords>
+        <Keyword Value="0x4" />
+      </Keywords>
+    </EventProvider>
+    <!-- Windows' launch events: Microsoft.Windows.AppLifeCycle.UI, Microsoft.Windows.ApplicationModel.DesktopAppx,
+         Microsoft.Windows.ShellExecute and Microsoft.Windows.AppLifeCycle; and Microsoft-Windows-Store. -->
+    <EventProvider Id="EP_AppLifeCycleUI" Name="EE97CDC4-B095-5C70-6E37-A541EB74C2B5" Level="5" />
+    <EventProvider Id="EP_DesktopAppx" Name="5526AED1-F6E5-5896-CBF0-27D9F59B6BE7" Level="5" />
+    <EventProvider Id="EP_ShellExecute" Name="382B5E24-181E-417F-A8D6-2155F749E724" Level="5" />
+    <EventProvider Id="EP_AppLifeCycle" Name="EF00584A-2655-462C-BC24-E7DE630E7FBF" Level="5" />
+    <EventProvider Id="EP_Store" Name="9C2A37F3-E5FD-5CAE-BCD1-43DAFEEE1FF0" Level="5" />
+    <Profile Id="LaunchTrace.Verbose.File" Name="LaunchTrace" Description="WinUI Profiler: an app's launch"
+             LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <SystemCollectorId Value="SC_Kernel">
+          <SystemProviderId Value="SP_Process" />
+        </SystemCollectorId>
+        <EventCollectorId Value="EC_Launch">
+          <EventProviders>
+            <EventProviderId Value="EP_Xaml" />
+            <EventProviderId Value="EP_XamlDiagnostics" />
+            <EventProviderId Value="EP_XamlProfiler" />
+            <EventProviderId Value="EP_MuxXaml" />
+            <EventProviderId Value="EP_MuxControls" />
+            <EventProviderId Value="EP_DxgKrnl" />
+            <EventProviderId Value="EP_AppLifeCycleUI" />
+            <EventProviderId Value="EP_DesktopAppx" />
+            <EventProviderId Value="EP_ShellExecute" />
+            <EventProviderId Value="EP_AppLifeCycle" />
+            <EventProviderId Value="EP_Store" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>
