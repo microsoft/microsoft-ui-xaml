@@ -3556,6 +3556,86 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyClosingOverflowAfterClearingSelectionOfExpandableOverflowChildDoesNotCrash()
+        {
+            // #9812 review: selecting an expandable child of an overflow parent defers the move to the primary list until the
+            // overflow flyout closes. Clearing SelectedItem before that drops the selection model's path, so the deferred
+            // move must be dropped too instead of reading the empty path.
+            NavigationView navView = null;
+            Button overflowButton = null;
+            ItemsRepeater overflowRepeater = null;
+            Category parentCategory = null;
+            Category childCategory = null;
+            RunOnUIThread.Execute(() =>
+            {
+                childCategory = new Category("Child", "Child", "Icon", new ObservableCollection<Category> { new Category("Grandchild", "Grandchild", "Icon", null, true) }, true);
+                parentCategory = new Category("CCCCCCCCCCCCCCC", "Parent", "Icon", new ObservableCollection<Category> { childCategory }, true);
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                    IsSettingsVisible = false,
+                    Width = 240,
+                    Height = 300,
+                    MenuItemsSource = new ObservableCollection<Category> {
+                        new Category("AA", "AA", "Icon", null, true),
+                        new Category("BBBBBBB", "BBBBBBB", "Icon", null, true),
+                        parentCategory
+                    },
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' MenuItemsSource='{Binding Children}'/>
+</DataTemplate>")
+                };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                overflowButton = VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") as Button;
+                Verify.IsNotNull(overflowButton);
+                (FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton).GetPattern(PatternInterface.Invoke) as IInvokeProvider).Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                overflowRepeater = VisualTreeUtils.FindVisualChildByName((overflowButton.Flyout as Flyout).Content, "TopNavMenuItemsOverflowHost") as ItemsRepeater;
+                Verify.IsNotNull(overflowRepeater);
+                Verify.AreEqual(parentCategory, overflowRepeater.ItemsSourceView.GetAt(0), "The parent should be in the overflow");
+                ((NavigationViewItem)overflowRepeater.TryGetElement(0)).IsExpanded = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var childContainer = navView.ContainerFromMenuItem(childCategory) as NavigationViewItem;
+                Verify.IsNotNull(childContainer, "The child of the overflow parent should be realized");
+                (FrameworkElementAutomationPeer.CreatePeerForElement(childContainer) as IInvokeProvider).Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(childCategory, navView.SelectedItem);
+                navView.SelectedItem = null;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => overflowButton.Flyout.Hide());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(navView.SelectedItem);
+                Verify.IsFalse(overflowButton.Flyout.IsOpen);
+                Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+            });
+        }
+
+        [TestMethod]
         public void VerifyIsChildSelectedIsKeptWhenCompactFooterFlyoutChildrenAreReplaced()
         {
             // #9812 review: re-preparing an ancestor of the selected item inside a footer item's flyout (closed LeftCompact pane)
