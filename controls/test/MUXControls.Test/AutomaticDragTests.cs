@@ -588,6 +588,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        // On the test VMs, releasing the child's touch capture from a dispatcher callback raised no
+        // PointerCaptureLost (ChildCaptureLostCount stayed 0 with and without the fix), so this
+        // can't reach the scenario yet. Kept for manual runs on touch hardware.
+        [TestProperty("Ignore", "True")]
         public void ChildTouchCaptureReleaseKeepsTouchHoldDrag()
         {
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
