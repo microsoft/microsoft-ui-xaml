@@ -1,163 +1,121 @@
-BuildColumns(ManagerTable);
-BuildColumns(MentorTable);
+Source = TableViewSource.From(People);     // one source; ParentBy, Filter, Sort and GroupBy reshape it in place
+Source.IsLiveShaping = true;               // an edit to a key or shaped value reshapes the tree
+InitializeComponent();
 
-_managerSource = TableViewSource.From(_employees);
-_mentorSource = TableViewSource.From(_employees);
-ManagerTable.ItemsSource = _managerSource;
-MentorTable.ItemsSource = _mentorSource;
-ManagerTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
-MentorTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
-DeclareManagerRelation(_managerSource);
-DeclareMentorRelation(_mentorSource);
+public TableViewSource Source { get; }
 
-// …
-
-private static void BuildColumns(TableView table)
+private void OnLiveToggled(object sender, RoutedEventArgs e)
 {
-    // The chevron and the indent are drawn over the first column; nothing about these column
-    // declarations is hierarchy-aware.
-    table.Columns.Add(SampleColumns.Text("Name", nameof(Employee.Name), SampleColumns.Star(2)));
-    table.Columns.Add(SampleColumns.Text("Title", nameof(Employee.Title), SampleColumns.Star()));
-    table.Columns.Add(SampleColumns.Text("Dept", nameof(Employee.Dept), SampleColumns.Pixels(100)));
-    table.Columns.Add(SampleColumns.Text("Id", nameof(Employee.Id), SampleColumns.Pixels(60)));
+    Source.IsLiveShaping = ((ToggleSwitch)sender).IsOn;
 }
 
-// ---- Relations ----
-
-// A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
-private static void DeclareManagerRelation(TableViewSource source) =>
-    source.ParentBy(
-        new TableViewKeySelector(item => ((Employee)item).Id),
-        new TableViewKeySelector(item => ((Employee)item).ManagerId!));
-
-private static void DeclareMentorRelation(TableViewSource source) =>
-    source.ParentBy(
-        new TableViewKeySelector(item => ((Employee)item).Id),
-        new TableViewKeySelector(item => ((Employee)item).MentorId!));
-
-// …
-
-// ---- Shaping (applied to both sources) ----
-
-private void ApplyFilter()
+private void OnFilterChanged(object sender, TextChangedEventArgs e)
 {
-    var text = FilterBox.Text?.Trim() ?? string.Empty;
-    foreach (var source in Sources)
+    var text = ((TextBox)sender).Text.Trim();
+    if (text.Length == 0)
     {
-        if (text.Length == 0)
-        {
-            source.ClearFilter();
-        }
-        else
-        {
-            // Matches NODES; ancestors of a match are kept as ordinary rows and expanded while the
-            // filter is active.
-            source.Filter(new TableViewPredicate(
-                item => ((Employee)item).Name.Contains(text, StringComparison.OrdinalIgnoreCase)));
-        }
+        Source.ClearFilter();
+    }
+    else
+    {
+        // Matches rows; the ancestors of a match stay as ordinary rows, expanded while the filter is on.
+        Source.Filter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
     }
 }
 
-private void ApplySort()
+private void OnSortChanged(object sender, SelectionChangedEventArgs e)
 {
-    foreach (var source in Sources)
+    // A key-selector sort adds an axis rather than replacing one, so clear the previous axis first.
+    Source.ClearSort();
+    switch (((ComboBox)sender).SelectedIndex)
     {
-        // A key-selector sort is an anonymous axis: a new Sort(keySelector) is added behind the
-        // previous one instead of replacing it, so clear the old axis first.
-        source.ClearSort();
-        switch (SortCombo.SelectedIndex)
-        {
-            case 1:
-                source.Sort(new TableViewKeySelector(item => ((Employee)item).Name), SortDirection.Ascending);
-                break;
-            case 2:
-                source.Sort(new TableViewKeySelector(item => ((Employee)item).Name), SortDirection.Descending);
-                break;
-            case 3:
-                source.Sort(new TableViewKeySelector(item => ((Employee)item).Title), SortDirection.Ascending);
-                break;
-        }
+        case 1:
+            Source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
+            break;
+        case 2:
+            Source.Sort(item => ((Person)item).FullName, SortDirection.Descending);
+            break;
+        case 3:
+            Source.Sort(item => ((Person)item).Role, SortDirection.Ascending);
+            break;
     }
 }
 
-private void ApplyGroup()
+// TableView.Columns is the live column collection: moving an entry moves the column. The first
+// visible column hosts the level indent and the expander chevron.
+private void SetFirstColumn(TableViewColumn first)
 {
-    foreach (var source in Sources)
+    var columns = PeopleTable.Columns;
+    var from = columns.IndexOf(first);
+    if (from > 0)
     {
-        if (GroupToggle.IsOn)
-        {
-            // Only the roots are bucketed; a descendant stays under its parent.
-            source.GroupBy(new TableViewKeySelector(item => ((Employee)item).Dept));
-        }
-        else
-        {
-            source.ClearGroupBy();
-        }
+        columns.RemoveAt(from);
+        columns.Insert(0, first);
     }
 }
 
-// Under ParentBy, live shaping also tracks keys, so a ManagerId/MentorId edit reparents.
-private void ApplyLive()
+// From Controls\ShapingOptions.xaml.cs
+// ParentBy takes each row's key and its parent's key. A second ParentBy replaces the relation and
+// resets expansion, so declare it once.
+private static void NestRows(TableViewSource source, ParentRelation relation) =>
+    source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+
+// From Controls\ShapingOptions.xaml.cs
+// Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+// the tree rows, so Grouped hierarchy calls both.
+private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
 {
-    bool live = LiveToggle.IsOn;
-    foreach (var source in Sources)
+    if (grouped)
     {
-        source.IsLiveShaping = live;
+        table.ExpandAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.ExpandAllRows();
     }
 }
 
-// …
-
-// Moves selection under another manager (never itself or a report, which would cycle). Live: a
-// property set reparents. Off: the item is replaced so the collection change carries the new key.
-private void Reparent_Click(object sender, RoutedEventArgs e)
+private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
 {
-    if (SelectedEmployee() is not { } selected)
+    if (grouped)
     {
-        return;
+        table.CollapseAllGroups();
     }
 
-    int index = _employees.IndexOf(selected);
-    var managerOf = _employees.ToDictionary(x => x.Id, x => x.ManagerId);
-    bool IsUnderSelected(int? id)
+    if (hierarchical)
     {
-        for (int hops = 0; id is int current && hops <= _employees.Count; hops++)
-        {
-            if (current == selected.Id)
-            {
-                return true;
-            }
-
-            id = managerOf.GetValueOrDefault(current);
-        }
-
-        return false;
+        table.CollapseAllRows();
     }
+}
 
-    for (int step = 1; step < _employees.Count; step++)
+// From Helpers\ParentRelation.cs
+// The two selectors ParentBy takes: a row's unique key, and its parent's key (null for a root).
+// Person rows: EmployeeId under ManagerId (the org chart).
+public static ParentRelation Manager { get; } = new(
+    "Manager",
+    row => (row as Person)?.EmployeeId,
+    row => (row as Person)?.ManagerId);
+
+// Person rows: EmployeeId under MentorId, a second tree over the same rows.
+public static ParentRelation Mentor { get; } = new(
+    "Mentor",
+    row => (row as Person)?.EmployeeId,
+    row => (row as Person)?.MentorId);
+
+// From Models\Person.cs
+// The Name column binds FullName, so it needs a setter to be editable: the first word becomes
+// FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+public string FullName
+{
+    get => $"{_firstName} {_lastName}".Trim();
+    set
     {
-        var candidate = _employees[(index + step * 7) % _employees.Count];
-        if (candidate.Id != selected.ManagerId && !IsUnderSelected(candidate.Id))
-        {
-            if (LiveToggle.IsOn)
-            {
-                selected.ManagerId = candidate.Id;
-            }
-            else
-            {
-                _employees[index] = new Employee
-                {
-                    Id = selected.Id,
-                    ManagerId = candidate.Id,
-                    MentorId = selected.MentorId,
-                    Name = selected.Name,
-                    Title = selected.Title,
-                    Dept = selected.Dept,
-                };
-            }
-
-            return;
-        }
+        var name = (value ?? string.Empty).Trim();
+        var split = name.IndexOfAny(new[] { ' ', '\t' });
+        FirstName = split < 0 ? name : name[..split];
+        LastName = split < 0 ? string.Empty : name[(split + 1)..].Trim();
     }
 }

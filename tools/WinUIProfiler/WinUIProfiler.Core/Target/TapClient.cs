@@ -14,11 +14,17 @@ public sealed class TapClient : IAsyncDisposable
 {
     private const string Prefix = "WinUIProfiler-";
     private readonly NamedPipeClientStream pipe;
+    private readonly ProcessInstanceKey target;
     private readonly SemaphoreSlim requests = new(1, 1);
     private readonly CancellationTokenSource closed = new();
     private int disposed;
     private bool authenticated;
-    private TapClient(NamedPipeClientStream pipe) => this.pipe = pipe;
+    public bool IsClosed => Volatile.Read(ref disposed) != 0;
+    private TapClient(NamedPipeClientStream pipe, ProcessInstanceKey target)
+    {
+        this.pipe = pipe;
+        this.target = target;
+    }
     public static string CreatePipeName() => Prefix + Guid.NewGuid().ToString("N");
 
     public static async Task<TapClient> ConnectAsync(string pipeName,
@@ -54,7 +60,7 @@ TokenImpersonationLevel.Identification);
         {
             await pipe.ConnectAsync(deadline.Token).ConfigureAwait(false);
             VerifyServer(pipe, scope.Process);
-            client = new(pipe);
+            client = new(pipe, scope.Process);
             await client.Exchange(TapMessageType.Handshake,
                 new HandshakeBody(scope.SessionId, scope.Process, ContractVersions.Schema, Convert.ToBase64String(nonce.Span)),
                 timeout,
@@ -92,6 +98,100 @@ deadline.Token).ConfigureAwait(false);
 
         var response = await Exchange(TapMessageType.Hello, new HelloBody("hello"), timeout, cancellationToken).ConfigureAwait(false);
         return ((HelloBody)response.Body).Message;
+    }
+
+    public async Task<TreeSnapshotDocument> TakeSnapshotAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        ValidateTimeout(timeout);
+        ObjectDisposedException.ThrowIf(IsClosed, this);
+        if (!authenticated)
+        {
+            throw new InvalidOperationException("The TAP session is not authenticated.");
+        }
+
+        var requestId = Guid.NewGuid();
+        var captureId = Guid.NewGuid();
+        var frame = TapCodec.Encode(TapMessageType.TakeSnapshot, requestId, new TakeSnapshotBody(captureId));
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, closed.Token);
+        deadline.CancelAfter(timeout);
+        var acquired = false;
+        var completed = false;
+        try
+        {
+            await requests.WaitAsync(deadline.Token).ConfigureAwait(false);
+            acquired = true;
+            ObjectDisposedException.ThrowIf(IsClosed, this);
+            await pipe.WriteAsync(frame, deadline.Token).ConfigureAwait(false);
+            await pipe.FlushAsync(deadline.Token).ConfigureAwait(false);
+            using var payload = new MemoryStream();
+            var chunks = 0;
+            while (true)
+            {
+                var response = await TapFraming.ReadAsync(pipe, deadline.Token).ConfigureAwait(false);
+                if (response.Header.RequestId != requestId)
+                {
+                    throw new InvalidDataException("Snapshot response belongs to another request.");
+                }
+
+                if (response.Body is AcknowledgementBody rejection)
+                {
+                    if (chunks != 0 || rejection.CaptureId != captureId ||
+                        rejection.Status is not (CommandStatus.Unsupported or CommandStatus.Failed or CommandStatus.Cancelled or CommandStatus.Rejected))
+                    {
+                        throw new InvalidDataException("Snapshot rejection has invalid capture/status/chunk correlation.");
+                    }
+
+                    completed = true;
+                    if (rejection.Status == CommandStatus.Unsupported)
+                    {
+                        throw new NotSupportedException("The target TAP cannot capture these trees: " + rejection.Reason);
+                    }
+
+                    throw new IOException($"Target snapshot {rejection.Status}: {rejection.Reason}");
+                }
+
+                if (response.Body is SnapshotChunkBody chunk)
+                {
+                    if (chunk.CaptureId != captureId || chunk.Index != chunks || chunks >= TapProtocol.MaximumSnapshotChunks)
+                    {
+                        throw new InvalidDataException("Snapshot chunks are foreign, duplicated or out of order.");
+                    }
+
+                    var bytes = Convert.FromBase64String(chunk.DataBase64);
+                    if (payload.Length + bytes.Length > TapProtocol.MaximumSnapshotBytes)
+                    {
+                        throw new InvalidDataException("Snapshot exceeds its transfer bound.");
+                    }
+
+                    payload.Write(bytes);
+                    chunks++;
+                    continue;
+                }
+
+                if (response.Body is not SnapshotResultBody result || result.CaptureId != captureId ||
+                    result.ChunkCount != chunks || result.ByteCount != payload.Length || chunks == 0)
+                {
+                    throw new InvalidDataException("Snapshot is missing its exact correlated terminal count/length.");
+                }
+
+                var document = TreeSnapshotCodec.Decode(payload.GetBuffer().AsMemory(0, checked((int)payload.Length)), target, captureId);
+                completed = true;
+                return document;
+            }
+        }
+        catch (OperationCanceledException error) when (!cancellationToken.IsCancellationRequested &&
+            !closed.IsCancellationRequested && deadline.IsCancellationRequested)
+        {
+            throw new TimeoutException("TAP snapshot deadline expired; the partial transport cannot be reused.", error);
+        }
+        finally
+        {
+            if (acquired)
+            {
+                if (!completed) Close();
+                requests.Release();
+            }
+        }
     }
 
     public async Task DisconnectAsync(CancellationToken cancellationToken)

@@ -90,6 +90,9 @@ public static class TapCodec
     {
         TapMessageType.Handshake => typeof(HandshakeBody),
         TapMessageType.Hello => typeof(HelloBody),
+        TapMessageType.TakeSnapshot => typeof(TakeSnapshotBody),
+        TapMessageType.SnapshotChunk => typeof(SnapshotChunkBody),
+        TapMessageType.SnapshotResult => typeof(SnapshotResultBody),
         TapMessageType.Disconnect => typeof(DisconnectBody),
         TapMessageType.Acknowledgement => typeof(AcknowledgementBody),
         _ => throw new NotSupportedException("Unknown TAP message type.")
@@ -99,6 +102,33 @@ public static class TapCodec
     {
         switch (body)
         {
+            case TakeSnapshotBody snapshot:
+                Require.Id(snapshot.CaptureId);
+                break;
+            case SnapshotChunkBody chunk:
+                Require.Id(chunk.CaptureId);
+                if (chunk.Index is < 0 or >= TapProtocol.MaximumSnapshotChunks ||
+                    chunk.DataBase64 is not { Length: > 0 and <= (TapProtocol.SnapshotChunkBytes + 2) / 3 * 4 })
+                {
+                    throw new ArgumentException("Snapshot chunk index/size is invalid.");
+                }
+
+                var data = Convert.FromBase64String(chunk.DataBase64);
+                if (data.Length is 0 or > TapProtocol.SnapshotChunkBytes)
+                {
+                    throw new ArgumentException("Snapshot chunk payload is invalid.");
+                }
+
+                break;
+            case SnapshotResultBody result:
+                Require.Id(result.CaptureId);
+                if (result.ChunkCount is <= 0 or > TapProtocol.MaximumSnapshotChunks ||
+                    result.ByteCount is <= 0 or > TapProtocol.MaximumSnapshotBytes)
+                {
+                    throw new ArgumentException("Snapshot completion bounds are invalid.");
+                }
+
+                break;
             case HelloBody hello:
                 if (hello.Message != "hello")
                 {

@@ -5,9 +5,6 @@
 
 #include <TraceLoggingInterop.h>
 
-// Uncomment to trace allocations via ETW
-//#define TRACE_ALLOC 1
-
 // Uncomment to trace parser commands via ETW
 //#define TRACE_PARSER_COMMANDS 1
 

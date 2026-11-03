@@ -10,6 +10,9 @@ if (!(Test-Path -LiteralPath $vswhere)) { throw 'Visual Studio C++ build tools a
 $msbuild = @(& $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\amd64\MSBuild.exe') |
     Select-Object -First 1
 if (!$msbuild) { throw 'Visual Studio x64 MSBuild was not found.' }
+$appProject = Join-Path $root 'WinUIProfiler.App\WinUIProfiler.App.csproj'
+& $msbuild $appProject /t:Restore "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:quiet
+if ($LASTEXITCODE -ne 0) { throw 'Restoring the SDK metadata for the app and tree snapshot TAP failed.' }
 foreach ($architecture in @('x64', 'ARM64')) {
     foreach ($project in @('WinUIProfiler.Tap', 'WinUIProfiler.Injector')) {
         & $msbuild (Join-Path $root "$project\$project.vcxproj") /t:Build "/p:Configuration=$Configuration" "/p:Platform=$architecture" /nologo /v:quiet
@@ -19,7 +22,7 @@ foreach ($architecture in @('x64', 'ARM64')) {
 & $msbuild (Join-Path $root 'WinUIProfiler.Native\WinUIProfiler.Native.vcxproj') /t:Build `
     "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:quiet
 if ($LASTEXITCODE -ne 0) { throw 'Building the native process metrics library failed.' }
-& $msbuild (Join-Path $root 'WinUIProfiler.App\WinUIProfiler.App.csproj') /restore /t:Build `
+& $msbuild $appProject /t:Build `
     "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:minimal
 if ($LASTEXITCODE -ne 0) { throw 'Building the self-contained profiler executable failed.' }
 $outputFile = Join-Path $root "WinUIProfiler.App\obj\ProfilerAppOutput.$Platform.$Configuration.txt"

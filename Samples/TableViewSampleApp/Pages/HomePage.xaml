@@ -70,7 +70,7 @@
                     <x:String>Tooltips — HeaderToolTip and per-cell CellToolTipBinding</x:String>
                     <x:String>Text wrapping with variable row heights</x:String>
                     <x:String>Empty state — EmptyTemplate shown when the source has no rows</x:String>
-                    <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
+                    <x:String>Row virtualization — realizes only the rows in or near the viewport, so large datasets scroll smoothly</x:String>
                     <x:String>Keyboard navigation and UI Automation peers for tables, rows, cells and headers</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
                     <x:String>Hierarchical rows from a parent key (ParentBy), composed with filter, sort, grouping and live shaping, on the Hierarchy page and in the Hierarchy and Grouped hierarchy shaping modes of the table pages</x:String>
@@ -178,7 +178,7 @@
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Scales to large data" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="Row virtualization realizes only the rows currently in view, so tens of thousands of rows scroll smoothly without holding every off-screen row's cell controls in memory. The Virtualization page shows it live."
+                    Text="Row virtualization realizes only the rows in or near the viewport, so tens of thousands of rows scroll smoothly without holding every other row's cell controls in memory. The Virtualization page shows it live."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
             </StackPanel>

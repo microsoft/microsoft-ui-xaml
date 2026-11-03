@@ -1,22 +1,9 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
-// ---- Data source: the ways of being empty ---------------------------------------------
-
-private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
-{
-    // Fires during InitializeComponent (SelectedIndex="0"), and when an action moves the
-    // selector to match what it just did; neither is a user choice.
-    if (!IsLoaded || _syncingDataSource)
-    {
-        return;
-    }
-
-    var tag = SampleShaping.SelectedTag(DataSourceSelector, "Populated");
-    ApplyDataSource(tag);
-}
+public TableViewSource Source { get; }
 
 private void ApplyDataSource(string tag)
 {
@@ -56,18 +43,10 @@ private void AttachSource()
     }
 }
 
-// …
-
 private void OnFilterToZeroClick(object sender, RoutedEventArgs e)
 {
-    if (!_sourceAttached)
-    {
-        return;
-    }
-
     // Nobody joins in the future, so the filter matches nothing while the collection keeps
     // every row. Filter mutates the source in place, like GroupBy.
     var today = DateTimeOffset.Now;
     Source.Filter(item => item is Person p && p.JoinDate > today);
-    _filteredToZero = true;
 }

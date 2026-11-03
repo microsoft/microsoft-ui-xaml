@@ -1,4 +1,3 @@
-RandomizeAll();
 Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
 InitializeComponent();
 
@@ -11,34 +10,9 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
     column.SortCycle = TableViewSortCycle.DescendingAscending;
 }
 
-_timer.Tick += OnTimerTick;
+public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
-// …
-
-private void OnTimerTick(object? sender, object e)
-{
-    RandomizeAll();
-    ResortIfMetricSorted();
-}
-
-// A value change raised through INotifyPropertyChanged updates the cell but does not move the
-// row: the projection re-sorts on collection changes only. Re-declaring the active sort with
-// the column's own path re-sorts the same source and keeps that column's sort indicator.
-private void ResortIfMetricSorted()
-{
-    var column = SampleShaping.ActiveSortColumn(ProcessTable);
-    if (column is null || column.SortMemberPath is not
-        (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
-    {
-        return;
-    }
-
-    Source.Sort(column.SortMemberPath, column.SortDirection);
-}
-
-// …
-
-// ---- Search (TableViewSource.Filter) ------------------------------------------------
+public TableViewSource Source { get; }
 
 private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {
@@ -69,35 +43,3 @@ private static bool MatchesSearch(ProcessItem process, string query) =>
     process.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
     || process.Category.Contains(query, StringComparison.CurrentCultureIgnoreCase)
     || process.StatusText.Contains(query, StringComparison.CurrentCultureIgnoreCase);
-
-// …
-
-// Child processes are rows only while the source is nested: ParentBy then shows each under its app.
-protected override void OnShapingApplying(ShapingApplyingEventArgs e)
-{
-    var show = e.Mode is "hierarchy" or "groupedHierarchy";
-    if (show == _childRowsShown)
-    {
-        return;
-    }
-
-    _childRowsShown = show;
-    if (show)
-    {
-        foreach (var app in Processes.Where(process => process.Children.Count > 0).ToList())
-        {
-            var index = Processes.IndexOf(app);
-            foreach (var child in app.Children)
-            {
-                Processes.Insert(++index, child);
-            }
-        }
-    }
-    else
-    {
-        foreach (var child in Processes.Where(process => process.ParentPid is not null).ToList())
-        {
-            Processes.Remove(child);
-        }
-    }
-}

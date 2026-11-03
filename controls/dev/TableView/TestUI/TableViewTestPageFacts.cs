@@ -32,6 +32,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ScrollingTable = "ScrollingTableView";
         internal const string HierarchyTable = "HierarchyTable";
         internal const string HierarchyRtlTable = "HierarchyRtlTable";
+        internal const string CellControlsTable = "CellControlsTableView";
+        internal const string ToggleCellControlsHeadersButton = "ToggleCellControlsHeadersButton";
 
         // ---- Page controls (AutomationId) ----
 
@@ -60,6 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string GroupedPagingPivotItem = "GroupedPaging";
         internal const string ScrollingPivotItem = "Scrolling";
         internal const string HierarchyPivotItem = "Hierarchy";
+        internal const string CellControlsPivotItem = "CellControls";
 
         internal static string GoToButton(string pivotItem) => "GoTo" + pivotItem + "Button";
 
@@ -221,6 +224,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static readonly int[] ContextMenuColumnWidths = { 160, 160, 100 };
         internal const int ContextMenuTableWidth = 600;
         internal const int ContextMenuItemCount = 6;
+        internal const int CellControlsItemCount = 12;
 
         internal const int ContextMenuNameColumn = 0;
         internal const int ContextMenuCityColumn = 1;

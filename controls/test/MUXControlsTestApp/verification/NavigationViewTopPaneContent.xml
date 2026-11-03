@@ -1560,7 +1560,6 @@
                       Padding=0,0,0,0
                       RenderSize=36,36
                       Visibility=Visible
-                      Width=36
                     [Microsoft.UI.Xaml.Shapes.Rectangle]
                         FocusVisualPrimaryBrush=#E4000000
                         FocusVisualPrimaryThickness=2,2,2,2

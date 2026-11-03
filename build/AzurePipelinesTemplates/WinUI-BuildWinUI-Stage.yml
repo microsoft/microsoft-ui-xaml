@@ -24,6 +24,11 @@ parameters:
   # Optional OneBranch host SKU for the BuildMUX jobs (e.g. D64). Empty = inherit the
   # pipeline-level WindowsHostVersion, which currently draws an 8-vCPU host.
   buildHostSku: ''
+  # Optional extra files to exclude from OneBranch CodeSign Validation in the BuildMUX jobs, as
+  # Guardian globs relative to ob_outputDirectory (e.g. '**\Foo.dll'). Appended to the jobs' default
+  # exclusions. Only for dependency binaries the pipeline redistributes but does not sign itself.
+  # Empty (default) = default exclusions only.
+  codeSignValidationExcludes: []
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -139,7 +144,10 @@ stages:
     variables:
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
-      ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      ${{ if eq(length(parameters.codeSignValidationExcludes), 0) }}:
+        ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      ${{ else }}:
+        ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll;-|${{ join('';-|'', parameters.codeSignValidationExcludes) }}'
       # The default ob checkout only does a shallow fetch. For PGO to work, it needs to fetch deeper.
       ob_git_fetchDepth: -1
       # Currently, the version of PREfast in Guardian does not correctly detect VSBuild tasks, which is a known pipeline-template issue.

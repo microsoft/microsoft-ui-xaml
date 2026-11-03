@@ -89,7 +89,7 @@ namespace WinUIProfiler::Tap
                         return result;
                     }
                     const auto active = state;
-                    auto server = std::make_shared<PipeServer>(std::move(bootstrap),
+                    auto server = std::make_shared<PipeServer>(std::move(bootstrap), diagnostics,
                         [active](PipeServer* ended)
                         {
                             ComPtr<IUnknown> released;

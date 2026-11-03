@@ -31,6 +31,7 @@ TEAM_PARENT_MAP_PATH = Path(__file__).with_name("team-parent-map.json")
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
+MAX_REPOSITORY_COMMENTS = 6
 MAX_COMMENT_BODY = 2000
 MAX_CONTEXT_BYTES = 1024 * 1024
 MAX_PROMPT_BYTES = 2 * 1024 * 1024
@@ -209,12 +210,24 @@ def snapshot(client: GitHub, number: int) -> dict:
         if comment["user"]["id"] == issue["user"]["id"]
         and comment["user"].get("type") != "Bot"
     ]
+    repository_comments = [
+        {
+            "id": comment["id"], "body": comment.get("body") or "",
+            "author": comment["user"]["login"],
+            "association": comment["author_association"],
+        }
+        for comment in comments
+        if comment["user"]["id"] != issue["user"]["id"]
+        and comment["user"].get("type") != "Bot"
+        and comment.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"}
+    ]
     content = {
         "number": number,
         "title": issue.get("title") or "",
         "body": issue.get("body") or "",
         "labels": sorted(label_names(issue)),
         "author_comments": author_comments,
+        "repository_comments": repository_comments,
     }
     digest = hashlib.sha256(
         json.dumps(content, sort_keys=True, ensure_ascii=True).encode("utf-8")
@@ -314,6 +327,10 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     content = current["content"]
     author_comments = content["author_comments"]
     selected = {comment["id"]: comment for comment in author_comments[:5] + author_comments[-5:]}
+    repository_comments = content["repository_comments"]
+    selected_repository = {
+        comment["id"]: comment for comment in repository_comments[:3] + repository_comments[-3:]
+    }
     kind = issue_kind(issue)
 
     def search(query):
@@ -335,10 +352,16 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
             {"id": comment["id"], "body": evidence_text(comment["body"], MAX_COMMENT_BODY)}
             for comment in selected.values()
         ],
+        "repository_followups": [
+            {**comment, "body": evidence_text(comment["body"], MAX_COMMENT_BODY)}
+            for comment in selected_repository.values()
+        ],
         "context_truncated": (
             len(content["body"]) > MAX_BODY
             or len(author_comments) > MAX_AUTHOR_COMMENTS
             or any(len(comment["body"]) > MAX_COMMENT_BODY for comment in selected.values())
+            or len(repository_comments) > MAX_REPOSITORY_COMMENTS
+            or any(len(comment["body"]) > MAX_COMMENT_BODY for comment in selected_repository.values())
         ),
         "existing_labels": content["labels"],
         "allowed_areas": areas,
@@ -370,7 +393,7 @@ def validate(output: dict, evidence: dict) -> dict:
         "routing_rule", "routing_reason",
     }
     if (
-        not required <= set(item) <= required | {"missing_information_kind"}
+        not required <= set(item) <= required | {"missing_information_kind", "uwp_specific", "uwp_reason"}
         or item["type"] != "publish_triage_summary"
     ):
         raise TriageError("Unexpected triage output schema or operation")
@@ -391,6 +414,17 @@ def validate(output: dict, evidence: dict) -> dict:
     }
     if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
         raise TriageError("Invalid content-based issue kind")
+    if {"uwp_specific", "uwp_reason"} & set(item):
+        if type(item.get("uwp_specific")) is not bool:
+            raise TriageError("Invalid UWP-specific classification")
+        result["uwp_specific"] = item["uwp_specific"]
+        result["uwp_reason"] = required_string(item, "uwp_reason", 400)
+    else:
+        result["uwp_specific"] = False
+        result["uwp_reason"] = "None"
+        result["normalization_notes"].append(
+            "The older output has no app-model assessment; app-model labels are unchanged."
+        )
     if "missing_information_kind" in item:
         request_kind = required_string(item, "missing_information_kind", 32)
         if request_kind not in ("NONE", "REPRODUCTION", "ENVIRONMENT", "REQUEST_DETAILS"):
@@ -431,6 +465,12 @@ def validate(output: dict, evidence: dict) -> dict:
             raise TriageError("Conditional routing requires evidence for the selected rule")
     if result["reproduction"] not in ("SUFFICIENT", "INSUFFICIENT", "NOT_APPLICABLE"):
         raise TriageError("Invalid reproduction classification")
+    if result["area_confidence"] == "HIGH" and result["routing_reason"] == "None":
+        result["area_confidence"] = "MEDIUM"
+        result["review_notes"].append(
+            "The area suggestion lacks supporting report evidence. HIGH confidence was "
+            "reduced to MEDIUM; new area routing needs maintainer confirmation."
+        )
     raw_duplicates = required_string(item, "duplicate_candidates_json", 6000)
     duplicates = json.loads(raw_duplicates)
     if not isinstance(duplicates, list) or len(duplicates) > MAX_SUGGESTIONS:
@@ -529,6 +569,21 @@ def reconcile_assessment(result: dict, evidence: dict) -> None:
         and result["missing_information_kind"] == "REPRODUCTION"
         and not evidence["context_truncated"]
     )
+    result["add_uwp"] = False
+    if result["uwp_specific"]:
+        if assessed_kind != "BUG" or source_kind == "FEATURE":
+            notes.append("Automatic appModel-UWP labeling applies only to bugs, not feature or other assessments.")
+        elif result["uwp_reason"] == "None":
+            notes.append("The UWP-specific assessment lacks supporting report evidence; app-model labeling is deferred.")
+        elif evidence["context_truncated"]:
+            notes.append("App-model labeling is deferred because the supplied context was truncated.")
+        elif any(
+            label.startswith("appModel-") and label != "appModel-UWP"
+            for label in evidence["existing_labels"]
+        ):
+            notes.append("Existing app-model labels take precedence; the conflicting UWP-specific assessment needs review.")
+        else:
+            result["add_uwp"] = True
 
 
 def route_team(mapping: dict, area: str, rule_id: str) -> str | None:
@@ -595,6 +650,8 @@ def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
         additions.add("needs-triage")
     if result["needs_repro"]:
         additions.add("needs-repro")
+    if result["add_uwp"]:
+        additions.add("appModel-UWP")
     if not additions <= set(evidence["_catalog"]):
         raise TriageError("A proposed label no longer exists")
     return sorted(additions - set(evidence["existing_labels"]))
@@ -612,7 +669,11 @@ def plain_text(value: str) -> str:
 
 def render(result: dict, evidence: dict, mapping: dict) -> str:
     decision = routing_decision(result, evidence, mapping)
-    lines = [MARKER, "", "## \U0001f9ed Triage summary", ""]
+    lines = [
+        MARKER, "",
+        "Thank you for taking the time to file this issue and help improve WinUI.", "",
+        "## \U0001f9ed Triage summary", "",
+    ]
     if result["missing_information"] != "None":
         lines.extend([
             "### \U0001f64b For the issue author", "",
@@ -654,10 +715,13 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     else:
         reproduction = "\u26a0\ufe0f Needs maintainer review"
     lines.append("- **Reproduction:** " + reproduction)
+    if result["add_uwp"]:
+        lines.append("- **App model:** `appModel-UWP` (UWP-specific bug). "
+                     + plain_text(result["uwp_reason"]))
     if package:
         lines.append("- **Package version (reported):** " + plain_text(package))
     if route_areas or route_teams:
-        lines.append("- **Routing plan (existing labels preserved):** "
+        lines.append("- **Routing at assessment time (existing labels preserved):** "
                      + ", ".join(f"`{label}`" for label in route_areas + route_teams) + ".")
     if result["area"] != "None":
         area = result["area"]
@@ -706,6 +770,7 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     lines.extend([
         "",
         "_AI-assisted automated triage; WinUI maintainers make final decisions. "
+        "Routing above is an assessment-time snapshot; later maintainer label changes take precedence. "
         "Existing labels are preserved; this workflow never closes issues automatically._",
     ])
     return "\n".join(lines)

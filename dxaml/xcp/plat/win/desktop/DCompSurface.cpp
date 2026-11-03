@@ -1437,54 +1437,6 @@ void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
         GetHeightWithGutters(),
         GetPixelStride(),
         m_pVirtualCompositionSurface != nullptr);
-    XamlProfilerTracing::XamlHeapSnapshot(
-        XcpAllocation::GetHeapHandle(),
-        XcpAllocation::IsUsingPrivateHeap(),
-        XcpAllocation::GetOutstandingAllocationSize(),
-        XcpAllocation::GetOutstandingAllocationCount(),
-        XcpAllocation::GetAllocationSize(),
-        XcpAllocation::GetAllocationCount(),
-        XcpAllocation::GetDeallocationCount());
-
-    if (m_d3dDevice == nullptr)
-    {
-        return;
-    }
-
-    DXGI_QUERY_VIDEO_MEMORY_INFO localInfo{};
-    DXGI_QUERY_VIDEO_MEMORY_INFO nonLocalInfo{};
-    bool localAvailable = false;
-    bool nonLocalAvailable = false;
-
-    CD3D11SharedDeviceGuard guard;
-    if (SUCCEEDED(m_d3dDevice->TakeLockAndCheckDeviceLost(&guard)))
-    {
-        Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
-        Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-        Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter3;
-
-        if (SUCCEEDED(m_d3dDevice->GetDevice(&guard)->QueryInterface(IID_PPV_ARGS(&dxgiDevice))) &&
-            SUCCEEDED(dxgiDevice->GetAdapter(&adapter)) &&
-            SUCCEEDED(adapter.As(&adapter3)))
-        {
-            localAvailable = SUCCEEDED(adapter3->QueryVideoMemoryInfo(
-                0,
-                DXGI_MEMORY_SEGMENT_GROUP_LOCAL,
-                &localInfo));
-            nonLocalAvailable = SUCCEEDED(adapter3->QueryVideoMemoryInfo(
-                0,
-                DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL,
-                &nonLocalInfo));
-        }
-    }
-
-    XamlProfilerTracing::GpuMemorySnapshot(
-        localInfo.CurrentUsage,
-        localInfo.Budget,
-        localAvailable,
-        nonLocalInfo.CurrentUsage,
-        nonLocalInfo.Budget,
-        nonLocalAvailable);
 }
 #endif
 

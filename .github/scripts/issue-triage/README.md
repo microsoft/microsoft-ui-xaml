@@ -48,6 +48,7 @@ still rebuilds live evidence independently.
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
+| BUG clearly specific to WinUI 2 UWP, with supporting report evidence | Add the existing `appModel-UWP` label independently of area confidence, unless context is truncated or a human app-model label conflicts. |
 | BUG assessment with an insufficient repro and an actionable REPRODUCTION request | Ask for the specified details and add `needs-repro`, unless the intake is a feature or context is truncated. |
 | Missing version but otherwise actionable reproduction | Ask for the version in the comment; do not add `needs-repro` for that alone. |
 | Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
@@ -75,6 +76,9 @@ author's comment cannot make the publisher edit it.
 
 The canonical comment uses a compact, decorated triage-summary layout:
 
+- A brief thank-you is the first visible line, before the triage heading. The
+  wording applies to bugs, feature proposals, and questions without mentioning
+  the author or making commitments.
 - An **issue-author** section appears only when there is an actual information
   request. The request stays visible outside collapsed details, without adding
   new mention/notification behavior.
@@ -90,7 +94,19 @@ The metadata uses the preserved/planned routing, not a model suggestion that
 would be ignored. Sufficient reproduction details are not presented as a claim
 that the automation reproduced the bug. All issue-derived prose and package
 metadata remain escaped, and the canonical marker remains the first line so
-updates do not create additional comments.
+updates do not create additional comments. Routing is explicitly an
+assessment-time snapshot: later maintainer label changes take precedence.
+This does not introduce label-change triggers or retroactively refresh old comments.
+
+Prepared evidence includes up to six non-author, non-bot follow-ups carrying
+GitHub `OWNER`, `MEMBER`, or `COLLABORATOR` association, in addition to the
+author's existing bounded follow-ups. These associations identify repository
+affiliation, not verified area ownership or policy authority. The first three
+and last three are retained with author/association provenance; omitted or
+oversized context is flagged. Affiliated comments participate in the input
+fingerprint, so changing them during analysis invalidates publication. Comment
+bodies remain untrusted evidence and cannot override workflow policy. Existing
+author-only re-triage triggers and human-label preservation are unchanged.
 
 ## Ownership mapping
 
@@ -100,9 +116,8 @@ there is no separate mapping approval or activation step.
 
 The team-maintained configuration maps area labels to their default owners;
 `area-External` and `area-Performance` deliberately have no default owner.
-It also provides keyword guidance, ownership confidence, and nine
-conditional routes: eight declared override rules and the explicit
-AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
+It also provides keyword guidance, ownership confidence, and
+conditional routes. Teams are derived from this configuration,
 never accepted as arbitrary model output.
 
 Parent relationships are maintained separately in `team-parent-map.json`:
@@ -143,8 +158,21 @@ Each area entry contains:
 
 The model picks an area and either `default` or a rule ID configured for that
 area. Conditional choices require a short evidence-based explanation. The
-default rule may also carry a useful explanation; it does not require an empty
-rationale. Unknown rule IDs remain errors. A cross-area rule can be normalized
+default rule requires a supporting explanation for HIGH area confidence.
+An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
+without discarding the summary, reproduction assessment, or duplicate handling.
+This checks for a missing rationale, not its semantic correctness.
+First-level routing does not require independently verifying the root cause.
+A clear reporter diagnosis identifying the failing component, operation, or
+boundary can support HIGH area confidence and the configured team route.
+The rationale attributes the diagnosis to the reporter rather than presenting
+it as a verified finding. Unverified root cause alone is not a reason to lower
+routing confidence; contradictory observations or unresolved competing areas
+outside the initial-investigation defaults below still require an advisory
+assessment. A bare label request or unsupported guess
+is not diagnostic evidence, and human labels and configured routing rules remain
+authoritative. This is model guidance, not a publisher-side confidence promotion.
+Unknown rule IDs remain errors. A cross-area rule can be normalized
 to `default` only if the selected area has no conditional rules and its fixed
 default owner exactly matches the unambiguous owner of that known rule. This
 cannot introduce a new owner or bypass a selected area's conditions, and the
@@ -152,6 +180,36 @@ adjustment is recorded in the result, comment, and workflow log.
 For example, `area-Scrolling` normally maps to `team-Controls`, but its
 `compositor-input` rule maps compositor-thread interaction tracker/input-latency
 problems to `team-CompInput`.
+
+For a window-behavior report that does not distinguish XAML/WinUI Window from
+AppWindow, prefer `area-XamlWindow` for initial investigation. A working
+AppWindow alternative is not required: maintainers can redirect later. HIGH
+confidence can express this clear initial route, not a verified root cause;
+the rationale explains the report and policy. Direct AppWindow failures and
+clearly identified control/content-layout failures retain their own areas.
+Existing human areas and teams are never replaced by this default.
+
+The AppWindow `xaml-window-facade` rule handles an evidenced XAML/WinUI Window
+size-propagation or activation-ordering failure when the corresponding direct
+AppWindow operation works. Its stable identifier is retained for compatibility;
+the descriptions refer directly to XAML/WinUI Window. This exception preserves
+an existing AppWindow area rather than replacing the human area decision.
+`area-WebView` defaults to `team-Controls` across product generations, without
+a version-specific exception or inherited Rendering/Core labels. Area selection
+must still distinguish WinUI control/integration defects from evidenced external
+browser-runtime failures. These distinctions use report evidence without adding
+other product/app-model labels. UWP-specific bugs are assessed separately from
+area ownership, as described below.
+
+`area-TitleBar` defaults to `team-Controls`; its existing `pointer-handling`
+exception still routes evidenced hit-testing, drag-region input, or caption-button
+pointer handling to `team-CompInput`. Existing human team labels are preserved.
+`ExtendsContentIntoTitleBar` is a Window/AppWindow API, not a TitleBar control
+property. Custom title-bar integration reports can start in `area-TitleBar`
+when the control/window boundary is unclear, without claiming API ownership or
+a verified control defect. Failures isolated to Window/AppWindow properties or
+operations follow the window guidance instead. The property name alone does
+not select the TitleBar area.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
 changes. An absent entry or a `null` default team means "do not auto-assign a
@@ -162,6 +220,33 @@ If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
 
 ## Assessment reconciliation
+
+### UWP app model
+
+The model returns a boolean `uwp_specific` assessment and bounded `uwp_reason`
+alongside its area/routing assessment. Clear report evidence of a WinUI 2 UWP
+failure, such as a CoreWindow reproduction tied to a WinUI 2-only handler, can
+support the existing `appModel-UWP` label without independent root-cause
+verification. A UWP mention, WinUI 2 version alone, migration/comparison example,
+shared failure, or bare label request is not sufficient. Uncertain app models
+and FEATURE/OTHER assessments return false.
+
+The publisher validates the types and requires a nonempty supporting rationale.
+It adds only the fixed existing label, never an arbitrary model-supplied name,
+and only for a BUG assessment that is not a feature intake. Missing rationale,
+truncated context, or an existing conflicting `appModel-*` label defers this
+label and surfaces a review note without discarding valid area/team triage.
+No existing app-model label is removed or replaced. Area confidence does not
+gate this independent classification. No other product/app-model label is added.
+As with area rationale, validation checks for an explanation, not its semantic
+correctness; the model must establish UWP specificity from the supplied evidence.
+
+Older output artifacts without both app-model fields remain usable but cannot
+authorize app-model labels; the omission is recorded in the comment and log.
+Partially present or malformed fields fail closed. Label existence, changed-input,
+preview, threat-detection and canonical-comment publication checks still apply.
+
+### Issue kind and reproduction
 
 The prepared issue kind is a label/template-based hint, not a verdict about the
 report's content. The model assesses BUG, FEATURE, or OTHER independently, while

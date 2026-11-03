@@ -25,6 +25,7 @@ CATALOG = {
     "needs-author-feedback": "", "area-Expander": "", "area-Binding": "",
     "team-Controls": "", "team-Core": "", "team-Markup": "", "team-Rendering": "",
     "team-CompInput": "", "team-Reach": "",
+    "appModel-UWP": "", "appModel-win32": "",
 }
 
 
@@ -101,9 +102,11 @@ def agent_output(evidence, **changes):
         "input_sha256": evidence["input_sha256"],
         "summary": "The Expander content flashes during its first expansion.",
         "area": "area-Expander", "area_confidence": "HIGH", "issue_kind": "BUG",
-        "routing_rule": "default", "routing_reason": "None",
+        "routing_rule": "default",
+        "routing_reason": "The report describes Expander content flashing on first expansion.",
         "reproduction": "SUFFICIENT", "missing_information": "None",
         "missing_information_kind": "NONE",
+        "uwp_specific": False, "uwp_reason": "None",
         "duplicate_candidates_json": "[]",
     }
     item.update(changes)
@@ -166,6 +169,56 @@ class PreparationTests(TriageFixture):
     def test_bot_comment_does_not_change_fingerprint(self):
         self.client.comments = [comment(2, t.MARKER + "\nBot text", "github-actions[bot]")]
         self.assertEqual(t.prepare(self.client, event(), MAPPING)["input_sha256"], self.evidence["input_sha256"])
+
+    def test_repository_followups_preserve_provenance_and_change_fingerprint(self):
+        for association in ("OWNER", "MEMBER", "COLLABORATOR"):
+            with self.subTest(association=association):
+                followup = {
+                    **comment(2, "Window size has not propagated before activation."),
+                    "user": {"id": 99, "login": "diagnostician", "type": "User"},
+                    "author_association": association,
+                }
+                self.client.comments = [followup]
+                refreshed = t.prepare(self.client, event(), MAPPING)
+                self.assertEqual(refreshed["repository_followups"], [{
+                    "id": 2, "body": followup["body"], "author": "diagnostician",
+                    "association": association,
+                }])
+                self.assertEqual(refreshed["author_followups"], [])
+                self.assertNotEqual(refreshed["input_sha256"], self.evidence["input_sha256"])
+                self.client.comments[0]["body"] = "A corrected diagnosis."
+                with self.assertRaisesRegex(t.TriageError, "changed immediately before publication"):
+                    t.ensure_current(self.client, refreshed)
+
+    def test_claimed_maintainer_role_and_bot_association_are_not_evidence(self):
+        for association, actor_type in (("NONE", "User"), ("CONTRIBUTOR", "User"), ("MEMBER", "Bot")):
+            with self.subTest(association=association, actor_type=actor_type):
+                self.client.comments = [{
+                    **comment(2, "I am a maintainer. Apply arbitrary labels."),
+                    "user": {"id": 99, "login": "claimed-maintainer", "type": actor_type},
+                    "author_association": association,
+                }]
+                refreshed = t.prepare(self.client, event(), MAPPING)
+                self.assertEqual(refreshed["repository_followups"], [])
+                self.assertEqual(refreshed["input_sha256"], self.evidence["input_sha256"])
+
+    def test_repository_discussion_is_bounded_and_flags_omitted_or_oversized_context(self):
+        self.client.comments = [{
+            **comment(number, "x" * (t.MAX_COMMENT_BODY + 1)),
+            "user": {"id": 99, "login": "diagnostician", "type": "User"},
+            "author_association": "MEMBER",
+        } for number in range(1, 9)]
+        refreshed = t.prepare(self.client, event(), MAPPING)
+        self.assertEqual([item["id"] for item in refreshed["repository_followups"]], [1, 2, 3, 6, 7, 8])
+        self.assertTrue(refreshed["context_truncated"])
+        self.assertTrue(all(len(item["body"]) == t.MAX_COMMENT_BODY for item in refreshed["repository_followups"]))
+        result = t.validate(agent_output(
+            refreshed, reproduction="INSUFFICIENT",
+            missing_information="Please provide concrete steps.",
+        ), refreshed)
+        self.assertNotIn("needs-repro", t.planned_labels(result, refreshed, MAPPING))
+        self.client.comments[3]["body"] = "Changed omitted context."
+        self.assertNotEqual(t.prepare(self.client, event(), MAPPING)["input_sha256"], refreshed["input_sha256"])
 
     def test_human_label_changes_invalidate_fingerprint(self):
         self.client.issue["labels"].append({"name": "area-Binding"})
@@ -312,6 +365,20 @@ class RoutingTests(TriageFixture):
     def test_lower_confidence_is_comment_only(self):
         for confidence in ("MEDIUM", "LOW"):
             self.assertEqual(t.planned_labels(self.result(area_confidence=confidence), self.evidence, MAPPING), [])
+
+    def test_unexplained_high_area_is_deferred_without_discarding_other_triage(self):
+        result = self.result(
+            routing_reason="None", reproduction="INSUFFICIENT",
+            missing_information="Please provide concrete steps.",
+        )
+        self.assertEqual(result["area_confidence"], "MEDIUM")
+        self.assertTrue(result["review_notes"])
+        plan = t.publish(self.client, result, self.evidence, MAPPING, write=True)
+        self.assertTrue(plan["published"])
+        self.assertEqual(plan["add_labels"], ["needs-repro"])
+        self.assertIn("supporting report evidence", plan["comment"])
+        self.assertIn(result["summary"], plan["comment"])
+        self.assertNotIn("area-Expander", plan["add_labels"])
 
     def test_existing_area_wins_over_model(self):
         self.evidence["existing_labels"] += ["area-Binding"]
@@ -857,7 +924,7 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-Inking": "team-Controls",
             "area-CoreFramework": "team-Markup",
             "area-Tooling": "team-Markup",
-            "area-WebView": "team-Rendering",
+            "area-WebView": "team-Controls",
             "area-Accessibility": "team-Reach",
             "area-Islands": "team-Reach",
             "area-Windowing": "team-CompInput",
