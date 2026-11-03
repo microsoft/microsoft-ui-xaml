@@ -397,9 +397,9 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
 
 bool TableViewAutomationPeer::CanSelectMultiple()
 {
-    // Single selection only in this release. Multiple must derive this from SelectionMode, and
-    // GetSelection below must return every selected row rather than at most one.
-    return false;
+    // GetSelection below must return every selected row once this can be true.
+    auto const impl = GetImpl();
+    return impl && impl->CanSelectMultipleRows();
 }
 
 bool TableViewAutomationPeer::IsSelectionRequired()
