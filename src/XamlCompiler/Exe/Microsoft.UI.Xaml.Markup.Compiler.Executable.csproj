@@ -53,7 +53,7 @@
     <_NativeXamlCompilerDir>$(OutDir)native\</_NativeXamlCompilerDir>
     <!-- The IL-only output isn't deployed, only the native binary published below is -->
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
-    <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.NativeAot.cs) -->
+    <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.cs) -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--
       Regression guard: this build has no trim/AOT/single-file warning at all, neither from the analyzers nor from ILC, so keep any
@@ -71,13 +71,9 @@
     <Compile Include="$(BuildTasksDir)ConsoleCompileXaml.cs" />
     <Compile Include="$(BuildTasksDir)CompilerJsonContext.cs" />
   </ItemGroup>
-  <!-- Source-generated COM/P/Invoke interop (Native AOT has no built-in COM interop) used to call GenXbf.dll and vcmeta.dll -->
+  <!-- The Win32 P/Invokes and COM interfaces CsWin32 generates for the interop with GenXbf.dll and vcmeta.dll (see NativeMethods.cs) -->
   <ItemGroup>
     <AdditionalFiles Include="$(BuildTasksDir)NativeMethods.txt;$(BuildTasksDir)NativeMethods.json" />
-    <Compile Include="$(BuildTasksDir)NativeMethods.NativeAot.cs" />
-    <Compile Include="$(BuildTasksDir)Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
-    <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />
-    <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XBF\XbfNativeComClasses.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XamlCompiler\CodeGenerators\CX\CXMetadataDelegates.cs">

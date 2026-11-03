@@ -341,8 +341,8 @@ namespace System.Xaml.Schema
             const string AttributeName = "System.Runtime.CompilerServices.IsExternalInit";
 
             // We consider the property as writeable if there is no 'modreq(IsExternalInit)' on the setter.
-            // We match by name, because the type is only present in the .NET 5+ corelib, but XamlCompiler
-            // targets both .NET 5+ and .NET Framework.
+            // We match by name, because the modifier types are read from metadata (the corelib the project references), not
+            // runtime types.
             foreach (Type type in setMethod.ReturnParameter.GetRequiredCustomModifiers())
             {
                 if (type.FullName.Equals(AttributeName, StringComparison.Ordinal))

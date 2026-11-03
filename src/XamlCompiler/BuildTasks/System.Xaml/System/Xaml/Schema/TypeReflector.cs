@@ -434,9 +434,8 @@ namespace System.Xaml.Schema
         {
             const string AttributeName = "System.Runtime.CompilerServices.RequiredMemberAttribute";
 
-            // Check all attributes and match the type name. We can't lookup the attribute by type,
-            // because the attribute is only defined in the .NET 7+ corelib, but XamlCompiler targets
-            // both .NET 5+ and .NET Framework.
+            // Check all attributes and match the type name. We can't lookup the attribute by type, because the attributes are
+            // read from metadata (the corelib the project references, which may not even define it), not runtime types.
             return global::Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ReflectionHelper.FindAttributeByTypeName(type, inherit: false, AttributeName) != null;
         }
 

@@ -194,13 +194,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             // The trim analyzer can't verify that the interface returned by GetInterfaceCore (an LMR type, whose "members" are
             // metadata rows, so the annotation is meaningless for it) satisfies the annotation of the return value of
             // Type.GetInterface: interfaces come from arrays or from metadata, which carry no annotation (dotnet/runtime has
-            // the same limitation in TypeBuilderImpl.GetInterface). So in the Native AOT build, nothing returns through this
+            // the same limitation in TypeBuilderImpl.GetInterface). So nothing returns through this
             // annotated override: the compiler calls GetInterfaceCore, through LmrReflection.GetInterfaceLmr. Nothing in the
             // native binary calls Type.GetInterface(string, bool) at all: ILC doesn't even compile any implementation of it
             // (including this one and RuntimeType's), as its map file shows. Should that ever change, this throws instead of
             // returning a value that doesn't satisfy the annotation.
             throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture,
-                "Type.GetInterface isn't supported on '{0}' in the Native AOT build of the XAML compiler: use LmrReflection.GetInterfaceLmr instead.",
+                "Type.GetInterface isn't supported on '{0}' by the XAML compiler: use LmrReflection.GetInterfaceLmr instead.",
                 this));
         }
 

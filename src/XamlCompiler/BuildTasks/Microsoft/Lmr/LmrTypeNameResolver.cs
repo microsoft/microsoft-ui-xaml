@@ -19,10 +19,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// The LMR only uses <see cref="Type.GetType(string, Func{AssemblyName, Assembly}, Func{Assembly, string, bool, Type}, bool)"/>
     /// as a type name parser: the callbacks resolve the names against LMR assemblies and modules, and the constructed types
     /// (generic instantiations, arrays, pointers, references) are LMR types too, so it never loads any runtime type. That API
-    /// is annotated for trimming anyway (the analyzer can't know what the callbacks do), so .NET 9+ uses the type name parser
+    /// is annotated for trimming anyway (the analyzer can't know what the callbacks do), so this uses the type name parser
     /// of System.Reflection.Metadata instead, and does the resolution like .NET 10 does it for
     /// Type.GetType(typeName, assemblyResolver, typeResolver, throwOnError), see TypeNameResolver in dotnet/runtime.
-    /// .NET Framework keeps calling Type.GetType, since TypeName doesn't exist in the System.Reflection.Metadata it uses.
     /// </remarks>
     internal static class LmrTypeNameResolver
     {

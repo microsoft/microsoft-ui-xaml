@@ -24,10 +24,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// methods in overload resolution.
     /// </para>
     /// <para>
-    /// For any other object (e.g. a runtime type), these forward to the reflection member on .NET Framework, so the
-    /// behavior there doesn't change at all. In the Native AOT build (.NET 10) that would need the annotations: there, the
-    /// members of <see cref="Type"/> only work on the closed set of runtime types in <c>KnownRuntimeTypes</c> (the
-    /// built-in types of the XAML language), and everything else throws <see cref="NotSupportedException"/>.
+    /// For any other object (e.g. a runtime type), forwarding to the reflection member would need the annotations: the members
+    /// of <see cref="Type"/> only work on the closed set of runtime types in <c>KnownRuntimeTypes</c> (the built-in types of the
+    /// XAML language), and everything else throws <see cref="NotSupportedException"/>.
     /// </para>
     /// </remarks>
     internal static class LmrReflection
@@ -743,7 +742,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
 
             return new NotSupportedException(string.Format(CultureInfo.InvariantCulture,
-                "{0} isn't supported on '{1}' ({2}) in the Native AOT build of the XAML compiler, which can only reflect over the types and assemblies it reads from metadata.",
+                "{0} isn't supported on '{1}' ({2}) by the XAML compiler, which can only reflect over the types and assemblies it reads from metadata.",
                 member, value, value.GetType().FullName));
         }
 

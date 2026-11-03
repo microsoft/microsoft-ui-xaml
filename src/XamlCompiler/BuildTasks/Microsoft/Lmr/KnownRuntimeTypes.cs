@@ -12,8 +12,8 @@ using System.Xaml.MS.Impl;
 namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 {
     /// <summary>
-    /// The closed set of runtime types (as opposed to LMR types, read from metadata) that the Native AOT build of the
-    /// XAML compiler can reflect over, through <see cref="LmrReflection"/>.
+    /// The closed set of runtime types (as opposed to LMR types, read from metadata) that the XAML compiler can reflect over,
+    /// through <see cref="LmrReflection"/>.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -28,10 +28,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// that statically, and ILC keeps the members of exactly these types for reflection. Any other runtime type
     /// is rejected with a <see cref="NotSupportedException"/> naming it (never with a silently wrong result): add
     /// it here if the compiler legitimately needs it, with a comment saying why.
-    /// </para>
-    /// <para>
-    /// This only exists in the Native AOT build: on the other target frameworks, <see cref="LmrReflection"/>
-    /// just calls the reflection APIs on runtime types.
     /// </para>
     /// </remarks>
     internal static class KnownRuntimeTypes
@@ -127,7 +123,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
 
             throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture,
-                "{0} isn't supported on '{1}' ({2}) in the Native AOT build of the XAML compiler, which can only reflect over the types it reads from metadata and the runtime types listed in {3}.",
+                "{0} isn't supported on '{1}' ({2}) by the XAML compiler, which can only reflect over the types it reads from metadata and the runtime types listed in {3}.",
                 member, type, type.GetType().FullName, nameof(KnownRuntimeTypes)));
         }
 
@@ -144,7 +140,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         public static Type GetType(string typeName)
         {
             throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture,
-                "Type.GetType(\"{0}\") isn't supported in the Native AOT build of the XAML compiler, which can only reflect over the types it reads from metadata and the runtime types listed in {1}.",
+                "Type.GetType(\"{0}\") isn't supported by the XAML compiler, which can only reflect over the types it reads from metadata and the runtime types listed in {1}.",
                 typeName, nameof(KnownRuntimeTypes)));
         }
     }

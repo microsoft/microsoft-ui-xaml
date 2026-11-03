@@ -47,7 +47,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private Assembly _localAssembly;
         private string _localAssemblyName;
         private DirectUISchemaContext _schemaContext;
-        private IXbfMetadataProvider _xamlMetadataProvider;
+        private XbfMetadataProvider _xamlMetadataProvider;
 
         private TypeInfoCollector _typeInfoCollector;
         private XamlProjectInfo _projectInfo;
@@ -77,7 +77,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public string VCInstallDir { get; set; }
 
-        public string VCInstallPath32 { get; set; }
+        // The compiler is a 64-bit process: the 32-bit vcmeta.dll of the inputs (VCInstallPath32) isn't used
         public string VCInstallPath64 { get; set; }
 
         public string WindowsSdkPath { get; set; }
@@ -314,7 +314,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             RootsLog = i.RootsLog;
             TargetPlatformMinVersion = i.TargetPlatformMinVersion;
             VCInstallDir = i.VCInstallDir;
-            VCInstallPath32 = i.VCInstallPath32;
             VCInstallPath64 = i.VCInstallPath64;
             SuppressWarnings = i.SuppressWarnings != null ? i.SuppressWarnings.Split(';') : null;
             WindowsSdkPath = i.WindowsSdkPath;
@@ -457,7 +456,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 return true;
             }
-            FingerPrinter fingerPrinter = new FingerPrinter(LocalAssembly, ReferenceAssemblies, this.FingerprintIgnorePaths, this.VCInstallDir, this.VCInstallPath32, this.VCInstallPath64, this.UseVCMetaManaged);
+            FingerPrinter fingerPrinter = new FingerPrinter(LocalAssembly, ReferenceAssemblies, this.FingerprintIgnorePaths, this.VCInstallDir, this.VCInstallPath64, this.UseVCMetaManaged);
             if (String.IsNullOrEmpty(SaveState.LocalAssemblyName))
             {
                 SaveState.LocalAssemblyName = fingerPrinter.LocalAssemblyPath;

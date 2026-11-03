@@ -6,8 +6,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
     using System;
     using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices;
+    using System.Runtime.InteropServices.Marshalling;
 
+    // The COM class information is looked up on the exact runtime type, so derived types need to be marked as well
+    [GeneratedComClass]
     internal partial class StreamXbfOutput : StreamImpl, IXamlStream
     {
         private string _filePath;
