@@ -708,6 +708,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual("2", ReadText("DragCount"));
         }
 
+        [TestMethod]
+        public void TouchOwnerCaptureLossDoesNotBlockMouseDrag()
+        {
+            using var mouseController = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            new CheckBox(FindElement.ById("OwnerReleasesTouchCapture")).Check();
+            Wait.ForIdle();
+            var source = FindElement.ById("DragHandle");
+            var target = FindElement.ById("DropHandle");
+            var start = source.GetClickablePoint();
+            using var touch = new SyntheticTouch();
+
+            // The source captures the finger and gives the capture back on its first move, before
+            // holding starts. That candidate can no longer hold, so it must not block other presses.
+            touch.Press(0, start);
+            touch.Move(0, new System.Drawing.Point(start.X + 2, start.Y));
+            touch.Hold(200);
+            Verify.AreEqual("1", ReadText("TouchPressCount"));
+            Verify.AreEqual("1", ReadText("OwnerTouchCaptureLostCount"), "The source must lose its own touch capture.");
+
+            InputHelper.MouseDragToTarget(source, target);
+            Verify.AreEqual("Mouse", ReadText("LastPointerDevice"));
+            Verify.AreEqual("1", ReadText("DragCount"));
+            touch.Release(0);
+        }
+
+        [TestMethod]
+        public void ListViewTouchTapClearingCanDragIsSafe()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            new CheckBox(FindElement.ById("UseListView")).Check();
+            new CheckBox(FindElement.ById("ClearItemCanDragOnTap")).Check();
+            Wait.ForIdle();
+            Verify.AreEqual("Visible", ReadText("ListMode"));
+
+            // ItemClick runs inside the item's touch release and clears its CanDrag, which deletes
+            // the drag helper before the release reaches it.
+            using (InputController.Activate(PointerInputType.SingleTouch))
+            {
+                InputHelper.Tap(FindElement.ById("ListDragItem"));
+            }
+            Wait.ForIdle();
+            Verify.AreEqual("Touch", ReadText("LastPointerDevice"));
+            Verify.AreEqual("1", ReadText("ItemClickCount"));
+            new Button(FindElement.ById("Snapshot")).Invoke();
+            Wait.ForIdle();
+            Verify.AreEqual("0", ReadText("ListCaptureCount"));
+        }
+
         private static void TouchHoldAndDrag(SyntheticTouch touch, System.Drawing.Point start, System.Drawing.Point target)
         {
             touch.Press(0, start);
