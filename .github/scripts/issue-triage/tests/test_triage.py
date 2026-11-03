@@ -465,8 +465,15 @@ class ConditionalRoutingTests(TriageFixture):
     def test_conditional_rule_requires_evidence(self):
         with self.assertRaises(t.TriageError):
             self.result(routing_rule="rendering-artifact", routing_reason="None")
+
+    def test_overlong_routing_reason_is_bounded(self):
+        reason = "The reporter identifies the failing boundary and supporting evidence. " * 8
+        result = self.result(routing_reason=reason)
+        self.assertLessEqual(len(result["routing_reason"]), 400)
+        self.assertTrue(result["routing_reason"].endswith("…"))
+
         with self.assertRaises(t.TriageError):
-            self.result(routing_rule="rendering-artifact", routing_reason="x" * 401)
+            self.result(routing_reason="x" * 4097)
 
     def test_default_rule_accepts_explanations_without_changing_its_owner(self):
         result = self.result(routing_reason="This is a control-specific issue.")

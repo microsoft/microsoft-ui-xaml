@@ -382,6 +382,14 @@ def required_string(item: dict, name: str, limit: int) -> str:
     return value.strip()
 
 
+def routing_reason(item: dict) -> str:
+    value = required_string(item, "routing_reason", 4096)
+    if len(value) <= 400:
+        return value
+    shortened = value[:399].rsplit(" ", 1)[0].rstrip()
+    return (shortened or value[:399]) + "…"
+
+
 def validate(output: dict, evidence: dict) -> dict:
     items = output.get("items")
     if not isinstance(items, list) or len(items) != 1 or not isinstance(items[0], dict):
@@ -407,7 +415,7 @@ def validate(output: dict, evidence: dict) -> dict:
         "reproduction": item["reproduction"],
         "missing_information": required_string(item, "missing_information", 700),
         "routing_rule": required_string(item, "routing_rule", 64),
-        "routing_reason": required_string(item, "routing_reason", 400),
+        "routing_reason": routing_reason(item),
         "source_issue_kind": evidence["issue_kind"],
         "review_notes": [],
         "normalization_notes": [],
