@@ -2103,6 +2103,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyExpandCollapseLayoutAfterPaneToggle(useStackPanelHost: true);
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that collapsing a top-level item gives its children's space back after an earlier expand/collapse cycle while NavigationView gets unconstrained height from a StackPanel (#8291). The test never calls UpdateLayout, so only the control's own invalidation can update the layout.")]
+        public void VerifyCollapsingItemGivesSpaceBackInStackPanelHost()
+        {
+            // Negative control first: a fixed-height host gives the space back on main too.
+            foreach (bool useStackPanelHost in new[] { false, true })
+            {
+                string host = useStackPanelHost ? "StackPanel host" : "Fixed-height host";
+                var navView = SetupHierarchicalNavigationViewFor8291(useStackPanelHost, out var parent, out _, out var create);
+
+                double collapsedCreateTop = 0;
+                double collapsedParentHeight = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    // Layout slot, not TransformToVisual: the item's implicit offset animation would show an in-between position.
+                    collapsedCreateTop = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(create).Y;
+                    collapsedParentHeight = parent.ActualHeight;
+                });
+
+                foreach (bool isExpanded in new[] { true, false, true, false })
+                {
+                    RunOnUIThread.Execute(() => parent.IsExpanded = isExpanded);
+                    IdleSynchronizer.Wait();
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(parent.IsExpanded, $"{host}: parent should be collapsed");
+                    Verify.AreEqual(collapsedParentHeight, parent.ActualHeight, $"{host}: collapsed parent should shrink back to its own row");
+                    Verify.AreEqual(collapsedCreateTop, Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(create).Y, $"{host}: next item should move back up");
+                });
+            }
+        }
+
         // Repro from #8291: settings item hidden (with it the bug looks different) and no Height on NavigationView,
         // so a StackPanel host measures it with infinite height. Left maps to the same Expanded/CompactInline layout
         // as the issue's Auto mode in a wide window.

@@ -14,6 +14,12 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
+        // Negative control for #8291: an explicit Height gives NavigationView a finite height inside the StackPanel.
+        private void UseFixedHeightHost_Click(object sender, RoutedEventArgs e)
+        {
+            NavView.Height = 600;
+        }
+
         private void GetLayoutState_Click(object sender, RoutedEventArgs e)
         {
             var chevron = VisualTreeUtils.FindVisualChildByName(Pancakes, "ExpandCollapseChevron") as UIElement;

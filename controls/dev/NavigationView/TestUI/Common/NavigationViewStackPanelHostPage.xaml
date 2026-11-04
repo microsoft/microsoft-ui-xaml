@@ -26,6 +26,7 @@
             </muxcontrols:NavigationView>
         </StackPanel>
         <StackPanel Grid.Column="1" Width="300">
+            <Button x:Name="UseFixedHeightHost" AutomationProperties.AutomationId="UseFixedHeightHost" Content="UseFixedHeightHost" Click="UseFixedHeightHost_Click" />
             <Button x:Name="GetLayoutState" AutomationProperties.AutomationId="GetLayoutState" Content="GetLayoutState" Click="GetLayoutState_Click" />
             <TextBlock x:Name="LayoutState" AutomationProperties.AutomationId="LayoutState" TextWrapping="Wrap" />
         </StackPanel>

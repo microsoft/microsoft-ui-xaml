@@ -1435,6 +1435,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        [TestProperty("Description", "#8291 step 10: in a StackPanel host, after one collapse/expand cycle, collapsing an item by clicking its body must give the children's space back. Oracle: UIA bounds only (no page-side query, no UpdateLayout), so the test can't trigger the missing layout pass itself.")]
+        public void VerifyItemBodyClickCollapseGivesSpaceBackInStackPanelHost()
+        {
+            // Negative control first: with a fixed height the space is given back on main too.
+            foreach (bool fixedHost in new[] { true, false })
+            {
+                string host = fixedHost ? "Fixed-height host" : "StackPanel host";
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation StackPanel Host Test" }))
+                {
+                    if (fixedHost)
+                    {
+                        new Button(FindElement.ById("UseFixedHeightHost")).Invoke();
+                    }
+                    Wait.ForIdle();
+
+                    UIObject Pancakes() { ElementCache.Clear(); return FindElement.ByName("Pancakes"); }
+                    int CreateOffsetFromPancakes() => FindElement.ByName("Create").BoundingRectangle.Y - Pancakes().BoundingRectangle.Y;
+                    void ClickChevron() => InputHelper.LeftClick(Pancakes(), Pancakes().BoundingRectangle.Width - 25, 20);
+                    void Settle() { Wait.ForIdle(); Task.Delay(1000).Wait(); }
+
+                    Settle();
+                    int collapsedOffset = CreateOffsetFromPancakes();
+
+                    // One collapse/expand cycle with the chevron (in the issue this happened through the pane toggle and step 7).
+                    ClickChevron();
+                    Settle();
+                    int expandedOffset = CreateOffsetFromPancakes();
+                    Verify.IsGreaterThan(expandedOffset, collapsedOffset, $"{host}: expanding should push Create down");
+                    ClickChevron();
+                    Settle();
+                    Verify.AreEqual(collapsedOffset, CreateOffsetFromPancakes(), $"{host}: first collapse");
+                    ClickChevron();
+                    Settle();
+                    Verify.AreEqual(expandedOffset, CreateOffsetFromPancakes(), $"{host}: expanded again");
+
+                    // Issue step 9: click the item body (not the chevron) to collapse it.
+                    var pancakes = Pancakes();
+                    InputHelper.LeftClick(pancakes, pancakes.BoundingRectangle.Width / 2, 20);
+                    Task.Delay(1500).Wait();
+
+                    // Issue step 10: the children's space must be given back.
+                    Verify.AreEqual(collapsedOffset, CreateOffsetFromPancakes(), $"{host}: collapsing by clicking the item should give back the children's space");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void VerifyChangingFooterMenuItemVisibilityAdjustsPaneLayout()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
