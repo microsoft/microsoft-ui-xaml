@@ -56,9 +56,11 @@ Keyboard navigation and item invocation are both handled by the NavigationView.
 3. New selected NavigationViewItem gets selected
 4. Update UI (SelectionIndicator, Flyouts)
 
-Setting SelectedItem to null also removes any IndexPath left in the SelectionModel (and the
-IsChildSelected flags of its ancestors), for example when the selected data item's container was
-never selected because it did not exist when the item was selected.
+Setting SelectedItem to null (or to an item that isn't in the menus) also removes any IndexPath left in the
+SelectionModel (and the IsChildSelected flags of its ancestors), for example when the selected data item's
+container was never selected because it did not exist when the item was selected. If app code changes
+SelectedItem from a callback raised during this (IsSelected or IsChildSelected changes), the newer selection wins
+and the remaining stale updates are skipped.
 
 
 ### Compact pane length change

@@ -113,9 +113,9 @@ private:
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
     void CompletePendingSelectionChange();
-    void UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
+    bool UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
-    void ClearSelectionModelSelection();
+    void ClearSelectionModelSelection(const winrt::IInspectable& nextItem);
 
     // Item/container info functions
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
@@ -147,8 +147,8 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
-    void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
-    void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
+    bool UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    bool UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
     void CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem);
@@ -483,6 +483,8 @@ private:
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
 
     bool m_isSelectionChangedPending{ false };
+    // Incremented by every ChangeSelection, so callers can detect a selection made by app code from a callback.
+    uint32_t m_selectionChangeGeneration{ 0 };
     winrt::IInspectable m_pendingSelectionChangedItem{ nullptr };
     NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
