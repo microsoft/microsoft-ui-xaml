@@ -331,6 +331,28 @@ namespace System.Xaml.Schema
             return true;
         }
 
+        /// <summary>
+        /// Checks whether a given set method is <see langword="init"/>-only.
+        /// </summary>
+        /// <param name="setMethod">The input <see cref="MethodInfo"/> instance to inspect (for a property setter).</param>
+        /// <returns>Whether <paramref name="setMethod"/> is <see langword="init"/>-only.</returns>
+        internal static bool IsInitOnly(MethodInfo setMethod)
+        {
+            const string AttributeName = "System.Runtime.CompilerServices.IsExternalInit";
+
+            // We consider the property as writeable if there is no 'modreq(IsExternalInit)' on the setter.
+            // We match by name, because the type is only present in the .NET 5+ corelib, but XamlCompiler
+            // targets both .NET 5+ and .NET Framework.
+            foreach (Type type in setMethod.ReturnParameter.GetRequiredCustomModifiers())
+            {
+                if (type.FullName.Equals(AttributeName, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         // Used by Reflector for attribute lookups
         protected override MemberInfo Member

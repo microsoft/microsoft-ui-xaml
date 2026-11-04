@@ -4,7 +4,6 @@
 #include "precomp.h"
 #include <DependencyLocator.h>
 #ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
 #include <WucVisualTreeProfiler.h>
 #endif // XAMLPROFILER_ENABLED
 #include <D2DUtils.h>
@@ -397,6 +396,19 @@ void CPopup::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp)
     if (cleanupDComp)
     {
         ReleaseDCompResourcesForWindowedPopup();
+
+        // The old compositor closes the ContentIsland. Keep the bridge/HWND, but reconnect a new island when rendering resumes.
+        if (m_contentIsland)
+        {
+            if (m_automationProviderRequestedToken.value != 0)
+            {
+                IFCFAILFAST(m_contentIsland->remove_AutomationProviderRequested(m_automationProviderRequestedToken));
+                m_automationProviderRequestedToken = {};
+            }
+
+            m_inputSiteAdapter.reset();
+            m_contentIsland.Reset();
+        }
     }
 }
 
@@ -1372,14 +1384,11 @@ void CPopup::EnsureContentExternalBackdropLink()
         DCompTreeHost* dcompTreeHostNoRef = GetDCompTreeHost();
         ixp::ICompositor* compositorNoRef = dcompTreeHostNoRef->GetCompositor();
 
-        wrl::ComPtr<ixp::IContentExternalBackdropLinkStatics> backdropLinkStatics;
-        IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Microsoft_UI_Content_ContentExternalBackdropLink).Get(), &backdropLinkStatics));
-        IFCFAILFAST(backdropLinkStatics->Create(compositorNoRef, m_backdropLink.ReleaseAndGetAddressOf()));
+        IFCFAILFAST(ContentExternalBackdropLinkHelper::Create(compositorNoRef, m_backdropLink));
 
-        IFCFAILFAST(m_backdropLink->put_ExternalBackdropBorderMode(ixp::CompositionBorderMode::CompositionBorderMode_Soft));
+        IFCFAILFAST(m_backdropLink->SetExternalBackdropBorderMode(ixp::CompositionBorderMode::CompositionBorderMode_Soft));
 
-        IFCFAILFAST(m_backdropLink->get_PlacementVisual(m_systemBackdropPlacementVisual.ReleaseAndGetAddressOf()));
+        IFCFAILFAST(m_backdropLink->GetPlacementVisual(m_systemBackdropPlacementVisual.ReleaseAndGetAddressOf()));
         DCompTreeHost::SetTagIfEnabled(m_systemBackdropPlacementVisual.Get(), VisualDebugTags::WindowedPopup_SystemBackdropPlacementVisual);
 
         // If there's already an animation root visual, then the windowed popup is already open. Add the system backdrop
@@ -1414,7 +1423,7 @@ void CPopup::DiscardContentExternalBackdropLink()
 
         m_systemBackdropPlacementVisual.Reset();
 
-        m_backdropLink.Reset();
+        m_backdropLink.reset();
     }
 }
 
@@ -2461,11 +2470,23 @@ void CPopup::EnsureUIAWindow()
         ASSERT(island);
         uiaInfo = UIAHostEnvironmentInfo(island);
 
+        xref_ptr<CUIAHostWindow> uiaWindow;
         IFCFAILFAST(CUIAHostWindow::Create(
             uiaInfo,
             core->GetHostSite(),
             this,
-            m_spUIAWindow.ReleaseAndGetAddressOf()));
+            uiaWindow.ReleaseAndGetAddressOf()));
+
+        // Initializing the UIA window can pump messages. Don't adopt it if the windowed popup's resources were
+        // released meanwhile, or if a reentrant request already created a UIA window.
+        if (m_spUIAWindow || (!m_desktopPopupSiteBridge && !m_popupWindowBridge))
+        {
+            uiaWindow->Deinit();
+        }
+        else
+        {
+            m_spUIAWindow = std::move(uiaWindow);
+        }
     }
 }
 
@@ -4112,7 +4133,7 @@ _Check_return_ HRESULT CPopup::GetSystemBackdrop(_Outptr_result_maybenull_ RealW
     if (m_backdropLink)
     {
         wrl::ComPtr<ixp::ICompositionSupportsSystemBackdrop> icssb;
-        IFC_RETURN(m_backdropLink.As(&icssb));
+        IFC_RETURN(m_backdropLink->AsSystemBackdropTarget(&icssb));
         IFC_RETURN(icssb->get_SystemBackdrop(systemBackdropBrush));
     }
     else
@@ -4130,7 +4151,7 @@ _Check_return_ HRESULT CPopup::SetSystemBackdrop(_In_opt_ RealWUComp::ICompositi
         EnsureContentExternalBackdropLink();
 
         wrl::ComPtr<ixp::ICompositionSupportsSystemBackdrop> icssb;
-        IFC_RETURN(m_backdropLink.As(&icssb));
+        IFC_RETURN(m_backdropLink->AsSystemBackdropTarget(&icssb));
         IFC_RETURN(icssb->put_SystemBackdrop(systemBackdropBrush));
     }
     else

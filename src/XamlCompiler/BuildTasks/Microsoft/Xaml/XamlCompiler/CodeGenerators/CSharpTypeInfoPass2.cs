@@ -34,14 +34,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 using System.Diagnostics.CodeAnalysis;
 
 ");
-  if(!Model.GenerateTypeInfo)  
+  if(Model.IsPass1)
+    {
+        WriteLine(TypeInfoDefinition.CSharpPass1StubMarker);
+        WriteLine(TypeInfoDefinition.CSharpPass1WarningPragma);
+    }
+    if(!Model.GenerateTypeInfo)
   {                                       
-            this.Write("// No local types.\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(TypeInfoDefinition.CSharpNoTypeInfoMarker));
+            this.Write("\r\n");
   }                                       
   else                                    
   {                                       
             this.Write("\r\n");
-  if (!ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null) 
+  if (!Model.IsPass1 && !ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null)
   { 
             this.Write("namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.AppMetadataProviderNamespace));
@@ -62,9 +68,14 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownNamespaces.XamlMarkup)));
             this.Write(".FullXamlMetadataProvider()]\r\n");
   } 
-            this.Write("    public sealed partial class XamlMetaDataProvider : ");
+            this.Write("    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(TypeInfoDefinition.XamlMetadataProviderClassDeclaration));
+            this.Write(" : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlMetadataProvider)));
-            this.Write("\r\n    {\r\n        private ");
+            this.Write("\r\n    {\r\n");
+  if (!Model.IsPass1)
+  {
+            this.Write("        private ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
             this.Write(".XamlTypeInfoProvider _provider = null;\r\n\r\n        private ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
@@ -82,6 +93,7 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(" otherProvider)\r\n        {\r\n            Provider.AddOtherProvider(otherProvider);" +
                     "\r\n        }\r\n\r\n");
       }
+  }
             this.Write("        /// <summary>\r\n        /// GetXamlType(Type)\r\n        /// </summary>\r\n   " +
                     "     ");
             this.Write(this.ToStringHelper.ToStringWithCulture(OverloadAttribute));
@@ -89,21 +101,48 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(this.ToStringHelper.ToStringWithCulture(NotCLSCompliantAttribute));
             this.Write("public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
-            this.Write(" GetXamlType(global::System.Type type)\r\n        {\r\n            return Provider.Ge" +
-                    "tXamlTypeByType(type);\r\n        }\r\n\r\n        /// <summary>\r\n        /// GetXamlT" +
-                    "ype(String)\r\n        /// </summary>\r\n        ");
+            this.Write(" GetXamlType(global::System.Type type)\r\n        {\r\n");
+  if (Model.IsPass1)
+  {
+            this.Write("            throw new global::System.NotImplementedException();\r\n");
+  }
+  else
+  {
+            this.Write("            return Provider.GetXamlTypeByType(type);\r\n");
+  }
+            this.Write("        }\r\n\r\n        /// <summary>\r\n        /// GetXamlType(String)\r\n        /// " +
+                    "</summary>\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(NotCLSCompliantAttribute));
             this.Write("public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
-            this.Write(" GetXamlType(string fullName)\r\n        {\r\n            return Provider.GetXamlType" +
-                    "ByName(fullName);\r\n        }\r\n\r\n        /// <summary>\r\n        /// GetXmlnsDefin" +
-                    "itions()\r\n        /// </summary>\r\n        ");
+            this.Write(" GetXamlType(string fullName)\r\n        {\r\n");
+  if (Model.IsPass1)
+  {
+            this.Write("            throw new global::System.NotImplementedException();\r\n");
+  }
+  else
+  {
+            this.Write("            return Provider.GetXamlTypeByName(fullName);\r\n");
+  }
+            this.Write("        }\r\n\r\n        /// <summary>\r\n        /// GetXmlnsDefinitions()\r\n        //" +
+                    "/ </summary>\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(NotCLSCompliantAttribute));
             this.Write("public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.XmlnsDefinition)));
-            this.Write("[] GetXmlnsDefinitions()\r\n        {\r\n            return new ");
+            this.Write("[] GetXmlnsDefinitions()\r\n        {\r\n");
+  if (Model.IsPass1)
+  {
+            this.Write("            throw new global::System.NotImplementedException();\r\n");
+  }
+  else
+  {
+            this.Write("            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.XmlnsDefinition)));
-            this.Write("[0];\r\n        }\r\n    }\r\n\r\n");
+            this.Write("[0];\r\n");
+  }
+            this.Write("        }\r\n    }\r\n\r\n");
+  if (!Model.IsPass1)
+  {
     if(ProjectInfo.EnableTypeInfoReflection)
     { 
             this.Write("    ");
@@ -405,56 +444,56 @@ using System.Diagnostics.CodeAnalysis;
                     "{\r\n            DictionaryAdd(instance, key, item);\r\n        }\r\n\r\n        overrid" +
                     "e public void AddToVector(object instance, object item)\r\n        {\r\n            " +
                     "CollectionAdd(instance, item);\r\n        }\r\n\r\n        override public void RunIni" +
-                    "tializer() \r\n        {\r\n            StaticInitializer();\r\n        }\r\n\r\n        o" +
-                    "verride public object CreateFromString(string input)\r\n        {\r\n            if " +
-                    "(BoxedType != null)\r\n            {\r\n                return BoxInstance(BoxedType" +
-                    ".CreateFromString(input));\r\n            }\r\n\r\n            if (CreateFromStringMet" +
-                    "hod != null)\r\n            {\r\n                return this.CreateFromStringMethod(" +
-                    "input);\r\n            }\r\n            else if (_enumValues != null)\r\n            {" +
-                    "\r\n                long value = 0;\r\n\r\n                string[] valueParts = input" +
-                    ".Split(\',\');\r\n\r\n                foreach (string valuePart in valueParts) \r\n     " +
-                    "           {\r\n                    object partValue;\r\n                    long en" +
-                    "umFieldValue = 0;\r\n                    try\r\n                    {\r\n             " +
-                    "           if (_enumValues.TryGetValue(valuePart.Trim(), out partValue))\r\n      " +
-                    "                  {\r\n                            enumFieldValue = global::System" +
-                    ".Convert.ToInt64(partValue);\r\n                        }\r\n                       " +
-                    " else\r\n                        {\r\n                            try\r\n             " +
-                    "               {\r\n                                enumFieldValue = global::Syste" +
-                    "m.Convert.ToInt64(valuePart.Trim());\r\n                            }\r\n           " +
-                    "                 catch( global::System.FormatException )\r\n                      " +
-                    "      {\r\n                                foreach( string key in _enumValues.Keys" +
-                    " )\r\n                                {\r\n                                    if( s" +
-                    "tring.Compare(valuePart.Trim(), key, global::System.StringComparison.OrdinalIgno" +
-                    "reCase) == 0 )\r\n                                    {\r\n                         " +
-                    "               if( _enumValues.TryGetValue(key.Trim(), out partValue) )\r\n       " +
-                    "                                 {\r\n                                            " +
-                    "enumFieldValue = global::System.Convert.ToInt64(partValue);\r\n                   " +
-                    "                         break;\r\n                                        }\r\n    " +
-                    "                                }\r\n                                }\r\n          " +
-                    "                  }\r\n                        }\r\n                        value |=" +
-                    " enumFieldValue; \r\n                    }\r\n                    catch( global::Sys" +
-                    "tem.FormatException )\r\n                    {\r\n                        throw new " +
-                    "global::System.ArgumentException(input, FullName);\r\n                    }\r\n     " +
-                    "           }\r\n\r\n                return global::System.Convert.ChangeType(value, " +
-                    "global::System.Enum.GetUnderlyingType(this.UnderlyingType));\r\n            }\r\n   " +
-                    "         throw new global::System.ArgumentException(input, FullName);\r\n        }" +
-                    "\r\n\r\n        // --- End of Interface methods\r\n\r\n        public Activator Activato" +
-                    "r { get; set; }\r\n        public StaticInitializer StaticInitializer { get; set; " +
-                    "}\r\n        public AddToCollection CollectionAdd { get; set; }\r\n        public Ad" +
-                    "dToDictionary DictionaryAdd { get; set; }\r\n        public CreateFromStringMethod" +
-                    " CreateFromStringMethod {get; set; }\r\n        public BoxInstanceMethod BoxInstan" +
-                    "ce {get; set; }\r\n\r\n        public void SetContentPropertyName(string contentProp" +
-                    "ertyName)\r\n        {\r\n            _contentPropertyName = contentPropertyName;\r\n " +
-                    "       }\r\n\r\n        public void SetIsArray()\r\n        {\r\n            _isArray = " +
-                    "true; \r\n        }\r\n\r\n        public void SetIsMarkupExtension()\r\n        {\r\n    " +
-                    "        _isMarkupExtension = true;\r\n        }\r\n\r\n        public void SetIsBindab" +
-                    "le()\r\n        {\r\n            _isBindable = true;\r\n        }\r\n\r\n        public vo" +
-                    "id SetIsReturnTypeStub()\r\n        {\r\n            _isReturnTypeStub = true;\r\n    " +
-                    "    }\r\n\r\n        public void SetIsLocalType()\r\n        {\r\n            _isLocalTy" +
-                    "pe = true;\r\n        }\r\n\r\n        public void SetItemTypeName(string itemTypeName" +
-                    ")\r\n        {\r\n            _itemTypeName = itemTypeName;\r\n        }\r\n\r\n        pu" +
-                    "blic void SetKeyTypeName(string keyTypeName)\r\n        {\r\n            _keyTypeNam" +
-                    "e = keyTypeName;\r\n        }\r\n\r\n        public void SetBoxedType(");
+                    "tializer() \r\n        {\r\n            StaticInitializer?.Invoke();\r\n        }\r\n\r\n " +
+                    "       override public object CreateFromString(string input)\r\n        {\r\n       " +
+                    "     if (BoxedType != null)\r\n            {\r\n                return BoxInstance(B" +
+                    "oxedType.CreateFromString(input));\r\n            }\r\n\r\n            if (CreateFromS" +
+                    "tringMethod != null)\r\n            {\r\n                return this.CreateFromStrin" +
+                    "gMethod(input);\r\n            }\r\n            else if (_enumValues != null)\r\n     " +
+                    "       {\r\n                long value = 0;\r\n\r\n                string[] valueParts" +
+                    " = input.Split(\',\');\r\n\r\n                foreach (string valuePart in valueParts)" +
+                    " \r\n                {\r\n                    object partValue;\r\n                   " +
+                    " long enumFieldValue = 0;\r\n                    try\r\n                    {\r\n     " +
+                    "                   if (_enumValues.TryGetValue(valuePart.Trim(), out partValue))" +
+                    "\r\n                        {\r\n                            enumFieldValue = global" +
+                    "::System.Convert.ToInt64(partValue);\r\n                        }\r\n               " +
+                    "         else\r\n                        {\r\n                            try\r\n     " +
+                    "                       {\r\n                                enumFieldValue = globa" +
+                    "l::System.Convert.ToInt64(valuePart.Trim());\r\n                            }\r\n   " +
+                    "                         catch( global::System.FormatException )\r\n              " +
+                    "              {\r\n                                foreach( string key in _enumVal" +
+                    "ues.Keys )\r\n                                {\r\n                                 " +
+                    "   if( string.Compare(valuePart.Trim(), key, global::System.StringComparison.Ord" +
+                    "inalIgnoreCase) == 0 )\r\n                                    {\r\n                 " +
+                    "                       if( _enumValues.TryGetValue(key.Trim(), out partValue) )\r" +
+                    "\n                                        {\r\n                                    " +
+                    "        enumFieldValue = global::System.Convert.ToInt64(partValue);\r\n           " +
+                    "                                 break;\r\n                                       " +
+                    " }\r\n                                    }\r\n                                }\r\n  " +
+                    "                          }\r\n                        }\r\n                        " +
+                    "value |= enumFieldValue; \r\n                    }\r\n                    catch( glo" +
+                    "bal::System.FormatException )\r\n                    {\r\n                        th" +
+                    "row new global::System.ArgumentException(input, FullName);\r\n                    " +
+                    "}\r\n                }\r\n\r\n                return global::System.Convert.ChangeType" +
+                    "(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));\r\n          " +
+                    "  }\r\n            throw new global::System.ArgumentException(input, FullName);\r\n " +
+                    "       }\r\n\r\n        // --- End of Interface methods\r\n\r\n        public Activator " +
+                    "Activator { get; set; }\r\n        public StaticInitializer StaticInitializer { ge" +
+                    "t; set; }\r\n        public AddToCollection CollectionAdd { get; set; }\r\n        p" +
+                    "ublic AddToDictionary DictionaryAdd { get; set; }\r\n        public CreateFromStri" +
+                    "ngMethod CreateFromStringMethod {get; set; }\r\n        public BoxInstanceMethod B" +
+                    "oxInstance {get; set; }\r\n\r\n        public void SetContentPropertyName(string con" +
+                    "tentPropertyName)\r\n        {\r\n            _contentPropertyName = contentProperty" +
+                    "Name;\r\n        }\r\n\r\n        public void SetIsArray()\r\n        {\r\n            _is" +
+                    "Array = true; \r\n        }\r\n\r\n        public void SetIsMarkupExtension()\r\n       " +
+                    " {\r\n            _isMarkupExtension = true;\r\n        }\r\n\r\n        public void Set" +
+                    "IsBindable()\r\n        {\r\n            _isBindable = true;\r\n        }\r\n\r\n        p" +
+                    "ublic void SetIsReturnTypeStub()\r\n        {\r\n            _isReturnTypeStub = tru" +
+                    "e;\r\n        }\r\n\r\n        public void SetIsLocalType()\r\n        {\r\n            _i" +
+                    "sLocalType = true;\r\n        }\r\n\r\n        public void SetItemTypeName(string item" +
+                    "TypeName)\r\n        {\r\n            _itemTypeName = itemTypeName;\r\n        }\r\n\r\n  " +
+                    "      public void SetKeyTypeName(string keyTypeName)\r\n        {\r\n            _ke" +
+                    "yTypeName = keyTypeName;\r\n        }\r\n\r\n        public void SetBoxedType(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
             this.Write(@" boxedType)
         {
@@ -545,6 +584,7 @@ using System.Diagnostics.CodeAnalysis;
     }
 ");
   } //End of non-reflection type info provider 
+  } // End of pass 2 implementation
             this.Write("}\r\n");
  } // End of both type info providers codegen
             return this.GenerationEnvironment.ToString();
@@ -710,7 +750,7 @@ this.Write("];\r\n");
              InternalTypeEntry entry = SchemaInfo.TypeTable[i];      
              if (entry.IsDeprecated)                                 
              {                                                       
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
              }                                                       
 this.Write("            _typeTable[");
@@ -725,7 +765,7 @@ this.Write(");\r\n");
 
              if (entry.IsDeprecated)                                 
              {                                                       
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
              }                                                       
          }                                                           
@@ -860,7 +900,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(Model.ActivatorName(uentry)))
 this.Write(";\r\n");
 
                          }                               
-                         if(!uentry.IsArray)  
+                         if(uentry.RequiresStaticInitializer)  
                          {                               
 this.Write("                userType.StaticInitializer = ");
 
@@ -902,6 +942,13 @@ this.Write(";\r\n");
                          }                               
                          if (uentry.HasCreateFromStringMethod)
                          {
+                             // Suppress CS0618 when the CreateFromString type/method is [Obsolete]. Note: a hard-obsolete
+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.
+                             if (uentry.IsDeprecated)
+                             {
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
+
+                             }
                              if (uentry.TypeEntry.UnderlyingType.IsValueType)
                              {
 this.Write("                userType.CreateFromStringMethod = x => (global::System.Object)");
@@ -920,6 +967,11 @@ this.Write(this.ToStringHelper.ToStringWithCulture(uentry.CreateFromStringMethod
 this.Write(";\r\n");
 
                              }
+                             if (uentry.IsDeprecated)
+                             {
+this.Write("#pragma warning restore 0612, 0618\r\n");
+
+                             }
                          }
                          foreach(InternalXamlUserMemberInfo mem in uentry.Members)   
                          {                                                           
@@ -934,7 +986,7 @@ this.Write("\");\r\n");
                          {                               
                              if (uentry.IsDeprecated)    
                              {                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                              }                                            
                              foreach(string eValue in uentry.EnumValues)  
@@ -956,7 +1008,7 @@ this.Write(");\r\n");
                              }                           
                              if (uentry.IsDeprecated)    
                              {                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                              }                           
                          }                               
@@ -998,7 +1050,7 @@ this.Write("            return xamlType;\r\n        }\r\n");
                  {                                                               
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private object ");
@@ -1013,7 +1065,7 @@ this.Write("(); }\r\n");
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }           
@@ -1023,11 +1075,11 @@ this.Write("#pragma warning restore 0618\r\n");
          {                                                                       
              foreach(InternalXamlUserTypeInfo entry in SchemaInfo.UserTypeInfo)  
              {                                                                   
-                 if(!entry.IsArray)                                              
+                 if(entry.RequiresStaticInitializer)                             
                  {                                                               
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private void ");
@@ -1043,7 +1095,7 @@ this.Write(").TypeHandle);\r\n");
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }           
@@ -1057,7 +1109,7 @@ this.Write("#pragma warning restore 0618\r\n");
                  {                                                               
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private void ");
@@ -1077,7 +1129,7 @@ this.Write(")item;\r\n            collection.Add(newItem);\r\n        }\r\n");
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }                       
@@ -1085,7 +1137,7 @@ this.Write("#pragma warning restore 0618\r\n");
                  {                       
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                      }                                                           
 this.Write("        private void ");
@@ -1113,7 +1165,7 @@ this.Write(")item;\r\n            collection.Add(newKey, newItem);\r\n        }\
 
                      if (entry.IsDeprecated)                                     
                      {                                                           
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                                                           
                  }           
@@ -1237,7 +1289,7 @@ this.Write("            return xamlMember;\r\n        }\r\n");
                      continue;                       
                  if (entry.IsDeprecated)             
                  {                                   
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
                  }                                   
                  if (entry.HasPublicGetter)          
@@ -1373,7 +1425,7 @@ this.Write("        }\r\n");
                 }    
                      if (entry.IsDeprecated) 
                      {                       
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
                      }                       
             }        

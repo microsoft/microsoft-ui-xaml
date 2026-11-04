@@ -189,6 +189,13 @@
                     </Pivot.Items>
                 </Pivot>
 
+                <!-- Code to trigger 'required' and 'init' handling -->
+                <StackPanel>
+                    <local:RequiredAndInitTestControl TypeWithRequiredMemberProperty="{x:Bind SettableProperty}" />
+                    <local:RequiredAndInitTestControl TypeWithRequiredMemberProperty="{x:Bind InitOnlyProperty}" />
+                    <local:RequiredAndInitTestControl TypeWithoutRequiredMemberProperty="{x:Bind InitOnlyPropertyOfTypeWithoutRequiredMember}" />
+                </StackPanel>
+
                 <DatePicker />
 
                 <!-- Regression test for x:Bind in ResourceDictionary NullReferenceException. See control source code

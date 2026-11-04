@@ -10,6 +10,10 @@
     <Import_RootNamespace>NavigationView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPointerFocusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -63,6 +67,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemsSourcePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewFooterMenuItemsSourcePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -131,6 +139,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPointerFocusPage.xaml.cs">
+      <DependentUpon>NavigationViewPointerFocusPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml.cs">
       <DependentUpon>NavigationViewInfoBadge.xaml</DependentUpon>
     </Compile>
@@ -172,6 +183,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemsSourcePage.xaml.cs">
       <DependentUpon>NavigationViewMenuItemsSourcePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewFooterMenuItemsSourcePage.xaml.cs">
+      <DependentUpon>NavigationViewFooterMenuItemsSourcePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml.cs">
       <DependentUpon>NavigationViewRS3Page.xaml</DependentUpon>

@@ -1,0 +1,59 @@
+﻿// Do not move out of the private namespace: it, not [MUX_INTERNAL], keeps these types out of shipped winmds.
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass ResizeGripperDragDeltaEventArgs
+{
+    Double Delta{ get; };
+    Double TotalDelta{ get; };
+}
+
+[MUX_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass ResizeGripperDragCompletedEventArgs
+{
+    Double TotalDelta{ get; };
+    Boolean Canceled{ get; };
+}
+
+[MUX_INTERNAL]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ResizeGripper : Microsoft.UI.Xaml.Controls.Control
+{
+    ResizeGripper();
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsDragging{ get; };
+
+    Microsoft.UI.Xaml.UIElement ManipulationContainer{ get; set; };
+    String OwnerName{ get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
+    Microsoft.UI.Xaml.Controls.Orientation DragOrientation{ get; set; };
+
+    [MUX_DEFAULT_VALUE("c_defaultKeyboardIncrement")]
+    Double KeyboardIncrement{ get; set; };
+
+    void BeginDrag();
+    Boolean TryDrag(Double totalDelta);
+    void EndDrag(Boolean canceled);
+    Boolean TryKeyboardStep(Windows.System.VirtualKey key);
+
+    event Windows.Foundation.TypedEventHandler<ResizeGripper, Object> DragStarted;
+    event Windows.Foundation.TypedEventHandler<ResizeGripper, ResizeGripperDragDeltaEventArgs> DragDelta;
+    event Windows.Foundation.TypedEventHandler<ResizeGripper, ResizeGripperDragCompletedEventArgs> DragCompleted;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsDraggingProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ManipulationContainerProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty OwnerNameProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty DragOrientationProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty KeyboardIncrementProperty{ get; };
+}
+
+}

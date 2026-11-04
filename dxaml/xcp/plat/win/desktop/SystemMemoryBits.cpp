@@ -236,6 +236,7 @@ SystemMemoryBitsDriver::SystemMemoryBitsDriver(
     XINT64 size = GetWidth() * GetHeight() * GetPixelStride();
     
     TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(size));
+    XcpAllocation::UpdateAllocatedMemory(size);
 }
 
 //-------------------------------------------------------------------------
@@ -250,6 +251,7 @@ SystemMemoryBitsDriver::~SystemMemoryBitsDriver()
     XINT64 size = GetWidth() * GetHeight() * GetPixelStride();
     
     TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(-size));
+    XcpAllocation::UpdateAllocatedMemory(-size);
 }
 
 //-------------------------------------------------------------------------

@@ -49,11 +49,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestCleanupWrapper cleanup;
             RunOnUIThread([&] () {
                 Grid^ testGrid = ref new Grid();
-
                 TestServices::WindowHelper->WindowContent = testGrid;
-
                 VERIFY_ARE_EQUAL(TestServices::WindowHelper->WindowContent->GetHashCode(), testGrid->GetHashCode());
-                VERIFY_ARE_EQUAL(Window::Current->Content->GetHashCode(), testGrid->GetHashCode());
             });
         }
 

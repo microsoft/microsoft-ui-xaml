@@ -30,6 +30,7 @@
       <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
       <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
       <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
+      <x:Double x:Key="AppBarButtonLabelFontSize">12</x:Double>
       <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
       <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
       <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
@@ -65,6 +66,7 @@
       <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
       <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
       <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
+      <x:Double x:Key="AppBarButtonLabelFontSize">12</x:Double>
       <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
       <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
       <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
@@ -100,6 +102,7 @@
       <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
       <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
       <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
+      <x:Double x:Key="AppBarButtonLabelFontSize">12</x:Double>
       <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
       <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
       <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
@@ -344,7 +347,7 @@
               <Viewbox x:Name="ContentViewbox" Height="{ThemeResource AppBarButtonContentHeight}" Margin="{ThemeResource AppBarButtonContentViewboxCollapsedMargin}" HorizontalAlignment="Stretch" AutomationProperties.AccessibilityView="Raw">
                 <ContentPresenter x:Name="Content" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
               </Viewbox>
-              <TextBlock x:Name="TextLabel" Grid.Row="1" Text="{TemplateBinding Label}" Foreground="{TemplateBinding Foreground}" FontSize="12" FontFamily="{TemplateBinding FontFamily}" TextAlignment="Center" TextWrapping="Wrap" Margin="{ThemeResource AppBarButtonTextLabelMargin}" AutomationProperties.AccessibilityView="Raw" />
+              <TextBlock x:Name="TextLabel" Grid.Row="1" Text="{TemplateBinding Label}" Foreground="{TemplateBinding Foreground}" FontSize="{ThemeResource AppBarButtonLabelFontSize}" FontFamily="{TemplateBinding FontFamily}" TextAlignment="Center" TextWrapping="Wrap" Margin="{ThemeResource AppBarButtonTextLabelMargin}" AutomationProperties.AccessibilityView="Raw" />
               <TextBlock x:Name="OverflowTextLabel" Text="{TemplateBinding Label}" Foreground="{TemplateBinding Foreground}" FontSize="{ThemeResource ControlContentThemeFontSize}" FontFamily="{TemplateBinding FontFamily}" TextAlignment="Left" TextTrimming="Clip" TextWrapping="NoWrap" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="12,0,12,0" Padding="{ThemeResource AppBarButtonOverflowTextLabelPadding}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
               <TextBlock x:Name="KeyboardAcceleratorTextLabel" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,0,12,0" Foreground="{ThemeResource AppBarButtonKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
               <Grid x:Name="SubItemChevronPanel" Grid.Column="2" Visibility="Collapsed">

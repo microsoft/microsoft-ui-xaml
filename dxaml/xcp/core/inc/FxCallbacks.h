@@ -255,6 +255,8 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT ContentPresenter_OnContentTemplateSelectorChanged(_In_ CDependencyObject* target, _In_ const PropertyChangedParams& args);
 
+    _Check_return_ HRESULT DataTemplate_CreateElementFromFactory(_In_ CDependencyObject* nativeTemplate, _Outptr_result_maybenull_ CDependencyObject** ppResult);
+
     _Check_return_ HRESULT Popup_OnClosed(_In_ CDependencyObject* nativePopup);
 
     void Popup_OnIslandLostFocus(_In_ CDependencyObject* nativePopup);
@@ -541,6 +543,8 @@ namespace FxCallbacks
     _Check_return_ HRESULT DXamlCore_GetUISettings(_Out_ ctl::ComPtr<wuv::IUISettings>& spUISettings);
 
     void XamlIslandRoot_OnSizeChanged(_In_ CXamlIslandRoot* xamlIslandRoot);
+    _Check_return_ HRESULT XamlIslandRoot_ReleaseContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot);
+    _Check_return_ HRESULT XamlIslandRoot_RebuildContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot);
     CXamlIslandRoot* GetXamlIslandRootFromXamlIsland(_In_ xaml_hosting::IXamlIslandRoot* xamlIslandRoot);
 
     _Check_return_ HRESULT FrameworkApplication_RemoveIsland(_In_ xaml_hosting::IXamlIslandRoot* pIsland);

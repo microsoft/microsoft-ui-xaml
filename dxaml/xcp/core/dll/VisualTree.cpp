@@ -434,7 +434,11 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
         goto Cleanup;
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PutRootVisualBegin(pRoot);
+#else
     TracePutRootVisualBegin();
+#endif
 
     // If the public root visual changes, we need to remove and re-add the existing roots so that
     // they use the new public visual as namescope owner if needed, but we don't want to release them.
@@ -520,7 +524,11 @@ Cleanup:
         RECORDFAILURE(ResetRoots(nullptr));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PutRootVisualEnd(pRoot);
+#else
     TracePutRootVisualEnd();
+#endif
 
     return hr;
 }
@@ -1188,6 +1196,13 @@ _Check_return_ HRESULT VisualTree::ResetRoots( _Out_opt_ bool *pReleasePopup)
         RECORDFAILURE(RemoveRoot(m_visualDiagnosticsRoot.get()));
     }
 
+    if (m_publicRootVisual)
+    {
+        // Cancel any open automatic ToolTip for this root. Must run before popup root removal below so the
+        // ToolTip's host popup root still exists and its popup can close cleanly.
+        DirectUI::ToolTipService::OnPublicRootRemoved(m_publicRootVisual.get());
+    }
+
     if (m_popupRoot && m_rootElement)
     {
         // The popup root does not always get cleared so it needs to be checked in the collection before attempting to remove
@@ -1226,13 +1241,6 @@ _Check_return_ HRESULT VisualTree::ResetRoots( _Out_opt_ bool *pReleasePopup)
     if (m_xamlIslandRootCollection)
     {
         RECORDFAILURE(RemoveRoot(m_xamlIslandRootCollection.get()));
-    }
-
-    if (m_publicRootVisual)
-    {
-        // ToolTipService attaches handlers to the public root of the main window and each Xaml island. Clean up its
-        // bookkeeping now that the root is going away.
-        DirectUI::ToolTipService::OnPublicRootRemoved(m_publicRootVisual.get());
     }
 
     if (m_rootScrollViewer && m_bIsRootScrollViewerAddedToRoot)
@@ -1594,7 +1602,7 @@ xref_ptr<CLayoutTransitionElement> VisualTree::AddTestLTE(
     return lte;
 }
 
-void VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
+bool VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
 {
     CLayoutTransitionElement* lteNoRef = static_cast<CLayoutTransitionElement*>(lte);
     for (unsigned int i = 0; i < m_testLTEs.size(); i++)
@@ -1603,9 +1611,11 @@ void VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
         {
             lteNoRef->DetachTransition();
             m_testLTEs.erase(m_testLTEs.begin() + i);
-            break;
+            return true;
         }
     }
+
+    return false;
 }
 
 void VisualTree::ClearTestLTEs()

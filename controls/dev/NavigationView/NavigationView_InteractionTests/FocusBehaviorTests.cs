@@ -34,6 +34,119 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void ToggleSwitchRetainsPointerFocusAfterNavigationViewItemClick()
+        {
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+                {
+                    if (topMode)
+                    {
+                        FindElement.ByName<CheckBox>("Top mode").Check();
+                        Wait.ForIdle();
+                    }
+
+                    var item = FindElement.ByName("Second item");
+                    var toggle = FindElement.ByName("Focus toggle");
+                    var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+                    var pointerPressedCount = FindElement.ByName<TextBlock>("Pointer pressed count");
+
+                    for (int repetition = 0; repetition < 2; repetition++)
+                    {
+                        InputHelper.LeftClick(item);
+                        Verify.IsTrue(item.HasKeyboardFocus);
+                        Verify.AreEqual((repetition + 1).ToString(), pointerPressedCount.GetText(),
+                            "Ordinary application PointerPressed handlers must still receive the item press.");
+
+                        var previousToggleState = toggleState.GetText();
+                        InputHelper.LeftClick(toggle);
+                        Verify.AreNotEqual(previousToggleState, toggleState.GetText());
+                        Verify.IsTrue(toggle.HasKeyboardFocus, "The first toggle click after item selection must retain focus.");
+
+                        InputHelper.LeftClick(toggle);
+                        Verify.IsTrue(toggle.HasKeyboardFocus, "Subsequent toggle clicks must retain focus.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void NestedHandledReleasePreservesOuterScrollViewerFocus()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                FindElement.ByName<CheckBox>("Nested release mode").Check();
+                Wait.ForIdle();
+                var initialFocus = FindElement.ByName("Initial nested focus");
+                var status = FindElement.ByName<TextBlock>("Nested release status");
+                InputHelper.LeftClick(initialFocus);
+                Verify.IsTrue(initialFocus.HasKeyboardFocus);
+
+                InputHelper.LeftClick(FindElement.ByName("Outer release"), skipWait: true);
+                Wait.ForIdle();
+                Verify.AreEqual("Waiting", status.GetText());
+                InputHelper.LeftClick(FindElement.ByName("Inner release"));
+                Wait.ForIdle();
+                Verify.AreEqual("Completed", status.GetText());
+                Verify.IsTrue(FindElement.ByName("Input root ScrollViewer").HasKeyboardFocus,
+                    "The nested handled release must not consume the outer release's pending focus.");
+            }
+        }
+
+        [TestMethod]
+        public void UnhandledReleaseAfterCaptureStillFocusesScrollViewer()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                var captureTarget = FindElement.ByName("Capture target");
+                var toggle = FindElement.ByName("Focus toggle");
+                var scrollViewer = FindElement.ByName("Input root ScrollViewer");
+
+                InputHelper.LeftClick(toggle);
+                InputHelper.LeftMouseButtonDown(captureTarget);
+                Verify.AreEqual("True", FindElement.ByName<TextBlock>("Capture succeeded").GetText());
+                InputHelper.MoveMouse(toggle.GetClickablePoint());
+                InputHelper.LeftMouseButtonUp();
+
+                Verify.IsTrue(scrollViewer.HasKeyboardFocus,
+                    "Releasing capture before the unhandled release bubbles must preserve normal ScrollViewer focus.");
+                InputHelper.LeftClick(toggle);
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+            }
+        }
+
+        [TestMethod]
+        public void PointerFocusFixPreservesOtherControlsAndKeyboardNavigation()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                var toggle = FindElement.ByName("Focus toggle");
+                var button = FindElement.ByName("Other button");
+                var scrollViewer = FindElement.ByName("Focusable ScrollViewer");
+                var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+
+                InputHelper.LeftClick(button);
+                Verify.IsTrue(button.HasKeyboardFocus);
+                InputHelper.LeftClick(toggle);
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(button.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+                Verify.AreEqual("False", toggleState.GetText());
+
+                InputHelper.LeftClick(scrollViewer);
+                Verify.IsTrue(scrollViewer.HasKeyboardFocus, "Do not suppress legitimate ScrollViewer focus.");
+            }
+        }
+
+        [TestMethod]
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -849,6 +962,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             string GetSelectedItem()
             {
                 return FindElement.ByName("SelectionChangedResult").GetText();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyShoulderNavigationReachesFooterMenuItemsSourceItems()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationViewFooterMenuItemsSourcePage" }))
+            {
+                var navView = FindElement.ByName("NavView");
+
+                Log.Comment("Select the first main menu item to start.");
+                FindElement.ByName("Main 0").Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Main 0", GetSelectedItem());
+
+                // Forward (right shoulder): walk the main list, then cross into the bound footer.
+                // FooterMenuItemsSource is bound, so FooterMenuItems() is empty. Without the fix the
+                // footer count comes back as 0 (or 1 with Settings visible), so selection saturates at
+                // the first footer item instead of walking through the rest.
+                Log.Comment("Walk forward from the main list into the footer items.");
+                string[] forwardTrail = { "Main 1", "Main 2", "Footer 0", "Footer 1", "Footer 2" };
+                foreach (var expected in forwardTrail)
+                {
+                    PressShoulderUntilSelected(navView, GamepadButton.RightShoulder, expected);
+                }
+
+                // Backward (left shoulder): walk back through the footer, then cross into the main list.
+                // Without the fix the in-footer walk reports "nothing here" and the offset < 0 fallback
+                // jumps straight to the main list, so the intermediate footer items are skipped.
+                Log.Comment("Walk backward from the footer items into the main list.");
+                string[] backwardTrail = { "Footer 1", "Footer 0", "Main 2", "Main 1", "Main 0" };
+                foreach (var expected in backwardTrail)
+                {
+                    PressShoulderUntilSelected(navView, GamepadButton.LeftShoulder, expected);
+                }
+            }
+
+            string GetSelectedItem()
+            {
+                return FindElement.ByName("SelectionChangedResult").GetText();
+            }
+
+            // Injected shoulder presses are occasionally dropped, so give each step a retry budget.
+            // A press that leaves the selection unchanged is treated as a dropped keystroke and retried;
+            // a press that moves the selection to the wrong item is a real ordering bug and fails
+            // immediately. This keeps a lost keystroke from looking identical to a skipped item.
+            void PressShoulderUntilSelected(UIObject navView, GamepadButton button, string expected)
+            {
+                const int maxAttempts = 5;
+                string before = GetSelectedItem();
+
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    GamepadHelper.PressButton(navView, button);
+                    Wait.ForIdle();
+
+                    string after = GetSelectedItem();
+                    if (after == expected)
+                    {
+                        return;
+                    }
+
+                    if (after != before)
+                    {
+                        // Selection moved but not to the expected item: a real ordering bug, not a dropped press.
+                        Verify.AreEqual(expected, after, "Shoulder navigation reached the wrong item.");
+                        return;
+                    }
+
+                    Log.Comment("Shoulder press appears dropped (selection still '{0}', attempt {1}/{2}), retrying.", before, attempt, maxAttempts);
+                }
+
+                Verify.AreEqual(expected, GetSelectedItem(), "Shoulder navigation never reached the expected item.");
             }
         }
     }

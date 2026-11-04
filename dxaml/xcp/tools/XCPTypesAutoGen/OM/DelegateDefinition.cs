@@ -39,6 +39,16 @@ namespace OM
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the velocity feature version gating the entire delegate. When non-zero the
+        /// whole delegate is emitted behind a [feature(...)] tag (mirrors ClassDefinition.VelocityVersion).
+        /// </summary>
+        public int VelocityVersion
+        {
+            get;
+            set;
+        }
+
         public DelegateDefinition()
         {
             IdlDelegateInfo = new Idl.IdlDelegateInfo(this);

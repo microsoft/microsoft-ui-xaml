@@ -29,6 +29,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Check that VisualStateGroup names defined in a ControlTemplate are not visible at the control level")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DataTemplateLoadContentRootIsCollectibleAfterRelease)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify a DataTemplate.LoadContent root stays alive while caller-owned and is collectible after release")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanGoToVisualStates)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Check that we can go to VisualStates")

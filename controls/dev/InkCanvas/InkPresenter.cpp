@@ -12,6 +12,19 @@
 // ---------------------------------------------------------------------------
 namespace
 {
+    // The OS dry-ink container is null while custom drying is active (the app owns dry ink), so every
+    // stroke-container operation has to check before dereferencing it.
+    inking::InkStrokeContainer RequireStrokeContainer(inking::InkPresenter const& presenter)
+    {
+        auto container = presenter.StrokeContainer();
+        if (!container)
+        {
+            throw winrt::hresult_illegal_method_call{
+                L"InkPresenter.StrokeContainer is not available while custom drying is active." };
+        }
+        return container;
+    }
+
     struct GenericInkCallback : winrt::implements<GenericInkCallback, IInkHostWorkItem>
     {
         GenericInkCallback(std::function<void()> func)
@@ -53,11 +66,11 @@ void RunOnInkHostThread(winrt::weak_ref<muxc::InkPresenter> const& presenter, st
     }
 }
 
-void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool propagateException)
+void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages)
 {
     if (auto strong = presenter.get())
     {
-        winrt::get_self<::InkPresenter>(strong)->RunInkPresenterWorkItemSync(std::move(workItem), propagateException);
+        winrt::get_self<::InkPresenter>(strong)->RunInkPresenterWorkItemSync(std::move(workItem), pumpMessages);
     }
 }
 
@@ -76,7 +89,7 @@ void InkStrokeContainer::Clear()
     RunOnInkHostThread(m_owner,
         [](inking::InkPresenter const& presenter)
         {
-            presenter.StrokeContainer().Clear();
+            RequireStrokeContainer(presenter).Clear();
         });
 }
 
@@ -90,11 +103,12 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkStrok
     RunOnInkHostThreadSync(m_owner,
         [&snapshot](inking::InkPresenter const& presenter)
         {
-            for (auto const& stroke : presenter.StrokeContainer().GetStrokes())
+            for (auto const& stroke : RequireStrokeContainer(presenter).GetStrokes())
             {
                 snapshot.push_back(stroke);
             }
-        });
+        },
+        /* pumpMessages */ false);
 
     return winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView();
 }
@@ -105,7 +119,7 @@ void InkStrokeContainer::AddStroke(inking::InkStroke const& stroke)
     RunOnInkHostThread(m_owner,
         [stroke](inking::InkPresenter const& presenter)
         {
-            presenter.StrokeContainer().AddStroke(stroke);
+            RequireStrokeContainer(presenter).AddStroke(stroke);
         });
 }
 
@@ -123,7 +137,7 @@ void InkStrokeContainer::AddStrokes(winrt::Windows::Foundation::Collections::IIt
     RunOnInkHostThread(m_owner,
         [agileStrokes](inking::InkPresenter const& presenter)
         {
-            presenter.StrokeContainer().AddStrokes(agileStrokes);
+            RequireStrokeContainer(presenter).AddStrokes(agileStrokes);
         });
 }
 
@@ -138,9 +152,9 @@ winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::SaveAsync(winrt::Wi
         [outputStream](inking::InkPresenter const& presenter)
         {
             // Run the OS async to completion on the ink thread that owns the container.
-            presenter.StrokeContainer().SaveAsync(outputStream).get();
+            RequireStrokeContainer(presenter).SaveAsync(outputStream).get();
         },
-        /* propagateException */ true);
+        /* pumpMessages */ false);
 }
 
 winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::SaveAsync(winrt::Windows::Storage::Streams::IOutputStream outputStream, inking::InkPersistenceFormat inkPersistenceFormat)
@@ -154,9 +168,9 @@ winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::SaveAsync(winrt::Wi
         [outputStream, inkPersistenceFormat](inking::InkPresenter const& presenter)
         {
             // Run the OS async to completion on the ink thread that owns the container.
-            presenter.StrokeContainer().SaveAsync(outputStream, inkPersistenceFormat).get();
+            RequireStrokeContainer(presenter).SaveAsync(outputStream, inkPersistenceFormat).get();
         },
-        /* propagateException */ true);
+        /* pumpMessages */ false);
 }
 
 winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::LoadAsync(winrt::Windows::Storage::Streams::IInputStream inputStream)
@@ -168,23 +182,25 @@ winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::LoadAsync(winrt::Wi
     RunOnInkHostThreadSync(m_owner,
         [inputStream](inking::InkPresenter const& presenter)
         {
-            presenter.StrokeContainer().LoadAsync(inputStream).get();
+            RequireStrokeContainer(presenter).LoadAsync(inputStream).get();
         },
-        /* propagateException */ true);
+        /* pumpMessages */ false);
 }
 
 // Selection / query members. Each marshals a single call to the OS container on the ink
 // thread and blocks for the result (InkStroke and the value-type Rect/Point are agile, so
-// they cross the boundary safely). Clipboard copy/paste is intentionally not exposed yet
-// (OLE clipboard has apartment requirements the ink thread does not satisfy).
+// they cross the boundary safely). Clipboard copy/paste marshals to the ink thread too (the
+// container is thread-affine); the OS presenter's ink thread is the apartment that services
+// the ISF clipboard format, so the calls run there like every other container operation.
 inking::InkStroke InkStrokeContainer::GetStrokeById(uint32_t id)
 {
     inking::InkStroke result{ nullptr };
     RunOnInkHostThreadSync(m_owner,
         [&result, id](inking::InkPresenter const& presenter)
         {
-            result = presenter.StrokeContainer().GetStrokeById(id);
-        });
+            result = RequireStrokeContainer(presenter).GetStrokeById(id);
+        },
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -194,8 +210,9 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::DeleteSelected()
     RunOnInkHostThreadSync(m_owner,
         [&result](inking::InkPresenter const& presenter)
         {
-            result = presenter.StrokeContainer().DeleteSelected();
-        });
+            result = RequireStrokeContainer(presenter).DeleteSelected();
+        },
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -205,8 +222,9 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::MoveSelected(winrt::Windows
     RunOnInkHostThreadSync(m_owner,
         [&result, translation](inking::InkPresenter const& presenter)
         {
-            result = presenter.StrokeContainer().MoveSelected(translation);
-        });
+            result = RequireStrokeContainer(presenter).MoveSelected(translation);
+        },
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -216,8 +234,9 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::SelectWithLine(winrt::Windo
     RunOnInkHostThreadSync(m_owner,
         [&result, from, to](inking::InkPresenter const& presenter)
         {
-            result = presenter.StrokeContainer().SelectWithLine(from, to);
-        });
+            result = RequireStrokeContainer(presenter).SelectWithLine(from, to);
+        },
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -237,8 +256,9 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::SelectWithPolyLine(winrt::W
         {
             auto vec = winrt::single_threaded_vector<winrt::Windows::Foundation::Point>();
             for (auto const& p : snapshot) { vec.Append(p); }
-            result = presenter.StrokeContainer().SelectWithPolyLine(vec);
-        });
+            result = RequireStrokeContainer(presenter).SelectWithPolyLine(vec);
+        },
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -249,8 +269,47 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::BoundingRect()
     RunOnInkHostThreadSync(m_owner,
         [&result](inking::InkPresenter const& presenter)
         {
-            result = presenter.StrokeContainer().BoundingRect();
-        });
+            result = RequireStrokeContainer(presenter).BoundingRect();
+        },
+        /* pumpMessages */ false);
+    return result;
+}
+
+// Clipboard members. The OS container is thread-affine, so these run on the ink thread like
+// the other container operations. Failures surface to the app as an HRESULT (e.g. an empty
+// selection on copy, or an incompatible clipboard payload on paste); the returned Rect from
+// paste is the invalidated region.
+void InkStrokeContainer::CopySelectedToClipboard()
+{
+    RunOnInkHostThreadSync(m_owner,
+        [](inking::InkPresenter const& presenter)
+        {
+            RequireStrokeContainer(presenter).CopySelectedToClipboard();
+        },
+        /* pumpMessages */ true);
+}
+
+winrt::Windows::Foundation::Rect InkStrokeContainer::PasteFromClipboard(winrt::Windows::Foundation::Point const& position)
+{
+    winrt::Windows::Foundation::Rect result{};
+    RunOnInkHostThreadSync(m_owner,
+        [&result, position](inking::InkPresenter const& presenter)
+        {
+            result = RequireStrokeContainer(presenter).PasteFromClipboard(position);
+        },
+        /* pumpMessages */ true);
+    return result;
+}
+
+bool InkStrokeContainer::CanPasteFromClipboard()
+{
+    bool result = false;
+    RunOnInkHostThreadSync(m_owner,
+        [&result](inking::InkPresenter const& presenter)
+        {
+            result = RequireStrokeContainer(presenter).CanPasteFromClipboard();
+        },
+        /* pumpMessages */ true);
     return result;
 }
 
@@ -351,6 +410,12 @@ InkPresenter::InkPresenter(winrt::com_ptr<IInkDesktopHost> const& inkHost, winrt
     // A default InkDrawingAttributes is agile, so it is safe to cache here on the UI
     // thread and later hand into the ink-thread work item without marshaling issues.
     m_defaultDrawingAttributes = winrt::InkDrawingAttributes();
+
+    // Create the input event proxies eagerly (stable instances) so InitializeOsPresenter can wire
+    // the OS events to them from the ink thread without a lazy-create race. They hold no owner ref
+    // and are agile, so they are safe to touch from either thread.
+    m_strokeInput = winrt::make<::InkStrokeInput>();
+    m_unprocessedInput = winrt::make<::InkUnprocessedInput>();
 }
 
 // Queue-only: submit the work item to the ink thread and return WITHOUT waiting for it to run. The
@@ -375,7 +440,7 @@ void InkPresenter::QueueInkPresenterWorkItem(std::function<void(inking::InkPrese
 // deadlock. INVARIANT: a work item posted here must not synchronously call back to the UI thread
 // (the wait is non-pumping); anything needing UI/app objects uses the async path (SaveAsync /
 // LoadAsync resume_background() first, so the UI thread is never the one blocked).
-void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool propagateException)
+void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages)
 {
     if (!m_inkHost)
     {
@@ -384,29 +449,21 @@ void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPre
 
     if (::GetCurrentThreadId() == m_inkThreadId)
     {
-        try
+        if (m_osPresenter)
         {
-            if (m_osPresenter)
-            {
-                workItem(m_osPresenter);
-            }
-        }
-        catch (...)
-        {
-            if (propagateException)
-            {
-                throw;
-            }
+            workItem(m_osPresenter);
         }
         return;
     }
 
-    std::promise<void> done;
-    std::future<void> ready = done.get_future();
+    // Manual-reset event signaled by the ink thread when the work item has finished. Used instead of
+    // std::future so the wait below can be a COM-pumping wait when pumpMessages is set.
+    winrt::handle doneEvent{ ::CreateEventW(nullptr, /* bManualReset */ TRUE, /* bInitialState */ FALSE, nullptr) };
+    winrt::check_bool(static_cast<bool>(doneEvent));
     std::exception_ptr workError;
     auto strongThis = get_strong();
 
-    auto workItemWrapper = [&workItem, &done, &workError, strongThis]()
+    auto workItemWrapper = [&workItem, &doneEvent, &workError, strongThis]()
         {
             try
             {
@@ -417,20 +474,34 @@ void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPre
             }
             catch (...)
             {
-                // Capture rather than swallow: SaveAsync/LoadAsync opt into re-propagation so a
-                // failed save/load is reported to the app. Best-effort getters ignore this.
+                // Captured here and rethrown on the calling thread below: the ink thread has no way
+                // to raise it at the caller.
                 workError = std::current_exception();
             }
-            done.set_value();
+            ::SetEvent(doneEvent.get());
         };
 
     winrt::check_hresult(m_inkHost->QueueWorkItem(winrt::make<GenericInkCallback>(workItemWrapper).get()));
 
-    // Safe to capture workItem/done/workError by reference: we block here until the ink thread
-    // has finished running workItemWrapper.
-    ready.wait();
+    // Safe to capture workItem/doneEvent/workError by reference: we block here until the ink thread
+    // has finished running workItemWrapper (it signals doneEvent last).
+    if (pumpMessages)
+    {
+        // Clipboard path: the OS runs the OLE clipboard on the ink thread, which can SendMessage back
+        // to the UI thread (the clipboard owner) while we wait here. A non-pumping wait would deadlock,
+        // so pump COM calls - this services the incoming cross-apartment OLE call and lets the
+        // ink-thread work finish. COWAIT_DISPATCH_CALLS limits reentrancy to COM (it does not pump
+        // arbitrary input / window messages).
+        HANDLE handle = doneEvent.get();
+        DWORD signaledIndex = 0;
+        winrt::check_hresult(::CoWaitForMultipleHandles(COWAIT_DISPATCH_CALLS, INFINITE, 1, &handle, &signaledIndex));
+    }
+    else
+    {
+        ::WaitForSingleObject(doneEvent.get(), INFINITE);
+    }
 
-    if (propagateException && workError)
+    if (workError)
     {
         std::rethrow_exception(workError);
     }
@@ -444,6 +515,11 @@ void InkPresenter::Start()
     // the OS-creation work does not keep this proxy alive on its own.
     winrt::weak_ref<muxc::InkPresenter> weakSelf{ *this };
     auto inkHost = m_inkHost;
+
+    // Give the eagerly-created input mirrors their owner back-pointer now that a self weak-ref is
+    // safe (never in the ctor). Powers InkStrokeInput/InkUnprocessedInput.InkPresenter (UWP parity).
+    winrt::get_self<::InkStrokeInput>(m_strokeInput)->SetOwner(weakSelf);
+    winrt::get_self<::InkUnprocessedInput>(m_unprocessedInput)->SetOwner(weakSelf);
 
     auto callback = winrt::make<GenericInkCallback>([weakSelf, inkHost]()
         {
@@ -512,12 +588,35 @@ void InkPresenter::UpdateDefaultDrawingAttributes(winrt::InkDrawingAttributes co
 
 winrt::InkDrawingAttributes InkPresenter::CopyDefaultDrawingAttributes()
 {
-    if (!m_defaultDrawingAttributes)
-    {
-        m_defaultDrawingAttributes = winrt::InkDrawingAttributes();
-    }
+    // Parity with UWP: return an independent copy from the OS presenter (InkDrawingAttributes is agile,
+    // so it crosses back to the UI thread) so the caller can mutate it without touching the stored
+    // default.
+    winrt::InkDrawingAttributes result{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&result](inking::InkPresenter const& presenter)
+        {
+            result = presenter.CopyDefaultDrawingAttributes();
+        },
+        /* pumpMessages */ false);
 
-    return m_defaultDrawingAttributes;
+    if (!result)
+    {
+        // Before the ink thread has created the OS presenter, honor an UpdateDefaultDrawingAttributes
+        // the app already made rather than handing back unrelated OS defaults. InkDrawingAttributes has
+        // no Clone(), so copy the settable fields onto a fresh instance to keep the result independent.
+        result = winrt::InkDrawingAttributes();
+        if (auto const& cached = m_defaultDrawingAttributes)
+        {
+            result.Color(cached.Color());
+            result.Size(cached.Size());
+            result.PenTip(cached.PenTip());
+            result.IgnorePressure(cached.IgnorePressure());
+            result.FitToCurve(cached.FitToCurve());
+            result.PenTipTransform(cached.PenTipTransform());
+            result.DrawAsHighlighter(cached.DrawAsHighlighter());
+        }
+    }
+    return result;
 }
 
 void InkPresenter::SetPredefinedConfiguration(inking::InkPresenterPredefinedConfiguration const& configuration)
@@ -527,6 +626,24 @@ void InkPresenter::SetPredefinedConfiguration(inking::InkPresenterPredefinedConf
         [configuration](inking::InkPresenter const& presenter)
         {
             presenter.SetPredefinedConfiguration(configuration);
+        });
+}
+
+muxc::InkHighContrastAdjustment InkPresenter::HighContrastAdjustment() const noexcept
+{
+    return m_highContrastAdjustment;
+}
+
+void InkPresenter::HighContrastAdjustment(muxc::InkHighContrastAdjustment const& value)
+{
+    m_highContrastAdjustment = value;
+
+    // Map the MUXC mirror enum to the OS enum (identical values) for the ink thread.
+    auto osValue = static_cast<inking::InkHighContrastAdjustment>(static_cast<int32_t>(value));
+    QueueInkPresenterWorkItem(
+        [osValue](inking::InkPresenter const& presenter)
+        {
+            presenter.HighContrastAdjustment(osValue);
         });
 }
 
@@ -560,6 +677,103 @@ muxc::InkInputConfiguration InkPresenter::InputConfiguration()
     return m_inputConfiguration;
 }
 
+muxc::InkStrokeInput InkPresenter::StrokeInput()
+{
+    return m_strokeInput;
+}
+
+muxc::InkUnprocessedInput InkPresenter::UnprocessedInput()
+{
+    return m_unprocessedInput;
+}
+
+muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
+{
+    // Idempotent (UWP parity): activate once; repeated calls return the same synchronizer.
+    if (m_customDrySynchronizer)
+    {
+        return m_customDrySynchronizer;
+    }
+
+    // Created on the UI (calling) thread, where the app invokes it - a proxy created on the ink thread
+    // crashes when called cross-apartment.
+    auto customDrySynchronizer = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+
+    // UWP parity: the OS rejects this with E_ILLEGAL_METHOD_CALL once ink input has activated (first
+    // non-zero SetSize), and the app owns that ordering - activate before the first layout pass.
+    bool activated = false;
+    RunInkPresenterWorkItemSync(
+        [&](inking::InkPresenter const& osPresenter)
+        {
+            winrt::get_self<::InkSynchronizer>(customDrySynchronizer)->Initialize(osPresenter.ActivateCustomDrying());
+            activated = true;
+        },
+        /* pumpMessages */ false);
+
+    // The work item never ran: no ink host, or the OS presenter has not been created yet. Report it
+    // rather than handing back a synchronizer whose BeginDry would silently do nothing.
+    if (!activated)
+    {
+        InkTelemetry::ReportError(
+            InkTelemetry::ErrorCategory::ApiMisuse,
+            InkTelemetry::Operation::ActivateCustomDrying,
+            true /* isRecoverable */,
+            E_ILLEGAL_METHOD_CALL);
+
+        // Recoverable API-misuse: the presenter was not ready, so activation never proceeded and the
+        // caller can retry. That is a cancelled activation, not a hard failure.
+        InkTelemetry::ReportCustomDryingActivation(InkTelemetry::Result::Cancelled, E_ILLEGAL_METHOD_CALL);
+        throw winrt::hresult_error(E_ILLEGAL_METHOD_CALL, L"InkPresenter is not ready for custom drying.");
+    }
+
+    m_customDrySynchronizer = customDrySynchronizer;
+    InkTelemetry::ReportCustomDryingActivation(InkTelemetry::Result::Success);
+    return m_customDrySynchronizer;
+}
+
+// -- InkSynchronizer mirror -----------------------------------------------------------------------
+// Owns the OS InkSynchronizer (adopted on the ink thread from the presenter's OS ActivateCustomDrying)
+// and marshals its BeginDry/EndDry onto the ink thread through the owning InkPresenter proxy's work
+// queue. UWP hands the app the OS object directly; this proxy exists only because that object is
+// ink-thread affine, so it forwards both calls and keeps no dry-transaction state of its own.
+// No-ops once the owner has been torn down.
+
+winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynchronizer::BeginDry()
+{
+    std::vector<inking::InkStroke> strokes;
+    RunOnInkHostThreadSync(m_owner,
+        [this, &strokes](inking::InkPresenter const&)
+        {
+            if (!m_osSynchronizer)
+            {
+                return;
+            }
+            auto dry = m_osSynchronizer.BeginDry();
+            if (dry && dry.Size())
+            {
+                strokes.resize(dry.Size(), nullptr);
+                dry.GetMany(0, strokes);
+            }
+        },
+        /* pumpMessages */ false);
+    // Build the returned collection on the calling (UI) thread so the app is never handed an
+    // ink-thread-affine object.
+    return winrt::single_threaded_vector<inking::InkStroke>(std::move(strokes)).GetView();
+}
+
+void InkSynchronizer::EndDry()
+{
+    RunOnInkHostThreadSync(m_owner,
+        [this](inking::InkPresenter const&)
+        {
+            if (m_osSynchronizer)
+            {
+                m_osSynchronizer.EndDry();
+            }
+        },
+        /* pumpMessages */ false);
+}
+
 winrt::event_token InkPresenter::StrokesCollected(winrt::Windows::Foundation::TypedEventHandler<muxc::InkPresenter, muxc::InkStrokesCollectedEventArgs> const& handler)
 {
     return m_strokesCollectedEvent.add(handler);
@@ -580,18 +794,19 @@ void InkPresenter::StrokesErased(winrt::event_token const& token)
     m_strokesErasedEvent.remove(token);
 }
 
-// Runs ONCE on the ink thread (from Start's work item) as soon as the OS presenter is created. The
-// proxy takes ownership of the OS presenter and owns everything about it from here on: initial
-// configuration and the stroke-event forwarding path.
+// Runs on the ink thread as soon as an OS presenter is created: once from Start's work item, and again
+// from ActivateCustomDrying when it swaps in a freshly-created presenter to activate custom drying. The
+// proxy adopts the given OS presenter and (re)establishes everything about it from here on: initial
+// configuration and the stroke-event forwarding path. Safe to run more than once - it always targets
+// the passed-in presenter, and the previously-adopted one is released when m_osPresenter is reassigned.
 void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter)
 {
     m_osPresenter = osPresenter;
 
-    // Initial input devices. A local constant (not a cross-thread read of the UI-thread cache) so
-    // there is no race; any app override queued via InputDeviceTypes() runs after this on the ink
-    // thread and wins.
-    osPresenter.InputDeviceTypes(
-        winrt::CoreInputDeviceTypes::Mouse | winrt::CoreInputDeviceTypes::Pen | winrt::CoreInputDeviceTypes::Touch);
+    // Initial input devices: pen only, matching the UWP InkCanvas default. A local constant (not a
+    // cross-thread read of the UI-thread cache) so there is no race; any app override queued via
+    // InputDeviceTypes() runs after this on the ink thread and wins.
+    osPresenter.InputDeviceTypes(winrt::CoreInputDeviceTypes::Pen);
 
     // Weak ref to this proxy (as the projected type) for the UI-thread re-raise. A strong ref would
     // form a cycle (OS presenter -> handler -> proxy -> OS presenter). Typed as muxc::InkPresenter so
@@ -599,52 +814,107 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
     winrt::weak_ref<muxc::InkPresenter> weakSelf{ *this };
     auto uiDispatcher = m_uiDispatcher;
 
+    // Single UI-thread marshaling helper for every OS ink-thread event below: re-locks a strong
+    // self on the UI thread and runs 'fn' with it (no-op if the dispatcher is gone or the proxy was
+    // destroyed). Replaces the per-event weakSelf/TryEnqueue/get() boilerplate.
+    auto marshalToUi = [weakSelf, uiDispatcher](auto&& fn)
+    {
+        if (!uiDispatcher)
+        {
+            return;
+        }
+        uiDispatcher.TryEnqueue([weakSelf, fn = std::forward<decltype(fn)>(fn)]() mutable
+            {
+                if (auto strong = weakSelf.get())
+                {
+                    fn(winrt::get_self<::InkPresenter>(strong));
+                }
+            });
+    };
+
     // Subscribe to the OS presenter's stroke events on the ink thread. InkStroke is agile, so we
     // snapshot the strokes here, marshal to the UI thread, and re-raise our own events there.
     // Handlers are attached eagerly and are harmless when the app never subscribes to our events.
     osPresenter.StrokesCollected(
-        [weakSelf, uiDispatcher](inking::InkPresenter const&, inking::InkStrokesCollectedEventArgs const& args)
+        [marshalToUi, weakSelf](inking::InkPresenter const&, inking::InkStrokesCollectedEventArgs const& args)
         {
-            std::vector<inking::InkStroke> snapshot;
-            for (auto const& stroke : args.Strokes())
-            {
-                snapshot.push_back(stroke);
-            }
+            auto strokes = args.Strokes();
+            std::vector<inking::InkStroke> snapshot(strokes.Size(), nullptr);
+            strokes.GetMany(0, snapshot);
 
-            if (uiDispatcher)
-            {
-                uiDispatcher.TryEnqueue([weakSelf, snapshot = std::move(snapshot)]() mutable
-                    {
-                        if (auto strong = weakSelf.get())
-                        {
-                            winrt::get_self<::InkPresenter>(strong)->RaiseStrokesCollected(
-                                winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView());
-                        }
-                    });
-            }
+            marshalToUi([snapshot = std::move(snapshot)](::InkPresenter* self) mutable
+                {
+                    self->RaiseStrokesCollected(
+                        winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView());
+                });
         });
 
     osPresenter.StrokesErased(
-        [weakSelf, uiDispatcher](inking::InkPresenter const&, inking::InkStrokesErasedEventArgs const& args)
+        [marshalToUi](inking::InkPresenter const&, inking::InkStrokesErasedEventArgs const& args)
         {
-            std::vector<inking::InkStroke> snapshot;
-            for (auto const& stroke : args.Strokes())
-            {
-                snapshot.push_back(stroke);
-            }
+            auto strokes = args.Strokes();
+            std::vector<inking::InkStroke> snapshot(strokes.Size(), nullptr);
+            strokes.GetMany(0, snapshot);
 
-            if (uiDispatcher)
-            {
-                uiDispatcher.TryEnqueue([weakSelf, snapshot = std::move(snapshot)]() mutable
-                    {
-                        if (auto strong = weakSelf.get())
-                        {
-                            winrt::get_self<::InkPresenter>(strong)->RaiseStrokesErased(
-                                winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView());
-                        }
-                    });
-            }
+            marshalToUi([snapshot = std::move(snapshot)](::InkPresenter* self) mutable
+                {
+                    self->RaiseStrokesErased(
+                        winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView());
+                });
         });
+
+    // Subscribe to the OS presenter's raw pointer-input events (InkStrokeInput / InkUnprocessedInput)
+    // and re-raise them on the UI thread through our mirror proxies. The OS PointerEventArgs is
+    // passed through unchanged. NOTE: because delivery is marshaled to the UI thread, the
+    // args.Handled round-trip back to the OS is best-effort (the OS has already proceeded).
+    auto osStrokeInput = osPresenter.StrokeInput();
+    auto marshalStroke = [marshalToUi](void (::InkStrokeInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&))
+    {
+        return [marshalToUi, raise](inking::InkStrokeInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
+        {
+            // PointerEventArgs is not agile; capture an agile reference so the UI-thread read
+            // marshals through a proxy instead of touching the ink-thread object directly (which
+            // would risk RPC_E_WRONG_THREAD or a recycled args).
+            winrt::agile_ref<winrt::Windows::UI::Core::PointerEventArgs> agileArgs{ args };
+            marshalToUi([agileArgs, raise](::InkPresenter* self)
+                {
+                    if (self->m_strokeInput)
+                    {
+                        (winrt::get_self<::InkStrokeInput>(self->m_strokeInput)->*raise)(agileArgs.get());
+                    }
+                });
+        };
+    };
+    osStrokeInput.StrokeStarted(marshalStroke(&::InkStrokeInput::RaiseStrokeStarted));
+    osStrokeInput.StrokeContinued(marshalStroke(&::InkStrokeInput::RaiseStrokeContinued));
+    osStrokeInput.StrokeEnded(marshalStroke(&::InkStrokeInput::RaiseStrokeEnded));
+    osStrokeInput.StrokeCanceled(marshalStroke(&::InkStrokeInput::RaiseStrokeCanceled));
+
+    auto osUnprocessed = osPresenter.UnprocessedInput();
+    auto marshalUnproc = [marshalToUi](void (::InkUnprocessedInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&))
+    {
+        return [marshalToUi, raise](inking::InkUnprocessedInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
+        {
+            // PointerEventArgs is not agile; capture an agile reference so the UI-thread read
+            // marshals through a proxy instead of touching the ink-thread object directly (which
+            // would risk RPC_E_WRONG_THREAD or a recycled args).
+            winrt::agile_ref<winrt::Windows::UI::Core::PointerEventArgs> agileArgs{ args };
+            marshalToUi([agileArgs, raise](::InkPresenter* self)
+                {
+                    if (self->m_unprocessedInput)
+                    {
+                        (winrt::get_self<::InkUnprocessedInput>(self->m_unprocessedInput)->*raise)(agileArgs.get());
+                    }
+                });
+        };
+    };
+    osUnprocessed.PointerEntered(marshalUnproc(&::InkUnprocessedInput::RaisePointerEntered));
+    osUnprocessed.PointerHovered(marshalUnproc(&::InkUnprocessedInput::RaisePointerHovered));
+    osUnprocessed.PointerExited(marshalUnproc(&::InkUnprocessedInput::RaisePointerExited));
+    osUnprocessed.PointerPressed(marshalUnproc(&::InkUnprocessedInput::RaisePointerPressed));
+    osUnprocessed.PointerMoved(marshalUnproc(&::InkUnprocessedInput::RaisePointerMoved));
+    osUnprocessed.PointerReleased(marshalUnproc(&::InkUnprocessedInput::RaisePointerReleased));
+    osUnprocessed.PointerLost(marshalUnproc(&::InkUnprocessedInput::RaisePointerLost));
 }
 
 void InkPresenter::RaiseStrokesCollected(winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> const& strokes)

@@ -6,6 +6,7 @@
 #include "MediaPlayerPresenter_partial.h"
 #include "MediaPlayerElement.h"
 #include "MediaPlayerPresenter.h"
+#include "MediaPlayerExtensions.h"
 #include "MediaTransportControls_partial.h"
 #include "Panel_partial.h"
 #include "ContentPresenter_partial.h"
@@ -21,18 +22,16 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 MediaPlayerElement::MediaPlayerElement()
-    :m_bInit(false),
-    m_bOwnsMediaPlayer(false)
+    :m_bInit(false)
 {
 }
 
 MediaPlayerElement::~MediaPlayerElement()
 {
-    ctl::ComPtr<wmp::IMediaPlayer> spOldMediaPlayer(m_spMediaPlayer);
+    // Do NOT Close() the MediaPlayer here; just release our reference so a shared/retained player stays alive (closing it causes the E_ABORT crash - see MediaPlayerExtensions.cpp).
     m_spMediaPlayer.Reset();
 
     VERIFYHR(UpdateTimedTextSource()); // We need to clear the events in timed text source
-    VERIFYHR(CloseMediaPlayer(spOldMediaPlayer.Get()));
 }
 
 _Check_return_ HRESULT MediaPlayerElement::get_AutoPlayImpl(_Out_ BOOLEAN* pValue)
@@ -163,9 +162,8 @@ MediaPlayerElement::put_TransportControlsImpl(_In_opt_ xaml_controls::IMediaTran
 _Check_return_ HRESULT
 MediaPlayerElement::SetMediaPlayerImpl(_In_ wmp::IMediaPlayer* pMediaPlayer)
 {
-    ctl::ComPtr<wmp::IMediaPlayer> spOldMediaPlayer(m_spMediaPlayer.Get());
+    // Replacing the MediaPlayer just updates the property; the previous player is released (never Close()d) as its references drop - see ~MediaPlayerElement.
     IFC_RETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_MediaPlayer, pMediaPlayer));
-    IFC_RETURN(CloseMediaPlayer(spOldMediaPlayer.Get()));
     return S_OK;
 }
 
@@ -650,23 +648,9 @@ _Check_return_ HRESULT MediaPlayerElement::CreateDefaultMediaPlayer()
         wrl_wrappers::HStringReference(RuntimeClass_Windows_Media_Playback_MediaPlayer).Get(),
         spMediaPlayer.GetAddressOf()));
 
+    // XAML auto-creates this default MediaPlayer but never Close()es it; its engine is torn down by the WinRT MediaPlayer's final release once all references drop - see ~MediaPlayerElement.
     IFC_RETURN(SetMediaPlayer(spMediaPlayer.Get()));
 
-    m_bOwnsMediaPlayer = true;
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT MediaPlayerElement::CloseMediaPlayer(_In_opt_ wmp::IMediaPlayer* pOldMediaPlayer)
-{
-    ctl::ComPtr<wmp::IMediaPlayer> spOldMediaPlayer(pOldMediaPlayer);
-    if (m_bOwnsMediaPlayer && spOldMediaPlayer.Get())
-    {
-        ctl::ComPtr<wf::IClosable> spClosable;
-        IFC_RETURN(spOldMediaPlayer.As(&spClosable));
-        IFC_RETURN(spClosable->Close());
-    }
-    m_bOwnsMediaPlayer = false;
     return S_OK;
 }
 
@@ -738,7 +722,39 @@ MediaPlayerElement::LeaveImpl(
         IFC_RETURN(m_spTimedTextSource->SetMediaPlayer(nullptr));
     }
 
+    bool shouldPauseMediaPlayer = false;
+    if (bLive)
+    {
+        if (CContentRoot* contentRoot = VisualTree::GetContentRootForElement(GetHandle()))
+        {
+            shouldPauseMediaPlayer = contentRoot->IsShuttingDown();
+        }
+    }
+
     IFC_RETURN(__super::LeaveImpl(bLive, bSkipNameRegistration, bCoercedIsEnabled, bVisualTreeBeingReset));
+
+    if (shouldPauseMediaPlayer && m_spMediaPlayer)
+    {
+        ctl::ComPtr<wmp::IMediaPlaybackSession> spPlaybackSession;
+        wmp::MediaPlaybackState playbackState{};
+
+        HRESULT stateResult = MediaPlayer_GetCurrentPlaybackSession(m_spMediaPlayer.Get(), &spPlaybackSession);
+        if (SUCCEEDED(stateResult) && spPlaybackSession)
+        {
+            stateResult = spPlaybackSession->get_PlaybackState(&playbackState);
+        }
+        else if (SUCCEEDED(stateResult))
+        {
+            stateResult = E_UNEXPECTED;
+        }
+
+        if (SUCCEEDED(stateResult) &&
+            (playbackState == wmp::MediaPlaybackState_Playing ||
+             playbackState == wmp::MediaPlaybackState_Buffering))
+        {
+            IGNOREHR(m_spMediaPlayer->Pause());
+        }
+    }
 
     return S_OK;
 }

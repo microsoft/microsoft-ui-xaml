@@ -112,8 +112,6 @@ namespace DirectUI
         _Check_return_ HRESULT RedirectEvents();
         _Check_return_ HRESULT RestoreEventsRedirection();
 
-        _Check_return_ HRESULT CloseMediaPlayer(_In_opt_ wmp::IMediaPlayer* pOldMediaPlayer);
-
         _Check_return_ HRESULT UpdatePosterImageVisibility();
 
         bool IsPropertySet(KnownPropertyIndex propertyIndex);
@@ -123,6 +121,5 @@ namespace DirectUI
         ctl::ComPtr<wmp::IMediaPlayer> m_spMediaPlayer;
         ctl::ComPtr<CTimedTextSource> m_spTimedTextSource;
         bool m_bInit;
-        bool m_bOwnsMediaPlayer;
     };
 }

@@ -14,11 +14,6 @@ steps:
       $nugetConfigPath = "$(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config"
       $sourceName = "MUX-Dependencies"
       $newSourceUrl = "$(WinUILKGDependenciesFeedUri)"
-
-      # GitHub-backed PRs restore the Gallery's public dependencies anonymously from the shine-oss
-      # MUX-Dependencies feed and cannot reach the internal WinUI Dependencies feed, so the
-      # internal-feed repoint and nuget.org removal below are skipped for GitHub/GitHubEnterprise.
-      # Only the repo-root PackageStore add further down applies to every provider.
       $isGitHub = $env:BUILD_REPOSITORY_PROVIDER -in @('GitHub', 'GitHubEnterprise')
 
       if (Test-Path $nugetConfigPath) {
@@ -97,12 +92,7 @@ steps:
       # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
       $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
       $galleryTrimArg = ""
-      # The NativeAOT ILCompiler pack (Microsoft.DotNet.ILCompiler) ships only on the internal
-      # WinUI.Dependencies feed, so AOT cannot restore/complete on GitHub-backed validation
-      # (it 401s against the public shine-oss feed). Left enabled, the ILLink trim pass also
-      # emits a duplicate linked\WinUIGallery.pdb that fails the Gallery UnitTests MSIX with
-      # APPX1101. Disable AOT and trimming on GitHub so the Gallery build matches the known-green
-      # ADO layout (single, untrimmed WinUIGallery.pdb). ADO is unaffected.
+
       if ($env:BUILD_REPOSITORY_PROVIDER -in @('GitHub','GitHubEnterprise')) {
         $publishAot = $false
         $galleryTrimArg = "/p:PublishTrimmed=false"
@@ -193,6 +183,75 @@ steps:
       solution: Samples\DisableXamlGeneratedMain\CsNoCtor\DisableXamlGeneratedMainNoCtorCs.csproj
       artifactsRoot: ${{ parameters.artifactsRoot }}
       msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartApp
+      solution: Samples\ChartApp\ChartApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartAppCsUnpackaged
+      solution: Samples\ChartApp\ChartAppCsUnpackaged\ChartAppCsUnpackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartAppCsPackaged
+      solution: Samples\ChartApp\ChartAppCsPackaged\ChartAppCsPackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  # Unlike ChartApp, TableView is built from this repo (not the WinUIDetails package), so GitHub runs build it too.
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: TableViewApp
+      solution: Samples\TableViewApp\TableViewApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: TableViewAppCsUnpackaged
+      solution: Samples\TableViewApp\TableViewAppCsUnpackaged\TableViewAppCsUnpackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: TableViewAppCsPackaged
+      solution: Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  # Standalone .csproj with no publish profiles, so it is built rather than published.
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: TableViewSampleApp
+      solution: Samples\TableViewSampleApp\TableViewSampleApp.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
       condition: ${{ ne(parameters.MUXFinalRelease, true) }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}

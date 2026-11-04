@@ -423,6 +423,22 @@ namespace System.Xaml.Schema
             return null;
         }
 
+        /// <summary>
+        /// Checks whether a type is annotated with <c>[RequiredMember]</c>.
+        /// This is the case if it has any required properties.
+        /// </summary>
+        /// <param name="type">The input <see cref="System.Type"/> instance to inspect.</param>
+        /// <returns>Whether <paramref name="type"/> is annotated with <c>[RequiredMember]</c>.</returns>
+        internal static bool HasRequiredMemberAttribute(Type type)
+        {
+            const string AttributeName = "System.Runtime.CompilerServices.RequiredMemberAttribute";
+
+            // Check all attributes and match the type name. We can't lookup the attribute by type,
+            // because the attribute is only defined in the .NET 7+ corelib, but XamlCompiler targets
+            // both .NET 5+ and .NET Framework.
+            return global::Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ReflectionHelper.FindAttributeByTypeName(type, inherit: false, AttributeName) != null;
+        }
+
         #region Member lookup
 
         internal PropertyInfo LookupProperty(string name)

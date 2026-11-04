@@ -74,6 +74,14 @@ namespace XamlOM
 
             AddContractReference(definition.SupportedContracts);
 
+            // A velocity Platform on a delegate gates the entire delegate behind the feature. Classes
+            // and enums record this via BuildNewClass/BuildNewEnum, but delegates only run BuildNewType,
+            // so capture the velocity version here so the IDL emitter can write the [feature(...)] tag.
+            if (VelocityFeatures.IsVelocityVersion(Version) && definition is DelegateDefinition delegateDefinition)
+            {
+                delegateDefinition.VelocityVersion = Version;
+            }
+
             if (definition.SupportedContracts.Where(c => c.IsPrivateApiContract).Any())
             {
                 definition.IdlTypeInfo.IsPrivateIdlOnly = true;

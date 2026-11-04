@@ -1,0 +1,14 @@
+// Do not move to Microsoft.UI.Xaml.Data: C# consumers then fail with CS0234. See docs/design-notes/TabularControls/TableView-dev-spec.md.
+namespace MU_XC_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum SortDirection
+{
+    None = 0,
+    Ascending = 1,
+    Descending = 2,
+};
+
+}

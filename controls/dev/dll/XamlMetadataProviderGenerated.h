@@ -1455,6 +1455,27 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"UseSystemColorsWhenNecessary") return box_value(winrt::InkHighContrastAdjustment::UseSystemColorsWhenNecessary);
+                    if (fromString == L"UseSystemColors") return box_value(winrt::InkHighContrastAdjustment::UseSystemColors);
+                    if (fromString == L"UseOriginalColors") return box_value(winrt::InkHighContrastAdjustment::UseOriginalColors);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.InkInputConfiguration",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -1601,6 +1622,14 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"HighContrastAdjustment", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkPresenter>().HighContrastAdjustment()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkPresenter>().HighContrastAdjustment(unbox_value<winrt::InkHighContrastAdjustment>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"InputConfiguration", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkInputConfiguration", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().InputConfiguration(); },
@@ -1620,6 +1649,22 @@ Entry c_typeEntries[] =
                         L"StrokeContainer", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkStrokeContainer", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().StrokeContainer(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"StrokeInput", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkStrokeInput", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().StrokeInput(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"UnprocessedInput", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkUnprocessedInput", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().UnprocessedInput(); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
@@ -1660,6 +1705,55 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkStrokeInput",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkStrokeInput",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"InkPresenter", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkPresenter", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkStrokeInput>().InkPresenter(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkSynchronizer",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkSynchronizer",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.InkToolbar",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -1685,7 +1779,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"IsStencilButtonChecked", L"Boolean", statics.IsStencilButtonCheckedProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"TargetInkCanvas", L"Microsoft.UI.Xaml.Controls.InkCanvas", statics.TargetInkCanvasProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"TargetInkPresenter", L"Object", statics.TargetInkPresenterProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"TargetInkPresenter", L"Microsoft.UI.Xaml.Controls.InkPresenter", statics.TargetInkPresenterProperty(), false /* isContent */);
                     }
 
                 });
@@ -1714,14 +1808,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"IsExtensionGlyphShown", L"Boolean", statics.IsExtensionGlyphShownProperty(), false /* isContent */);
                     }
 
-                    xamlType.AddMember(
-                        L"ToggleKind", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.InkToolbarToggle", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToolButton>().ToggleKind()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
                     xamlType.AddMember(
                         L"ToolKind", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkToolbarTool", /* propertyType */
@@ -1949,58 +2035,12 @@ Entry c_typeEntries[] =
                 {
                     winrt::IInkToolbarEraserButtonStatics statics = GetFactory<winrt::IInkToolbarEraserButtonStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarEraserButton");
                     {
-                        xamlType.AddDPMember(L"ArePrecisionErasersVisible", L"Boolean", statics.ArePrecisionErasersVisibleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsClearAllVisible", L"Boolean", statics.IsClearAllVisibleProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsStrokeEraserVisible", L"Boolean", statics.IsStrokeEraserVisibleProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"SelectedEraser", L"Microsoft.UI.Xaml.Controls.InkToolbarEraserKind", statics.SelectedEraserProperty(), false /* isContent */);
                     }
 
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemKind",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemKind",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"StrokeEraser") return box_value(winrt::InkToolbarEraserFlyoutItemKind::StrokeEraser);
-                    if (fromString == L"PrecisionSmallEraser") return box_value(winrt::InkToolbarEraserFlyoutItemKind::PrecisionSmallEraser);
-                    if (fromString == L"PrecisionLargeEraser") return box_value(winrt::InkToolbarEraserFlyoutItemKind::PrecisionLargeEraser);
-                    if (fromString == L"ClearAll") return box_value(winrt::InkToolbarEraserFlyoutItemKind::ClearAll);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarEraserKind",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarEraserKind",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"Stroke") return box_value(winrt::InkToolbarEraserKind::Stroke);
-                    if (fromString == L"PrecisionSmall") return box_value(winrt::InkToolbarEraserKind::PrecisionSmall);
-                    if (fromString == L"PrecisionLarge") return box_value(winrt::InkToolbarEraserKind::PrecisionLarge);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
         }
     },
     {
@@ -2305,6 +2345,35 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkUnprocessedInput",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkUnprocessedInput",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"InkPresenter", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkPresenter", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkUnprocessedInput>().InkPresenter(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {
@@ -4605,6 +4674,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Slider",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IInkToolbarStrokeWidthSliderFactory>(L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -4900,6 +4989,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::IScrollPresenterStatics2 statics2 = GetFactory<winrt::IScrollPresenterStatics2>(L"Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(
@@ -5802,6 +5896,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::IScrollViewStatics2 statics2 = GetFactory<winrt::IScrollViewStatics2>(L"Microsoft.UI.Xaml.Controls.ScrollView");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(

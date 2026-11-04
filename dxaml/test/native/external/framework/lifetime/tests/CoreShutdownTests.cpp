@@ -8,6 +8,12 @@
 #include <wil/result_macros.h>
 #include <SafeEventRegistration.h>
 #include <TestEvent.h>
+#include <wrl.h>
+#if defined(MUX_TIP_REAL)
+#define wil_details_GetKernelBaseModuleHandle() GetModuleHandleW(L"kernelbase.dll")
+#include <tip/tip.h>
+#undef wil_details_GetKernelBaseModuleHandle
+#endif
 
 using namespace Platform;
 using namespace ::Windows::Foundation;
@@ -36,6 +42,157 @@ bool CoreShutdownTests::TestCleanup()
     // Deliberately don't shut down core in test cleanup, because the tests manually do this themselves.
     TestServices::WindowHelper->VerifyTestCleanup();
     return true;
+}
+
+void CoreShutdownTests::OffThreadReleaseBeforeIslandCreation()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+
+    xaml::RoutedEventArgs^ args = nullptr;
+    RunOnUIThread([&]
+    {
+        VERIFY_IS_NULL(TestServices::WindowHelper->WindowContent);
+        args = ref new xaml::RoutedEventArgs();
+    });
+
+    // Releasing off the UI thread queues cleanup, but there is no XAML island to tick build-tree work.
+    args = nullptr;
+    TestServices::WindowHelper->WaitForIdle();
+}
+
+void CoreShutdownTests::OffThreadReleaseWakesIdleCleanup()
+{
+    struct ReleaseState
+    {
+        Event destroyed;
+        DWORD threadId = 0;
+    };
+    class ReleaseSignal final : public WRL::RuntimeClass<IInspectable>
+    {
+        InspectableClass(L"LifetimeTests.ReleaseSignal", BaseTrust);
+    public:
+        explicit ReleaseSignal(std::shared_ptr<ReleaseState> state) : m_state(std::move(state)) {}
+        ~ReleaseSignal()
+        {
+            m_state->threadId = GetCurrentThreadId();
+            m_state->destroyed.Set();
+        }
+    private:
+        std::shared_ptr<ReleaseState> m_state;
+    };
+
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+    auto state = std::make_shared<ReleaseState>();
+    DWORD uiThreadId = 0;
+    xaml_controls::Grid^ element = nullptr;
+    RunOnUIThread([&]
+    {
+        uiThreadId = GetCurrentThreadId();
+        TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        element = ref new xaml_controls::Grid();
+        auto signal = WRL::Make<ReleaseSignal>(state);
+        VERIFY_IS_NOT_NULL(signal.Get());
+        element->Tag = reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(signal.Get()));
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    VERIFY_IS_FALSE(state->destroyed.HasFired());
+    VERIFY_ARE_NOT_EQUAL(uiThreadId, GetCurrentThreadId());
+
+    // Only a passive native destructor notification is observed after the off-thread release.
+    // No GC, WaitForIdle, rendering request, or queue enumeration may help the cleanup wake.
+    element = nullptr;
+    const bool destroyed = state->destroyed.WaitForNoThrow(std::chrono::seconds(5));
+    VERIFY_IS_TRUE(destroyed);
+    if (destroyed)
+    {
+        VERIFY_ARE_EQUAL(uiThreadId, state->threadId);
+    }
+}
+
+void CoreShutdownTests::CleanupTipCompletesAcrossTicks()
+{
+#if !defined(MUX_TIP_REAL)
+    Log::Result(TestResults::Skipped, L"The public TiP stub has no running tests to observe.");
+#else
+    // Older Windows builds lack the TiP exports, so the product never starts a sample there.
+    if (!GetProcAddress(GetModuleHandleW(L"kernelbase.dll"), "TestCreate"))
+    {
+        Log::Result(TestResults::Skipped, L"TiP is not available on this OS.");
+        return;
+    }
+
+    struct ReleaseState
+    {
+        Event destroyed;
+        DWORD delayMs = 0;
+    };
+    class ReleaseSignal final : public WRL::RuntimeClass<IInspectable>
+    {
+        InspectableClass(L"LifetimeTests.TipReleaseSignal", BaseTrust);
+    public:
+        explicit ReleaseSignal(std::shared_ptr<ReleaseState> state) : m_state(std::move(state)) {}
+        ~ReleaseSignal()
+        {
+            m_state->destroyed.Set();
+            Sleep(m_state->delayMs);
+        }
+    private:
+        std::shared_ptr<ReleaseState> m_state;
+    };
+    // UIAffinityReleaseQueueCleanupTest is process-scoped, so its running sample can be opened by measure id.
+    constexpr unsigned int cleanupMeasure = 64884230;
+
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+    std::shared_ptr<ReleaseState> states[3];
+    xaml_controls::Grid^ elements[3] = {};
+    // The first release outlasts the 40 ms cleanup budget, so the drain spans ticks.
+    RunOnUIThread([&]
+    {
+        TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        for (int i = 0; i < 3; ++i)
+        {
+            states[i] = std::make_shared<ReleaseState>();
+            elements[i] = ref new xaml_controls::Grid();
+            auto signal = WRL::Make<ReleaseSignal>(states[i]);
+            elements[i]->Tag = reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(signal.Get()));
+        }
+        states[0]->delayMs = 60;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(cleanupMeasure)));
+
+    elements[0] = nullptr;
+    elements[1] = nullptr;
+    VERIFY_IS_TRUE(states[0]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    // The first pass is still releasing, so its sample is running.
+    GUID sampleId{};
+    {
+        auto running = tip::open_dynamic(cleanupMeasure);
+        VERIFY_IS_TRUE(static_cast<bool>(running));
+        sampleId = running.test_id();
+    }
+    // Arrives before the queue drains, so it joins the running sample.
+    elements[2] = nullptr;
+    VERIFY_IS_TRUE(states[1]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    VERIFY_IS_TRUE(states[2]->destroyed.WaitForNoThrow(std::chrono::seconds(5)));
+    TestServices::WindowHelper->WaitForIdle();
+
+    // The drain completed the sample and left none running.
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(sampleId, cleanupMeasure)));
+    VERIFY_IS_FALSE(static_cast<bool>(tip::open_dynamic(cleanupMeasure)));
+#endif
 }
 
 // Exposed an edge case in our peer cleanup
@@ -107,6 +264,56 @@ void CoreShutdownTests::RoutedEventArgsCleanup()
 
     // Kill the args. deliberately off-thread
     preservedArgs = nullptr;
+}
+
+// Regression test for the shutdown access violation in CInputServices::GetPrimaryRegisteredIslandInputSite.
+//
+// A TextBox that still has focus when the core is torn down is kept alive by the text core rather than
+// by the visual tree, so it outlives ResetCoreWindowVisualTree and is destroyed by CCoreServices::~CCoreServices
+// at "delete m_pTextCore". That teardown synchronously re-enters input:
+//   CTextBoxBase::Destroy -> OnTxInPlaceDeactivate -> ShowGrippers -> TxGetWindow
+//     -> CDependencyObject::GetElementIslandInputSite -> CInputServices::GetPrimaryRegisteredIslandInputSite
+// m_inputServices is an xref_ptr, so resetting it before the text core is deleted destroys CInputServices
+// and that callback then runs on a null instance, faulting while reading m_islandInputSiteRegistrations.
+//
+// The test deliberately leaves the focused TextBox in the tree across shutdown. It fails as an access
+// violation (0xC0000005) if the reset is ordered before the text core teardown.
+void CoreShutdownTests::FocusedTextBoxAtCoreShutdown()
+{
+    TestServices::WindowHelper->InitializeXaml();
+
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+
+    xaml_controls::TextBox^ textBox = nullptr;
+
+    RunOnUIThread([&]
+    {
+        textBox = ref new xaml_controls::TextBox();
+        textBox->Text = L"focused text input at shutdown";
+        textBox->ContextFlyout = nullptr;
+        textBox->SelectionFlyout = nullptr;
+        TestServices::WindowHelper->WindowContent = textBox;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    // Focus activates the RichEdit host in place, which is what arms the deactivation callback below.
+    RunOnUIThread([&]
+    {
+        VERIFY_IS_TRUE(textBox->Focus(xaml::FocusState::Programmatic));
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    // Release the test's reference but deliberately leave the TextBox focused and in the tree, so the
+    // text core owns the final reference and drops it during core destruction.
+    RunOnUIThread([&]
+    {
+        textBox = nullptr;
+    });
+
+    shutdownGuard.reset();
 }
 
 } } } } } }

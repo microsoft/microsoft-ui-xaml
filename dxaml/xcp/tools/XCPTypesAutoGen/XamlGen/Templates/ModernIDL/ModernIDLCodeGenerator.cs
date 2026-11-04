@@ -444,7 +444,18 @@ namespace XamlGen.Templates.ModernIDL
             {
                 if (Helper.ShouldGenerateContracts())
                 {
-                    WriteLine(typeInfo.SupportedContracts.OrderBy(con => con.Version).FirstOrDefault()?.ToString());
+                    if (typeInfo is DelegateDefinition velocityDelegate && velocityDelegate.VelocityVersion != 0)
+                    {
+                        // The entire delegate is gated behind a velocity (experimental) feature. Emit the
+                        // experimental contract (the highest supported version) plus the [feature(...)] tag
+                        // instead of the default base contract that EnsureDefaultPlatforms adds.
+                        WriteLine(typeInfo.SupportedContracts.OrderByDescending(con => con.Version).FirstOrDefault()?.ToString());
+                        WriteLine($"[feature({VelocityFeatures.GetFeatureName(velocityDelegate.VelocityVersion)})]");
+                    }
+                    else
+                    {
+                        WriteLine(typeInfo.SupportedContracts.OrderBy(con => con.Version).FirstOrDefault()?.ToString());
+                    }
                 }
             }
 

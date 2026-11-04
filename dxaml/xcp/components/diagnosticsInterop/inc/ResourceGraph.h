@@ -3,9 +3,10 @@
 
 #pragma once
 
+#include <deque>
 #include <map>
 #include <set>
-#include <stack>
+#include <tuple>
 #include <base\inc\weakref_ptr.h>
 #include <Style.h>
 #include <collection\inc\SetterBaseCollection.h>
@@ -142,6 +143,7 @@ namespace Diagnostics
 
     private:
 #pragma region Private methods
+        void PruneExpiredResourceDependencies();
         void ResolveAllResourceDependencies();
 
         _Check_return_ HRESULT UpdateResourceReferences(
@@ -167,9 +169,10 @@ namespace Diagnostics
 
         using ResourceGraphMap = std::map<ResourceGraphKey, ResourceDependencyList, ResourceGraphKeyComparer>;
         ResourceGraphMap m_pResourceMap;
-        //A stack of deferred resource key/values we'll resolve and add to the resource graph
-        //when we're sure XamlDiagnostics is enabled
-        std::stack<std::tuple<ResourceGraphKey, ResourceDependency>> m_resourceStack;
+        // Deferred resource dependencies are kept until XamlDiagnostics needs the graph. Inspect a
+        // bounded number on each registration so dead objects don't accumulate while diagnostics is idle.
+        std::deque<std::tuple<ResourceGraphKey, ResourceDependency>> m_resourceDependencies;
+        size_t m_nextResourcesToInspect{ 0 };
 
         //Mapping of Styles to all other Styles which are directly based on them
         std::map<xref::weakref_ptr<CStyle>, std::set<xref::weakref_ptr<CStyle>>> m_dependentStyleMap;

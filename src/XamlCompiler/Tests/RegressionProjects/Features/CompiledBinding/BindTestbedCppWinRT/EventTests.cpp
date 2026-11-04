@@ -8,7 +8,7 @@
 
 namespace winrt::BindTestbed::implementation
 {
-    using namespace ::Windows::UI::Popups;
+    using namespace ::winrt::Windows::UI::Popups;
 
     EventTests::EventTests()
     {

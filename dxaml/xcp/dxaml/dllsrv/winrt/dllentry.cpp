@@ -7,6 +7,7 @@
 #include "FrameworkApplication.g.h"
 #include "BackgroundTaskFrameworkContext.h"
 #include <MetadataAPI.h>
+#include <DynamicMetadataStorage.h>
 #include <DependencyLocator.h>
 #include <CStaticLock.h>
 #include "ThreadPoolService.h"
@@ -177,16 +178,6 @@ void DeinitializeDll()
         g_nTlsIsCoreServicesReady = TLS_OUT_OF_INDEXES;
     }
 
-    // Ideally the metadata has already been cleaned up by now. We called MetadataAPI::Destroy() when the
-    // last (main) FrameworkView went away (and called FrameworkApplication::ReleaseCurrent()).
-    // The only exception right now is our Standalone test runner (ttds.exe). Instead of updating that code,
-    // we're leaving this call here to preserve the existing
-    // cleanup behavior as a fallback option. If anyone ever runs into a crash because we're cleaning up
-    // metadata here that ends up trying to release a reference to an object whose code pages are no longer
-    // there, they will need to make sure there's a MetadataAPI::Reset() call that happened sooner (*before*
-    // modules are being unloaded).
-    MetadataAPI::Destroy();
-
     ThreadPoolService::DetachFactories();
 
     BackgroundTaskFrameworkContext::GlobalDeinit();
@@ -223,6 +214,27 @@ void DeinitializeDll()
     IGNORERESULT(ErrorContextGlobalDeinit());
 
     IGNORERESULT(WarningContextGlobalDeinit());
+
+    //
+    // There is a change to the shutdown process some time after WASDK 2.5.3 that allowed WinUI to restart in a process
+    // where it has shut down. The problem was metadata and custom DependencyProperties. When the last instance of WinUI
+    // shuts down, it also unregisters all metadata (including custom DPs previously registered with it). When it restarts,
+    // external components like MUXC tries to reuse their previously registered custom DPs, only to find that their fields
+    // have all been cleared and the DP is invalid.
+    //
+    // One approach is to have all components release their custom DPs and reregister after restarting, but that's a breaking
+    // change for components that already defined custom DPs as static readonly fields that can't be re-created. The approach
+    // we went with was to have WinUI not touch the metadata at all during shutdown, since the metadata objects aren't bound
+    // to any UI thread and can be safely reused after restarting in the process anyway.
+    //
+    // Doing that leads us to problems during process teardown, where WinUI's dll unload will clear the metadata in the process.
+    // Previously this metadata would have already been cleaned up by WinUI shutdown, but now it stays around until the middle
+    // of unloading binaries. WinUI metadata can have references to objects implemented by other DLLs, which may already be
+    // unloaded, so we cannot safely call out to them during final cleanup. Since the process is being destroyed anyway,
+    // we'll just leak these metadata objects instead. Intentionally skip the call to MetadataAPI::Destroy(), and also clear
+    // the unique pointer holding the DynamicMetadataStorage so that CRT doesn't try to delete it.
+    //
+    DynamicMetadataStorageInstanceWithLock::Abandon();
 
     // Uninitializing the dependency locator needs to be the absolute last thing that we do*.
     // Any of the above calls could rely on a Dependency and since we never get this far in

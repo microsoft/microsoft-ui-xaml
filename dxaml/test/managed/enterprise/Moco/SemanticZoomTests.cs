@@ -18,7 +18,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")] // DCPP NoCoreWindow mode - SemanticZoom tests fail get stuck "Waiting for BuildTreeService to finish..."
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
@@ -35,6 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ZoomWithKeyboard()
         {
             using (TestServices.KeyboardHelper.CreateKeyboardWaitKindGuard(KeyboardWaitKind.None))
@@ -92,6 +93,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TabNavigationInDifferentViews()
         {
             using (TestServices.KeyboardHelper.CreateKeyboardWaitKindGuard(KeyboardWaitKind.None))

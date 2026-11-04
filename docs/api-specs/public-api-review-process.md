@@ -10,7 +10,7 @@ We assure our community that their input is invaluable to us, and we are dedicat
 
 
 ## Public Post on Github
-- The drafted spec from is posted as a PR under the `./specs/` directory.  
+- The drafted spec is posted as a PR under the `docs/api-specs` directory.
 
     - Example PR: [Popup placement properties API spec](https://github.com/microsoft/microsoft-ui-xaml/pull/4905)
     - Every spec will link to this public spec markdown file. <!-- TODO: Add link once it is public --> 
@@ -56,7 +56,7 @@ The start and end dates will be outlined in the spec and in the [API Specs Revie
 
 ## Handle Feedback 
 
-We are commited to respond to all feedback in different manners depending on the feedback category.
+We are committed to respond to all feedback in different manners depending on the feedback category.
 
 **Feedback categorization:** In general, feedback will be prioritized into the categories below based on relevance, impact, and feasibility. 
 

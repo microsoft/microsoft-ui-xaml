@@ -1,0 +1,42 @@
+namespace MU_XC_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Boolean TableViewPredicate(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Object TableViewKeySelector(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+delegate String TableViewIdentitySelector(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource
+{
+    Boolean IsLiveShaping { get; set; };
+
+    TableViewSource Filter(TableViewPredicate predicate);
+    // Do not remove the [default_overload]/[method_name] metadata on GroupBy/Sort: it is frozen ABI, and
+    // without it MIDL renames the overloads (GroupBy2/Sort2).
+    [default_overload] [method_name("GroupBy")]
+    TableViewSource GroupBy(TableViewKeySelector keySelector);
+    [method_name("GroupByWithIdentity")]
+    TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
+    [method_name("SortByPath")]
+    TableViewSource Sort(String sortMemberPath, SortDirection direction);
+    [default_overload] [method_name("Sort")]
+    TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
+    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    TableViewSource ClearFilter();
+    TableViewSource ClearGroupBy();
+    TableViewSource ClearSort();
+    TableViewSource ClearParentBy();
+
+    static TableViewSource From(Object items);
+}
+
+}

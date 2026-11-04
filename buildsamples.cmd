@@ -34,6 +34,8 @@ call :buildSamplesSolution %reporoot%\Samples\WinUICppIsland2SampleApp\WinUICppI
 if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\WinUICppIslandsSampleApp\WinUICppIslandsSampleApp.sln
 if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\WinUICsIslandsSampleApp\WinUICsIslandsSampleApp.sln /m
+if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\DisableXamlGeneratedMain\DisableXamlGeneratedMain.sln
 if ERRORLEVEL 1 goto:eof
 REM The C# projects in the solution above are single-project MSIX apps and so only emit their MSIX 
@@ -49,6 +51,22 @@ if "%Configuration%"=="Release" (
 call :buildSamplesSolution %reporoot%\Samples\WinUIGallery\WinUIGallery.slnx /m /p:PublishProfile=win-%BUILDPLATFORM%.pubxml /t:Publish %_publishAot% 
 if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\WinUIDesktop\NativeDX12DesktopSample.sln
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartApp.sln
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartAppCsUnpackaged\ChartAppCsUnpackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
+REM The C# packaged Chart app is a single-project MSIX app, so it only emits its .msix when published.
+call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartAppCsPackaged\ChartAppCsPackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\TableViewSampleApp\TableViewSampleApp.csproj
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewApp.sln
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewAppCsUnpackaged\TableViewAppCsUnpackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
+REM The C# packaged TableView app is a single-project MSIX app, so it only emits its .msix when published.
+call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
 if ERRORLEVEL 1 goto:eof
 
 exit /b 0

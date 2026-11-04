@@ -326,7 +326,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             {
                 return base.IsWritePublic;
             }
-            return (pi.GetSetMethod() != null);
+
+            MethodInfo mi = pi.GetSetMethod();
+
+            // Trivial case: if there is no setter, we can't use it
+            if (mi == null)
+            {
+                return false;
+            }
+
+            return !MemberReflector.IsInitOnly(mi);
         }
 
         // --- Overrides of base class Lookup* methods.

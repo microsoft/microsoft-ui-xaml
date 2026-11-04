@@ -31,7 +31,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Ignore", "True")] //Task 26103056: MUXC RadioButtons test is unreliable. They have been disabled.
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -42,6 +41,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        // Scenario: RadioButton-element items (from Items, then ItemsSource); select index 1 via SelectedIndex, then item 3
+        //     via SelectedItem.
+        // Expected: SelectedIndex reads 1 and "Radio Button 1" is UIA-selected; then SelectedIndex reads 3, "Radio Button 3"
+        //     is selected and "Radio Button 1" is no longer selected.
+        // Failure means: RadioButtons::Select/UpdateSelectedIndex/UpdateSelectedItem no longer check the new container and
+        //     uncheck the old one (GetDataAtIndex), so programmatic selection and the visible checked state diverge.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void SelectionTest()
@@ -68,6 +73,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: for Items and ItemsSource with string and RadioButton items (skipping Items + strings, issue #1674),
+        //     set SelectedItem to item 1 and then to item 3.
+        // Expected: the page's SelectedIndex reads 1, then 3.
+        // Failure means: RadioButtons::UpdateSelectedItem no longer maps SelectedItem to its index (ItemsSourceView.IndexOf
+        //     + Select), so selecting by item doesn't update SelectedIndex.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void SelectByItem()
@@ -100,6 +110,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: RadioButtonsFocus page with two 3-item RadioButtons; select index 1 in the first and 2 in the second
+        //     (via non-tab-stop buttons), then press Tab into the second group and Shift+Tab back to the first.
+        // Expected: selections read 1 and 2 and the first group has focus; after Tab the first group loses focus and the
+        //     second has focus on its selected item 2; after Shift+Tab the first group's selected item 1 has focus.
+        // Failure means: RadioButtons::OnGettingFocus no longer redirects keyboard focus arriving from outside the repeater
+        //     to the selected item (focus lands on another item), or the RadioButtonsFocusPage setup broke again.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void FocusComingFromAnotherRepeaterTest()
@@ -192,6 +208,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: default single column of 10 items, for Items/ItemsSource x string/RadioButton items; focus item 3 and
+        //     press Down/Up/Left/Right, focus item 0 and press Up then Down, focus item 9 and press Down.
+        // Expected: selection and focus move together: 3->4->3, Left/Right stay on 3; Up on 0 stays on 0 and Down from 0
+        //     goes to 1; Down on 9 stays on 9.
+        // Failure means: RadioButtons::OnChildPreviewKeyDown/MoveFocusNext/MoveFocusPrevious stop moving focus within the
+        //     repeater, HandleEdgeCaseFocus lets focus escape at the ends, or OnGettingFocus no longer selects on focus.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void BasicKeyboardTest()
@@ -221,6 +243,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(0);
                         KeyboardHelper.PressKey(Key.Up);
                         VerifySelectedFocusedIndex(0);
+                        // Down from the first item (index 0) moves to the second item.
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifySelectedFocusedIndex(1);
 
                         TapOnItem(9, useBackup);
                         VerifySelectedFocusedIndex(9);
@@ -231,6 +256,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: 10 items with MaxColumns=3 (columns 0-3, 4-6, 7-9), for Items/ItemsSource x string/RadioButton items;
+        //     from items 3, 0 and 9 press sequences of Down/Up/Left/Right.
+        // Expected: Up/Down move by index across column boundaries (3->4); Right/Left move to the nearest item in the
+        //     adjacent column (3->6->9, 6->2, 0->4, 9->6) and stop at the outer edges, with selection following focus.
+        // Failure means: RadioButtons::OnChildPreviewKeyDown's XY navigation (TryMoveFocus scoped to the RadioButtons) or
+        //     index navigation regressed, or HandleEdgeCaseFocus no longer keeps focus inside at the edges.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void MultiColumnKeyboardTest()
@@ -289,8 +320,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: 3 items with MaxColumns=3 (one row), for Items/ItemsSource x string/RadioButton items; from item 0
+        //     press Right, Right, Left, Left, then Down, Down, Up, Up.
+        // Expected: selection and focus move 0->1->2->1->0 with Right/Left, and the same with Down/Up.
+        // Failure means: Left/Right (XY focus) or Up/Down (MoveFocusNext/MoveFocusPrevious) in
+        //     RadioButtons::OnChildPreviewKeyDown no longer move between items laid out in a single row.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Task 26103056: unreliable; still fails when run (no reason streamed by TAEF).
         public void SingleRowKeyboardTest()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -328,6 +365,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: 10 RadioButton items, MaxColumns=3, for Items/ItemsSource: insert a disabled RadioButton at index 10,
+        //     later two more at index 6; tap items by name and press arrows (indices below are positions after inserts).
+        // Expected: navigation skips disabled items, e.g. 7 Right->9, 9 Left->5, 6 Right->9; after the second insert
+        //     1 Right->10, 2 Right->11, 5 Down->8 (past disabled 6 and 7), 10 Left->1, 11 Left->2.
+        // Failure means: RadioButtons::MoveFocus no longer skips items that can't take focus, or XY Left/Right navigation
+        //     lands on or stops at disabled items, so keyboard users get stuck.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void DisabledItemsKeyboardTest()
@@ -395,6 +438,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: 10 RadioButton items, MaxColumns=3, three disabled RadioButtons inserted at index 5 so they fill the
+        //     top of the middle column (columns 0-4, 5-8, 9-12); tap items and press Right or Left.
+        // Expected: Right from rows blocked by a disabled item jumps to the third column (0->9, 1->10, 2->11), 3 and 4 go
+        //     to 8; Left from 9/10/11 returns to 0/1/2 and from 12 goes to 8; selection follows focus.
+        // Failure means: XY Left/Right navigation in RadioButtons::OnChildPreviewKeyDown no longer skips disabled items at
+        //     the top of a column, leaving keyboard focus stuck or on a disabled RadioButton.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void DisabledItemsAtTopOfColumnKeyboardTest()
@@ -503,6 +552,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: 10 items, MaxColumns=3, for Items/ItemsSource x string/RadioButton items; from items 9, 0 and 7 press
+        //     DPadDown/DPadUp/DPadRight at the group's edges, then DPadDown and DPadLeft starting from item 7.
+        // Expected: at the edges the gamepad moves focus out of the RadioButtons; inside, focus moves 7->8->5 while the
+        //     selection stays on 7.
+        // Failure means: OnChildPreviewKeyDown's gamepad paths (TryMoveFocus searching the whole XamlRoot) trap focus, or
+        //     OnGettingFocus selects on non-keyboard focus, so gamepad users can't leave or select just by moving focus.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")] // Disabled due to #4576: Unreliable test
@@ -549,6 +604,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: for Items/ItemsSource x string/RadioButton items, focus item 3 and press Ctrl+Down.
+        // Expected: focus moves to item 4 while the selection stays on item 3.
+        // Failure means: RadioButtons::OnGettingFocus ignores the Control key state and selects on every focus move, so
+        //     Ctrl+arrow can no longer move focus without changing the selection.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void ControlKeyKeyboardTest()
@@ -575,8 +634,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: 10 items with unconstrained width and MaxColumns 1, 3, 5, 7, 10, 20; then 77 items; then the host
+        //     Border width set to 100, 200, 300, 500, 550 (for Items/ItemsSource x string/RadioButton items).
+        // Expected: the test hooks report (rows, columns, larger columns) of (10,1,0), (3,3,1), (2,5,0), (1,7,3), (1,10,0),
+        //     (1,10,0), (3,20,17), then (77,1,0), (77,1,0), (38,2,1), (25,3,2), (19,4,1).
+        // Failure means: ColumnMajorUniformToLargestGridLayout::CalculateColumns/ArrangeOverride compute the wrong column
+        //     count or distribution for MaxColumns, item count or available width (or the test hooks stopped reporting).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Task 26103056: unreliable; still fails when run (no reason streamed by TAEF).
         public void ColumnsTest()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -622,6 +688,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: RadioButton items via ItemsSource; find the "More Radio Buttons" group; select 1, set MaxColumns=3,
+        //     insert enabled RadioButtons at 0 and 10, select 10, then reset to 17 items and select 16.
+        // Expected: the group (found by its Header name) is ControlType Group; the selected index/PositionInSet/SizeOfSet
+        //     are 1/2/10, unchanged by MaxColumns, then 2/3/11, 2/3/12, 10/11/12 and 16/17/17.
+        // Failure means: RadioButtonsAutomationPeer naming/control type, or the RadioButtons ElementPrepared/IndexChanged/
+        //     CollectionChanged handlers no longer keep selection and PositionInSet/SizeOfSet current as items are inserted.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void UIAProperties()
@@ -669,6 +741,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: RadioButton items via ItemsSource with item 3 selected; insert an enabled, already-checked RadioButton
+        //     at index 6.
+        // Expected: SelectedIndex moves from 3 to 6 (the inserted checked item).
+        // Failure means: RadioButtons::OnRepeaterElementPrepared no longer selects a pre-checked RadioButton when it is
+        //     realized, so the control's selection and the checked item disagree.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void InsertedCheckedRadioButtonGetsSelection()
@@ -687,8 +764,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: for Items/ItemsSource x string/RadioButton items, select item 3 programmatically (group unfocused), click
+        //     ReproTextBlock so the ScrollViewer places focus on the first radio button, then press Down.
+        // Expected: the click leaves the selection on 3 with focus on item 0; Down then selects and focuses item 1.
+        // Failure means: RadioButtons::OnGettingFocus selects on non-keyboard (programmatic) focus, changing the selection
+        //     when a ScrollViewer moves focus, or keyboard Down from that item no longer selects it.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Task 26103056: intermittent; after clicking ReproTextBlock focus sometimes isn't on item 0 (VerifyFocusedIndex AreEqual(0, -1)).
         public void ScrollViewerSettingSelectionDoesNotMoveFocus()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -715,8 +798,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+        // Scenario: 10 items, AccessKey "r", for Items/ItemsSource x string/RadioButton items; press Alt+R with no
+        //     selection, then select item 3, press Tab and press Alt+R twice.
+        // Expected: with no selection Alt+R focuses item 0 without selecting it; after selecting 3 the group is unfocused,
+        //     and each Alt+R puts focus on the selected item 3.
+        // Failure means: RadioButtons::OnAccessKeyInvoked no longer focuses the selected item (or the first item when
+        //     nothing is selected), so the access key doesn't take users to the current choice.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Task 26103056: unreliable; fails in VerifyFocusedIndex with AreEqual(3, -1) after Alt+R with a selection.
         public void AccessKeys()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))

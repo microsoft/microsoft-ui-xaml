@@ -10,6 +10,13 @@
 
 RadioButtonsElementFactory::RadioButtonsElementFactory()
 {
+    m_isFactoryCreatedProperty =
+        InitializeDependencyProperty(
+            s_isFactoryCreatedPropertyName,
+            winrt::name_of<bool>(),
+            winrt::name_of<winrt::RadioButtons>(),
+            true /* isAttached */,
+            box_value(false));
 }
 
 void RadioButtonsElementFactory::UserElementFactory(const winrt::IInspectable& newValue)
@@ -30,7 +37,8 @@ void RadioButtonsElementFactory::UserElementFactory(const winrt::IInspectable& n
 
 winrt::UIElement RadioButtonsElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
+    auto const itemTemplateWrapper = m_itemTemplateWrapper;
+    auto const newContent = [itemTemplateWrapper, args]() {
         if (itemTemplateWrapper)
         {
             return itemTemplateWrapper.GetElement(args).as<winrt::IInspectable>();
@@ -44,14 +52,36 @@ winrt::UIElement RadioButtonsElementFactory::GetElementCore(const winrt::Element
         return radioButton;
     }
 
-    // Element is not a RadioButton. We'll wrap it in a RadioButton now.
-    auto const newRadioButton = winrt::RadioButton{};
+    // Element is not a RadioButton. Reuse or create a RadioButton wrapper.
+    auto const newRadioButton = [this, parent = args.Parent()]()
+    {
+        if (!m_radioButtonPool.empty())
+        {
+            auto radioButton = m_radioButtonPool.back();
+            if (winrt::VisualTreeHelper::GetParent(radioButton) == parent)
+            {
+                m_radioButtonPool.pop_back();
+                return radioButton;
+            }
+
+            m_radioButtonPool.clear();
+        }
+
+        auto radioButton = winrt::RadioButton{};
+        radioButton.SetValue(m_isFactoryCreatedProperty, box_value(true));
+        return radioButton;
+    }();
+
     newRadioButton.Content(args.Data());
 
     // If a user provided item template exists, we pass the template down to the ContentPresenter of the RadioButton.
-    if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
+    if (auto const itemTemplateWrapperImpl = itemTemplateWrapper.try_as<ItemTemplateWrapper>())
     {
-        newRadioButton.ContentTemplate(itemTemplateWrapper->Template());
+        newRadioButton.ContentTemplate(itemTemplateWrapperImpl->Template());
+    }
+    else
+    {
+        newRadioButton.ContentTemplate(nullptr);
     }
 
     return newRadioButton;
@@ -59,5 +89,23 @@ winrt::UIElement RadioButtonsElementFactory::GetElementCore(const winrt::Element
 
 void RadioButtonsElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)
 {
+    if (auto const element = args.Element())
+    {
+        auto const isFactoryCreated = unbox_value<bool>(element.GetValue(m_isFactoryCreatedProperty));
 
+        if (isFactoryCreated)
+        {
+            if (auto const radioButton = element.try_as<winrt::RadioButton>())
+            {
+                radioButton.IsChecked(false);
+                radioButton.Content(nullptr);
+                radioButton.ContentTemplate(nullptr);
+                m_radioButtonPool.push_back(radioButton);
+            }
+        }
+        else if (m_itemTemplateWrapper)
+        {
+            m_itemTemplateWrapper.RecycleElement(args);
+        }
+    }
 }

@@ -319,9 +319,11 @@ HRESULT MeScanner::ReadString(_Inout_ XStringBuilder& sb)
         }
         else if (quoteChar != nullChar)
         {
-            // TODO: this is dubious!
-            // Why do they do this?
-            if (ch != quoteChar)
+            if (ch == L'\\')
+            {
+                bEscaped = TRUE;
+            }
+            else if (ch != quoteChar)
             {
                 IFC_RETURN(sb.AppendChar(ch));
             }

@@ -616,7 +616,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         // the runtime knows about. These are types for which we do not need to generate type info.
         private static List<string> PrimitiveSystemTypes = new List<string>()
         {
-            "Object", "Double", "Single", "Int16", "Char16", "Int32", "Int64", "UInt32", "UInt64", "Boolean", "String"
+            "Object", "Double", "Single", "Int16", "UInt16", "Char16", "Int32", "Int64", "UInt32", "UInt64", "Boolean", "String"
         };
 
         protected virtual bool LookupIsCodeGenType()
@@ -1329,7 +1329,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             "System.TimeSpan",
             "System.Single",
             "Windows.Foundation.TimeSpan",
+            "System.Int16",
+            "System.UInt16",
+            "System.Char",
+            "System.Char16",
             "System.Int32",
+            "System.Int64",
+            "System.UInt32",
+            "System.UInt64",
             "System.EventHandler",
             "System.Type",
             "Windows.Foundation.Uri",

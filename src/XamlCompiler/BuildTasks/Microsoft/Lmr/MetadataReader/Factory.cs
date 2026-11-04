@@ -5,7 +5,7 @@
 
 using System.Reflection.Adds;
 using System.Reflection.Metadata;
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 
 using System.Reflection;  
 using Type = System.Type;

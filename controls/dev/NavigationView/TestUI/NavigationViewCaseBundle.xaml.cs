@@ -18,6 +18,7 @@ namespace MUXControlsTestApp
         {
             LogController.InitializeLogging();
             this.InitializeComponent();
+            NavigateToPointerFocusPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPointerFocusPage), 0); };
             NavigationViewPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPage), 0); };
             NavigationViewInfoBadgePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewInfoBadgeTestPage), 0); };
             NavigationViewCompactPaneLengthTestPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewCompactPaneLengthTestPage), 0); };
@@ -31,6 +32,7 @@ namespace MUXControlsTestApp
             NavigateToInitPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewInitPage), 0); };
             NavigateToStretchPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewStretchPage), 0); };
             NavigationViewMenuItemsSourcePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewMenuItemsSourcePage), 0); };
+            NavigationViewFooterMenuItemsSourcePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewFooterMenuItemsSourcePage), 0); };
             NavigateToItemTemplatePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewItemTemplatePage), 0); };
             NavigationViewCustomMenuItemPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewCustomMenuItemPage), 0); };
             NavigateToRS3Page.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewRS3Page), 0); };

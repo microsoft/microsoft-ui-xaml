@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Windows.Markup;
 using System.Xaml;
 
@@ -185,6 +186,38 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         public InternalTypeEntry ItemType { get; set; }
         public InternalTypeEntry KeyType { get; set; }
         public String AddMethodName { get; set; }
+
+        /// <summary>
+        /// Gets whether the current type requires a generated static initializer. This is generally for
+        /// any possible WinRT types that have a static constructor. It's especially crucial for user
+        /// types that have dependency properties, as those are registered when the initializer runs.
+        /// XAML needs to ensure those are done before interacting with the types in some scenarios.
+        /// </summary>
+        public bool RequiresStaticInitializer
+        {
+            get
+            {
+                // Array types never need a static initializer
+                if (IsArray)
+                {
+                    return false;
+                }
+
+                // Exclude all types from corelib (for sure they don't have any WinRT needs)
+                if (_simpleTypeEntry.UnderlyingType.Assembly == typeof(object).Assembly)
+                {
+                    return false;
+                }
+
+                // Exclude all types with no static constructors
+                if (_simpleTypeEntry.UnderlyingType.GetConstructor(BindingFlags.Static | BindingFlags.NonPublic, null, Type.EmptyTypes, null) == null)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
 
         public List<InternalXamlUserMemberInfo> Members
         {

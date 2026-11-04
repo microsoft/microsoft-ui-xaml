@@ -1,13 +1,14 @@
 # TableView sample
 
-A small, self-contained WinUI 3 desktop app that exercises the live public API of the
-`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
-sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
+A small WinUI 3 desktop app that exercises the live public API of the
+`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The navigation pane groups focused pages for
+quick-start usage, full-app scenarios, basics, columns, rows and cells, and power-user behavior.
 
-`TableView` currently ships as a **split binary** (`Microsoft.UI.Xaml.Controls.Tabular.dll`) that
-is not yet available through the WindowsAppSDK NuGet package, so this sample links the locally built
-control and needs a few build workarounds (described below). They all disappear once the control
-ships in-box. Deeper architecture notes live in [AGENTS.md](AGENTS.md).
+`TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL,
+but its API is published through the WindowsAppSDK NuGet package: type information reaches the
+public winmd, activation registrations are emitted, and the control's theme resources ship and
+resolve. So this sample is an **ordinary consumer** — it references the package and does nothing
+special, exactly like the [ChartApp](../ChartApp) samples.
 
 ## Prerequisites
 
@@ -20,77 +21,142 @@ ships in-box. Deeper architecture notes live in [AGENTS.md](AGENTS.md).
 
 ## Build
 
-From the repo root:
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so this sample can
+only build against a **locally packed** component. Building the project on its own resolves the
+package from the feed and fails with `CS0234: The type or namespace name 'Tabular' does not exist`.
 
-**1. Build the Tabular control** — produces `Microsoft.UI.Xaml.Controls.Tabular.dll` and its WinMD,
-which the sample consumes:
-
-```
-.\initrun.ps1 controls\Build.cmd tabular
-```
-
-**2. Build the sample:**
+The supported flow packs the component and passes the matching version for you:
 
 ```
-.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:RuntimeIdentifier=win-x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-### What the sample project does for you
+To iterate on just this app, pack once and point the build at that version:
 
-Because `TableView` is a split binary that isn't in WinAppSDK/NuGet yet, the project automates a few
-workarounds during build:
+```
+.\pack.component.cmd /version 3.0.0-mylocal
+.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
+```
 
-- **Stages `Microsoft.UI.Xaml.Controls.Tabular.dll` next to the EXE.**
-  *Why:* the control is a separate binary; without the DLL, activation fails with
-  `CLASS_E_CLASSNOTAVAILABLE`.
-- **Regenerates the CsWinRT projection from the freshly built WinMD.**
-  *Why:* keeps the generated projection in sync with the built control and avoids `E_NOINTERFACE`
-  caused by stale metadata.
-- **Includes the TableView theme resources, sourced directly from the control.**
-  *Why:* the split binary doesn't deploy its theme resources to consuming apps; without them the
-  control renders unstyled or blank. The sample references the control's resources at their
-  canonical locations (and the built `generic.xaml`) rather than checking in copies, so they can
-  never drift from the control.
-- **Builds as a self-contained, unpackaged app** (`WindowsAppSdkSelfContained=true`,
-  `WindowsPackageType=None`).
-  *Why:* bundles the required Windows App Runtime dependencies for unpackaged execution.
-- **Merges the InteractiveExperiences app manifest.**
-  *Why:* registers the activatable classes missing from the local mock package; without it, startup
-  fails with `REGDB_E_CLASSNOTREG`.
+Re-run `pack.component.cmd` after every control change — NuGet caches by version, so reuse the
+version only if you also clear `packages\microsoft.windowsappsdk.winui\`, and prefer a fresh version
+string when in doubt.
 
 ## Run
-
-The self-contained, unpackaged executable is produced at:
 
 ```
 BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
 ```
 
-Launch it directly — the required control DLL and runtime dependencies are staged alongside it.
+Supported launch arguments:
+
+- `--page=<tag>` opens a navigation page directly. Tags are the values in
+  `MainWindow.xaml` / `MainWindow.xaml.cs`, for example `Showcase`, `Selection`,
+  `GridLinesVisibility`, `Settings`, or `About`.
+- `--show-dev-info` shows the developer status bar with the loaded Tabular controls assembly path,
+  size, and timestamp. This is intended for local/UIA verification, not end-user docs.
+
+The app also contains an opt-in UIA verification log harness for local automation. It is compiled
+only when `TableViewSampleEnableVerificationLogs=true` is passed to MSBuild, and then activated with
+`--verify-groups` or `--verify-selection`. Normal public sample builds do not write log files next
+to the executable.
+
+## Using TableView in your own app
+
+Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
+`XamlControlsResources` and `TabularControlsResources` — the latter is Tabular's own theme-resource
+dictionary, the exact analogue of `XamlControlsResources` for MUXC. Everything else the control
+needs (its default style, theme XBFs and `.pri`) resolves from the package, so there is no URI to
+configure and nothing to compile out of the control source tree.
+
+`TabularControlsResources` is required, not optional: `TableView`'s column-header style resolves
+`SortIndicatorForeground`, which is defined in Tabular's theme resources because `SortIndicator`
+ships in the Tabular DLL rather than in MUXC. Without the merge the app throws
+`XamlParseException 0x802B000A` during its first layout pass, which surfaces as a `0xC000027B`
+stowed exception a few seconds after launch.
+
+Declare columns, or the table renders rows with no header row and no cells:
+
+```xml
+<tabular:TableView x:Name="Table">
+  <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
+  <tabular:TableViewTextColumn Header="Age"  Binding="{Binding Age}" />
+</tabular:TableView>
+```
+
+`TableView` is `[MUX_PREVIEW]`, so C# usage raises `CS8305` and XAML usage raises `WMC1501`
+("for evaluation purposes only"). This sample suppresses `CS8305`; the XAML warnings are left
+visible on purpose.
 
 ## What it demonstrates
 
-The left panel exercises these live-tweakable API surfaces:
+- A basic showcase table plus Task Manager, File Explorer, and File properties scenarios
+- Selection, sorting, filtering, keyboard navigation, and accessibility behavior
+- Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
+  lifecycle (add, remove, reorder at runtime), plus header visibility
+- Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
+  text wrapping, row height, cell editing (with `INotifyDataErrorInfo` validation that keeps a rejected
+  edit open), empty state, density, and grouped rows
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list of people, by manager or by mentor,
+  composed with filter, sort and grouping, and `IsLiveShaping` reshaping the tree when a row's property changes.
+  The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
+  GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
+  pages whose rows have no parent relation show those modes disabled with the reason
+- Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
+- `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
+  sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
+  a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
+  that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a
+  page names exists: a warning locally, an error in CI.
 
-- Column `Width` (Auto / Pixel / Star), `MinWidth`, `MaxWidth`
-- Add / remove / hide columns
-- `HeadersVisibility`
-- `GridLinesVisibility`
-- `Density` (Compact / Standard / Comfortable)
-- `RowBackground` / `AlternatingRowBackground`
-- `FrozenEdge`
-- `IsReadOnly`
-- `HeaderTemplate`
-- `EmptyTemplate`
-- `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
+The pages are code-behind on purpose (no view models): each one demonstrates TableView API calls,
+not app architecture.
 
-## Known issue
+## Context menus
 
-Using an `EmptyTemplate` that contains a `FontIcon` can crash at startup while the empty state is
-first shown. Prefer text or shape content in the `EmptyTemplate` until this is resolved.
+The **Context menus** page (`ContextMenus`) demonstrates per-column cell/header
+flyouts and row fallback with the shared people data: a **Name** cell menu whose
+items bind to the row item, a shared row menu (**Copy row**, **Move to next
+department**, **Remove from list**) set through an implicit `TableViewRow` style,
+per-column header menus that hide columns, a group header menu set through an
+implicit `TableViewGroupHeader` style, and the table's own `ContextFlyout` as the
+final fallback. The rail switches the cell, row and header menus off.
+
+The row menu varies per row kind: its `Opening` handler reads `MenuFlyout.Target`
+(the row, also for a cell request) and keeps the items tagged for that kind, so
+under Hierarchy shaping managers (expandable rows) also get **Email team**.
+**Deactivate** / **Reactivate** bind `Visibility` to the person's `IsActive`.
+
+There is no row menu property: rows get their menu from their own `ContextFlyout`,
+set through an implicit `TableViewRow` style or a row template; a menu's `Opening`
+handler can vary its items per row through `MenuFlyout.Target`. Column cell menus
+take precedence over it; the native `TableView.ContextFlyout` is the final
+fallback. A column header uses its
+`HeaderContextFlyout`, otherwise native fallback. Group headers use their own
+`ContextFlyout` (its items see the `TableViewGroupInfo`), otherwise native fallback. Setting a menu property to null (or removing the row style) removes that
+candidate.
+
+Keyboard requests (Shift+F10, Menu key) follow the focus level: with focus on a
+cell, that cell's menu opens; with focus on the row itself (press Left from the
+first cell), the row menu opens even if the remembered current column has a cell
+menu. UI Automation `ShowContextMenu` on a row peer likewise opens the row menu.
+
+A `ContextFlyout` you set inside a cell or header (`CellTemplate`,
+`HeaderTemplate`, or an implicit style) wins over the column properties, for
+mouse, keyboard (Shift+F10, Menu key) and UI Automation alike. It covers the
+whole cell or header, padding included.
+
+On text controls only a `ContextFlyout` set on the element itself counts: their
+built-in copy/select flyouts and flyouts set through a style are skipped.
+
+Context requests move body focus without changing selection. Headers do not move
+body focus.
+Menus are not stamped on realized cells; each menu inherits the requested row's
+item as its `DataContext` while open. A target invalidated while focus moves is
+not retargeted: custom display is suppressed. A body request with no applicable
+custom candidate still permits native fallback if focus invalidates its target.
 
 ## More detail
 
-For the full build architecture — why the projection is regenerated, why the app is built
-self-contained and unpackaged, how the theme resources and control DLL are staged, and how the
-app manifest is augmented — see [AGENTS.md](AGENTS.md).
+See [AGENTS.md](AGENTS.md).

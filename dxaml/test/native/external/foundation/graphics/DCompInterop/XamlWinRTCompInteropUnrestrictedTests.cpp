@@ -4311,11 +4311,21 @@ void XamlWinRTCompInteropUnrestrictedTests::ElementCulling_Transform()
 void XamlWinRTCompInteropUnrestrictedTests::CompositorTest()
 {
     Window^ window = nullptr;
+    auto windowCleanup = wil::scope_exit([&]()
+    {
+        if (window != nullptr)
+        {
+            RunOnUIThread([&]()
+            {
+                window->Close();
+            });
+        }
+    });
 
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"Getting Compositor from UI thread");
-        window = Microsoft::UI::Xaml::Window::Current;
+        window = ref new Window();
         auto compositor = window->Compositor;
         VERIFY_IS_NOT_NULL(compositor);
 
