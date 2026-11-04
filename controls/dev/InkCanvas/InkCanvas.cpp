@@ -464,28 +464,7 @@ void InkCanvas::AttachToVisualLink()
         }
         catch (winrt::hresult_error const& e)
         {
-            // The system splice depends on runtime/OS pieces that may be missing (e.g. an unregistered
-            // proxy class, 0x80040154). The lifted path also works on a system-backed compositor, so fall
-            // back to it instead of rendering no ink.
-            wchar_t message[160];
-            swprintf_s(
-                message,
-                L"InkCanvas: system compositor attach failed (hr=0x%08X); falling back to the lifted path.\n",
-                static_cast<unsigned int>(e.code()));
-            OutputDebugStringW(message);
-
-            InkTelemetry::ReportError(
-                InkTelemetry::ErrorCategory::Initialization,
-                InkTelemetry::Operation::AttachToCompositor,
-                true /* isRecoverable */,
-                e.code(),
-                &m_telemetryState);
-
-            // Drop the partial system attach; DetachFromVisualLink clears m_hostHwnd, so restore it.
-            DetachFromVisualLink();
-            m_hostHwnd = hostHwnd;
-            m_telemetryEngine = InkTelemetry::CompositorEngine::Lifted;
-            AttachToLiftedCompositor();
+            FallBackToLiftedCompositor(e.code());
         }
     }
     else
@@ -689,18 +668,56 @@ void InkCanvas::OnXamlDeviceBindCompleted(
     wchar_t message[128];
     swprintf_s(message, L"InkCanvas: ink on XAML's device failed (hr=0x%08X); using the splice.\n", static_cast<uint32_t>(bindResult));
     ::OutputDebugStringW(message);
+    HRESULT spliceResult = S_OK;
     try
     {
         AttachInkThroughSplice(compositor, mucRootVisual);
+        return;
     }
     catch (winrt::hresult_error const& e)
     {
-        // Same outcome as a failed attach in OnLoaded, which this async step continues: report it and render no ink.
+        spliceResult = e.code();
+    }
+
+    // Same as a failed system attach in AttachToVisualLink, which this async step continues.
+    try
+    {
+        FallBackToLiftedCompositor(spliceResult);
+    }
+    catch (winrt::hresult_error const& e)
+    {
         swprintf_s(message, L"InkCanvas: attach to the composition tree failed (hr=0x%08X); rendering no ink.\n", static_cast<uint32_t>(e.code()));
         ::OutputDebugStringW(message);
         InkTelemetry::ReportError(
             InkTelemetry::ErrorCategory::Initialization, InkTelemetry::Operation::AttachToCompositor, false /* isRecoverable */, e.code(), &m_telemetryState);
     }
+}
+
+// The system attach depends on runtime/OS pieces that may be missing (e.g. an unregistered proxy class, 0x80040154).
+// The lifted path also works on a system-backed compositor, so drop the partial system attach and render through it
+// instead of rendering no ink. Throws if the lifted attach fails too.
+void InkCanvas::FallBackToLiftedCompositor(HRESULT systemAttachError)
+{
+    wchar_t message[160];
+    swprintf_s(
+        message,
+        L"InkCanvas: system compositor attach failed (hr=0x%08X); falling back to the lifted path.\n",
+        static_cast<unsigned int>(systemAttachError));
+    ::OutputDebugStringW(message);
+
+    InkTelemetry::ReportError(
+        InkTelemetry::ErrorCategory::Initialization,
+        InkTelemetry::Operation::AttachToCompositor,
+        true /* isRecoverable */,
+        systemAttachError,
+        &m_telemetryState);
+
+    // DetachFromVisualLink clears m_hostHwnd, so restore it.
+    const HWND hostHwnd = m_hostHwnd;
+    DetachFromVisualLink();
+    m_hostHwnd = hostHwnd;
+    m_telemetryEngine = InkTelemetry::CompositorEngine::Lifted;
+    AttachToLiftedCompositor();
 }
 
 // Lifted compositor path: ContentExternalOutputLink produces a lifted PlacementVisual (backed by a
