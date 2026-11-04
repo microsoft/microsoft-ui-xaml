@@ -60,6 +60,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Apply a ControlTemplate with a nested, unnamed child, and verify that GetTemplateChild won't find it, nor the targetType control")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanFindNamedStringsAfterTemplateExpansion)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Named strings survive template expansion and property changes in each template instance.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GetTemplateChildIgnoresNamedStrings)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"GetTemplateChild returns null for named strings, including during OnApplyTemplate.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(TargetTypeInXmlNamespacesTest)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that a ControlTemplate's target type can be resolved in various XML namespaces")

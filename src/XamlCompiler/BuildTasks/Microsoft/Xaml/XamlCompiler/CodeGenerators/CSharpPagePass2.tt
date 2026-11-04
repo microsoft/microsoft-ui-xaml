@@ -148,7 +148,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 Output_PushDeprecated(element.Type.IsDeprecated()); #>
                 {
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
-                    <#=objectInitName#> = <#=ObjectCast(element.Type, "target")#>;
+                    <#=objectInitName#> = <#=ProjectInfo.UsingCSWinRT && element.Type.IsString() ? "target == null ? null : " : ""#><#=ObjectCast(element.Type, "target")#>;
 <#+                 foreach (EventAssignment ev in element.EventAssignments) #>
 <#+                 { #>
 <#+                     Output_ApiInformationCall_Push(ev.ApiInformation, Indent.TwoTabs); #>
