@@ -94,22 +94,32 @@
   <data name="SnapshotDiffError.Title" xml:space="preserve"><value>Snapshot comparison failed</value></data>
   <data name="SnapshotDiffChangesOnly.Content" xml:space="preserve"><value>Show only changed subtrees</value></data>
   <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No differences in comparable tree, property, or memory values.</value></data>
-  <data name="SnapshotResourceHeading.Header" xml:space="preserve"><value>XAML resources</value></data>
+  <data name="SnapshotResourceHeading.Header" xml:space="preserve"><value>Resource allocations</value></data>
   <data name="SnapshotResourceStatus.AutomationProperties.Name" xml:space="preserve"><value>Resource snapshot availability</value></data>
-  <data name="SnapshotResourceScope.Text" xml:space="preserve"><value>Sampled before tree enumeration. Allocator counters cover enabled profiling, not the whole process heap; allocation/free pairs across profiling transitions can be unbalanced. Allocations before profiling starts are not counted. All-zero graphics resource slots are not measurements.</value></data>
-  <data name="SnapshotResourceMetric.Text" xml:space="preserve"><value>Metric</value></data>
-  <data name="SnapshotResourceBefore.Text" xml:space="preserve"><value>Before</value></data>
+  <data name="SnapshotResourceScope.Text" xml:space="preserve"><value>Sampled before tree enumeration, not scoped to the displayed nodes. Graphics totals accumulate across enabled profiling periods; earlier creations are not counted. All-zero graphics slots are omitted, not proof that no resources exist.</value></data>
+  <data name="SnapshotResourceGraphicsEmpty" xml:space="preserve"><value>No populated graphics counters were recorded. Tracking may be unsupported or disabled, or no creations were observed.</value></data>
+  <data name="SnapshotResourceAllocationsHeading" xml:space="preserve"><value>Allocation statistics</value></data>
+  <data name="SnapshotResourceAllocationsScope" xml:space="preserve"><value>Allocator totals cover DBG accounting or enabled profiling, not the process heap. Profiling transitions can leave allocation/free pairs unbalanced. Managed-runtime GC tracking is independent and may be unavailable.</value></data>
+  <data name="SnapshotResourceCompositionHeading" xml:space="preserve"><value>Composition objects</value></data>
+  <data name="SnapshotResourceCompositionScope" xml:space="preserve"><value>Creation counts only; destruction and live counts are not tracked.</value></data>
+  <data name="SnapshotResourceD2DHeading" xml:space="preserve"><value>D2D objects</value></data>
+  <data name="SnapshotResourceD2DScope" xml:space="preserve"><value>Creation counts only; destruction and live counts are not tracked.</value></data>
+  <data name="SnapshotResourceWrappersHeading" xml:space="preserve"><value>WinUI wrappers</value></data>
+  <data name="SnapshotResourceWrappersScope" xml:space="preserve"><value>Observed WinUI wrapper lifetimes, not the lifetime of underlying graphics objects or GPU memory.</value></data>
+  <data name="SnapshotResourceType" xml:space="preserve"><value>Resource type</value></data>
+  <data name="SnapshotResourceUnknownFormat" xml:space="preserve"><value>Graphics slot {0}</value></data>
+  <data name="SnapshotResourceUnknownScope.Text" xml:space="preserve"><value>Unrecognized graphics slots are shown separately with raw counters. Their category and lifetime support are unknown.</value></data>
+  <data name="SnapshotResourceMetric" xml:space="preserve"><value>Metric</value></data>
+  <data name="SnapshotResourceBefore" xml:space="preserve"><value>Before</value></data>
   <data name="SnapshotResourceAfter" xml:space="preserve"><value>After</value></data>
-  <data name="SnapshotResourceDelta.Text" xml:space="preserve"><value>Delta (After - Before)</value></data>
-  <data name="SnapshotResourceValues.AutomationProperties.Name" xml:space="preserve"><value>Captured XAML resource values</value></data>
+  <data name="SnapshotResourceDelta" xml:space="preserve"><value>Delta (After - Before)</value></data>
   <data name="SnapshotResourceValue" xml:space="preserve"><value>Value</value></data>
   <data name="SnapshotResourceUnavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="SnapshotResourceNotRecorded" xml:space="preserve"><value>Resources were not recorded in this older snapshot.</value></data>
   <data name="SnapshotResourceAvailable" xml:space="preserve"><value>Resource snapshot available.</value></data>
-  <data name="SnapshotResourceUnsupported" xml:space="preserve"><value>IXamlDiagnostics3 is unavailable in this target ({0}).</value></data>
+  <data name="SnapshotResourceUnsupported" xml:space="preserve"><value>IXamlDiagnosticsPrivate resource snapshots are unavailable in this target ({0}).</value></data>
   <data name="SnapshotResourceFailed" xml:space="preserve"><value>GetResourceSnapShot failed ({0}).</value></data>
   <data name="SnapshotResourceStatusFormat" xml:space="preserve"><value>Before: {0} After: {1}</value></data>
-  <data name="SnapshotResourceGraphicsFormat" xml:space="preserve"><value>Graphics slot {0}: {1}</value></data>
   <data name="SnapshotResourceBytesFormat" xml:space="preserve"><value>{0} (bytes)</value></data>
   <data name="SnapshotResourceAllocCount" xml:space="preserve"><value>Cumulative allocation calls</value></data>
   <data name="SnapshotResourceAllocSize" xml:space="preserve"><value>Cumulative requested allocation size</value></data>
