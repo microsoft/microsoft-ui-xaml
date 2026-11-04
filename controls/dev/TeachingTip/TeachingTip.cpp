@@ -1478,8 +1478,9 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t isOpenChangeCoun
 
     // Really removed. If the app closed the tip in the meantime (for example a later Unloaded handler cleared the bound
     // source), its close may still be pending on a Closing deferral or be cancelled; close the popup anyway, as an
-    // unload always did before #8095. Only write IsOpen while it is still true, so a closed tip's binding is kept.
-    if (isOpen)
+    // unload always did before #8095. Only write IsOpen while it is still true, so a closed tip's binding is kept. Re-read
+    // it here: the container checks above can run app code (ItemsSourceView.GetAt, IsItemItsOwnContainerOverride).
+    if (IsOpen())
     {
         IsOpen(false);
     }
