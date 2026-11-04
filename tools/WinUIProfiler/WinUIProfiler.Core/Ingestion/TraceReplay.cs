@@ -77,7 +77,9 @@ public sealed class TraceReplay : IAsyncDisposable
         try
         {
             source.AllEvents += OnAnyEvent;
-            XamlEventSubscription.Match(source, processId, OnEvent);
+            // The process's start event, when the trace recorded it, comes before the process's first event and becomes
+            // time zero, as in a live session that saw the process start.
+            XamlEventSubscription.Match(source, processId, OnEvent, writer.SetProcessStart);
             changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
             new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
         }

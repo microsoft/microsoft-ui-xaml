@@ -9,8 +9,9 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Storage;
 
-// ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording; negative
-// when it was created earlier (attach), null when unknown (a recorded trace).
+// ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording: 0 when the
+// recording saw the process's start event, which is then time zero; negative when it was created earlier (attach); null
+// when unknown (a recorded trace without the start event).
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
     long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,
@@ -473,15 +474,20 @@ public static class SessionFile
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        // Files written before StartedQpc was added are otherwise the same; without it the process start is unknown.
+        // Files written before StartedQpc or ProcessStartQpc was added are otherwise the same; without them the process
+        // start is unknown.
         var startedQpc = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_table_info('SessionInfo') WHERE name = 'StartedQpc'",
             transaction) > 0 ? "StartedQpc" : "NULL";
+        var processStartQpc = Sql.Scalar(connection,
+            "SELECT COUNT(*) FROM pragma_table_info('SessionInfo') WHERE name = 'ProcessStartQpc'", transaction) > 0
+            ? "ProcessStartQpc" : "NULL";
         var kind = KindColumn(connection, transaction);
         command.CommandText = $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
                 (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Element'),
-                (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, {startedQpc}, (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Visual')
+                (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, {startedQpc}, (SELECT COUNT(*) FROM Objects o WHERE {kind} = 'Visual'),
+                {processStartQpc}
             FROM SessionInfo
             """;
         using var reader = command.ExecuteReader();
@@ -493,10 +499,21 @@ public static class SessionFile
         var frequency = reader.IsDBNull(12) ? Stopwatch.Frequency : reader.GetInt64(12);
         long? startQpc = reader.IsDBNull(13) ? null : reader.GetInt64(13);
         var startedUtc = ParseUtc(reader.GetString(5));
-        // StartedQpc was read with StartedUtc, so the process creation time maps onto the events' QPC clock.
-        double? processStart = startQpc is { } start && !reader.IsDBNull(17) && !reader.IsDBNull(18)
-            ? (reader.GetInt64(18) - start) * 1000.0 / frequency - (startedUtc - ParseUtc(reader.GetString(17))).TotalMilliseconds
-            : null;
+        // The process's start event is on the events' clock. Without it, StartedQpc was read with StartedUtc, so the
+        // process creation time maps onto the events' QPC clock.
+        double? processStart = null;
+        if (startQpc is { } start)
+        {
+            if (!reader.IsDBNull(20))
+            {
+                processStart = (reader.GetInt64(20) - start) * 1000.0 / frequency;
+            }
+            else if (!reader.IsDBNull(17) && !reader.IsDBNull(18))
+            {
+                processStart = (reader.GetInt64(18) - start) * 1000.0 / frequency -
+                    (startedUtc - ParseUtc(reader.GetString(17))).TotalMilliseconds;
+            }
+        }
         var info = new SessionFileInfo(reader.GetInt32(0), NullableString(reader, 1), reader.GetString(2), NullableString(reader, 3),
             Enum.Parse<SessionCoverage>(reader.GetString(4)), startedUtc,
             reader.IsDBNull(6) ? null : ParseUtc(reader.GetString(6)), NullableString(reader, 7),

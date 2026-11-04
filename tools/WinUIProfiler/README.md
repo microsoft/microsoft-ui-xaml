@@ -293,6 +293,17 @@ as they are read. When reading starts, the session requests capture state, so
 an attached target also gets its current values. If the GPU memory events
 cannot be enabled, the session still reads the XAML events.
 
+For a launch, the session also reads the kernel's process start events
+(Microsoft-Windows-Kernel-Process, keyword `0x10`) without a process filter,
+because the process that creates the target writes its start event; the
+target's is found by its `ProcessID` field. That event is time zero of the
+session file, as it is for a trace that recorded it (see below), so a launch
+and its trace show the same times. ETW can deliver it after the target's
+first events, so the session flushes its buffers when it switches to the
+process ID filter, and the first events are stored once it arrives, or after
+2 seconds. Without it (an attach, a packaged app that was already running, or
+when the events cannot be enabled), time zero is when the session started.
+
 The panel says whether the counts start at process start or at connection. A
 launch starts at connection when activation returns a packaged app that was
 already running, when the app declares no executable, or when the launched
@@ -326,7 +337,7 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero (`StartQpc`) and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. `ProcessStartQpc` is the process's start event when the recording saw it, and is then time zero; otherwise time zero is when a live session started, or a trace's first event of the process. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
@@ -347,6 +358,10 @@ and the panel shows why. Session files are not deleted by the profiler.
 
 ETW timestamps an event separately in each session that receives it, so the
 same event recorded by `logman` and by the app differs by a few microseconds.
+The session file of a launch and the one read from a trace recorded at the
+same time both time their events from the process's start event, so their
+times agree to within those microseconds; a time shown in tenths of a
+millisecond can differ by one at a rounding boundary.
 
 `Seq` numbers the events 1, 2, 3... in arrival order, without gaps (after
 trimming it starts later). In the sessions measured, arrival order matched
@@ -458,9 +473,11 @@ in this tab and the Objects tab, until the next connection or trace read.
   selected event mentions UI elements or visuals, its details link to each
   one's history in the Objects tab. Each link has the same Element or Visual
   badge as the Objects tab.
-- For a launch recorded from process start, the tab gives when the first ten
-  drawn frames of the first UI thread ended, from the process's creation;
-  otherwise from the start of the recording. A trimmed file no longer has them.
+- When the recording saw the process start (a launch recorded from process
+  start, or a trace with the kernel's process start event), the tab gives when
+  the first ten drawn frames of the first UI thread ended, from the process's
+  creation; otherwise from the start of the recording. A trimmed file no longer
+  has them.
 
 ### Objects tab
 
@@ -505,7 +522,9 @@ still being captured, and a new object can reuse the address.
 
 To record a trace, use `logman`. Start it before the app: the kernel writes the
 app's starting GPU memory values when the app opens a GPU adapter, and after
-that only changes. `logman` enables the providers in every process, so other
+that only changes, and its process start event
+(Microsoft-Windows-Kernel-Process) makes the app's start time zero, as in a
+launch from the app. `logman` enables the providers in every process, so other
 XAML processes, such as explorer, write to the trace too; the larger buffers
 (`-bs`, `-nb`) keep ETW from losing events. Then inspect the trace with
 `WinUIProfiler.Cli`, which reads the file through `Ingestion\OfflineEtlSource.cs`.
@@ -518,6 +537,7 @@ from a trace. Run from this directory:
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
 '{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
 '{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
+'{22FB2CD6-0E7B-422B-A0C7-2FAD1FD0E716} 0x10 4',
 '{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5' | Set-Content providers.txt
 logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
 # ... use the target app ...
@@ -568,14 +588,19 @@ from the trace, and the Frames and Objects tabs follow it as it grows.
   session file, so their times are right from the first frame; `record` does
   the same. When it can't be worked out, as in a damaged or very short trace, it
   is derived from the process's events once they span a second.
+- Time zero is the process's start event when the trace has it
+  (Microsoft-Windows-Kernel-Process, as in the `logman` providers above), as
+  for a launch from the app, so a launch and a trace recorded at the same time
+  show the same times; otherwise it is the process's first event.
 - The connection panel shows how much of the trace has been read. **Stop**
   ends the reading, as does closing the app: the events already read are
   stored, so the session file holds the process's events from the start of the
   trace to about where the reading stopped.
 - Most events of other providers, such as the kernel's in a WPR trace, are
   skipped without being decoded, in the CLI too. The kernel's process events,
-  which name the processes in the list, and the graphics kernel's events, among
-  them the GPU memory events, are still decoded. On the machine measured,
+  which name the processes in the list, the graphics kernel's events, among
+  them the GPU memory events, and Microsoft-Windows-Kernel-Process's process
+  start events are still decoded. On the machine measured,
   listing the processes of a 17.9-second WPR trace of the WinUI 3 Gallery took
   about a second, and reading the app's 101,281 events less than two.
 - A trace has no running process, so there are no live metrics or tree

@@ -9,11 +9,14 @@ using WinUIProfiler.Engine.Events;
 namespace WinUIProfiler.Engine.Ingestion;
 
 // A real-time ETW session that reads one process's events from the XAML providers, and the kernel's GPU memory
-// events for it, while the profiler is connected.
+// events for it, while the profiler is connected. For a launch, it also reads the kernel's event for the process's
+// start, which is time zero, as it is for a trace that recorded the event.
 public sealed class LiveEtwSource : IDisposable
 {
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
     private const ulong GpuMemoryKeyword = 0x4;
+    // Microsoft-Windows-Kernel-Process keyword of the process start and stop events (WINEVENT_KEYWORD_PROCESS).
+    private const ulong ProcessKeyword = 0x10;
     private const string SessionPrefix = "WinUIProfiler-";
 
     private readonly object gate = new();
@@ -23,13 +26,18 @@ public sealed class LiveEtwSource : IDisposable
     private bool reading;
     private bool disposed;
 
-    private LiveEtwSource(TraceEventSession session)
+    private LiveEtwSource(TraceEventSession session, bool processStartEnabled)
     {
         this.session = session;
+        ProcessStartEnabled = processStartEnabled;
         reader = new(Read) { IsBackground = true, Name = "WinUIProfiler ETW reader" };
     }
 
     public Exception? Failure { get; private set; }
+
+    // Whether the session reads the kernel's process start events (a launch), so StartReading reports the process's
+    // start.
+    public bool ProcessStartEnabled { get; }
 
     // Events ETW dropped because its buffers were full. Still readable after Dispose.
     public int EventsLost
@@ -52,7 +60,7 @@ public sealed class LiveEtwSource : IDisposable
     public static LiveEtwSource Start(int processId, Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        var source = Create(ForProcess(processId));
+        var source = Create(ForProcess(processId), processStart: false);
         try
         {
             lock (source.gate)
@@ -71,17 +79,20 @@ public sealed class LiveEtwSource : IDisposable
 
     // For a launch: call before the process is created, then call StartReading with its ID. The process has
     // no ID yet, so until then ETW filters on the executable name and keeps the events in the session's
-    // buffers. The launched process is not delayed or suspended.
+    // buffers. The launched process is not delayed or suspended. The session also reads the kernel's process
+    // start events, of every process, so it sees the launched process's start.
     public static LiveEtwSource StartBeforeLaunch(IReadOnlyCollection<string> executableNames)
     {
         ArgumentNullException.ThrowIfNull(executableNames);
         ArgumentOutOfRangeException.ThrowIfZero(executableNames.Count);
-        return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] });
+        return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] }, processStart: true);
     }
 
     // Narrows the session to the launched process and delivers its events, including those buffered since
     // the session started. The same session keeps running, so nothing is lost while the filter changes.
-    public void StartReading(int processId, Action<ProfilerEvent> sink)
+    // processStarted gets the QPC timestamp of the process's start event when the session reads those events
+    // (ProcessStartEnabled). ETW can deliver it after the process's first events.
+    public void StartReading(int processId, Action<ProfilerEvent> sink, Action<long>? processStarted = null)
     {
         ArgumentNullException.ThrowIfNull(sink);
         lock (gate)
@@ -94,7 +105,10 @@ public sealed class LiveEtwSource : IDisposable
 
             // Other processes with the same executable name stop writing to the session.
             EnableProviders(session, ForProcess(processId));
-            BeginReading(processId, sink);
+            // Hands the buffered events, among them the process's start event, to the reader as soon as it starts,
+            // rather than when ETW next flushes the buffers on its own.
+            FlushBuffers();
+            BeginReading(processId, sink, processStarted);
         }
     }
 
@@ -102,7 +116,7 @@ public sealed class LiveEtwSource : IDisposable
 
     // Needs an elevated process or membership in the local Performance Log Users group;
     // otherwise starting the session throws UnauthorizedAccessException.
-    private static LiveEtwSource Create(TraceEventProviderOptions options)
+    private static LiveEtwSource Create(TraceEventProviderOptions options, bool processStart)
     {
         StopAbandonedSessions();
         var session = new TraceEventSession($"{SessionPrefix}{Environment.ProcessId}-{Guid.NewGuid():N}") { StopOnDispose = true };
@@ -112,7 +126,7 @@ public sealed class LiveEtwSource : IDisposable
             _ = session.Source;
             EnableProviders(session, options);
             EnableGpuMemory(session);
-            return new(session);
+            return new(session, processStart && EnableProcessStart(session));
         }
         catch
         {
@@ -154,6 +168,23 @@ public sealed class LiveEtwSource : IDisposable
         }
     }
 
+    // The process that creates the target writes its start event, so the provider is enabled for every process and
+    // XamlEventSubscription keeps the target's by its ProcessID field. Best effort: without it, time zero is when the
+    // session started listening.
+    private static bool EnableProcessStart(TraceEventSession session)
+    {
+        try
+        {
+            session.EnableProvider(XamlProviders.KernelProcess, TraceEventLevel.Informational, ProcessKeyword);
+            return true;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not enable the kernel's process start events: {error.Message}");
+            return false;
+        }
+    }
+
     // The kernel writes a process's current GPU memory usage and budget when the process opens a GPU adapter, and
     // for every process when a session requests capture state. Request it, so a process that opened its adapter
     // before the session started also gets its current values.
@@ -166,6 +197,19 @@ public sealed class LiveEtwSource : IDisposable
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             Trace.TraceWarning($"Could not request the kernel's GPU memory state: {error.Message}");
+        }
+    }
+
+    // Best effort: otherwise the reader gets the buffered events when ETW next flushes the buffers on its own.
+    private void FlushBuffers()
+    {
+        try
+        {
+            session.Flush();
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not flush the ETW session's buffers: {error.Message}");
         }
     }
 
@@ -210,9 +254,9 @@ public sealed class LiveEtwSource : IDisposable
 
     // The process ID check also skips events other processes with the same executable name wrote before the
     // session was narrowed to one process.
-    private void BeginReading(int processId, Action<ProfilerEvent> sink)
+    private void BeginReading(int processId, Action<ProfilerEvent> sink, Action<long>? processStarted = null)
     {
-        XamlEventSubscription.Subscribe(session.Source, processId, sink);
+        XamlEventSubscription.Subscribe(session.Source, processId, sink, processStarted);
         CaptureGpuMemoryState();
         reader.Start();
         reading = true;

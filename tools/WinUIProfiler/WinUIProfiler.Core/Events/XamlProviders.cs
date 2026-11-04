@@ -28,8 +28,12 @@ public static class XamlProviders
     public static readonly Guid MicrosoftUIXaml = new("2dc72f6e-e4d1-5f58-3245-09a4243799dd");
     public static readonly Guid MicrosoftUIXamlControls = new("21e0ae07-56a7-55b5-12f9-011e6bc08cca");
     public static readonly Guid DxgKrnl = new("802ec45a-1e99-4b83-9920-87c98277ba9d");
+    // Microsoft-Windows-Kernel-Process. Only its process start event is read, as the session's time zero; it is not
+    // stored, so it is not a XamlProvider.
+    public static readonly Guid KernelProcess = new("22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716");
 
-    // The XAML providers, whose events are all read. DxgKrnl events are matched by ID in XamlEventSubscription.
+    // The XAML providers, whose events are all read. DxgKrnl and KernelProcess events are matched by ID in
+    // XamlEventSubscription.
     private static readonly Dictionary<Guid, XamlProvider> XamlProviderIds = new()
     {
         [Xaml] = XamlProvider.Xaml,

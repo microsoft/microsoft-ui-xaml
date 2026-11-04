@@ -125,3 +125,47 @@ finally
         File.Delete(file);
     }
 }
+
+// A trace's time zero is the process's start event when it recorded one: the latest at or before the process's first event,
+// as in a live session that saw the process start. A start after the first event is not this process's.
+CheckTimeZero([400_000, 1_000_000, 1_300_000], 0, [250, 260]);
+Console.WriteLine("Passed: a trace's time zero is the process's latest start event at or before its first event.");
+CheckTimeZero([1_300_000], null, [0, 10]);
+Console.WriteLine("Passed: without such a start event, a trace's time zero is its first event and the process start is unknown.");
+
+static void CheckTimeZero(long[] processStarts, double? processStartMilliseconds, double[] eventMilliseconds)
+{
+    var sessionPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-TimeZero-{Guid.NewGuid():N}.sqlite");
+    try
+    {
+        using (var writer = SessionWriter.Create(sessionPath, new(1, "TimeZeroTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+        {
+            foreach (var qpc in processStarts)
+            {
+                writer.SetProcessStart(qpc);
+            }
+
+            writer.Process(1, new(1_250_000, 0, 1, 1, XamlProvider.Xaml, true, "First", 0, []));
+            writer.Process(2, new(1_260_000, 10, 1, 1, XamlProvider.Xaml, true, "Second", 0, []));
+        }
+
+        var times = new List<double>();
+        SessionFile.Read(sessionPath, profilerEvent => times.Add(profilerEvent.RelativeMilliseconds));
+        var info = SessionFile.ReadInfo(sessionPath);
+        if (info.ProcessStartMilliseconds != processStartMilliseconds || times.Count != eventMilliseconds.Length ||
+            times.Zip(eventMilliseconds).Any(time => Math.Abs(time.First - time.Second) > 1e-9))
+        {
+            throw new InvalidOperationException(
+                $"The process started at {info.ProcessStartMilliseconds?.ToString() ?? "an unknown time"} and the events are at " +
+                $"[{string.Join(", ", times)}] ms; expected {processStartMilliseconds?.ToString() ?? "an unknown time"} and " +
+                $"[{string.Join(", ", eventMilliseconds)}] ms.");
+        }
+    }
+    finally
+    {
+        foreach (var file in new[] { sessionPath, sessionPath + "-wal", sessionPath + "-shm" })
+        {
+            File.Delete(file);
+        }
+    }
+}

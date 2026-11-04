@@ -203,8 +203,9 @@ public sealed partial class FramesView : UserControl
         }
     }
 
-    // Shows when the first drawn frames of the first UI thread ended: from process start if the recording saw it,
-    // otherwise from the start of the recording. Not shown for a trimmed file, which no longer has them.
+    // Shows when the first drawn frames of the first UI thread ended: from process start if the recording saw it (a
+    // launch, or a trace with the process's start event), otherwise from the start of the recording. Not shown for a
+    // trimmed file, which no longer has them.
     private void ShowSummary(SessionFileInfo info)
     {
         FileSummary.Text = Format(info.CompleteFromSeq is null ? "FramesFileFormat" : "FramesFileTrimmedFormat",
@@ -215,7 +216,7 @@ public sealed partial class FramesView : UserControl
             return;
         }
 
-        var origin = info.Coverage == SessionCoverage.ProcessStart ? info.ProcessStartMilliseconds : null;
+        var origin = info.Coverage == SessionCoverage.Connection ? null : info.ProcessStartMilliseconds;
         var thread = Frames[0].Frame.ThreadId;
         var drawn = Frames.Select(row => row.Frame).Where(frame => frame.ThreadId == thread && frame.Drawn && frame.EndMilliseconds is not null)
             .Take(LaunchFrames)

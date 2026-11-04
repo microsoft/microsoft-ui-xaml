@@ -326,7 +326,7 @@ internal static class CliApplication
         try
         {
             result = OfflineEtlSource.Read(options.InputPath, options.ProcessId, profilerEvent => writer.Process(++sequence, profilerEvent),
-                cancellationToken);
+                cancellationToken, writer.SetProcessStart);
         }
         finally
         {

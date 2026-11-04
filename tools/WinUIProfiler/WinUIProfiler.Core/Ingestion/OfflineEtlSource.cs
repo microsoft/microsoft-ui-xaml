@@ -158,9 +158,10 @@ public static class OfflineEtlSource
         return string.IsNullOrEmpty(name) ? null : name;
     }
 
-    // A null processId reads every process.
+    // A null processId reads every process. processStarted gets the QPC timestamp of each start event of the process
+    // (XamlEventSubscription.Subscribe).
     public static EtlReadResult Read(string path, int? processId, Action<ProfilerEvent> sink,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Action<long>? processStarted = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         ArgumentNullException.ThrowIfNull(sink);
@@ -175,7 +176,7 @@ public static class OfflineEtlSource
         {
             delivered++;
             sink(profilerEvent);
-        });
+        }, processStarted);
         using (cancellationToken.Register(source.StopProcessing))
         {
             source.Process();

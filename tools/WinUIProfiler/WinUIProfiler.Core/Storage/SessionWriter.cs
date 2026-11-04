@@ -23,9 +23,12 @@ public enum SessionCoverage
 
 // Where a session's events come from. For a recorded trace, pass the trace's QpcFrequency
 // (OfflineEtlSource.ReadQpcFrequency): a null one is derived from the events once they span a second, and until then
-// readers time events with this machine's frequency. A null StartQpc makes the first event time zero.
+// readers time events with this machine's frequency. Time zero is the process's start event when SetProcessStart
+// reports it before the first batch is stored; otherwise StartQpc, and a null StartQpc makes the first event time zero.
+// AwaitsProcessStart holds the first batch for up to ProcessStartWait until the start event is reported: a live
+// session's reader can get it after the process's first events.
 public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? ProcessCreatedUtc, long? QpcFrequency,
-    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null);
+    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null, bool AwaitsProcessStart = false);
 
 // CompleteFromSeconds is set once older events were dropped to stay within the limit: the file holds every event
 // from that many seconds after the recording started.
@@ -39,6 +42,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     public const long DefaultLimitBytes = 500L * 1024 * 1024;
     private const int BatchSize = 2_000;
     private static readonly TimeSpan BatchInterval = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan ProcessStartWait = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan ProcessStartPoll = TimeSpan.FromMilliseconds(50);
 
     // Trimming deletes the oldest 5% of the stored events. It starts below the limit because the file keeps the freed
     // pages for new events, so the file itself stays within the limit.
@@ -64,6 +69,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly Thread writer;
     private readonly long pageSize;
     private readonly bool derivesFrequency;
+    private readonly bool awaitsProcessStart;
+    // Start events of a process with the session's process ID, reported by the reader thread (SetProcessStart).
+    private readonly ConcurrentQueue<long> processStarts = new();
+    private bool timeBaseChosen;
     private (long Qpc, double Milliseconds)? firstEventTime;
     private long qpcFrequency;
     private long startQpc;
@@ -80,6 +89,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         LimitBytes = limitBytes;
         this.connection = connection;
         derivesFrequency = start.QpcFrequency is null;
+        awaitsProcessStart = start.AwaitsProcessStart;
         qpcFrequency = start.QpcFrequency ?? 0;
         startQpc = start.StartQpc ?? 0;
         pageSize = Sql.Scalar(connection, "PRAGMA page_size");
@@ -204,6 +214,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
+    // The QPC timestamp of a start event of the session's process (XamlEventSubscription). The latest one at or before
+    // the first stored event becomes time zero. One reported after the first batch was stored is ignored: readers may
+    // already show times.
+    public void SetProcessStart(long qpc) => processStarts.Enqueue(qpc);
+
     private void Run()
     {
         var batch = new List<(long Sequence, ProfilerEvent Event)>(BatchSize);
@@ -224,6 +239,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     batch.Add(next);
                 }
 
+                AwaitProcessStart(batch, started);
                 Write(batch);
                 batch.Clear();
             }
@@ -235,6 +251,20 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             // Keep taking so a producer waiting in Process is released; nothing more is stored.
             foreach (var _ in queue.GetConsumingEnumerable())
             {
+            }
+        }
+    }
+
+    // Holds the first batch until the process's start event is reported, the queue is completed, or ProcessStartWait
+    // has passed since the batch started. It keeps taking events meanwhile, so the processing thread never waits.
+    private void AwaitProcessStart(List<(long Sequence, ProfilerEvent Event)> batch, long started)
+    {
+        while (awaitsProcessStart && !timeBaseChosen && processStarts.IsEmpty && !queue.IsAddingCompleted &&
+            Stopwatch.GetElapsedTime(started) < ProcessStartWait)
+        {
+            if (queue.TryTake(out var next, ProcessStartPoll))
+            {
+                batch.Add(next);
             }
         }
     }
@@ -339,15 +369,37 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // A recorded trace gives no start: time zero is its first event. Its frequency is normally given; if not, it comes
-    // from the events' QPC timestamps and their milliseconds since the trace started, measured over at least a second.
+    // Time zero is chosen with the first batch: the latest start event of the process at or before the batch's first
+    // event, so a live session and a trace that recorded the event agree; otherwise the given start (a live session)
+    // or the first event (a trace). A trace's frequency is normally given; if not, it comes from the events' QPC
+    // timestamps and their milliseconds since the trace started, measured over at least a second.
     private void UpdateTimeBase(ProfilerEvent first, ProfilerEvent last, SqliteTransaction transaction)
     {
         var changed = false;
-        if (Interlocked.Read(ref startQpc) == 0)
+        if (!timeBaseChosen)
         {
-            Interlocked.Exchange(ref startQpc, first.TimestampQpc);
-            changed = true;
+            timeBaseChosen = true;
+            long? processStartQpc = null;
+            while (processStarts.TryDequeue(out var qpc))
+            {
+                if (qpc <= first.TimestampQpc && qpc > (processStartQpc ?? long.MinValue))
+                {
+                    processStartQpc = qpc;
+                }
+            }
+
+            if (processStartQpc is { } processStart)
+            {
+                Interlocked.Exchange(ref startQpc, processStart);
+                Sql.Execute(connection, "UPDATE SessionInfo SET ProcessStartQpc = $processStart", transaction,
+                    ("$processStart", processStart));
+                changed = true;
+            }
+            else if (Interlocked.Read(ref startQpc) == 0)
+            {
+                Interlocked.Exchange(ref startQpc, first.TimestampQpc);
+                changed = true;
+            }
         }
 
         if (derivesFrequency && Interlocked.Read(ref qpcFrequency) == 0)
