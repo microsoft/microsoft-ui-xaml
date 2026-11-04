@@ -38,8 +38,8 @@ static constexpr double c_resizeGripperWidthFallback{ 8.0 };
 // Fallbacks mirroring the resources shipped in TableView.xaml.
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
-static constexpr double c_defaultGroupExpanderSize{ 24.0 };
-static constexpr double c_defaultGroupExpanderSpacing{ 8.0 };
+static constexpr double c_defaultGroupExpanderSize{ 12.0 };
+static constexpr double c_defaultGroupExpanderSpacing{ 4.0 };
 static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
@@ -327,10 +327,11 @@ namespace
     // Resolves a key the way {ThemeResource} would from `start`: ancestors nearest first, then
     // Application.Resources, then global theme resources, with theme dictionaries selected as
     // EnsureActiveThemeDictionary does (see ThemeDictionaryKeys).
-    winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, std::wstring_view key, bool highContrast = false)
+    winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, winrt::IInspectable const& boxedKey,
+        bool highContrast, bool includeGlobal = true)
     {
         ElementResourceQuery query;
-        query.boxedKey = winrt::box_value(winrt::hstring{ key });
+        query.boxedKey = boxedKey;
 
         const auto systemHighContrastVariant = SystemHighContrastVariantKey();
 
@@ -378,7 +379,12 @@ namespace
             }
         }
 
-        return query.GlobalValue();
+        return includeGlobal ? query.GlobalValue() : nullptr;
+    }
+
+    winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, std::wstring_view key, bool highContrast = false)
+    {
+        return LookupElementResource(start, winrt::box_value(winrt::hstring{ key }), highContrast);
     }
 
     bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
@@ -459,6 +465,8 @@ namespace
         cache.density.hasRowMinHeight = false;
         cache.density.hasCellPadding = false;
         cache.density.hasHeaderCellPadding = false;
+        cache.density.hasGroupHeaderMinHeight = false;
+        cache.density.hasGroupHeaderPadding = false;
         cache.font.hasCellFontSize = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
@@ -790,6 +798,10 @@ void TableView::OnThemeSettingsChanged(
         QueueTerminalGridLineRefresh();
         // Lead-cell padding and indent are imperative; re-derive from the new metrics.
         RefreshRealizedRowHierarchyState();
+        ForEachRealizedGroupHeader([](winrt::TableViewGroupHeader const& header, int32_t)
+        {
+            winrt::get_self<TableViewGroupHeader>(header)->RefreshDensity();
+        });
     }
 }
 
@@ -1092,6 +1104,10 @@ try
                     strongThis->QueueTerminalGridLineRefresh();
                     // Re-apply indent and lead-cell reservation against the new theme's metrics.
                     strongThis->RefreshRealizedRowHierarchyState();
+                    strongThis->ForEachRealizedGroupHeader([](winrt::TableViewGroupHeader const& header, int32_t)
+                    {
+                        winrt::get_self<TableViewGroupHeader>(header)->RefreshDensity();
+                    });
                 }
                 catch (...)
                 {
@@ -1355,6 +1371,10 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
 
     ApplyGridLinesToHeader();
     RefreshGridLinesOnRealizedRows();
+    ForEachRealizedGroupHeader([](winrt::TableViewGroupHeader const& header, int32_t)
+    {
+        winrt::get_self<TableViewGroupHeader>(header)->RefreshGridLines();
+    });
     QueueTerminalGridLineRefresh();
 }
 
@@ -1709,7 +1729,8 @@ void TableView::RefreshTerminalGridLines()
     const bool hasBottomGridLine =
         terminalRow
             ? WantsHorizontalLines(GridLinesVisibility())
-            : terminalGroupHeader && terminalGroupHeader.BorderThickness().Bottom > 0.0;
+            : terminalGroupHeader && GridLinesVisibility() != winrt::TableViewGridLinesVisibility::None &&
+                terminalGroupHeader.BorderThickness().Bottom > 0.0;
     auto bottomResult = terminalElement
         ? ShouldSuppressBottomGridLine(terminalElement, hasBottomGridLine)
         : std::optional<bool>{ false };
@@ -2387,8 +2408,10 @@ double TableView::GetCellFontSize()
         return cache.font.cellFontSize;
     }
 
-    constexpr double fallback = 14.0;
-    if (auto raw = LookupElementResource(*this, L"TableViewCellFontSize"))
+    const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
+    const double fallback = extraCompact ? 12.0 : 14.0;
+    if (auto raw = LookupElementResource(*this,
+        extraCompact ? L"TableViewCellFontSizeExtraCompact" : L"TableViewCellFontSize"))
     {
         cache.font.cellFontSize = winrt::unbox_value_or<double>(raw, fallback);
         cache.font.hasCellFontSize = true;
@@ -2473,8 +2496,49 @@ double TableView::GetRowExpanderSize()
     return resolved;
 }
 
+double TableView::GetDensityGroupHeaderMinHeight()
+{
+    auto& metrics = GetTableViewResourceCache(this).density;
+    if (!metrics.hasGroupHeaderMinHeight)
+    {
+        std::wstring key{ L"TableViewGroupHeaderMinHeight" };
+        key += DensitySuffix(Density());
+        const auto fallback = DensityRowMinHeightFallback(Density());
+        metrics.groupHeaderMinHeight = winrt::unbox_value_or<double>(LookupElementResource(*this, key), fallback);
+        metrics.hasGroupHeaderMinHeight = true;
+    }
+    return metrics.groupHeaderMinHeight;
+}
+
+winrt::Style TableView::GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header)
+{
+    if (auto const style = header ? header.Style() : nullptr)
+    {
+        return style;
+    }
+    // Implicit styles do not populate the public Style property; exclude the framework default.
+    return LookupElementResource(*this, box_value(winrt::TypeName{
+        winrt::hstring_name_of<winrt::TableViewGroupHeader>(), winrt::TypeKind::Metadata }),
+        IsHighContrast(), false).try_as<winrt::Style>();
+}
+
+winrt::Thickness TableView::GetDensityGroupHeaderPadding()
+{
+    auto& metrics = GetTableViewResourceCache(this).density;
+    if (!metrics.hasGroupHeaderPadding)
+    {
+        std::wstring key{ L"TableViewGroupHeaderPadding" };
+        key += DensitySuffix(Density());
+        const auto vertical = DensityCellPaddingFallback(Density()).Top;
+        metrics.groupHeaderPadding = winrt::unbox_value_or<winrt::Thickness>(
+            LookupElementResource(*this, key), { 4.0, vertical, 12.0, vertical });
+        metrics.hasGroupHeaderPadding = true;
+    }
+    return metrics.groupHeaderPadding;
+}
+
 // Grouped root-row indent: the group header's expander gutter plus TableViewGroupExpanderSpacing.
-// The header's Padding is not included, so a root chevron sits Padding.Left (8px by default) left of
+// The header's Padding is not included, so a root chevron sits Padding.Left (4px by default) left of
 // the group key text.
 double TableView::GetGroupHeaderContentOffset()
 {
@@ -2518,11 +2582,18 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
     {
         winrt::get_self<TableViewRow>(row)->RefreshDensity();
     });
+    ForEachRealizedGroupHeader([](winrt::TableViewGroupHeader const& header, int32_t)
+    {
+        winrt::get_self<TableViewGroupHeader>(header)->RefreshDensity();
+    });
 
-    // Density changes only vertical padding and row height (horizontal cell padding is identical
-    // across all presets), so it does not alter Auto content *width*. Re-measure for the new row
-    // metrics and re-pin frozen columns (clips depend on row height); the grow-only Auto accumulator
-    // is deliberately left intact since density is not a data-set change.
+    // Crossing ExtraCompact changes intrinsic text widths. Drop the grow-only maxima so Auto
+    // columns can shrink as well as grow; Standard/Compact transitions retain their measured maxima.
+    if ((winrt::unbox_value<winrt::TableViewDensity>(args.OldValue()) == winrt::TableViewDensity::ExtraCompact)
+        != (Density() == winrt::TableViewDensity::ExtraCompact))
+    {
+        ResetColumnDesiredWidths();
+    }
     InvalidateMeasure();
     RefreshFrozenColumns();
 }
@@ -2781,7 +2852,7 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
 using TableViewDetails::GetColumnHeaderText;
 
 // Includes BasedOn styles.
-static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property)
+bool TableView::StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property)
 {
     for (auto current = style; current; current = current.BasedOn())
     {
@@ -3172,6 +3243,10 @@ void TableView::RebuildHeadersCore()
 
     const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
+    const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
+    const double extraCompactHeaderFontSize = extraCompact
+        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeExtraCompact"), 12.0)
+        : 14.0;
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
     double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
@@ -3188,6 +3263,10 @@ void TableView::RebuildHeadersCore()
     }
     const bool canUserSortColumns = CanUserSortColumns();
     auto const tableHeaderStyle = CompatibleHeaderStyle(ColumnHeaderStyle());
+    auto const implicitHeaderStyle = CompatibleHeaderStyle(LookupElementResource(*this,
+        winrt::box_value(winrt::TypeName{
+            winrt::hstring_name_of<winrt::TableViewColumnHeader>(), winrt::TypeKind::Metadata }),
+        IsHighContrast(), false /* includeGlobal */).try_as<winrt::Style>());
 
     if (auto columns = Columns())
     {
@@ -3209,6 +3288,8 @@ void TableView::RebuildHeadersCore()
             // never-accessed Setters reseals it and re-merges its BasedOn setters.
             const bool styleSetsMinHeight = StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty());
             const bool styleSetsPadding = StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty());
+            const bool styleSetsFontSize = StyleSetsProperty(
+                headerStyle ? headerStyle : implicitHeaderStyle, winrt::Control::FontSizeProperty());
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3230,6 +3311,10 @@ void TableView::RebuildHeadersCore()
             if (!styleSetsPadding)
             {
                 header.Padding(cachedHeaderCellPadding);
+            }
+            if (extraCompact && !styleSetsFontSize)
+            {
+                header.FontSize(extraCompactHeaderFontSize);
             }
 
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())

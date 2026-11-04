@@ -1035,6 +1035,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
 
     auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
     headerImpl->SetOwningTableViewInternal(*this);
+    headerImpl->RefreshDensity();
 
     // Subscribe ONCE per container: it is pooled and re-prepared many times, and subscribing per
     // prepare would fan one band gesture into N toggles. The guard lives here because containers

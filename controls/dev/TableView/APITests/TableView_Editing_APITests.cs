@@ -507,7 +507,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             foreach (var testCase in TableViewThemingTestHelpers.DensityCases)
             {
-                var nextCase = TableViewThemingTestHelpers.DensityCases.First(value => value.Density != testCase.Density);
+                var nextCase = TableViewThemingTestHelpers.DensityCases.First(value => value.FontSize != testCase.FontSize);
                 TableView tableView = null;
                 List<EditablePerson> items = null;
                 bool vetoClose = true;
@@ -537,6 +537,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var editor = FindVisualChildrenByType<TextBox>(tableView).First();
                     var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(testCase.FontSize, editor.FontSize);
                     Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, $"Editing must not grow a {testCase.Density} row.");
                     Verify.AreEqual(testCase.CellPadding.Left, editor.Padding.Left + editor.BorderThickness.Left,
                         "Editor text must retain the display cell's horizontal inset.");
@@ -550,6 +551,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var editor = FindVisualChildrenByType<TextBox>(tableView).First();
                     var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
                     Verify.IsTrue(tableView.IsEditing, "Changing density must preserve the open editor.");
+                    Verify.AreEqual(nextCase.FontSize, editor.FontSize, "The open editor must follow density typography.");
                     Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "The open editor must follow a runtime density change.");
                     Verify.AreEqual(nextCase.CellPadding.Top, editor.Padding.Top + editor.BorderThickness.Top);
                     vetoClose = false;
@@ -560,6 +562,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
                     Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "Closing the editor must preserve row height.");
+                    Verify.AreEqual(nextCase.FontSize, TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).FontSize,
+                        "The cached display text must pick up the new font size before it is restored.");
                 });
             }
         }

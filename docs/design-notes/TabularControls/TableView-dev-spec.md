@@ -97,15 +97,16 @@ TableView
 
 TableViewRow
 └─ Grid
-   ├─ Border PART_RootBorder                      rounded row background, no content to clip
-   ├─ Border (layout padding and gridline reserve)
+   ├─ Border PART_RootBorder                      rounded background, same separator inset as PART_RowChrome
+   ├─ Border (layout padding)
    │  └─ Grid
    │     └─ ContentPresenter PART_CellForegroundPresenter   foreground for Selected* states
    │        └─ Grid
    │           ├─ TableViewCellsPanel PART_CellsHost         one TableViewCell per column
    │           └─ Border PART_RowExpanderGutter > FontIcon PART_RowExpanderIcon
    ├─ Border PART_GridLineBorder                  1px bottom gridline, not hit-testable
-   └─ Border PART_SelectionIndicator              rounded whole-row outline, Opacity 0 unless Selected*
+   └─ Grid PART_RowChrome                         native-focus target, excludes horizontal separators
+      └─ Border PART_SelectionIndicator           rounded whole-row outline, Opacity 0 unless Selected*
 ```
 
 `RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from `TableViewColumn.GenerateElement(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
@@ -294,12 +295,21 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | `GridLinesVisibility` | Body gridlines, independent of header lines. |
 | `HeaderGridLinesVisibility` | Header dividers (`Vertical`) and bottom rule (`Horizontal`), using the same All / Horizontal / None / Vertical enum as the body. Defaults to All. The table template's `HeaderGridLineStates` hide the bottom rule's brush without changing layout; header-cell `PART_GridLine` visibility controls the dividers and preserves trailing-edge suppression. |
 | `BorderBrush`, `BorderThickness` | Outer frame. Transparent in Light/Dark; system-color in High Contrast. The default 1px inset is retained for stable layout and opt-in visible borders. |
-| `Density` | `Standard` / `Compact` / `ExtraCompact`: 40/32/24px minimum row and header heights (`TableViewRowMinHeight` / `TableViewRowMinHeightCompact` / `TableViewRowMinHeightExtraCompact`). Matching cell/header padding is 12,10,12,10 / 12,6,12,6 / 12,2,12,2. Font size does not vary. The preview `Comfortable` preset is removed; its numeric value 2 is not reused (`ExtraCompact` = 3). |
+| `Density` | `Standard` / `Compact` / `ExtraCompact`: 40/32/24px minimum row and column-header heights (`TableViewRowMinHeight` / `TableViewRowMinHeightCompact` / `TableViewRowMinHeightExtraCompact`). Matching cell/header padding is 12,10,12,10 / 12,6,12,6 / 12,2,12,2. Built-in data cells, text editors, column headers, and section titles/counts use 14/14/12px text. Section-header minimums also match at 40/32/24px (`TableViewGroupHeaderMinHeight` and density-suffixed variants), with padding 4,10,12,10 / 4,6,12,6 / 4,2,12,2. Section text is regular by default; its leading inset is 20px (4px padding + 12px expander + 4px gap). Section font size and vertical padding follow cell density metrics, while horizontal padding remains section-specific. App section-header metric overrides are preserved. Transitions to/from ExtraCompact recompute Auto widths for the changed typography; Standard/Compact transitions preserve grown widths. The preview `Comfortable` preset is removed; its numeric value 2 is not reused (`ExtraCompact` = 3). |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
-| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`Normal`), `TabularSurface*` brushes. |
+| `StrongTableViewGroupHeaderStyle` | Named style from `TabularControlsResources`: semibold section title/count text only. Apply through an implicit `TableViewGroupHeader` style scoped to the table. Omit it for regular text; foreground and count opacity are unchanged. Independent of column-header styling. |
+| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14); `TableViewCellFontSizeExtraCompact` and `TableViewHeaderFontSizeExtraCompact` (both 12). Column-header font styles override the density default. `TableViewHeaderFontWeight` (`Normal`), `TabularSurface*` brushes. |
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
+
+Section-header backplates are transparent at rest in Light/Dark and use the unselected row
+hover/pressed brushes. Their background border binds the same `CornerRadius` as row backplates.
+High Contrast keeps its system window background and highlight/highlight-text interaction pairing.
+Section-header bottom dividers use the body's gridline colors and are visible for every body
+`GridLinesVisibility` value except `None`, including `Vertical`. `RefreshGridLines` updates the
+overlay on preparation and live body-gridline changes; terminal-edge suppression still avoids
+doubling the outer border. The content border does not consume divider thickness in layout.
 
 | Key | Used for | Fluent | High Contrast |
 |---|---|---|---|
@@ -307,7 +317,13 @@ Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme 
 | `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
 | `TabularSurfaceOuterBorderBrush` | Control border | Transparent | `SystemColorWindowTextColor` |
 
-A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container. The selection outline's 4px `TableViewSelectionIndicatorMargin` clears the native 2px + 1px focus strokes with a 1px gap. Row and header horizontal rules are overlays, so toggling gridlines does not add a pixel to the density height. Built-in text editors subtract their border thickness from cell padding to preserve text alignment. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container.
+
+Horizontal separators occupy the effective top/bottom border strip inside the unchanged row slot. `PART_RowChrome` excludes that strip from the backplate, selection outline, and native-focus target; section headers use the same part for their backplate and focus. Content, editors, and cell hit targets keep their full-height layout. Template roots retain a transparent hit surface across the entire slot. Row `FocusVisualMargin` remains `0,-1,0,-1`; cell margins are adjusted from the arranged cell and chrome bounds so row and cell focus agree after fractional-DPI rounding. Updates follow cell arrangement, chrome/row size changes, and row focus-margin changes. Templates without `PART_RowChrome` retain full-row focus geometry. Terminal-gridline suppression also removes the corresponding chrome inset.
+
+The selection outline's `3,2,3,2` `TableViewSelectionIndicatorMargin` is relative to this visual area, abutting the inner native focus stroke along straight edges without covering either native 2px + 1px stroke. Its interior height is the arranged chrome height minus 6px, rather than the full row height minus 6px. The contrasting secondary focus stroke supplies visual separation; there is no additional empty gap. Corner radii are unchanged, so the curved portions leave additional space. Toggling gridlines does not add a pixel to the density height. Built-in text editors subtract their border thickness from cell padding to preserve text alignment. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+
+Text now uses the same divider-free center as selection. `RefreshCellVisualGeometry` computes the difference between the arranged chrome and full-row centers, and redistributes generated text padding without changing its total. Layout restamps use that same offset to avoid oscillating between nominal and adjusted padding. Built-in editors apply the adjustment before subtracting border thickness; their frame and hit target retain the full row height. Section `PART_ContentHost` redistributes its padding similarly, keeping title/count and chevron together while preserving the header's public `Padding` value. Content adjustment is bounded by the available padding. No-separator rows use the original padding.
 
 **Later:** per-element `RowStyle` (on `TableViewRow`) and `CellStyle` (on the `TableViewCell` wrapper), as in WPF, rather than a monolithic `TableStyle`, so standard `Style` machinery applies without a property explosion.
 

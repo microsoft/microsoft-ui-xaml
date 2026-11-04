@@ -14,12 +14,14 @@
                  duplicate-key build failure when the theme-XBF pages merge. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
             <!-- The header's bottom edge and internal column edges meet gridlines. -->
             <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+            <x:Double x:Key="TableViewCellFontSizeExtraCompact">12</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
             <!-- Header/cell chrome metrics as theme tokens (tunable without code edits). -->
@@ -31,16 +33,24 @@
             <Thickness x:Key="TableViewCellPaddingExtraCompact">12,2,12,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">12,6,12,6</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingExtraCompact">12,2,12,2</Thickness>
+            <x:Double x:Key="TableViewGroupHeaderMinHeight">40</x:Double>
+            <x:Double x:Key="TableViewGroupHeaderMinHeightCompact">32</x:Double>
+            <x:Double x:Key="TableViewGroupHeaderMinHeightExtraCompact">24</x:Double>
+            <Thickness x:Key="TableViewGroupHeaderPadding">4,10,12,10</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderPaddingCompact">4,6,12,6</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderPaddingExtraCompact">4,2,12,2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
             <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+            <x:Double x:Key="TableViewCellFontSizeExtraCompact">12</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">32</x:Double>
@@ -50,17 +60,25 @@
             <Thickness x:Key="TableViewCellPaddingExtraCompact">12,2,12,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">12,6,12,6</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingExtraCompact">12,2,12,2</Thickness>
+            <x:Double x:Key="TableViewGroupHeaderMinHeight">40</x:Double>
+            <x:Double x:Key="TableViewGroupHeaderMinHeightCompact">32</x:Double>
+            <x:Double x:Key="TableViewGroupHeaderMinHeightExtraCompact">24</x:Double>
+            <Thickness x:Key="TableViewGroupHeaderPadding">4,10,12,10</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderPaddingCompact">4,6,12,6</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderPaddingExtraCompact">4,2,12,2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. The
                  canonical HighContrast System*Color brushes live in TabularSurfaces_themeresources.xaml. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
             <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+            <x:Double x:Key="TableViewCellFontSizeExtraCompact">12</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">32</x:Double>
@@ -70,6 +88,12 @@
             <Thickness x:Key="TableViewCellPaddingExtraCompact">12,2,12,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">12,6,12,6</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingExtraCompact">12,2,12,2</Thickness>
+            <x:Double x:Key="TableViewGroupHeaderMinHeight">40</x:Double>
+            <x:Double x:Key="TableViewGroupHeaderMinHeightCompact">32</x:Double>
+            <x:Double x:Key="TableViewGroupHeaderMinHeightExtraCompact">24</x:Double>
+            <Thickness x:Key="TableViewGroupHeaderPadding">4,10,12,10</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderPaddingCompact">4,6,12,6</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderPaddingExtraCompact">4,2,12,2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -80,5 +104,9 @@
     <Style x:Key="StrongTableViewColumnHeaderStyle" TargetType="tabular:TableViewColumnHeader">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+    </Style>
+
+    <Style x:Key="StrongTableViewGroupHeaderStyle" TargetType="tabular:TableViewGroupHeader">
+        <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 </ResourceDictionary>

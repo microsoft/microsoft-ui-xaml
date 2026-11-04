@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewGroupHeader.h"
 #include "TableView.h"
+#include "TableViewFocusHelpers.h"
 #include "TableViewGroupHeaderToggleRequestedEventArgs.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
@@ -14,6 +15,30 @@ static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBord
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
+    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(),
+        [weakThis = get_weak()](auto const&, auto const&)
+        {
+            if (auto header = weakThis.get())
+            {
+                header->RefreshContentAlignment();
+            }
+        });
+    m_headerSizeChangedRevoker = SizeChanged(winrt::auto_revoke,
+        [weakThis = get_weak()](auto const&, auto const&)
+        {
+            if (auto header = weakThis.get())
+            {
+                header->RefreshContentAlignment();
+            }
+        });
+    RegisterPropertyChangedCallback(winrt::Control::BorderThicknessProperty(),
+        [weakThis = get_weak()](auto const&, auto const&)
+        {
+            if (auto header = weakThis.get())
+            {
+                header->RefreshGridLines();
+            }
+        });
 
     // Tab from another band must not land on a cache group header outside the viewport.
     m_gettingFocusRevoker = GettingFocus(
@@ -37,6 +62,7 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
 {
+    RefreshDensity();
     auto const desired = MeasureBand(availableSize);
 
     // The base measure realizes the content template, so a header created disabled, or given a new
@@ -84,11 +110,61 @@ void TableViewGroupHeader::SetOwningTableViewInternal(winrt::TableView const& ow
     // Weak: the TableView owns this container through the repeater, so a strong ref here would
     // be a cycle. Mirrors TableViewRow::SetOwningTableViewInternal.
     m_owningTableView = owner ? winrt::make_weak(owner) : nullptr;
+    RefreshGridLines();
 }
 
 winrt::TableView TableViewGroupHeader::GetOwningTableView() const
 {
     return m_owningTableView.get();
+}
+
+void TableViewGroupHeader::RefreshDensity()
+{
+    if (auto const owner = GetOwningTableView())
+    {
+        auto* const ownerImpl = winrt::get_self<TableView>(owner);
+        auto const style = ownerImpl->GetGroupHeaderStyle(*this);
+        if (!m_densityStyleInspected || style != m_densityStyle.get())
+        {
+            m_styleSetsMinHeight = TableView::StyleSetsProperty(style, winrt::FrameworkElement::MinHeightProperty());
+            m_styleSetsPadding = TableView::StyleSetsProperty(style, winrt::Control::PaddingProperty());
+            m_styleSetsFontSize = TableView::StyleSetsProperty(style, winrt::Control::FontSizeProperty());
+            m_densityStyle.set(style);
+            m_densityStyleInspected = true;
+        }
+        const auto update = [this](winrt::DependencyProperty const& property, auto value, auto& appliedValue, bool styleSetsProperty)
+        {
+            using Value = std::decay_t<decltype(value)>;
+            auto const local = ReadLocalValue(property);
+            auto const boxedLocal = local.try_as<winrt::IReference<Value>>();
+            const bool ownsLocal = appliedValue && boxedLocal && boxedLocal.Value() == *appliedValue;
+
+            // Density owns only values it assigned, never app local values, bindings or Style setters.
+            if (styleSetsProperty)
+            {
+                if (ownsLocal)
+                {
+                    ClearValue(property);
+                }
+                appliedValue.reset();
+            }
+            else if (local == winrt::DependencyProperty::UnsetValue() || ownsLocal)
+            {
+                if (!ownsLocal || *appliedValue != value)
+                {
+                    SetValue(property, box_value(value));
+                }
+                appliedValue = value;
+            }
+            else
+            {
+                appliedValue.reset();
+            }
+        };
+        update(winrt::FrameworkElement::MinHeightProperty(), ownerImpl->GetDensityGroupHeaderMinHeight(), m_densityMinHeight, m_styleSetsMinHeight);
+        update(winrt::Control::PaddingProperty(), ownerImpl->GetDensityGroupHeaderPadding(), m_densityPadding, m_styleSetsPadding);
+        update(winrt::Control::FontSizeProperty(), ownerImpl->GetCellFontSize(), m_densityFontSize, m_styleSetsFontSize);
+    }
 }
 
 void TableViewGroupHeader::OnApplyTemplate()
@@ -98,6 +174,20 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_isEnabledChangedRevoker.revoke();
     m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
+    m_rowChrome.set(GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>());
+    m_contentHost.set(GetTemplateChild(L"PART_ContentHost").try_as<winrt::Border>());
+    m_chromeSizeChangedRevoker.revoke();
+    if (auto const chrome = m_rowChrome.get())
+    {
+        m_chromeSizeChangedRevoker = chrome.SizeChanged(winrt::auto_revoke,
+            [weakThis = get_weak()](auto const&, auto const&)
+            {
+                if (auto header = weakThis.get())
+                {
+                    header->RefreshContentAlignment();
+                }
+            });
+    }
 
     // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
     // a cell is editing.
@@ -127,7 +217,7 @@ void TableViewGroupHeader::OnApplyTemplate()
         });
 
     UpdateVisualStates(false /* useTransitions */);
-    UpdateTerminalBottomGridLineSuppression();
+    RefreshGridLines();
 }
 
 void TableViewGroupHeader::UpdateDefaultCountOpacity()
@@ -177,21 +267,43 @@ void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
     // also derived from BorderThickness, so a same-value push re-asserts it against the current
     // thickness.
     m_suppressBottomGridLine = suppress;
-    UpdateTerminalBottomGridLineSuppression();
+    RefreshGridLines();
 }
 
-void TableViewGroupHeader::UpdateTerminalBottomGridLineSuppression()
+void TableViewGroupHeader::RefreshGridLines()
 {
     if (auto gridLineBorder = m_gridLineBorder.get())
     {
         auto thickness = BorderThickness();
-        if (m_suppressBottomGridLine)
+        auto const owner = GetOwningTableView();
+        if (m_suppressBottomGridLine ||
+            (owner && owner.GridLinesVisibility() == winrt::TableViewGridLinesVisibility::None))
         {
             thickness.Bottom = 0.0;
         }
         if (gridLineBorder.BorderThickness() != thickness)
         {
             gridLineBorder.BorderThickness(thickness);
+        }
+        TableViewDetails::SetRowChromeSeparatorInsets(m_rowChrome.get(), thickness);
+    }
+}
+
+void TableViewGroupHeader::RefreshContentAlignment()
+{
+    if (auto const content = m_contentHost.get())
+    {
+        auto const chrome = m_rowChrome.get();
+        const bool hasBounds = chrome && chrome == GetTemplateChild(L"PART_RowChrome")
+            && chrome.ActualHeight() > 0.0 && ActualHeight() > 0.0;
+        const double offset = hasBounds
+            ? chrome.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y
+                + (chrome.ActualHeight() - ActualHeight()) / 2.0
+            : 0.0;
+        auto const padding = TableViewDetails::OffsetContentPadding(Padding(), offset);
+        if (content.Padding() != padding)
+        {
+            content.Padding(padding);
         }
     }
 }

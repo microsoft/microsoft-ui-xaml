@@ -110,6 +110,7 @@ public:
     void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
     // Cells panel reports the lead cell's arranged slot to confine the chevron. leadWidth < 0: none.
     void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
+    double GetContentVerticalOffset() const { return m_contentVerticalOffset; }
     void RefreshDensity();
     void RefreshCells();
 
@@ -235,9 +236,14 @@ private:
     // full RebuildCells per row). Recycle / owner / DataContext paths still rebuild synchronously.
     void QueueRebuildCells();
     void UpdateVisualState(bool useTransitions);
+    void RefreshCellVisualGeometry();
+    double m_contentVerticalOffset{ 0.0 };
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
+    winrt::FrameworkElement::SizeChanged_revoker m_chromeSizeChangedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_rowSizeChangedRevoker{};
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
@@ -292,6 +298,7 @@ private:
     bool m_isRebuildingCells{ false };
 
     bool m_rebuildCellsQueued{ false };
+    double m_cellFontSize{ 0.0 };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };

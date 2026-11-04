@@ -153,12 +153,15 @@ struct TableViewResourceCache
         winrt::Thickness cellPadding{};
         bool hasHeaderCellPadding{ false };
         winrt::Thickness headerCellPadding{};
+        bool hasGroupHeaderMinHeight{ false };
+        double groupHeaderMinHeight{};
+        bool hasGroupHeaderPadding{ false };
+        winrt::Thickness groupHeaderPadding{};
     };
     DensityInfo density{};
 
-    // Font sizes resolved from fixed (non-density-suffixed) ThemeResource keys, so they do NOT
-    // vary with Density; kept out of DensityInfo to avoid implying otherwise. Still cached and
-    // cleared by InvalidateTableViewResourceCache alongside the other resolved resources.
+    // Built-in text uses 12px in ExtraCompact and 14px otherwise. Density/theme changes clear
+    // this cache alongside the other resolved resources.
     struct FontInfo
     {
         bool hasCellFontSize{ false };
@@ -244,6 +247,10 @@ public:
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
+    double GetDensityGroupHeaderMinHeight();
+    winrt::Thickness GetDensityGroupHeaderPadding();
+    winrt::Style GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header);
+    static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property);
     double GetCellFontSize();
     void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 

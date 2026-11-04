@@ -6,6 +6,8 @@
 #include "TableViewTextColumn.h"
 #include "TableView.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewRow.h"
+#include "TableViewFocusHelpers.h"
 
 TableViewTextColumn::TableViewTextColumn()
 {
@@ -36,7 +38,6 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
     // FontWeight stays unset so a TableView/app value inherits.
     textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    // Density changes spacing, not the text size.
     if (owner)
     {
         textBlock.Padding(winrt::get_self<TableView>(owner)->GetDensityCellPadding());
@@ -57,9 +58,24 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
 
 void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner)
 {
-    const auto padding = owner
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0;
+    if (editor.FontSize() != fontSize)
+    {
+        editor.FontSize(fontSize);
+    }
+    auto padding = owner
         ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
         : winrt::ThicknessHelper::FromLengths(12, 10, 12, 10);
+    for (auto parent = winrt::VisualTreeHelper::GetParent(editor); parent;
+        parent = winrt::VisualTreeHelper::GetParent(parent))
+    {
+        if (auto const row = parent.try_as<winrt::TableViewRow>())
+        {
+            padding = TableViewDetails::OffsetContentPadding(
+                padding, winrt::get_self<TableViewRow>(row)->GetContentVerticalOffset());
+            break;
+        }
+    }
     const auto border = editor.BorderThickness();
     const auto editorPadding = winrt::ThicknessHelper::FromLengths(
         std::max(0.0, padding.Left - border.Left),

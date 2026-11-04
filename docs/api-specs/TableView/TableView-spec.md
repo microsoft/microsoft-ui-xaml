@@ -145,14 +145,33 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `GridLinesVisibility` controls the body gridlines. Independently, `HeaderGridLinesVisibility` controls the column-header lines using the same `TableViewGridLinesVisibility` enum: `All` shows both strokes, `Vertical` shows only the dividers between headers, `Horizontal` shows only the rule beneath the header, and `None` hides both. Both properties default to `All`. Hiding header strokes preserves header layout and does not disable sorting or resizing.
 
-Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
 
 The density presets are `Standard` (40px), `Compact` (32px), and `ExtraCompact` (24px).
 These are minimum heights, not caps: larger text and custom content can grow the row.
+Section headers match the cells' 40/32/24px minimum heights for the same presets, with regular 14/14/12px text.
+Their padding is `4,10,12,10`, `4,6,12,6`, and `4,2,12,2`; a 12px expander gutter and 4px gap
+put the content 20px from the leading edge. Section headers grow for larger text and custom content;
+app `MinHeight` and `Padding` values or styles override density defaults. Existing item counts,
+expand/collapse behavior, and native keyboard focus are unchanged.
 Built-in cell and header padding is respectively `12,10,12,10`, `12,6,12,6`, and `12,2,12,2`
-(left, top, right, bottom). Font size stays 14px. Gridlines are overlays and do not add to
+(left, top, right, bottom). Built-in data cells, text editors, and column headers use 14px text
+in Standard/Compact and 12px in ExtraCompact, including section titles and counts.
+The `TableViewCellFontSizeExtraCompact` and `TableViewHeaderFontSizeExtraCompact` resources
+override the ExtraCompact defaults; explicit column-header font styles still win.
+Gridlines are overlays and do not add to
 the preset height. Built-in text editors account for their border thickness so editing
 preserves the display text's inset.
+Horizontal separators occupy a strip inside the preset height but outside the row's
+backplate, selection, and native-focus target. Content and cell hit targets retain the
+full row height. Text and section content use the same divider-free vertical center:
+the effective top/bottom padding is redistributed by half the arranged separator
+imbalance, without changing its total or horizontal padding. Built-in editors use the
+same adjustment before accounting for their borders. The adjustment is bounded by the
+available padding and is removed when the separator is hidden. At every density, native
+focus extends 1px vertically outside that visual area. The selection outline uses a
+`3,2,3,2` inset within it, abutting the inner
+native focus stroke along straight edges without changing content layout.
 
 ```xaml
 <tabular:TableView
@@ -218,6 +237,27 @@ independently to customize the disabled-selected indicator and disabled row text
 By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
 The default indicator is a 1px whole-row outline with the row's `CornerRadius`, painted above gridlines.
 It does not change cell layout or pointer hit testing, and remains distinct from the system keyboard-focus visual.
+
+Section headers have no resting backplate in Light/Dark and use the same hover/pressed fills and
+rounded backplate corners as unselected data rows. High Contrast retains system-color background
+and interaction brushes.
+
+Section headers show a full-width bottom divider whenever body `GridLinesVisibility` is `All`,
+`Horizontal`, or `Vertical`; `None` hides it. This is independent of `HeaderGridLinesVisibility`.
+The divider is an overlay and does not change section-header height.
+
+Section text is regular by default. To opt into semibold title/count text without changing colors,
+apply `StrongTableViewGroupHeaderStyle` through a scoped implicit style:
+
+```xaml
+<tabular:TableView.Resources>
+    <Style TargetType="tabular:TableViewGroupHeader"
+           BasedOn="{StaticResource StrongTableViewGroupHeaderStyle}" />
+</tabular:TableView.Resources>
+```
+
+This option is independent of `StrongTableViewColumnHeaderStyle`. Omitting the section-header style
+keeps regular text; the default section-title foreground remains primary in either treatment.
 
 The default group header's item count inherits the header `Foreground` and is dimmed by
 `TabularSurfaceGroupHeaderCountOpacity` (1.0 in High Contrast). A disabled header shows the count
@@ -864,6 +904,7 @@ Template parts:
 | Part | Type | Description |
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
+| `PART_RowChrome` | `Grid` | Optional native-focus target and selection host. Its margin excludes effective horizontal separator thickness, including terminal-line suppression. Templates without this part retain full-row focus geometry. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Border` | **Required by the default state definitions.** Rounded whole-row selection outline; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `BorderBrush`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
@@ -877,10 +918,16 @@ Selected states share the one group rather than living in a second, overlapping 
 
 Hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TabularSurfaceSelectionIndicatorBrush`; `SelectedDisabled` uses `TabularSurfaceSelectionIndicatorDisabledBrush`.
 
-The 1px selection outline is overlaid with a 4px inset (`TableViewSelectionIndicatorMargin`),
-inside the native 2px primary and 1px secondary focus strokes with a 1px gap. Selection
-and focus remain independently visible without changing cell layout, including at the
-24px density. The inset can be overridden when customizing focus geometry.
+The 1px selection outline is overlaid within `PART_RowChrome` with a `3,2,3,2` inset (`TableViewSelectionIndicatorMargin`),
+abutting the native 1px secondary focus stroke along straight edges without covering either
+native focus stroke. The secondary stroke provides contrasting separation from the 2px primary stroke. Row/cell
+focus extends 1px vertically outside this visual area (`FocusVisualMargin="0,-1,0,-1"`
+on the row). Cell focus margins are adjusted to the same arranged top and bottom,
+including fractional display-scale rounding. The separator is outside these visuals
+but inside the unchanged row slot. Section headers use the same separation for their
+backplate and native focus. Selection and focus remain independently visible without
+changing cell layout, including at the 24px density. The inset can be overridden when
+customizing focus geometry.
 
 Properties:
 

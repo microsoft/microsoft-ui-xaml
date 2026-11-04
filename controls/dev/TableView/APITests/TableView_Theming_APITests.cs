@@ -89,10 +89,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsNotNull(groupHeader.Template, "TableViewGroupHeader must resolve its default ControlTemplate.");
 
-                // Hardcoded rather than looked up: TableViewGroupHeaderPadding is declared at the root
-                // of TableView.xaml, the default-style page, which reaches a control through
-                // DefaultStyleResourceUri and is never merged into Application.Current.Resources.
-                Verify.AreEqual(new Thickness(8, 8, 12, 8), groupHeader.Padding,
+                Verify.AreEqual(new Thickness(4, 10, 12, 10), groupHeader.Padding,
                     "TableViewGroupHeader's default style must take Padding from TableViewGroupHeaderPadding.");
             });
         }
@@ -1328,6 +1325,135 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyGroupHeaderBackplatesMatchRowsAndFollowTheme()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+
+                var resources = new TabularControlsResources();
+                Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderBackgroundBrush").Color,
+                    "High Contrast must retain the system window background.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                RunOnUIThread.Execute(() => tableView.RequestedTheme = theme);
+                IdleSynchronizer.Wait();
+
+                foreach (var state in new[] { "Normal", "PointerOver", "Pressed", "Normal" })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                        var row = GetRealizedRows(tableView).First();
+                        Verify.IsTrue(VisualStateManager.GoToState(header, state, false));
+                        Verify.IsTrue(VisualStateManager.GoToState(row, state, false));
+                    });
+
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                        var row = GetRealizedRows(tableView).First();
+                        var headerRoot = (Border)header.FindVisualChildByName("PART_Root");
+                        var rowRoot = (Border)row.FindVisualChildByName("PART_RootBorder");
+                        var headerFill = headerRoot.Background as SolidColorBrush;
+                        var rowFill = rowRoot.Background as SolidColorBrush;
+                        Verify.IsNotNull(headerFill);
+                        Verify.IsNotNull(rowFill);
+                        Verify.AreEqual(rowFill.Color, headerFill.Color,
+                            $"{theme}/{state}: section headers must use the unselected row backplate.");
+                        Verify.AreEqual(rowRoot.CornerRadius, headerRoot.CornerRadius,
+                            $"{theme}/{state}: section and row backplate corners must match.");
+                        if (state == "Normal")
+                        {
+                            Verify.AreEqual((byte)0, headerFill.Color.A,
+                                $"{theme}: section headers must have no resting backplate.");
+                        }
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyStrongGroupHeaderStyleChangesOnlyWeightAndCanBeToggledLive()
+        {
+            TableView tableView = null;
+            Style strongStyle = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+                strongStyle = resources["StrongTableViewGroupHeaderStyle"] as Style;
+                Verify.IsNotNull(strongStyle);
+                Verify.AreEqual(1, strongStyle.Setters.Count, "The strong section style changes only weight.");
+                Verify.AreEqual(Control.FontWeightProperty, ((Setter)strongStyle.Setters[0]).Property);
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            foreach (var strong in new[] { false, true, false })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    if (strong)
+                    {
+                        tableView.Resources[typeof(TableViewGroupHeader)] = strongStyle;
+                    }
+                    else
+                    {
+                        tableView.Resources.Remove(typeof(TableViewGroupHeader));
+                    }
+                });
+
+                IdleSynchronizer.Wait();
+
+                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+                {
+                    RunOnUIThread.Execute(() => tableView.RequestedTheme = theme);
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                        var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                        var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                        var title = FindVisualChildrenByType<TextBlock>(presenter).First(text => text != count);
+                        var expectedWeight = (ushort)(strong ? 600 : 400);
+                        var themeName = theme == ElementTheme.Light ? "Light" : "Default";
+                        var resources = new TabularControlsResources();
+                        Verify.IsNotNull(header.Template, "Both weights retain the built-in template.");
+                        Verify.AreEqual(expectedWeight, header.FontWeight.Weight);
+                        Verify.AreEqual(expectedWeight, title.FontWeight.Weight);
+                        Verify.AreEqual(expectedWeight, count.FontWeight.Weight);
+                        Verify.AreEqual(14.0, title.FontSize, "Section typography size is unchanged.");
+                        Verify.AreEqual(RequireBrush(resources, themeName, "TabularSurfaceGroupHeaderForegroundBrush").Color,
+                            ((SolidColorBrush)title.Foreground).Color, "Weight must not change the title color.");
+                        Verify.AreEqual(((SolidColorBrush)title.Foreground).Color, ((SolidColorBrush)count.Foreground).Color,
+                            "The count must keep inheriting the title foreground.");
+                        Verify.IsLessThan(Math.Abs(count.Opacity - (theme == ElementTheme.Light ? 0.7 : 0.77)), 0.000001,
+                            "The count's existing secondary treatment is unchanged.");
+                        Verify.AreEqual((ushort)400, GetRealizedRows(tableView).First().FontWeight.Weight,
+                            "Section weight must not change data-row weight.");
+                        Verify.AreEqual((ushort)400, RequireColumnHeader(tableView, 0).FontWeight.Weight,
+                            "Section weight must remain independent of column-header weight.");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyPointerOverAndPressedGroupHeadersSuppressHighContrastBackplate()
         {
             foreach (var state in new[] { "PointerOver", "Pressed" })
@@ -1458,9 +1584,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         FindVisualChildrenByType<TextBlock>(contentPresenter).FirstOrDefault(t => t != count);
                     Verify.IsNotNull(key, "The default group header content must contain the key TextBlock.");
                     Verify.AreEqual(DependencyProperty.UnsetValue, key?.ReadLocalValue(TextBlock.FontWeightProperty),
-                        "Key text weight must come from a style, not a local value.");
-                    Verify.AreEqual((ushort)600, key?.FontWeight.Weight ?? (ushort)0,
-                        "Key text must be SemiBold (BodyStrongTextBlockStyle equivalent).");
+                        "Key text weight must inherit from the header, not a local value.");
+                    Verify.AreEqual((ushort)400, key?.FontWeight.Weight ?? (ushort)0,
+                        "Key text must use regular body typography.");
                     Verify.AreEqual(TextWrapping.NoWrap, key?.TextWrapping ?? TextWrapping.Wrap, "Key text stays on one line.");
 
                     Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "PointerOver", false), "PointerOver must exist.");
@@ -1667,6 +1793,176 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #region 13.3 Density
 
+        [TestMethod]
+        public void VerifyGroupHeaderDensityGeometryAndTypography()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedThemingTable();
+                tableView.IsTextScaleFactorEnabled = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            {
+                foreach (var direction in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+                {
+                    foreach (var testCase in DensityCases)
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            tableView.RequestedTheme = theme;
+                            tableView.FlowDirection = direction;
+                            tableView.Density = testCase.Density;
+                            tableView.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                            var expectedHeight = testCase.RowMinHeight;
+                            var verticalPadding = testCase.CellPadding.Top;
+                            Verify.AreEqual(expectedHeight, header.MinHeight, "Section-header density minimum.");
+                            Verify.AreEqual(expectedHeight, header.ActualHeight, "Unscaled section-header rendered height.");
+                            Verify.AreEqual(new Thickness(4, verticalPadding, 12, verticalPadding), header.Padding,
+                                "Section-header padding follows live density changes.");
+                            var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                            var gutter = (FrameworkElement)header.FindVisualChildByName("PART_ExpanderGutter");
+                            var root = tableView.XamlRoot.Content;
+                            var headerBounds = header.TransformToVisual(root).TransformBounds(
+                                new Rect(0, 0, header.ActualWidth, header.ActualHeight));
+                            var contentBounds = presenter.TransformToVisual(root).TransformBounds(
+                                new Rect(0, 0, presenter.ActualWidth, presenter.ActualHeight));
+                            var leadingInset = direction == FlowDirection.LeftToRight
+                                ? contentBounds.Left - headerBounds.Left : headerBounds.Right - contentBounds.Right;
+                            Verify.AreEqual(20.0, leadingInset, "Section content starts 20px from the leading edge, including in RTL.");
+                            Verify.AreEqual(12.0, gutter.ActualWidth, "The expander uses a 12px gutter.");
+                            var title = FindVisualChildrenByType<TextBlock>(header)
+                                .First(text => text.Text == ((TableViewGroupInfo)header.Content).KeyText);
+                            Verify.AreEqual(testCase.FontSize, title.FontSize,
+                                "Section titles match the cells' font size at every density.");
+                            Verify.AreEqual(Microsoft.UI.Text.FontWeights.Normal, title.FontWeight,
+                                "Section titles use regular rather than semibold text.");
+                            var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                            Verify.IsNotNull(count, "Density and typography changes preserve item counts.");
+                            Verify.AreEqual(testCase.FontSize, count.FontSize,
+                                "Section counts match the cells' font size at every density.");
+                            Verify.IsTrue(header.IsTabStop && header.UseSystemFocusVisuals,
+                                "Section headers retain native keyboard focus.");
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderDensityPreservesAppMetrics()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedThemingTable();
+                var baseStyle = new Style(typeof(TableViewGroupHeader));
+                baseStyle.Setters.Add(new Setter(FrameworkElement.MinHeightProperty, 64.0));
+                baseStyle.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(16, 8, 16, 8)));
+                tableView.Resources[typeof(TableViewGroupHeader)] = new Style(typeof(TableViewGroupHeader)) { BasedOn = baseStyle };
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            foreach (var testCase in DensityCases)
+            {
+                RunOnUIThread.Execute(() => tableView.Density = testCase.Density);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                    Verify.AreEqual(64.0, header.MinHeight, "A BasedOn Style's MinHeight wins over density.");
+                    Verify.AreEqual(new Thickness(16, 8, 16, 8), header.Padding, "A BasedOn Style's Padding wins over density.");
+                    header.MinHeight = 72;
+                    header.Padding = new Thickness(20, 12, 20, 12);
+                    tableView.Density = TableViewDensity.Standard;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                    Verify.AreEqual(72.0, header.MinHeight, "Local MinHeight wins over density.");
+                    Verify.AreEqual(new Thickness(20, 12, 20, 12), header.Padding, "Local Padding wins over density.");
+                    header.ClearValue(FrameworkElement.MinHeightProperty);
+                    header.ClearValue(Control.PaddingProperty);
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderDensityPreservesLocalMetricsAfterLoad()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(tableView))
+                {
+                    header.MinHeight = 72;
+                    header.Padding = new Thickness(20, 12, 20, 12);
+                }
+            });
+            foreach (var testCase in DensityCases)
+            {
+                RunOnUIThread.Execute(() => tableView.Density = testCase.Density);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                    Verify.AreEqual(72.0, header.MinHeight, "A new local MinHeight replaces the density-owned value.");
+                    Verify.AreEqual(new Thickness(20, 12, 20, 12), header.Padding,
+                        "A new local Padding replaces the density-owned value.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderDensityGrowsForLargerText()
+        {
+            foreach (var testCase in DensityCases)
+            {
+                TableView tableView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateGroupedThemingTable();
+                    tableView.Density = testCase.Density;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(tableView))
+                    {
+                        header.FontSize = 28;
+                    }
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                    var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                    var minimum = testCase.RowMinHeight;
+                    Verify.IsTrue(header.IsTextScaleFactorEnabled, "Section headers retain system text scaling.");
+                    Verify.IsGreaterThan(header.ActualHeight, minimum, "Larger section text grows beyond the density minimum.");
+                    Verify.IsGreaterThanOrEqual(header.ActualHeight, presenter.ActualHeight + header.Padding.Top + header.Padding.Bottom,
+                        "Section content is not vertically clipped.");
+                });
+            }
+        }
+
         // Density is one of the better-specified areas in the control: the presets are literal values in
         // TableView_themeresources.xaml rather than constants in code.
         //
@@ -1775,12 +2071,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         return;
                     }
 
-                    Verify.AreEqual(testCase.CellPadding, cellText.Padding,
-                        $"Density={testCase.Density} must give generated text cells a Padding of {testCase.CellPadding}.");
+                    Verify.AreEqual(GetAlignedContentPadding(GetRealizedRows(tableView).First(), testCase.CellPadding), cellText.Padding,
+                        $"Density={testCase.Density} keeps nominal padding while aligning text with the row visuals.");
 
                     var headerPresenter = GetHeaderPresenter(tableView, 0);
                     Verify.AreEqual(testCase.CellPadding, headerPresenter.Padding,
-                        $"Density={testCase.Density} must give header cells the same padding as body cells.");
+                        $"Density={testCase.Density} preserves the header's nominal padding.");
                 });
             }
         }
@@ -1874,7 +2170,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyDensitySelectionOutlineClearsNativeFocusVisuals()
+        public void VerifyDensitySelectionOutlineAbutsNativeFocusVisuals()
         {
             foreach (var testCase in DensityCases)
             {
@@ -1915,11 +2211,122 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             FrameworkElement target = focusCell ? GetRowCell(row, 0) : row;
                             Verify.AreEqual(FocusState.Keyboard, target.FocusState);
                             Verify.IsTrue(target.UseSystemFocusVisuals, "Keep native focus rendering for rows and cells.");
-                            var focusInset = target.FocusVisualMargin.Top
-                                + target.FocusVisualPrimaryThickness.Top + target.FocusVisualSecondaryThickness.Top;
-                            Verify.IsTrue(outline.Margin.Top > focusInset, "Selection must start inside both focus strokes with a visible gap.");
+                            Verify.AreEqual(new Thickness(0, -1, 0, -1), row.FocusVisualMargin,
+                                "Native focus extends 1px outside the interactive row visuals.");
+                            Verify.AreEqual(new Thickness(3, 2, 3, 2), outline.Margin);
+                            var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
+                            Verify.IsTrue(Control.GetIsTemplateFocusTarget(chrome),
+                                "Row focus must target the visual area outside the separator.");
+                            var chromeBounds = chrome.TransformToVisual(row).TransformBounds(
+                                new Rect(0, 0, chrome.ActualWidth, chrome.ActualHeight));
+                            var targetBounds = focusCell
+                                ? target.TransformToVisual(row).TransformBounds(
+                                    new Rect(0, 0, target.ActualWidth, target.ActualHeight))
+                                : chromeBounds;
+                            var outlineBounds = outline.TransformToVisual(row).TransformBounds(
+                                new Rect(0, 0, outline.ActualWidth, outline.ActualHeight));
+                            var margin = target.FocusVisualMargin;
+                            var primary = target.FocusVisualPrimaryThickness;
+                            var secondary = target.FocusVisualSecondaryThickness;
+                            Verify.IsLessThanOrEqual(Math.Abs(outlineBounds.Top -
+                                (targetBounds.Top + margin.Top + primary.Top + secondary.Top)), 0.001,
+                                "Selection must touch the top inner focus stroke after layout rounding.");
+                            Verify.IsLessThanOrEqual(Math.Abs(outlineBounds.Bottom -
+                                (targetBounds.Bottom - margin.Bottom - primary.Bottom - secondary.Bottom)), 0.001,
+                                "Row and cell focus must touch selection above the separator.");
+                            Verify.AreEqual(chrome.ActualHeight - 6, outline.ActualHeight
+                                - outline.BorderThickness.Top - outline.BorderThickness.Bottom,
+                                "Both native focus strokes fit inside the visual area without growing the row.");
                             Verify.AreEqual(1.0, outline.Opacity, "Focus must not hide selection.");
                             Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, "Focus and selection must not grow the row.");
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHorizontalSeparatorsStayOutsideRowChrome()
+        {
+            foreach (var grouped in new[] { false, true })
+            {
+                TableView tableView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = grouped ? CreateGroupedThemingTable() : CreateThemingTable();
+                    tableView.IsTextScaleFactorEnabled = false;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                foreach (var testCase in DensityCases)
+                {
+                    foreach (var mode in new[] { TableViewGridLinesVisibility.All, TableViewGridLinesVisibility.None,
+                        TableViewGridLinesVisibility.Horizontal, TableViewGridLinesVisibility.Vertical })
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            tableView.Density = testCase.Density;
+                            tableView.GridLinesVisibility = mode;
+                            tableView.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var row = GetRealizedRows(tableView).First();
+                            var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
+                            var background = (Border)row.FindVisualChildByName("PART_RootBorder");
+                            var outline = (Border)row.FindVisualChildByName("PART_SelectionIndicator");
+                            var line = (Border)row.FindVisualChildByName("PART_GridLineBorder");
+                            var horizontal = mode == TableViewGridLinesVisibility.All ||
+                                mode == TableViewGridLinesVisibility.Horizontal;
+                            Verify.AreEqual(horizontal ? 1.0 : 0.0, line.BorderThickness.Bottom);
+                            Verify.AreEqual(new Thickness(0, 0, 0, line.BorderThickness.Bottom), chrome.Margin);
+                            Verify.AreEqual(chrome.Margin, background.Margin,
+                                "Hover and selection backplates must leave the same separator area.");
+                            Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight,
+                                "Separators must not add height to any density.");
+                            Verify.AreEqual(row.ActualHeight, GetRowCell(row, 0).ActualHeight,
+                                "Cell content and hit targets retain the full density slot.");
+                            var scale = tableView.XamlRoot.RasterizationScale;
+                            var separatorHeight = Math.Round(line.BorderThickness.Bottom * scale,
+                                MidpointRounding.AwayFromZero) / scale;
+                            Verify.IsLessThanOrEqual(Math.Abs(row.ActualHeight - chrome.ActualHeight -
+                                separatorHeight), 0.001, "The separator must sit outside the row visuals.");
+                            Verify.AreEqual(chrome.ActualHeight - 4, outline.ActualHeight,
+                                "Selection keeps its symmetric 2px inset within the row visuals.");
+                            Verify.IsTrue(Control.GetIsTemplateFocusTarget(chrome));
+                            var text = (TextBlock)GetCellContent(GetRowCell(row, 0));
+                            Verify.AreEqual(GetAlignedContentPadding(row, testCase.CellPadding), text.Padding);
+                            var chromeTop = chrome.TransformToVisual(row).TransformPoint(new Point()).Y;
+                            var textTop = text.TransformToVisual(row).TransformPoint(new Point()).Y;
+                            var lineCenter = textTop + (text.ActualHeight + text.Padding.Top - text.Padding.Bottom) / 2;
+                            Verify.IsLessThanOrEqual(Math.Abs(lineCenter - chromeTop - chrome.ActualHeight / 2),
+                                1.0 / scale, "The text line and selection must share a vertical center.");
+                            Verify.AreEqual(testCase.CellPadding.Top + testCase.CellPadding.Bottom,
+                                text.Padding.Top + text.Padding.Bottom, "Alignment must not grow the text's padding.");
+                            if (grouped)
+                            {
+                                var header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First();
+                                var headerChrome = (FrameworkElement)header.FindVisualChildByName("PART_RowChrome");
+                                var headerLine = (Border)header.FindVisualChildByName("PART_GridLineBorder");
+                                Verify.AreEqual(mode == TableViewGridLinesVisibility.None ? 0.0 : 1.0,
+                                    headerLine.BorderThickness.Bottom,
+                                    "Sections keep a bottom separator even in Vertical mode.");
+                                Verify.AreEqual(new Thickness(0, 0, 0, headerLine.BorderThickness.Bottom),
+                                    headerChrome.Margin);
+                                Verify.AreEqual(testCase.RowMinHeight, header.ActualHeight);
+                                Verify.IsTrue(Control.GetIsTemplateFocusTarget(headerChrome));
+                                var contentHost = (Border)header.FindVisualChildByName("PART_ContentHost");
+                                Verify.AreEqual(GetAlignedContentPadding(header, header.Padding), contentHost.Padding);
+                                var presenter = (FrameworkElement)header.FindVisualChildByName("PART_ContentPresenter");
+                                var contentCenter = presenter.TransformToVisual(header).TransformPoint(new Point()).Y
+                                    + presenter.ActualHeight / 2;
+                                var headerChromeCenter = headerChrome.TransformToVisual(header).TransformPoint(new Point()).Y
+                                    + headerChrome.ActualHeight / 2;
+                                Verify.IsLessThanOrEqual(Math.Abs(contentCenter - headerChromeCenter),
+                                    1.0 / scale, "Section text and chevron use the divider-free vertical center.");
+                            }
                         });
                     }
                 }
@@ -2080,6 +2487,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyDensityChangeAfterLoadUpdatesRealizedRows()
         {
             TableView tableView = null;
+            TableViewRow realizedRow = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -2092,55 +2500,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
-            TableViewRow realizedRow = null;
-
             RunOnUIThread.Execute(() =>
             {
                 realizedRow = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
-                if (realizedRow == null)
-                {
-                    Verify.Fail("The TableView should realize at least one row before the density change.");
-                    return;
-                }
-
+                Verify.IsNotNull(realizedRow);
                 Verify.AreEqual(40.0, realizedRow.MinHeight, "The row should start at the Standard metric.");
-
-                tableView.Density = TableViewDensity.Compact;
-                tableView.UpdateLayout();
             });
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
+            foreach (var testCase in new[] { DensityCases[0], DensityCases[2], DensityCases[1] })
             {
-                tableView.UpdateLayout();
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var rowAfter = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
-                if (rowAfter == null)
+                RunOnUIThread.Execute(() => tableView.Density = testCase.Density);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
                 {
-                    Verify.Fail("The TableView should still have a realized row after the density change.");
-                    return;
-                }
-
-                Verify.AreEqual(realizedRow, rowAfter,
-                    "The density change should update the existing row rather than force a rebuild.");
-                Verify.AreEqual(32.0, rowAfter.MinHeight,
-                    "An already-realized row must pick up the Compact metric; otherwise the table shows a mix of densities as the user scrolls.");
-
-                var cellText = RequireFirstCellTextBlock(tableView);
-                if (cellText == null)
-                {
-                    return;
-                }
-
-                Verify.AreEqual(new Thickness(12, 6, 12, 6), cellText.Padding,
-                    "An already-realized cell must pick up the Compact padding.");
-            });
+                    var rowAfter = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(realizedRow, rowAfter,
+                        "A density change must update the existing row rather than force a rebuild.");
+                    Verify.AreEqual(testCase.RowMinHeight, rowAfter.MinHeight);
+                    var cellText = RequireFirstCellTextBlock(tableView);
+                    Verify.AreEqual(GetAlignedContentPadding(rowAfter, testCase.CellPadding), cellText.Padding);
+                    Verify.AreEqual(testCase.FontSize, cellText.FontSize, "Realized text must follow live density changes.");
+                    Verify.AreEqual(testCase.FontSize, GetHeaderPresenter(tableView, 0).FontSize);
+                });
+            }
         }
 
         // The only test that can tell the difference between the resource and the C++ fallback constant:
@@ -2190,18 +2572,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // A negative test, and new relative to PR !15971489. The product states the exclusion as
-        // deliberate (TableView.h:62: font sizes resolve from fixed, non-density-suffixed keys and are
-        // kept out of the density cache "to avoid implying otherwise"), and TableView-dev-spec.md:215
-        // scopes Density to "row min-height + built-in cell/header padding".
-        //
-        // If someone adds a density suffix to the font keys, Compact starts shrinking text - a
-        // legibility regression that would read as intentional to a reviewer.
         [TestMethod]
-        public void VerifyFontSizeDoesNotVaryWithDensity()
+        public void VerifyDensityFontSizePresets()
         {
-            const double expectedFontSize = 14.0;
-
             foreach (var testCase in DensityCases)
             {
                 TableView tableView = null;
@@ -2223,15 +2596,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         return;
                     }
 
-                    Verify.AreEqual(expectedFontSize, cellText.FontSize,
-                        $"Cell font size must stay {expectedFontSize} at Density={testCase.Density}: TableViewCellFontSize has no " +
-                        "density variants, and density is specified as row height and padding only.");
+                    Verify.AreEqual(testCase.FontSize, cellText.FontSize,
+                        $"Built-in cell typography must follow Density={testCase.Density}.");
 
                     var headerPresenter = GetHeaderPresenter(tableView, 0);
-                    Verify.AreEqual(expectedFontSize, headerPresenter.FontSize,
-                        $"Header font size must stay {expectedFontSize} at Density={testCase.Density}.");
+                    Verify.AreEqual(testCase.FontSize, headerPresenter.FontSize,
+                        $"Built-in header typography must follow Density={testCase.Density}.");
                 });
             }
+        }
+
+        [TestMethod]
+        public void VerifyDensityFontResourceOverridesWin()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.Resources["TableViewCellFontSizeExtraCompact"] = 13.0;
+                tableView.Resources["TableViewHeaderFontSizeExtraCompact"] = 15.0;
+                tableView.Density = TableViewDensity.ExtraCompact;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(13.0, RequireFirstCellTextBlock(tableView).FontSize);
+                Verify.AreEqual(15.0, GetHeaderPresenter(tableView, 0).FontSize);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyDensityPreservesColumnHeaderFontStyles()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                var tableBase = new Style(typeof(Control));
+                tableBase.Setters.Add(new Setter(Control.FontSizeProperty, 17.0));
+                tableView.ColumnHeaderStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = tableBase };
+                var columnBase = new Style(typeof(ContentControl));
+                columnBase.Setters.Add(new Setter(Control.FontSizeProperty, 18.0));
+                tableView.Columns[1].HeaderStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = columnBase };
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            foreach (var testCase in DensityCases)
+            {
+                RunOnUIThread.Execute(() => tableView.Density = testCase.Density);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(17.0, GetHeaderPresenter(tableView, 0).FontSize);
+                    Verify.AreEqual(18.0, GetHeaderPresenter(tableView, 1).FontSize);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensityPreservesImplicitColumnHeaderFontStyle()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                var style = new Style(typeof(TableViewColumnHeader));
+                style.Setters.Add(new Setter(Control.FontSizeProperty, 18.0));
+                tableView.Resources[typeof(TableViewColumnHeader)] = style;
+                tableView.Density = TableViewDensity.ExtraCompact;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual(18.0, GetHeaderPresenter(tableView, 0).FontSize,
+                    "The density default must not override an app's implicit font style."));
         }
 
         [TestMethod]
@@ -2270,9 +2709,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(outline, "The selection indicator must be a whole-row Border.");
                     Verify.AreEqual(new Thickness(1), outline.BorderThickness, "The selection outline is 1px.");
                     Verify.AreEqual(row.CornerRadius, outline.CornerRadius, "All selection corners must follow the row radius.");
-                    Verify.AreEqual(new Thickness(4), outline.Margin, "Selection must leave room for both native focus strokes.");
-                    Verify.AreEqual(row.ActualWidth - 8, outline.ActualWidth, "Selection must span every column inside the focus visual.");
-                    Verify.AreEqual(row.ActualHeight - 8, outline.ActualHeight, "Selection must be inset within the row.");
+                    Verify.AreEqual(new Thickness(3, 2, 3, 2), outline.Margin, "Selection must leave room for both native focus strokes.");
+                    Verify.AreEqual(row.ActualWidth - 6, outline.ActualWidth, "Selection must span every column inside the focus visual.");
+                    var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
+                    Verify.AreEqual(chrome.ActualHeight - 4, outline.ActualHeight,
+                        "Selection uses a symmetric 2px inset outside the separator.");
                     Verify.IsFalse(outline.IsHitTestVisible, "Selection must not intercept cell input.");
                     Verify.AreEqual(state == "Normal" ? 0.0 : 1.0, outline.Opacity, $"Outline visibility in {state}.");
                     var cell = GetRowCell(row, 0);
@@ -3939,20 +4380,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewThemingTestHelpers
     {
+        internal static Thickness GetAlignedContentPadding(FrameworkElement row, Thickness padding)
+        {
+            var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
+            var offset = chrome.TransformToVisual(row).TransformPoint(new Point()).Y
+                + (chrome.ActualHeight - row.ActualHeight) / 2;
+            offset = Math.Max(-padding.Top, Math.Min(padding.Bottom, offset));
+            return new Thickness(padding.Left, padding.Top + offset, padding.Right, padding.Bottom - offset);
+        }
+
         internal struct DensityCase
         {
             internal TableViewDensity Density;
             internal double RowMinHeight;
             internal Thickness CellPadding;
+            internal double FontSize;
         }
 
         // The literal presets from TableView_themeresources.xaml, not from the code constants. They
         // agree today; VerifyDensityResourceOverrideWins is what proves the resource is the real source.
         internal static readonly DensityCase[] DensityCases = new[]
         {
-            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 32.0, CellPadding = new Thickness(12, 6, 12, 6) },
-            new DensityCase { Density = TableViewDensity.Standard, RowMinHeight = 40.0, CellPadding = new Thickness(12, 10, 12, 10) },
-            new DensityCase { Density = TableViewDensity.ExtraCompact, RowMinHeight = 24.0, CellPadding = new Thickness(12, 2, 12, 2) },
+            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 32.0, CellPadding = new Thickness(12, 6, 12, 6), FontSize = 14.0 },
+            new DensityCase { Density = TableViewDensity.Standard, RowMinHeight = 40.0, CellPadding = new Thickness(12, 10, 12, 10), FontSize = 14.0 },
+            new DensityCase { Density = TableViewDensity.ExtraCompact, RowMinHeight = 24.0, CellPadding = new Thickness(12, 2, 12, 2), FontSize = 12.0 },
         };
 
         internal static TableView CreateThemingTable()

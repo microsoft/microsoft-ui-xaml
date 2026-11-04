@@ -5,6 +5,27 @@
 
 namespace TableViewDetails
 {
+    inline winrt::Thickness OffsetContentPadding(winrt::Thickness padding, double offset)
+    {
+        offset = std::clamp(offset, -padding.Top, padding.Bottom);
+        padding.Top += offset;
+        padding.Bottom -= offset;
+        return padding;
+    }
+
+    inline void SetRowChromeSeparatorInsets(
+        winrt::FrameworkElement const& chrome, winrt::Thickness const& separator)
+    {
+        if (chrome)
+        {
+            winrt::Thickness const margin{ 0.0, separator.Top, 0.0, separator.Bottom };
+            if (chrome.Margin() != margin)
+            {
+                chrome.Margin(margin);
+            }
+        }
+    }
+
     // One step up that crosses popup boundaries. A popup's content (a ComboBox dropdown, a flyout)
     // is not a visual descendant of the element that owns it, so a plain VisualTreeHelper walk from
     // a dropdown item never reaches the editor that opened it.
