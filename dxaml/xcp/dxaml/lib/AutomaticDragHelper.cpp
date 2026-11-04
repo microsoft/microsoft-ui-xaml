@@ -45,6 +45,16 @@ namespace
         *isDown = pointerState && pointerState->IsPointerDown() && !pointerState->IsPointerCanceled();
         return S_OK;
     }
+
+    _Check_return_ HRESULT IsPointerStateCanceled(
+        _In_ UINT pointerId,
+        _Out_ bool* isCanceled)
+    {
+        std::shared_ptr<CPointerState> pointerState;
+        IFC_RETURN(GetPointerState(pointerId, &pointerState));
+        *isCanceled = pointerState && pointerState->IsPointerCanceled();
+        return S_OK;
+    }
 }
 
 AutomaticDragHelper::AutomaticDragHelper(_In_ DirectUI::UIElement* pUIElement, _In_ bool shouldAddInputHandlers)
@@ -496,38 +506,56 @@ AutomaticDragHelper::HandlePointerCaptureLostEventArgs(
         }
 
         // A canceled contact ends the candidate whatever element reports it: without a capture
-        // owner, core raises the capture loss from the element under the finger.
+        // owner, core raises the capture loss from the element under the finger. Prefer the
+        // candidate's own core state; an app-initiated loss can carry another contact's point.
         bool isCanceled = false;
+        IFC_RETURN(IsPointerStateCanceled(touchPointerId, &isCanceled));
         ctl::ComPtr<ixp::IPointerPoint> pointerPoint;
-        if (SUCCEEDED(pArgs->GetCurrentPoint(m_pOwnerNoRef, &pointerPoint)) && pointerPoint)
+        if (!isCanceled && SUCCEEDED(pArgs->GetCurrentPoint(m_pOwnerNoRef, &pointerPoint)) && pointerPoint)
         {
-            ctl::ComPtr<ixp::IPointerPointProperties> properties;
-            BOOLEAN canceled = FALSE;
-            IFC_RETURN(pointerPoint->get_Properties(&properties));
-            IFC_RETURN(properties->get_IsCanceled(&canceled));
-            isCanceled = !!canceled;
-        }
-        if (isCanceled)
-        {
-            m_spPointerPoint = nullptr;
-            m_spPointer = nullptr;
-            m_isHoldingCompleted = false;
-            IFC_RETURN(UnregisterEvents());
-            return S_OK;
+            UINT pointId = 0;
+            IFC_RETURN(pointerPoint->get_PointerId(&pointId));
+            if (pointId == touchPointerId)
+            {
+                ctl::ComPtr<ixp::IPointerPointProperties> properties;
+                BOOLEAN canceled = FALSE;
+                IFC_RETURN(pointerPoint->get_Properties(&properties));
+                IFC_RETURN(properties->get_IsCanceled(&canceled));
+                isCanceled = !!canceled;
+            }
         }
 
-        // The helper never captures touch. A descendant giving up its own capture of the finger
-        // (now visible through handledEventsToo) does not end the owner's candidate.
-        ctl::ComPtr<xaml::IRoutedEventArgs> routedArgs;
-        ctl::ComPtr<IInspectable> originalSource;
-        bool isOwnerSource = false;
-        IFC_RETURN(ctl::do_query_interface(routedArgs, pArgs));
-        IFC_RETURN(routedArgs->get_OriginalSource(&originalSource));
-        IFC_RETURN(ctl::are_equal(originalSource.Get(), ctl::as_iinspectable(m_pOwnerNoRef), &isOwnerSource));
-        if (!isOwnerSource)
+        if (!isCanceled)
         {
-            return S_OK;
+            // The helper never captures touch. A descendant giving up its own capture of the
+            // finger (now visible through handledEventsToo) does not end the owner's candidate.
+            ctl::ComPtr<xaml::IRoutedEventArgs> routedArgs;
+            ctl::ComPtr<IInspectable> originalSource;
+            bool isOwnerSource = false;
+            IFC_RETURN(ctl::do_query_interface(routedArgs, pArgs));
+            IFC_RETURN(routedArgs->get_OriginalSource(&originalSource));
+            IFC_RETURN(ctl::are_equal(originalSource.Get(), ctl::as_iinspectable(m_pOwnerNoRef), &isOwnerSource));
+            if (!isOwnerSource)
+            {
+                return S_OK;
+            }
+
+            if (m_isHoldingCompleted)
+            {
+                // DirectManipulation takes over a held contact before DraggingStarted; keep the
+                // hold for it, as on main.
+                IFC_RETURN(UnregisterEvents());
+                return S_OK;
+            }
         }
+
+        // Detection has ended (canceled, or the owner lost the contact before it was held):
+        // drop the candidate so it cannot block other pointers' presses.
+        m_spPointerPoint = nullptr;
+        m_spPointer = nullptr;
+        m_isHoldingCompleted = false;
+        IFC_RETURN(UnregisterEvents());
+        return S_OK;
     }
 
     IFC_RETURN(spPointer->get_PointerDeviceType(&pointerDeviceType));

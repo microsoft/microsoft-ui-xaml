@@ -36,6 +36,9 @@ namespace MUXControlsTestApp
         private int holdingStartedCount;
         private int touchPressCount;
         private int dragStartingDisableCount;
+        private int ownerTouchCaptureLostCount;
+        private int itemClickCount;
+        private Pointer ownerCapturedTouch;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int index);
@@ -69,6 +72,11 @@ namespace MUXControlsTestApp
                 else if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
                     TouchPressCount.Text = (++touchPressCount).ToString();
+                    if (OwnerReleasesTouchCapture.IsChecked == true && DragSource.CapturePointer(args.Pointer))
+                    {
+                        // Released on the first move, before holding can start.
+                        ownerCapturedTouch = args.Pointer;
+                    }
                 }
                 if (ReleaseOnPress.IsChecked == true)
                 {
@@ -110,7 +118,20 @@ namespace MUXControlsTestApp
                 {
                     PenCaptureLostCount.Text = (++penCaptureLostCount).ToString();
                 }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && args.OriginalSource == DragSource)
+                {
+                    OwnerTouchCaptureLostCount.Text = (++ownerTouchCaptureLostCount).ToString();
+                }
             }), true);
+            DragList.ItemClick += (sender, args) =>
+            {
+                ItemClickCount.Text = (++itemClickCount).ToString();
+                if (ClearItemCanDragOnTap.IsChecked == true)
+                {
+                    // Deletes the ListViewBaseItem's drag helper inside its touch release.
+                    ListDragItem.CanDrag = false;
+                }
+            };
             TouchChild.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
             {
                 if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && ChildReleasesTouchCapture.IsChecked == true)
@@ -200,6 +221,15 @@ namespace MUXControlsTestApp
                     }
                 }
             }), true);
+            DragSource.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (ownerCapturedTouch != null && args.Pointer.PointerId == ownerCapturedTouch.PointerId)
+                {
+                    var pointer = ownerCapturedTouch;
+                    ownerCapturedTouch = null;
+                    DragSource.ReleasePointerCapture(pointer);
+                }
+            }), true);
             DragSource.DragStarting += (sender, args) =>
             {
                 DragCount.Text = (++dragCount).ToString();
@@ -242,6 +272,12 @@ namespace MUXControlsTestApp
         {
             DragSource.CanDrag = false;
             DragSource.CanDrag = true;
+        }
+
+        private void ClearItemCanDragOnTap_Checked(object sender, RoutedEventArgs args)
+        {
+            DragList.IsItemClickEnabled = true;
+            ListDragItem.CanDrag = true;
         }
 
         private void UseListView_Changed(object sender, RoutedEventArgs args)
