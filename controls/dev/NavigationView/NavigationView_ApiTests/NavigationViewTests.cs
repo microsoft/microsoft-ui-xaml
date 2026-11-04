@@ -1835,11 +1835,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyFlyoutBackgroundKeysReplaceTheDefaultSurface()
         {
-            // Translucent and acrylic overrides must replace FlyoutPresenterBackground, not be layered on top of it.
+            // Translucent, acrylic and fully transparent overrides must replace FlyoutPresenterBackground, not be layered on top of it or ignored.
             var brushFactories = new Func<Brush>[]
             {
                 () => new SolidColorBrush(global::Windows.UI.Color.FromArgb(0x80, 0xFF, 0x00, 0x00)),
                 () => new AcrylicBrush { TintColor = Colors.Green, TintOpacity = 0.3, FallbackColor = Colors.Green },
+                // A fully transparent override is a real customization too (see-through flyout), not "use the default".
+                () => new SolidColorBrush(Colors.Transparent),
             };
             foreach (var createBrush in brushFactories)
             {
