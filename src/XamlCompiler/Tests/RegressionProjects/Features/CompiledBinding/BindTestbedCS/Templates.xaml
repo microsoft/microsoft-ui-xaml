@@ -52,8 +52,15 @@
                 <TextBlock Text="{x:Bind Content}" Foreground="{x:Bind Foreground}"/>
                 <TextBlock x:Name="namedTextBlock" Text="this text should be displayed twice (control template)" />
                 <TextBlock Text="{x:Bind namedTextBlock.Text, Mode=OneWay}" />
+                <TextBlock x:Name="deferredTemplateText" Text="{x:Bind Content, Mode=OneWay}" x:Load="{x:Bind IsEnabled, Mode=OneWay}" />
             </StackPanel>
         </Border>
+    </ControlTemplate>
+
+    <ControlTemplate TargetType="Button" x:Key="UnboundRootLoadTemplate">
+        <Grid>
+            <TextBlock x:Name="deferredUnboundRootText" Text="{x:Bind Content, Mode=OneWay}" x:Load="{x:Bind IsEnabled, Mode=OneWay}" />
+        </Grid>
     </ControlTemplate>
 
 </ResourceDictionary>

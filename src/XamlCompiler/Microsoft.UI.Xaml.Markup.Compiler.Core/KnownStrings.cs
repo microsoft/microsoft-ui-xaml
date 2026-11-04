@@ -184,6 +184,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string XamlTypeInfo = "XamlTypeInfo";
         public const string Get = "Get";
         public const string Set = "Set";
+        public const string ToString = "ToString";
         public const string Debug = "Debug";
         public const string Converter = "Converter";
         public const string ConverterLanguage = "ConverterLanguage";
@@ -203,6 +204,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string op_Explicit = "op_Explicit";
         public const string UpdateParamName = "obj";
         public const string UpdateParamBindingsName = "bindings";
+        public const string FunctionInstanceName = "instance";
         public const string DataChanged = "DATA_CHANGED";
         public const string NotPhased = "NOT_PHASED";
         public const string DirectCast = "DirectCast";

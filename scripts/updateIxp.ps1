@@ -39,10 +39,17 @@ Function OpenXml($filename)
 }
 
 
-#update IXP package version in eng\Version.Details.Xml
-$filename = "$rootPath\eng\Version.Details.Xml"
+# update IXP transport package version in eng\versions.props
+$filename = "$rootPath\eng\versions.props"
 $xmldoc = OpenXml $filename
 
-$($xmldoc.Dependencies.ProductDependencies.Dependency | Where-Object {$_.Name.EndsWith("Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage")}).version = $version
+$node = $xmldoc.SelectSingleNode("//IxpTransportPackageVersion[not(@Condition)]")
+if($null -eq $node)
+{
+    write-host "Could not find unconditional IxpTransportPackageVersion in $filename"
+    exit 1
+}
+# Keep the ValueOrDefault wrapper so the mono-build can still override via $(WindowsAppSDKVersionPinned); bump only the literal fallback.
+$node.InnerText = "`$([MSBuild]::ValueOrDefault('`$(WindowsAppSDKVersionPinned)', '$version'))"
 $xmldoc.Save($filename)
 write-host "Updated $filename"

@@ -39,7 +39,9 @@ Write-Host "queryUri = $queryUri"
 # with their pass/fail states as well as any relevant error messages for failed attempts.
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
 
-$testRunsToProcess = @($testRuns.value | where {$_.name -eq $TestRunTitle} | Sort-Object -Property "completedDate" -Descending)
+# An older attempt can have a later completion timestamp. Run IDs select the latest
+# publication, whose subresults belong to the current job attempt.
+$testRunsToProcess = @($testRuns.value | where {$_.name -eq $TestRunTitle} | Sort-Object -Property "id" -Descending)
 
 if($testRunsToProcess.Count -eq 0)
 {

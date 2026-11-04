@@ -1,0 +1,45 @@
+Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
+InitializeComponent();
+
+ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+ProcessTable.Density = TableViewDensity.Compact;
+// Metrics open descending, as in Task Manager: the busiest process comes first.
+foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
+{
+    column.SortCycle = TableViewSortCycle.DescendingAscending;
+}
+
+public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
+
+public TableViewSource Source { get; }
+
+private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+{
+    if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+    {
+        return;
+    }
+
+    var query = sender.Text?.Trim();
+    _searchText = string.IsNullOrEmpty(query) ? null : query;
+    ApplySearch();
+}
+
+// Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
+// again after a write to a searched property.
+private void ApplySearch()
+{
+    if (_searchText is not { } text)
+    {
+        Source.ClearFilter();
+        return;
+    }
+
+    Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+}
+
+private static bool MatchesSearch(ProcessItem process, string query) =>
+    process.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+    || process.Category.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+    || process.StatusText.Contains(query, StringComparison.CurrentCultureIgnoreCase);

@@ -7495,7 +7495,6 @@
                                 <Setter Property="BorderBrush" Value="{x:Null}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="Padding" Value="11,5,11,6" />
-                                <Setter Property="FontFamily" Value="{x:Null}" />
                                 <Setter Property="FontSize" Value="14" />
                                 <!-- UseSystemFocusVisuals is left alone -->
                                 <Setter Property="CornerRadius" Value="4" />
@@ -7520,7 +7519,6 @@
                                 <Setter Property="BorderBrush" Value="{x:Null}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="Padding" Value="0,0,4,0" />
-                                <Setter Property="FontFamily" Value="{x:Null}" />
                                 <Setter Property="FontSize" Value="14" />
                                 <!-- UseSystemFocusVisuals is left alone -->
                                 <Setter Property="CornerRadius" Value="4" />
@@ -7590,7 +7588,6 @@
                                 <Setter Property="BorderBrush" Value="{x:Null}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="Padding" Value="4,0,0,0" />
-                                <Setter Property="FontFamily" Value="{x:Null}" />
                                 <Setter Property="FontSize" Value="14" />
                                 <!-- UseSystemFocusVisuals is left alone -->
                                 <Setter Property="CornerRadius" Value="4" />
@@ -7660,7 +7657,6 @@
                                 <Setter Property="BorderBrush" Value="{x:Null}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="Padding" Value="4,0,0,0" />
-                                <Setter Property="FontFamily" Value="{x:Null}" />
                                 <Setter Property="FontSize" Value="14" />
                                 <!-- UseSystemFocusVisuals is left alone -->
                                 <Setter Property="CornerRadius" Value="4" />
@@ -7729,7 +7725,6 @@
                                 <Setter Property="BorderBrush" Value="{x:Null}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="Padding" Value="0,4,0,0" />
-                                <Setter Property="FontFamily" Value="{x:Null}" />
                                 <Setter Property="FontSize" Value="14" />
                                 <!-- UseSystemFocusVisuals is left alone -->
                                 <Setter Property="CornerRadius" Value="4" />

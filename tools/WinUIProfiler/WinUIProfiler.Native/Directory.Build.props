@@ -1,0 +1,3 @@
+<Project>
+  <!-- Standalone native boundary: do not import managed or product build defaults. -->
+</Project>

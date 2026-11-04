@@ -22,6 +22,7 @@
             $(XcpPath)\dxaml\lib\;
             $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
             $(XcpPath)\components\WindowChrome\inc\;
+            $(XcpPath)\components\DesktopUtility\inc;
             $(XcpPath)\components\ContentRoot\inc;
             $(XcpPath)\components\valueboxer\inc;
         </ProjectIncludeDirectories>

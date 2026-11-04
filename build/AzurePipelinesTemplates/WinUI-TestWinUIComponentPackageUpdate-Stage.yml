@@ -45,11 +45,13 @@ stages:
         ob_sdl_apiscan_enabled: true
         ob_sdl_apiscan_softwareFolder: '$(Build.SourcesDirectory)\BuildOutput\APIScanTarget'
         ob_sdl_apiscan_symbolsFolder: '$(Build.SourcesDirectory)\out\Symbols;SRV*$(WinUISymbolServerUri)'
+      # Omit /p:ProductPrereleaseTag when VersionTag is empty (stable branches); see WinUI-BuildWinUI-Stage.yml.
+      prereleaseTagMSBuildOption: $[replace(format('/p:ProductPrereleaseTag="{0}"', variables['VersionTag']), '/p:ProductPrereleaseTag=""', '')]
 
     steps:
     - template: WinUI-BuildMUXProject-Steps.yml
       parameters:
-        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" /p:ProductPrereleaseTag="$(VersionTag)"'
+        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" $(prereleaseTagMSBuildOption)'
         pipelineKind: ${{ parameters.pipelineKind }}
         buildScenarioApps: ${{ parameters.buildScenarioApps }}
         signOutput: ${{ parameters.signOutput }}
