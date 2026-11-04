@@ -283,6 +283,8 @@ reference becomes a compile error._
 With this change enabled, style application always calls `NotifySetterApplied`
 after invalidating each setter's property. This allows the style to retain a
 value's peer if applying the value created that peer.
+Notification only protects already-realized values; it does not construct
+deferred values that property evaluation did not need.
 
 With the change disabled, `OptimizeApplyStyles` may skip that notification when
 `IsPropertySetByStyle` indicates a style-sourced value. Because that flag does

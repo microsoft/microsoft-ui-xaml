@@ -360,6 +360,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Data:RetainOriginalStyle", L"{true,false}")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(StyleSetterValuesStayDeferredWhileShadowed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that notification does not realize a shadowed setter, and its value is created and retained when needed.")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true|NotifySetterApplied:true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AppliedSingleSetterValueSurvivesOverride)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify peer protection for a single native or custom setter value, including BasedOn styles.")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true|NotifySetterApplied:true}")
+            TEST_METHOD_PROPERTY(L"Data:UseBasedOn", L"{false,true}")
+            TEST_METHOD_PROPERTY(L"Data:UseCustomControl", L"{false,true}")
+            TEST_METHOD_PROPERTY(L"Data:InitiallyShadowed", L"{false,true}")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root and its ThemeDictionaries contains an implicit style")

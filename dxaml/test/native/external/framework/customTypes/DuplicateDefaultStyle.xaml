@@ -18,4 +18,31 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style x:Key="SingleSetterStyle" TargetType="Control">
+        <Setter Property="local:CustomControl.AttachedTag">
+            <Setter.Value>
+                <Style TargetType="Control">
+                    <Setter Property="Width" Value="37" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="SingleSetterControlStyle" TargetType="Control">
+        <Setter Property="local:CustomControl.AttachedTag">
+            <Setter.Value>
+                <local:CustomControl Width="37" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="InheritedSingleSetterStyle" TargetType="Control"
+           BasedOn="{StaticResource SingleSetterStyle}" />
+    <Style x:Key="InheritedSingleSetterControlStyle" TargetType="Control"
+           BasedOn="{StaticResource SingleSetterControlStyle}" />
+    <Style x:Key="DeferredCustomObjectStyle" TargetType="Control">
+        <Setter Property="local:CustomControl.AttachedTag">
+            <Setter.Value>
+                <local:CustomObject />
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

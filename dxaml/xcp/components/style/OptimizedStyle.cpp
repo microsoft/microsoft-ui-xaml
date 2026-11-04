@@ -808,10 +808,10 @@ _Check_return_ HRESULT OptimizedStyle::NotifySetterApplied(_In_ unsigned int set
     {
         // The index is within the range of this style's owned setters.
 
-        // Realize the value if it was deferred
+        // Unrealized values have no peer to protect. Property evaluation will realize them when needed.
         if (m_runtimeData && !m_realizedStates[setterIndex])
         {
-            IFC_RETURN(EnsureValueRealized(setterIndex));
+            return S_OK;
         }
 
         if (!m_peggedStates[setterIndex])

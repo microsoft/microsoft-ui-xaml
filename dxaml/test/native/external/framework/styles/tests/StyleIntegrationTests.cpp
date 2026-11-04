@@ -4455,6 +4455,95 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void StyleIntegrationTests::StyleSetterValuesStayDeferredWhileShadowed()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            CustomObject::ClearInstanceCount();
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            auto style = safe_cast<Style^>(resources->Lookup(L"DeferredCustomObjectStyle"));
+            VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount());
+
+            auto control = ref new ContentControl();
+            control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
+            control->Style = style;
+            VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount(),
+                L"Notifying a shadowed setter must not construct its deferred value");
+            VERIFY_ARE_EQUAL(L"Local override", safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
+
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            VERIFY_IS_NOT_NULL(safe_cast<CustomObject^>(control->GetValue(CustomControl::AttachedTagProperty)));
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetInstanceCount(),
+                L"The deferred value must be created when it becomes effective");
+
+            control->SetValue(CustomControl::AttachedTagProperty, L"Second override");
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetInstanceCount(),
+                L"The style must retain the realized value while it is overridden");
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            VERIFY_IS_NOT_NULL(safe_cast<CustomObject^>(control->GetValue(CustomControl::AttachedTagProperty)));
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetInstanceCount());
+        });
+    }
+
+    void StyleIntegrationTests::AppliedSingleSetterValueSurvivesOverride()
+    {
+        TestCleanupWrapper cleanup;
+        bool useBasedOn = false;
+        bool useCustomControl = false;
+        bool initiallyShadowed = false;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"UseBasedOn", useBasedOn));
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"UseCustomControl", useCustomControl));
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"InitiallyShadowed", initiallyShadowed));
+        LOG_OUTPUT(L"BasedOn: %s; custom control value: %s; initially shadowed: %s",
+            useBasedOn ? L"true" : L"false", useCustomControl ? L"true" : L"false", initiallyShadowed ? L"true" : L"false");
+
+        RunOnUIThread([&]()
+        {
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            const wchar_t* styleKey = useCustomControl
+                ? (useBasedOn ? L"InheritedSingleSetterControlStyle" : L"SingleSetterControlStyle")
+                : (useBasedOn ? L"InheritedSingleSetterStyle" : L"SingleSetterStyle");
+            auto control = ref new ContentControl();
+            if (initiallyShadowed)
+            {
+                control->SetValue(CustomControl::AttachedTagProperty, L"Initial override");
+            }
+            control->Style = safe_cast<Style^>(resources->Lookup(ref new String(styleKey)));
+            if (initiallyShadowed)
+            {
+                control->ClearValue(CustomControl::AttachedTagProperty);
+            }
+
+            auto verifyValue = [&]()
+            {
+                double actualWidth;
+                if (useCustomControl)
+                {
+                    actualWidth = safe_cast<CustomControl^>(control->GetValue(CustomControl::AttachedTagProperty))->Width;
+                }
+                else
+                {
+                    auto probe = ref new ContentControl();
+                    probe->Style = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+                    actualWidth = probe->Width;
+                }
+                VERIFY_ARE_EQUAL(37.0, actualWidth,
+                    WEX::Common::String().Format(L"The restored value must remain usable (actualWidth=%g)", actualWidth));
+            };
+
+            verifyValue();
+            control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
+            VERIFY_ARE_EQUAL(L"Local override", safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
+            LOG_OUTPUT(L"Restoring a single setter value without retaining its peer should not crash");
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            verifyValue();
+        });
+    }
+
     void StyleIntegrationTests::VerifyImplicitStyleInvalidationInThemeDictionaries()
     {
         TestCleanupWrapper cleanup;
