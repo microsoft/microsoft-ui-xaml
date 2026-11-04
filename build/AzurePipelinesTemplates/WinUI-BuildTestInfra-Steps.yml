@@ -1,0 +1,78 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# WinUI-BuildTestInfra-Steps.yml
+#
+# Builds the two WinUI test-helper projects from source so the mono-build's WinUI stage can pack
+# them into Component-WinUI-Final:
+#   * Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj
+#       -> AppTestAutomationHelpers.dll/.winmd + TestAutomationHelpersPanel.xaml
+#   * controls\test\testinfra\MUXTestInfra\MUXTestInfra.csproj  -> MUXTestInfra.dll
+#
+# Both binplace to BuildOutput\bin\<arch>fre\Test\MUXTestInfra (the destination is defined globally
+# in eng\folderpaths.props, so building the two projects directly lands them where the test-helper
+# nuspecs expect — no need to build the whole MUXControls.sln test surface).
+#
+# The mono-build's product build skips the test surface (MUXControls.sln) and does not produce the
+# WinUI component package locally, so AppTestAutomationHelpers.vcxproj's
+# Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion) import would not resolve. This template first builds
+# + installs that component package locally (same as the standalone mock-package step), then builds
+# the two projects. Invoked only from WinUI-BuildMUXProject-Steps.yml when buildTestInfra=true.
+
+parameters:
+  # Coherent version the product binaries were stamped with (/p:WinUIVersion). The WinUI component
+  # package is installed at this version so AppTestAutomationHelpers.vcxproj's
+  # Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion) import resolves.
+  winUIVersion: '$(versionFinal)'
+  buildConfiguration: 'Release'
+  MUXFinalRelease: false
+  additionalMSBuildOptions: ''
+  msbuildInstallDir: ''
+
+steps:
+  # Build + install the WinUI component package locally so the AppTestAutomationHelpers.vcxproj
+  # import resolves. Mirrors the standalone "Build WinUI component package" step exactly: pass only
+  # -VersionOverride (so the package installs at $(WinUIVersion)) and let the nuspec dependency
+  # versions stay at the eng\Versions.props values, which -InstallPackage's `nuget install`
+  # resolves from the WinUI.Dependencies feed. The package is consumed only by the test-infra build
+  # below (for the WinUI props/headers/winmd); its declared dependency versions are not used.
+  - powershell: |
+      & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+        -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+        -VersionOverride '${{ parameters.winUIVersion }}' `
+        -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\${{ parameters.buildConfiguration }}' `
+        -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+        -InstallPackage
+    displayName: 'TestInfra: build + install WinUI component package'
+
+  # AppTestAutomationHelpers.vcxproj uses packages.config (CppWinRT, WebView2, SDK.cpp,
+  # SDK.BuildTools.MSIX); MSBuild /restore does not restore packages.config, so restore it
+  # explicitly first (same as WinUI-BuildScenarioApps-Stage.yml). MUXTestInfra.csproj is SDK-style
+  # (PackageReference) and is restored by WinUI-BuildProject-Steps.yml's /restore below.
+  - task: NuGetCommand@2
+    displayName: 'TestInfra: NuGet restore AppTestAutomationHelpers'
+    inputs:
+      command: 'custom'
+      arguments: 'restore $(Build.SourcesDirectory)\Samples\AppTestAutomationHelpers\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  # Build AppTestAutomationHelpers (C++): AppTestAutomationHelpers.dll/.winmd + TestAutomationHelpersPanel.xaml.
+  - template: WinUI-BuildProject-Steps.yml
+    parameters:
+      solutionName: AppTestAutomationHelpers.vcxproj
+      solutionPath: $(Build.SourcesDirectory)\Samples\AppTestAutomationHelpers
+      nugetConfigPath: nuget.config
+      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} /p:WinUIVersion=${{ parameters.winUIVersion }} /m ${{ parameters.additionalMSBuildOptions }}'
+      msbuildInstallDir: ${{ parameters.msbuildInstallDir }}
+      # Test infra is not product code; skip the PREfast SDL native-rules scan.
+      runStaticAnalysis: false
+
+  # Build MUXTestInfra (C#): MUXTestInfra.dll. Self-contained (external NuGet deps only).
+  - template: WinUI-BuildProject-Steps.yml
+    parameters:
+      solutionName: MUXTestInfra.csproj
+      solutionPath: $(Build.SourcesDirectory)\controls\test\testinfra\MUXTestInfra
+      nugetConfigPath: nuget.config
+      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} /p:WinUIVersion=${{ parameters.winUIVersion }} /m ${{ parameters.additionalMSBuildOptions }}'
+      msbuildInstallDir: ${{ parameters.msbuildInstallDir }}
+      runStaticAnalysis: false

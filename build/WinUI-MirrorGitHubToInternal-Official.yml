@@ -5,6 +5,11 @@
 # preserve target-only content. This pipeline publishes when run. It must be
 # defined from the public GitHub repository so CI runs directly when main
 # advances.
+#
+# A second stage then integrates github/internal/main into the internal
+# integration branch (main) via a --no-ff merge, so a single run performs both
+# legs (fast-forward mirror, then integrate). The integrate stage takes an
+# exclusive lock (lockBehavior: runLatest) so concurrent runs cannot race.
 
 trigger:
   batch: true
@@ -55,3 +60,9 @@ extends:
       parameters:
         sourceBranchName: main
         targetBranchName: github/internal/main
+    - template: AzurePipelinesTemplates\WinUI-PublicMirrorMerge-Stage.yml@self
+      parameters:
+        sourceBranchName: github/internal/main
+        targetBranchName: main
+        dependsOnStage: FastForwardPublicMirror
+        checkoutRepository: targetRepository

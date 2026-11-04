@@ -49,8 +49,8 @@
                 <wucSpriteVisual SizeX="100" SizeY="200" BorderMode="Soft" Opacity="0.5" OffsetX="0" OffsetY="26" OffsetZ="0">
                   <ColorBrush Color="rgb {1, 0, 0}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="67" SizeY="196" BorderMode="Hard" Opacity="0.5" OffsetX="1" OffsetY="31" OffsetZ="0">
-                  <Clip ClipLeft="-1" ClipTop="-5" ClipRight="-32" ClipBottom="1" TransformMatrix="Identity" />
+                <wucSpriteVisual SizeX="69" SizeY="198" BorderMode="Hard" Opacity="0.5" OffsetX="0" OffsetY="30" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="-4" ClipRight="-31" ClipBottom="2" TransformMatrix="Identity" />
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -63,7 +63,7 @@
                 <wucSpriteVisual SizeX="50" SizeY="149" BorderMode="Soft" Opacity="0.5" OffsetX="0" OffsetY="226" OffsetZ="0">
                   <ColorBrush Color="rgb {0, 0, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="34" SizeY="140" BorderMode="Hard" Opacity="0.5" OffsetX="0" OffsetY="231" OffsetZ="0">
+                <wucSpriteVisual SizeX="36" SizeY="142" BorderMode="Hard" Opacity="0.5" OffsetX="-1" OffsetY="230" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -76,7 +76,7 @@
                 <wucSpriteVisual SizeX="50" SizeY="149" BorderMode="Soft" Opacity="0.5" OffsetX="50" OffsetY="226" OffsetZ="0">
                   <ColorBrush Color="rgb {0, 0.502, 0}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="34" SizeY="140" BorderMode="Hard" Opacity="0.5" OffsetX="50" OffsetY="231" OffsetZ="0">
+                <wucSpriteVisual SizeX="36" SizeY="142" BorderMode="Hard" Opacity="0.5" OffsetX="49" OffsetY="230" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />

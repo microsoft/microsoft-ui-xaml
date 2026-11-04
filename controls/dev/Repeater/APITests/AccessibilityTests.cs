@@ -80,6 +80,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: construct a RepeaterAutomationPeer with its public constructor for a repeater showing three Buttons.
+        // Expected: the peer owns the repeater, reports control type Group, and returns one child peer per realized item in
+        //           item order; the framework creates the same kind of peer for the repeater.
+        // A failure means: screen readers would see the repeater's items missing, duplicated or out of order.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a RepeaterAutomationPeer created with its public constructor reports Group and realized children in index order.")]
+        public void VerifyRepeaterAutomationPeerCreatedDirectly()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='30'/></DataTemplate>"),
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var peer = new RepeaterAutomationPeer(repeater);
+                Verify.AreSame(repeater, peer.Owner);
+                Verify.AreEqual(AutomationControlType.Group, peer.GetAutomationControlType());
+                Log.Comment("ClassName: '" + peer.GetClassName() + "'");
+
+                var children = peer.GetChildren().Select(p => ((FrameworkElementAutomationPeer)p).Owner).ToList();
+                Verify.AreEqual(3, children.Count);
+                for (int i = 0; i < 3; i++)
+                {
+                    Verify.AreSame(repeater.TryGetElement(i), children[i], $"Child peer {i} belongs to item {i}.");
+                    Verify.AreEqual("Item #" + i, ((Button)children[i]).Content);
+                }
+
+                Verify.IsTrue(FrameworkElementAutomationPeer.CreatePeerForElement(repeater) is RepeaterAutomationPeer,
+                    "The framework creates a RepeaterAutomationPeer for ItemsRepeater.");
+            });
+        }
+
         private ItemsRepeater CreateRepeater(object dataSource, object elementFactory, VirtualizingLayout layout = null)
         {
             var repeater = new ItemsRepeater

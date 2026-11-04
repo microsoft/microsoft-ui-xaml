@@ -1,0 +1,17 @@
+<!-- The per-level indent is a theme resource, not a property; set it in the table's Resources. -->
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="People by parent relation"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="False">
+    <tv:TableView.Resources>
+        <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
+    </tv:TableView.Resources>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
+    <tv:TableViewTextColumn Header="#" Width="80" IsReadOnly="True" Binding="{Binding EmployeeId}"/>
+</tv:TableView>

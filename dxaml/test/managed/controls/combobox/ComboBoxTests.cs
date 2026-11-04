@@ -146,7 +146,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void VerifyComboBoxPlaceholderForeground()
         {
@@ -206,7 +206,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void VerifyComboBoxPlaceholderForegroundHC()
         {

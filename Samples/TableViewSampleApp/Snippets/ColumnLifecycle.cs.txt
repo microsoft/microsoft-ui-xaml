@@ -1,0 +1,54 @@
+private const string JoinDateHeader = "Join date";
+
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
+
+public TableViewSource Source { get; }
+
+// A collapsed column stays in Columns, in its place, and comes back there when made visible.
+private static void SetColumnVisible(TableViewColumn column, bool visible) =>
+    column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+// Moving the entry in the observable Columns vector IS the reorder; the header band and
+// the realized rows follow. The instance is reused, so its width travels with it.
+private void MoveColumn(int from, int to)
+{
+    var column = PeopleTable.Columns[from];
+    PeopleTable.Columns.RemoveAt(from);
+    PeopleTable.Columns.Insert(to, column);
+}
+
+private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
+{
+    if (FindColumn(JoinDateHeader) is not null)
+    {
+        return;
+    }
+
+    // A template column added at run time through the same vector the text columns live in.
+    // SortMemberPath makes it sortable by the date value behind the picker.
+    var resources = Application.Current.Resources;
+    PeopleTable.Columns.Add(new TableViewTemplateColumn
+    {
+        Header = JoinDateHeader,
+        Width = new GridLength((double)resources["ColWidthDatePicker"]),
+        CellTemplate = (DataTemplate)resources["JoinDatePickerTemplate"],
+        SortMemberPath = nameof(Person.JoinDate),
+        HeaderToolTip = "Date the person joined. Editable; sorts by the JoinDate value.",
+    });
+}
+
+private void OnRemoveJoinDateColumnClick(object sender, RoutedEventArgs e)
+{
+    if (FindColumn(JoinDateHeader) is not { } joinDate)
+    {
+        return;
+    }
+
+    PeopleTable.Columns.Remove(joinDate);
+}
+
+private TableViewColumn? FindColumn(string header) =>
+    PeopleTable.Columns.FirstOrDefault(c => string.Equals(c.Header?.ToString(), header, StringComparison.Ordinal));

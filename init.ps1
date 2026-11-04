@@ -25,6 +25,9 @@ $arguments = New-Object Collections.ArrayList (,$args)
 ## the PS environment.
 . (join-path $initScriptsDir Invoke-CmdScript) (join-path $rootDir "init.cmd") $arguments.ToArray()
 
+# Invoke-CmdScript propagates variables that remain set, but not variables removed by init.cmd.
+Remove-Item Env:\NUGET_PACKAGES -ErrorAction SilentlyContinue
+
 if ($LASTEXITCODE -ne 0)
 {
     throw "init.cmd failed, error: $($LASTEXITCODE). See init.cmd output for more info."

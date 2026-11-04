@@ -45,7 +45,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(ValidateTextControlForegroundUpdate)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates foreground color update on Text Control.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -60,9 +60,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(ValidateEmojiRendering)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates rendering of emoji character.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+                TEST_METHOD_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_23H2) // Emoji font rendering changed in 23H2
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateTextFormattersLowMemoryRelease)
@@ -83,4 +83,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } }
 } } } }
-

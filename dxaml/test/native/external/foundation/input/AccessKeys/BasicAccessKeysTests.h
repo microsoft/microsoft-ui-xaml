@@ -134,13 +134,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(SettingAccessKeyOverridesFEAPAccessKey)
                 TEST_METHOD_PROPERTY(L"Description", L"When we set FrameworkElement.AccessKey and FEAP.AccessKeys does not have a value, ensure that the value is mapped")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(SettingAccessKeyDoesNotOverrideWhenSetOnFEAP)
                 TEST_METHOD_PROPERTY(L"Description", L"When we set FrameworkElement.AccessKey and FEAP.AccessKeys does has a value, use the value on AP")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(WindowMoveEndsAKSequence)

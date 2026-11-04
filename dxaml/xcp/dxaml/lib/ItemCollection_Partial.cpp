@@ -5,6 +5,7 @@
 #include "ItemCollection.g.h"
 #include "ItemsControl.g.h"
 #include "CollectionViewManager.h"
+#include <OptionalChangeState.h>
 
 using namespace DirectUI;
 using namespace xaml_interop;
@@ -61,6 +62,15 @@ ItemCollection::First(
 {
     if(ItemsSourceActive())
     {
+        if (OptionalChangeState::IsCollectionMoveNotificationsEnabled() &&
+            m_tpItemsView &&
+            ctl::is<IBindableVector>(m_tpItemsSource.Get()) &&
+            ctl::is<INotifyCollectionChanged>(m_tpItemsSource.Get()))
+        {
+            ctl::ComPtr<wfc::IIterable<IInspectable*>> iterable;
+            IFC_RETURN(m_tpItemsView.As(&iterable));
+            return iterable->First(first);
+        }
         RRETURN(m_tpItemsSource->First(first));
     }
     else

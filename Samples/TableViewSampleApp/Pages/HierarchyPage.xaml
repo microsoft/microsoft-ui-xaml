@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pages:SamplePageBase
+    x:Class="TableViewSampleApp.Pages.HierarchyPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Hierarchy"
+        Description="The rows are one flat list of people with no children collection, level or expanded flag. TableViewSource.ParentBy(key, parentKey) tells the source how they relate: here EmployeeId under ManagerId (the org chart) or under MentorId (a second tree over the same rows). Rows start collapsed; a null parent key makes a root and an unknown parent key an orphan root. Sort applies within each sibling set, Filter keeps every match and its ancestors, and Grouped hierarchy buckets the roots while each root keeps its subtree. ParentBy is a code-behind call: a hierarchy cannot be declared in XAML in this release."
+        Snippet="Hierarchy"
+        StretchExample="True"
+        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to its parent, and * expands its whole subtree. Switch Parent relation to Mentor: the same people form a different tree. Select a row and choose Reparent, Rename or Next department; with Live shaping on, the tree reshapes in place. Sort by Name and press F2 on a Name: with Live shaping on the renamed row moves among its siblings; off, it stays put."
+        WhatToLookFor="The same person sits at a different depth under each relation. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted and announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows and CollapseAllRows, the Expand all and Collapse all buttons): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open one row. With Live shaping off, an edit leaves the row where it is until the next reshape, so Reparent replaces the item instead. Known control issue: under a filter, a match whose descendants also match stays collapsed, so those descendants stay hidden until you expand it.">
+
+        <controls:SamplePresenter.Example>
+            <!-- snippet -->
+            <!-- The per-level indent is a theme resource, not a property; set it in the table's Resources. -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="HierarchyTable"
+                AutomationProperties.Name="People by parent relation"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                IsReadOnly="False"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableView.Resources>
+                    <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
+                </tv:TableView.Resources>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
+                <tv:TableViewTextColumn Header="#" Width="80" IsReadOnly="True" Binding="{Binding EmployeeId}"/>
+            </tv:TableView>
+            <!-- /snippet -->
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Relation"
+                    Description="ParentBy is declared again with the chosen parent key, over the same rows. With live shaping, an edit to a key or a sorted, filtered or grouped value reshapes the tree in place.">
+                    <ComboBox
+                        x:Name="RelationSelector"
+                        AutomationProperties.AutomationId="HierarchyRelationSelector"
+                        Header="Parent relation"
+                        SelectedIndex="0"
+                        SelectionChanged="OnRelationChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Manager" Tag="Manager"/>
+                        <ComboBoxItem Content="Mentor" Tag="Mentor"/>
+                    </ComboBox>
+                    <ToggleSwitch
+                        x:Name="LiveToggle"
+                        AutomationProperties.AutomationId="HierarchyLiveShapingToggle"
+                        Header="Live shaping"
+                        IsOn="True"
+                        Toggled="OnLiveToggled"/>
+                </controls:RailSection>
+
+                <controls:RailSection
+                    Header="First column"
+                    Description="The first column hosts the indent and the expander chevron. Compare a text column with an image column there.">
+                    <ComboBox
+                        x:Name="FirstColumnSelector"
+                        AutomationProperties.AutomationId="HierarchyFirstColumnSelector"
+                        Header="First column"
+                        SelectedIndex="1"
+                        SelectionChanged="OnFirstColumnChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Photo" Tag="Photo"/>
+                        <ComboBoxItem Content="Text (Name)" Tag="Text"/>
+                    </ComboBox>
+                </controls:RailSection>
+
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="Hierarchy"
+                    InitialMode="hierarchy"
+                    ArrangesHierarchyColumn="False"
+                    Description="This page starts in Hierarchy. Grouped hierarchy adds GroupBy on the same source: it buckets the roots, and every root keeps its subtree. Expand all and Collapse all call ExpandAllRows and CollapseAllRows (and the group versions when grouped).">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Office" Tag="Office"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                </controls:ShapingOptions>
+
+                <controls:RailSection
+                    Header="Filter and sort"
+                    Description="Filter matches names and keeps each match's ancestors. Sort uses a key selector and orders each sibling set; header clicks sort the same way.">
+                    <TextBox
+                        x:Name="FilterBox"
+                        AutomationProperties.AutomationId="HierarchyFilterBox"
+                        Header="Filter by name"
+                        PlaceholderText="Name contains"
+                        TextChanged="OnFilterChanged"
+                        HorizontalAlignment="Stretch"/>
+                    <ComboBox
+                        x:Name="SortCombo"
+                        AutomationProperties.AutomationId="HierarchySortSelector"
+                        Header="Sort"
+                        SelectedIndex="0"
+                        SelectionChanged="OnSortChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Source order"/>
+                        <ComboBoxItem Content="Name ascending"/>
+                        <ComboBoxItem Content="Name descending"/>
+                        <ComboBoxItem Content="Role ascending"/>
+                    </ComboBox>
+                </controls:RailSection>
+
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Add and remove change the collection; Reparent, Rename and Next department change one property of the selected row. Watch the table and the Last action readout.">
+                    <StackPanel Spacing="8">
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyAddReportButton"
+                            Content="Add a report to the selected row"
+                            Click="OnAddReportClick"
+                            ToolTipService.ToolTip="Adds a person whose manager and mentor are the selected row; with no row selected, a root."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyAddRootButton"
+                            Content="Add a root"
+                            Click="OnAddRootClick"
+                            ToolTipService.ToolTip="Adds a person with no manager and no mentor."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyReparentButton"
+                            Content="Reparent the selected row"
+                            Click="OnReparentClick"
+                            ToolTipService.ToolTip="Moves the selected row under another parent in the current relation, never under itself or its own subtree."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyRenameButton"
+                            Content="Rename the selected row"
+                            Click="OnRenameClick"
+                            ToolTipService.ToolTip="Adds or removes a 'zz' prefix, which sorts last and changes what a name filter matches."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyNextDeptButton"
+                            Content="Move the selected row to the next department"
+                            Click="OnNextDepartmentClick"
+                            ToolTipService.ToolTip="Grouped, a root moves to another group with its subtree; a nested row only changes its cell."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyRemoveButton"
+                            Content="Remove the selected row"
+                            Click="OnRemoveClick"
+                            ToolTipService.ToolTip="Its children become orphan roots: their parent key no longer matches a row."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            AutomationProperties.AutomationId="HierarchyResetButton"
+                            Content="Reset the data"
+                            Click="OnResetClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="PerfButton"
+                            AutomationProperties.AutomationId="HierarchyPerfButton"
+                            Content="Run the 100,000-row probe"
+                            Click="OnPerfClick"
+                            ToolTipService.ToolTip="Times ParentBy, Sort and ExpandAllRows against a GroupBy baseline over 100,000 rows; the result appears in Perf probe."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </controls:RailSection>
+
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Hierarchy">
+                    <TextBlock x:Name="SelectedText" controls:StatusPanel.Label="Selected" Text="(none)" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="FilterText" controls:StatusPanel.Label="Filter" Text="(none)" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="SortText" controls:StatusPanel.Label="Sort" Text="Source order"/>
+                    <TextBlock x:Name="LiveText" controls:StatusPanel.Label="Live shaping" Text="On"/>
+                    <TextBlock x:Name="StatusText" controls:StatusPanel.Label="Perf probe" Text="(not run)" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                </controls:StatusPanel>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</pages:SamplePageBase>

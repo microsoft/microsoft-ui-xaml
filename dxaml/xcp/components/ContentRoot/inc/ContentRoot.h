@@ -96,7 +96,7 @@ public:
     CInputManager& GetInputManager();
 
     ixp::IContentIsland* GetCompositionContentNoRef() const { return m_compositionContent.Get(); }
-    _Check_return_ HRESULT SetContentIsland(_In_ ixp::IContentIsland* compositionContent);
+    _Check_return_ HRESULT SetContentIsland(_In_opt_ ixp::IContentIsland* compositionContent);
 
     AccessKeys::AccessKeyExport& GetAKExport() { return m_akExport; }
 

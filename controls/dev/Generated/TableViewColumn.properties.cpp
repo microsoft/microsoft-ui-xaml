@@ -16,11 +16,15 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 GlobalDependencyProperty TableViewColumnProperties::s_ActualWidthProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CanResizeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CanSortProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_CellContextFlyoutProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CellEditingTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_HeaderContextFlyoutProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_HeaderStyleProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateSelectorProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_HeaderToolTipProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MaxWidthProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MinWidthProperty{ nullptr };
@@ -70,6 +74,17 @@ void TableViewColumnProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnCanSortPropertyChanged));
     }
+    if (!s_CellContextFlyoutProperty)
+    {
+        s_CellContextFlyoutProperty =
+            InitializeDependencyProperty(
+                L"CellContextFlyout",
+                winrt::name_of<winrt::FlyoutBase>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_CellEditingTemplateProperty)
     {
         s_CellEditingTemplateProperty =
@@ -103,6 +118,28 @@ void TableViewColumnProperties::EnsureProperties()
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
+    if (!s_HeaderContextFlyoutProperty)
+    {
+        s_HeaderContextFlyoutProperty =
+            InitializeDependencyProperty(
+                L"HeaderContextFlyout",
+                winrt::name_of<winrt::FlyoutBase>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_HeaderStyleProperty)
+    {
+        s_HeaderStyleProperty =
+            InitializeDependencyProperty(
+                L"HeaderStyle",
+                winrt::name_of<winrt::Style>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Style>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnHeaderStylePropertyChanged));
+    }
     if (!s_HeaderTemplateProperty)
     {
         s_HeaderTemplateProperty =
@@ -124,6 +161,17 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnHeaderTemplateSelectorPropertyChanged));
+    }
+    if (!s_HeaderToolTipProperty)
+    {
+        s_HeaderToolTipProperty =
+            InitializeDependencyProperty(
+                L"HeaderToolTip",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnHeaderToolTipPropertyChanged));
     }
     if (!s_IsReadOnlyProperty)
     {
@@ -220,11 +268,15 @@ void TableViewColumnProperties::ClearProperties()
     s_ActualWidthProperty = nullptr;
     s_CanResizeProperty = nullptr;
     s_CanSortProperty = nullptr;
+    s_CellContextFlyoutProperty = nullptr;
     s_CellEditingTemplateProperty = nullptr;
     s_FrozenEdgeProperty = nullptr;
     s_HeaderProperty = nullptr;
+    s_HeaderContextFlyoutProperty = nullptr;
+    s_HeaderStyleProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_HeaderTemplateSelectorProperty = nullptr;
+    s_HeaderToolTipProperty = nullptr;
     s_IsReadOnlyProperty = nullptr;
     s_MaxWidthProperty = nullptr;
     s_MinWidthProperty = nullptr;
@@ -275,6 +327,14 @@ void TableViewColumnProperties::OnHeaderPropertyChanged(
     winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
 }
 
+void TableViewColumnProperties::OnHeaderStylePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableViewColumn>();
+    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
+}
+
 void TableViewColumnProperties::OnHeaderTemplatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -284,6 +344,14 @@ void TableViewColumnProperties::OnHeaderTemplatePropertyChanged(
 }
 
 void TableViewColumnProperties::OnHeaderTemplateSelectorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableViewColumn>();
+    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
+}
+
+void TableViewColumnProperties::OnHeaderToolTipPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -370,6 +438,19 @@ bool TableViewColumnProperties::CanSort()
     return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanSortProperty));
 }
 
+void TableViewColumnProperties::CellContextFlyout(winrt::FlyoutBase const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_CellContextFlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::FlyoutBase TableViewColumnProperties::CellContextFlyout()
+{
+    return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CellContextFlyoutProperty));
+}
+
 void TableViewColumnProperties::CellEditingTemplate(winrt::DataTemplate const& value)
 {
     [[gsl::suppress(con)]]
@@ -409,6 +490,32 @@ winrt::IInspectable TableViewColumnProperties::Header()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderProperty));
 }
 
+void TableViewColumnProperties::HeaderContextFlyout(winrt::FlyoutBase const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_HeaderContextFlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::FlyoutBase TableViewColumnProperties::HeaderContextFlyout()
+{
+    return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderContextFlyoutProperty));
+}
+
+void TableViewColumnProperties::HeaderStyle(winrt::Style const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_HeaderStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Style TableViewColumnProperties::HeaderStyle()
+{
+    return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderStyleProperty));
+}
+
 void TableViewColumnProperties::HeaderTemplate(winrt::DataTemplate const& value)
 {
     [[gsl::suppress(con)]]
@@ -433,6 +540,19 @@ void TableViewColumnProperties::HeaderTemplateSelector(winrt::DataTemplateSelect
 winrt::DataTemplateSelector TableViewColumnProperties::HeaderTemplateSelector()
 {
     return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderTemplateSelectorProperty));
+}
+
+void TableViewColumnProperties::HeaderToolTip(winrt::IInspectable const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_HeaderToolTipProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IInspectable TableViewColumnProperties::HeaderToolTip()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderToolTipProperty));
 }
 
 void TableViewColumnProperties::IsReadOnly(bool value)

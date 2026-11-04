@@ -40,7 +40,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(DoesntFlagUsesOfTemplateBinding)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that we don't flag uses of TemplateBinding inside ControlTemplate.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(DoesntFlagUsesOfTemplatedParent)

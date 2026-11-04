@@ -1,0 +1,38 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// Wrapping, trimming and line limit shared by every Bio cell.
+public static TextWrapState WrapState { get; } = new();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource Source { get; }
+
+private void OnWrapToggled(object sender, RoutedEventArgs e)
+{
+    ApplyTextState();
+}
+
+private void OnMaxLinesChanged(object sender, SelectionChangedEventArgs e)
+{
+    _maxLines = int.TryParse((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag, NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
+    ApplyTextState();
+}
+
+// The one writer of WrapState, so the toggle and the max-lines picker never overwrite each
+// other. Every Bio cell binds WrapState, which is what makes the setting survive recycling.
+private void ApplyTextState()
+{
+    var wrapOn = WrapToggle.IsOn;
+    WrapState.TextWrapping = wrapOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
+
+    // TextBlock.MaxLines only clamps text that wraps, so it is not applied for NoWrap and the
+    // picker is disabled to say so.
+    WrapState.MaxLines = wrapOn ? _maxLines : 0;
+    WrapState.TextTrimming = !wrapOn || _maxLines > 0 ? TextTrimming.CharacterEllipsis : TextTrimming.None;
+}
+
+private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
+{
+    BioColumn.Width = new GridLength(e.NewValue);
+}
