@@ -648,11 +648,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyKeyboardScroll(2, 0, 20);
                 KeyboardHelper.PressKey(Key.Tab);
                 Verify.AreEqual("-1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
-                Verify.AreEqual("20", new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                VerifyKeyboardScrollOffset(20);
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Verify.AreEqual("2", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
-                Verify.AreEqual("20", new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText(),
-                    "Tab re-entry must restore the focused item without nudging the viewport.");
+                VerifyKeyboardScrollOffset(20,
+                    message: "Tab re-entry must restore the focused item without nudging the viewport.");
             }
         }
 
@@ -768,18 +768,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
                     Wait.ForIdle();
                     new Button(FindElement.ById("PrepareFocusEntryAfter")).Invoke();
-                    string initialOffset = position == "Leading" ? "1000" : "800";
+                    double initialOffset = position == "Leading" ? 1000 : 800;
                     Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
-                        new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText() == initialOffset &&
+                        IsKeyboardScrollOffsetNear(initialOffset) &&
                         new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText() == "0");
-                    Verify.AreEqual(initialOffset, new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                    VerifyKeyboardScrollOffset(initialOffset);
                     KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                     Wait.ForIdle();
                     Verify.AreEqual("Button", new TextBlock(FindElement.ById("KeyboardScrollFocusedKind")).GetText());
                     Verify.AreEqual("10", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
-                    string expectedOffset = new TextBlock(FindElement.ById("KeyboardScrollExpectedNestedOffset")).GetText();
-                    Verify.AreEqual(expectedOffset, new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
-                    Verify.AreEqual(expectedOffset, new TextBlock(FindElement.ById("KeyboardScrollOffsetAtFocus")).GetText(),
+                    double expectedOffset = double.Parse(
+                        new TextBlock(FindElement.ById("KeyboardScrollExpectedNestedOffset")).GetText(), CultureInfo.InvariantCulture);
+                    VerifyKeyboardScrollOffset(expectedOffset);
+                    VerifyKeyboardScrollOffset(expectedOffset, "KeyboardScrollOffsetAtFocus",
                         "The child's 80-pixel focus margin must be applied before focus, without a later correction.");
                     Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText());
                 }
@@ -864,11 +865,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double expectedOffset = position == "Trailing" || position == "Before" ?
                     11 * itemSize - viewportSize + 20 :
                     10 * itemSize - 20;
-                string initialOffsetText = initialOffset.ToString(CultureInfo.InvariantCulture);
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
-                    new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText() == initialOffsetText &&
+                    IsKeyboardScrollOffsetNear(initialOffset) &&
                     new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText() == "0");
-                Verify.AreEqual(initialOffsetText, new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                VerifyKeyboardScrollOffset(initialOffset);
                 Verify.AreEqual("10", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText());
                 Verify.AreEqual("-1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
 
@@ -1431,12 +1431,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.AreEqual("38", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText());
                 Verify.AreEqual("38", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
-                Verify.AreEqual("7200", new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                VerifyKeyboardScrollOffset(7200);
                 KeyboardHelper.PressKey(Key.Home);
                 Wait.ForIdle();
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText());
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
-                Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText());
+                VerifyKeyboardScrollOffset(0);
             }
         }
 
@@ -1487,6 +1487,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 // The newly selected item is scrolled to its padded position before GettingFocus runs.
                 VerifyKeyboardScroll(3, 20, 220);
             }
+        }
+
+        // Animated setup scrolls can settle a fraction of a pixel away from the requested offset.
+        private static bool IsKeyboardScrollOffsetNear(double expectedOffset, string elementId = "KeyboardScrollOffset")
+        {
+            return double.TryParse(new TextBlock(FindElement.ById(elementId)).GetText(), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out double offset) && Math.Abs(offset - expectedOffset) < 0.1;
+        }
+
+        private static void VerifyKeyboardScrollOffset(double expectedOffset,
+            string elementId = "KeyboardScrollOffset", string message = null)
+        {
+            Verify.IsTrue(IsKeyboardScrollOffsetNear(expectedOffset, elementId),
+                $"{message} Expected {elementId} near {expectedOffset}, actual " +
+                $"{new TextBlock(FindElement.ById(elementId)).GetText()}.");
         }
 
         private void VerifyKeyboardScroll(int index, double previousOffset, double expectedOffset,
@@ -1586,8 +1601,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 new Button(FindElement.ById("PublicScrollIntoView")).Invoke();
                 Wait.ForIdle();
 
-                Verify.AreEqual("1600", new TextBlock(FindElement.ById("KeyboardScrollOffset")).GetText(),
-                    "Public ScrollIntoView must keep its unpadded default alignment.");
+                VerifyKeyboardScrollOffset(1600,
+                    message: "Public ScrollIntoView must keep its unpadded default alignment.");
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText(),
                     "Public ScrollIntoView must not change selection.");
             }
