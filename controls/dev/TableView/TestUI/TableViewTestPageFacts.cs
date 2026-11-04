@@ -48,6 +48,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string DelayedUnloadButton = "DelayedUnloadButton";
         internal const string DelayedGripperCaptureLossButton = "DelayedGripperCaptureLossButton";
         internal const string DelayedDisableButton = "DelayedDisableButton";
+        internal const string PinNameOnHeaderToolTipDetachButton = "PinNameOnHeaderToolTipDetachButton";
+        internal const string PinNameRebuildOnHeaderToolTipAttachButton = "PinNameRebuildOnHeaderToolTipAttachButton";
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
