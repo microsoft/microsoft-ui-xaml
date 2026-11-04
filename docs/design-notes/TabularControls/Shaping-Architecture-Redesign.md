@@ -73,7 +73,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 1 | Public verb API | `TableViewSource2.idl` | Declared |
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h/.cpp` | Implemented |
-| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
+| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | `SourceRecord` implemented; the rest declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h` | `ShapedNode` and `FenwickTree` implemented; the rest declared, not implemented |
 | 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
@@ -418,6 +418,7 @@ classDiagram
         -hstring m_identity
         +Identity() hstring
         +TryParseIdentity(identity)$ optional~ObjectAddress~
+        +AddressOf(item)$ ObjectAddress
     }
 
     class WatchState {
@@ -1002,6 +1003,7 @@ and that live exactly as long as the item stays in the source.
 |---|---|
 | `Item` | A `tracker_ref<IInspectable>` bound to the owning `TableViewSource2` (matching `Vector<IInspectable>`). Keeps the item alive while in the table while letting the .NET GC collect cycles when an item references its owner. `get_abi(Item.get())` is the raw-pointer lookup key. `Item.get()` is used only on live paths; teardown paths use `Item.safe_get()` (see *Reference tracking and teardown*). |
 | `Address` (`ObjectAddress` = `uintptr_t`) | The canonical `IUnknown` pointer: the object's physical identity. It costs one QI, at creation. |
+| `AddressOf(item)` (static) | Computes `Address` for any item: the address of its canonical `IUnknown`. A managed item can reach native code through different interface pointers on different calls, and all of them QI to the same `IUnknown`, so `SourceTable` lookups fall back to this key when the raw pointer misses. |
 | `Identity()` | The logical identity string: `"0x"` + `Address` in hex (fixed, D4; it is also the record's row key). It is formatted on first use and cached; this accessor is the only way to read it. |
 | `TryParseIdentity(identity)` (static) | Inverse of `Identity()`: the `Address` it encodes, or `nullopt` (a `g|` group key or garbage). Lets `ShapedCollectionView::IndexFromKey` resolve a record through `TryFindByAddress`, which is always on, instead of the identity index (D4). |
 | `PropertyChangedToken`, `Watch` | Live-shaping subscription state, revoked in `~SourceRecord()`. `NotObservable` records that an item has no `INotifyPropertyChanged`, so it is not probed again. |
@@ -3328,7 +3330,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
   - `CollectionAccessor2.cpp`: kind resolution (constructor), `Count`, `TryGetAt`, `Enumerate`
     (member and static one-shot form, with the `Iterable` CLR retry), `ResolveRead`,
     `EnumerateResolved`, the typed `As*` getters.
-  - `SourceRecord.cpp`: canonical `IUnknown` QI, lazy hex `Identity()`, `~SourceRecord()` token revoke.
+  - `SourceRecord.cpp`: canonical `IUnknown` QI (`AddressOf`), lazy hex `Identity()` and its inverse
+    `TryParseIdentity`, `~SourceRecord()` token revoke.
   - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
     upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_diverged` recovery), the `Refresh()` match
     (`MatchRecords` / `CommitRecords`: position → raw pointer → address; per-feed `MatchForRefresh`), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
@@ -3597,7 +3600,7 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - `Refresh` and `IsLiveShaping` are declared in the IDL and the header, with no `.cpp` stubs yet (Phase 1.4).
 - `m_shapingManager` is never created yet (the constructor does not allocate it), and
   `Shaping/ShapingManager.h` has no `.cpp` (Phase 1.4 / Phase 5).
-- `Source/SourceRecord.h` and `Source/SourceTable.h` have no `.cpp` files yet (Phase 1.4).
+- `Source/SourceTable.h` has no `.cpp` file yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
 - `Engine/ShapedTree.h` (`GroupNode`, `IShapedRowsListener`, `ShapedTree`), `ShapeState` and
   `Engine/GroupExpansion.h` are declared only (Phases 4–5); `ShapedNode` and `FenwickTree` are
