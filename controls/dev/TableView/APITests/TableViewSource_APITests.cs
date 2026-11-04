@@ -2409,6 +2409,204 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "with live shaping off, an edit must still be applied by the next change");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that with live shaping on, filter membership of rows that raise no change notification is re-evaluated by the next Add.")]
+        public void VerifyLiveFilterMembershipOfPlainItemsIsReevaluatedByTheNextAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<PlainShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<PlainShapedPerson>(
+                    MakeShapedPeople().Select(p => new PlainShapedPerson { Name = p.Name, Role = p.Role }));
+                var source = TableViewSource.From(items).Filter(o => ((PlainShapedPerson)o).Role == "Engineer");
+                source.IsLiveShaping = true;
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Diego,Rafa,Owen", PlainNames(tableView), "baseline");
+                StartIncrementalChanges(items);
+
+                // No notification, so live shaping cannot see it either.
+                items.First(p => p.Name == "Asha").Role = "Engineer";
+                items.Add(new PlainShapedPerson { Name = "Nadia", Role = "Engineer" });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Rafa,Owen,Nadia", PlainNames(tableView),
+                    "the next collection change must re-evaluate membership of rows live shaping cannot observe");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Replace whose live-shaping subscription throws is not left showing the replaced item.")]
+        public void VerifyLiveFilteredReplaceRecoversFromAThrowingSubscription()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var source = TableViewSource.From(items).Filter(o => Person(o).Role == "Engineer");
+                source.IsLiveShaping = true;
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                var nadia = new ShapedPerson("Nadia", "Engineer", "Platform") { ThrowOnNextSubscribe = true };
+                var threw = false;
+                try
+                {
+                    items[items.IndexOf(items.First(p => p.Name == "Rafa"))] = nadia;
+                }
+                catch (global::System.Exception)
+                {
+                    threw = true;
+                }
+                Verify.IsTrue(threw, "The subscription's exception must reach the caller.");
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Nadia", "Owen", "Zoe" },
+                    "the next change must rebuild instead of keeping the replaced item");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Add whose PropertyChanged subscription clears the filter shows the added item once.")]
+        public void VerifyFilteredAddWhoseSubscriptionClearsTheFilterIsNotDuplicated()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Filter(o => Person(o).Role == "Engineer");
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                var nadia = new ShapedPerson("Nadia", "Engineer", "Platform") { OnNextSubscribe = () => source.ClearFilter() };
+                items.Insert(2, nadia);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Nadia", "Mei", "Rafa", "Ines", "Owen" },
+                    "the rebuilt rows already hold the added item");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered Add whose predicate groups the source ends with a consistent grouped projection.")]
+        public void VerifyFilteredAddWhosePredicateGroupsTheSource()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var groupOnNextCall = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Filter(o =>
+                {
+                    if (groupOnNextCall)
+                    {
+                        groupOnNextCall = false;
+                        source.GroupBy(p => Person(p).Role);
+                    }
+                    return Person(o).Role == "Engineer";
+                });
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                groupOnNextCall = true;
+                items.Insert(5, new ShapedPerson("Nadia", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "#Engineer(4)", "Diego", "Rafa", "Nadia", "Owen" },
+                    "the predicate's GroupBy must leave a consistent projection");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies re-setting a selected item to itself in a filtered, sorted source keeps it selected.")]
+        public void VerifySameObjectReplaceKeepsSelectionWhileFilteredAndSorted()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            ShapedPerson rafa = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items)
+                    .Filter(o => Person(o).Role == "Engineer")
+                    .Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                rafa = items.First(p => p.Name == "Rafa");
+                tableView.Select(GetProjectedItems(tableView).IndexOf(rafa));
+                Verify.AreSame(rafa, tableView.SelectedItem, "baseline");
+
+                items[items.IndexOf(rafa)] = rafa;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Owen", "Rafa" }, "after the replace");
+                Verify.AreSame(rafa, tableView.SelectedItem, "the same object must stay selected");
+            });
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a Remove after a Replace whose rebuild failed (one object on two rows) is not applied against the stale sorted projection.")]
         public void VerifySortedRemoveAfterAFailedRebuildMatchesTheSource()
@@ -2817,6 +3015,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Makes the next PropertyChanged subscription throw, as an app's event accessor might.
         internal bool ThrowOnNextSubscribe { get; set; }
 
+        // Runs once from the next PropertyChanged subscription, as app code in an event accessor might.
+        internal Action OnNextSubscribe { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -2826,6 +3027,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ThrowOnNextSubscribe = false;
                     throw new InvalidOperationException("subscription bug");
                 }
+                var onSubscribe = OnNextSubscribe;
+                OnNextSubscribe = null;
+                onSubscribe?.Invoke();
                 m_propertyChanged += value;
             }
             remove => m_propertyChanged -= value;
