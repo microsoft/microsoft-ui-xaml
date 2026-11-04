@@ -1499,6 +1499,7 @@ void TeachingTip::ClosePopupForUnload()
         // The popup is gone, so the opening transition is over. Don't let it keep the tip busy: a busy tip reverts a
         // pending IsOpen=false (ours or the app's) to true on the next tick, which would leave IsOpen true with no popup.
         m_isExpandAnimationPlaying = false;
+        ++m_expandAnimationGeneration;
         if (!m_isContractAnimationPlaying)
         {
             SetIsIdle(true);
@@ -1951,8 +1952,15 @@ void TeachingTip::StartExpandToOpen()
     }();
     scopedBatch.End();
 
-    scopedBatch.Completed([strongThis = get_strong()](auto, auto)
+    // An unload can end this transition early (ClosePopupForUnload); then this completion belongs to an aborted
+    // animation and must not touch a newer one.
+    const auto expandGeneration = ++m_expandAnimationGeneration;
+    scopedBatch.Completed([strongThis = get_strong(), expandGeneration](auto, auto)
     {
+        if (expandGeneration != strongThis->m_expandAnimationGeneration)
+        {
+            return;
+        }
         strongThis->m_isExpandAnimationPlaying = false;
         if (!strongThis->m_isContractAnimationPlaying)
         {
