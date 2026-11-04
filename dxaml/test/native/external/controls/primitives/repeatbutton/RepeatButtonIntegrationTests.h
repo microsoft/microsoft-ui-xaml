@@ -39,7 +39,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(UIETree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of RepeatButton in various visual states ")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -55,9 +55,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanActivateWithSpaceKeyInput)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can activate a RepeatButton using the space key.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")  // Allow XAML apps to also have XamlIslandRoots (part 2)
-                                            // This test is failing in WPF hosting because the XamlIslandRoot content doesn't automatically
-                                            // get focused.  This will be fixed when we move XamlIslandRoot content into a RootScrollViewer.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 

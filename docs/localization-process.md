@@ -43,7 +43,9 @@ If you want to manually schedule a pipeline run, use the following steps:
        No need to run build here.
     + Touchdown task takes .mui & .resw files and uploads to Touchdown service
     + Touchdown task retrieves currently localized files being stored in Touchdown
-3. Currently available localized resource files get placed into a nuget package and uploaded to the internal dependency feed.
+3. Currently available localized resource files get placed into a `Microsoft.Internal.WinUILocalizationResources` NuGet package.
+   The same package version is uploaded to both the internal dependency feed and the shine-oss `WinUI-Dependencies` feed
+   before the pipeline proposes localization updates, so OSS builds can restore the updated version.
     1. The place holder files without localized data get immediately created with successful run. However, it takes couple of days 
        for Touchdown to localize new strings. Once files are generated, the next localization pipeline run will pick up the changes.
 4. The pipeline will automatically detect when there are changes to localization files and create a Pull Request titled 'Localization Update YYYYMMDD'. 
@@ -55,6 +57,9 @@ If you want to manually schedule a pipeline run, use the following steps:
 is automatically updated in `packages.config` for the `WinUILocalizationResources` 
 package.
 * Updates to .resw files are checked-in as part of the PR the pipeline opens
+* Publishing to shine-oss requires the cross-organization service connection to be authorized for the localization pipeline.
+  Its identity must have Feed Publisher (Contributor) permission on `WinUI-Dependencies`.
+  An authentication or publishing failure stops the pipeline before it proposes a package-version update.
 
 ## Responsibility & Requirements
 
@@ -62,6 +67,9 @@ package.
    This is CASE SENSITIVE because currently the Touchdown localization service is unable to ignore character case. 
    It will treat the same source file as two different files if the character case in the file path is changed. 
    To keep consistent with the other english source files, we should keep the 'en-us' folder name lower case.
+   Add the source file to `resourceFilePath` in
+   `build\AzurePipelinesTemplates\WinUI-LocalizeResources-Steps.yml`. The update script
+   requires a returned resource file for every English control resource.
 2. For new strings, give a time window of more than 3-4 days so that Touchdown has time for their 
    localization process. 
 3. The pipeline should be run (Run all stages) at least once after we make changes to the Major and/or Minor version 

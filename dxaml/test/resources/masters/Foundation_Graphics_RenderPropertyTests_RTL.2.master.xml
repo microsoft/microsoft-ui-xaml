@@ -6,7 +6,7 @@
     <Visual Tag="PrependVisual">
       <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
         <Visual Tag="ContentVisual">
-          <wucSpriteVisual SizeX="27" SizeY="10" BorderMode="Hard" OffsetX="374" OffsetY="5" OffsetZ="0">
+          <wucSpriteVisual SizeX="29" SizeY="12" BorderMode="Hard" OffsetX="373" OffsetY="4" OffsetZ="0">
             <MaskBrush>
               <Source>
                 <ColorBrush Color="#ffffffff" />
@@ -19,7 +19,7 @@
           <wucSpriteVisual SizeX="150" SizeY="50" BorderMode="Soft" OffsetX="250" OffsetY="19" OffsetZ="0">
             <SurfaceBrush Stretch="Fill" Transform="Identity" />
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="27" SizeY="10" BorderMode="Hard" OffsetX="374" OffsetY="5" OffsetZ="0">
+          <wucSpriteVisual SizeX="29" SizeY="12" BorderMode="Hard" OffsetX="373" OffsetY="4" OffsetZ="0">
             <MaskBrush>
               <Source>
                 <ColorBrush Color="#ffffffff" />
@@ -32,7 +32,7 @@
           <wucSpriteVisual SizeX="150" SizeY="50" BorderMode="Soft" OffsetX="250" OffsetY="19" OffsetZ="0">
             <SurfaceBrush Stretch="Fill" Transform="Identity" />
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="27" SizeY="10" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+          <wucSpriteVisual SizeX="29" SizeY="12" BorderMode="Hard" OffsetX="-1" OffsetY="4" OffsetZ="0">
             <MaskBrush>
               <Source>
                 <ColorBrush Color="#ffffffff" />
@@ -54,7 +54,7 @@
             </TransformMatrix>
             <Visual Tag="PrimaryVisual" CompositeMode="SourceOver">
               <Visual Tag="ContentVisual">
-                <wucSpriteVisual SizeX="27" SizeY="10" BorderMode="Hard" ScaleX="-1" OffsetX="26" OffsetY="5" OffsetZ="0">
+                <wucSpriteVisual SizeX="29" SizeY="12" BorderMode="Hard" ScaleX="-1" OffsetX="27" OffsetY="4" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />

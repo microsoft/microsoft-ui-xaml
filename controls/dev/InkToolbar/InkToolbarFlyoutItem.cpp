@@ -425,20 +425,43 @@ void InkToolbarFlyoutItem::OnIsCheckedChanged(winrt::DependencyPropertyChangedEv
     }
 
     UpdateStates(false);
+    auto kind = Kind();
+    bool isSelectionItem = kind == winrt::InkToolbarFlyoutItemKind::Radio || kind == winrt::InkToolbarFlyoutItemKind::RadioCheck;
+
+    // Ensure other items in the radio group are unchecked when checked programmatically.
+    if (newValue && isSelectionItem)
+    {
+        ForAllOthersInGroup(*this, [](winrt::InkToolbarFlyoutItem const& item)
+        {
+            item.IsChecked(false);
+            return true;
+        });
+    }
+
+    if (isSelectionItem)
+    {
+        if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+            {
+                peer.RaisePropertyChangedEvent(
+                    winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
+                    winrt::box_value(oldValue),
+                    winrt::box_value(newValue));
+            }
+
+            auto selectionEvent = newValue
+                ? winrt::AutomationEvents::SelectionItemPatternOnElementSelected
+                : winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection;
+            if (winrt::AutomationPeer::ListenerExists(selectionEvent))
+            {
+                peer.RaiseAutomationEvent(selectionEvent);
+            }
+        }
+    }
 
     if (newValue)
     {
-        auto kind = Kind();
-        // Ensure other items in the radio group are unchecked when checked programmatically.
-        if (kind == winrt::InkToolbarFlyoutItemKind::Radio || kind == winrt::InkToolbarFlyoutItemKind::RadioCheck)
-        {
-            ForAllOthersInGroup(*this, [](winrt::InkToolbarFlyoutItem const& item)
-            {
-                item.IsChecked(false);
-                return true;
-            });
-        }
-
         m_checkedEventSource(*this, nullptr);
     }
     else

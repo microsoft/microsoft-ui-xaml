@@ -50,6 +50,10 @@ _Check_return_ HRESULT GridView::GetCurrentTransitionContext(
         *returnValue = ThemeTransitionContext::MultipleDeleteGrid;
         break;
 
+    case ThemeTransitionContext::MixedOperationsList:
+        *returnValue = ThemeTransitionContext::MixedOperationsGrid;
+        break;
+
     case ThemeTransitionContext::SingleReorderList:
         *returnValue = ThemeTransitionContext::SingleReorderGrid;
         break;

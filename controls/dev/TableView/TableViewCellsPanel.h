@@ -45,9 +45,10 @@ public:
     // that is currently being edited; null for the header host, which has no row.
     void SetOwningRowInternal(winrt::TableViewRow const& row);
 
-private:
     // Each cell is Tagged with its owning TableViewColumn; this reads it (or null).
     static winrt::TableViewColumn ColumnForCell(winrt::UIElement const& child);
+
+private:
     void CacheMeasuredWidthForColumn(winrt::TableViewColumn const& column, double measuredWidth);
 
     // Records this panel's freshly measured width for a column into newLastMeasured and returns true if

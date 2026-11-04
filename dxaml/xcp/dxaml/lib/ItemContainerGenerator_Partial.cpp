@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ItemContainerGenerator.g.h"
 #include "GroupStyle.g.h"
 #include "Panel.g.h"
@@ -1350,7 +1351,11 @@ ItemContainerGenerator::Generator::GenerateNext(
     _Out_ BOOLEAN* isNewlyRealized,
     _Outptr_ xaml::IDependencyObject** returnValue)
 {
-    TraceGenerateContainerBegin();
+    const bool traceGenerateContainer = XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::LayoutKeyword);
+    if (traceGenerateContainer)
+    {
+        XamlTelemetry::GenerateContainerBegin();
+    }
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spContainer;
     ctl::ComPtr<IGeneratorHost> spHost;
@@ -1483,7 +1488,16 @@ ItemContainerGenerator::Generator::GenerateNext(
     IFC(spContainer.CopyTo(returnValue));
 
 Cleanup:
-    TraceGenerateContainerEnd();
+    if (traceGenerateContainer)
+    {
+        auto coreContainer = spContainer ? spContainer.Cast<DependencyObject>()->GetHandle() : nullptr;
+        ctl::ComPtr<xaml::IUIElement> hostElement;
+        if (coreContainer && !coreContainer->OfTypeByIndex<KnownTypeIndex::UIElement>())
+        {
+            hostElement = spHost.AsOrNull<xaml::IUIElement>();
+        }
+        XamlTelemetry::GenerateContainerEnd(coreContainer, hostElement ? hostElement.Cast<UIElement>()->GetHandle() : nullptr);
+    }
     RRETURN(hr);
 }
 

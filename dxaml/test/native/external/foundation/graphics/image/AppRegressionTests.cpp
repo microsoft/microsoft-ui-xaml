@@ -820,7 +820,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             RunOnUIThread([&]()
             {
-                TestServices::WindowHelper->WindowContent = ref new MeasureOverrideSetsImageUri(GetResourcesPath() + L"barcelona.png");
+                auto content = ref new MeasureOverrideSetsImageUri(GetResourcesPath() + L"barcelona.png");
+                auto root = ref new xaml_controls::Grid();
+                root->Children->Append(content);
+                TestServices::WindowHelper->WindowContent = root;
             });
 
             decodeEtwWaiter.WaitForDefault();

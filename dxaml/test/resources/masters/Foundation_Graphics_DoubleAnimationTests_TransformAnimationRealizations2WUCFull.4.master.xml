@@ -4,10 +4,10 @@
     <Visual />
     <Visual />
     <Visual Tag="PrependVisual">
-      <Visual Tag="PrimaryVisual" SizeX="267.3" SizeY="267.3">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
         <Visual Tag="ContentVisual">
           <Visual Tag="PrependVisual" SizeX="400" SizeY="400">
-            <Clip ClipLeft="0" ClipTop="0" ClipRight="132.7" ClipBottom="132.7" TransformMatrix="Identity" />
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
             <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="400" SizeY="400">
               <TransformMatrix>
                 <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
@@ -46,7 +46,7 @@
                       <Scale ScaleX="2" ScaleY="2" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="61" SizeY="30" BorderMode="Hard" ScaleX="0.3333" ScaleY="0.3333" OffsetX="1.333" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="63" SizeY="32" BorderMode="Hard" ScaleX="0.3333" ScaleY="0.3333" OffsetX="1" OffsetY="4.667" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {0, 0.502, 0}" />

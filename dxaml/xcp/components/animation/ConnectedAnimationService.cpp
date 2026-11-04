@@ -112,10 +112,15 @@ _Check_return_ HRESULT CConnectedAnimationService::OnUnloadingElement(_In_ CUIEl
         {
             // Add detained element to the unloading storage.
             xref_ptr<CUIElement> element(unloadingElement);
+            auto visualTree = VisualTree::GetForElementNoRef(element);
+            CConnectedAnimationRoot* connectedAnimationRoot =
+                visualTree != nullptr ? visualTree->GetConnectedAnimationRoot() : GetContext()->GetConnectedAnimationRoot();
+            ASSERT(connectedAnimationRoot != nullptr);
+
             m_retainedElements.push_back(element);
-            auto core = GetContext();
-            core->GetConnectedAnimationRoot()->SetNeedsUnloadingHWWalk(true);
-            CUIElement::NWSetContentDirty(core->GetConnectedAnimationRoot(), DirtyFlags::Render);
+            m_retainedElementRoots.emplace_back(connectedAnimationRoot);
+            connectedAnimationRoot->SetNeedsUnloadingHWWalk(true);
+            CUIElement::NWSetContentDirty(connectedAnimationRoot, DirtyFlags::Render);
             // We need to render walk the rataining element in order to create the comp node for the source element.
             // However we need to hide the retaining element for the next frame.
             if (!element->HasActiveConnectedAnimation())
@@ -132,10 +137,13 @@ _Check_return_ HRESULT CConnectedAnimationService::OnUnloadingElement(_In_ CUIEl
 _Check_return_ HRESULT CConnectedAnimationService::CleanupRetainedElements()
 {
     // Remove all the detained element from unloading storage.
-    for (auto& element : m_retainedElements)
+    for (size_t i = 0; i < m_retainedElements.size(); ++i)
     {
+        auto& element = m_retainedElements[i];
         CUIElement* pParent = nullptr;
         bool bWasUnloading = false;
+
+        m_retainedElementRoots[i]->SetNeedsUnloadingHWWalk(false);
 
         // unload target
         pParent = do_pointer_cast<CUIElement>(element->GetParentInternal());
@@ -147,13 +155,7 @@ _Check_return_ HRESULT CConnectedAnimationService::CleanupRetainedElements()
     }
 
     m_retainedElements.clear();
-
-    auto core = GetContext();
-
-    if (core->GetConnectedAnimationRoot())
-    {
-        core->GetConnectedAnimationRoot()->SetNeedsUnloadingHWWalk(false);
-    }
+    m_retainedElementRoots.clear();
     return S_OK;
 }
 
@@ -330,3 +332,17 @@ const std::vector<xref_ptr<CUIElement>>& CConnectedAnimationService::GetUnloadin
     return m_retainedElements;
 }
 
+bool CConnectedAnimationService::IsUnloadingElementForRoot(
+    _In_ CUIElement* element,
+    _In_ CConnectedAnimationRoot* root) const
+{
+    for (size_t i = 0; i < m_retainedElements.size(); ++i)
+    {
+        if (m_retainedElements[i].get() == element)
+        {
+            return m_retainedElementRoots[i].get() == root;
+        }
+    }
+
+    return false;
+}

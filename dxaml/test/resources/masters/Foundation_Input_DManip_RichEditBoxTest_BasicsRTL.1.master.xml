@@ -131,7 +131,7 @@
                       <ColorBrush Color="#00000000" />
                     </wucSpriteVisual>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="359" SizeY="24" BorderMode="Hard" OffsetX="1" OffsetY="7" OffsetZ="0">
+                      <wucSpriteVisual SizeX="361" SizeY="26" BorderMode="Hard" OffsetX="0" OffsetY="6" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
