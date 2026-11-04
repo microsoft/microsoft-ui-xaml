@@ -87,6 +87,12 @@ Describe 'System composition engine pipeline review fixes' {
         $script:broadGenerator = Join-Path `
             $PSScriptRoot `
             'New-SystemCompositionEngineBroadWorkItem.ps1'
+        $script:crashDumpPolicy = Join-Path `
+            $PSScriptRoot `
+            'Set-SystemCompositionEngineCrashDumpPolicy.ps1'
+        $script:sliceRunner = Join-Path `
+            $script:repositoryRoot `
+            'Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1'
         $script:excludedTestsManifest = Join-Path `
             $PSScriptRoot `
             'SystemCompositionEngineExcludedTests-WPF.csv'
@@ -144,6 +150,9 @@ Describe 'System composition engine pipeline review fixes' {
                 Import-Csv -LiteralPath $script:focusedExcludedTestsManifest |
                     ForEach-Object { [string]$_.TestName }
             )
+            $focusedTests += (
+                'Microsoft::UI::Xaml::Tests::Foundation::Graphics::' +
+                'SystemCompositionEngineTests::UnexcludedControl')
             $harness = New-FakeTaefHarness -RegularTests $focusedTests
             $outputProjFile = Join-Path $TestDrive 'focused-output.proj'
 
@@ -159,6 +168,14 @@ Describe 'System composition engine pipeline review fixes' {
                 -ExcludedTestsManifestPath $script:focusedExcludedTestsManifest
 
             @($result.MatchedExcludedTests).Count | Should Be 14
+            [xml]$plan = Get-Content -LiteralPath $outputProjFile -Raw
+            $commands = @(
+                $plan.SelectNodes('/Project/ItemGroup/HelixWorkItem') |
+                    ForEach-Object { [string]$_.Command }
+            )
+            ($commands.Count -gt 0) | Should Be $true
+            ($commands -join [Environment]::NewLine) |
+                Should Not Match '/reportLoadingIssue'
         }
 
         It 'rejects an invalid focused failure category' {
@@ -226,6 +243,8 @@ Describe 'System composition engine pipeline review fixes' {
             $workItems = @($plan.SelectNodes('/Project/ItemGroup/HelixWorkItem'))
             $workItems.Count | Should Be 1
             ([string]$workItems[0].Command) | Should Not Match '/runIgnoredTests'
+            ([string]$workItems[0].Command) |
+                Should Not Match '/reportLoadingIssue'
         }
     }
 
@@ -342,6 +361,185 @@ Describe 'System composition engine pipeline review fixes' {
                 $plan.SelectSingleNode('/Project/ItemGroup/HelixWorkItem').Command)
             $command | Should Match (
                 [regex]::Escape("NOT(@Name='$excludedTestName')"))
+        }
+    }
+
+    Context 'token-bearing host crash dump policy' {
+        BeforeEach {
+            $id = [guid]::NewGuid().ToString('N')
+            $script:testRegistryCleanupPath = (
+                "Software\Microsoft\Windows\Windows Error Reporting\" +
+                "WinUITests\$id")
+            $script:testLocalDumpsRegistryPath =
+                "$script:testRegistryCleanupPath\LocalDumps"
+            $script:testProcessName = 'te.processhost.exe'
+        }
+
+        AfterEach {
+            $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+                [Microsoft.Win32.RegistryHive]::CurrentUser,
+                [Microsoft.Win32.RegistryView]::Registry64)
+            try {
+                $baseKey.DeleteSubKeyTree(
+                    $script:testRegistryCleanupPath,
+                    $false)
+            }
+            finally {
+                $baseKey.Close()
+            }
+        }
+
+        It 'overrides an inherited full dump policy and removes its temporary key' {
+            $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+                [Microsoft.Win32.RegistryHive]::CurrentUser,
+                [Microsoft.Win32.RegistryView]::Registry64)
+            try {
+                $localDumpsKey = $baseKey.CreateSubKey(
+                    $script:testLocalDumpsRegistryPath)
+                try {
+                    $localDumpsKey.SetValue(
+                        'DumpType',
+                        2,
+                        [Microsoft.Win32.RegistryValueKind]::DWord)
+                }
+                finally {
+                    $localDumpsKey.Close()
+                }
+            }
+            finally {
+                $baseKey.Close()
+            }
+
+            $state = & $script:crashDumpPolicy `
+                -ProcessName $script:testProcessName `
+                -RegistryHive CurrentUser `
+                -RegistryView Registry64 `
+                -LocalDumpsRegistryPath $script:testLocalDumpsRegistryPath
+
+            $state.ProcessKeyExisted | Should Be $false
+            $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+                [Microsoft.Win32.RegistryHive]::CurrentUser,
+                [Microsoft.Win32.RegistryView]::Registry64)
+            try {
+                $processKey = $baseKey.OpenSubKey(
+                    "$script:testLocalDumpsRegistryPath\$script:testProcessName")
+                try {
+                    [int]$processKey.GetValue('DumpType') | Should Be 1
+                    $processKey.GetValueKind('DumpType') |
+                        Should Be ([Microsoft.Win32.RegistryValueKind]::DWord)
+                }
+                finally {
+                    $processKey.Close()
+                }
+            }
+            finally {
+                $baseKey.Close()
+            }
+
+            & $script:crashDumpPolicy -RestoreState $state
+
+            $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+                [Microsoft.Win32.RegistryHive]::CurrentUser,
+                [Microsoft.Win32.RegistryView]::Registry64)
+            try {
+                $localDumpsKey = $baseKey.OpenSubKey(
+                    $script:testLocalDumpsRegistryPath)
+                try {
+                    [int]$localDumpsKey.GetValue('DumpType') | Should Be 2
+                    $processKey = $localDumpsKey.OpenSubKey(
+                        $script:testProcessName)
+                    ($null -eq $processKey) | Should Be $true
+                }
+                finally {
+                    $localDumpsKey.Close()
+                }
+            }
+            finally {
+                $baseKey.Close()
+            }
+        }
+
+        It 'restores an existing per-process dump policy without changing sibling values' {
+            $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+                [Microsoft.Win32.RegistryHive]::CurrentUser,
+                [Microsoft.Win32.RegistryView]::Registry64)
+            try {
+                $processKey = $baseKey.CreateSubKey(
+                    "$script:testLocalDumpsRegistryPath\$script:testProcessName")
+                try {
+                    $processKey.SetValue(
+                        'DumpType',
+                        2,
+                        [Microsoft.Win32.RegistryValueKind]::DWord)
+                    $processKey.SetValue(
+                        'DumpCount',
+                        7,
+                        [Microsoft.Win32.RegistryValueKind]::DWord)
+                    $processKey.SetValue(
+                        'DumpFolder',
+                        '%TEMP%\OriginalDumps',
+                        [Microsoft.Win32.RegistryValueKind]::ExpandString)
+                }
+                finally {
+                    $processKey.Close()
+                }
+            }
+            finally {
+                $baseKey.Close()
+            }
+
+            $state = & $script:crashDumpPolicy `
+                -ProcessName $script:testProcessName `
+                -RegistryHive CurrentUser `
+                -RegistryView Registry64 `
+                -LocalDumpsRegistryPath $script:testLocalDumpsRegistryPath
+
+            $state.ProcessKeyExisted | Should Be $true
+            $state.DumpTypeExisted | Should Be $true
+            & $script:crashDumpPolicy -RestoreState $state
+
+            $baseKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+                [Microsoft.Win32.RegistryHive]::CurrentUser,
+                [Microsoft.Win32.RegistryView]::Registry64)
+            try {
+                $processKey = $baseKey.OpenSubKey(
+                    "$script:testLocalDumpsRegistryPath\$script:testProcessName")
+                try {
+                    [int]$processKey.GetValue('DumpType') | Should Be 2
+                    [int]$processKey.GetValue('DumpCount') | Should Be 7
+                    $processKey.GetValue(
+                        'DumpFolder',
+                        $null,
+                        [Microsoft.Win32.RegistryValueOptions]::
+                            DoNotExpandEnvironmentNames) |
+                        Should Be '%TEMP%\OriginalDumps'
+                }
+                finally {
+                    $processKey.Close()
+                }
+            }
+            finally {
+                $baseKey.Close()
+            }
+        }
+
+        It 'applies before token creation and restores after mapping disposal' {
+            $runnerContent = Get-Content -LiteralPath $script:sliceRunner -Raw
+            $applyIndex = $runnerContent.IndexOf(
+                '$systemCompositionEngineCrashDumpPolicyState = &')
+            $launchRequestIndex = $runnerContent.IndexOf(
+                '& $setLaunchRequestScript @launchRequestParameters')
+            $disposeIndex = $runnerContent.IndexOf(
+                '$systemCompositionEngineLaunchRequest.Dispose()')
+            $restoreIndex = $runnerContent.IndexOf(
+                '-RestoreState $systemCompositionEngineCrashDumpPolicyState')
+
+            ($applyIndex -ge 0) | Should Be $true
+            ($launchRequestIndex -ge 0) | Should Be $true
+            ($disposeIndex -ge 0) | Should Be $true
+            ($restoreIndex -ge 0) | Should Be $true
+            ($applyIndex -lt $launchRequestIndex) | Should Be $true
+            ($disposeIndex -lt $restoreIndex) | Should Be $true
         }
     }
 

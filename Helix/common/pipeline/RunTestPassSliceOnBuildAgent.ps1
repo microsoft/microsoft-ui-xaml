@@ -92,6 +92,8 @@ if (-not $testSliceHasWork)
 
 $systemCompositionEngineLaunchRequest = $null
 $systemCompositionEngineLaunchRequestDirectory = $null
+$systemCompositionEngineCrashDumpPolicyState = $null
+$systemCompositionEngineCrashDumpPolicyScript = $null
 
 function Move-CrashDumpsToUploadRoot
 {
@@ -123,6 +125,15 @@ try
             {
                 $repositoryRoot = [IO.Path]::GetFullPath(
                     (Join-Path $PSScriptRoot "..\..\.."))
+                $systemCompositionEngineCrashDumpPolicyScript = Join-Path `
+                    $repositoryRoot `
+                    "build\PipelineScripts\Set-SystemCompositionEngineCrashDumpPolicy.ps1"
+                $systemCompositionEngineCrashDumpPolicyState = & $systemCompositionEngineCrashDumpPolicyScript `
+                    -ProcessName "te.processhost.exe"
+                if ($null -eq $systemCompositionEngineCrashDumpPolicyState)
+                {
+                    Throw "The token-bearing host crash dump policy was not applied."
+                }
                 $systemCompositionEngineLaunchRequestDirectory = Join-Path `
                     $TestPayloadDir `
                     "Test\.winui-composition-engine"
@@ -208,10 +219,6 @@ finally
         -ErrorAction SilentlyContinue
     try
     {
-        Move-CrashDumpsToUploadRoot
-    }
-    finally
-    {
         try
         {
             if ($null -ne $systemCompositionEngineLaunchRequest)
@@ -231,6 +238,21 @@ finally
                     -Recurse `
                     -Force
             }
+        }
+    }
+    finally
+    {
+        try
+        {
+            if ($null -ne $systemCompositionEngineCrashDumpPolicyState)
+            {
+                & $systemCompositionEngineCrashDumpPolicyScript `
+                    -RestoreState $systemCompositionEngineCrashDumpPolicyState
+            }
+        }
+        finally
+        {
+            Move-CrashDumpsToUploadRoot
         }
     }
 }

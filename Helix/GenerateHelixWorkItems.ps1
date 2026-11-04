@@ -86,8 +86,7 @@ if ($CompositionEngineType -eq "System")
     $taefExtraParameters = (
         "/p:CompositionEngineType=System " +
         "/p:CompositionEngineLaunchRequestPath=" +
-        "%HELIX_CORRELATION_PAYLOAD%\Test\.winui-composition-engine\system " +
-        "/reportLoadingIssue")
+        "%HELIX_CORRELATION_PAYLOAD%\Test\.winui-composition-engine\system")
 }
 
 if ($HostingMode) {

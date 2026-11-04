@@ -133,7 +133,7 @@ try {
         "/p:CompositionEngineType=System " +
         "/p:CompositionEngineLaunchRequestPath=" +
         "%HELIX_CORRELATION_PAYLOAD%\Test\.winui-composition-engine\system " +
-        "/reportLoadingIssue /p:HostingMode=WPF")
+        "/p:HostingMode=WPF")
 
     Write-Host (
         "Selecting broad WPF system composition engine tests while excluding " +
