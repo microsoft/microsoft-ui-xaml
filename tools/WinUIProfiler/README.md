@@ -51,9 +51,10 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file. It can also read them from a
-recorded trace (`.etl`) into a session file. The Frames tab shows its frames,
-and the Objects tab its UI elements and composition visuals.
+GPU memory and window focus events for it, to a session file. It can also read
+them from a recorded trace (`.etl`) into a session file. The Frames tab shows
+its UI-thread ticks and the regions of interest in them, and the Objects tab
+its UI elements and composition visuals.
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
@@ -205,8 +206,9 @@ errors and scope limitations are included in the JSON rather than fabricated val
 ## XAML events
 
 `WinUIProfiler.Core` reads all the events of the XAML providers for one process,
-and the kernel's GPU memory events for it, live or from a recorded `.etl` file.
-Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
+and the kernel's GPU memory and window focus events for it, live or from a
+recorded `.etl` file. Each event becomes a `ProfilerEvent`
+(`Events\ProfilerEvent.cs`).
 
 | Provider | GUID | Events read |
 | --- | --- | --- |
@@ -216,6 +218,7 @@ Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 | Microsoft.UI.Xaml | `2dc72f6e-e4d1-5f58-3245-09a4243799dd` | The runtime's telemetry events, such as the first UI thread frame (`FirstUiThreadFrameEnd`), D3D device sharing and loss, XAML islands, GC durations and fail-fasts |
 | Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
+| Microsoft-Windows-Win32k | `8c416c79-d49b-4f01-a467-e56d3aa8234c` | Window focus changes, keyword `0x2000` at level 4: event 2, the only event with that keyword, once per focus change. Its fields are the thread that lost focus and the thread that got it |
 
 Projection-layer activities, peer association and surface initialization use
 runtime ETW enablement in all build configurations. Remaining element and
@@ -228,6 +231,10 @@ process opens a GPU adapter and when a session requests capture state. The
 System process writes some of them, such as those written when the process
 exits, which bring the usage down to 0. So they are matched to the process by
 their `ProcessId` field, which becomes the event's process ID.
+
+The focus events also come from Windows, for every process with windows. They
+are matched to the process by the event header, and only start the Frames
+tab's regions of interest (see Frames tab below).
 
 The XAML providers are enabled with every keyword at level 5 (Verbose). That
 includes the telemetry events, which have keyword bits, and the TraceLogging
@@ -331,8 +338,8 @@ so events are still only dropped at the queue.
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
 | `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
-| `Frames` | One row per frame on a UI thread: thread, frame number, ticks, and their timing (see below) |
-| `FrameEvents` | One row per UI-thread event: `Seq`, its `FrameId`, and its bucket: `Xaml`, `Composition` or `Other` |
+| `Frames` | One row per tick on a UI thread: thread, frame number, start and end (see below) |
+| `FrameEvents` | One row per UI-thread event: `Seq`, the `FrameId` of its tick, and its bucket: `Xaml`, `Composition` or `Other` |
 
 JSON has no Infinity or NaN, so those values are stored as the strings
 `"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
@@ -353,6 +360,37 @@ trimming it starts later). In the sessions measured, arrival order matched
 timestamp order, but ETW does not guarantee that across processors, and two
 events can have the same timestamp: to order events by time, sort by `Qpc`,
 then `Seq`.
+
+### Shared queries (views)
+
+The rules that turn the tables into the Frames tab's data are SQL views in the
+session file (`Storage\SessionSchema.cs`), not C# code. The app, the CLI and
+any SQLite reader, such as an AI agent with only the file, read the same rows
+from them. Each view's description is inside its definition, so
+`SELECT sql FROM sqlite_master WHERE type = 'view'` shows it, and
+`SELECT * FROM QueryCatalog` lists the views with an example query each.
+Times are in ms from the start of the recording.
+
+| View | Rows | Used by |
+| --- | --- | --- |
+| `EventDetails` | Every event, with its fields by name (JSON object), its tick and bucket, and the UI elements and visuals it mentions | The events of a region or row |
+| `TickEvents` | The same columns for each tick's events, read through the tick's index | The events of a tick, `frames --frame` |
+| `Ticks` | Every tick: times, `Drew`, `Slow` (over 16.7 ms), event counts by bucket | `frames` |
+| `InterestingRows` | The regions of interest and the interesting rows (rules in Frames tab below), with `RegionId` and `TickId` | `interesting`, a region's rows |
+| `InterestingRowEvents` | The events of each interesting row | Agents |
+| `FrameList` | The Frames tab's list in order, with what each Show choice keeps (`InInteresting`, `InSlow`) | The Frames tab, `frames --list` |
+| `LaunchSummary` | When the first 10 ticks that drew ended, from process start or recording start | The Frames tab |
+| `QueryCatalog` | The views and an example query each | Agents |
+
+```sql
+SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex;                 -- the tab with Show = Regions of interest
+SELECT * FROM InterestingRows WHERE RegionId = :region ORDER BY StartSeq;       -- a region and the rows in it
+SELECT Seq, Ms, Name, Bucket, Fields FROM TickEvents WHERE TickId = :tick ORDER BY Seq;   -- a tick's events
+```
+
+`InterestingRows` uses the `EventsByType` index. On a 148 MB file, it takes
+about 0.15 s, and `FrameList` about 0.65 s. Files written before the views were
+added are not read; record them again.
 
 ### UI elements
 
@@ -409,27 +447,23 @@ visual surface events mention.
 
 ### Frames
 
-The writer also records which frame each UI-thread event belongs to
-(`Storage\FrameIndex.cs`), in the same transaction.
+The writer also records which UI-thread tick each event belongs to
+(`Storage\FrameIndex.cs`), in the same transaction. Each tick is a row of the
+`Frames` table.
 
 - `CoreServices_Frame` marks the start and end of every UI-thread tick with the
-  core's frame counter, which only advances when a tick submits composition
-  commands. A tick with nothing to submit keeps the number, so a frame is
-  usually one tick, sometimes a few short ticks that drew nothing and then the
-  one that drew. Frames are per UI thread.
-- Events that carry `FrameNumber` (`DependencyObject_Enter`, `ApplyTemplate`,
-  `GoToStateOptimized`, ...) belong to that frame. Other events between a
-  tick's start and stop belong to that tick's frame; events between ticks
-  belong to the next frame, the one that renders them. So do a thread's events
-  before its first frame number, such as the rest of a tick in progress when
-  the recording started.
-- Events on threads that never report a frame number (the render and image
-  decode threads) are not attributed, nor are a UI thread's last events if no
-  frame number follows them.
-- `StartQpc` to `EndQpc` spans all of a frame's ticks, including idle time
-  between them; `LastTickStartQpc` to `EndQpc` is the tick that drew;
-  `TickTimeQpc` is the time spent in its ticks. A thread's latest frame may not
-  have drawn yet.
+  core's frame counter, which only advances after a tick submits composition
+  commands. A tick with nothing to submit keeps the number. So a frame number
+  usually has one tick, and sometimes a few short ticks that drew nothing and
+  then the one that drew. A tick drew if the thread's next tick has a higher
+  number. For the thread's latest tick, this is not known yet.
+- Events between a tick's start and its stop belong to that tick. Events
+  between ticks belong to the thread's next tick, the one that renders them.
+  So do a thread's events before its first tick. A stop without a start ends
+  a tick that was in progress when the recording started. That tick has no
+  `StartQpc`.
+- Events on threads that never tick (the render and image decode threads) are
+  not attributed. Nor are a UI thread's last events if no tick follows them.
 - Buckets: `Xaml` for the tree, `DependencyObject_Enter`, templates, visual
   states and loading; `Composition` for composition node, WUC visual and
   surface events; `Other` for everything else (layout, rendering, scheduling).
@@ -441,26 +475,75 @@ The writer also records which frame each UI-thread event belongs to
 
 The app's Frames tab (`Views\FramesView.xaml`) reads the session file of the
 connection, or of the trace being read, once a second until the connection or
-the reading ends: only the frames that changed since the last read
-(`SessionFile.ReadChangedFrames`). When the writer trims the oldest events, the
-tab reads the file again. **Open session file...** shows a saved file instead,
-in this tab and the Objects tab, until the next connection or trace read.
+the reading ends: the `FrameList` view, when the file has new events. It keeps
+the rows it read before, so the selection and the scroll position stay. When the
+writer trims the oldest events, the tab reads the file again. **Open session
+file...** shows a saved file instead, in this tab and the Objects tab, until the
+next connection or trace read. A new connection or trace read clears both tabs
+right away.
 
-- Each frame shows when it was drawn (the end of its drawing tick), how long
-  the drawing tick took (the bar is full at 50 ms; a warning icon marks more
-  than 16.7 ms) and its events per bucket. `*` marks a thread's latest frame.
-  Ticks that draw nothing keep the frame number, so after an idle period a
-  frame's first tick can be long before it was drawn; the frame's title shows
-  both.
-- Selecting a frame shows its events, 100 per page, all or one bucket. The
+The list has one row for each tick, in time order. **Show** selects the rows:
+
+- **All ticks**: every tick. A region of interest (see below) is a teal header
+  row right above the tick it ends with, and that tick is tinted. An
+  interesting row outside the regions, such as graphics device creation on a
+  worker thread, is a gray row.
+- **Regions of interest**: only the regions, their ticks and the gray rows.
+  The `InterestingRows` view finds them with the rules below.
+- **Slow ticks (over 16.7 ms)**: only the ticks that took more than 16.7 ms.
+
+A tick shows its frame number, when it started, how long it took, a check mark
+if it drew a frame, and its events per bucket. The bar is full at 50 ms, and a
+warning icon marks more than 16.7 ms. A region header shows what started the
+region, such as `Frame::Navigating`, and its span. The tints and accent bars
+are in `App.xaml`. They give way to the list's hover and selection colors.
+
+- Selecting a tick shows its events, 100 per page, all or one bucket. The
   filter keeps events whose name or a string field contains the text; a number
   (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the
   selected event mentions UI elements or visuals, its details link to each
   one's history in the Objects tab. Each link has the same Element or Visual
   badge as the Objects tab.
+- Selecting a region lists the interesting rows in it: its tick, `UpdateLayout`
+  passes, operations, navigations and focus changes. Below them are its
+  thread's events from the region's start to its end, with the same buckets,
+  filter and pages. Selecting a gray row shows its thread's events from its
+  start to its stop.
 - For a launch recorded from process start, the tab gives when the first ten
-  drawn frames of the first UI thread ended, from the process's creation;
+  ticks that drew on the first UI thread ended, from the process's creation;
   otherwise from the start of the recording. A trimmed file no longer has them.
+- `WinUIProfiler.Cli frames` prints the ticks, `frames --list` the tab's list
+  (`--show interesting` or `slow` as the Show filter), and `interesting` the
+  interesting rows (`--region <id>` for one region). `--json` prints the views'
+  values.
+
+The regions answer a different question from the tick time: which ticks
+render a large change to the tree, not which ticks were slow. A slow tick with
+no trigger before it is not interesting, and a fast one after a navigation is.
+The rules:
+
+- A region of interest starts on a UI thread at a navigation
+  (`FrameNavigating`, `FrameNavigated`), at the start of a `PerfXamlEvent`
+  (`WXM::InitializeForCurrentThread`, `DWXS::Initialize`, `MenuFlyout::ShowAt`,
+  `FlyoutBase::ShowAt[WithOptions]`, `ContentDialog::ShowAsync[WithPlacement]`)
+  or at a window focus change, and ends at the end of that thread's next tick.
+  So a region holds one tick, and the time before it, such as building a page.
+  A trigger during a tick moves the start back to that tick's start, and a
+  trigger while a region is open is ignored. A focus change on a thread with
+  no rows yet is held, and the next trigger's region starts at it.
+- The rows are the region, and the ticks (`Frame`), `UpdateLayout` passes,
+  `PerfXamlEvent` operations, navigations and focus changes that start in it.
+  Operations, focus changes and graphics device creation
+  (`CreateGraphicsDevice`, on a worker thread) are interesting anyway.
+- A start while one of the same kind is open on the thread is ignored, as is a
+  stop without a start, such as the end of a tick in progress when the
+  recording started.
+
+Limits:
+
+- There is no CPU time per row: that needs the kernel's context switch events.
+- WinAppSDK 1.4 and earlier trigger regions with `ApiFunctionCall` events,
+  which are not read.
 
 ### Objects tab
 
@@ -473,14 +556,13 @@ keeps the objects whose type, name or address contains the text. Selecting one
 shows its history: the events that mention it, 100 per page, each with the
 frame it belongs to. While connected or reading a trace, the tab reads the file
 once a second while it is shown, keeping the list's scroll position and
-selection. Session files written before visuals were indexed show all their
-objects as elements.
+selection.
 
 Each row starts with an Element or Visual badge, and element rows have a light
 blue background, visual rows a light amber one (darker shades in the dark
 theme; the brushes are in `App.xaml`). The background gives way to the list's
 own hover and selection colors, and high contrast uses the system colors, so
-the badge is what always shows the kind. Opening an object from a frame's
+the badge is what always shows the kind. Opening an object from a tick's
 event or a snapshot resets the kind list to all objects.
 
 Snapshots don't record the runtime's element addresses, only each XAML
@@ -518,7 +600,8 @@ from a trace. Run from this directory:
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
 '{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
 '{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
-'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5' | Set-Content providers.txt
+'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5',
+'{8C416C79-D49B-4F01-A467-E56D3AA8234C} 0x2000 4' | Set-Content providers.txt
 logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
 # ... use the target app ...
 logman stop XamlTrace -ets
@@ -532,8 +615,11 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
 & $cli objects session.sqlite --type Button    # UI elements and visuals (--kind element|visual), with first/last seen and event counts
 & $cli timeline session.sqlite --object <id>   # the events that mention one object, with their frames (or --address 0x...)
-& $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
-& $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
+& $cli frames session.sqlite                   # ticks per UI thread, with timing, whether each drew, and events per bucket
+& $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one tick's events, as in the Frames tab
+& $cli interesting session.sqlite              # the regions of interest and the interesting rows in them, with what started each region
+& $cli frames session.sqlite --list --show interesting   # the Frames tab's list, as Show = Regions of interest keeps it, with region IDs
+& $cli interesting session.sqlite --region <id> --json   # one region and its rows, as JSON
 ```
 
 The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
@@ -545,7 +631,7 @@ when the trace has the kernel's process events, as a WPR trace has. **Open
 trace** reads the selected process's events into a new session file, named
 after the process, or after the trace when the process has no name. The events
 go through the same pipeline and processors as a live session's, so the file
-holds the same events, UI elements, visuals and frames as one `record` writes
+holds the same events, UI elements, visuals and ticks as one `record` writes
 from the trace, and the Frames and Objects tabs follow it as it grows.
 
 - A reader thread reads the file in its order and posts the process's events to

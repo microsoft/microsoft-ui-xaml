@@ -6,12 +6,12 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's events from the XAML providers, and the kernel's GPU memory events for it, from a TraceEvent
-// source (an .etl file or a live session). TraceLogging events carry their own field names and types. Manifest events
-// are decoded with the manifest Windows registers for their provider: system XAML's for Microsoft-Windows-XAML and
-// Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for DxgKrnl. An event that manifest
-// does not describe is not delivered. WinUI's FrameInfo is the one shared event whose fields differ, so it is decoded
-// here.
+// Delivers one process's events from the XAML providers, and the kernel's GPU memory and window focus events for it, from
+// a TraceEvent source (an .etl file or a live session). TraceLogging events carry their own field names and types.
+// Manifest events are decoded with the manifest Windows registers for their provider: system XAML's for
+// Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for DxgKrnl
+// and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared event whose
+// fields differ, so it is decoded here.
 internal static class XamlEventSubscription
 {
     // WINEVENT_CHANNEL_TRACELOGGING (winmeta.h). Manifest events on the same providers use other channels.
@@ -21,6 +21,10 @@ internal static class XamlEventSubscription
     // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
     private const int VidMmProcessBudgetChange = 366;
     private const int VidMmProcessUsageChange = 367;
+
+    // Microsoft-Windows-Win32k's one event with the Focus keyword (0x2000): a window focus change, with the thread
+    // that lost focus and the one that got it.
+    internal const int FocusChange = 2;
 
     // Microsoft-Windows-XAML FrameInfo, version 0. WinUI writes one 4-byte Boolean, Value, which is whether the frame
     // drew (TraceFrameInfo in xcpcore.cpp). System XAML's manifest describes four UInt32 fields instead.
@@ -50,6 +54,17 @@ internal static class XamlEventSubscription
                     PayloadProcessId(data) is { } owner && (processId is null || owner == processId))
                 {
                     match(data, XamlProvider.DxgKrnl, owner);
+                }
+
+                return;
+            }
+
+            if (data.ProviderGuid == XamlProviders.Win32k)
+            {
+                // Matched to the process by the event header's process ID.
+                if ((int)data.ID == FocusChange && (processId is null || data.ProcessID == processId))
+                {
+                    match(data, XamlProvider.Win32k, data.ProcessID);
                 }
 
                 return;
@@ -91,7 +106,7 @@ internal static class XamlEventSubscription
             {
                 var classic = unknown.IsClassicProvider;
                 var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
-                if (provider == XamlProviders.DxgKrnl || XamlProviders.TryGet(provider, out _))
+                if (provider == XamlProviders.DxgKrnl || provider == XamlProviders.Win32k || XamlProviders.TryGet(provider, out _))
                 {
                     return false;
                 }
