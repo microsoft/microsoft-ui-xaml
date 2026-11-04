@@ -531,6 +531,11 @@ inline bool HasActionableContent(
         {
             continue;
         }
+        // Nothing under a disabled Control can take focus.
+        if (auto const control = child.try_as<winrt::Control>(); control && !control.IsEnabled())
+        {
+            continue;
+        }
         --budget;
         // A non-Control UIElement (Grid, Border) with IsTabStop is focusable too, as Enter's FindFirstFocusableElement sees it.
         if (IsFocusableCellContent(child) || (!child.try_as<winrt::Control>() && child.IsTabStop()) ||

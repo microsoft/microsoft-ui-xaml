@@ -1911,7 +1911,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies that in a read-only table a cell is actionable when its only interactive content is a Hyperlink inside nested Spans, a focusable non-Control element, or content past the per-level scan cap.")]
+        [TestProperty("Description", "Verifies that in a read-only table a cell is actionable when its only interactive content is a Hyperlink inside nested Spans, a focusable non-Control element, or content past the per-level scan cap, and not when the focusable element is under a disabled Control.")]
         public void VerifyCellActionabilityCoversNestedLinksFocusablePanelsAndUnscannedChildren()
         {
             TableView tableView = null;
@@ -1946,6 +1946,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                               </StackPanel>
                           </DataTemplate>"),
                 });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "DisabledTile",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <ContentControl IsEnabled=""False""><Grid IsTabStop=""True"" Background=""Transparent""><TextBlock Text=""tile""/></Grid></ContentControl>
+                          </DataTemplate>"),
+                });
                 LoadContent(tableView);
             });
 
@@ -1958,6 +1966,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A Hyperlink inside nested Bold/Italic spans makes the cell actionable.");
                 Verify.IsTrue(GetCellPeer(row, 4).IsKeyboardFocusable(), "A focusable Grid (IsTabStop) makes the cell actionable.");
                 Verify.IsTrue(GetCellPeer(row, 5).IsKeyboardFocusable(), "Children past the per-level scan cap are assumed actionable.");
+                Verify.IsFalse(GetCellPeer(row, 6).IsKeyboardFocusable(), "A focusable Grid under a disabled Control does not make the cell actionable.");
             });
         }
 

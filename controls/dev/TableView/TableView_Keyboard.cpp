@@ -588,32 +588,54 @@ void TableView::QueueFocusTableEntry(winrt::DependencyObject const& expected, bo
 void TableView::MoveFocusOffCollapsingHeaders()
 {
     auto const root = XamlRoot();
-    const int32_t index = GetFocusedVisibleHeaderIndex();
     auto const queue = DispatcherQueue();
-    if (!root || index < 0 || !queue)
+    if (!root || !queue)
     {
         return;
     }
 
-    winrt::DependencyObject const header = GetVisibleHeaderCells(m_headerHost.get())[static_cast<size_t>(index)];
+    // Focus may be on content inside the header (a Button, CheckBox or inline Hyperlink in its template).
+    winrt::FrameworkElement headerCell{ nullptr };
+    if (!ResolveFocusedHeaderColumn(GetFocusedVisual(root), m_headerHost.get(), headerCell) || !headerCell)
+    {
+        return;
+    }
+
+    winrt::DependencyObject const header = headerCell;
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>();
     auto const focusState = focused ? focused.FocusState() : winrt::FocusState::Programmatic;
+    auto const isWithinHeader = [](winrt::DependencyObject element, winrt::DependencyObject const& originHeader)
+    {
+        if (auto const textElement = element.try_as<winrt::Microsoft::UI::Xaml::Documents::TextElement>())
+        {
+            element = textElement.ContentStart().VisualParent();
+        }
+        return element && originHeader &&
+            (element == originHeader || SharedHelpers::IsAncestor(element, originHeader, false /* checkVisibility */));
+    };
     m_headerCollapseFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
-        [weakThis = get_weak(), weakHeader = winrt::make_weak(header)](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+        [weakThis = get_weak(), weakHeader = winrt::make_weak(header), isWithinHeader](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
         {
             // One-shot: only the first move off the hidden header is XAML's rescue.
             if (auto const strongThis = weakThis.get())
             {
                 auto const originHeader = weakHeader.get();
-                auto const oldFocus = args.OldFocusedElement();
                 strongThis->m_headerCollapseFocusRevoker.revoke();
-                if ((!oldFocus || oldFocus == originHeader) && !strongThis->IsElementInBody(args.NewFocusedElement()))
+                try
                 {
-                    strongThis->TrySetBodyEntryTarget(args);
+                    auto const oldFocus = args.OldFocusedElement();
+                    if ((!oldFocus || isWithinHeader(oldFocus, originHeader)) && !strongThis->IsElementInBody(args.NewFocusedElement()))
+                    {
+                        strongThis->TrySetBodyEntryTarget(args);
+                    }
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Redirecting focus off hidden headers failed.");
                 }
             }
         });
-    queue.TryEnqueue([weakThis = get_weak(), weakHeader = winrt::make_weak(header), focusState]()
+    queue.TryEnqueue([weakThis = get_weak(), weakHeader = winrt::make_weak(header), focusState, isWithinHeader]()
         {
             auto const strongThis = weakThis.get();
             auto const root = strongThis ? strongThis->XamlRoot() : nullptr;
@@ -622,10 +644,17 @@ void TableView::MoveFocusOffCollapsingHeaders()
                 return;
             }
             strongThis->m_headerCollapseFocusRevoker.revoke();
-            auto const now = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
-            if (!strongThis->ShouldShowColumnHeaders() && (!now || now == weakHeader.get() || strongThis->FindOwnHeaderCell(now)))
+            try
             {
-                strongThis->FocusBodyEntryTarget(false /* select */, focusState);
+                auto const now = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+                if (!strongThis->ShouldShowColumnHeaders() && (!now || isWithinHeader(now, weakHeader.get())))
+                {
+                    strongThis->FocusBodyEntryTarget(false /* select */, focusState);
+                }
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Moving focus off hidden headers failed.");
             }
         });
 }
@@ -768,7 +797,7 @@ bool TableView::TrySetBodyEntryTarget(const winrt::Microsoft::UI::Xaml::Input::G
     }
 
     FocusEntryTarget edge{};
-    edge.Element = FindViewportEdgeElementInternal(previous, true /* includeGroupHeaders */);
+    edge.Element = FindViewportEdgeElementInternal(previous, true /* includeGroupHeaders */, true /* allowNoViewport */);
     edge.Row = edge.Element.try_as<winrt::TableViewRow>();
     return trySet(edge);
 }
@@ -820,7 +849,7 @@ TableView::FocusEntryTarget TableView::ResolveBodyEntryTarget(bool last)
     }
 
     // A group header first (last) in view is an entry target like a row.
-    result.Element = FindViewportEdgeElementInternal(last, true /* includeGroupHeaders */);
+    result.Element = FindViewportEdgeElementInternal(last, true /* includeGroupHeaders */, true /* allowNoViewport */);
     result.Row = result.Element.try_as<winrt::TableViewRow>();
     return result;
 }
@@ -2057,6 +2086,11 @@ void TableView::OnReshapeFocusAttempt()
     auto const origin = m_pendingBodyFocusOrigin.get();
     auto const root = origin ? XamlRoot() : nullptr;
     const bool onOrigin = root && winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() == origin;
+    if (!onOrigin)
+    {
+        // One-way: once focus has left the origin, returning to it is a new user move.
+        m_pendingBodyFocusOrigin = nullptr;
+    }
     if (!onOrigin && IsFocusOnNonBodyElement())
     {
         CancelReshapeFocusRestore();
@@ -2855,16 +2889,15 @@ bool TableView::IsEntryRedirectTargetFocusable(winrt::DependencyObject const& ta
     return true;
 }
 
-winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const
+winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders, bool allowNoViewport) const
 {
     auto const repeater = m_rowsRepeater.get();
     auto const scroller = m_bodyScroller.get();
-    if (!repeater)
+    if (!repeater || (!scroller && !allowNoViewport))
     {
         return nullptr;
     }
 
-    // A template without a body scroller has no viewport; every realized row counts as in view.
     const double viewportHeight = scroller ? scroller.ViewportHeight() : 0.0;
     if (scroller && !(viewportHeight > 0.0))
     {

@@ -374,7 +374,8 @@ public:
     };
 
     static bool IsEntryRedirectTargetFocusable(winrt::DependencyObject const& target, winrt::DependencyObject const& owner);
-    winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const;
+    // allowNoViewport: without a body scroller, every realized row counts as in view (entry only; paging keeps its estimate).
+    winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders, bool allowNoViewport = false) const;
 
     // A redirect re-raises GettingFocus with the same CorrelationId; redirect once to avoid a loop.
     bool HasRedirectedFocusEntry(winrt::guid const& correlationId) const noexcept

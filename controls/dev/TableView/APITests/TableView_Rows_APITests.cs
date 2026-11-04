@@ -760,6 +760,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that hiding the column headers while a Button inside a header's HeaderTemplate has focus moves focus to the body entry row.")]
+        public void VerifyHidingHeadersWithHeaderContentFocusedMovesFocusToBody()
+        {
+            TableView tableView = null;
+            Button headerButton = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(height: 200);
+                tableView.Columns[0].HeaderTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Button Content=""Filter""/>
+                      </DataTemplate>");
+                LoadFocusFixture(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                headerButton = FindVisualChildrenByType<Button>(GetHeaderCell(tableView, 0)).FirstOrDefault();
+                Verify.IsNotNull(headerButton, "Precondition: the header template hosts a Button.");
+                Verify.IsTrue(headerButton.Focus(FocusState.Keyboard), "Precondition: the header Button takes focus.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.IsTrue(focused is TableViewRow && IsWithin(focused, tableView), "Focus must move to a row of the table.");
+                Verify.AreEqual(0, GetRowsRepeater(tableView).GetElementIndex((UIElement)focused), "Focus must move to the body entry row.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell-level body entry that another GettingFocus handler cancels leaves only the entry row armed at cell level.")]
         public void VerifyCancelledCellEntryLeavesOneCellLevelRow()
         {
