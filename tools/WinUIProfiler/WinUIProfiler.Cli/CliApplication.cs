@@ -343,7 +343,8 @@ internal static class CliApplication
     private static int Summary(Options options, TextWriter output, CancellationToken cancellationToken)
     {
         // One event name can have several field layouts (for example a start and a stop form), so they are counted apart.
-        var counts = new Dictionary<(string Provider, string Name, string Fields), long>();
+        // So are providers, by ID: a marker provider can have a built-in provider's short name.
+        var counts = new Dictionary<(Guid ProviderId, string Name, string Fields), (string Label, long Count)>();
         double first = double.MaxValue, last = 0;
         var processId = options.ProcessId;
         var result = Read(options, options.ProcessId, profilerEvent =>
@@ -351,8 +352,8 @@ internal static class CliApplication
             processId = profilerEvent.ProcessId;
             first = Math.Min(first, profilerEvent.RelativeMilliseconds);
             last = Math.Max(last, profilerEvent.RelativeMilliseconds);
-            var key = (ShortName(profilerEvent), profilerEvent.Name, string.Join(",", profilerEvent.Fields.Select(field => field.Name)));
-            counts[key] = counts.GetValueOrDefault(key) + 1;
+            var key = (profilerEvent.ProviderId, profilerEvent.Name, string.Join(",", profilerEvent.Fields.Select(field => field.Name)));
+            counts[key] = (ShortName(profilerEvent), counts.GetValueOrDefault(key).Count + 1);
         }, cancellationToken);
 
         if (result.EventsDelivered == 0)
@@ -365,9 +366,9 @@ internal static class CliApplication
         output.WriteLine($"Process {processId}: {result.EventsDelivered} events over {seconds:F1} s " +
             $"({result.EventsDelivered / seconds:F0}/s); {result.EventsLost} events lost in the {(options.IsSessionFile ? "session" : "trace")}.");
         output.WriteLine();
-        foreach (var (key, count) in counts.OrderByDescending(entry => entry.Value))
+        foreach (var (key, (label, count)) in counts.OrderByDescending(entry => entry.Value.Count))
         {
-            output.WriteLine($"{count,9}  {key.Provider,-9} {key.Name}  [{key.Fields}]");
+            output.WriteLine($"{count,9}  {label,-9} {key.Name}  [{key.Fields}]");
         }
 
         return 0;

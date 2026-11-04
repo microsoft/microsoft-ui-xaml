@@ -229,7 +229,9 @@ public static class SessionFile
             ("ChildAdded", "ChildId", "ChildPeerHandle"), ("ChildInserted", "ChildId", "ChildPeerHandle")
         ];
         var shapes = new List<(long TypeId, int Element, int Peer)>();
-        using (var command = Command(connection, transaction, "SELECT TypeId, Name, FieldNames FROM EventTypes"))
+        // A marker provider's fields mean what its app makes them mean, whatever its events are named.
+        using (var command = Command(connection, transaction,
+            $"SELECT TypeId, Name, FieldNames FROM EventTypes WHERE Provider <> '{XamlProvider.Marker}'"))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())

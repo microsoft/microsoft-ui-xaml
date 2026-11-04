@@ -485,7 +485,8 @@ The writer also records which UI-thread tick each event belongs to
   surface events; `Other` for everything else (layout, rendering, scheduling).
   They go by the TraceLogging events' names, so manifest events about the same
   work, such as `ApplyTemplate/Start` or Microsoft-Windows-XAML-Diagnostics'
-  `ElementAdded`, are `Other`.
+  `ElementAdded`, are `Other`. So are marker providers' events, whatever their
+  names.
 
 ### Frames tab
 
@@ -587,9 +588,10 @@ object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
 `PeerAssociated`, `ElementEnteredTree`, `ChildAdded` and `ChildInserted` carry
 both an element's address and its WinRT object's, so
 `SessionFile.FindSnapshotElement` maps a snapshot node to the element that was
-at that address when the snapshot was taken. That needs the recording to have
-seen the element being created or added to the tree: a session attached to a
-running app finds only the elements added since.
+at that address when the snapshot was taken (a marker provider's events of
+those names aren't used). That needs the recording to have seen the element
+being created or added to the tree: a session attached to a running app finds
+only the elements added since.
 
 A Composition node's address is its `IVisual` pointer, which the visual events
 carry too, so `SessionFile.FindSnapshotVisual` finds the visual at that

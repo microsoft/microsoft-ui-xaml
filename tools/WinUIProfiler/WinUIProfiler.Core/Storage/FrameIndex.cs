@@ -162,11 +162,13 @@ internal sealed class FrameIndex : IDisposable
     {
         if (!shapes.TryGetValue(typeId, out var shape))
         {
-            // A marker provider's fields mean what its app makes them mean, so its events only join the tick they are in.
-            var names = profilerEvent.Provider == XamlProvider.Marker ? [] : profilerEvent.Fields.Select(field => field.Name).ToArray();
+            // A marker provider's fields and event names mean what its app makes them mean, so its events only join
+            // the tick they are in, as other work.
+            var marker = profilerEvent.Provider == XamlProvider.Marker;
+            var names = marker ? [] : profilerEvent.Fields.Select(field => field.Name).ToArray();
             var isFrame = profilerEvent.Name == "CoreServices_Frame";
             shape = new(isFrame ? Array.IndexOf(names, "FrameNumber") : -1, isFrame ? Array.IndexOf(names, "IsStart") : -1,
-                BucketOf(profilerEvent.Name));
+                marker ? "Other" : BucketOf(profilerEvent.Name));
             shapes[typeId] = shape;
         }
 
