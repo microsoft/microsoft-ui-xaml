@@ -497,8 +497,8 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 }
             }
 
-            EnsureFirstLastRealizedIndices();
-            m_lastRealizedElementIndexHeldByLayout += countChange;
+            // The children are already shifted; rebuild the range from them on the next lookup.
+            InvalidateRealizedIndicesHeldByLayout();
         }
         break;
     }

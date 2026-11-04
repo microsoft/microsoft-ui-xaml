@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using System.Threading;
 using Common;
 
@@ -521,6 +522,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 dataSource.Insert(index: 1, count: 1, reset: false);
                 repeater.UpdateLayout();
                 Verify.AreEqual("10000,1000,1", RealizedTexts(repeater, dataSource));
+            });
+        }
+
+        // Scenario: replace the first two items with one, lay out, then insert ahead of the last realized element.
+        // Expected: the realized element after the insert moves to its new index and keeps the right data.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an insert after an unequal-count replace moves the following realized elements to their new indexes.")]
+        public void InsertAfterShrinkingReplaceShiftsRealizedElements()
+        {
+            VerifyInsertAfterShrinkingReplace(() => new StackLayout());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Same as InsertAfterShrinkingReplaceShiftsRealizedElements with a UniformGridLayout.")]
+        public void InsertAfterShrinkingReplaceShiftsRealizedElementsInUniformGridLayout()
+        {
+            VerifyInsertAfterShrinkingReplace(() => new UniformGridLayout());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Same as InsertAfterShrinkingReplaceShiftsRealizedElements with a FlowLayout.")]
+        public void InsertAfterShrinkingReplaceShiftsRealizedElementsInFlowLayout()
+        {
+            VerifyInsertAfterShrinkingReplace(() => new FlowLayout());
+        }
+
+        private void VerifyInsertAfterShrinkingReplace(Func<VirtualizingLayout> createLayout)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new CustomItemsSource(Enumerable.Range(0, 5).ToList());
+                var elementFactory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                elementFactory.Templates["Item"] = SharedHelpers.GetDataTemplate(@"<TextBlock Text='{Binding}' Height='30' />");
+                ScrollViewer scrollViewer = null;
+                var repeater = SetupRepeater(dataSource, elementFactory, ref scrollViewer, createLayout());
+                Verify.AreEqual("0,1,2,3,4", RealizedTexts(repeater, dataSource));
+
+                dataSource.Replace(index: 0, oldCount: 2, newCount: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual("10000,2,3,4", RealizedTexts(repeater, dataSource));
+
+                dataSource.Insert(index: 3, count: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual("10000,2,3,1000,4", RealizedTexts(repeater, dataSource));
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(repeater); i++)
+                {
+                    var child = (TextBlock)VisualTreeHelper.GetChild(repeater, i);
+                    var index = repeater.GetElementIndex(child);
+                    if (index >= 0)
+                    {
+                        Verify.AreEqual(dataSource.Inner[index].ToString(), child.Text, $"Element at index {index} shows its item.");
+                    }
+                }
             });
         }
 
