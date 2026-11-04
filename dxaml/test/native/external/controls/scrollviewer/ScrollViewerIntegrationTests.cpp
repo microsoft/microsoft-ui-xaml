@@ -64,6 +64,60 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Generic::FrameworkElementTests<xaml_controls::ScrollViewer>::CanEnterAndLeaveLiveTree();
     }
 
+    void ScrollViewerIntegrationTests::HandledReleasePreservesAnotherPointerPress()
+    {
+        xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+        xaml_controls::Border^ surface = nullptr;
+        xaml_controls::Button^ button = nullptr;
+        auto buttonReleaseHandled = std::make_shared<bool>(false);
+
+        RunOnUIThread([&]()
+        {
+            surface = ref new xaml_controls::Border();
+            surface->Width = 120;
+            surface->Height = 80;
+            surface->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Blue);
+            button = ref new xaml_controls::Button();
+            button->Width = 120;
+            button->Height = 80;
+            button->Content = L"Handled release";
+            button->AddHandler(xaml::UIElement::PointerReleasedEvent,
+                ref new xaml_input::PointerEventHandler(
+                    [buttonReleaseHandled](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
+                    {
+                        *buttonReleaseHandled = args->Handled;
+                    }), true);
+
+            auto panel = ref new xaml_controls::StackPanel();
+            panel->Orientation = xaml_controls::Orientation::Horizontal;
+            panel->Children->Append(surface);
+            panel->Children->Append(button);
+            scrollViewer = ref new xaml_controls::ScrollViewer();
+            scrollViewer->Width = 300;
+            scrollViewer->Height = 150;
+            scrollViewer->IsTabStop = true;
+            scrollViewer->HorizontalScrollMode = xaml_controls::ScrollMode::Disabled;
+            scrollViewer->VerticalScrollMode = xaml_controls::ScrollMode::Disabled;
+            scrollViewer->Content = panel;
+            TestServices::WindowHelper->WindowContent = scrollViewer;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { VERIFY_IS_TRUE(button->Focus(xaml::FocusState::Keyboard)); });
+
+        TestServices::InputHelper->DynamicPressCenter(surface, 0, 0, PointerFinger::Finger1);
+        TestServices::InputHelper->DynamicPressCenter(button, 0, 0, PointerFinger::Finger2);
+        TestServices::InputHelper->DynamicRelease(PointerFinger::Finger2);
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::InputHelper->DynamicRelease(PointerFinger::Finger1);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(*buttonReleaseHandled);
+            VERIFY_IS_TRUE(scrollViewer->Equals(xaml_input::FocusManager::GetFocusedElement(scrollViewer->XamlRoot)));
+        });
+    }
+
     void ScrollViewerIntegrationTests::CanScrollToHorizontalOffset()
     {
         DoScrollToOffset(ChangeViewDirectionHorizontal, true /*canScroll*/);
@@ -7125,6 +7179,69 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             // ScrollViewer must have entered the TouchIndicator and NoIndicator states
             VERIFY_IS_GREATER_THAN(customScrollViewerVsm->GetTouchIndicatorCount(), 0.0);
             VERIFY_IS_GREATER_THAN(customScrollViewerVsm->GetNoIndicatorCount(), 0.0);
+        });
+    }
+
+    void ScrollViewerIntegrationTests::ValidateIndicatorsHideAfterVerticalScrollBarHover()
+    {
+        ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation::Vertical);
+    }
+
+    void ScrollViewerIntegrationTests::ValidateIndicatorsHideAfterHorizontalScrollBarHover()
+    {
+        ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation::Horizontal);
+    }
+
+    void ScrollViewerIntegrationTests::ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation orientation)
+    {
+        TestCleanupWrapper cleanup;
+
+        auto scrollViewer = AddScrollViewer(orientation);
+        xaml_primitives::ScrollBar^ scrollBar = nullptr;
+        CustomScrollViewerVsm^ customScrollViewerVsm = nullptr;
+        auto indicatorHiddenEvent = std::make_shared<Event>();
+        long long indicatorModeChangedToken = 0;
+
+        RunOnUIThread([&]()
+        {
+            scrollViewer->Name = L"scrollViewer";
+            scrollBar = safe_cast<xaml_primitives::ScrollBar^>(TreeHelper::GetVisualChildByName(
+                scrollViewer,
+                orientation == xaml_controls::Orientation::Vertical ? L"VerticalScrollBar" : L"HorizontalScrollBar"));
+            VERIFY_IS_NOT_NULL(scrollBar);
+
+            customScrollViewerVsm = ref new CustomScrollViewerVsm();
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(scrollViewer, 0));
+            xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot, customScrollViewerVsm);
+        });
+
+        TestServices::InputHelper->MoveMouse(scrollBar);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(scrollBar->IndicatorMode, xaml_primitives::ScrollingIndicatorMode::MouseIndicator);
+            customScrollViewerVsm->ResetIndicatorCounts();
+            indicatorModeChangedToken = scrollBar->RegisterPropertyChangedCallback(
+                xaml_primitives::ScrollBar::IndicatorModeProperty,
+                ref new DependencyPropertyChangedCallback([indicatorHiddenEvent](DependencyObject^ sender, DependencyProperty^)
+            {
+                if (safe_cast<xaml_primitives::ScrollBar^>(sender)->IndicatorMode == xaml_primitives::ScrollingIndicatorMode::None)
+                {
+                    indicatorHiddenEvent->Set();
+                }
+            }));
+        });
+
+        TestServices::InputHelper->MoveMouse(scrollViewer);
+        indicatorHiddenEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_GREATER_THAN(customScrollViewerVsm->GetNoIndicatorCount(), 0);
+            VERIFY_ARE_EQUAL(scrollBar->IndicatorMode, xaml_primitives::ScrollingIndicatorMode::None);
+            scrollBar->UnregisterPropertyChangedCallback(xaml_primitives::ScrollBar::IndicatorModeProperty, indicatorModeChangedToken);
         });
     }
 

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
     TabularShaping — the shared shaping substrate.
 
-    ShapingHelpers is consumed by three components (TableViewSource/TableViewSourceIdentity/
-    TableView_Sort, and GroupedSourceAdapter), so it is build-owned here rather than by any one
+    ShapingHelpers is consumed by three components (TableViewSource/TableView_Sort/
+    GroupedSourceAdapter), so it is build-owned here rather than by any one
     of them.
 
     SortDirection.idl is here for the same reason: the enum is named by TableViewSource,
@@ -30,11 +30,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingDescriptions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingPipeline.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingRevoke.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingHelpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingDescriptions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingPipeline.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)SortDirection.idl" />

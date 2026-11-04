@@ -399,11 +399,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwice)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a MenuFlyout remains within the screen's boundaries when its ShowAt method is called twice in a row.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // y coordinate of flyout is about 8 pixels off.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSettingKeyboardAcceleratorCreatesDefaultItemKeyboardAcceleratorText)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting a KeyboardAccelerator on a MenuFlyoutItem causes us to generate a default value for KeyboardAcceleratorTextOverride.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateKeyboardAcceleratorsDoNotCreateMenuFlyoutItemToolTips)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that MenuFlyoutItems with KeyboardAccelerators do not get ToolTips when OptimizeApplyStyles is enabled.")
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSettingKeyboardAcceleratorDoesNotOverrideItemCustomKeyboardAcceleratorText)

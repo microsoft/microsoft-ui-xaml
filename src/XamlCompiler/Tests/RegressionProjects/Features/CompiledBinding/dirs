@@ -1,8 +1,0 @@
-DIRS = \
-  BindTestbedModel \
-  BindTestbedCXModel \
-
-OPTIONAL_DIRS=\
-  BindTestbedCppWinRT \
-  BindTestbedCS \
-  BindTestbedCX \

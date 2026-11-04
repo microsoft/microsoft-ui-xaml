@@ -49,6 +49,7 @@
                             <ComboBoxItem AutomationProperties.Name="ExecuteScriptTest">ExecuteScriptTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_BackAndForthTabTest">Focus_BackAndForthTabTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_BasicTabTest">Focus_BasicTabTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Focus_DisabledParentTest">Focus_DisabledParentTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_MouseActivateTest">Focus_MouseActivateTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_ReverseTabTest">Focus_ReverseTabTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="GoBackAndForwardTest">GoBackAndForwardTest</ComboBoxItem>
@@ -71,7 +72,7 @@
                             <ComboBoxItem AutomationProperties.Name="NavigateToLocalImageTest">NavigateToLocalImageTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigateToStringTest">NavigateToStringTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigateToVideoTest">NavigateToVideoTest</ComboBoxItem>
-                            <ComboBoxItem AutomationProperties.Name="NavigationErrorTest">NavigationErrorTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigationHttpErrorTest">NavigationHttpErrorTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingInvalidTest">NavigationStartingInvalidTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingTest">NavigationStartingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NonAsciiUriTest">NonAsciiUriTest</ComboBoxItem>

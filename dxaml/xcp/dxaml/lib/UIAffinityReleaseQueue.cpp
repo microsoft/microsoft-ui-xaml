@@ -5,16 +5,119 @@
 #include <DependencyLocator.h>
 #include <GCInstrumentationAggregator.h>
 #include "UIAffinityReleaseQueue.h"
+#include "UIAffinityReleaseQueueTipTests.h"
 #include "MUX-ETWEvents.h"
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
+#include "Callback.h"
+#include "Dispatcher.h"
+#include <WRLHelper.h>
 
 using namespace DirectUI;
 using namespace Instrumentation;
 
+_Check_return_ HRESULT UIAffinityReleaseQueue::Initialize()
+{
+    IFC_RETURN(ctl::WeakReferenceSourceNoThreadId::Initialize());
+
+    if (auto core = DXamlCore::GetCurrentNoCreate())
+    {
+        // Capture the agile platform queue while on the owning thread. XBF-only cores have no queue.
+        if (auto dispatcher = core->GetDispatcherQueueNoRef())
+        {
+            auto state = std::make_shared<CleanupWakeState>();
+            IFC_RETURN(ctl::AsWeak(ctl::as_iinspectable(this), &state->target));
+            m_wakeDispatcher = dispatcher;
+            m_wakeState = std::move(state);
+        }
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::RequestCleanupWake(
+    _In_opt_ msy::IDispatcherQueue* dispatcher,
+    const std::shared_ptr<CleanupWakeState>& state)
+{
+    if (!state)
+    {
+        return S_OK;
+    }
+    IFCPTR_RETURN(dispatcher);
+
+    if (state->pending.exchange(true, std::memory_order_acq_rel))
+    {
+        return S_OK;
+    }
+
+    // Do not take the release-queue lock here: the unreachable producer already holds the GC/core lock.
+    auto callback = WRLHelper::MakeAgileCallback<msy::IDispatcherQueueHandler>(
+        [state]() -> HRESULT
+        {
+            return OnPlatformCleanupWake(state);
+        });
+    boolean enqueued = false;
+    const HRESULT hr = dispatcher->TryEnqueue(callback.Get(), &enqueued);
+    if (FAILED(hr) || !enqueued)
+    {
+        state->pending.store(false, std::memory_order_release);
+        // Report rejection without dropping the objects; core shutdown still drains the release queue.
+        return FAILED(hr) ? hr : E_ABORT;
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::OnPlatformCleanupWake(const std::shared_ptr<CleanupWakeState>& state)
+{
+    auto core = DXamlCore::GetCurrentNoCreate();
+    if (!core || !core->IsInitialized())
+    {
+        state->pending.store(false, std::memory_order_release);
+        // A queued wake may outlive the core; teardown performs synchronous cleanup.
+        return S_OK;
+    }
+
+    // Enter XAML's dispatcher so its pause/reentrancy protections still govern cleanup.
+    const HRESULT hr = core->GetXamlDispatcherNoRef()->RunAsync(
+        MakeCallback(&UIAffinityReleaseQueue::OnCleanupWake, state), false);
+    if (FAILED(hr))
+    {
+        state->pending.store(false, std::memory_order_release);
+        IFC_RETURN(hr);
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::OnCleanupWake(std::shared_ptr<CleanupWakeState> state)
+{
+    // A producer arriving while cleanup is serviced must be able to request another wake.
+    state->pending.store(false, std::memory_order_release);
+    auto core = DXamlCore::GetCurrentNoCreate();
+    if (!core || !core->IsInitialized())
+    {
+        return S_OK;
+    }
+    auto coreServices = core->GetHandle();
+    if (coreServices->GetInitializationType() == InitializationType::IslandsOnly
+        && !coreServices->HasXamlIslandRoots())
+    {
+        // Without an island, BuildTreeService cannot tick. Preserve cleanup on the first frame or shutdown.
+        return S_OK;
+    }
+    auto weakTarget = state->target;
+    ctl::ComPtr<ITreeBuilder> target;
+    IFC_RETURN(weakTarget.As(&target));
+    return target ? static_cast<UIAffinityReleaseQueue*>(target.Get())->Cleanup(FALSE) : S_OK;
+}
+
 UIAffinityReleaseQueue::~UIAffinityReleaseQueue()
 {
     Cleanup( /* bSync */ TRUE );
+    if (m_cleanupTipId != GUID{})
+    {
+        // An extended-lifetime test left running would later be reported as a failure.
+        tip::open<UIAffinityReleaseQueueCleanupTest>(m_cleanupTipId).complete_and_ignore(
+            TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::cancelled));
+    }
 }
 
 HRESULT UIAffinityReleaseQueue::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
@@ -84,7 +187,7 @@ HRESULT UIAffinityReleaseQueue::Cleanup( _In_ BOOLEAN bSync )
 
         // If we haven't already registered for cleanup time, and we have something to clean up, register.
         if( !m_bIsRegisteredForCallbacks
-            && ( !m_queuedObjectsForUnreachableCleanup.empty()
+            && ( m_hasUnreachableObjects.load(std::memory_order_acquire)
                  || !m_queuedObjectsForFinalRelease.empty() ))
         {
             IFC(DXamlCore::GetCurrent()->GetBuildTreeService(spBuildTree));
@@ -133,9 +236,8 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     // UI+Finalizer Lock inplace.
     //
 
-    // Only take a core-lock if there are objects to cleanup. This way we can block a GC from queueing
-    // more objects.
-    if (!m_queuedObjectsForUnreachableCleanup.empty())
+    // Skip the GC lock when no unreachable work has been published; vector access still requires it.
+    if (m_hasUnreachableObjects.load(std::memory_order_acquire))
     {
         //
         // UI+GC+Finalizer Lock inplace.
@@ -163,6 +265,10 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
                 // See bugs 20395531, 13108159
                 if (!iter->m_ptr->IsInFinalRelease())
                 {
+                    if (m_queuedObjectsForFinalRelease.empty() || m_unreachableQueuedAt < m_finalQueuedAt)
+                    {
+                        m_finalQueuedAt = m_unreachableQueuedAt;
+                    }
                     m_queuedObjectsForFinalRelease.push_back(*iter);
                 }
             }
@@ -172,8 +278,14 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
             // collection this array has capacity for over 90k elements yet has 0, which unnecessarily takes up memory.
             m_queuedObjectsForUnreachableCleanup.shrink_to_fit();
         }
+        m_hasUnreachableObjects.store(false, std::memory_order_release);
     }
 
+    // Sample from the first asynchronous pass until the queue drains, including a synchronous drain.
+    if (!bSync && m_cleanupCount == 0 && !m_queuedObjectsForFinalRelease.empty() && m_cleanupTipId == GUID{})
+    {
+        m_cleanupTipId = tip::start<UIAffinityReleaseQueueCleanupTest>().test_id();
+    }
 
     // Process objects for final release.
     //
@@ -255,6 +367,10 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
 
     if( *completed )
     {
+        if (m_cleanupTipId != GUID{})
+        {
+            CompleteReleaseQueueCleanupTip(std::exchange(m_cleanupTipId, GUID{}), m_finalQueuedAt, m_cleanupCount, S_OK);
+        }
         m_cDoCleanupAttempts = 0;
         m_cleanupCount = 0;
 
@@ -273,6 +389,11 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     m_bInCleanup = FALSE;
 
 Cleanup:
+    if (FAILED(hr) && m_cleanupTipId != GUID{})
+    {
+        CompleteReleaseQueueCleanupTip(std::exchange(m_cleanupTipId, GUID{}), m_finalQueuedAt, m_cleanupCount, hr);
+    }
+
     // Resume dispatch — must happen on all paths (normal and error) to avoid
     // permanently stalling the dispatcher. Paired with PauseDispatchAtControl above.
     DXamlCore::GetCurrent()->ResumeDispatchAtControl();
@@ -312,8 +433,10 @@ _Check_return_ HRESULT DirectUI::UIAffinityReleaseQueue::put_IsRegisteredForCall
     return S_OK;
 }
 
-BOOLEAN DirectUI::UIAffinityReleaseQueue::IsEmpty(){
-    return m_queuedObjectsForFinalRelease.empty() && m_queuedObjectsForUnreachableCleanup.empty();
+BOOLEAN DirectUI::UIAffinityReleaseQueue::IsEmpty()
+{
+    auto lock = m_CriticalSection.lock();
+    return m_queuedObjectsForFinalRelease.empty() && !m_hasUnreachableObjects.load(std::memory_order_acquire);
 }
 
 HRESULT DirectUI::UIAffinityReleaseQueue::GetQueueObjects(wfc::IVector<IInspectable*>* queue)
@@ -326,6 +449,7 @@ HRESULT DirectUI::UIAffinityReleaseQueue::GetQueueObjects(wfc::IVector<IInspecta
         obj.m_ptr->QueryInterface(__uuidof(IInspectable), &inspectable);
         IFC_RETURN(queue->InsertAt(0, inspectable.Get()));
     }
+    AutoReentrantReferenceLock coreLock(DXamlCore::GetCurrent());
     for(auto& obj : m_queuedObjectsForUnreachableCleanup)
     {
         wrl::ComPtr<IInspectable> inspectable;
@@ -335,4 +459,3 @@ HRESULT DirectUI::UIAffinityReleaseQueue::GetQueueObjects(wfc::IVector<IInspecta
 
     return S_OK;
 }
-

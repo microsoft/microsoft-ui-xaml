@@ -88,6 +88,11 @@ public:
         return m_pWindow;
     }
 
+    CUIAWindow* GetUIAWindowIfValid()
+    {
+        return m_pUIAWindowValidator && m_pUIAWindowValidator->IsValid() ? m_pWindow : nullptr;
+    }
+
 private:
     UIAHostEnvironmentInfo m_uiaHostEnvironmentInfo;
 

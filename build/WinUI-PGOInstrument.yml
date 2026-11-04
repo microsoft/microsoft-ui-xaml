@@ -12,7 +12,7 @@ parameters:
     default: true
 
 variables:
-- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-Versions.yml
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - template: AzurePipelinesTemplates\WinUI-PGO-BuildMatrix.yml
 - name: perfPath
@@ -27,14 +27,6 @@ resources:
     - repository: templates
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
-      ref: refs/heads/main
-    - repository: WindowsAppSDKConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
-    - repository: WindowsAppSDKVersionConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
       ref: refs/heads/main
 
 extends:

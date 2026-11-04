@@ -9,7 +9,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     using System.Diagnostics;
     using System.Globalization;
     using System.Reflection.Adds;
-    using Debug = Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+    using Debug = System.Diagnostics.Debug;
     using System.IO;
 
     using System.Reflection;  

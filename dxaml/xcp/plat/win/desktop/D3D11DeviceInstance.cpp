@@ -625,6 +625,15 @@ _Check_return_ HRESULT CD3D11DeviceInstance::EnsureDeviceSpecificD2DResources(_I
     return S_OK;
 }
 
+// Counterpart to EnsureDeviceSpecificD2DResources: these belong to one CD3D11Device, so they go when it does.
+void CD3D11DeviceInstance::ReleaseDeviceSpecificD2DResources(_In_ const CD3D11Device* deviceWrapper)
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    m_d2dDeviceContexts.erase(deviceWrapper);
+    m_d2dSolidColorBrushes.erase(deviceWrapper);
+}
+
 //------------------------------------------------------------------------------
 //
 //  Synopsis:

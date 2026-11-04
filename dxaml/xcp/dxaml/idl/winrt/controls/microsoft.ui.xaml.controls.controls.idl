@@ -581,7 +581,7 @@ namespace Microsoft.UI.Xaml
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface IDataTemplateExtension
+    interface IDataTemplateExtension 
     {
         void ResetTemplate();
         Boolean ProcessBinding(UInt32 phase);
@@ -600,7 +600,7 @@ namespace Microsoft.UI.Xaml
         static Microsoft.UI.Xaml.DependencyProperty ExtensionInstanceProperty{ get; };
         static Microsoft.UI.Xaml.IDataTemplateExtension GetExtensionInstance(Microsoft.UI.Xaml.FrameworkElement element);
         static void SetExtensionInstance(Microsoft.UI.Xaml.FrameworkElement element, Microsoft.UI.Xaml.IDataTemplateExtension value);
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
         [constructor_name("Microsoft.UI.Xaml.IDataTemplateFactoryFeature_ExperimentalApi")]
@@ -984,14 +984,14 @@ namespace Microsoft.UI.Xaml.Controls
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface IInsertionPanel
+    interface IInsertionPanel 
     {
         void GetInsertionIndexes(Windows.Foundation.Point position, out Int32 first, out Int32 second);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface IItemContainerMapping
+    interface IItemContainerMapping 
     {
         Object ItemFromContainer(Microsoft.UI.Xaml.DependencyObject container);
         Microsoft.UI.Xaml.DependencyObject ContainerFromItem(Object item);
@@ -1001,14 +1001,14 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface INavigate
+    interface INavigate 
     {
         Boolean Navigate(Windows.UI.Xaml.Interop.TypeName sourcePageType);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface IScrollAnchorProvider
+    interface IScrollAnchorProvider 
     {
         Microsoft.UI.Xaml.UIElement CurrentAnchor{ get; };
         void RegisterAnchorCandidate(Microsoft.UI.Xaml.UIElement element);
@@ -1017,7 +1017,7 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface ISemanticZoomInformation
+    interface ISemanticZoomInformation 
     {
         Microsoft.UI.Xaml.Controls.SemanticZoom SemanticZoomOwner;
         Boolean IsActiveView;
@@ -1565,7 +1565,7 @@ namespace Microsoft.UI.Xaml.Controls
         static Microsoft.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty IsItemsHostProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty ChildrenTransitionsProperty{ get; };
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_WUXCPreviewTypes)]
         [protected_name("Microsoft.UI.Xaml.Controls.IPanelProtectedFeature_WUXCPreviewTypes")]
@@ -2003,7 +2003,7 @@ namespace Microsoft.UI.Xaml.Controls
         static Microsoft.UI.Xaml.DependencyProperty CanPasteClipboardContentProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_HeaderPlacement)]
         [static_name("Microsoft.UI.Xaml.Controls.IPasswordBoxStaticsFeature_HeaderPlacement")]
@@ -2217,7 +2217,7 @@ namespace Microsoft.UI.Xaml.Controls
         static Microsoft.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty DesiredCandidateWindowAlignmentProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty TextReadingOrderProperty{ get; };
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_HeaderPlacement)]
         [static_name("Microsoft.UI.Xaml.Controls.ITextBoxStaticsFeature_HeaderPlacement")]
@@ -2255,7 +2255,7 @@ namespace Microsoft.UI.Xaml.Controls
         overridable void OnOnContentChanged(Object oldContent, Object newContent);
         overridable void OnOffContentChanged(Object oldContent, Object newContent);
         overridable void OnHeaderChanged(Object oldContent, Object newContent);
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_HeaderPlacement)]
         [static_name("Microsoft.UI.Xaml.Controls.IToggleSwitchStaticsFeature_HeaderPlacement")]
@@ -2364,7 +2364,7 @@ namespace Microsoft.UI.Xaml.Controls
         static Microsoft.UI.Xaml.DependencyProperty ThumbToolTipValueConverterProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_HeaderPlacement)]
         [static_name("Microsoft.UI.Xaml.Controls.ISliderStaticsFeature_HeaderPlacement")]
@@ -2450,7 +2450,7 @@ namespace Microsoft.UI.Xaml.Controls
         static Microsoft.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
         overridable void OnDropDownClosed(Object e);
         overridable void OnDropDownOpened(Object e);
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_HeaderPlacement)]
         [static_name("Microsoft.UI.Xaml.Controls.IComboBoxStaticsFeature_HeaderPlacement")]
@@ -2634,7 +2634,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface IScrollSnapPointsInfo
+    interface IScrollSnapPointsInfo 
     {
         Boolean AreHorizontalSnapPointsRegular{ get; };
         Boolean AreVerticalSnapPointsRegular{ get; };
@@ -2801,7 +2801,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
         static Microsoft.UI.Xaml.DependencyProperty IsLightDismissEnabledProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty LightDismissOverlayModeProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty ShouldConstrainToRootBoundsProperty{ get; };
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 2)]
         {
             Microsoft.UI.Xaml.FrameworkElement PlacementTarget;
@@ -2811,7 +2811,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
             static Microsoft.UI.Xaml.DependencyProperty PlacementTargetProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty DesiredPlacementProperty{ get; };
         }
-
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 5)]
         {
             Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
@@ -3474,7 +3474,7 @@ namespace Microsoft.UI.Xaml.Interop
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [uuid(036d2c08-df29-41af-8aa2-d774be62ba6f)]
     [webhosthidden]
-    interface IBindableIterable
+    interface IBindableIterable 
     {
         Microsoft.UI.Xaml.Interop.IBindableIterator First();
     };
@@ -3482,7 +3482,7 @@ namespace Microsoft.UI.Xaml.Interop
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [uuid(6a1d6c07-076d-49f2-8314-f52c9c9a8331)]
     [webhosthidden]
-    interface IBindableIterator
+    interface IBindableIterator 
     {
         Object Current{ get; };
         Boolean HasCurrent{ get; };
@@ -3526,7 +3526,7 @@ namespace Microsoft.UI.Xaml.Interop
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    interface INotifyCollectionChanged
+    interface INotifyCollectionChanged 
     {
         event Microsoft.UI.Xaml.Interop.NotifyCollectionChangedEventHandler CollectionChanged;
     };

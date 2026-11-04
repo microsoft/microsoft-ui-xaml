@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "Hub.g.h"
 #include "HubAutomationPeer.g.h"
 #include "HubSection.g.h"
@@ -161,12 +162,13 @@ Hub::OnCollectionChanged(
     ctl::ComPtr<VectorChangedEventArgs> spArg;
     UINT32 nIndexInPanel = nIndex;
 
-    if (EventEnabledHubSectionCountInfo() && m_tpSections)
+    const bool traceHubSectionCount = XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::ControlsKeyword);
+    if (traceHubSectionCount && m_tpSections)
     {
         UINT nNewSectionsCount = 0;
         if (SUCCEEDED(m_tpSections->get_Size(&nNewSectionsCount)))
         {
-            TraceHubSectionCountInfo(nNewSectionsCount);
+            XamlTelemetry::HubSectionCount(GetHandle(), nNewSectionsCount);
         }
     }
 

@@ -58,6 +58,18 @@ namespace MUXControlsTestApp
             this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
             this.TeachingTipInResourcesOnEdge.Closed += TeachingTipInResourcesOnEdge_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
+            this.PreviewKeyDown += TeachingTipPage_PreviewKeyDown;
+        }
+
+        // Logs F6 presses that reach the page unhandled. An open TeachingTip handles F6 in a PreviewKeyDown handler on the
+        // window content (an ancestor of this page, so it runs first). Tunneling skips this handler once the key is marked
+        // handled, so F6 should only be logged here while no tip is open.
+        private void TeachingTipPage_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.F6 && lstTeachingTipEvents != null)
+            {
+                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") Page KeyDown: F6");
+            }
         }
 
         private void TeachingTipInResources_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)

@@ -7,9 +7,6 @@
 #include <WUCBrushManager.h>
 #include "XamlCompositionBrush.h"
 #include <XamlLight.h>
-#ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
-#endif
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;

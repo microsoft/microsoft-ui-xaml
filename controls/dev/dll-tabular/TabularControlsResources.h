@@ -12,6 +12,11 @@ class TabularControlsResources :
 {
 public:
     TabularControlsResources();
+
+    // Successful construction does not imply that the dictionary is merged or still available.
+    static bool HasBeenCreatedOnCurrentThread() noexcept { return s_hasBeenCreated; }
 private:
     void UpdateSource();
+
+    static inline thread_local bool s_hasBeenCreated{ false };
 };
