@@ -12677,6 +12677,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         &CIconElement::EnsureTextFormatting, // Storage ensure method
         OFFSET(TextFormatting, m_pForeground) // Storage offset
     },
+    // Microsoft.UI.Xaml.Controls.Image.CornerRadius
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        &CUIElement::NWSetContentDirty, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Controls.Image.NineGrid
     {
         (METHODPFN)OFFSET(CImage, m_ninegridPrivate), // Offset. Cast to METHODPFN to force it into the union.

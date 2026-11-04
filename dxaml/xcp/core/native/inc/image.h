@@ -58,6 +58,8 @@ public:
     _Check_return_ HRESULT GetAlphaMask(
         _Outptr_ WUComp::ICompositionBrush** ppReturnValue);
 
+    XCORNERRADIUS GetCornerRadius() const final;
+
     void CleanupDeviceRelatedResourcesRecursive(
         _In_ bool cleanupDComp) override;
 

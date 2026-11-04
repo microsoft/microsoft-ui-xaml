@@ -32,6 +32,12 @@ HRESULT DirectUI::ImageGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ v
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IImage*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi>(this);
+    }
+#endif
     else
     {
         RRETURN(DirectUI::FrameworkElement::QueryInterfaceImpl(iid, ppObject));
@@ -42,6 +48,15 @@ HRESULT DirectUI::ImageGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ v
 }
 
 // Properties.
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::ImageGenerated::get_CornerRadius(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue)
+{
+    RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Image_CornerRadius, pValue));
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::ImageGenerated::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
+{
+    IFC_RETURN(DefaultStrictApiCheck(this));
+    RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Image_CornerRadius, value));
+}
 IFACEMETHODIMP DirectUI::ImageGenerated::get_NineGrid(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Image_NineGrid, pValue));
@@ -228,6 +243,12 @@ HRESULT DirectUI::ImageFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ voi
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IImageStatics*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IImageStaticsFeature_ExperimentalApi)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IImageStaticsFeature_ExperimentalApi*>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -252,6 +273,10 @@ IFACEMETHODIMP DirectUI::ImageFactory::get_StretchProperty(_Out_ ABI::Microsoft:
 IFACEMETHODIMP DirectUI::ImageFactory::get_NineGridProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
 {
     RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::Image_NineGrid, ppValue));
+}
+IFACEMETHODIMP DirectUI::ImageFactory::get_CornerRadiusProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
+{
+    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::Image_CornerRadius, ppValue));
 }
 
 // Attached properties.

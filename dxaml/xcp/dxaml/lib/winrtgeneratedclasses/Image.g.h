@@ -12,9 +12,29 @@
 #pragma once
 
 #include "FrameworkElement.g.h"
+#include "CornerRadius.g.h"
 #include "Thickness.g.h"
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __Image_GUID "c4d89a08-d1fc-4c96-9e52-8033e4803cf2"
+
+#pragma region forwarders
+namespace ctl
+{
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_CornerRadius)(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue) override { return This()->get_CornerRadius(pValue); }
+        IFACEMETHOD(put_CornerRadius)(ABI::Microsoft::UI::Xaml::CornerRadius value) override { return This()->put_CornerRadius(value); }
+    };
+}
+#pragma endregion
 
 namespace DirectUI
 {
@@ -24,6 +44,9 @@ namespace DirectUI
     class __declspec(novtable) ImageGenerated:
         public DirectUI::FrameworkElement
         , public ABI::Microsoft::UI::Xaml::Controls::IImage
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi, ImageGenerated >
+#endif
     {
         friend class DirectUI::Image;
 
@@ -31,6 +54,9 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(ImageGenerated, DirectUI::FrameworkElement)
             INTERFACE_ENTRY(ImageGenerated, ABI::Microsoft::UI::Xaml::Controls::IImage)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(ImageGenerated, ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(ImageGenerated, DirectUI::FrameworkElement)
 
     public:
@@ -52,6 +78,8 @@ namespace DirectUI
         }
 
         // Properties.
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_CornerRadius(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value);
         IFACEMETHOD(get_NineGrid)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
         IFACEMETHOD(put_NineGrid)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IImageSource** ppValue) override;
@@ -94,9 +122,15 @@ namespace DirectUI
     class __declspec(novtable) ImageFactory:
        public ctl::BetterCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IImageStatics
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::Controls::IImageStaticsFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(ImageFactory, ctl::BetterCoreObjectActivationFactory)
             INTERFACE_ENTRY(ImageFactory, ABI::Microsoft::UI::Xaml::Controls::IImageStatics)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(ImageFactory, ABI::Microsoft::UI::Xaml::Controls::IImageStaticsFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(ImageFactory, ctl::BetterCoreObjectActivationFactory)
 
     public:
@@ -108,6 +142,7 @@ namespace DirectUI
         IFACEMETHOD(get_SourceProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(get_StretchProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(get_NineGridProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
+        IFACEMETHOD(get_CornerRadiusProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
         // Attached properties.
 

@@ -16965,12 +16965,12 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     },
     // Microsoft.UI.Xaml.Controls.Image
     {
-        KnownPropertyIndex::Image_NineGrid, // First property
+        KnownPropertyIndex::Image_CornerRadius, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         78, // First enter property = Microsoft.UI.Xaml.Controls.Image.Source
         67, // First render property = Microsoft.UI.Xaml.Controls.Image.Source
         74, // First object property = Microsoft.UI.Xaml.Controls.Image.Source
-        136, // Property slot count
+        137, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ImageAutomationPeer
     {
@@ -29916,6 +29916,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::IconElement, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsInheritedProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsStorageGroup) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
     },
+    // Microsoft.UI.Xaml.Controls.Image.CornerRadius
+    {
+        KnownPropertyIndex::Image_CornerRadius, // Index name
+        KnownTypeIndex::CornerRadius, // Property type
+        KnownTypeIndex::Image, // Declaring type
+        KnownTypeIndex::Image, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
     // Microsoft.UI.Xaml.Controls.Image.NineGrid
     {
         KnownPropertyIndex::Image_NineGrid, // Index name
@@ -39359,6 +39367,7 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::PresentationFrameworkCollection_Count, // GradientStopCollection_ContentProperty
     KnownPropertyIndex::PresentationFrameworkCollection_Count, // HubSectionCollection_ContentProperty
     KnownPropertyIndex::FrameworkElement_ActualHeight, // IconElement_Foreground
+    KnownPropertyIndex::Image_NineGrid, // Image_CornerRadius
     KnownPropertyIndex::Image_Source, // Image_NineGrid
     KnownPropertyIndex::Image_Stretch, // Image_Source
     KnownPropertyIndex::FrameworkElement_ActualHeight, // Image_Stretch
@@ -41319,9 +41328,10 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     9, // GradientStopCollection_ContentProperty
     9, // HubSectionCollection_ContentProperty
     133, // IconElement_Foreground
-    133, // Image_NineGrid
-    134, // Image_Source
-    135, // Image_Stretch
+    133, // Image_CornerRadius
+    134, // Image_NineGrid
+    135, // Image_Source
+    136, // Image_Stretch
     14, // ImageBrush_ImageSource
     26, // InlineUIContainer_Child
     9, // InputScopeNameCollection_ContentProperty
@@ -43279,6 +43289,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"ContentProperty"),
     XSTRING_PTR_STORAGE(L"ContentProperty"),
     XSTRING_PTR_STORAGE(L"Foreground"),
+    XSTRING_PTR_STORAGE(L"CornerRadius"),
     XSTRING_PTR_STORAGE(L"NineGrid"),
     XSTRING_PTR_STORAGE(L"Source"),
     XSTRING_PTR_STORAGE(L"Stretch"),

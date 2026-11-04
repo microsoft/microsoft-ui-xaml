@@ -1523,6 +1523,15 @@ namespace Microsoft.UI.Xaml.Controls
         static Microsoft.UI.Xaml.DependencyProperty SourceProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty StretchProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty NineGridProperty{ get; };
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [static_name("Microsoft.UI.Xaml.Controls.IImageStaticsFeature_ExperimentalApi")]
+        [interface_name("Microsoft.UI.Xaml.Controls.IImageFeature_ExperimentalApi")]
+        {
+            Microsoft.UI.Xaml.CornerRadius CornerRadius;
+            static Microsoft.UI.Xaml.DependencyProperty CornerRadiusProperty{ get; };
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

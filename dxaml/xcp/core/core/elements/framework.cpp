@@ -453,6 +453,7 @@ CFrameworkElement::SetValue(_In_ const SetValueParams& args)
         case KnownPropertyIndex::Border_CornerRadius:
         case KnownPropertyIndex::ContentPresenter_CornerRadius:
         case KnownPropertyIndex::Grid_CornerRadius:
+        case KnownPropertyIndex::Image_CornerRadius:
         case KnownPropertyIndex::RelativePanel_CornerRadius:
         case KnownPropertyIndex::StackPanel_CornerRadius:
             {
@@ -2689,6 +2690,8 @@ XCORNERRADIUS CFrameworkElement::GetCornerRadius() const
 // If it's just this element itself with a rounded corner, then we'll draw the rounded corner via
 // an alpha mask, and we don't need to apply a rounded corner clip via DComp. We don't want to pay
 // for the perf cost of the rounded corner clip, so we avoid it if there are no children.
+// Image is the exception: its content is the image source rather than a masked background, so it
+// always needs the clip.
 void CFrameworkElement::UpdateRequiresCompNodeForRoundedCorners()
 {
     XCORNERRADIUS cornerRadius = GetCornerRadius();
@@ -2703,7 +2706,7 @@ void CFrameworkElement::UpdateRequiresCompNodeForRoundedCorners()
         GetChildren() != nullptr
         && GetChildren()->GetCount() > 0;
 
-    if (hasRoundedCorner && hasChildren)
+    if (hasRoundedCorner && (hasChildren || OfTypeByIndex<KnownTypeIndex::Image>()))
     {
         if (!RequiresCompNodeForRoundedCorners())
         {

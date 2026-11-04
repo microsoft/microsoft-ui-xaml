@@ -1959,6 +1959,7 @@ enum class KnownPropertyIndex: UINT16
     GradientStopCollection_ContentProperty,
     HubSectionCollection_ContentProperty,
     IconElement_Foreground,
+    Image_CornerRadius,
     Image_NineGrid,
     Image_Source,
     Image_Stretch,
