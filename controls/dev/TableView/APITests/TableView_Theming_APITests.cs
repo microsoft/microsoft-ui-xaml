@@ -392,8 +392,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(border, (tableView.BorderBrush as SolidColorBrush)?.Color ?? default,
                         "The outer border must come from TabularSurfaceOuterBorderBrush.");
 
-                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
-                    Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
+                    Verify.IsNotNull(headerRow, "The template must contain PART_HeaderGridLine.");
                     Verify.AreEqual(gridLine, (headerRow?.BorderBrush as SolidColorBrush)?.Color ?? default,
                         "The header bottom rule must come from TabularSurfaceHeaderSeparatorBrush.");
                 });
@@ -525,12 +525,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             Verify.AreEqual(separatorColor, (separator.Background as SolidColorBrush)?.Color ?? default,
                                 "Header separators paint TabularSurfaceHeaderSeparatorBrush.");
 
-                            var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
-                            Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                            var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
+                            Verify.IsNotNull(headerRow, "The template must contain PART_HeaderGridLine.");
                             if (headerRow != null)
                             {
                                 Verify.AreEqual(new Thickness(0, 0, 0, 1), headerRow.BorderThickness,
-                                    $"Hiding the header bottom rule must preserve its layout inset ({context}).");
+                                    $"The header bottom rule is a 1px overlay ({context}).");
                                 if (headerHorizontal)
                                 {
                                     Verify.AreEqual(separatorColor, (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default,
@@ -593,7 +593,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
                     Verify.IsNotNull(headerRow);
                     Verify.IsNull(headerRow.BorderBrush, "A pre-template None value must survive retemplating and theme changes.");
                     foreach (var columnHeader in FindVisualChildrenByType<TableViewColumnHeader>(tableView))
@@ -614,7 +614,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.HeaderGridLinesVisibility,
                         "Clearing the property must restore the default All value.");
-                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
                     var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
                     Verify.IsNotNull(headerRow.BorderBrush, "Showing horizontal gridlines must restore the live themed brush.");
                     Verify.AreEqual(Visibility.Visible, separator.Visibility, "Showing vertical gridlines must restore rebuilt separators.");
@@ -651,8 +651,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(transparent, (separator?.Background as SolidColorBrush)?.Color ?? default,
                         "Overriding TabularSurfaceHeaderSeparatorBrush with Transparent must hide the header separators.");
 
-                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
-                    Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
+                    Verify.IsNotNull(headerRow, "The template must contain PART_HeaderGridLine.");
                     Verify.AreEqual(transparent, (headerRow?.BorderBrush as SolidColorBrush)?.Color ?? default,
                         "Overriding TabularSurfaceHeaderSeparatorBrush with Transparent must hide the header bottom rule.");
                 });
@@ -1704,7 +1704,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // TableView-dev-spec.md:83 states it directly: "Header cells use the density row minimum height,
-        // so the header band matches body rows." Most visible at Compact, where the difference is 10px.
+        // so the header band matches body rows.
         [TestMethod]
         public void VerifyHeaderBandHeightFollowsDensity()
         {
@@ -1776,14 +1776,153 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Verify.AreEqual(testCase.CellPadding, cellText.Padding,
-                        $"Density={testCase.Density} must give generated text cells a Padding of {testCase.CellPadding}. " +
-                        "Without it rows grow taller but text stays pinned to the top, so Comfortable buys empty space " +
-                        "instead of breathing room.");
+                        $"Density={testCase.Density} must give generated text cells a Padding of {testCase.CellPadding}.");
 
                     var headerPresenter = GetHeaderPresenter(tableView, 0);
                     Verify.AreEqual(testCase.CellPadding, headerPresenter.Padding,
                         $"Density={testCase.Density} must give header cells the same padding as body cells.");
                 });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensityRenderedHeightsAndContentInsets()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.IsTextScaleFactorEnabled = false;
+                tableView.Columns[0].CanSort = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var testCase in DensityCases)
+            {
+                foreach (var lines in new[] { TableViewGridLinesVisibility.All, TableViewGridLinesVisibility.None })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView.Density = testCase.Density;
+                        tableView.GridLinesVisibility = lines;
+                        tableView.HeaderGridLinesVisibility = lines;
+                        tableView.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var row = GetRealizedRows(tableView).First();
+                        var cell = GetRowCell(row, 0);
+                        var text = RequireFirstCellTextBlock(tableView);
+                        var header = GetHeaderCell(tableView, 0);
+                        var presenter = GetHeaderPresenter(tableView, 0);
+                        var headerBand = (FrameworkElement)tableView.FindVisualChildByName("PART_HeaderRow");
+                        var context = $"{testCase.Density}, {lines}";
+                        Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, $"Rendered row height: {context}.");
+                        Verify.AreEqual(testCase.RowMinHeight, header.ActualHeight, $"Rendered header height: {context}.");
+                        Verify.AreEqual(testCase.RowMinHeight, headerBand.ActualHeight, $"Header rule must not add height: {context}.");
+
+                        var bodyOrigin = text.TransformToVisual(cell).TransformPoint(new Point());
+                        var headerOrigin = presenter.TransformToVisual(header).TransformPoint(new Point());
+                        Verify.AreEqual(12.0, bodyOrigin.X + text.Padding.Left, $"Body text starts 12px inside the cell: {context}.");
+                        Verify.AreEqual(12.0, headerOrigin.X + presenter.Padding.Left, $"Header and body text align: {context}.");
+                        var roundingTolerance = 1.0 / tableView.XamlRoot.RasterizationScale;
+                        Verify.IsLessThanOrEqual(Math.Abs(row.ActualHeight - text.ActualHeight - 2 * bodyOrigin.Y),
+                            roundingTolerance, $"Padded body text is vertically centered: {context}.");
+                        Verify.IsLessThanOrEqual(Math.Abs(header.ActualHeight - presenter.ActualHeight - 2 * headerOrigin.Y),
+                            roundingTolerance, $"Padded header text is vertically centered: {context}.");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensityRowsGrowForLargerText()
+        {
+            foreach (var testCase in DensityCases)
+            {
+                TableView tableView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateThemingTable();
+                    tableView.Density = testCase.Density;
+                    Verify.IsTrue(tableView.IsTextScaleFactorEnabled, "Density must not disable system text scaling.");
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    RequireFirstCellTextBlock(tableView).FontSize = 28;
+                    ((TableViewColumnHeader)GetHeaderCell(tableView, 0)).FontSize = 28;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = GetRealizedRows(tableView).First();
+                    var text = RequireFirstCellTextBlock(tableView);
+                    var header = GetHeaderCell(tableView, 0);
+                    Verify.IsTrue(text.IsTextScaleFactorEnabled, "Generated text must keep system text scaling.");
+                    Verify.IsGreaterThan(row.ActualHeight, testCase.RowMinHeight, "Larger text must grow the row beyond its density minimum.");
+                    Verify.IsGreaterThan(header.ActualHeight, testCase.RowMinHeight, "Larger text must grow the header.");
+                    Verify.IsGreaterThanOrEqual(row.ActualHeight, text.ActualHeight, "The row must fit the padded text rather than clip it.");
+                    Verify.IsLessThanOrEqual(row.ActualHeight - text.ActualHeight, 1.0 / tableView.XamlRoot.RasterizationScale,
+                        "Extra row space must be no more than layout rounding.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensitySelectionOutlineClearsNativeFocusVisuals()
+        {
+            foreach (var testCase in DensityCases)
+            {
+                TableView tableView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateThemingTable();
+                    tableView.IsTextScaleFactorEnabled = false;
+                    tableView.Density = testCase.Density;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView.RequestedTheme = theme;
+                        tableView.FlowDirection = theme == ElementTheme.Dark ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    foreach (var focusCell in new[] { false, true })
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var row = GetRealizedRows(tableView).First();
+                            FrameworkElement target = focusCell ? GetRowCell(row, 0) : row;
+                            target.IsTabStop = true;
+                            Verify.IsTrue(target.Focus(FocusState.Keyboard), "The row or cell must take keyboard focus.");
+                            Verify.IsTrue(VisualStateManager.GoToState(row, "Selected", false));
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var row = GetRealizedRows(tableView).First();
+                            var outline = (Border)row.FindVisualChildByName("PART_SelectionIndicator");
+                            FrameworkElement target = focusCell ? GetRowCell(row, 0) : row;
+                            Verify.AreEqual(FocusState.Keyboard, target.FocusState);
+                            Verify.IsTrue(target.UseSystemFocusVisuals, "Keep native focus rendering for rows and cells.");
+                            var focusInset = target.FocusVisualMargin.Top
+                                + target.FocusVisualPrimaryThickness.Top + target.FocusVisualSecondaryThickness.Top;
+                            Verify.IsTrue(outline.Margin.Top > focusInset, "Selection must start inside both focus strokes with a visible gap.");
+                            Verify.AreEqual(1.0, outline.Opacity, "Focus must not hide selection.");
+                            Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, "Focus and selection must not grow the row.");
+                        });
+                    }
+                }
             }
         }
 
@@ -1990,7 +2129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(realizedRow, rowAfter,
                     "The density change should update the existing row rather than force a rebuild.");
-                Verify.AreEqual(30.0, rowAfter.MinHeight,
+                Verify.AreEqual(32.0, rowAfter.MinHeight,
                     "An already-realized row must pick up the Compact metric; otherwise the table shows a mix of densities as the user scrolls.");
 
                 var cellText = RequireFirstCellTextBlock(tableView);
@@ -1999,7 +2138,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                Verify.AreEqual(new Thickness(8, 2, 8, 2), cellText.Padding,
+                Verify.AreEqual(new Thickness(12, 6, 12, 6), cellText.Padding,
                     "An already-realized cell must pick up the Compact padding.");
             });
         }
@@ -2040,7 +2179,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Verify.AreEqual(overriddenMinHeight, row.MinHeight,
-                        "An app-scope TableViewRowMinHeightCompact override must win. A value of 30 here means the metric came " +
+                        "An app-scope TableViewRowMinHeightCompact override must win. A value of 32 here means the metric came " +
                         "from the C++ fallback constant and the resource key is decorative.");
                 });
             }
@@ -2131,8 +2270,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(outline, "The selection indicator must be a whole-row Border.");
                     Verify.AreEqual(new Thickness(1), outline.BorderThickness, "The selection outline is 1px.");
                     Verify.AreEqual(row.CornerRadius, outline.CornerRadius, "All selection corners must follow the row radius.");
-                    Verify.AreEqual(row.ActualWidth, outline.ActualWidth, "Selection must span every column.");
-                    Verify.AreEqual(row.ActualHeight, outline.ActualHeight, "Selection must span the full row height.");
+                    Verify.AreEqual(new Thickness(4), outline.Margin, "Selection must leave room for both native focus strokes.");
+                    Verify.AreEqual(row.ActualWidth - 8, outline.ActualWidth, "Selection must span every column inside the focus visual.");
+                    Verify.AreEqual(row.ActualHeight - 8, outline.ActualHeight, "Selection must be inset within the row.");
                     Verify.IsFalse(outline.IsHitTestVisible, "Selection must not intercept cell input.");
                     Verify.AreEqual(state == "Normal" ? 0.0 : 1.0, outline.Opacity, $"Outline visibility in {state}.");
                     var cell = GetRowCell(row, 0);
@@ -2562,7 +2702,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var second = RequireColumnHeader(tableView, 1);
                 Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle's BasedOn Background must win over ColumnHeaderStyle.");
-                Verify.AreEqual(30.0, second.MinHeight, "Without a style MinHeight the header follows the Compact row height.");
+                Verify.AreEqual(32.0, second.MinHeight, "Without a style MinHeight the header follows the Compact row height.");
             });
         }
 
@@ -3810,9 +3950,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // agree today; VerifyDensityResourceOverrideWins is what proves the resource is the real source.
         internal static readonly DensityCase[] DensityCases = new[]
         {
-            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 30.0, CellPadding = new Thickness(8, 2, 8, 2) },
-            new DensityCase { Density = TableViewDensity.Standard, RowMinHeight = 40.0, CellPadding = new Thickness(8, 4, 8, 4) },
-            new DensityCase { Density = TableViewDensity.Comfortable, RowMinHeight = 48.0, CellPadding = new Thickness(8, 8, 8, 8) },
+            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 32.0, CellPadding = new Thickness(12, 6, 12, 6) },
+            new DensityCase { Density = TableViewDensity.Standard, RowMinHeight = 40.0, CellPadding = new Thickness(12, 10, 12, 10) },
+            new DensityCase { Density = TableViewDensity.ExtraCompact, RowMinHeight = 24.0, CellPadding = new Thickness(12, 2, 12, 2) },
         };
 
         internal static TableView CreateThemingTable()

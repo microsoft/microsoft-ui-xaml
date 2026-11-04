@@ -8,6 +8,7 @@
 #include "TableViewFocusHelpers.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
+#include "TableViewTextColumn.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
@@ -1967,7 +1968,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     }
 
     // Density: apply the owning TableView's row min-height (Fluent Standard = 40,
-    // Compact = 30, Comfortable = 48; resolved from the TableViewRowMinHeight* resources).
+    // Compact = 32, ExtraCompact = 24; resolved from the TableViewRowMinHeight* resources).
     const auto ownerImpl = winrt::get_self<TableView>(owner);
     const auto rowMinHeight = ownerImpl->GetDensityRowMinHeight();
     if (MinHeight() != rowMinHeight)
@@ -2092,6 +2093,11 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     if (canRestampCells)
     {
         const auto cellPadding = ownerImpl->GetDensityCellPadding();
+        if (auto displayText = m_editingDisplayElement.get().try_as<winrt::TextBlock>();
+            displayText && displayText.Padding() != cellPadding)
+        {
+            displayText.Padding(cellPadding);
+        }
         childIndex = 0;
         for (auto const& column : columns)
         {
@@ -2120,6 +2126,11 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
                     {
                         textBlock.Padding(cellPadding);
                     }
+                }
+                else if (auto editor = cellElement.try_as<winrt::TextBox>();
+                    editor && column.try_as<winrt::TableViewTextColumn>() && !column.CellEditingTemplate())
+                {
+                    TableViewTextColumn::RefreshEditorMetrics(editor, owner);
                 }
             }
 
@@ -3304,4 +3315,3 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
 
     return nullptr;
 }
-

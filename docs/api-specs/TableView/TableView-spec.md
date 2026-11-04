@@ -147,6 +147,13 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
 
+The density presets are `Standard` (40px), `Compact` (32px), and `ExtraCompact` (24px).
+These are minimum heights, not caps: larger text and custom content can grow the row.
+Built-in cell and header padding is respectively `12,10,12,10`, `12,6,12,6`, and `12,2,12,2`
+(left, top, right, bottom). Font size stays 14px. Gridlines are overlays and do not add to
+the preset height. Built-in text editors account for their border thickness so editing
+preserves the display text's inset.
+
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
@@ -478,7 +485,7 @@ Template parts:
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
 
-The table template's `HeaderGridLineStates` group contains `HeaderHorizontalGridLinesVisible` and `HeaderHorizontalGridLinesHidden`. The hidden state clears `PART_HeaderRow.BorderBrush` without changing its thickness; the visible state restores the template's themed brush. Custom templates should implement these states to support the horizontal part of `HeaderGridLinesVisibility`.
+The table template's `HeaderGridLineStates` group contains `HeaderHorizontalGridLinesVisible` and `HeaderHorizontalGridLinesHidden`. The hidden state clears the overlay `PART_HeaderGridLine.BorderBrush`; the visible state restores the template's themed brush. The line does not consume header layout space. Custom templates should implement these states to support the horizontal part of `HeaderGridLinesVisibility`.
 
 Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
@@ -870,6 +877,11 @@ Selected states share the one group rather than living in a second, overlapping 
 
 Hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TabularSurfaceSelectionIndicatorBrush`; `SelectedDisabled` uses `TabularSurfaceSelectionIndicatorDisabledBrush`.
 
+The 1px selection outline is overlaid with a 4px inset (`TableViewSelectionIndicatorMargin`),
+inside the native 2px primary and 1px secondary focus strokes with a 1px gap. Selection
+and focus remain independently visible without changing cell layout, including at the
+24px density. The inset can be overridden when customizing focus geometry.
+
 Properties:
 
 | Property | Type | Default | Description |
@@ -941,9 +953,13 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used independently by 
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Compact` | 0 | Compact spacing. |
-| `Standard` | 1 | Standard spacing. |
-| `Comfortable` | 2 | Comfortable spacing. |
+| `Compact` | 0 | 32px minimum row/header height. |
+| `Standard` | 1 | 40px minimum row/header height; default. |
+| `ExtraCompact` | 3 | 24px minimum row/header height. |
+
+The preview `Comfortable` preset (value 2, 48px) has been removed. Migrate callers to
+one of these presets or override the metric resources for custom spacing. Value 2
+is intentionally not reused.
 
 ### TableViewSelectionMode
 
@@ -1070,7 +1086,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     {
         Compact = 0,
         Standard = 1,
-        Comfortable = 2,
+        ExtraCompact = 3,
     };
 
     [MUX_PREVIEW, webhosthidden]

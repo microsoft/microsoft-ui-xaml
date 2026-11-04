@@ -323,7 +323,7 @@ Entry c_typeEntries[] =
                 {
                     if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Standard") return box_value(winrt::TableViewDensity::Standard);
-                    if (fromString == L"Comfortable") return box_value(winrt::TableViewDensity::Comfortable);
+                    if (fromString == L"ExtraCompact") return box_value(winrt::TableViewDensity::ExtraCompact);
                     throw winrt::hresult_invalid_argument();
                 });
 

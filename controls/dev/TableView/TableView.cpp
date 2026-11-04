@@ -483,8 +483,8 @@ namespace
     {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return 30.0;
-        case winrt::TableViewDensity::Comfortable: return 48.0;
+        case winrt::TableViewDensity::Compact: return 32.0;
+        case winrt::TableViewDensity::ExtraCompact: return 24.0;
         default: return 40.0; // Standard
         }
     }
@@ -493,9 +493,9 @@ namespace
     {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(8, 2, 8, 2);
-        case winrt::TableViewDensity::Comfortable: return winrt::ThicknessHelper::FromLengths(8, 8, 8, 8);
-        default: return winrt::ThicknessHelper::FromLengths(8, 4, 8, 4); // Standard
+        case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(12, 6, 12, 6);
+        case winrt::TableViewDensity::ExtraCompact: return winrt::ThicknessHelper::FromLengths(12, 2, 12, 2);
+        default: return winrt::ThicknessHelper::FromLengths(12, 10, 12, 10); // Standard
         }
     }
 
@@ -2287,7 +2287,7 @@ static std::wstring_view DensitySuffix(winrt::TableViewDensity density)
     switch (density)
     {
     case winrt::TableViewDensity::Compact: return L"Compact"sv;
-    case winrt::TableViewDensity::Comfortable: return L"Comfortable"sv;
+    case winrt::TableViewDensity::ExtraCompact: return L"ExtraCompact"sv;
     default: return L""sv;
     }
 }

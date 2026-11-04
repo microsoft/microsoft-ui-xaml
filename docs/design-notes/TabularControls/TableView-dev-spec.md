@@ -87,7 +87,7 @@ The full surface, including event args and enums, is in `TableView.idl`, `TableV
 TableView
 └─ Border (chrome; CornerRadius = ControlCornerRadius)
    └─ Grid: Row 0 = Auto (header band), Row 1 = * (body band)
-      ├─ Border PART_HeaderRow                    header background + 1px bottom rule
+      ├─ Border PART_HeaderRow                    header background; contains overlaid PART_HeaderGridLine
       │  └─ ScrollViewer PART_HeaderScroller      no user scrolling; H offset driven from the body
       │     └─ TableViewCellsPanel PART_HeaderHost   one TableViewColumnHeader per column
       └─ ScrollViewer PART_BodyScroller           H + V, auto scrollbars
@@ -294,7 +294,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | `GridLinesVisibility` | Body gridlines, independent of header lines. |
 | `HeaderGridLinesVisibility` | Header dividers (`Vertical`) and bottom rule (`Horizontal`), using the same All / Horizontal / None / Vertical enum as the body. Defaults to All. The table template's `HeaderGridLineStates` hide the bottom rule's brush without changing layout; header-cell `PART_GridLine` visibility controls the dividers and preserves trailing-edge suppression. |
 | `BorderBrush`, `BorderThickness` | Outer frame. Transparent in Light/Dark; system-color in High Contrast. The default 1px inset is retained for stable layout and opt-in visible borders. |
-| `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
+| `Density` | `Standard` / `Compact` / `ExtraCompact`: 40/32/24px minimum row and header heights (`TableViewRowMinHeight` / `TableViewRowMinHeightCompact` / `TableViewRowMinHeightExtraCompact`). Matching cell/header padding is 12,10,12,10 / 12,6,12,6 / 12,2,12,2. Font size does not vary. The preview `Comfortable` preset is removed; its numeric value 2 is not reused (`ExtraCompact` = 3). |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
 | Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`Normal`), `TabularSurface*` brushes. |
@@ -307,7 +307,7 @@ Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme 
 | `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
 | `TabularSurfaceOuterBorderBrush` | Control border | Transparent | `SystemColorWindowTextColor` |
 
-A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container. The selection outline's 4px `TableViewSelectionIndicatorMargin` clears the native 2px + 1px focus strokes with a 1px gap. Row and header horizontal rules are overlays, so toggling gridlines does not add a pixel to the density height. Built-in text editors subtract their border thickness from cell padding to preserve text alignment. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
 
 **Later:** per-element `RowStyle` (on `TableViewRow`) and `CellStyle` (on the `TableViewCell` wrapper), as in WPF, rather than a monolithic `TableStyle`, so standard `Style` machinery applies without a property explosion.
 

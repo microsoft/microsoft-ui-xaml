@@ -33,6 +33,7 @@ public:
     // authored separately. The public answer to "which field is this column about?" is the base
     // column's SortMemberPath, so this must never become a second public concept.
     winrt::hstring GetEditingPropertyPath() const;
+    static void RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner);
 
 private:
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_binding{ this };

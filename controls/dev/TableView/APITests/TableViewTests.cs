@@ -324,7 +324,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     CreateTextTemplate("Group A"), CreateTextTemplate("Group B"),
                     () => tableView.GroupHeaderTemplate, value => tableView.GroupHeaderTemplate = (DataTemplate)value);
                 VerifySettableDependencyProperty(tableView, TableView.DensityProperty, "TableView.Density",
-                    TableViewDensity.Compact, TableViewDensity.Comfortable,
+                    TableViewDensity.Compact, TableViewDensity.ExtraCompact,
                     () => tableView.Density, value => tableView.Density = (TableViewDensity)value);
                 VerifySettableDependencyProperty(tableView, TableView.IsReadOnlyProperty, "TableView.IsReadOnly",
                     false, true,

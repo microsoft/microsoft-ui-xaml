@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
-    <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
+    <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
+    <!-- Clears the native 2px primary + 1px secondary focus strokes, with a 1px gap. -->
+    <Thickness x:Key="TableViewSelectionIndicatorMargin">4</Thickness>
     <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
@@ -45,7 +47,7 @@
                                 <VisualState x:Name="HeaderHorizontalGridLinesVisible" />
                                 <VisualState x:Name="HeaderHorizontalGridLinesHidden">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_HeaderRow.BorderBrush" Value="{x:Null}" />
+                                        <Setter Target="PART_HeaderGridLine.BorderBrush" Value="{x:Null}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -57,9 +59,7 @@
                             </Grid.RowDefinitions>
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
-                                    Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                    BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
-                                    BorderThickness="0,0,0,1">
+                                    Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"
@@ -72,6 +72,11 @@
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
                                                                       HorizontalAlignment="Left" />
                                     </ScrollViewer>
+                                    <Border x:Name="PART_HeaderGridLine"
+                                            BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                            BorderThickness="0,0,0,1"
+                                            IsHitTestVisible="False"
+                                            AutomationProperties.AccessibilityView="Raw" />
                                 </Grid>
                             </Border>
                             <ScrollViewer x:Name="PART_BodyScroller"
@@ -414,8 +419,7 @@
                                 Grid.Column="0"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding CornerRadius}" />
-                        <Border BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}">
+                        <Border Padding="{TemplateBinding Padding}">
                         <Grid>
                             <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper
                                  per TableViewColumn, in Columns order, laid out left-to-right.
@@ -464,6 +468,7 @@
                                 IsHitTestVisible="False" />
                         <!-- Paint above the gridlines without changing cell layout or hit testing. -->
                         <Border x:Name="PART_SelectionIndicator"
+                                Margin="{ThemeResource TableViewSelectionIndicatorMargin}"
                                 BorderBrush="{ThemeResource TabularSurfaceSelectionIndicatorBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{TemplateBinding CornerRadius}"

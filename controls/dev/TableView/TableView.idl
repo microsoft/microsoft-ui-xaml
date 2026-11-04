@@ -43,7 +43,7 @@ enum TableViewDensity
 {
     Compact = 0,
     Standard = 1,
-    Comfortable = 2,
+    ExtraCompact = 3,
 };
 
 [MUX_PREVIEW]

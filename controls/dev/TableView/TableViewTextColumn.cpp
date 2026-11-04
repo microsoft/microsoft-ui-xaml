@@ -36,14 +36,14 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
     // FontWeight stays unset so a TableView/app value inherits.
     textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    // Density-aware built-in cell padding (Standard = 8,4,8,4 = unchanged default).
+    // Density changes spacing, not the text size.
     if (owner)
     {
         textBlock.Padding(winrt::get_self<TableView>(owner)->GetDensityCellPadding());
     }
     else
     {
-        textBlock.Padding(winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
+        textBlock.Padding(winrt::ThicknessHelper::FromLengths(12, 10, 12, 10));
     }
     textBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
 
@@ -53,6 +53,28 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     }
 
     return textBlock;
+}
+
+void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner)
+{
+    const auto padding = owner
+        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
+        : winrt::ThicknessHelper::FromLengths(12, 10, 12, 10);
+    const auto border = editor.BorderThickness();
+    const auto editorPadding = winrt::ThicknessHelper::FromLengths(
+        std::max(0.0, padding.Left - border.Left),
+        std::max(0.0, padding.Top - border.Top),
+        std::max(0.0, padding.Right - border.Right),
+        std::max(0.0, padding.Bottom - border.Bottom));
+    if (editor.Padding() != editorPadding)
+    {
+        editor.Padding(editorPadding);
+    }
+    const auto minHeight = owner ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight() : 40.0;
+    if (editor.MinHeight() != minHeight)
+    {
+        editor.MinHeight(minHeight);
+    }
 }
 
 winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const winrt::IInspectable& dataItem)
@@ -79,17 +101,19 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     // text or resize the row as the edit opens.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
     textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    textBox.Padding(owner
-        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
-        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
-
-    // The shipping TextBox style carries its own MinHeight (32px), which is taller than a Compact
-    // TableView row (30px). Left alone, opening an editor grows the row and shifts the rows below
-    // it. Clamp to the row's own minimum so the swap is visually neutral.
-    if (owner)
-    {
-        textBox.MinHeight(winrt::get_self<TableView>(owner)->GetDensityRowMinHeight());
-    }
+    // The TextBox template adds BorderThickness outside Padding; display text has no border.
+    // Re-evaluate when the inherited theme resolves the editor's style after attachment.
+    const auto weakOwner = owner ? winrt::make_weak(owner) : winrt::weak_ref<winrt::TableView>{};
+    textBox.RegisterPropertyChangedCallback(winrt::Control::BorderThicknessProperty(),
+        [weakOwner](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            RefreshEditorMetrics(sender.as<winrt::TextBox>(), weakOwner.get());
+        });
+    textBox.Loaded([weakOwner](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&)
+        {
+            RefreshEditorMetrics(sender.as<winrt::TextBox>(), weakOwner.get());
+        });
+    RefreshEditorMetrics(textBox, owner);
 
     // The consumer's Binding is reused rather than copied field-by-field so that Converter,
     // ConverterParameter, StringFormat and TargetNullValue all keep working in the editor.
