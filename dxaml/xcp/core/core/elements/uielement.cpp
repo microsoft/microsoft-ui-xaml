@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "MetadataAPI.h"
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
@@ -79,6 +80,7 @@ using namespace Theming;
 // here to avoid pulling the allocator's private headers into the core.
 _Check_return_ UINT64 XcpDebugGetAllocationSize(_In_opt_ const void *pAddress) noexcept;
 #endif
+#endif // XAMLPROFILER_ENABLED
 // Computes the DXaml-peer InstanceHandle for a core object so the XAML Profiler can bridge a
 // tree node back to the live element (e.g. to highlight it in the target app). This is the same
 // value XAML Diagnostics / the WinUISnoop tap use as an InstanceHandle (see HandleMap::GetHandle):
@@ -110,7 +112,7 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
     return 0;
 }
 
-XamlElementTracing::Identity XamlElementTracing::GetIdentity(
+XamlTelemetry::Identity XamlTelemetry::GetIdentity(
     _In_opt_ CDependencyObject* object,
     _In_opt_ CDependencyObject* relatedUIElement)
 {
@@ -131,6 +133,15 @@ XamlElementTracing::Identity XamlElementTracing::GetIdentity(
         identity.uiElement = reinterpret_cast<uint64_t>(owner);
     }
     return identity;
+}
+
+#ifdef XAMLPROFILER_ENABLED
+XamlElementTracing::Identity XamlElementTracing::GetIdentity(
+    _In_opt_ CDependencyObject* object,
+    _In_opt_ CDependencyObject* relatedUIElement)
+{
+    const auto identity = XamlTelemetry::GetIdentity(object, relatedUIElement);
+    return { identity.uiElement, identity.objectPointer };
 }
 
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
@@ -1352,15 +1363,6 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
             sourceUri.GetBuffer(),
             sourceLine,
             sourceColumn);
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -1973,15 +1975,6 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
             static_cast<bool>(params.fIsLive));
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
 #endif // XAMLPROFILER_ENABLED
 

@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="[10.0.13]" />
+    <!-- XamlEventSubscription.IgnoreOtherProviders relies on how this version works: re-check it when updating. -->
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="[3.2.8]" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="[2.3.9]" />
   </ItemGroup>

@@ -46,7 +46,7 @@ public sealed partial class SnapshotDiffWindow : Window
     private SnapshotDiffData? data;
     private bool closed, changingExpansion, synchronizing;
 
-    public event EventHandler<SnapshotElement>? ElementRequested;
+    public event EventHandler<SnapshotObject>? ObjectRequested;
 
     public SnapshotDiffWindow(SnapshotHistoryEntry baseline, SnapshotHistoryEntry comparison)
     {
@@ -58,8 +58,8 @@ public sealed partial class SnapshotDiffWindow : Window
             InitializeComponent();
             Title = Text("SnapshotDiffTitle");
             AppWindow.Resize(new SizeInt32(1520, 1000));
-            BeforeIdentity.Text = Format("SnapshotDiffBeforeFormat", before.Title, before.CaptureId);
-            AfterIdentity.Text = Format("SnapshotDiffAfterFormat", after.Title, after.CaptureId);
+            BeforeIdentity.Text = Format("SnapshotDiffBeforeFormat", before.Process.ProcessId, before.CaptureId);
+            AfterIdentity.Text = Format("SnapshotDiffAfterFormat", after.Process.ProcessId, after.CaptureId);
             Root.Loaded += OnLoaded;
         }
         catch
@@ -88,7 +88,9 @@ public sealed partial class SnapshotDiffWindow : Window
             AutomationProperties.SetItemStatus(CompositionSummary, Counts(data.Composition));
             AutomationProperties.SetItemStatus(BeforeIdentity, before.CaptureId);
             AutomationProperties.SetItemStatus(AfterIdentity, after.CaptureId);
-            NoDifferences.Visibility = data.Xaml.Nodes.Concat(data.Composition.Nodes)
+            ResourceSnapshot.Show(data.Before.Document.ResourceSnapshot, data.After.Document.ResourceSnapshot, true);
+            ResourceSnapshot.Visibility = Visibility.Visible;
+            NoDifferences.Visibility = data.Resources.HasChanges || data.Xaml.Nodes.Concat(data.Composition.Nodes)
                 .Any(node => node.Change != SnapshotChange.None) ? Visibility.Collapsed : Visibility.Visible;
             RebuildTrees();
             Viewer.Visibility = Visibility.Visible;
@@ -228,14 +230,23 @@ public sealed partial class SnapshotDiffWindow : Window
 
     private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args) => Populate(args.Node);
 
-    // Double-clicking a XAML node asks the main window to show its element's history in the Elements tab: as it was in
-    // the later snapshot, or in the earlier one for a removed node.
+    // Double-clicking a node asks the main window to show the history of its element (a XAML node) or its visual (a
+    // composition node) in the Objects tab, as it was in the later snapshot, or in the earlier one for a removed node.
     private void XamlTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
     {
         if (data is null || SnapshotTreeExpansion.NodeAt(XamlTree, args.OriginalSource)?.Content is not SnapshotDiffTreeItem { Difference: { } node }) return;
         args.Handled = true;
-        ElementRequested?.Invoke(this, node.After is { } later
-            ? SnapshotElement.From(data.After.Document, later) : SnapshotElement.From(data.Before.Document, node.Before!));
+        ObjectRequested?.Invoke(this, node.After is { } later
+            ? SnapshotObject.FromXaml(data.After.Document, later) : SnapshotObject.FromXaml(data.Before.Document, node.Before!));
+    }
+
+    private void CompositionTree_DoubleTapped(object sender, DoubleTappedRoutedEventArgs args)
+    {
+        if (data is null || SnapshotTreeExpansion.NodeAt(CompositionTree, args.OriginalSource)?.Content is not SnapshotDiffTreeItem { Difference: { } node }) return;
+        args.Handled = true;
+        ObjectRequested?.Invoke(this, node.After is { } later
+            ? SnapshotObject.FromComposition(data.After.Document, later)
+            : SnapshotObject.FromComposition(data.Before.Document, node.Before!));
     }
 
     private void ChangesOnly_Click(object sender, RoutedEventArgs args)

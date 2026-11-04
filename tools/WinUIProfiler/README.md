@@ -35,9 +35,9 @@ connection work, joins polling and disconnects the TAP without killing the targe
 Unavailable and warm-up measurements remain labelled gaps, never invented zeros.
 
 The chart visuals, legends and searchable target-selection dialog are declared
-in XAML. Executable browsing uses
+in XAML. Executable and trace file browsing use
 `Microsoft.Windows.Storage.Pickers.FileOpenPicker`, including when elevated;
-it does not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
+they do not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
 picker preserves the existing target input.
 
 `WinUIProfiler.Core\Ingestion\NativeMetricAbi.cs` mirrors the fixed-width C ABI
@@ -51,8 +51,9 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file. The Frames tab shows its frames and
-the Elements tab its UI elements.
+GPU memory events for it, to a session file. It can also read them from a
+recorded trace (`.etl`) into a session file. The Frames tab shows its frames,
+and the Objects tab its UI elements and composition visuals.
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
@@ -77,15 +78,58 @@ hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
+Run the event compatibility regression checks from this directory:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
+```
+
+These check object timelines across new TraceLogging and legacy manifest events,
+and verify that migrated performance regions distinguish Start/Stop without
+also matching legacy manifest events.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
 target PID, creation time, runtime path and latest hello. Errors and timeouts
 remain visible; connecting to a non-WinUI process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
-silently elevated.
+silently elevated. Select **Recorded trace (.etl)** to read a recorded trace
+instead (see "Recorded, from a trace file" below).
 
 ## Tree snapshots
+
+Each capture also calls the target's private `IXamlDiagnosticsPrivate::GetResourceSnapShot`
+once, before tree enumeration, and saves the result and its QPC interval in the
+snapshot JSON (schema 4, `resourceSnapshot`). The resource view currently shows
+the five allocator/GC metrics and any populated graphics counter slots, identified
+by their fixed array index rather than a generated string name. Comparison shows **Before**, **After**, and
+signed **Delta (After - Before)** values, in counts or bytes; resource-only changes
+are included even when the trees are unchanged. Deltas preserve the full 64-bit
+counter range, including decreases. All five allocator/GC metrics use signed 64-bit
+values: `-1` means unavailable, while zero is a measured value. Unavailable metrics
+and resources absent from either capture have no delta, not an assumed zero.
+
+The private interface requires a target runtime containing resource diagnostics.
+Its IID changed with the signed allocator-counter contract so older runtimes fail
+the interface query safely instead of writing an incompatible snapshot layout.
+Missing support or a failed call preserves the tree capture and reports unavailable
+resources with the HRESULT. Schema-1 snapshots remain readable and report resources not
+recorded. Existing schema-3 resource captures and allocation-only schema-2 memory
+captures remain readable when their allocator values fit the signed 64-bit range;
+schema-2 captures are normalized on read. Larger legacy unsigned allocator values
+are rejected rather than wrapped. Graphics counters retain their unsigned 64-bit range;
+old named graphics entries without fixed-slot identities are rejected, not assigned
+invented identities. Allocator totals cover DBG accounting or enabled profiling,
+not the process heap. The first resource snapshot ensures the provider is registered.
+DBG builds track allocator statistics even without a profiler listener. Other builds
+miss earlier allocations, and allocation/free pairs across profiling transitions can
+be unbalanced. Disabled or unrepresentable allocator metrics are returned as `-1`;
+retained internal totals are not presented as measured zeros when tracking stops.
+`AllocatedMemory` is the independent managed-runtime GC heuristic and returns `-1`
+when managed-memory tracking is disabled. Resource and tree intervals are not atomic.
+Graphics counters are still unimplemented;
+all-zero placeholder slots are omitted, not reported as measured zeros.
 
 As soon as a connection succeeds after the genuine TAP hello, the app
 automatically captures and saves an **Initial snapshot** as the first snapshot
@@ -116,8 +160,9 @@ session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
 No recording database, heap capture or MUX changes are required.
 
-Double-clicking a XAML node, in a snapshot's viewer or in a comparison, shows
-that element's history in the main window's Elements tab (see below).
+Double-clicking a node, in a snapshot's viewer or in a comparison, shows its
+history in the main window's Objects tab: a XAML node's element, or a
+Composition node's visual (see below).
 
 XAML properties include margin, horizontal/vertical alignment, layout slot,
 transformed bounds relative to the visual parent, render transform and origin,
@@ -172,9 +217,10 @@ Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 | Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
-The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
-events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
-from Windows, whatever the build. They carry the values
+Projection-layer activities, peer association and surface initialization use
+runtime ETW enablement in all build configurations. Remaining element and
+composition instrumentation still requires `XamlProfilerEnabled`. The GPU memory
+events come from Windows, whatever the build. They carry the values
 `IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
 reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
 when the usage or budget changes, and writes the current values when the
@@ -220,8 +266,9 @@ wrote 116,000 to 138,000 events, 70 to 75 percent from Microsoft-Windows-XAML
 and nearly all the rest from Microsoft-Windows-XAML-Diagnostics: a 6 to 7 MB
 session file, with no events lost or dropped.
 
-Reading ETW needs an elevated process, or membership in the local Performance
-Log Users group.
+Reading ETW live, or recording a trace, needs an elevated process, or
+membership in the local Performance Log Users group. Reading a trace file does
+not.
 
 ### Live, from the app
 
@@ -270,8 +317,9 @@ whose profiler process no longer exists. To stop one by hand, find it with
 
 ### Session files
 
-While connected, the app saves every event it receives to a SQLite file, one
-per connection, in `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
+While connected, or while it reads a trace, the app saves every event it
+receives to a SQLite file, one per connection or trace read, in
+`%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
 `<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
@@ -281,8 +329,8 @@ so events are still only dropped at the queue.
 | `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
-| `Objects` | One row per UI element the events mention: address, type and `x:Name` (see below) |
-| `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the element's address. An event can mention several elements, such as `ChildAdded`'s parent and child |
+| `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
+| `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
 | `Frames` | One row per frame on a UI thread: thread, frame number, ticks, and their timing (see below) |
 | `FrameEvents` | One row per UI-thread event: `Seq`, its `FrameId`, and its bucket: `Xaml`, `Composition` or `Other` |
 
@@ -310,11 +358,14 @@ then `Seq`.
 
 While saving events, the writer also indexes the UI elements they mention
 (`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
-mentions with their events. Only the TraceLogging events of
-Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, and
-none of them creates or destroys an object, so an element's lifetime in the
-file is from the first to the last of them that mentions it. Manifest events
-use the same field names for other objects too: `BeginStoryboard`'s
+mentions with their events. The TraceLogging events of
+Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, along
+with older traces' `VirtualizationIsEnabledByLayout` manifest observation
+when it has the version-1 element-data layout. New traces emit this observation
+only as TraceLogging. None
+creates or destroys an object, so an element's lifetime in the file is from
+the first to the last event that mentions it. Other manifest events are not
+indexed because they use the same field names for other objects too: `BeginStoryboard`'s
 `ElementId` is the storyboard, and the `ParentId` of
 Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
 
@@ -331,8 +382,30 @@ Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
   Reuse by an object of the same type can't be told apart.
 - The type is the nearest built-in type: a `TabViewItem` shows as
   `ListViewItem`, and an app's own control as its built-in base class.
-- Other objects (brushes, transforms, composition nodes, visuals, surfaces)
-  are not indexed; they can still be found in `Events`.
+- Other objects (brushes, transforms, composition nodes, surfaces) are not
+  indexed; they can still be found in `Events`.
+
+### Visuals
+
+The same index records the composition visuals (`IVisual`) the WUC visual and
+visual surface events mention.
+
+- `ParentVisualId`, `ChildVisualId` and `VisualId` only ever hold an `IVisual`
+  pointer, so a visual is known from its first mention.
+- Its insertion (`WucVisualChildInserted`, `WucVisualRootSet`) gives its type
+  and owner comp node. The owner's `CompPeerLinked` label (the element's
+  `x:Name`, or its class name) becomes the visual's name. A comp node usually
+  creates its visuals before it is linked, so the label is added when the link
+  comes. Visuals inserted with owner 0, mostly leaf visuals, have no name.
+- An insertion with a different type or owner than the visual's last means a
+  new visual reused the pointer, so a new visual starts there. Visuals get their
+  children before they are inserted, so the old visual's mentions since it left
+  the tree move to the new one. Reuse by a visual of the same type and owner
+  can't be told apart. A hand-in or hand-off visual that its element's
+  re-created comp node inserts again also gets a new owner, so its history
+  splits there.
+- `WucVisualChildrenCleared` names only the parent, so each child it removes
+  gets a mention through the parent's field (`child of ParentVisualId`).
 
 ### Frames
 
@@ -366,11 +439,12 @@ The writer also records which frame each UI-thread event belongs to
 
 ### Frames tab
 
-The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
-file once a second while connected: only the frames that changed since the last
-read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
-the tab reads the file again. **Open session file...** shows a saved file
-instead, in this tab and the Elements tab, until the next connection.
+The app's Frames tab (`Views\FramesView.xaml`) reads the session file of the
+connection, or of the trace being read, once a second until the connection or
+the reading ends: only the frames that changed since the last read
+(`SessionFile.ReadChangedFrames`). When the writer trims the oldest events, the
+tab reads the file again. **Open session file...** shows a saved file instead,
+in this tab and the Objects tab, until the next connection or trace read.
 
 - Each frame shows when it was drawn (the end of its drawing tick), how long
   the drawing tick took (the bar is full at 50 ms; a warning icon marks more
@@ -381,22 +455,33 @@ instead, in this tab and the Elements tab, until the next connection.
 - Selecting a frame shows its events, 100 per page, all or one bucket. The
   filter keeps events whose name or a string field contains the text; a number
   (`42`, `0x1A2B`) matches numeric fields with exactly that value. When the
-  selected event mentions UI elements, its details link to each one's history
-  in the Elements tab.
+  selected event mentions UI elements or visuals, its details link to each
+  one's history in the Objects tab. Each link has the same Element or Visual
+  badge as the Objects tab.
 - For a launch recorded from process start, the tab gives when the first ten
   drawn frames of the first UI thread ended, from the process's creation;
   otherwise from the start of the recording. A trimmed file no longer has them.
 
-### Elements tab
+### Objects tab
 
-The Elements tab (`Views\ElementsView.xaml`) lists the UI elements of the same
-session file, in the order they were first seen, with their type and name,
+The Objects tab (`Views\ObjectsView.xaml`) lists the UI elements and
+composition visuals of the same session file, in the order they were first
+seen, with their kind, type and name (a visual's is its owner element's label),
 address, when an event first and last mentioned them, and how many events do.
-The search box keeps elements whose type, name or address contains the text.
-Selecting an element shows its history: the events that mention it, 100 per
-page, each with the frame it belongs to. While connected, the tab reads the
-file once a second while it is shown, keeping the list's scroll position and
-selection.
+The kind list shows all objects, only elements or only visuals; the search box
+keeps the objects whose type, name or address contains the text. Selecting one
+shows its history: the events that mention it, 100 per page, each with the
+frame it belongs to. While connected or reading a trace, the tab reads the file
+once a second while it is shown, keeping the list's scroll position and
+selection. Session files written before visuals were indexed show all their
+objects as elements.
+
+Each row starts with an Element or Visual badge, and element rows have a light
+blue background, visual rows a light amber one (darker shades in the dark
+theme; the brushes are in `App.xaml`). The background gives way to the list's
+own hover and selection colors, and high contrast uses the system colors, so
+the badge is what always shows the kind. Opening an object from a frame's
+event or a snapshot resets the kind list to all objects.
 
 Snapshots don't record the runtime's element addresses, only each XAML
 object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
@@ -406,6 +491,15 @@ both an element's address and its WinRT object's, so
 at that address when the snapshot was taken. That needs the recording to have
 seen the element being created or added to the tree: a session attached to a
 running app finds only the elements added since.
+
+A Composition node's address is its `IVisual` pointer, which the visual events
+carry too, so `SessionFile.FindSnapshotVisual` finds the visual at that
+address when the snapshot was taken. A visual inserted before the recording
+started and not mentioned since isn't found.
+
+Both lookups use the time the node's root finished being captured, not the end
+of the whole snapshot: a root's objects can be released while other roots are
+still being captured, and a new object can reuse the address.
 
 ### Recorded, from a trace file
 
@@ -436,11 +530,56 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
 & $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
-& $cli objects session.sqlite --type Button    # UI elements, with first/last seen and event counts
-& $cli timeline session.sqlite --object <id>   # the events that mention one element, with their frames (or --address 0x...)
+& $cli objects session.sqlite --type Button    # UI elements and visuals (--kind element|visual), with first/last seen and event counts
+& $cli timeline session.sqlite --object <id>   # the events that mention one object, with their frames (or --address 0x...)
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
 & $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
+
+The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
+trace (.etl)** as the connection mode, then type the trace's path or browse for
+it. The app lists the processes with XAML events in the trace, most events
+first, with their event counts and the trace times of their first and last
+events, and selects the process if there is only one. A process is named only
+when the trace has the kernel's process events, as a WPR trace has. **Open
+trace** reads the selected process's events into a new session file, named
+after the process, or after the trace when the process has no name. The events
+go through the same pipeline and processors as a live session's, so the file
+holds the same events, UI elements, visuals and frames as one `record` writes
+from the trace, and the Frames and Objects tabs follow it as it grows.
+
+- A reader thread reads the file in its order and posts the process's events to
+  the processing thread's queue, which holds as many events as a live
+  session's. When the queue is full, the reader waits instead of dropping
+  events, so no event of the process is dropped, and the connection panel's
+  dropped count stays 0. Its lost count is the number of events ETW lost while
+  the trace was recorded, of any process. As in a live session, the 500 MB
+  limit can still delete the oldest events from the session file (see Session
+  files above); the panel then says from when the file is complete.
+- ETW delivers a trace's events in timestamp order, merging the processors'
+  buffers, but events with the same timestamp on different processors can come
+  in any order. The events keep the file's order; the connection panel
+  counts the process's events whose timestamp is earlier than the event before
+  them as out of order. In the traces measured, there were none.
+- Timestamps in a trace count ticks of the recording machine's clock, whose
+  frequency can differ from this machine's, such as 24 MHz on many Arm64 PCs
+  and 10 MHz on many x64 PCs. Before reading the process's events, the app
+  works out the trace's frequency from its first events and stores it in the
+  session file, so their times are right from the first frame; `record` does
+  the same. When it can't be worked out, as in a damaged or very short trace, it
+  is derived from the process's events once they span a second.
+- The connection panel shows how much of the trace has been read. **Stop**
+  ends the reading, as does closing the app: the events already read are
+  stored, so the session file holds the process's events from the start of the
+  trace to about where the reading stopped.
+- Most events of other providers, such as the kernel's in a WPR trace, are
+  skipped without being decoded, in the CLI too. The kernel's process events,
+  which name the processes in the list, and the graphics kernel's events, among
+  them the GPU memory events, are still decoded. On the machine measured,
+  listing the processes of a 17.9-second WPR trace of the WinUI 3 Gallery took
+  about a second, and reading the app's 101,281 events less than two.
+- A trace has no running process, so there are no live metrics or tree
+  snapshots for it.
 
 ## Limitations
 

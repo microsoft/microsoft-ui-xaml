@@ -57,6 +57,7 @@
     <ClInclude Include="ReplayGuard.h" />
     <ClInclude Include="TreeSnapshot.h" />
     <ClInclude Include="TreeSnapshotJson.h" />
+    <ClInclude Include="ResourceSnapshot.h" />
     <None Include="WinUIProfiler.Tap.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
