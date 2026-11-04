@@ -878,9 +878,7 @@ does not also cancel the edit.
 
 An unavailable pooled group-header automation peer rejects `ShowContextMenu` with
 `ElementNotAvailable`, just as it rejects a row-coordinate query. It cannot open either
-its retained menu or the table fallback. Implementation and validation status for these
-behaviors are recorded in the
-[context-menu review checklist](../../design-notes/TabularControls/TableView-Context-Menu-Review-Tracking.md).
+its retained menu or the table fallback.
 
 ## TableViewTextColumn class
 

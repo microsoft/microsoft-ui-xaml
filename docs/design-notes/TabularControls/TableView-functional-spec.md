@@ -51,7 +51,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 
 ### Row & hierarchy
 - Single + multi selection (Ctrl/Shift). — **PR3**
-- Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented; review follow-ups tracked**
+- Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
 - Checkbox selection (File-Explorer-specific). — **PR3** / surface
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
 - Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
@@ -138,7 +138,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Focus and selection: TableView-routed requests focus the target cell, row, or header without changing selection; a body-cell request also sets the current cell. This remains intentional when no menu resolves: focus follows interaction, not menu availability. Normal focus-driven bring-into-view behavior remains applicable to partially visible cells. An unhandled mouse/pen right-button press reaching a data row establishes cell focus/current-cell state before a native template menu opens, without handling the press or arming selection. This respects editing suppression, nested-table ownership, and child-handled presses, and preserves focus already inside the target cell. Other native template-menu input can still bypass the context-request focus move; touch/hold, keyboard, and UIA behavior are unchanged.
 - Editing: TableView suppresses its cell/header routing, native row/group-header-owned menus, and table fallback while editing or awaiting an edit-ending deferral, including after a vetoed commit. Native owner suppression cancels opening before visibility without replacing application property values; `Opening`/`Closing` may run, but a `Closing` veto cannot override this policy. Shared flyouts remain usable by unrelated targets. Editor-owned menus remain available and do not themselves commit the edit; cancelled `Closing` retains the subscription until actual closure, preserving later Escape handling.
 - Virtualization: unavailable pooled group-header peers reject `ShowContextMenu` with `ElementNotAvailable`. Open group menus retain their original group projection rather than retargeting when a header is recycled.
-- Full resolution, binding, and targeting: [API specification: Context menus](../../api-specs/TableView/TableView-spec.md#context-menus). Implementation and validation status: [review checklist](TableView-Context-Menu-Review-Tracking.md).
+- Full resolution, binding, and targeting: [API specification: Context menus](../../api-specs/TableView/TableView-spec.md#context-menus).
 
 ### Accessibility (UIA)
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
