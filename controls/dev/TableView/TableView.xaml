@@ -472,7 +472,9 @@
 
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
         <StackPanel x:Name="TableViewDefaultGroupHeaderContentRoot" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="{Binding KeyText, Mode=OneWay}"
+            <!-- The text comes only from these bindings to TableViewGroupInfo: a restyled copy must keep them. -->
+            <TextBlock x:Name="TableViewGroupHeaderKeyText"
+                       Text="{Binding KeyText, Mode=OneWay}"
                        Style="{StaticResource TableViewGroupHeaderKeyTextStyle}" />
             <!-- Inherits Foreground so it follows the header's states and an app's Foreground. -->
             <TextBlock x:Name="TableViewGroupHeaderItemCountText"

@@ -35,9 +35,9 @@ connection work, joins polling and disconnects the TAP without killing the targe
 Unavailable and warm-up measurements remain labelled gaps, never invented zeros.
 
 The chart visuals, legends and searchable target-selection dialog are declared
-in XAML. Executable browsing uses
+in XAML. Executable and trace file browsing use
 `Microsoft.Windows.Storage.Pickers.FileOpenPicker`, including when elevated;
-it does not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
+they do not use the older, brokered `Windows.Storage.Pickers` API. Cancelling a
 picker preserves the existing target input.
 
 `WinUIProfiler.Core\Ingestion\NativeMetricAbi.cs` mirrors the fixed-width C ABI
@@ -51,7 +51,8 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory events for it, to a session file. The Frames tab shows its frames,
+GPU memory events for it, to a session file. It can also read them from a
+recorded trace (`.etl`) into a session file. The Frames tab shows its frames,
 and the Objects tab its UI elements and composition visuals.
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
@@ -77,13 +78,24 @@ hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
+Run the event compatibility regression checks from this directory:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
+```
+
+These check object timelines across new TraceLogging and legacy manifest events,
+and verify that migrated performance regions distinguish Start/Stop without
+also matching legacy manifest events.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
 target PID, creation time, runtime path and latest hello. Errors and timeouts
 remain visible; connecting to a non-WinUI process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
-silently elevated.
+silently elevated. Select **Recorded trace (.etl)** to read a recorded trace
+instead (see "Recorded, from a trace file" below).
 
 ## Tree snapshots
 
@@ -205,9 +217,10 @@ Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 | Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
-The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
-events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
-from Windows, whatever the build. They carry the values
+Projection-layer activities, peer association and surface initialization use
+runtime ETW enablement in all build configurations. Remaining element and
+composition instrumentation still requires `XamlProfilerEnabled`. The GPU memory
+events come from Windows, whatever the build. They carry the values
 `IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
 reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
 when the usage or budget changes, and writes the current values when the
@@ -253,8 +266,9 @@ wrote 116,000 to 138,000 events, 70 to 75 percent from Microsoft-Windows-XAML
 and nearly all the rest from Microsoft-Windows-XAML-Diagnostics: a 6 to 7 MB
 session file, with no events lost or dropped.
 
-Reading ETW needs an elevated process, or membership in the local Performance
-Log Users group.
+Reading ETW live, or recording a trace, needs an elevated process, or
+membership in the local Performance Log Users group. Reading a trace file does
+not.
 
 ### Live, from the app
 
@@ -303,8 +317,9 @@ whose profiler process no longer exists. To stop one by hand, find it with
 
 ### Session files
 
-While connected, the app saves every event it receives to a SQLite file, one
-per connection, in `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
+While connected, or while it reads a trace, the app saves every event it
+receives to a SQLite file, one per connection or trace read, in
+`%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
 `<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
@@ -343,11 +358,14 @@ then `Seq`.
 
 While saving events, the writer also indexes the UI elements they mention
 (`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
-mentions with their events. Only the TraceLogging events of
-Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, and
-none of them creates or destroys an object, so an element's lifetime in the
-file is from the first to the last of them that mentions it. Manifest events
-use the same field names for other objects too: `BeginStoryboard`'s
+mentions with their events. The TraceLogging events of
+Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, along
+with older traces' `VirtualizationIsEnabledByLayout` manifest observation
+when it has the version-1 element-data layout. New traces emit this observation
+only as TraceLogging. None
+creates or destroys an object, so an element's lifetime in the file is from
+the first to the last event that mentions it. Other manifest events are not
+indexed because they use the same field names for other objects too: `BeginStoryboard`'s
 `ElementId` is the storyboard, and the `ParentId` of
 Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
 
@@ -421,11 +439,12 @@ The writer also records which frame each UI-thread event belongs to
 
 ### Frames tab
 
-The app's Frames tab (`Views\FramesView.xaml`) reads the connection's session
-file once a second while connected: only the frames that changed since the last
-read (`SessionFile.ReadChangedFrames`). When the writer trims the oldest events,
-the tab reads the file again. **Open session file...** shows a saved file
-instead, in this tab and the Objects tab, until the next connection.
+The app's Frames tab (`Views\FramesView.xaml`) reads the session file of the
+connection, or of the trace being read, once a second until the connection or
+the reading ends: only the frames that changed since the last read
+(`SessionFile.ReadChangedFrames`). When the writer trims the oldest events, the
+tab reads the file again. **Open session file...** shows a saved file instead,
+in this tab and the Objects tab, until the next connection or trace read.
 
 - Each frame shows when it was drawn (the end of its drawing tick), how long
   the drawing tick took (the bar is full at 50 ms; a warning icon marks more
@@ -452,9 +471,10 @@ address, when an event first and last mentioned them, and how many events do.
 The kind list shows all objects, only elements or only visuals; the search box
 keeps the objects whose type, name or address contains the text. Selecting one
 shows its history: the events that mention it, 100 per page, each with the
-frame it belongs to. While connected, the tab reads the file once a second
-while it is shown, keeping the list's scroll position and selection. Session
-files written before visuals were indexed show all their objects as elements.
+frame it belongs to. While connected or reading a trace, the tab reads the file
+once a second while it is shown, keeping the list's scroll position and
+selection. Session files written before visuals were indexed show all their
+objects as elements.
 
 Each row starts with an Element or Visual badge, and element rows have a light
 blue background, visual rows a light amber one (darker shades in the dark
@@ -515,6 +535,51 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli frames session.sqlite                   # frames per UI thread, with timing and events per bucket
 & $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one frame's events, as in the Frames tab
 ```
+
+The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
+trace (.etl)** as the connection mode, then type the trace's path or browse for
+it. The app lists the processes with XAML events in the trace, most events
+first, with their event counts and the trace times of their first and last
+events, and selects the process if there is only one. A process is named only
+when the trace has the kernel's process events, as a WPR trace has. **Open
+trace** reads the selected process's events into a new session file, named
+after the process, or after the trace when the process has no name. The events
+go through the same pipeline and processors as a live session's, so the file
+holds the same events, UI elements, visuals and frames as one `record` writes
+from the trace, and the Frames and Objects tabs follow it as it grows.
+
+- A reader thread reads the file in its order and posts the process's events to
+  the processing thread's queue, which holds as many events as a live
+  session's. When the queue is full, the reader waits instead of dropping
+  events, so no event of the process is dropped, and the connection panel's
+  dropped count stays 0. Its lost count is the number of events ETW lost while
+  the trace was recorded, of any process. As in a live session, the 500 MB
+  limit can still delete the oldest events from the session file (see Session
+  files above); the panel then says from when the file is complete.
+- ETW delivers a trace's events in timestamp order, merging the processors'
+  buffers, but events with the same timestamp on different processors can come
+  in any order. The events keep the file's order; the connection panel
+  counts the process's events whose timestamp is earlier than the event before
+  them as out of order. In the traces measured, there were none.
+- Timestamps in a trace count ticks of the recording machine's clock, whose
+  frequency can differ from this machine's, such as 24 MHz on many Arm64 PCs
+  and 10 MHz on many x64 PCs. Before reading the process's events, the app
+  works out the trace's frequency from its first events and stores it in the
+  session file, so their times are right from the first frame; `record` does
+  the same. When it can't be worked out, as in a damaged or very short trace, it
+  is derived from the process's events once they span a second.
+- The connection panel shows how much of the trace has been read. **Stop**
+  ends the reading, as does closing the app: the events already read are
+  stored, so the session file holds the process's events from the start of the
+  trace to about where the reading stopped.
+- Most events of other providers, such as the kernel's in a WPR trace, are
+  skipped without being decoded, in the CLI too. The kernel's process events,
+  which name the processes in the list, and the graphics kernel's events, among
+  them the GPU memory events, are still decoded. On the machine measured,
+  listing the processes of a 17.9-second WPR trace of the WinUI 3 Gallery took
+  about a second, and reading the app's 101,281 events less than two.
+- A trace has no running process, so there are no live metrics or tree
+  snapshots for it.
 
 ## Limitations
 
