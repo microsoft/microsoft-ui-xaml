@@ -49,9 +49,10 @@
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#0FFFFFFF" />                  <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#0AFFFFFF" />       <!-- SubtleFillColorTertiary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#0FFFFFFF" />           <!-- SubtleFillColorSecondary -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedDisabledBrush" Color="#0FFFFFFF" />          <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" /> <!-- AccentFillColorDefault (Dark) -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5DFFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#28FFFFFF" />             <!-- AccentFillColorDisabled -->
 
             <!-- Row foregrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="#FFFFFF" />                            <!-- TextFillColorPrimary -->
@@ -97,9 +98,10 @@
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#09000000" />                  <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#06000000" />       <!-- SubtleFillColorTertiary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#09000000" />           <!-- SubtleFillColorSecondary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedDisabledBrush" Color="#09000000" />          <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" /> <!-- AccentFillColorDefault (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5C000000" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#37000000" />             <!-- AccentFillColorDisabled (Light) -->
 
             <!-- Row foregrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="#E4000000" />                          <!-- TextFillColorPrimary (Light) -->
@@ -142,6 +144,7 @@
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />

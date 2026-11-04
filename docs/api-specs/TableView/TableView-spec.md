@@ -234,7 +234,11 @@ no replacement template is needed.
 
 Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
 independently to customize the disabled-selected indicator and disabled row text.
-By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
+By default, the disabled-selected indicator uses the theme's `AccentFillColorDisabled`
+value rather than the accent or disabled-text color. Selected-disabled rows retain a
+`SubtleFillColorSecondary` backplate through `TabularSurfaceRowBackgroundSelectedDisabledBrush`;
+unselected-disabled rows remain transparent. High Contrast retains a system window background
+and gray-text outline and foreground for both disabled states.
 The default indicator is a 1px whole-row outline with the row's `CornerRadius`, painted above gridlines.
 It does not change cell layout or pointer hit testing, and remains distinct from the system keyboard-focus visual.
 
@@ -747,9 +751,9 @@ Template parts. All are optional; a missing part disables only its feature:
 | Part | Type | Purpose |
 |---|---|---|
 | `PART_Background` | `Border` | Decorative fill, separate from content and resize hit targets. Rounded only at exposed top corners; all corners adjoining header gridlines remain square. |
-| `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
+| `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort indicator's width and its host's horizontal padding to the presenter's right `Margin`, reserving space even while unsorted so text trims before the icon without jumping when sorting changes. |
 | `PART_GridLine` | `Border` | Vertical separator. Shown when the table's `HeaderGridLinesVisibility` includes vertical lines, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
-| `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
+| `PART_SortIndicatorHost` | `Border` | Hosts the sort icon on a sortable column. Its margin follows header padding, with another 4px on each horizontal side: a 4px text gap and a 16px trailing inset with the default 12px header padding. The icon always follows `PART_ContentPresenter`'s `Foreground`: secondary text for regular headers, primary text for strong headers, and matching custom, disabled, or High Contrast foregrounds. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 
 Visual states:
@@ -760,6 +764,14 @@ Visual states:
 | `HighContrastStates` | `HighContrastNormal`, `HighContrastPointerOver`, `HighContrastPressed` | Entered alongside `PointerOver`/`Pressed` only under High Contrast: text and glyph switch to `TabularSurfaceHeaderForeground*Brush` and drop the text backplate. |
 | `SortStates` | `Unsorted`, `SortAscending`, `SortDescending` | Show or hide the sort glyph; the glyph is hidden until the column is sorted. |
 | `HeaderEdgeStates` | `InteriorHeader`, `LeftEdgeHeader`, `RightEdgeHeader`, `SingleHeader` | Follow visible columns, trailing separator suppression, and flow direction. Set the fill's corner radius using the `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens. |
+
+The default sort indicator uses the Fluent System Library's 16px Regular **Arrow Sort Up Lines** and
+**Arrow Sort Down Lines** vector paths rather than a font glyph. The original SVG viewport is preserved;
+its fill follows the header text's foreground, including live regular/strong style changes, custom
+foregrounds, theme, disabled, and High Contrast states. Customize the hosted icon and header text
+together through the header style's `Foreground`; the standalone indicator retains its own
+`SortIndicatorForeground` resource.
+The icon sits at the trailing edge (mirrored placement in RTL) and is centered within header padding.
 
 The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
 
@@ -903,7 +915,7 @@ Template parts:
 
 | Part | Type | Description |
 |---|---|---|
-| `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
+| `PART_RootBorder` | `Border` | Row backplate. Its `Background` is driven by `CommonStates`; hover, pressed, and selected states inset it to the selection outline and reserve the 1px stroke with `BorderThickness`. |
 | `PART_RowChrome` | `Grid` | Optional native-focus target and selection host. Its margin excludes effective horizontal separator thickness, including terminal-line suppression. Templates without this part retain full-row focus geometry. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Border` | **Required by the default state definitions.** Rounded whole-row selection outline; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `BorderBrush`. Custom templates using other indicator types must adapt the corresponding state targets. |
@@ -917,6 +929,12 @@ Visual states:
 Selected states share the one group rather than living in a second, overlapping one: they animate the same `PART_RootBorder.Background`, so two groups would make the result depend on `GoToState` call order. Encoding both dimensions in the state name is the pattern `TreeViewItem` and `ItemContainer` use.
 
 Hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TabularSurfaceSelectionIndicatorBrush`; `SelectedDisabled` uses `TabularSurfaceSelectionIndicatorDisabledBrush`.
+
+Unselected hover/pressed and all `Selected*` backplates share the selection outline's inner edge,
+including its rounded corners, so selecting a hovered or pressed row does not resize its fill.
+Resting backgrounds, including banded rows, and unselected-disabled backgrounds retain the full
+divider-free row area. This changes only fill geometry; content, row height, hit targets,
+gridlines, and focus geometry are unchanged.
 
 The 1px selection outline is overlaid within `PART_RowChrome` with a `3,2,3,2` inset (`TableViewSelectionIndicatorMargin`),
 abutting the native 1px secondary focus stroke along straight edges without covering either

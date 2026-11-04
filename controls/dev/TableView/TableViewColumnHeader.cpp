@@ -154,6 +154,11 @@ void TableViewColumnHeader::UpdateContentReserve()
         if (m_isSortable)
         {
             margin.Right += m_indicatorReserve;
+            if (auto const host = m_sortIndicatorHost.get())
+            {
+                const auto padding = host.Padding();
+                margin.Right += padding.Left + padding.Right;
+            }
         }
         if (presenter.Margin() != margin)
         {
@@ -194,7 +199,7 @@ void TableViewColumnHeader::HostSortIndicator()
     }
 }
 
-void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool highlighted)
+void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
 {
     auto const indicator = m_sortIndicator.get();
     if (!indicator)
@@ -202,11 +207,10 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool hi
         return;
     }
 
-    // The glyph's style sets Foreground, so it cannot inherit; when a state recolors the text
-    // (Disabled, or a High Contrast highlight) the glyph must follow it. Bound, not copied, so it
-    // also follows a re-resolved theme brush (High Contrast toggle) without a state change.
+    // The indicator's style sets Foreground, so bind it to the header text instead of inheriting.
+    // Keep the binding live across style, theme, disabled, and High Contrast changes.
     auto const presenter = m_contentPresenter.get();
-    if (followText && presenter)
+    if (presenter)
     {
         // Rebinding on every state change would rebuild an identical expression.
         auto const bound = indicator.GetBindingExpression(winrt::Control::ForegroundProperty());
@@ -272,7 +276,7 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
         winrt::VisualStateManager::GoToState(*this, commonState, useTransitions);
     }
     const bool highlighted = highContrastState != std::wstring_view{ L"HighContrastNormal" };
-    SyncSortIndicatorForeground(highlighted || !IsEnabled(), highlighted);
+    SyncSortIndicatorForeground(highlighted);
 
     const wchar_t* sortState = L"Unsorted";
     if (m_sortDirection == winrt::SortDirection::Ascending)

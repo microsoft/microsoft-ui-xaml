@@ -209,6 +209,7 @@
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
                                           ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                           ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          Foreground="{TemplateBinding Foreground}"
                                           Padding="{TemplateBinding Padding}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -223,6 +224,8 @@
                                 AutomationProperties.AccessibilityView="Raw" />
 
                         <Border x:Name="PART_SortIndicatorHost"
+                                Margin="{TemplateBinding Padding}"
+                                Padding="4,0,4,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 IsHitTestVisible="False"
@@ -272,6 +275,10 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
+                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
@@ -285,6 +292,10 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
+                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
@@ -313,6 +324,10 @@
                                      whose names encode both dimensions is the pattern TreeViewItem
                                      and ItemContainer use. -->
                                 <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
+                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedBrush}" />
@@ -329,6 +344,10 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="SelectedPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
+                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPointerOverBrush}" />
@@ -345,6 +364,10 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="SelectedPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
+                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPressedBrush}" />
@@ -361,9 +384,13 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="SelectedDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
+                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
+                                    </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
@@ -415,12 +442,13 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Border x:Name="PART_RootBorder"
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                Margin="{Binding Margin, ElementName=PART_RowChrome}"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="{TemplateBinding CornerRadius}" />
+                        <Border Margin="{Binding Margin, ElementName=PART_RowChrome}"
+                                IsHitTestVisible="False">
+                            <!-- Interaction fills share the outline's inner edge without moving content or focus. -->
+                            <Border x:Name="PART_RootBorder"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
+                        </Border>
                         <Border Padding="{TemplateBinding Padding}">
                         <Grid>
                             <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper

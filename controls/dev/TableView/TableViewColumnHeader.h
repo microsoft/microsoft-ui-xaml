@@ -50,7 +50,7 @@ private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
     void HostSortIndicator();
-    void SyncSortIndicatorForeground(bool followText, bool highlighted);
+    void SyncSortIndicatorForeground(bool highlighted);
     void ResetPointerState(winrt::PointerRoutedEventArgs const& args);
     bool IsInsideResizeGripper(winrt::IInspectable const& source);
 

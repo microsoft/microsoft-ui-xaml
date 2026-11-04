@@ -3,6 +3,8 @@
 
 using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
@@ -1126,14 +1128,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         "An app-scope SortIndicatorForeground override must reach the indicator.");
 
                     // The glyph template-binds Foreground, so the override has to survive the binding too.
-                    var glyph = indicator.FindVisualChildByName("GlyphIcon") as FontIcon;
+                    var glyph = indicator.FindVisualChildByName("GlyphIcon") as Microsoft.UI.Xaml.Shapes.Path;
                     if (glyph == null)
                     {
-                        Verify.Fail("The SortIndicator template must contain the GlyphIcon FontIcon part.");
+                        Verify.Fail("The SortIndicator template must contain the GlyphIcon vector Path part.");
                         return;
                     }
 
-                    var glyphForeground = glyph.Foreground as SolidColorBrush;
+                    var glyphForeground = glyph.Fill as SolidColorBrush;
                     Verify.IsNotNull(glyphForeground, "GlyphIcon must template-bind the control's Foreground.");
                     Verify.AreEqual(expected, glyphForeground.Color,
                         "The glyph itself must render with the overridden foreground, not just the control property.");
@@ -1261,19 +1263,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "A sorted indicator must end fully opaque. A value between 0 and 1 means the transition was stranded " +
                     "mid-animation by the theme change.");
 
-                var glyph = indicator.FindVisualChildByName("GlyphIcon") as FontIcon;
+                var glyph = indicator.FindVisualChildByName("GlyphIcon") as Microsoft.UI.Xaml.Shapes.Path;
                 if (glyph == null)
                 {
                     Verify.Fail("The SortIndicator template must contain the GlyphIcon part.");
                     return;
                 }
 
-                Verify.IsFalse(string.IsNullOrEmpty(glyph.Glyph),
-                    "The glyph must still be set after the interrupted transition.");
+                Verify.IsNotNull(glyph.Data,
+                    "The vector geometry must still be set after the interrupted transition.");
 
                 var foreground = indicator.Foreground as SolidColorBrush;
                 Verify.IsNotNull(foreground,
                     "The indicator must still carry a resolved foreground brush after the theme change - a null brush renders nothing.");
+                Verify.AreEqual(foreground.Color, ((SolidColorBrush)glyph.Fill).Color,
+                    "The vector fill must follow the resolved foreground after the theme change.");
             });
         }
 
@@ -2282,8 +2286,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 mode == TableViewGridLinesVisibility.Horizontal;
                             Verify.AreEqual(horizontal ? 1.0 : 0.0, line.BorderThickness.Bottom);
                             Verify.AreEqual(new Thickness(0, 0, 0, line.BorderThickness.Bottom), chrome.Margin);
-                            Verify.AreEqual(chrome.Margin, background.Margin,
-                                "Hover and selection backplates must leave the same separator area.");
+                            Verify.AreEqual(chrome.ActualHeight, background.ActualHeight,
+                                "Unselected backplates must leave the same separator area as row chrome.");
+                            Verify.AreEqual(chrome.TransformToVisual(row).TransformPoint(new Point()),
+                                background.TransformToVisual(row).TransformPoint(new Point()),
+                                "Unselected backplates must remain aligned with row chrome.");
                             Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight,
                                 "Separators must not add height to any density.");
                             Verify.AreEqual(row.ActualHeight, GetRowCell(row, 0).ActualHeight,
@@ -2722,8 +2729,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     if (state == "SelectedDisabled")
                     {
                         Verify.AreEqual(
-                            ((row.FindVisualChildByName("PART_CellForegroundPresenter") as ContentPresenter)?.Foreground
-                                as SolidColorBrush)?.Color ?? default,
+                            RequireBrush(new TabularControlsResources(),
+                                row.ActualTheme == ElementTheme.Dark ? "Default" : "Light",
+                                "TabularSurfaceSelectionIndicatorDisabledBrush").Color,
                             (outline.BorderBrush as SolidColorBrush)?.Color ?? default,
                             "Disabled selection must use the disabled outline brush.");
                     }
@@ -2742,17 +2750,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 resources = new TabularControlsResources();
+                foreach (var themeName in new[] { "Light", "Default" })
+                {
+                    Verify.AreEqual(RequireThemeColor(themeName, "SubtleFillColorSecondary"),
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundSelectedDisabledBrush").Color,
+                        $"{themeName}: disabled selection must retain the subtle selected fill.");
+                    Verify.AreEqual(RequireThemeColor(themeName, "AccentFillColorDisabled"),
+                        RequireBrush(resources, themeName, "TabularSurfaceSelectionIndicatorDisabledBrush").Color,
+                        $"{themeName}: disabled selection must use the theme-specific disabled accent fill as its stroke.");
+                }
+                Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundSelectedDisabledBrush").Color,
+                    "HighContrast must preserve the window background behind gray disabled text.");
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() => row = GetRealizedRows(tableView).First());
 
-            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            foreach (var testCase in new[]
             {
-                RunOnUIThread.Execute(() => tableView.RequestedTheme = theme);
+                (Theme: ElementTheme.Light, Density: TableViewDensity.Standard),
+                (Theme: ElementTheme.Dark, Density: TableViewDensity.Compact),
+                (Theme: ElementTheme.Light, Density: TableViewDensity.ExtraCompact)
+            })
+            {
+                var theme = testCase.Theme;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.RequestedTheme = theme;
+                    tableView.Density = testCase.Density;
+                });
                 IdleSynchronizer.Wait();
 
-                foreach (var state in new[] { "Selected", "SelectedPointerOver", "SelectedPressed", "SelectedDisabled", "Selected" })
+                foreach (var state in new[] { "Selected", "SelectedPointerOver", "SelectedPressed",
+                    "PointerOver", "Selected", "Pressed", "Disabled", "SelectedDisabled", "Selected", "Normal" })
                 {
                     RunOnUIThread.Execute(() =>
                         Verify.IsTrue(VisualStateManager.GoToState(row, state, false), $"The row must define {state}."));
@@ -2766,13 +2797,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var outline = row.FindVisualChildByName("PART_SelectionIndicator") as Border;
                         Verify.IsNotNull(backplate);
                         Verify.IsNotNull(outline);
+                        var selected = state.StartsWith("Selected", StringComparison.Ordinal);
+                        var contained = selected || state == "PointerOver" || state == "Pressed";
+                        var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
+                        var expectedBounds = contained ? outline : chrome;
+                        Verify.AreEqual(expectedBounds.ActualWidth, backplate.ActualWidth,
+                            $"{theme}/{testCase.Density}/{state}: backplate width must match its visual bounds.");
+                        Verify.AreEqual(expectedBounds.ActualHeight, backplate.ActualHeight,
+                            $"{theme}/{testCase.Density}/{state}: backplate height must match its visual bounds.");
+                        Verify.AreEqual(expectedBounds.TransformToVisual(row).TransformPoint(new Point()),
+                            backplate.TransformToVisual(row).TransformPoint(new Point()),
+                            $"{theme}/{testCase.Density}/{state}: backplate must not extend outside its visual bounds.");
+                        Verify.AreEqual(contained ? outline.BorderThickness : new Thickness(0), backplate.BorderThickness,
+                            "Hover, pressed, and selected fills must share the selection outline's inner edge.");
+                        Verify.AreEqual(BackgroundSizing.InnerBorderEdge, backplate.BackgroundSizing);
+                        Verify.AreEqual(outline.CornerRadius, backplate.CornerRadius);
+                        Verify.IsNull(backplate.BorderBrush, "The backplate must not paint a second selection stroke.");
+                        Verify.AreEqual(selected ? 1.0 : 0.0, outline.Opacity,
+                            "Unselected hover and pressed states must not show a selection outline.");
                         var background = backplate.Background as SolidColorBrush;
                         var border = outline.BorderBrush as SolidColorBrush;
                         Verify.IsNotNull(background);
                         Verify.IsNotNull(border);
-                        var backgroundState = state == "SelectedDisabled" ? "Disabled" : state;
+                        var backgroundKey = state == "Normal"
+                            ? "TabularSurfaceRowBackgroundBrush"
+                            : $"TabularSurfaceRowBackground{state}Brush";
                         Verify.AreEqual(
-                            RequireBrush(resources, themeName, $"TabularSurfaceRowBackground{backgroundState}Brush").Color,
+                            RequireBrush(resources, themeName, backgroundKey).Color,
                             background.Color,
                             $"{theme}/{state} must use its backplate brush.");
                         var outlineKey = state == "SelectedDisabled"
@@ -2782,6 +2833,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             RequireBrush(resources, themeName, outlineKey).Color,
                             border.Color,
                             $"{theme}/{state}: hover and press must preserve the selection outline; disabled has its own brush.");
+                        if (state == "Disabled" || state == "SelectedDisabled")
+                        {
+                            var foreground = (row.FindVisualChildByName("PART_CellForegroundPresenter") as ContentPresenter)?.Foreground as SolidColorBrush;
+                            Verify.IsNotNull(foreground);
+                            Verify.AreEqual(RequireThemeColor(themeName, "TextFillColorDisabled"), foreground.Color,
+                                $"{theme}/{state} must preserve disabled text.");
+                        }
                     });
                 }
             }
@@ -2977,8 +3035,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 host.Children.Add(defaultTable);
                 host.Children.Add(strongTable);
                 LoadContent(host);
+                Verify.IsTrue(defaultTable.SortByColumn(defaultTable.Columns[0], SortDirection.Ascending));
+                Verify.IsTrue(strongTable.SortByColumn(strongTable.Columns[0], SortDirection.Descending));
             });
             IdleSynchronizer.Wait();
+
+            void VerifySortColor(TableView table, Color expected)
+            {
+                var header = RequireColumnHeader(table, 0);
+                Verify.AreEqual(expected, ((SolidColorBrush)GetHeaderPresenter(table, 0).Foreground).Color,
+                    "The header text must use the resolved foreground.");
+                var indicator = (SortIndicator)header.FindVisualChildByName("TableViewSortIndicator");
+                Verify.IsNotNull(indicator, "The sorted header must host its indicator.");
+                Verify.AreEqual(expected, ((SolidColorBrush)indicator.Foreground).Color,
+                    "The sort indicator must match the resolved header text color.");
+                var path = (Microsoft.UI.Xaml.Shapes.Path)indicator.FindVisualChildByName("GlyphIcon");
+                Verify.AreEqual(expected, ((SolidColorBrush)path.Fill).Color,
+                    "The vector itself must match the resolved header text color.");
+            }
 
             foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
             {
@@ -3001,6 +3075,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(RequireThemeColor(themeName, "TextFillColorSecondary"),
                         (GetHeaderPresenter(defaultTable, 0).Foreground as SolidColorBrush)?.Color ?? default,
                         "Using the named style must not change another table's default foreground.");
+                    VerifySortColor(strongTable, RequireThemeColor(themeName, "TextFillColorPrimary"));
+                    VerifySortColor(defaultTable, RequireThemeColor(themeName, "TextFillColorSecondary"));
                     Verify.IsNotNull(header.Template, "The strong variant must keep the stock template.");
                     Verify.IsNotNull(header.FindVisualChildByName("PART_ResizeGripperHost"), "The resize host must remain.");
                     Verify.IsNotNull(header.FindVisualChildByName("PART_SortIndicatorHost"), "The sort host must remain.");
@@ -3017,7 +3093,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                     Verify.IsTrue(VisualStateManager.GoToState(header, "Normal", false));
                 });
+
+                foreach (var strong in new[] { true, false })
+                {
+                    RunOnUIThread.Execute(() =>
+                        defaultTable.ColumnHeaderStyle = strong ? strongTable.ColumnHeaderStyle : null);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var themeName = theme == ElementTheme.Light ? "Light" : "Default";
+                        VerifySortColor(defaultTable, RequireThemeColor(themeName,
+                            strong ? "TextFillColorPrimary" : "TextFillColorSecondary"));
+                    });
+                }
             }
+
+            var customColor = Color.FromArgb(0xFF, 0x33, 0x66, 0x99);
+            RunOnUIThread.Execute(() =>
+                RequireColumnHeader(defaultTable, 0).Foreground = new SolidColorBrush(customColor));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifySortColor(defaultTable, customColor));
         }
 
         private static TableViewColumnHeader RequireColumnHeader(TableView tableView, int index)
@@ -4083,6 +4178,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(gripperHost, "PART_ResizeGripperHost should exist.");
                 Verify.IsTrue(gripperHost.Child is ResizeGripper, "A resizable header should host its gripper in PART_ResizeGripperHost.");
             });
+        }
+
+        [TestMethod]
+        public void VerifySortIndicatorGeometryAndHeaderPlacement()
+        {
+            foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                TableView tableView = null;
+                Grid root = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateThemingTable();
+                    tableView.Density = density;
+                    tableView.FlowDirection = flow;
+                    tableView.Columns[0].Width = new GridLength(200);
+                    root = new Grid { FlowDirection = FlowDirection.LeftToRight };
+                    root.Children.Add(tableView);
+                    LoadContent(root);
+                    tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending);
+                });
+                IdleSynchronizer.Wait();
+
+                void VerifyPlacement(bool customPadding, SortDirection direction)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var context = $"{density}/{flow}/{direction}, custom padding={customPadding}";
+                        var header = RequireColumnHeader(tableView, 0);
+                        var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                        var host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
+                        var indicator = (SortIndicator)host.Child;
+                        var glyph = indicator.FindVisualChildByName("GlyphIcon") as Microsoft.UI.Xaml.Shapes.Path;
+                        Verify.IsNotNull(glyph, $"The icon must be a vector Path ({context}).");
+                        var geometry = glyph.Data as PathGeometry;
+                        Verify.IsNotNull(geometry, $"The direction must supply vector geometry ({context}).");
+                        Verify.AreEqual(4, geometry.Figures.Count, $"Keep the arrow and three sort lines ({context}).");
+                        Verify.AreEqual(direction == SortDirection.Ascending ? 14.5 : 1.5,
+                            geometry.Figures[0].StartPoint.Y, $"Use the corresponding exported SVG ({context}).");
+
+                        var bounds = indicator.TransformToVisual(header).TransformBounds(
+                            new Rect(0, 0, indicator.ActualWidth, indicator.ActualHeight));
+                        Verify.IsLessThan(Math.Abs(bounds.Width - 16), 0.1, $"Preserve the 16px icon viewport ({context}).");
+                        Verify.IsLessThan(Math.Abs(bounds.Height - 16), 0.1, $"Preserve the 16px icon viewport ({context}).");
+                        var physicalBounds = indicator.TransformToVisual(root).TransformBounds(
+                            new Rect(0, 0, indicator.ActualWidth, indicator.ActualHeight));
+                        var headerBounds = header.TransformToVisual(root).TransformBounds(
+                            new Rect(0, 0, header.ActualWidth, header.ActualHeight));
+                        var trailingInset = flow == FlowDirection.LeftToRight
+                            ? headerBounds.Right - physicalBounds.Right : physicalBounds.Left - headerBounds.Left;
+                        Verify.IsLessThan(Math.Abs(header.Padding.Right + 4 - trailingInset), 0.1,
+                            $"The icon must follow header padding plus 4px at the trailing edge ({context}).");
+                        var centerTolerance = 0.5 / header.XamlRoot.RasterizationScale + 0.01;
+                        Verify.IsLessThan(Math.Abs((header.ActualHeight + header.Padding.Top - header.Padding.Bottom) / 2
+                            - bounds.Top - bounds.Height / 2), centerTolerance, $"Center within the padded header ({context}).");
+                        Verify.IsLessThan(Math.Abs(presenter.Margin.Right - 24), 0.1,
+                            $"Reserve the icon and both 4px host paddings ({context}).");
+                        var text = (TextBlock)presenter.Content;
+                        var textBounds = text.TransformToVisual(root).TransformBounds(
+                            new Rect(0, 0, text.ActualWidth, text.ActualHeight));
+                        var gap = flow == FlowDirection.LeftToRight
+                            ? physicalBounds.Left - textBounds.Right : textBounds.Left - physicalBounds.Right;
+                        Verify.IsTrue(gap >= 3.9, $"Text must stay at least 4px away from the icon ({context}).");
+                        Verify.IsFalse(indicator.IsHitTestVisible, $"The icon must not intercept header input ({context}).");
+                        Verify.AreEqual(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(indicator),
+                            $"The header peer, not the decorative icon, announces sorting ({context}).");
+                    });
+                }
+
+                VerifyPlacement(false, SortDirection.Ascending);
+                RunOnUIThread.Execute(() =>
+                {
+                    RequireColumnHeader(tableView, 0).Padding = new Thickness(20, 3, 28, 7);
+                    tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending);
+                    tableView.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+                VerifyPlacement(true, SortDirection.Descending);
+
+                RunOnUIThread.Execute(() => tableView.ClearSort());
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = RequireColumnHeader(tableView, 0);
+                    var host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
+                    Verify.AreEqual(Visibility.Collapsed, host.Visibility, "Clearing sort hides the icon.");
+                    Verify.AreEqual(24.0, ((ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter")).Margin.Right,
+                        "Unsorted headers must keep the same text reservation.");
+                });
+            }
         }
 
         [TestMethod]
