@@ -472,6 +472,8 @@ private:
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
     bool m_initialListSizeStateSet{ false };
+    // True when the last measure gave NavigationView unlimited height (for example inside a vertical StackPanel).
+    bool m_isHeightUnconstrained{ false };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
