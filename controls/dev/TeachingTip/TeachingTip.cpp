@@ -829,12 +829,16 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 
 void TeachingTip::OnIsOpenChanged()
 {
-    ++m_isOpenChangeCount;
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
     else
     {
+        // Count requests to open, not the busy-state revert below (it only undoes a request the tip rejected).
+        if (IsOpen())
+        {
+            ++m_openRequestCount;
+        }
         SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
             if (strongThis->m_isIdle) {
@@ -1411,7 +1415,7 @@ void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& sender, win
     // happens for a Target inside a NavigationViewItem, which can be unloaded while NavigationView (re)hosts its items.
     if (!IsOpen())
     {
-        ClosePopup();
+        ClosePopupForUnload();
         return;
     }
 
@@ -1429,13 +1433,13 @@ void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& sender, win
         m_pendingUnloadCheckForTip = true;
     }
     const auto generation = ++m_unloadCloseGeneration;
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation, isOpenChangeCount = m_isOpenChangeCount]()
+    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation, openRequestCount = m_openRequestCount]()
     {
-        strongThis->CloseIfUnloaded(generation, isOpenChangeCount);
+        strongThis->CloseIfUnloaded(generation, openRequestCount);
     });
 }
 
-void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t isOpenChangeCount)
+void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t openRequestCount)
 {
     // Only the latest queued check runs; it covers every unload recorded since the last check.
     if (generation != m_unloadCloseGeneration)
@@ -1450,7 +1454,7 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t isOpenChangeCoun
         return;
     }
     const bool isOpen = IsOpen();
-    if (isOpen && isOpenChangeCount != m_isOpenChangeCount)
+    if (isOpen && openRequestCount != m_openRequestCount)
     {
         // The app reopened the tip after the unload; don't override that newer request.
         return;
@@ -1484,7 +1488,22 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t isOpenChangeCoun
     {
         IsOpen(false);
     }
+    ClosePopupForUnload();
+}
+
+void TeachingTip::ClosePopupForUnload()
+{
     ClosePopup();
+    if (m_isExpandAnimationPlaying)
+    {
+        // The popup is gone, so the opening transition is over. Don't let it keep the tip busy: a busy tip reverts a
+        // pending IsOpen=false (ours or the app's) to true on the next tick, which would leave IsOpen true with no popup.
+        m_isExpandAnimationPlaying = false;
+        if (!m_isContractAnimationPlaying)
+        {
+            SetIsIdle(true);
+        }
+    }
 }
 
 // Returns the Popup whose Child is the element, or null.
