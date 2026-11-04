@@ -485,8 +485,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // middle can exceed the system double-click time and turn the gesture into two single clicks.
         internal static void DoubleClickRowAtColumnOffset(UIObject row, int rowRelativeX)
         {
-            var point = RowPointAtColumnOffset(row, rowRelativeX);
+            DoubleClickPoint(RowPointAtColumnOffset(row, rowRelativeX));
+        }
 
+        internal static void DoubleClickPoint(Point point)
+        {
             Log.Comment("Double-click at absolute point ({0}, {1}).", point.X, point.Y);
             PointerInput.Move(point);
             PointerInput.Press(PointerButtons.Primary);
