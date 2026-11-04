@@ -189,6 +189,11 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
     }
 
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        TraceSurfaceInit(compositionSurfaceFormat);
+    }
+
     if (m_spWinRTSurface == nullptr)
     {
         // Wrap with an ICompositionSurface
@@ -243,6 +248,11 @@ DCompSurface::InitializeSurface(
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
+        }
+
         // Wrap with an ICompositionSurface
         auto hr = pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
             m_pVirtualCompositionSurface, &m_spWinRTSurface);
@@ -268,6 +278,11 @@ DCompSurface::InitializeSurface(
             ));
 
         UpdateMemoryFootprint(TRUE);
+
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
+        }
 
         // Wrap with an ICompositionSurface
         IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
@@ -1327,6 +1342,26 @@ std::uint32_t
 DCompSurface::GetTextureSizeInBytes() const
 {
     return GetWidthWithGutters() * GetHeightWithGutters() * GetPixelStride();
+}
+
+void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
+{
+    if (!XamlProfilerTracing::IsEnabled())
+    {
+        return;
+    }
+
+    XamlProfilerTracing::DCompSurfaceInit(
+        reinterpret_cast<uint64_t>(this),
+        reinterpret_cast<uint64_t>(m_pCompositionSurface),
+        GetWidthWithoutGutters(),
+        GetHeightWithoutGutters(),
+        static_cast<uint32_t>(format),
+        static_cast<uint32_t>(m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED),
+        m_pVirtualCompositionSurface != nullptr,
+        static_cast<bool>(m_includesGutters),
+        static_cast<bool>(m_requestAtlas),
+        static_cast<bool>(m_fAlphaMask));
 }
 
 //-------------------------------------------------------------------------

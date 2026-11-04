@@ -52,13 +52,13 @@
                 <Visual Tag="PrependVisual">
                   <Visual Tag="PrimaryVisual" SizeX="50" SizeY="150" OffsetX="20" OffsetY="20" OffsetZ="0">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="8" SizeY="10" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="10" SizeY="12" BorderMode="Hard" OffsetX="-1" OffsetY="4" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
                           </Source>
                           <Mask>
-                            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="496643932" />
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="1283560980" />
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>

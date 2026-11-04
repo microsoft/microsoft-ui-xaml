@@ -31,25 +31,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         BEGIN_TEST_METHOD(CanPerformLayout)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the panel can perform layout correctly.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanParseDeferredElements)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the panel can perform layout correctly when using deferred elements.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanBeEmpty)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the panel can render with no children.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanArrangePhysicallyImpossibleDefinitions)
          TEST_METHOD_PROPERTY(L"Description", L"Verifies that the panel does not fail even if contraints specify a definition that is physically impossible to arrange.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ThrowsExceptionForCircularDependencies)
@@ -74,18 +74,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(BorderChrome)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that border properties works for RelativePanel")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyPropertyChangesInvalidateMeasure)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that changing the RelativePanel attached properties invalidates measure on the RelativePanel.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyLayoutViaXamlReader)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that RelativePanel properties can be set via XamlReader::Load.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
     };

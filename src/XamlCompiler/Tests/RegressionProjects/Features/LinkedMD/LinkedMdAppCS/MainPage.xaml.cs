@@ -62,18 +62,6 @@ namespace AppCS
             t = EnsureTypeExists("SubControlsCS.T");
             EnsureMemberExists(t, "StringPropertyOnT");
 
-            // CX
-            t = EnsureTypeExists("ControlsCX.A");
-            EnsureMemberExists(t, "StringPropertyOnA");
-            EnsureMemberExists(t, "BPropertyOnA");
-            t = EnsureTypeExists("ControlsCX.B");
-            EnsureMemberExists(t, "StringPropertyOnB");
-            t = EnsureTypeExists("SubControlsCX.S");
-            EnsureMemberExists(t, "StringPropertyOnS");
-            EnsureMemberExists(t, "TPropertyOnS");
-            t = EnsureTypeExists("SubControlsCX.T");
-            EnsureMemberExists(t, "StringPropertyOnT");
-
             // C++
             t = EnsureTypeExists("LinkedMDControlsCppWinRT.A");
             EnsureMemberExists(t, "StringPropertyOnA");

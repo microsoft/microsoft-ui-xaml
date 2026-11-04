@@ -34,6 +34,8 @@ namespace XcpAllocation {
     size_t GetAllocationCount();
     size_t GetAllocationSize();
     size_t GetDeallocationCount();
+    uint64_t GetHeapHandle();
+    bool IsUsingPrivateHeap();
 
     void UpdateAllocatedMemory(INT64 cSize);
 

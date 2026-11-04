@@ -9,6 +9,9 @@ class ScrollViewProperties
 public:
     ScrollViewProperties();
 
+    void CanContentRenderOutsideBounds(bool value);
+    bool CanContentRenderOutsideBounds();
+
     void ComputedHorizontalScrollBarVisibility(winrt::Visibility const& value);
     winrt::Visibility ComputedHorizontalScrollBarVisibility();
 
@@ -75,6 +78,7 @@ public:
     void ZoomMode(winrt::ScrollingZoomMode const& value);
     winrt::ScrollingZoomMode ZoomMode();
 
+    static winrt::DependencyProperty CanContentRenderOutsideBoundsProperty() { return s_CanContentRenderOutsideBoundsProperty; }
     static winrt::DependencyProperty ComputedHorizontalScrollBarVisibilityProperty() { return s_ComputedHorizontalScrollBarVisibilityProperty; }
     static winrt::DependencyProperty ComputedHorizontalScrollModeProperty() { return s_ComputedHorizontalScrollModeProperty; }
     static winrt::DependencyProperty ComputedVerticalScrollBarVisibilityProperty() { return s_ComputedVerticalScrollBarVisibilityProperty; }
@@ -98,6 +102,7 @@ public:
     static winrt::DependencyProperty ZoomChainModeProperty() { return s_ZoomChainModeProperty; }
     static winrt::DependencyProperty ZoomModeProperty() { return s_ZoomModeProperty; }
 
+    static GlobalDependencyProperty s_CanContentRenderOutsideBoundsProperty;
     static GlobalDependencyProperty s_ComputedHorizontalScrollBarVisibilityProperty;
     static GlobalDependencyProperty s_ComputedHorizontalScrollModeProperty;
     static GlobalDependencyProperty s_ComputedVerticalScrollBarVisibilityProperty;
@@ -158,6 +163,10 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnCanContentRenderOutsideBoundsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnComputedHorizontalScrollBarVisibilityPropertyChanged(
         winrt::DependencyObject const& sender,
