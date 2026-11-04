@@ -46,6 +46,10 @@ public:
     void RemoveFromSelection();
     void Select();
 
+    // Shared with the data-item peer for an unrealized selected row, so both enforce the same checks.
+    enum class SelectionItemAction { Add, Remove, Select };
+    static void ApplySelectionItemAction(SelectionItemAction action, bool isEnabled, winrt::TableView const& tableView, int32_t rowIndex);
+
     // IVirtualizedItemProvider — available only after the realized row has been recycled out.
     void Realize();
     // Creates the row at rowIndex and brings it into view (UIA Realize only, never a read). Throws

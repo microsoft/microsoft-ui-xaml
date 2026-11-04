@@ -725,56 +725,57 @@ winrt::IRawElementProviderSimple TableViewRowAutomationPeer::SelectionContainer(
 
 void TableViewRowAutomationPeer::AddToSelection()
 {
-    if (!IsEnabled())
-    {
-        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
-    }
-
-    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
-    // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
-    if (auto const tableView = GetOwningTableView())
-    {
-        auto const impl = winrt::get_self<TableView>(tableView);
-        if (!impl->CanSelectMultipleRows() && impl->SelectedIndexInternal() >= 0 && !impl->IsSelected(GetRowIndex()))
-        {
-            throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
-        }
-    }
-    Select();
+    ApplySelectionItemAction(SelectionItemAction::Add, IsEnabled(), GetOwningTableView(), GetRowIndex());
 }
 
 void TableViewRowAutomationPeer::RemoveFromSelection()
 {
-    if (!IsEnabled())
-    {
-        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
-    }
-
-    if (auto const tableView = GetOwningTableView())
-    {
-        if (const int32_t index = GetRowIndex(); index >= 0)
-        {
-            // Deselect only clears when THIS row is the selection, so a stale UIA call
-            // cannot wipe out a selection the user has since moved elsewhere.
-            winrt::get_self<TableView>(tableView)->Deselect(index);
-        }
-    }
+    ApplySelectionItemAction(SelectionItemAction::Remove, IsEnabled(), GetOwningTableView(), GetRowIndex());
 }
 
 void TableViewRowAutomationPeer::Select()
 {
-    if (!IsEnabled())
+    ApplySelectionItemAction(SelectionItemAction::Select, IsEnabled(), GetOwningTableView(), GetRowIndex());
+}
+
+void TableViewRowAutomationPeer::ApplySelectionItemAction(
+    SelectionItemAction action,
+    bool isEnabled,
+    winrt::TableView const& tableView,
+    int32_t rowIndex)
+{
+    if (!isEnabled)
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
-
-    if (auto const tableView = GetOwningTableView())
+    if (!tableView)
     {
-        if (const int32_t index = GetRowIndex(); index >= 0)
-        {
-            // toggle=false: UIA Select() means "make this the selection", never "clear it".
-            winrt::get_self<TableView>(tableView)->SelectRowIndexFromInteraction(index, false);
-        }
+        return;
+    }
+
+    auto const impl = winrt::get_self<TableView>(tableView);
+    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
+    // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
+    if (action == SelectionItemAction::Add &&
+        !impl->CanSelectMultipleRows() && impl->SelectedIndexInternal() >= 0 && !impl->IsSelected(rowIndex))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+    if (rowIndex < 0)
+    {
+        return;
+    }
+
+    if (action == SelectionItemAction::Remove)
+    {
+        // Deselect only clears when THIS row is the selection, so a stale UIA call
+        // cannot wipe out a selection the user has since moved elsewhere.
+        impl->Deselect(rowIndex);
+    }
+    else
+    {
+        // toggle=false: UIA Select() means "make this the selection", never "clear it".
+        impl->SelectRowIndexFromInteraction(rowIndex, false);
     }
 }
 

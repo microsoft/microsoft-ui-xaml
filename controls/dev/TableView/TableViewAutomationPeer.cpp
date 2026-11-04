@@ -237,19 +237,9 @@ namespace
             return peer ? ProviderFromPeer(peer) : nullptr;
         }
 
-        void AddToSelection() { Select(); }
-
-        void RemoveFromSelection()
-        {
-            const int32_t index = RequireIndex();
-            winrt::get_self<TableView>(m_table.get())->Deselect(index);
-        }
-
-        void Select()
-        {
-            const int32_t index = RequireIndex();
-            winrt::get_self<TableView>(m_table.get())->SelectRowIndexFromInteraction(index, false);
-        }
+        void AddToSelection() { ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Add); }
+        void RemoveFromSelection() { ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Remove); }
+        void Select() { ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Select); }
 
         void Realize()
         {
@@ -272,6 +262,12 @@ namespace
         }
 
     private:
+        void ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction action)
+        {
+            const int32_t index = RequireIndex();
+            TableViewRowAutomationPeer::ApplySelectionItemAction(action, IsEnabledCore(), m_table.get(), index);
+        }
+
         // -1 once the item left the source (or a boxed value's row was deselected); the table is alive when >= 0.
         int32_t ItemIndex()
         {
