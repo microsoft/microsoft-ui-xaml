@@ -2012,14 +2012,14 @@ void ThemeShadowTests::ThemeShadowDropShadowVerifyShadowPixels()
     {
         LOG_OUTPUT(L"Creating Canvas");
         rootPanel = safe_cast<Canvas^>(xaml_markup::XamlReader::Load(
-            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' Background='Green'>"
+            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' HorizontalAlignment='Left' Background='Green'>"
             L"  <Rectangle x:Name='rectangle' Height='100' Width='100' Canvas.Top='50' Fill='Red'/>"
             L"</Canvas>"
         ));
 
         LOG_OUTPUT(L"Creating RTB Canvas");
         rtbCanvas = safe_cast<Canvas^>(xaml_markup::XamlReader::Load(
-            L"  <Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='rtbCanvas' Height='100' Width='100' Background='White' Canvas.Top='150'>"
+            L"  <Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='rtbCanvas' Height='100' Width='100' HorizontalAlignment='Left' Background='White' Canvas.Top='150'>"
             L"      <Rectangle x:Name='rectForRTB' Height='50' Width='50' Fill='Black' Canvas.Top='25' Canvas.Left='25'>"
             L"          <Rectangle.Shadow>"
             L"              <ThemeShadow/>"
@@ -2115,7 +2115,7 @@ void ThemeShadowTests::ThemeShadowDropShadowDynamicCornerRadiusOnParent()
     {
         LOG_OUTPUT(L"Creating Canvas");
         rootCanvas = safe_cast<Canvas^>(xaml_markup::XamlReader::Load(
-            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' Background='White'>"
+            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' HorizontalAlignment='Left' Background='White'>"
             L"  <Grid x:Name='myBorder' Height='100' Width='100' CornerRadius='10,10,10,10'>"
             L"    <Rectangle x:Name='myRectangle' Height='100' Width='100' Fill='Black'>"
             L"      <Rectangle.Shadow>"
@@ -2168,7 +2168,7 @@ void ThemeShadowTests::ThemeShadowDropShadowUseCachedBrush()
     {
         LOG_OUTPUT(L"Creating Canvas");
         rootCanvas = safe_cast<Canvas^>(xaml_markup::XamlReader::Load(
-            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' Background='White'>"
+            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' HorizontalAlignment='Left' Background='White'>"
             L"    <Rectangle x:Name='myRectangle1' Height='30' Width='30' Fill='Black' RadiusX='4' RadiusY='4'>"
             L"      <Rectangle.Shadow>"
             L"        <ThemeShadow/>"
@@ -2230,7 +2230,7 @@ void ThemeShadowTests::ThemeShadowDropShadowSystemThemeRedrawRTB()
     {
         LOG_OUTPUT(L"Creating Canvas");
         rootPanel = safe_cast<Canvas^>(xaml_markup::XamlReader::Load(
-            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' Background='Green'>"
+            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='myCanvas1' Height='300' Width='300' HorizontalAlignment='Left' Background='Green'>"
             L"  <Rectangle x:Name='rectangle' Height='100' Width='100' Canvas.Top='50' Fill='Red'/>"
             L"  <Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='rtbCanvas' Height='100' Width='100' Background='White' Canvas.Top='150'>"
             L"      <Rectangle x:Name='rectForRTB' Height='50' Width='50' Fill='Black' Canvas.Top='25' Canvas.Left='25' RadiusX='4' RadiusY='4'>"
@@ -2331,7 +2331,7 @@ void ThemeShadowTests::ThemeShadowDropShadowCornerRoundingOnControl()
     {
         LOG_OUTPUT(L"Button with corner radius set");
         canvas = safe_cast<xaml_controls::Canvas^>(xaml_markup::XamlReader::Load(
-            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='mygrid' Height='300' Width='300' Background='White'>"
+            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='mygrid' Height='300' Width='300' HorizontalAlignment='Left' Background='White'>"
             L"  <Button Height='50' Width='50' Name='mybutton' Content='Test Button' Canvas.Top='100' Canvas.Left='100' Background='Black'>"
             L"    <Button.Shadow>"
             L"        <ThemeShadow/>"

@@ -938,12 +938,35 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <!-- Id 0 excludes manifest events from the name/opcode-based TraceLogging regions. -->
+        <Region Guid="{b0d00ed9-9817-440d-adc0-019be9ab8d1c}" Name="VirtualizationMeasureTraceLogging" FriendlyName="VirtualizationMeasure">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="VirtualizationMeasure" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="VirtualizationMeasure" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{2904bcdc-7aaf-49e3-ae0d-6375f1d1b1dd}" Name="VirtualizationCleanup">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="201" Version="0" />
           </Start>
           <Stop>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="202" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{2904bcdc-7aaf-49e3-ae0d-6375f1d1b1de}" Name="VirtualizationCleanupTraceLogging" FriendlyName="VirtualizationCleanup">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="VirtualizationCleanup" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="VirtualizationCleanup" Opcode="2" />
           </Stop>
           <Match>
             <Event TID="true" PID="true" />
@@ -960,12 +983,34 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{6b9cbe75-90d7-48f3-a220-319ed580b6b3}" Name="VirtualizationAddTraceLogging" FriendlyName="VirtualizationAdd">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="VirtualizationAdd" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="VirtualizationAdd" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{50ecb666-b7ca-4a19-9d59-5d39490ac0c6}" Name="GenerateContainer">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="205" Version="0" />
           </Start>
           <Stop>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="206" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{50ecb666-b7ca-4a19-9d59-5d39490ac0c7}" Name="GenerateContainerTraceLogging" FriendlyName="GenerateContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GenerateContainer" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GenerateContainer" Opcode="2" />
           </Stop>
           <Match>
             <Event TID="true" PID="true" />
@@ -982,6 +1027,17 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{be15d722-b80a-4d23-a81e-28b089b686bd}" Name="MeasureChildTraceLogging" FriendlyName="MeasureChild">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="MeasureChild" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="MeasureChild" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{8c3660af-56e3-41e3-bf43-151de0f0fbe5}" Name="PrepareContainer">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="209" Version="0" />
@@ -993,12 +1049,34 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{8c3660af-56e3-41e3-bf43-151de0f0fbe6}" Name="PrepareContainerTraceLogging" FriendlyName="PrepareContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="PrepareContainer" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="PrepareContainer" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{B3FFB743-6106-4A03-B47B-BDD1FD934A4F}" Name="UpdateLogicalScrollData">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="211" Version="0" />
           </Start>
           <Stop>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="212" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{B3FFB743-6106-4A03-B47B-BDD1FD934A50}" Name="UpdateLogicalScrollDataTraceLogging" FriendlyName="UpdateLogicalScrollData">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="UpdateLogicalScrollData" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="UpdateLogicalScrollData" Opcode="2" />
           </Stop>
           <Match>
             <Event TID="true" PID="true" />
@@ -1609,6 +1687,17 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{b14ae938-a1e4-4de7-ab83-c67defe40605}" Name="SetupCCCTraceLogging" FriendlyName="SetupCCC">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="SetupCCC" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="SetupCCC" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{0638a158-511e-41f2-9dcf-d0d2a4cf384f}" Name="IndividualSizeChanged">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="491" Version="0" />
@@ -1686,6 +1775,17 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{9d9ad09a-896a-4fe7-999f-b5df0fda142a}" Name="GenerateItemsTraceLogging" FriendlyName="GenerateItems">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GenerateItems" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GenerateItems" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{e14b6177-3720-48da-8e72-a8e0b9075a74}" Name="GenerateMCContainer">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="505" Version="0" />
@@ -1697,12 +1797,34 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{e14b6177-3720-48da-8e72-a8e0b9075a75}" Name="GenerateMCContainerTraceLogging" FriendlyName="GenerateMCContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GenerateMCContainer" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GenerateMCContainer" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{b20eb71b-73ec-43ab-b508-c4506b5458b6}" Name="PlaceElement">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="507" Version="0" />
           </Start>
           <Stop>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="508" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b20eb71b-73ec-43ab-b508-c4506b5458b7}" Name="PlaceElementTraceLogging" FriendlyName="PlaceElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="PlaceElement" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="PlaceElement" Opcode="2" />
           </Stop>
           <Match>
             <Event TID="true" PID="true" />
@@ -1917,6 +2039,17 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{68b50386-4ef7-4167-8a5d-a03e646cec01}" Name="GetElementCountTraceLogging" FriendlyName="GetElementCount">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GetElementCount" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GetElementCount" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
         <Region Guid="{300c38f5-0da4-438b-8811-0b6d850a7a49}" Name="GetCompressedImageSize">
           <Start>
             <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="549" Version="0" />
@@ -2064,4 +2197,3 @@
     </Regions>
   </Instrumentation>
 </InstrumentationManifest>
-

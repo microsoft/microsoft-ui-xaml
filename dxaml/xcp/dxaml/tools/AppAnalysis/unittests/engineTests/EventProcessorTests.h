@@ -12,10 +12,12 @@ namespace AppAnalysis {
         BEGIN_TEST_CLASS(EventProcessorTests)
         END_TEST_CLASS()
 
+        TEST_METHOD(ValidateTraceLoggingVirtualizationDispatch)
+
         BEGIN_TEST_METHOD(ValidateBasicProperties)
             TEST_METHOD_PROPERTY(L"Classification", L"Integration")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Platform", L"Desktop")
             TEST_METHOD_PROPERTY(L"BCQ", L"TRUE")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the event processor class can add rules and fire notifications.")
@@ -24,7 +26,7 @@ namespace AppAnalysis {
         BEGIN_TEST_METHOD(ValidateRuleDoesntGetCallbackTwice)
             TEST_METHOD_PROPERTY(L"Classification", L"Integration")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Platform", L"Desktop")
             TEST_METHOD_PROPERTY(L"BCQ", L"TRUE")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the event processor doesn't add callbacks multiple times to engine.")

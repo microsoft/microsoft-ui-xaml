@@ -31,7 +31,6 @@ using namespace winrt::Microsoft::UI::Xaml::Interop;
 App::App()
 {
     InitializeComponent();
-    Suspending({ this, &App::OnSuspending });
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
     UnhandledException([this](IInspectable const&, ::Microsoft::UI::Xaml::UnhandledExceptionEventArgs const& e)
@@ -106,21 +105,6 @@ void App::OnLaunched(winrt::Microsoft::UI::Xaml::LaunchActivatedEventArgs const&
             Window::Current().Activate();
         }
     }
-}
-
-/// <summary>
-/// Invoked when application execution is being suspended.  Application state is saved
-/// without knowing whether the application will be terminated or resumed with the contents
-/// of memory still intact.
-/// </summary>
-/// <param name="sender">The source of the suspend request.</param>
-/// <param name="e">Details about the suspend request.</param>
-void App::OnSuspending(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::ApplicationModel::SuspendingEventArgs const& e)
-{
-    (void)sender;  // Unused parameter
-    (void)e;   // Unused parameter
-
-               //Save application state and stop any background activity
 }
 
 /// <summary>

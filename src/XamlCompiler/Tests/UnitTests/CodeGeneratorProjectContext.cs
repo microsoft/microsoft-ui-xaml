@@ -9,7 +9,8 @@ using Win8Xaml.CompilerProxies;
 
 namespace UnitTests
 {
-    enum CodeGenLanguage { CSharp, Cpp, VisualBasic };
+    // Keep CppWinRT last: CodeGeneratorTests iterates CSharp through VisualBasic.
+    enum CodeGenLanguage { CSharp, Cpp, VisualBasic, CppWinRT };
 
     class CodeGeneratorProjectContext
     {

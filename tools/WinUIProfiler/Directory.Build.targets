@@ -1,0 +1,3 @@
+<Project>
+  <!-- Deliberately terminate Directory.Build.targets discovery at this tool boundary. -->
+</Project>

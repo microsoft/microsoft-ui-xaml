@@ -36,7 +36,7 @@ namespace Microsoft.UI.Xaml.Tests
         }
         
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestDataTemplateGeneration()
         {
             UIExecutor.Execute(() =>
@@ -129,7 +129,7 @@ namespace Microsoft.UI.Xaml.Tests
 
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test fails on WPF from failure to activate DMManager
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyElementFromDataTemplateSelectorGetsArranged()
         {
             // Regression coverage for: 
@@ -144,7 +144,7 @@ namespace Microsoft.UI.Xaml.Tests
             {
                 rootPanel = new StackPanel();
                 rootPanel.Loaded += (s,e) => { rootPanelLoaded.Set(); };
-                Window.Current.Content = rootPanel;
+                TestServices.WindowHelper.WindowContent = rootPanel;
             });
             Verify.IsTrue(rootPanelLoaded.WaitOne(TimeSpan.FromSeconds(5)), "Wait for root panel to load");
             TestServices.WindowHelper.WaitForIdle();
@@ -177,7 +177,7 @@ namespace Microsoft.UI.Xaml.Tests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test fails on WPF from failure to activate DMManager
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyRecyclingBetweenTemplateAndSelector()
         {
             // Getting an element directly from the template and then recycling it through a selector should work.
@@ -188,7 +188,7 @@ namespace Microsoft.UI.Xaml.Tests
             {
                 rootPanel = new StackPanel();
                 rootPanel.Loaded += (s, e) => { rootPanelLoaded.Set(); };
-                Window.Current.Content = rootPanel;
+                TestServices.WindowHelper.WindowContent = rootPanel;
             });
             Verify.IsTrue(rootPanelLoaded.WaitOne(TimeSpan.FromSeconds(5)), "Wait for root panel to load");
             TestServices.WindowHelper.WaitForIdle();

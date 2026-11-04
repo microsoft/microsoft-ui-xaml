@@ -108,7 +108,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="110" SizeY="124" BorderMode="Hard" OffsetX="1" OffsetY="64" OffsetZ="0">
+                      <wucSpriteVisual SizeX="112" SizeY="126" BorderMode="Hard" OffsetX="0" OffsetY="63" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -189,7 +189,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="76" SizeY="124" BorderMode="Hard" OffsetX="16" OffsetY="64" OffsetZ="0">
+                      <wucSpriteVisual SizeX="78" SizeY="126" BorderMode="Hard" OffsetX="15" OffsetY="63" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />

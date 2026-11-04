@@ -1,0 +1,7 @@
+<!-- Columns come from BuildColumns: each width intent swaps in a new set. -->
+<tv:TableView
+    x:Name="WidthsTable"
+    AutomationProperties.Name="People, with columns sized by the chosen width intent"
+    ItemsSource="{x:Bind People}"
+    SelectionMode="Single"
+    CanUserResizeColumns="True"/>

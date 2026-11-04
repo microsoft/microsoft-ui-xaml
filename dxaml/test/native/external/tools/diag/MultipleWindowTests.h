@@ -28,7 +28,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\xamlom.idl")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")    // WPF_HOSTING_MODE_FAILURE - creates new UWP views.
+                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
             END_TEST_CLASS()
 
@@ -47,7 +47,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can attach to an app with multiple windows open.")
                 TEST_METHOD_PROPERTY(L"Data:ShowMainView", L"{False, True}")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: MultipleWindowTests#metadataSet0::BasicMultipleWindowTest_Attach#metadataSet0 not reliably connecting the tree
             END_TEST_METHOD()
 
@@ -61,7 +61,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that we only set the core dispatcher once when running in single window mode in a "
                                                      L"multi-window app.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 

@@ -11,11 +11,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
     internal class StreamXbfOutput : StreamImpl, IXamlStream
     {
         private string _filePath;
+        private string _sourceXamlPath;
         private MemoryStream _memoryStream;
 
-        public StreamXbfOutput(string filePath)
+        public StreamXbfOutput(string filePath, string sourceXamlPath)
         {
             _filePath = filePath;
+            _sourceXamlPath = sourceXamlPath;
             _underlyingStream = _memoryStream = new MemoryStream();
         }
 
@@ -30,19 +32,41 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
             return !fileContent.SequenceEqual(memoryContent);
         }
 
+        // Pass2 treats an XBF older than its source XAML as out of date. When identical bytes are
+        // regenerated for a touched XAML, advance the XBF so it isn't rebuilt on every build.
+        // Leave it alone when regeneration was forced for other reasons (e.g. a referenced
+        // assembly changed) so unchanged XBFs don't dirty downstream targets.
+        private void RefreshTimestampIfOlderThanSource()
+        {
+            if (string.IsNullOrEmpty(_sourceXamlPath) || !File.Exists(_sourceXamlPath))
+            {
+                return;
+            }
+
+            DateTime sourceTime = File.GetLastWriteTimeUtc(_sourceXamlPath);
+            if (sourceTime > File.GetLastWriteTimeUtc(_filePath))
+            {
+                DateTime now = DateTime.UtcNow;
+                File.SetLastWriteTimeUtc(_filePath, sourceTime > now ? sourceTime : now);
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             // If already disposed, do nothing
             if (_underlyingStream != null)
             {
-                // Conditionally write output file only if content has changed,
-                // to avoid unnecessary downstream build ripples.
+                // Avoid rewriting identical bytes to prevent downstream build ripples (copy, PRI, packaging).
                 if (ContentChanged())
                 {
                     using (var fileStream = new FileStream(_filePath, FileMode.Create, FileAccess.Write))
                     {
                         _memoryStream.WriteTo(fileStream);
                     }
+                }
+                else
+                {
+                    RefreshTimestampIfOlderThanSource();
                 }
             }
 
