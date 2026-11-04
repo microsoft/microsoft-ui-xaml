@@ -8,6 +8,8 @@
 //      go along with them).
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "D3D11DeviceInstance.h"
 #include "D3D11SharedDeviceGuard.h"
@@ -620,6 +622,10 @@ _Check_return_ HRESULT CD3D11DeviceInstance::EnsureDeviceSpecificD2DResources(_I
             &D2D1::ColorF(D2D1::ColorF::Black),
             &D2D1::BrushProperties(),
             &d2dSolidColorBrush));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
+        }
         m_d2dSolidColorBrushes[deviceWrapper] = d2dSolidColorBrush;
     }
     return S_OK;

@@ -9,12 +9,12 @@
 // different alignment annotations that conflict during link-time code generation.
 static std::atomic<bool> g_profilerEnabled{false};
 
-void XamlProfilerTracing::EnableAllocationProfiling(bool enabled) noexcept
+void XamlProfilerTracing::SetProfilerEnabled(bool enabled) noexcept
 {
     g_profilerEnabled.store(enabled, std::memory_order_relaxed);
 }
 
-bool XamlProfilerTracing::IsAllocationProfilingEnabled() noexcept
+bool XamlProfilerTracing::IsProfilerEnabled() noexcept
 {
     return g_profilerEnabled.load(std::memory_order_relaxed);
 }
