@@ -75,7 +75,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h/.cpp` | Implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
-| 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
+| 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h` | `ShapedNode` and `FenwickTree` implemented; the rest declared, not implemented |
 | 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
 | 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener` and the adapters' `IShapedExpansion`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapedExpansion.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the expansion actions, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
@@ -3383,8 +3383,12 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `LiveChange`, `Rebuild` scoped to dirty records (E7).
 - [x] Surgical placement and tie order: `PlacementIndex`, `ShapeFlags::PlacementMark`,
       `StagedEdit::ShapedIndex` (E5).
-- [ ] Shaped tree node types `ShapedNode` (`Engine/ShapeState.h`), `GroupNode` (`Engine/ShapedTree.h`): declared, no
-      implementation.
+- [ ] Shaped tree node types `ShapedNode` (`Engine/ShapeState.h`), `GroupNode` (`Engine/ShapedTree.h`):
+      `ShapedNode` implemented (`Engine/ShapeState.cpp`: `AsRecord` / `AsGroup`, `ShapedParent`,
+      `ShapedChildCount`, `ShapedChildAt`); `GroupNode` is data only.
+- [x] Implement `FenwickTree` (`Engine/FenwickTree.cpp`; the `Build` template inline in the
+      header): linear O(k) build, `Add` / `PrefixSum` in O(log k), `Find` as one power-of-two
+      descent, `Clear` frees the storage.
 - [x] Decide where engine state lives: an engine-owned `ShapeState` slot on `SourceRecord`.
 - [x] Declare `ShapeState` (`Engine/ShapeState.h`, stored inline) and add `SourceRecord::Shape`.
 - [x] Replace the tagged `ShapedRef` / `ShapedRefHash` with a non-polymorphic `ShapedNode` base
@@ -3595,9 +3599,9 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   `Shaping/ShapingManager.h` has no `.cpp` (Phase 1.4 / Phase 5).
 - `Source/SourceRecord.h` and `Source/SourceTable.h` have no `.cpp` files yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
-- `Engine/ShapedTree.h` (`GroupNode`, `IShapedRowsListener`, `ShapedTree`),
-  `Engine/ShapeState.h` (`ShapedNode`, `ShapeState`), `Engine/FenwickTree.h` and `Engine/GroupExpansion.h` are
-  declared only (Phases 4–5).
+- `Engine/ShapedTree.h` (`GroupNode`, `IShapedRowsListener`, `ShapedTree`), `ShapeState` and
+  `Engine/GroupExpansion.h` are declared only (Phases 4–5); `ShapedNode` and `FenwickTree` are
+  implemented.
 - `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h` and `Spec/PathEvaluator.h` are declared only
   (Phase 2); `ShapingManager` declares the members that own them (§6).
 - **`ShapingManager::Source()` accessor (resolved: none).** See §6 *No `Source()` accessor*.
