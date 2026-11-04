@@ -820,12 +820,14 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         }
     }
 
+    // Row-level Up/Down too, or PART_BodyScroller would focus a control in this row's own cells.
     if (!args.Handled() &&
-        (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
+        (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right ||
+            ((args.Key() == winrt::VirtualKey::Up || args.Key() == winrt::VirtualKey::Down) && IsRowItselfFocused())))
     {
         if (auto const owner = GetOwningTableView())
         {
-            winrt::get_self<TableView>(owner)->HandleBodyHorizontalKeyFromRowInternal(args);
+            winrt::get_self<TableView>(owner)->HandleBodyKeyFromRowInternal(args);
         }
     }
 

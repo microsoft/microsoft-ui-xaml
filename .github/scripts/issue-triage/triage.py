@@ -28,6 +28,7 @@ from find_duplicates import (
 MARKER = "<!-- winui-ai-triage:canonical:v1 -->"
 MAP_PATH = Path(__file__).with_name("area-team-map.json")
 TEAM_PARENT_MAP_PATH = Path(__file__).with_name("team-parent-map.json")
+PRIORITY_POLICY_PATH = Path(__file__).with_name("priority-policy.md")
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
@@ -38,9 +39,14 @@ MAX_PROMPT_BYTES = 2 * 1024 * 1024
 CONTEXT_MARKER = "[WINUI_TRIAGE_CONTEXT]"
 CONTEXT_START = "<untrusted-issue-evidence>"
 CONTEXT_END = "</untrusted-issue-evidence>"
+PROJECT_NUMBER = 1868
 
 
 class TriageError(RuntimeError):
+    pass
+
+
+class ProjectError(TriageError):
     pass
 
 
@@ -106,6 +112,15 @@ class GitHub:
 
     def write(self, method: str, suffix: str, payload: dict):
         return self.request(method, self.repo_path(suffix), payload)
+
+    def graphql(self, query: str, variables: dict) -> dict:
+        try:
+            response = self.request("POST", "graphql", {"query": query, "variables": variables})
+        except TriageError as error:
+            raise ProjectError(str(error)) from error
+        if response.get("errors") or not isinstance(response.get("data"), dict):
+            raise ProjectError("GitHub Projects GraphQL request failed; no automatic retry")
+        return response["data"]
 
     def pages(self, suffix: str, max_pages: int = 10) -> list[dict]:
         result = []
@@ -223,9 +238,12 @@ def snapshot(client: GitHub, number: int) -> dict:
     ]
     content = {
         "number": number,
+        "node_id": issue["node_id"],
         "title": issue.get("title") or "",
         "body": issue.get("body") or "",
         "labels": sorted(label_names(issue)),
+        "issue_type": issue.get("type"),
+        "priority_policy_sha256": hashlib.sha256(load_priority_policy()[0].encode("utf-8")).hexdigest(),
         "author_comments": author_comments,
         "repository_comments": repository_comments,
     }
@@ -346,6 +364,7 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
         "number": number,
         "input_sha256": current["input_sha256"],
         "issue_kind": kind,
+        "existing_issue_type": (issue.get("type") or {}).get("name"),
         "title": evidence_text(content["title"], 256),
         "body": evidence_text(content["body"], MAX_BODY),
         "author_followups": [
@@ -382,6 +401,86 @@ def required_string(item: dict, name: str, limit: int) -> str:
     return value.strip()
 
 
+def load_priority_policy() -> tuple[str, dict]:
+    text = PRIORITY_POLICY_PATH.read_text(encoding="utf-8")
+    if len(text.encode("utf-8")) > 16384:
+        raise TriageError("Priority policy exceeded its size limit")
+    rows = [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in text.splitlines() if line.startswith("|")
+    ]
+    if (
+        len(rows) < 3
+        or rows[0] != ["Impact", "Issue kinds", "Report evidence",
+                       "Without reported workaround", "With reported workaround"]
+        or len(rows[1]) != 5 or any(not re.fullmatch(r"-{3,}", cell) for cell in rows[1])
+    ):
+        raise TriageError("Invalid priority policy table")
+    rules = {}
+    for row in rows[2:]:
+        if len(row) != 5:
+            raise TriageError("Invalid priority policy row")
+        impact, kinds, reason, without, with_workaround = row
+        kinds = {kind.strip() for kind in kinds.split(",")}
+        if (
+            not re.fullmatch(r"[A-Z][A-Z_]{0,39}", impact) or impact in rules
+            or not kinds <= {"BUG", "FEATURE", "OTHER"} or not kinds or not reason
+            or without not in {"P0", "P1", "P2", "None"}
+            or with_workaround not in {"P0", "P1", "P2", "None"}
+        ):
+            raise TriageError("Invalid or duplicate priority policy rule")
+        rules[impact] = {"kinds": kinds, "priorities": (without, with_workaround)}
+    if "OTHER" not in rules or rules["OTHER"]["priorities"] != ("None", "None"):
+        raise TriageError("Priority policy must defer OTHER impact")
+    return text, rules
+
+
+def assess_priority(item: dict, evidence: dict, result: dict) -> None:
+    """Apply the trusted Markdown policy; no impact-specific rules live in code."""
+    fields = {"impact", "workaround", "priority_reason"}
+    result["priority"] = None
+    result["priority_reason"] = "None"
+    if not fields & set(item):
+        result["normalization_notes"].append(
+            "The older output has no priority assessment; project priority is unchanged."
+        )
+        return
+    if not fields <= set(item):
+        raise TriageError("Incomplete priority assessment")
+    impact = required_string(item, "impact", 40)
+    _, rules = load_priority_policy()
+    if impact not in rules:
+        raise TriageError("Invalid priority impact")
+    if type(item["workaround"]) is not bool:
+        raise TriageError("Invalid workaround assessment")
+    reason = required_string(item, "priority_reason", 400)
+    rule = rules[impact]
+    priority = rule["priorities"][int(item["workaround"])]
+    if priority == "None":
+        return
+    kind = result["issue_kind"]
+    if (
+        kind not in rule["kinds"]
+        or evidence.get("existing_issue_type") not in (None, {"BUG": "Bug", "FEATURE": "Feature"}.get(kind))
+        or kind == "BUG" and evidence["issue_kind"] == "FEATURE"
+        or evidence["context_truncated"] or reason == "None"
+    ):
+        result["review_notes"].append(
+            "Project priority needs a supported bug or feature assessment and complete context; priority is deferred."
+        )
+        return
+    result["priority"] = priority
+    result["priority_reason"] = reason
+
+
+def routing_reason(item: dict) -> str:
+    value = required_string(item, "routing_reason", 4096)
+    if len(value) <= 400:
+        return value
+    shortened = value[:399].rsplit(" ", 1)[0].rstrip()
+    return (shortened or value[:399]) + "…"
+
+
 def validate(output: dict, evidence: dict) -> dict:
     items = output.get("items")
     if not isinstance(items, list) or len(items) != 1 or not isinstance(items[0], dict):
@@ -393,7 +492,10 @@ def validate(output: dict, evidence: dict) -> dict:
         "routing_rule", "routing_reason",
     }
     if (
-        not required <= set(item) <= required | {"missing_information_kind", "uwp_specific", "uwp_reason"}
+        not required <= set(item) <= required | {
+            "missing_information_kind", "uwp_specific", "uwp_reason",
+            "impact", "workaround", "priority_reason",
+        }
         or item["type"] != "publish_triage_summary"
     ):
         raise TriageError("Unexpected triage output schema or operation")
@@ -407,13 +509,14 @@ def validate(output: dict, evidence: dict) -> dict:
         "reproduction": item["reproduction"],
         "missing_information": required_string(item, "missing_information", 700),
         "routing_rule": required_string(item, "routing_rule", 64),
-        "routing_reason": required_string(item, "routing_reason", 400),
+        "routing_reason": routing_reason(item),
         "source_issue_kind": evidence["issue_kind"],
         "review_notes": [],
         "normalization_notes": [],
     }
     if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
         raise TriageError("Invalid content-based issue kind")
+    assess_priority(item, evidence, result)
     if {"uwp_specific", "uwp_reason"} & set(item):
         if type(item.get("uwp_specific")) is not bool:
             raise TriageError("Invalid UWP-specific classification")
@@ -715,6 +818,14 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     else:
         reproduction = "\u26a0\ufe0f Needs maintainer review"
     lines.append("- **Reproduction:** " + reproduction)
+    if evidence.get("existing_issue_type"):
+        lines.append("- **Existing issue Type (preserved):** " + plain_text(evidence["existing_issue_type"]))
+    elif bug_type_applies(result, evidence):
+        lines.append("- **Issue Type plan:** Set the missing repository Type to `Bug`.")
+    if result["priority"]:
+        lines.append("- **WinUI project priority assessment:** `" + result["priority"] + "`. "
+                     + plain_text(result["priority_reason"])
+                     + " Existing project values take precedence; publication requires configured project access.")
     if result["add_uwp"]:
         lines.append("- **App model:** `appModel-UWP` (UWP-specific bug). "
                      + plain_text(result["uwp_reason"]))
@@ -798,17 +909,174 @@ def ensure_current(client: GitHub, evidence: dict) -> dict | None:
     return current
 
 
+def bug_type_applies(result: dict, evidence: dict) -> bool:
+    return (
+        result["issue_kind"] == "BUG" and evidence["issue_kind"] != "FEATURE"
+        and not evidence["context_truncated"]
+        and evidence.get("existing_issue_type") is None
+    )
+
+
+def project_priority_snapshot(client: GitHub, issue_id: str) -> dict:
+    data = client.graphql("""
+        query($number: Int!) {
+          organization(login: "microsoft") {
+            projectV2(number: $number) {
+              id title closed
+              fields(first: 100) {
+                pageInfo { hasNextPage }
+                nodes { ... on ProjectV2SingleSelectField { id name options { id name } } }
+              }
+            }
+          }
+        }
+    """, {"number": PROJECT_NUMBER})
+    project = (data.get("organization") or {}).get("projectV2")
+    if not project or project["title"] != "WinUI" or project["closed"]:
+        raise ProjectError("Expected the open microsoft WinUI project 1868")
+    fields = project["fields"]
+    if fields["pageInfo"]["hasNextPage"]:
+        raise ProjectError("Project field pagination requires manual configuration")
+    priority = [field for field in fields["nodes"] if field.get("name") == "Priority"]
+    if len(priority) != 1:
+        raise ProjectError("WinUI project must have one single-select Priority field")
+    field = priority[0]
+    options = {name: [o["id"] for o in field["options"] if o["name"] == name] for name in ("P0", "P1", "P2")}
+    if any(len(ids) != 1 for ids in options.values()):
+        raise ProjectError("WinUI Priority must have exact P0, P1 and P2 options")
+    items = []
+    cursor = None
+    for _ in range(10):
+        data = client.graphql("""
+            query($issue: ID!, $cursor: String) {
+              node(id: $issue) {
+                ... on Issue {
+                  id
+                  projectItems(first: 100, after: $cursor, includeArchived: true) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes {
+                      id isArchived project { id }
+                      fieldValueByName(name: "Priority") {
+                        __typename
+                        ... on ProjectV2ItemFieldSingleSelectValue { optionId name }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """, {"issue": issue_id, "cursor": cursor})
+        node = data.get("node")
+        if not node or node.get("id") != issue_id:
+            raise ProjectError("Project query returned an unexpected issue")
+        connection = node["projectItems"]
+        items.extend(item for item in connection["nodes"] if item["project"]["id"] == project["id"])
+        if not connection["pageInfo"]["hasNextPage"]:
+            break
+        cursor = connection["pageInfo"]["endCursor"]
+        if not cursor:
+            raise ProjectError("Invalid issue project pagination")
+    else:
+        raise ProjectError("Issue project pagination limit reached")
+    if len(items) > 1:
+        raise ProjectError("Multiple WinUI project items found; manual review required")
+    return {
+        "project_id": project["id"], "field_id": field["id"],
+        "options": {name: ids[0] for name, ids in options.items()},
+        "item": items[0] if items else None,
+    }
+
+
+def publish_metadata(client: GitHub, result: dict, evidence: dict, labels: list[str], project_client) -> str | None:
+    expected = dict(evidence["_snapshot"]["content"])
+    expected["labels"] = sorted(set(expected["labels"]) | set(labels))
+
+    def fresh():
+        current = snapshot(client, evidence["number"])
+        if not eligible(current["issue"]):
+            raise TriageError("Issue no longer eligible for metadata publication")
+        if current["content"] != expected:
+            raise TriageError("Issue changed before metadata publication; refusing stale output")
+        return current["issue"]
+
+    issue = fresh()
+    if bug_type_applies(result, evidence):
+        updated = client.write("PATCH", f"issues/{evidence['number']}", {"type": "Bug"})
+        if (updated.get("type") or {}).get("name") != "Bug":
+            raise TriageError("GitHub did not apply the Bug issue Type")
+        expected["issue_type"] = updated["type"]
+    if not result["priority"] or project_client is None:
+        return None
+    fresh()
+    try:
+        publish_project_priority(project_client, result, issue)
+    except ProjectError as error:
+        return str(error)
+    return None
+
+
+def publish_project_priority(project_client: GitHub, result: dict, issue: dict) -> None:
+    project = project_priority_snapshot(project_client, issue["node_id"])
+    item = project["item"]
+    if item and (item["isArchived"] or item["fieldValueByName"] is not None):
+        print("Existing or archived WinUI project priority is preserved")
+        return
+    if item is None:
+        raise ProjectError("Issue is not in the WinUI project; leave insertion to project automation or a maintainer")
+    updated = project_client.graphql("""
+        mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+          updateProjectV2ItemFieldValue(input: {
+            projectId: $project, itemId: $item, fieldId: $field,
+            value: {singleSelectOptionId: $option}
+          }) { projectV2Item { id } }
+        }
+    """, {
+        "project": project["project_id"], "item": item["id"], "field": project["field_id"],
+        "option": project["options"][result["priority"]],
+    })
+    if updated["updateProjectV2ItemFieldValue"]["projectV2Item"]["id"] != item["id"]:
+        raise ProjectError("Unexpected project priority mutation result")
+    verified = project_priority_snapshot(project_client, issue["node_id"])["item"]
+    if (
+        not verified or verified["id"] != item["id"]
+        or (verified["fieldValueByName"] or {}).get("optionId") != project["options"][result["priority"]]
+    ):
+        raise ProjectError("WinUI project priority could not be verified; inspect before retrying")
+
+
 def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: bool) -> dict:
     for note in result["normalization_notes"] + result["review_notes"]:
         print("::warning::" + plain_text(note))
     body = render(result, evidence, mapping)
     labels = planned_labels(result, evidence, mapping)
-    plan = {"comment": body, "add_labels": labels, "published": False}
+    project_token = os.environ.get("TRIAGE_PROJECT_TOKEN", "")
+    project_client = GitHub(client.repository, project_token) if project_token and result["priority"] else None
+    plan = {
+        "comment": body, "add_labels": labels, "published": False,
+        "issue_type": "Bug" if bug_type_applies(result, evidence) else None,
+        "project_priority": result["priority"],
+        "project_priority_enabled": project_client is not None,
+        "project_priority_error": None,
+    }
+    if result["priority"] and project_client is None:
+        print("::warning::WinUI project priority is assessment-only: TRIAGE_PROJECT_TOKEN is not configured.")
+    if project_client is not None:
+        try:
+            project_priority_snapshot(project_client, evidence["_snapshot"]["issue"]["node_id"])
+        except ProjectError as error:
+            plan["project_priority_error"] = str(error)
+            plan["project_priority_enabled"] = False
+            project_client = None
+            print("::warning::WinUI priority deferred; normal triage continues: " + plain_text(str(error)))
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as stream:
             stream.write(("## Publish plan\n\n" if write else "## Preview only - no issue writes\n\n"))
             stream.write(body + "\n\nLabels to add: " + ", ".join(labels) + "\n")
+            stream.write(f"\nIssue Type plan: {plan['issue_type']}; WinUI priority assessment: {plan['project_priority']}\n")
+            if plan["project_priority_error"]:
+                stream.write("\nPriority deferred; normal triage continues: "
+                             + plain_text(plan["project_priority_error"]) + "\n")
     if not write:
         print("Preview only: validated triage; no issue writes were made")
         return plan
@@ -821,8 +1089,19 @@ def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: 
         client.write("POST", f"issues/{number}/comments", {"body": body})
     elif comment["body"] != body:
         client.write("PATCH", f"issues/comments/{comment['id']}", {"body": body})
-    if labels and ensure_current(client, evidence) is not None:
+    if labels:
+        if ensure_current(client, evidence) is None:
+            return plan
         client.write("POST", f"issues/{number}/labels", {"labels": labels})
+    if plan["issue_type"] or (result["priority"] and project_client is not None):
+        error = publish_metadata(client, result, evidence, labels, project_client)
+        if error:
+            plan["project_priority_error"] = error
+            print("::warning::WinUI priority deferred or unverified; normal triage published: " + plain_text(error))
+            if summary_path:
+                with open(summary_path, "a", encoding="utf-8") as stream:
+                    stream.write("\nPriority was not verified; inspect partial project writes before retrying: "
+                                 + plain_text(error) + "\n")
     plan["published"] = True
     return plan
 
@@ -863,7 +1142,8 @@ def attach_context(context_path: str, prompt_path: str) -> None:
     if prompt.count(CONTEXT_MARKER) != 1:
         raise TriageError("Expected exactly one prepared-evidence slot in the rendered prompt")
     block = CONTEXT_START + "\n" + context + "\n" + CONTEXT_END
-    rendered = prompt.replace(CONTEXT_MARKER, block, 1)
+    policy, _ = load_priority_policy()
+    rendered = prompt.replace(CONTEXT_MARKER, policy + "\n\n" + block, 1)
     if len(rendered.encode("utf-8")) > MAX_PROMPT_BYTES:
         raise TriageError("Prompt with prepared evidence exceeded its byte limit")
     destination.write_text(rendered, encoding="utf-8", newline="")

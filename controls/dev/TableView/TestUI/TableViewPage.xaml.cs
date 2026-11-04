@@ -118,6 +118,7 @@ namespace MUXControlsTestApp
     {
         private readonly ObservableCollection<TableViewTestPerson> _basicItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
+        private readonly ObservableCollection<TableViewTestPerson> _cellControlsItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
         private TableViewSource _groupedSource;
         private int _addedColumnCount;
@@ -148,6 +149,11 @@ namespace MUXControlsTestApp
                 _scrollingItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
             }
 
+            for (int i = 0; i < Facts.CellControlsItemCount; i++)
+            {
+                _cellControlsItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
+            }
+
             for (int i = 0; i < Facts.GroupedItemCount; i++)
             {
                 _groupedItems.Add(new TableViewTestPerson(i, Facts.GroupedName(i), Facts.GroupedAge(i), Facts.CityOf(i)));
@@ -167,6 +173,7 @@ namespace MUXControlsTestApp
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
+            CellControlsTableView.ItemsSource = _cellControlsItems;
             GroupedTableView.ItemsSource = _groupedSource;
 
             // Reports the column each edit opens on. Appends rather than overwrites so a test can tell a
@@ -972,6 +979,15 @@ namespace MUXControlsTestApp
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
         private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
+        private void OnGoToCellControlsClick(object sender, RoutedEventArgs e) => ShowTableHost(CellControlsTableHost);
+
+        private void OnToggleCellControlsHeadersClick(object sender, RoutedEventArgs e)
+        {
+            CellControlsTableView.HeadersVisibility = CellControlsTableView.HeadersVisibility == TableViewHeadersVisibility.None
+                ? TableViewHeadersVisibility.Column
+                : TableViewHeadersVisibility.None;
+        }
+
         private void ShowTableHost(FrameworkElement host)
         {
             BasicTableHost.Visibility = Visibility.Collapsed;
@@ -981,6 +997,7 @@ namespace MUXControlsTestApp
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
             ContextMenuTableHost.Visibility = Visibility.Collapsed;
+            CellControlsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 

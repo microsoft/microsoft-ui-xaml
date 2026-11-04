@@ -135,7 +135,8 @@ class PromptHandoffTests(unittest.TestCase):
     def test_untrusted_text_stays_data_and_does_not_change_trusted_rules(self):
         t.attach_context(str(self.context), str(self.prompt))
         rendered = self.prompt.read_text(encoding="utf-8")
-        self.assertTrue(rendered.startswith("Trusted prefix\n" + t.CONTEXT_START + "\n"))
+        policy, _ = t.load_priority_policy()
+        self.assertTrue(rendered.startswith("Trusted prefix\n" + policy + "\n\n" + t.CONTEXT_START + "\n"))
         self.assertTrue(rendered.endswith(t.CONTEXT_END + "\nTrusted rules stay last\n"))
         self.assertEqual(rendered.count(t.CONTEXT_START), 1)
         self.assertEqual(rendered.count(t.CONTEXT_END), 1)
@@ -325,6 +326,33 @@ class WorkflowRuntimeTests(unittest.TestCase):
         for area in ("area-AppWindow", "area-XamlWindow"):
             self.assertNotIn("facade", mapping[area]["note"])
             self.assertIn("initial investigation", mapping[area]["note"])
+
+    def test_type_priority_policy_and_project_secret_stay_in_trusted_publisher(self):
+        policy = self.source.split("## Repository issue Type and WinUI project priority\n", 1)[1]
+        policy = policy.split("## UWP-specific", 1)[0]
+        for guidance in (
+            "Existing Type", "priority-policy.md", "single source of",
+            "assess_priority", "same table",
+            "number 1868", "Existing project", "not performed during preview",
+        ):
+            self.assertIn(guidance, policy)
+        _, rules = t.load_priority_policy()
+        choices = re.search(r"(?ms)^        impact:\n.*?          options: \[([^\]]+)\]", self.source)
+        self.assertEqual(list(rules), [choice.strip() for choice in choices[1].split(",")])
+        agent = re.search(r"(?ms)^  agent:\n.*?(?=^  \w|\Z)", self.lock).group()
+        detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
+        publisher = re.search(r"(?ms)^  publish_triage_summary:\n.*?(?=^  \w|\Z)", self.lock).group()
+        for job in (agent, detection):
+            self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", job)
+        self.assertNotIn("WINUI_TRIAGE_APP_PRIVATE_KEY", self.lock)
+        self.assertNotIn("create-github-app-token", self.lock)
+        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}", publisher)
+        self.assertIn("GITHUB_TOKEN: ${{ github.token }}", publisher)
+        self.assertIn("It never adds project items", policy)
+        self.assertIn("credential failures do not block normal triage", policy)
+        for name in ("impact", "workaround", "priority_reason"):
+            self.assertIn(f'"{name}"', self.lock)
+        self.assertNotIn("regression_release", self.lock)
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

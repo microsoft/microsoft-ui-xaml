@@ -84,7 +84,84 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(40, items.Count, "The items source must still be alive after the table was collected.");
         }
 
-        // NoInlining so the JIT cannot keep the control alive in a stack slot; on the test class because LoadContent is protected.
+        [TestMethod]
+        [TestProperty("Description", "Verifies releasing a TableView whose rows were recycled into the template pools does not fail-fast, for both an unloaded table and one in a closed secondary window.")]
+        public void VerifyReleasingTableViewWithRecycledRowsDoesNotCrash()
+        {
+            foreach (var inSecondaryWindow in new[] { false, true })
+            {
+                var tracked = new Dictionary<string, WeakReference>();
+                TableView tableView = null;
+                Window window = null;
+
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        EnsureTabularControlsResources();
+                        tableView = CreateTableView(MakeManyItems(40), headers: new[] { "Name", "Role" }, width: 400, height: 300);
+                        tracked["TableView"] = new WeakReference(tableView);
+                        if (inSecondaryWindow)
+                        {
+                            window = new Window() { Content = tableView };
+                            window.Activate();
+                        }
+                        else
+                        {
+                            LoadContent(tableView);
+                        }
+                    });
+                    SettleAfterLoad();
+
+                    // Swapping the source recycles the realized rows into the template's pool.
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsGreaterThan(GetRealizedRows(tableView).Count, 0, "Rows must be realized before the source swap.");
+                        tableView.ItemsSource = MakeManyItems(40);
+                        tableView.UpdateLayout();
+                    });
+                    SettleAfterLoad();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsTrue(RowTemplateIsPooled(tableView), "The row template must carry a RecyclePool so Detach has a pool edge to break.");
+
+                        tableView = null;
+                        if (inSecondaryWindow)
+                        {
+                            window.Close();
+                            window = null;
+                        }
+                        else
+                        {
+                            Content = null;
+                        }
+                    });
+
+                    AssertCollected(tracked);
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        window?.Close();
+                        MUXControlsTestApp.App.CurrentWindow.Activate();
+                    });
+                }
+
+                Log.Comment($"Released a TableView with pooled row templates (secondary window: {inSecondaryWindow}) without crashing.");
+            }
+        }
+
+        // NoInlining so the selector and template do not linger in a stack slot past the call.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool RowTemplateIsPooled(TableView tableView)
+        {
+            var repeater = (Microsoft.UI.Xaml.Controls.ItemsRepeater)tableView.FindVisualChildByName("PART_RowsRepeater");
+            var selector = (Microsoft.UI.Xaml.Controls.DataTemplateSelector)repeater.ItemTemplate;
+            var rowTemplate = selector.SelectTemplate(((IList<Person>)tableView.ItemsSource)[0]);
+            return rowTemplate != null && Microsoft.UI.Xaml.Controls.RecyclePool.GetPoolInstance(rowTemplate) != null;
+        }
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void CreateAndLoadTable(object itemsSource, Dictionary<string, WeakReference> tracked)
         {
@@ -121,6 +198,119 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             tracked["TableView"] = new WeakReference(tableView);
+        }
+    }
+
+    // Isolated, not ApiTestBase: after XAML shuts down on a second thread the shared Setup/Cleanup would hang.
+    [TestClass]
+    public class TableViewShutdownTests
+    {
+        // Holds the control past ShutdownAllPeers, like an app view model would.
+        private static TableView s_keepAlive;
+        private static DataTemplate s_rowTemplate;
+
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        [TestProperty("Description", "Verifies releasing a TableView whose row templates are pooled, after XAML shut down on its thread, does not fail-fast.")]
+        public void VerifyTableViewReleasedAfterXamlShutdownOnItsThreadDoesNotCrash()
+        {
+            Exception failure = null;
+            Exception clearPoolFailure = null;
+            bool templatesPooled = false;
+
+            var thread = new global::System.Threading.Thread(() =>
+            {
+                try
+                {
+                    var controller = Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnCurrentThread();
+                    var xaml = Microsoft.UI.Xaml.Hosting.WindowsXamlManager.InitializeForCurrentThread();
+
+                    templatesPooled = ShowTableViewAndRunUntilExit(controller.DispatcherQueue);
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+
+                    // Window stays open, so shutdown runs while s_keepAlive still holds the TableView.
+                    controller.ShutdownQueue();
+                    xaml.Dispose();
+
+                    // The state from the crash stack: clearing the template's pool, as main's Detach did, now throws.
+                    var rowTemplate = s_rowTemplate;
+                    s_rowTemplate = null;
+                    try
+                    {
+                        Microsoft.UI.Xaml.Controls.RecyclePool.SetPoolInstance(rowTemplate, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        clearPoolFailure = ex;
+                    }
+
+                    // Drop the test's references after shutdown. In-process this does not reach Detach's throwing
+                    // call (it passes without the fix too), so it only checks that releasing the control does not crash.
+                    var tableView = s_keepAlive;
+                    s_keepAlive = null;
+                    ((WinRT.IWinRTObject)tableView).NativeObject.Dispose();
+                    ((WinRT.IWinRTObject)rowTemplate).NativeObject.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                }
+            });
+            thread.SetApartmentState(global::System.Threading.ApartmentState.STA);
+            thread.Start();
+
+            Verify.IsTrue(thread.Join(TimeSpan.FromSeconds(60)), "The secondary UI thread should finish shutting down XAML.");
+            Verify.IsNull(failure, $"Secondary UI thread failed: {failure}");
+            Verify.IsTrue(templatesPooled, "The row template must carry a RecyclePool so Detach has a pool edge to break.");
+            Verify.IsNotNull(clearPoolFailure, "Precondition: after XAML shutdown, clearing the row template's pool must throw; that is the state Detach has to tolerate.");
+            Log.Comment($"Clearing the pool after shutdown threw {clearPoolFailure?.GetType().Name} 0x{clearPoolFailure?.HResult:X8}: {clearPoolFailure?.Message}");
+            Verify.AreEqual(unchecked((int)0x8000FFFF), clearPoolFailure?.HResult ?? 0, "Precondition: clearing the pool must fail with E_UNEXPECTED, the shutdown failure.");
+
+            Log.Comment("Releasing the TableView after XAML shutdown completed without crashing.");
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool ShowTableViewAndRunUntilExit(Microsoft.UI.Dispatching.DispatcherQueue dispatcher)
+        {
+            bool templatesPooled = false;
+            var items = MakeManyItems(30);
+            var tableView = CreateTableView(items, headers: new[] { "Name", "Role" });
+            var window = new Window() { Content = tableView };
+            s_keepAlive = tableView;
+
+            tableView.Loaded += (sender, args) =>
+            {
+                tableView.UpdateLayout();
+
+                // Swap the source so realized rows are recycled into the template's pool.
+                var replacement = MakeManyItems(30);
+                tableView.ItemsSource = replacement;
+                tableView.UpdateLayout();
+
+                dispatcher.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    try
+                    {
+                        var repeater = (Microsoft.UI.Xaml.Controls.ItemsRepeater)tableView.FindVisualChildByName("PART_RowsRepeater");
+                        var selector = (Microsoft.UI.Xaml.Controls.DataTemplateSelector)repeater.ItemTemplate;
+                        var rowTemplate = selector.SelectTemplate(replacement[0]);
+                        templatesPooled = rowTemplate != null && Microsoft.UI.Xaml.Controls.RecyclePool.GetPoolInstance(rowTemplate) != null;
+                        s_rowTemplate = rowTemplate;
+                        Log.Comment($"Realized rows: {GetRealizedRows(tableView).Count}; row template pooled: {templatesPooled}.");
+                    }
+                    finally
+                    {
+                        dispatcher.EnqueueEventLoopExit();
+                    }
+                });
+            };
+
+            window.Activate();
+            dispatcher.RunEventLoop();
+            return templatesPooled;
         }
     }
 

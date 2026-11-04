@@ -4,7 +4,6 @@
 #pragma once
 
 #include <TraceLoggingInterop.h>
-#include <atomic>
 #include <cstdint>
 #include <evntrace.h>
 
@@ -34,7 +33,8 @@ public:
     ~XamlProfilerLogging();
 };
 
-#ifdef XAMLPROFILER_ENABLED
+// The provider is available in all configurations for surface and peer tracing.
+// Call sites not yet migrated remain guarded by XAMLPROFILER_ENABLED.
 
 #include "XamlTelemetry.h"
 
@@ -42,28 +42,40 @@ class CDependencyObject;
 
 uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept;
 
+#ifdef XAMLPROFILER_ENABLED
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept;
 
 #endif // XAMLPROFILER_ENABLED
 
 class XamlProfilerTracing final : public TelemetryBase
 {
-    inline static std::atomic<bool> g_profilerEnabled{false};
-
     #pragma warning (suppress : 6387)
     IMPLEMENT_TELEMETRY_CLASS(XamlProfilerTracing, XamlProfilerLogging);
 
 public:
 
-    static void EnableAllocationProfiling(bool enabled) noexcept
-    {
-        g_profilerEnabled.store(enabled, std::memory_order_relaxed);
-    }
+    static void EnableAllocationProfiling(bool enabled) noexcept;
+    static bool IsAllocationProfilingEnabled() noexcept;
 
-    static bool IsAllocationProfilingEnabled() noexcept
-    {
-        return g_profilerEnabled.load(std::memory_order_relaxed);
-    }
+    DEFINE_TRACELOGGING_EVENT_PARAM2(PeerAssociated,
+        uint64_t, ElementId,
+        uint64_t, PeerHandle,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Reports successful native surface creation before WinRT wrapping. Width/Height exclude
+    // gutters; Format/AlphaMode are the actual creation arguments, not backing-texture attributes.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceInit,
+        uint64_t, SurfaceId,
+        uint64_t, NativeSurfaceId,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, Format,
+        uint32_t, AlphaMode,
+        bool,     IsVirtual,
+        bool,     IncludesGutters,
+        bool,     RequestAtlas,
+        bool,     IsAlphaMask,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,
         uint32_t, ResourceKind,
@@ -120,11 +132,6 @@ public:
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool, IsLive,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    DEFINE_TRACELOGGING_EVENT_PARAM2(PeerAssociated,
-        uint64_t, ElementId,
-        uint64_t, PeerHandle,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     DEFINE_TRACELOGGING_EVENT_PARAM5(ContentChanged,
@@ -217,19 +224,6 @@ public:
         bool,     IsVirtual,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
-        uint64_t, SurfaceId,
-        uint64_t, ResourceId,
-        uint32_t, Width,
-        uint32_t, Height,
-        uint32_t, MipLevels,
-        uint32_t, ArraySize,
-        uint32_t, Format,
-        uint32_t, SampleCount,
-        int32_t,  OffsetX,
-        int32_t,  OffsetY,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
     DEFINE_TRACELOGGING_EVENT_PARAM3(VisualSurfaceChanged,
         uint64_t, VisualId,
         uint64_t, SurfaceId,
@@ -255,6 +249,11 @@ inline XamlProfilerLogging::~XamlProfilerLogging()
 
 #ifdef XAMLPROFILER_ENABLED
 
+// Element-scoped events are TraceLogging events on the existing Microsoft-Windows-XAML provider
+// {531a35ab-63ce-4bcf-aa98-f88c7a89e455}, through the same XamlTelemetryLogging registration that
+// XamlTelemetry uses, rather than on Microsoft-Windows-XAML-Profiler. TraceLogging events are
+// self-describing, so WPA/TraceProcessor decode their names and typed identity fields without a
+// registered manifest.
 class XamlElementTracing final : public TelemetryBase
 {
     #pragma warning (suppress : 6387)
