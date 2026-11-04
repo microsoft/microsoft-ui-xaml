@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "SolidColorBrush.h"
 #include "ColorUtil.h"
 #include <DependencyObjectDCompRegistry.h>
@@ -87,7 +88,7 @@ WUComp::ICompositionBrush* CSolidColorBrush::GetWUCBrush(_In_ WUComp::IComposito
         if (m_wucBrush == nullptr)
         {
             IFCFAILFAST(compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
             }

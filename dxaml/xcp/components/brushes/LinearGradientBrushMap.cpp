@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "LinearGradientBrushMap.h"
 
 #include <microsoft.ui.composition.h>
@@ -17,7 +18,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> LinearGradientBrushMap::GetBrush(
     {
         wrl::ComPtr<WUComp::ICompositionLinearGradientBrush> linearGradientBrush;
         IFCFAILFAST(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
         }

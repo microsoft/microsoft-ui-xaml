@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <GraphicsUtility.h>
 #include <DCompTreeHost.h>
 #include <MUX-ETWEvents.h>
@@ -172,7 +173,7 @@ DCompSurface::InitializeSurface(
             m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
             &m_pVirtualCompositionSurface
             ));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VirtualCompositionSurface);
         }
@@ -189,7 +190,7 @@ DCompSurface::InitializeSurface(
             !m_requestAtlas,
             &m_pCompositionSurface
             ));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
         }
@@ -254,7 +255,7 @@ DCompSurface::InitializeSurface(
             m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
             &m_pVirtualCompositionSurface
             ));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VirtualCompositionSurface);
         }
@@ -289,7 +290,7 @@ DCompSurface::InitializeSurface(
             !m_requestAtlas,
             &m_pCompositionSurface
             ));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
         }
@@ -336,7 +337,7 @@ DCompSurface::DCompSurface(
     , m_isHDR(isHDR)
     , m_requestAtlas(requestAtlas)
 {
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::DCompSurfaceWrapper);
     }

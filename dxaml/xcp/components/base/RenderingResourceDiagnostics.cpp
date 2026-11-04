@@ -56,14 +56,9 @@ namespace RenderingResourceDiagnostics
         Counters g_counters[ResourceKindCount];
     }
 
-    bool IsEnabled() noexcept
-    {
-        return XamlProfilerTracing::IsProfilerEnabled();
-    }
-
     bool LogResourceCreated(ResourceKind kind) noexcept
     {
-        if (!IsEnabled())
+        if (!XamlProfilerTracing::IsProfilerEnabled())
         {
             return false;
         }
@@ -87,7 +82,7 @@ namespace RenderingResourceDiagnostics
         counters.destroyed.fetch_add(1, std::memory_order_relaxed);
         ASSERT(counters.live.load(std::memory_order_relaxed) != 0);
         counters.live.fetch_sub(1, std::memory_order_relaxed);
-        if (IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::GraphicsResourceDestroyed(index, ResourceNames[index], HasLifetime(index));
         }
@@ -103,7 +98,7 @@ namespace RenderingResourceDiagnostics
 
         snapshot.name = ResourceNames[index];
         snapshot.hasLifetime = HasLifetime(index);
-        snapshot.enabled = IsEnabled();
+        snapshot.enabled = XamlProfilerTracing::IsProfilerEnabled();
         if (snapshot.enabled)
         {
             const auto& counters = g_counters[index];

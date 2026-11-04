@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "HWCompNodeWinRT.h"
 #include <HWRedirectedCompTreeNodeWinRT.h>
 #include <HWWindowedPopupCompTreeNodeWinRT.h>
@@ -377,7 +378,7 @@ void HWCompTreeNodeWinRT::CreateWUCSpineVisual(_In_ DCompTreeHost* dcompTreeHost
 {
     wrl::ComPtr<ixp::IContainerVisual> containerVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
     }
@@ -1478,7 +1479,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         wrl::ComPtr<ixp::ICompositorWithVisualSurface> compositorVisualSurface;
         IFCFAILFAST(dcompTreeHost->GetCompositor()->QueryInterface(IID_PPV_ARGS(&compositorVisualSurface)));
         IFCFAILFAST(compositorVisualSurface->CreateVisualSurface(&dropShadowVS));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
         }
@@ -1495,7 +1496,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         wrl::ComPtr<ixp::ICompositionSurface> dropShadowSurface;
         IFCFAILFAST(dropShadowVS.As(&dropShadowSurface));
         IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateSurfaceBrushWithSurface(dropShadowSurface.Get(), &dropShadowSurfaceBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
         }
@@ -1687,7 +1688,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     // since the DropShadow will inherit from the rectangle's opacity.
     wrl::ComPtr<ixp::ICompositionColorBrush> rectFillColor;
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateColorBrushWithColor({ 255, 0, 0, 0 }, &rectFillColor));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
     }
@@ -1729,7 +1730,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     // Now to combine the Ambient and Directional visuals, we'll put them in a container visual.
     wrl::ComPtr<ixp::IContainerVisual> shadowVisualContainer;
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(&shadowVisualContainer));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
     }
@@ -1810,7 +1811,7 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeShapeVisual(_In_ DCompTreeHos
 {
     wrl::ComPtr<ixp::IShapeVisual> shapeVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor5()->CreateShapeVisual(&shapeVisual));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual);
     }
@@ -1830,7 +1831,7 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeLayerVisual(_In_ DCompTreeHos
 {
     wrl::ComPtr<ixp::ILayerVisual> layerVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor2()->CreateLayerVisual(&layerVisual));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual);
     }
@@ -2687,7 +2688,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         WUComp::ICompositor* compositor = dcompTreeHost->GetCompositor();
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -2722,7 +2723,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
 
         wrl::ComPtr<WUComp::ICompositionColorBrush> transparentBrush;
         IFCFAILFAST(compositor->CreateColorBrush(&transparentBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
         }
@@ -4177,7 +4178,7 @@ void HWCompTreeNodeWinRT::EnsureDropShadowVisual(_In_ DCompTreeHost* dcompTreeHo
         // Create a SpriteVisual to hold most properties and draw the drop shadow.
         wrl::ComPtr<ixp::ISpriteVisual> dropShadowSpriteVisual;
         IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateSpriteVisual(dropShadowSpriteVisual.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }

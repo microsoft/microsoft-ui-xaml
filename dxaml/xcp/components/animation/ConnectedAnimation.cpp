@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "ConnectedAnimation.h"
 #include "ConnectedAnimationRoot.h"
@@ -821,7 +822,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     Microsoft::WRL::ComPtr<WUComp::ICompositorWithVisualSurface> compositorVisualSurface;
     IFC_RETURN(pDCompTreeHostNoRef->GetCompositor()->QueryInterface(IID_PPV_ARGS(&compositorVisualSurface)));
     IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&visualSurface));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
     }
@@ -875,7 +876,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
         Microsoft::WRL::ComPtr<WUComp::ICompositionSurface> surface;
         IFC_RETURN(visualSurface.As(&surface));
         IFC_RETURN(pDCompTreeHostNoRef->GetCompositor()->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
         }
@@ -1041,7 +1042,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     // Use the factory to create a brush and set our two source parameters.
     Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> crossfadeEffectBrush;
     IFC_RETURN(effectFactory->CreateBrush(&crossfadeEffectBrush));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush);
     }
@@ -1076,7 +1077,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
     {
         Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> tempVisual;
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(&tempVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -1094,7 +1095,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         Microsoft::WRL::ComPtr<WUComp::ICompositorWithVisualSurface> compositorVisualSurface;
         IFC_RETURN(compositorNoRef->QueryInterface(IID_PPV_ARGS(&compositorVisualSurface)));
         IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&visualSurface));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
         }
@@ -1119,7 +1120,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         Microsoft::WRL::ComPtr<WUComp::ICompositionSurface> surface;
         IFC_RETURN(visualSurface.As(&surface));
         IFC_RETURN(compositorNoRef->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
         }

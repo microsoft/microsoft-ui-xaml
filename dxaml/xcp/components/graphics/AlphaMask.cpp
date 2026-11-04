@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <DCompTreeHost.h>
 #include <core.h> // Remove in the future when possible
 #include <corep.h> // Remove in the future when possible
@@ -131,7 +132,7 @@ _Check_return_ HRESULT AlphaMask::Impl::Ensure(_In_ CUIElement* pUIElement)
     {
         wrl::ComPtr<WUComp::ICompositor> spCompositor = GetDCompTreeHostNoRef(pUIElement)->GetCompositor();
         IFCFAILFAST(spCompositor->CreateSurfaceBrush(m_spCompositionSurfaceBrush.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
         }

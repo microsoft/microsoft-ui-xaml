@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "palgfx.h"
 #ifdef XAMLPROFILER_ENABLED
@@ -1086,7 +1087,7 @@ HWCompMediaNode::SetMedia(
         else
         {
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
             }
@@ -1153,7 +1154,7 @@ _Check_return_ HRESULT HWCompMediaNode::EnsureVisual(_In_opt_ DCompTreeHost* pDC
     {
         ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -1278,7 +1279,7 @@ HWCompSwapChainNode::SetSwapChain(
         else
         {
             IFC_RETURN(compositorNoRef->CreateColorBrush(&colorBrush));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
             }
@@ -1302,7 +1303,7 @@ HWCompSwapChainNode::SetSwapChain(
         else
         {
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
             }
@@ -1407,7 +1408,7 @@ _Check_return_ HRESULT HWCompSwapChainNode::EnsureVisual(_In_opt_ DCompTreeHost*
         {
             ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
             IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
             }

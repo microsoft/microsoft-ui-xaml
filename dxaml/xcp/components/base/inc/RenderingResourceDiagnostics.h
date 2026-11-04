@@ -53,8 +53,6 @@ namespace RenderingResourceDiagnostics
     // Independent atomic observations, not a transactionally consistent state cut.
     bool TryGetSnapshot(uint32_t index, Snapshot& snapshot) noexcept;
 
-    bool IsEnabled() noexcept;
-
     // Wrappers retain the result so only observed creations have a matching destruction.
     bool LogResourceCreated(ResourceKind kind) noexcept;
 

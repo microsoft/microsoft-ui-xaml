@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "DCompTreeHost.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "WucVisualTreeProfiler.h"
@@ -603,7 +604,7 @@ DCompTreeHost::EnsureResources() noexcept
                 );
             if (SUCCEEDED(createTextureHR))
             {
-                if (RenderingResourceDiagnostics::IsEnabled())
+                if (XamlProfilerTracing::IsProfilerEnabled())
                 {
                     RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
                 }
@@ -792,7 +793,7 @@ DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
 
                 wrl::ComPtr<ixp::IContainerVisual> containerRootVisual;
                 IFCFAILFAST(m_spCompositor->CreateContainerVisual(&containerRootVisual));
-                if (RenderingResourceDiagnostics::IsEnabled())
+                if (XamlProfilerTracing::IsProfilerEnabled())
                 {
                     RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
                 }
@@ -836,7 +837,7 @@ _Check_return_ HRESULT
 DCompTreeHost::SetTargetHelper()
 {
     IFCFAILFAST(GetCompositor()->CreateContainerVisual(m_hwndVisual.ReleaseAndGetAddressOf()));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
     }
@@ -861,14 +862,14 @@ DCompTreeHost::SetTargetHelper()
 
         wrl::ComPtr<WUComp::IContainerVisual> containerVisual;
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
         }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual1));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual1.Get()));
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
         }
@@ -934,7 +935,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         {
             wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
             IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
             }
@@ -944,7 +945,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
 
             ComPtr<WUComp::ISpriteVisual> spriteVisual;
             IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
             }
@@ -967,7 +968,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
         IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
         }
@@ -976,7 +977,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
 
         ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -1302,7 +1303,7 @@ _Check_return_ HRESULT DCompTreeHost::CreateContainerVisual(_Outptr_ WUComp::ICo
 {
     xref_ptr<WUComp::IContainerVisual> spContainerVisual;
     IFC_RETURN(GetCompositor()->CreateContainerVisual(spContainerVisual.ReleaseAndGetAddressOf()));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
     }
@@ -1690,7 +1691,7 @@ void DCompTreeHost::UpdateUIThreadCounters(
     wrl::ComPtr<WUComp::ICompositionBrush> brush;
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
     IFCFAILFAST(GetCompositor()->CreateSurfaceBrush(&surfaceBrush))
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
     }
@@ -1770,7 +1771,7 @@ void DCompTreeHost::ShowUIThreadCounters()
                 IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
                 IFCFAILFAST(contentIslandExperimental->put_Root(nullptr));
                 IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
-                if (RenderingResourceDiagnostics::IsEnabled())
+                if (XamlProfilerTracing::IsProfilerEnabled())
                 {
                     RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
                 }
@@ -1799,7 +1800,7 @@ void DCompTreeHost::ShowUIThreadCounters()
     {
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -1972,7 +1973,7 @@ DCompTreeHost::CreateFrameRateSurface(
                 D2D1::ColorF(D2D1::ColorF::White),
                 &m_pFrameRateScratchBrush
                 ));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
             }

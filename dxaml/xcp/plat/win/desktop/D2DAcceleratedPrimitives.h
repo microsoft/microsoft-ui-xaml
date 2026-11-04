@@ -6,6 +6,7 @@
 #include <d2d1_1.h>
 #include <DWrite_3.h>
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 _Check_return_ HRESULT UnwrapD2DGeometry(
     _In_ IPALAcceleratedGeometry *pGeometry,
@@ -85,7 +86,7 @@ public:
 protected:
     CD2DGeometry() : m_pGeometry(NULL)
     {
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DGeometryWrapper);
         }

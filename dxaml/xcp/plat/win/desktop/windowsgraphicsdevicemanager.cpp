@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "d3d11device.h"
 #include "D2DAccelerated.h"
@@ -311,7 +312,7 @@ WindowsGraphicsDeviceManager::DrawDummyText()
                     D2D1::ColorF(D2D1::ColorF::White),
                     &whiteBrush
                     ));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
     }

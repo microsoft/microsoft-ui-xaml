@@ -37,7 +37,7 @@ namespace RenderingResourceDiagnosticsTests
     {
         const auto before = Read(ResourceKind::SpriteVisual);
         XamlProfilerTracing::SetProfilerEnabled(false);
-        VERIFY_IS_FALSE(IsEnabled());
+        VERIFY_IS_FALSE(XamlProfilerTracing::IsProfilerEnabled());
         VERIFY_IS_FALSE(LogResourceCreated(ResourceKind::SpriteVisual));
         const auto disabled = Read(ResourceKind::SpriteVisual);
         VERIFY_IS_FALSE(disabled.enabled);
@@ -46,7 +46,7 @@ namespace RenderingResourceDiagnosticsTests
         VERIFY_ARE_EQUAL(uint64_t{0}, disabled.live);
 
         XamlProfilerTracing::SetProfilerEnabled(true);
-        VERIFY_IS_TRUE(IsEnabled());
+        VERIFY_IS_TRUE(XamlProfilerTracing::IsProfilerEnabled());
         VERIFY_ARE_EQUAL(before.created, Read(ResourceKind::SpriteVisual).created);
         VERIFY_IS_TRUE(LogResourceCreated(ResourceKind::SpriteVisual));
         VERIFY_ARE_EQUAL(before.created + 1, Read(ResourceKind::SpriteVisual).created);

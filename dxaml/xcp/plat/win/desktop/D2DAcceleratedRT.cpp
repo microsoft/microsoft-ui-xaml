@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"
@@ -32,7 +33,7 @@ private:
         )
     {
         SetInterface(m_pD2DBitmap, pBitmap);
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DBitmapWrapper);
         }
@@ -272,7 +273,7 @@ CD2DRenderTarget<T>::CreateSolidColorBrush(
         D2D1::BrushProperties(rOpacity),
         &pD2DBrush
         ));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
     }
@@ -437,7 +438,7 @@ CD2DRenderTarget<T>::CreateSharedBitmapBrush(
         D2D1::BrushProperties(rOpacity),
         &pD2DBrush
         ));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DBitmapBrush);
     }
@@ -498,7 +499,7 @@ CD2DRenderTarget<T>::CreateLinearGradientBrush(
         pGradientStopCollection,
         &pD2DBrush
         ));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DLinearGradientBrush);
     }
@@ -563,7 +564,7 @@ CD2DRenderTarget<T>::CreateRadialGradientBrush(
         pGradientStopCollection,
         &pD2DBrush
         ));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DRadialGradientBrush);
     }

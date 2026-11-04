@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <wincodec.h>
 #include <NamespaceAliases.h>
 #include <uielement.h>
@@ -141,7 +142,7 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     // visual for scaling quality and so it is oriented at 0,0 in the texture.
     ctl::ComPtr<WUComp::IContainerVisual> propertyContainerVisual;
     IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(compositor->CreateContainerVisual(propertyContainerVisual.ReleaseAndGetAddressOf()));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
     }

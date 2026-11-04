@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <DependencyLocator.h>
 #ifdef XAMLPROFILER_ENABLED
 #include <WucVisualTreeProfiler.h>
@@ -1328,7 +1329,7 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 
         wrl::ComPtr<ixp::IContainerVisual> containerVisual;
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
         }
@@ -2391,7 +2392,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContainerVisual> windowCV;
         wrl::ComPtr<ixp::IVisual> windowV;
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(windowCV.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
         }
@@ -2402,7 +2403,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContainerVisual> animationCV;
         wrl::ComPtr<ixp::IVisual> animationV;
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(animationCV.ReleaseAndGetAddressOf()));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
         }
@@ -2444,7 +2445,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             // either the island bounds or the "undo transform" was not computed correctly.
             wrl::ComPtr<ixp::ICompositionColorBrush> debugColor_cb;
             IFCFAILFAST(compositorNoRef->CreateColorBrush(&debugColor_cb));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
             }
@@ -2455,7 +2456,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 
             wrl::ComPtr<ixp::ISpriteVisual> debugVisual;
             IFCFAILFAST(compositorNoRef->CreateSpriteVisual(&debugVisual));
-            if (RenderingResourceDiagnostics::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
             }

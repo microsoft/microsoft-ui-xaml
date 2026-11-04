@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "WUCBrushManager.h"
 #include <DCompSurface.h>
 #include <HWTextureMgr.h>
@@ -212,7 +213,7 @@ wrl::ComPtr<WUComp::ICompositionMaskBrush> WUCBrushManager::GetMaskBrush(
     if (maskBrush == nullptr)
     {
         IFCFAILFAST(m_compositor2->CreateMaskBrush(&maskBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush);
         }
@@ -317,7 +318,7 @@ wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush
     if (nineGridBrush == nullptr)
     {
         IFCFAILFAST(m_compositor2->CreateNineGridBrush(&nineGridBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
         }
@@ -355,7 +356,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetSurfaceBrush(
     if (surfaceBrush == nullptr)
     {
         IFCFAILFAST(m_compositor->CreateSurfaceBrush(&surfaceBrush));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
         }
@@ -427,7 +428,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetColorBrush(_In_ CSoli
                 {
                     wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
                     IFCFAILFAST(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
-                    if (RenderingResourceDiagnostics::IsEnabled())
+                    if (XamlProfilerTracing::IsProfilerEnabled())
                     {
                         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
                     }

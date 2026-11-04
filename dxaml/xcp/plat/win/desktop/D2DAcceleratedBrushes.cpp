@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"
@@ -129,7 +130,7 @@ Cleanup:
 
 CD2DSolidColorBrush::CD2DSolidColorBrush()
 {
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrushWrapper);
     }
@@ -191,7 +192,7 @@ Cleanup:
 
 CD2DBitmapBrush::CD2DBitmapBrush()
 {
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DBitmapBrushWrapper);
     }
@@ -236,7 +237,7 @@ Cleanup:
 
 CD2DLinearGradientBrush::CD2DLinearGradientBrush()
 {
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DLinearGradientBrushWrapper);
     }
@@ -283,7 +284,7 @@ Cleanup:
 
 CD2DRadialGradientBrush::CD2DRadialGradientBrush()
 {
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DRadialGradientBrushWrapper);
     }

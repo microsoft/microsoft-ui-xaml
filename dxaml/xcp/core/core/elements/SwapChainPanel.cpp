@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "SwapChainPanelOwner.h"
 #include "RootScale.h"
@@ -595,7 +596,7 @@ wrl::ComPtr<ixp::ISpriteVisual> CSwapChainPanel::GetOrEnsureSwapChainVisual()
     if (m_swapChainVisual == nullptr)
     {
         IFCFAILFAST(GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&m_swapChainVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }

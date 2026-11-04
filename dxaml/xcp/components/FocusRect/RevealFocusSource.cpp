@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "RevealFocusSource.h"
 #include "corep.h"
 #include "WindowRenderTarget.h"
@@ -103,7 +104,7 @@ Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> RevealFocusSource::BuildRevealFocu
     else
     {
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -403,7 +404,7 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> RevealFocusSource::Creat
 
     wrl::ComPtr<WUComp::ICompositionEffectBrush> compEffectBrush;
     IFCFAILFAST(effectFactory->CreateBrush(&compEffectBrush));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush);
     }
@@ -435,7 +436,7 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> RevealFocusSource::Crea
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
 
     IFCFAILFAST(compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush));
-    if (RenderingResourceDiagnostics::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
     }
@@ -463,7 +464,7 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionBrush> RevealFocusSource::CreateEffec
     else
     {
         IFCFAILFAST(compositor2->CreateNineGridBrush(&nineGrid));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
         }

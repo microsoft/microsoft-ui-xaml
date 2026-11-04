@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "VisualContentRenderer.h"
 #include <LinearGradientBrush.h>
 #include <WUCBrushManager.h>
@@ -587,7 +588,7 @@ VisualContentRenderer::EnsureSpriteVisual(
     else
     {
         IFC_RETURN(pCompositor->CreateSpriteVisual(&spContentVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
         }
@@ -639,7 +640,7 @@ void VisualContentRenderer::EnsureShapeVisual(
     {
         // Create a ShapeVisual
         IFCFAILFAST(GetCompositor5()->CreateShapeVisual(&shapeVisual));
-        if (RenderingResourceDiagnostics::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual);
         }
