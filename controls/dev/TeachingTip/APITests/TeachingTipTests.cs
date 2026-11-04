@@ -3146,6 +3146,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForTipState(tip, isOpen: false);
         }
 
+        // Scenario (issue #8095 review, Copilot 4467656656): the expand animation is slowed to 2s. While the tip is opening,
+        //           its target is removed (the unload close ends the opening transition), then the target is put back and
+        //           the tip reopened with a 6s expand animation, before the first animation's completion arrives (~2s).
+        // Expected: the tip stays busy (not idle) until the second animation completes; the first animation's completion
+        //           is ignored.
+        // A failure means: the stale completion of the aborted expand animation marked the reopened tip idle early.
+        // Skipped (with a warning) when system animations are off.
+        [TestMethod]
+        public void StaleExpandCompletionDoesNotEndReopenedTipsAnimation()
+        {
+            if (AnimationsAreDisabled())
+            {
+                Log.Warning("Test is disabled when animations are turned off: the tip becomes idle as soon as it opens.");
+                return;
+            }
+
+            TeachingTip tip = null;
+            StackPanel host = null;
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new StackPanel();
+                target = new Button() { Content = "Target" };
+                host.Children.Add(target);
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                var root = new StackPanel();
+                root.Children.Add(host);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(2));
+            });
+            IdleSynchronizer.Wait();
+
+            var sinceFirstOpen = Stopwatch.StartNew();
+            RunOnUIThread.Execute(() => tip.IsOpen = true);
+            Verify.IsTrue(PollUIWithoutIdleWait(() =>
+            {
+                var popup = TeachingTipTestHooks.GetPopup(tip);
+                return popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
+            }), "Precondition: the tip is opening");
+
+            RunOnUIThread.Execute(() => host.Children.Remove(target));
+            Verify.IsTrue(PollUIWithoutIdleWait(() => !tip.IsOpen && TeachingTipTestHooks.GetIsIdle(tip)),
+                "Precondition: removing the target closed the opening tip and ended its transition");
+
+            RunOnUIThread.Execute(() =>
+            {
+                host.Children.Add(target);
+                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(6));
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(PollUIWithoutIdleWait(() =>
+            {
+                var popup = TeachingTipTestHooks.GetPopup(tip);
+                return popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
+            }), "Precondition: the reopened tip is opening");
+            var reopenedAt = sinceFirstOpen.Elapsed;
+            Log.Comment($"Reopened {reopenedAt.TotalMilliseconds:F0} ms after the first open");
+            Verify.IsTrue(reopenedAt < TimeSpan.FromSeconds(1.8), "Precondition: reopened before the first animation's completion");
+
+            // Past the first (2s) animation's completion, well before the second (6s) one ends.
+            var remaining = TimeSpan.FromSeconds(3.5) - sinceFirstOpen.Elapsed;
+            if (remaining > TimeSpan.Zero)
+            {
+                Thread.Sleep(remaining);
+            }
+            bool idle = true, popupOpen = false;
+            RunOnUIThread.Execute(() =>
+            {
+                idle = TeachingTipTestHooks.GetIsIdle(tip);
+                popupOpen = TeachingTipTestHooks.GetPopup(tip).IsOpen;
+            });
+            Log.Comment($"At {sinceFirstOpen.Elapsed.TotalMilliseconds:F0} ms: idle={idle}, popup.IsOpen={popupOpen}");
+            Verify.IsTrue(popupOpen, "Precondition: the reopened tip is still open");
+            Verify.IsFalse(idle, $"The reopened tip should still be opening (its 6s animation is running), not idle (idle={idle})");
+
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The reopened tip should finish opening");
+            RunOnUIThread.Execute(() => tip.IsOpen = false);
+            WaitForTipState(tip, isOpen: false);
+        }
+
         // Scenario (issue #8095 review, Copilot): an OPEN tip targets a static Button; the Button is removed, and the app's
         //           Unloaded handler on it (registered after the tip's) retargets the tip to an already loaded element that
         //           an ItemsRepeater generated for a string item, all before the next Rendering tick.
@@ -4723,6 +4805,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Waits for a UI-thread condition that has no completion event; the timeout is only an outer safety bound.
+        // Polls a UI-thread condition without IdleSynchronizer (which can wait for running animations to finish).
+        private static bool PollUIWithoutIdleWait(Func<bool> condition)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            bool reached = false;
+            while (!reached && stopwatch.ElapsedMilliseconds < 10000)
+            {
+                RunOnUIThread.Execute(() => reached = condition());
+                if (!reached)
+                {
+                    Thread.Sleep(20);
+                }
+            }
+            return reached;
+        }
+
         private static bool WaitForUIState(Func<bool> condition)
         {
             var stopwatch = Stopwatch.StartNew();
