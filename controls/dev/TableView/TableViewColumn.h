@@ -9,10 +9,38 @@
 #include "TableViewColumn.g.h"
 #include "TableViewColumn.properties.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <limits>
+
 // Default pixel width and fallback for unresolved Auto values (and Star before the owning
 // TableView has a viewport to resolve against); keep in sync with ActualWidth's
 // MUX_DEFAULT_VALUE("120.0") in TableView.idl.
 static constexpr winrt::GridLength c_widthDefault{ 120.0, winrt::GridUnitType::Pixel };
+
+static inline double NonNegativeFiniteOrZero(double value)
+{
+    return std::isfinite(value) && value >= 0.0 ? value : 0.0;
+}
+
+static inline double NonNegativeFiniteOrDefault(double value)
+{
+    return std::isfinite(value) && value >= 0.0 ? value : c_widthDefault.Value;
+}
+
+static inline double MaxWidthForColumn(winrt::TableViewColumn const& column, double minWidth)
+{
+    const double maxWidth = column.MaxWidth();
+    if (std::isnan(maxWidth) || maxWidth == std::numeric_limits<double>::infinity())
+    {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    // A negative MaxWidth is a malformed finite bound. Treat it as zero so it still clamps to
+    // MinWidth; only NaN and positive infinity mean there is no upper bound.
+    return std::max(minWidth, std::max(0.0, maxWidth));
+}
 
 class TableViewColumn :
     public ReferenceTracker<TableViewColumn, winrt::implementation::TableViewColumnT, winrt::composable>,
@@ -30,6 +58,9 @@ public:
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
+
+    // Internal — stable, non-address token used by column-header automation peers.
+    uint32_t AutomationIdentity();
 
     // Overridable
     virtual winrt::hstring GetSortMemberPathCore();
@@ -51,7 +82,7 @@ public:
     void CustomSortComparer(winrt::ITableViewSortComparer const& value);
 
     // Derived columns call this when one of their own properties invalidates realized cell content.
-    void NotifyCellContentChanged();
+    void NotifyCellContentChanged(bool resetAutoWidth = true);
 
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
@@ -72,23 +103,39 @@ public:
     void SetSortStateInternal(winrt::SortDirection direction);
 
     // Internal — Auto size-to-content. The owning TableView pulls measured widths from the header
-    // and realized row panels; ResolveColumnWidths derives the current measured max each pass and
-    // stores the resulting nonnegative desired width here (shrink-capable — not a grow-only
-    // accumulator). Reset on data-set boundaries (ItemsSource / Columns replaced / CellTemplate /
-    // Header changes).
-    void SetDesiredWidthInternal(double desiredWidth);
+    // and realized row panels; ResolveColumnWidths keeps the grow-only max of the row widths and of
+    // the header width separately, so hiding the headers drops only the header term. Both reset on
+    // data-set boundaries (ItemsSource / Columns replaced / CellTemplate / Header changes).
+    void SetDesiredWidthInternal(double rowsDesiredWidth, double headerDesiredWidth);
     void ResetDesiredWidthInternal();
-    double DesiredWidthInternal() const noexcept { return m_desiredWidth; }
+    double RowsDesiredWidthInternal() const noexcept { return m_rowsDesiredWidth; }
+    double HeaderDesiredWidthInternal() const noexcept { return m_headerDesiredWidth; }
+    double DesiredWidthInternal() const noexcept { return std::max(m_rowsDesiredWidth, m_headerDesiredWidth); }
+
+    // Internal - resize: the width the app authored. A user resize rewrites Width as pixels, and
+    // the layout needs the original mode to know whether the table is meant to fit its viewport.
+    winrt::GridLength AuthoredWidthInternal() const noexcept { return m_authoredWidth; }
+    // Width written inside this scope is the control resizing, not the app re-authoring the column.
+    [[nodiscard]] auto BeginUserResizeScope()
+    {
+        m_inUserResize = true;
+        return gsl::finally([this]() { m_inUserResize = false; });
+    }
 
 private:
     // Write the resolved, clamped width into the read-only ActualWidth DP.
     void UpdateActualWidth();
 
-    // Monotonic max of pulled realized-cell measured widths for an Auto column (0 until first pull).
-    double m_desiredWidth{ 0.0 };
+    // Monotonic maxima of the pulled realized-row cell and header measured widths for an Auto column
+    // (0 until first pull; the header term is 0 while headers are hidden).
+    double m_rowsDesiredWidth{ 0.0 };
+    double m_headerDesiredWidth{ 0.0 };
+    winrt::GridLength m_authoredWidth{ c_widthDefault };
+    bool m_inUserResize{ false };
 
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
+    uint32_t m_automationIdentity{ 0 };
 };

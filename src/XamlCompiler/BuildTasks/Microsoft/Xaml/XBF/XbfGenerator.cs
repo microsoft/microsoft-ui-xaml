@@ -132,7 +132,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
                     string folder = Path.GetDirectoryName(xbfFileName);
                     Directory.CreateDirectory(folder);
 
-                    streams.Add(new StreamXbfOutput(xbfFileName));
+                    streams.Add(new StreamXbfOutput(xbfFileName, xamlFile.SourceXamlName));
                 }
                 catch (Exception ex)  // permission denied, UNC path problem, etc...
                 {

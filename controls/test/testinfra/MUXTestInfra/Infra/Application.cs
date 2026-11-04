@@ -437,18 +437,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 // Calling CoCreateInstance with CLSCTX_LOCAL_SERVER gets us an instance that will not launch an elevated app.
                 // This is essentially what UAPApp.Launch does, except for this step - using UAPApp.Launch here would result in
                 // the app being elevated.
-                if (NativeMethods.CoCreateInstance(
-                    NativeMethods.CLSID_ApplicationActivationManager,
-                    IntPtr.Zero,
-                    NativeMethods.CLSCTX.CLSCTX_LOCAL_SERVER,
-                    NativeMethods.CLSID_IApplicationActivationManager,
-                    out object applicationActivationManagerAsObject) != 0)
-                {
-                    throw new Exception("Failed to create ApplicationActivationManager!");
-                }
-
-                var applicationActivationManager = (NativeMethods.IApplicationActivationManager)applicationActivationManagerAsObject;
-                applicationActivationManager.ActivateApplication(_appName, null, NativeMethods.ActivateOptions.None, out uint processId);
+                ActivateApplication(_appName, null, NativeMethods.ActivateOptions.None);
                 
                 waiter.Wait();
                 window = waiter.Source;
@@ -456,6 +445,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             NativeMethods.SetForegroundWindow(window.NativeWindowHandle);
             return window;
+        }
+
+        public static uint ActivateApplication(string appUserModelId, string arguments)
+        {
+            return ActivateApplication(
+                appUserModelId,
+                arguments,
+                NativeMethods.ActivateOptions.NoErrorUI | NativeMethods.ActivateOptions.NoSplashScreen);
+        }
+
+        private static uint ActivateApplication(
+            string appUserModelId,
+            string arguments,
+            NativeMethods.ActivateOptions options)
+        {
+            if (NativeMethods.CoCreateInstance(
+                NativeMethods.CLSID_ApplicationActivationManager,
+                IntPtr.Zero,
+                NativeMethods.CLSCTX.CLSCTX_LOCAL_SERVER,
+                NativeMethods.CLSID_IApplicationActivationManager,
+                out object applicationActivationManagerAsObject) != 0)
+            {
+                throw new Exception("Failed to create ApplicationActivationManager!");
+            }
+
+            var applicationActivationManager =
+                (NativeMethods.IApplicationActivationManager)applicationActivationManagerAsObject;
+            int result = applicationActivationManager.ActivateApplication(
+                appUserModelId,
+                arguments,
+                options,
+                out uint processId);
+            Marshal.ThrowExceptionForHR(result);
+            return processId;
         }
 
         public void Close()
@@ -772,7 +795,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             {
                 // Activates the specified immersive application for the "Launch" contract, passing the provided arguments
                 // string into the application.  Callers can obtain the process Id of the application instance fulfilling this contract.
-                IntPtr ActivateApplication([In] String appUserModelId, [In] String arguments, [In] ActivateOptions options, [Out] out UInt32 processId);
+                [PreserveSig]
+                int ActivateApplication([In] String appUserModelId, [In] String arguments, [In] ActivateOptions options, [Out] out UInt32 processId);
                 IntPtr ActivateForFile([In] String appUserModelId, [In] IntPtr /*IShellItemArray* */ itemArray, [In] String verb, [Out] out UInt32 processId);
                 IntPtr ActivateForProtocol([In] String appUserModelId, [In] IntPtr /* IShellItemArray* */itemArray, [Out] out UInt32 processId);
             }

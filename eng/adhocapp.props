@@ -25,7 +25,9 @@
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wapproj'">
-    <AssetTargetFallback>net6.0-windows$(WindowsTargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
+    <!-- Packaging projects wrap both net6.0 projection-floor projects and net8.0 sample/test apps,
+         so both fallbacks are needed. -->
+    <AssetTargetFallback>net6.0-windows$(WindowsTargetPlatformVersion);net8.0-windows$(WindowsTargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
   </PropertyGroup>
 
   <!-- These ProjectReferences have metadata on them with the purpose of affect the actual build as little as possible -->

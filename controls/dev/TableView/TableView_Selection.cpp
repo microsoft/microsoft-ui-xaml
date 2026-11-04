@@ -31,6 +31,33 @@ namespace
         bool& m_flag;
         bool m_previous;
     };
+
+    bool IsResolvableSelectionAnnouncementRow(
+        winrt::TableView const& owner,
+        winrt::TableViewRow const& row,
+        winrt::AutomationPeer const& peer,
+        winrt::IInspectable const& expectedItem)
+    {
+        if (!owner || !row || !peer || !expectedItem ||
+            winrt::get_self<TableViewRow>(row)->GetOwningTableView() != owner)
+        {
+            return false;
+        }
+
+        auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterInternal();
+        if (!repeater)
+        {
+            return false;
+        }
+
+        const int32_t index = repeater.GetElementIndex(row);
+        auto const element = index >= 0 ? repeater.TryGetElement(index).try_as<winrt::TableViewRow>() : nullptr;
+        // Identity, not just index: a recycled container can still report an index while it has
+        // already been re-bound to a different item, so either announcement - selected or removed
+        // from selection - would name the wrong record.
+        auto const actualItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(row.DataContext());
+        return element == row && actualItem && TableView::SameInspectableIdentity(actualItem, expectedItem);
+    }
 }
 
 bool TableView::CanSelectRows()
@@ -49,6 +76,25 @@ bool TableView::HasRowsSource() const
 }
 
 // ----- SelectionModel plumbing -----
+
+template <typename Call>
+void TableView::CallSelectionModel(Call&& call)
+{
+    m_selectionModelAppFault = {};
+    ++m_selectionModelCallDepth;
+    auto const depth = wil::scope_exit([this]() noexcept { --m_selectionModelCallDepth; });
+    try
+    {
+        std::forward<Call>(call)();
+        // A hop whose exception SelectionModel swallowed must not keep the app's error object alive.
+        m_selectionModelAppFault = {};
+    }
+    catch (...)
+    {
+        TableViewTip::RestoreAppFault(std::exchange(m_selectionModelAppFault, {}));
+        throw;
+    }
+}
 
 void TableView::EnsureSelectionModel()
 {
@@ -91,7 +137,7 @@ void TableView::UpdateSelectionModelSource()
     // Source has no identity short-circuit: assigning the same source again clears the selection.
     if (m_selectionModel.Source() != rowsSource)
     {
-        m_selectionModel.Source(rowsSource);
+        CallSelectionModel([&]() { m_selectionModel.Source(rowsSource); });
     }
 }
 
@@ -140,6 +186,25 @@ bool TableView::ShouldDeferSelectionRequest()
 void TableView::ClearPendingSelection()
 {
     m_pendingSelectedItem.set(nullptr);
+    m_pendingSelectedIdentity.clear();
+}
+
+winrt::hstring TableView::HierarchyIdentityForIndex(int32_t index) const
+{
+    if (index < 0 || !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    {
+        return {};
+    }
+
+    try
+    {
+        return m_tableViewSourceRowMetadata->GetIdentity(index);
+    }
+    catch (...)
+    {
+        // Mid-reshape the row may not be addressable; the object anchor still applies.
+        return {};
+    }
 }
 
 bool TableView::DrainPendingSelection()
@@ -151,8 +216,25 @@ bool TableView::DrainPendingSelection()
 
     if (auto const pendingItem = m_pendingSelectedItem.get())
     {
+        auto const pendingIdentity = m_pendingSelectedIdentity;
         ClearPendingSelection();
-        ApplySelection(IndexOfItem(pendingItem));
+
+        // Tree: re-anchor on node key first (app may have replaced the object); object identity is
+        // the fallback.
+        int32_t index = -1;
+        if (!pendingIdentity.empty() && m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->IsHierarchicalSource())
+        {
+            int32_t candidate = -1;
+            TableViewRowInfo info{};
+            if (m_tableViewSourceRowMetadata->TryGetIndexForIdentity(pendingIdentity, candidate) &&
+                TryGetTableViewSourceRowInfo(candidate, info) && info.Kind == TableViewRowKind::Data)
+            {
+                index = candidate;
+            }
+        }
+
+        ApplySelection(index >= 0 ? index : IndexOfItem(pendingItem));
         return true;
     }
 
@@ -198,48 +280,88 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
 // ----- The single writer -----
 
-void TableView::ApplySelection(int32_t index)
+void TableView::ApplySelection(int32_t index, bool measureTip)
 {
+    bool validRequest = index >= -1;
     if (!CanSelectRows())
     {
         index = -1;
+        validRequest = false;
     }
 
     if (index >= 0 && index >= GetItemsSourceCount())
     {
         index = -1;
+        validRequest = false;
     }
 
-    if (index < 0 && !m_selectionModel)
+    const bool accepted = m_telemetrySession.active && measureTip && !m_isRestoringSelection &&
+        validRequest && m_lastPublishedIndex != index;
+    const auto version = m_selectionVersion;
+    const auto sourceGeneration = m_rowMetadataGeneration;
+    ActionTip tip{ *this, TableViewTip::Operation::Selection, TableViewTip::Stage::Selection, accepted };
+    try
     {
-        // Nothing selected and no model yet - nothing to clear, but publish so the projections
-        // start out agreeing with the model.
+        if (index < 0 && !m_selectionModel)
+        {
+            // Nothing selected and no model yet - nothing to clear, but publish so the projections
+            // start out agreeing with the model.
+            m_stickySelectedItem.set(nullptr);
+            m_stickySelectedIdentity.clear();
+            PushSelectionProperties();
+            return;
+        }
+
+        EnsureSelectionModel();
+
+        if (index < 0)
+        {
+            CallSelectionModel([&]() { m_selectionModel.ClearSelection(); });
+        }
+        else
+        {
+            CallSelectionModel([&]() { m_selectionModel.Select(index); });
+        }
+
+        // Capture the intentional selection by object identity. This is the single selection writer, so
+        // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
+        // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
+        // runs under the restore flag, keeping it for the identity restore.
+        m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
+        m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
+
+        // The model raises SelectionChanged only when the selection actually moved; publish here too so
+        // a rejected write still leaves the DPs agreeing with the model.
         PushSelectionProperties();
-        return;
+        if (accepted)
+        {
+            if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
+                m_lastPublishedIndex == index)
+            {
+                tip.Complete();
+            }
+            else
+            {
+                tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+            }
+        }
     }
-
-    EnsureSelectionModel();
-
-    if (index < 0)
+    catch (...)
     {
-        m_selectionModel.ClearSelection();
+        tip.Escaping(TableViewTip::CurrentFault());
+        throw;
     }
-    else
-    {
-        m_selectionModel.Select(index);
-    }
-
-    // The model raises SelectionChanged only when the selection actually moved; publish here too so
-    // a rejected write still leaves the DPs agreeing with the model.
-    PushSelectionProperties();
 }
 
 void TableView::OnSelectionModelSelectionChanged(
     const winrt::SelectionModel& /*sender*/,
     const winrt::SelectionModelSelectionChangedEventArgs& /*args*/)
+try
 {
     const int32_t newIndex = SelectedIndexInternal();
     auto const newItem = SelectedItemInternal();
+    auto const deselectedItem = UnwrapEditingDataItem(SelectedItem());
+    auto const selectedItem = UnwrapEditingDataItem(newItem);
 
     auto const deselectedRow = FindRealizedRowForIndex(m_lastPublishedIndex);
     auto const selectedRow = FindRealizedRowForIndex(newIndex);
@@ -276,14 +398,29 @@ void TableView::OnSelectionModelSelectionChanged(
         return;
     }
 
+    // Outside a restore, a model clear means the row left the view (a removal, or a group or subtree
+    // collapse). Drop the anchor so a later Reset doesn't resurrect it.
+    if (newIndex < 0)
+    {
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
+    }
+
     PushSelectionProperties();
     if (m_selectionVersion != version)
     {
         return;
     }
 
-    RaiseSelectionAutomationEvents(deselectedRow, selectedRow);
+    RaiseSelectionAutomationEvents(deselectedRow, deselectedItem, selectedRow, selectedItem);
     RaiseSelectionChanged(newItem);
+}
+catch (...)
+{
+    // SelectionModel called this through the ABI, which drops the exception's tag; CallSelectionModel restores it.
+    // Outside such a call nothing would consume it.
+    if (m_selectionModelCallDepth) { m_selectionModelAppFault = TableViewTip::CurrentAppFaultHop(); }
+    throw;
 }
 
 void TableView::PushSelectionProperties()
@@ -295,14 +432,22 @@ void TableView::PushSelectionProperties()
     const int32_t index = SelectedIndexInternal();
     auto const item = SelectedItemForIndex(index);
 
-    if (SelectedIndex() != index)
+    // Only app property observers and bindings run from these writes; a throw from them is the app's.
+    try
     {
-        SelectedIndex(index);
-    }
+        if (SelectedIndex() != index)
+        {
+            SelectedIndex(index);
+        }
 
-    if (!SameInspectableIdentity(SelectedItem(), item))
+        if (!SameInspectableIdentity(SelectedItem(), item))
+        {
+            SelectedItem(item);
+        }
+    }
+    catch (...)
     {
-        SelectedItem(item);
+        TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback);
     }
 }
 
@@ -358,12 +503,15 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
 
-    m_selectionChangedEventSource(*this, args);
+    try { m_selectionChangedEventSource(*this, args); }
+    catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 }
 
 void TableView::RaiseSelectionAutomationEvents(
     winrt::TableViewRow const& deselectedRow,
-    winrt::TableViewRow const& selectedRow)
+    winrt::IInspectable const& deselectedItem,
+    winrt::TableViewRow const& selectedRow,
+    winrt::IInspectable const& selectedItem)
 {
     // Container-level first: it is the only signal available when the selected row is unrealized
     // and there is no row peer to raise a per-element event on.
@@ -381,7 +529,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(selectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            if (IsResolvableSelectionAnnouncementRow(*this, selectedRow, peer, selectedItem))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            }
         }
     }
 
@@ -390,7 +541,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            if (IsResolvableSelectionAnnouncementRow(*this, deselectedRow, peer, deselectedItem))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            }
         }
     }
 
@@ -402,10 +556,13 @@ void TableView::RaiseSelectionAutomationEvents(
         {
             if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(selectedRow))
             {
-                peer.RaisePropertyChangedEvent(
-                    winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
-                    box_value(false),
-                    box_value(true));
+                if (IsResolvableSelectionAnnouncementRow(*this, selectedRow, peer, selectedItem))
+                {
+                    peer.RaisePropertyChangedEvent(
+                        winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
+                        box_value(false),
+                        box_value(true));
+                }
             }
         }
 
@@ -413,10 +570,13 @@ void TableView::RaiseSelectionAutomationEvents(
         {
             if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
             {
-                peer.RaisePropertyChangedEvent(
-                    winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
-                    box_value(true),
-                    box_value(false));
+                if (IsResolvableSelectionAnnouncementRow(*this, deselectedRow, peer, deselectedItem))
+                {
+                    peer.RaisePropertyChangedEvent(
+                        winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
+                        box_value(true),
+                        box_value(false));
+                }
             }
         }
     }
@@ -440,23 +600,110 @@ void TableView::OnSelectionModePropertyChanged(const winrt::DependencyPropertyCh
 
 void TableView::UpdateSelectionCollectionChangedSubscription()
 {
-    // auto_revoke drops the prior source's subscription.
-    m_selectionCollectionChangedRevoker = {};
-
+    winrt::ItemsSourceView view{ nullptr };
     if (auto const repeater = m_rowsRepeater.get())
     {
-        if (auto const view = repeater.ItemsSourceView())
-        {
-            m_selectionCollectionChangedRevoker = view.CollectionChanged(
-                winrt::auto_revoke, { this, &TableView::OnSelectionItemsSourceCollectionChanged });
-        }
+        view = repeater.ItemsSourceView();
     }
+
+    if (m_selectionCollectionChangedRevoker && SameInspectableIdentity(view, m_selectionCollectionChangedView))
+    {
+        return;
+    }
+
+    // auto_revoke drops the prior source's subscription.
+    m_selectionCollectionChangedRevoker = {};
+    m_selectionCollectionChangedView = nullptr;
+
+    if (view)
+    {
+        m_selectionCollectionChangedRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnSelectionItemsSourceCollectionChanged });
+        m_selectionCollectionChangedView = view;
+    }
+}
+
+void TableView::UpdateSelectionResetDetectorSubscription()
+{
+    winrt::ItemsSourceView view{ nullptr };
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        view = repeater.ItemsSourceView();
+    }
+
+    if (m_selectionResetDetectorRevoker && SameInspectableIdentity(view, m_selectionResetDetectorView))
+    {
+        return;
+    }
+
+    // auto_revoke drops the prior source's subscription.
+    m_selectionResetDetectorRevoker = {};
+    m_selectionResetDetectorView = nullptr;
+
+    if (view)
+    {
+        m_selectionResetDetectorRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnSelectionSourceReset });
+        m_selectionResetDetectorView = view;
+    }
+}
+
+void TableView::OnSelectionSourceReset(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Only a Reset drops the model's indices wholesale (an Add/Remove shifts the selected index and
+    // SelectionModel reconciles it in place, so selection survives without help). This must run
+    // FIRST, before the model reconciles the same Reset - else the app sees a spurious
+    // SelectionChanged clearing the selection, immediately followed by another restoring it.
+    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    // A reload restore already owns the stash/suppress protocol; don't stack a second one.
+    if (m_isRestoringSelection || m_resetSelectionRestorePending)
+    {
+        return;
+    }
+
+    auto const sticky = m_stickySelectedItem.get();
+    if (!sticky)
+    {
+        return;
+    }
+
+    // Stash by identity and arm the restore. Setting m_isRestoringSelection now suppresses the
+    // transient clear the model is about to publish, so the restore reads as one atomic event (or
+    // as silence when the same row is re-selected) rather than a clear-then-reselect pair.
+    m_pendingSelectedItem.set(sticky);
+    m_pendingSelectedIdentity = m_stickySelectedIdentity;
+    m_isRestoringSelection = true;
+    m_resetSelectionRestorePending = true;
 }
 
 void TableView::OnSelectionItemsSourceCollectionChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& /*args*/)
 {
+    if (m_resetSelectionRestorePending)
+    {
+        // The model has now reconciled the Reset (this handler is subscribed after it), so the view
+        // is settled and the identity lookup is valid. Restore the stashed item: DrainPendingSelection
+        // re-selects it when it survived the reshape, or clears when the filter removed it. Mirrors
+        // ResolveSelectionAfterSourceChange - drain under the restoring flag so the internal write is
+        // suppressed, then publish exactly once.
+        m_resetSelectionRestorePending = false;
+        DrainPendingSelection();
+        m_isRestoringSelection = false;
+
+        m_lastPublishedIndex = SelectedIndexInternal();
+        RestampAllRealizedRowSelection(m_lastPublishedIndex);
+        PushSelectionProperties();
+        RaiseSelectionChanged(SelectedItemInternal());
+        return;
+    }
+
     // SelectionModel has already reconciled the index - and deliberately does not raise when an
     // insert merely shifts it. All that is left is the chrome: ItemsRepeater re-indexes its
     // realized containers around now, so re-derive every one of them rather than trusting the
@@ -502,6 +749,18 @@ void TableView::ResolveSelectionAfterSourceChange()
     // for the same reason.
     EnsureSelectionModel();
 
+    // A source/shape swap (grouped<->flat, an ItemsSource replacement) reassigns the model's Source,
+    // which clears it. If nothing was explicitly stashed, seed the restore from the sticky anchor so
+    // a selection that survives the swap by identity is preserved here too - the same guarantee the
+    // in-place Reset path gives. A stale item (new dataset) simply resolves to -1 and clears.
+    if (!m_pendingSelectedItem.get())
+    {
+        if (auto const sticky = m_stickySelectedItem.get())
+        {
+            m_pendingSelectedItem.set(sticky);
+        }
+    }
+
     const bool hasStashedSelection = m_pendingSelectedItem.get() != nullptr;
 
     {
@@ -510,8 +769,13 @@ void TableView::ResolveSelectionAfterSourceChange()
         // actually change, so the whole restore is published once, at the end.
         ScopedFlag const restoring{ m_isRestoringSelection, hasStashedSelection };
 
-        // Model first: it must be subscribed to the shared view ahead of this control, so that by
-        // the time OnSelectionItemsSourceCollectionChanged restamps rows the index is reconciled.
+        // Detector first, then model, then the restamp handler: the detector must observe a later
+        // in-place Reset ahead of the model so it can capture the selection before the model drops
+        // it, and the restamp handler must observe after the model so it restores against a
+        // reconciled view.
+        UpdateSelectionResetDetectorSubscription();
+        // Model second: it must be subscribed to the shared view ahead of the restamp handler, so
+        // that by the time OnSelectionItemsSourceCollectionChanged runs the index is reconciled.
         UpdateSelectionModelSource();
         UpdateSelectionCollectionChangedSubscription();
 
@@ -596,20 +860,33 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
         return;
     }
 
+    // Group headers share the flat projection's index space with data rows but are not selectable.
+    // Keyboard navigation legitimately lands focus on a header (to expand/collapse it); when it
+    // does, leave the existing data selection untouched rather than moving it to - or clearing it
+    // against - a header index. Selection-follows-focus resumes on the next data row.
+    if (index >= 0 && IsGroupHeaderRow(index))
+    {
+        return;
+    }
+
     // An explicit gesture settles the question - drop anything held for a reload.
     ClearPendingSelection();
 
     if (toggle && IsSelected(index))
     {
-        ApplySelection(-1);
+        ApplySelection(-1, true);
         return;
     }
 
-    ApplySelection(index);
+    ApplySelection(index, true);
+}
+
+void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
+{
+    SelectRowIndexFromInteraction(index, false /* toggle */);
 }
 
 // ----- Public API -----
-
 void TableView::Select(int32_t index)
 {
     if (index < 0)
@@ -627,7 +904,14 @@ void TableView::Select(int32_t index)
         return;
     }
 
-    ApplySelection(index);
+    // A group header shares the flat projection's index space with data rows but is not selectable,
+    // so it is rejected here. Without this the internal GroupedEntry would reach the app.
+    if (IsGroupHeaderRow(index))
+    {
+        return;
+    }
+
+    ApplySelection(index, true);
 }
 
 void TableView::Deselect(int32_t index)
@@ -635,7 +919,7 @@ void TableView::Deselect(int32_t index)
     // Only clears when `index` IS the selection, so a stale call cannot clobber a newer one.
     if (IsSelected(index))
     {
-        ApplySelection(-1);
+        ApplySelection(-1, true);
     }
 }
 
@@ -655,5 +939,5 @@ bool TableView::IsSelected(int32_t index)
 void TableView::DeselectAll()
 {
     ClearPendingSelection();
-    ApplySelection(-1);
+    ApplySelection(-1, true);
 }

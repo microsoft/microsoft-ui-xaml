@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Private.Infrastructure;
 using System;
@@ -26,7 +26,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
@@ -77,7 +77,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [Priority(1)]
         [Description("Tests the DataTemplateSelector using ListView with and without ItemTemplate applied")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestWithItemTemplate()
         {
             ListView lv = null;
@@ -205,6 +205,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [Priority(1)]
         [Description("Tests DataTemplateSelector API by updating an item in the ListView")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestUpdatingItem()
         {
             ListView lv = null;
@@ -289,6 +290,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [Priority(1)]
         [Description("Tests ListView items template by changing the DataTemplateSelector instance")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestUpdatingItemTemplateSelector()
         {
             ListView lv = null;
@@ -382,6 +384,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanHandleSentinelsInRealizationRangeWhenRecycling()
         {
             ListView list = null;
@@ -478,6 +481,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [Priority(1)]
         [Description("Tests ListView items template using DataTemplateSelector when they are virtualized")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestWithVirtualization()
         {
             ListView lv = null;
