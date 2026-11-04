@@ -106,6 +106,7 @@
         <ClCompile Include="..\WindowChrome_Partial.cpp"/>
         <ClCompile Include="..\UWPWindowImpl.cpp"/>
         <ClCompile Include="..\DesktopWindowImpl.cpp"/>
+        <ClCompile Include="..\WindowPlacement.cpp"/>
         <ClCompile Include="..\FrameworkViewSource_Partial.cpp"/>
         <ClCompile Include="..\FrameworkView_Partial.cpp"/>
         <ClCompile Include="..\DependencyPropertyChangedEventArgs_Partial.cpp"/>
