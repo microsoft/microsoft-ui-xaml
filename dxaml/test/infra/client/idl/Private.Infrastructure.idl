@@ -1014,6 +1014,7 @@ namespace Private.Infrastructure
         HRESULT Stop(GUID providerGuid, unsigned long eventId);
         HRESULT GetActiveWaiterCount([out] unsigned int *waiterCount);
         HRESULT StopTaskName(GUID providerGuid, [in] HSTRING taskName);
+        HRESULT StartWithTaskNameAndPayload(GUID providerGuid, [in] HSTRING taskName, [in] HSTRING payloadCriteria);
     }
 
     [version(NTDDI_WINTHRESHOLD)]

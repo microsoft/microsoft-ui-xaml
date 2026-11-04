@@ -322,7 +322,6 @@ CContentControl::Content(
         // Notify the managed code layer of this change.
         IFC(FxCallbacks::ContentControl_OnContentChanged(pThis, &oldForManaged, &newForManaged, pValueOuter));
 
-#ifdef XAMLPROFILER_ENABLED
         if (XamlProfilerTracing::IsEnabled())
         {
             XamlProfilerTracing::ContentChanged(
@@ -332,7 +331,6 @@ CContentControl::Content(
                 pNewContent ? pNewContent->GetDebugLabel().GetBuffer() : L"",
                 XamlProfilerGetPeerHandle(pNewContent));
         }
-#endif // XAMLPROFILER_ENABLED
     }
 
 Cleanup:
