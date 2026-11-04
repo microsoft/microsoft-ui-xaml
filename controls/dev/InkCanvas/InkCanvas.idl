@@ -93,13 +93,8 @@
         event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeCanceled;
 
         // Back-pointer to the owning presenter (parity with UWP InkStrokeInput.InkPresenter). Returns
-        // our mirror InkPresenter, not the OS one, consistent with the wrapping model. Exposed as a
-        // method, NOT a property: a property here generates a XAML metadata thunk, and because
-        // InkPresenter.StrokeInput is itself a property thunk pointing back to InkStrokeInput, the two
-        // thunks form a cycle the metadata provider walks recursively (stack overflow at first use).
-        // A method carries no metadata thunk, breaking the cycle (same reasoning as
-        // InkPresenter.GetHighContrastAdjustment below). UWP's get_InkPresenter is a method at the ABI.
-        InkPresenter GetInkPresenter();
+        // our mirror InkPresenter, not the OS one, consistent with the wrapping model.
+        InkPresenter InkPresenter{ get; };
     }
 
     // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkUnprocessedInput. Fires the raw
@@ -117,10 +112,20 @@
         event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerLost;
 
         // Back-pointer to the owning presenter (parity with UWP InkUnprocessedInput.InkPresenter).
-        // Returns our mirror InkPresenter, not the OS one, consistent with the wrapping model. Exposed
-        // as a method, NOT a property, to avoid the recursive XAML metadata thunk cycle with
-        // InkPresenter.UnprocessedInput (see InkStrokeInput.GetInkPresenter above).
-        InkPresenter GetInkPresenter();
+        // Returns our mirror InkPresenter, not the OS one, consistent with the wrapping model.
+        InkPresenter InkPresenter{ get; };
+    }
+
+    // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkSynchronizer. Returned by
+    // InkPresenter.ActivateCustomDrying; lets the app take over rendering of "dry" (committed) ink.
+    // BeginDry/EndDry bracket the app's own rendering of the strokes the presenter just committed, so
+    // the presenter does not also draw them. The OS synchronizer is thread-affine to the ink thread,
+    // so both calls marshal there through the owning InkPresenter.
+    [MUX_PREVIEW]
+    runtimeclass InkSynchronizer
+    {
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> BeginDry();
+        void EndDry();
     }
 
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkPresenter.
@@ -133,18 +138,19 @@
         Windows.UI.Input.Inking.InkDrawingAttributes CopyDefaultDrawingAttributes();
         void SetPredefinedConfiguration(Windows.UI.Input.Inking.InkPresenterPredefinedConfiguration configuration);
 
-        // High-contrast rendering adjustment. Exposed as get/set methods rather than a property:
-        // our InkPresenter runtimeclass name-collides with Windows.UI.Input.Inking.InkPresenter, so
-        // the generated XAML metadata property thunk would bind to the OS presenter (whose enum type
-        // differs). Methods carry no XAML metadata thunk, so the mirror enum flows correctly.
-        InkHighContrastAdjustment GetHighContrastAdjustment();
-        void SetHighContrastAdjustment(InkHighContrastAdjustment value);
+        InkHighContrastAdjustment HighContrastAdjustment;
 
         InkStrokeContainer StrokeContainer{ get; };
         InkInputProcessingConfiguration InputProcessingConfiguration{ get; };
         InkInputConfiguration InputConfiguration{ get; };
         InkStrokeInput StrokeInput{ get; };
         InkUnprocessedInput UnprocessedInput{ get; };
+
+        // Switches the presenter into custom-drying mode and returns the InkSynchronizer used to
+        // bracket the app's own rendering of committed strokes (parity with UWP
+        // InkPresenter.ActivateCustomDrying). Must be called before the canvas begins receiving
+        // input, i.e. during page construction or Loaded, before the first layout pass sizes it.
+        InkSynchronizer ActivateCustomDrying();
 
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;

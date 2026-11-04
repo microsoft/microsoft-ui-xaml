@@ -86,42 +86,36 @@ namespace Microsoft.UI.Xaml.Tests.Controls.DispatcherQueueTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Description", "Verify for Window that its DispatcherQueue property is correctly set")]
         public async Task VerifyDispatcherQueuePropertyForWindow()
         {
-            StackPanel root = null;
-            Button button = null;
             int threadid = -1;
             var waiterWindow = new TaskCompletionSource<object>();
             Window window = null;
             UIExecutor.Execute(() =>
             {
-                root = new StackPanel();
-                StackPanel stackPanel = new StackPanel();
-                button = new Button();
-                button.Width = 100;
-                button.Height = 100;
-
-                stackPanel.Children.Add(button);
-                root.Children.Add(stackPanel);
-                TestServices.WindowHelper.WindowContent = root;
                 threadid = Environment.CurrentManagedThreadId;
-                window = Window.Current;
+                window = new Window();
             });
-            TestServices.WindowHelper.WaitForIdle();
 
-            var windowDispatcherQueue = window.DispatcherQueue;
-            Verify.IsNotNull(windowDispatcherQueue);
-            Verify.AreNotEqual(threadid, Environment.CurrentManagedThreadId);
-            
-            windowDispatcherQueue.TryEnqueue( new DispatcherQueueHandler(() =>
+            try
             {
-                Verify.AreEqual(threadid, Environment.CurrentManagedThreadId);
-                waiterWindow.TrySetResult(null);
-            }));
-            await waiterWindow.Task;
-            TestServices.WindowHelper.WaitForIdle();
+                var windowDispatcherQueue = window.DispatcherQueue;
+                Verify.IsNotNull(windowDispatcherQueue);
+                Verify.AreNotEqual(threadid, Environment.CurrentManagedThreadId);
+
+                windowDispatcherQueue.TryEnqueue(new DispatcherQueueHandler(() =>
+                {
+                    Verify.AreEqual(threadid, Environment.CurrentManagedThreadId);
+                    waiterWindow.TrySetResult(null);
+                }));
+                await waiterWindow.Task;
+            }
+            finally
+            {
+                UIExecutor.Execute(() => window.Close());
+            }
         }
     }
 }

@@ -12,6 +12,9 @@
 #include "DXamlCore.h"
 #include <WRLHelper.h>
 #include "Callback.h"
+#include "GamepadKeyRoutingLightup.h"
+#include <windows.foundation.metadata.h>
+#include <windows.ui.input.h>
 
 using namespace WRLHelper;
 using namespace DirectUI;
@@ -130,4 +133,41 @@ void DXamlCore::RemoveAnimationsEnabledChangedHandler()
         VERIFYHR(source->remove_AnimationsEnabledChanged(m_animationsEnabledChangedToken));
         m_animationsEnabledChangedToken.value = 0;
     }
+}
+
+// GamepadKeyRoutingConfiguration requires UniversalApiContract 19 (Windows 11, version 24H2).
+static_assert(
+    WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >= 0x130000,
+    "The Windows SDK in use predates UniversalApiContract 19 and does not declare "
+    "Windows.UI.Input.GamepadKeyRoutingConfiguration.  Update the SDK version this repo builds against.");
+
+_Check_return_ HRESULT DirectUI::EnableGamepadKeyRouting()
+{
+    ctl::ComPtr<wf::Metadata::IApiInformationStatics> apiInformationStatics;
+    IFC_RETURN(ctl::GetActivationFactory(
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_Foundation_Metadata_ApiInformation).Get(),
+        &apiInformationStatics));
+
+    boolean isContractPresent = false;
+    IFC_RETURN(apiInformationStatics->IsApiContractPresentByMajor(
+        wrl_wrappers::HStringReference(L"Windows.Foundation.UniversalApiContract").Get(),
+        19,
+        &isContractPresent));
+
+    if (!isContractPresent)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<wui::IGamepadKeyRoutingConfigurationStatics> gamepadKeyRoutingStatics;
+    IFC_RETURN(ctl::GetActivationFactory(
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_Input_GamepadKeyRoutingConfiguration).Get(),
+        &gamepadKeyRoutingStatics));
+
+    // A refusal is not an error: gamepad navigation is an enhancement, and the app remains fully
+    // usable without it.
+    boolean wasApplied = false;
+    IFC_RETURN(gamepadKeyRoutingStatics->TrySetKeyRoutingEnabled(true, &wasApplied));
+
+    return S_OK;
 }

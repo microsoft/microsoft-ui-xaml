@@ -18,6 +18,9 @@ public:
     void CanSort(bool value);
     bool CanSort();
 
+    void CellContextFlyout(winrt::FlyoutBase const& value);
+    winrt::FlyoutBase CellContextFlyout();
+
     void CellEditingTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate CellEditingTemplate();
 
@@ -27,11 +30,20 @@ public:
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
+    void HeaderContextFlyout(winrt::FlyoutBase const& value);
+    winrt::FlyoutBase HeaderContextFlyout();
+
+    void HeaderStyle(winrt::Style const& value);
+    winrt::Style HeaderStyle();
+
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
 
     void HeaderTemplateSelector(winrt::DataTemplateSelector const& value);
     winrt::DataTemplateSelector HeaderTemplateSelector();
+
+    void HeaderToolTip(winrt::IInspectable const& value);
+    winrt::IInspectable HeaderToolTip();
 
     void IsReadOnly(bool value);
     bool IsReadOnly();
@@ -60,11 +72,15 @@ public:
     static winrt::DependencyProperty ActualWidthProperty() { return s_ActualWidthProperty; }
     static winrt::DependencyProperty CanResizeProperty() { return s_CanResizeProperty; }
     static winrt::DependencyProperty CanSortProperty() { return s_CanSortProperty; }
+    static winrt::DependencyProperty CellContextFlyoutProperty() { return s_CellContextFlyoutProperty; }
     static winrt::DependencyProperty CellEditingTemplateProperty() { return s_CellEditingTemplateProperty; }
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
+    static winrt::DependencyProperty HeaderContextFlyoutProperty() { return s_HeaderContextFlyoutProperty; }
+    static winrt::DependencyProperty HeaderStyleProperty() { return s_HeaderStyleProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
+    static winrt::DependencyProperty HeaderToolTipProperty() { return s_HeaderToolTipProperty; }
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty MaxWidthProperty() { return s_MaxWidthProperty; }
     static winrt::DependencyProperty MinWidthProperty() { return s_MinWidthProperty; }
@@ -77,11 +93,15 @@ public:
     static GlobalDependencyProperty s_ActualWidthProperty;
     static GlobalDependencyProperty s_CanResizeProperty;
     static GlobalDependencyProperty s_CanSortProperty;
+    static GlobalDependencyProperty s_CellContextFlyoutProperty;
     static GlobalDependencyProperty s_CellEditingTemplateProperty;
     static GlobalDependencyProperty s_FrozenEdgeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
+    static GlobalDependencyProperty s_HeaderContextFlyoutProperty;
+    static GlobalDependencyProperty s_HeaderStyleProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
+    static GlobalDependencyProperty s_HeaderToolTipProperty;
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_MaxWidthProperty;
     static GlobalDependencyProperty s_MinWidthProperty;
@@ -114,11 +134,19 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnHeaderStylePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnHeaderTemplatePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnHeaderTemplateSelectorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderToolTipPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

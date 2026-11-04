@@ -434,7 +434,11 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
         goto Cleanup;
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PutRootVisualBegin(pRoot);
+#else
     TracePutRootVisualBegin();
+#endif
 
     // If the public root visual changes, we need to remove and re-add the existing roots so that
     // they use the new public visual as namescope owner if needed, but we don't want to release them.
@@ -520,7 +524,11 @@ Cleanup:
         RECORDFAILURE(ResetRoots(nullptr));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PutRootVisualEnd(pRoot);
+#else
     TracePutRootVisualEnd();
+#endif
 
     return hr;
 }
@@ -1594,7 +1602,7 @@ xref_ptr<CLayoutTransitionElement> VisualTree::AddTestLTE(
     return lte;
 }
 
-void VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
+bool VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
 {
     CLayoutTransitionElement* lteNoRef = static_cast<CLayoutTransitionElement*>(lte);
     for (unsigned int i = 0; i < m_testLTEs.size(); i++)
@@ -1603,9 +1611,11 @@ void VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
         {
             lteNoRef->DetachTransition();
             m_testLTEs.erase(m_testLTEs.begin() + i);
-            break;
+            return true;
         }
     }
+
+    return false;
 }
 
 void VisualTree::ClearTestLTEs()

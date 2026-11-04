@@ -7,10 +7,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 {
     public class AttachedPropertyStep : DependencyPropertyStep
     {
+        public bool IsReadOnly { get; }
+
         public AttachedPropertyStep(string propertyName, XamlType valueType, XamlType ownerType,
             BindPathStep parent, ApiInformation apiInformation)
+            : this(propertyName, valueType, ownerType, parent, apiInformation, false)
+        {
+        }
+
+        public AttachedPropertyStep(string propertyName, XamlType valueType, XamlType ownerType,
+            BindPathStep parent, ApiInformation apiInformation, bool isReadOnly)
             : base(propertyName, valueType, ownerType, parent, apiInformation)
         {
+            IsReadOnly = isReadOnly;
         }
 
         public override string UniqueName => string.Format("A_{0}_{1}", OwnerType.UnderlyingType.FullName.GetMemberFriendlyName(), PropertyName);

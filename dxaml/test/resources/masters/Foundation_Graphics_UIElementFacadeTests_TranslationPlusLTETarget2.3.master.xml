@@ -6,13 +6,13 @@
     <Visual Tag="PrependVisual">
       <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
         <Visual Tag="ContentVisual">
-          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="50" OffsetY="50" OffsetZ="0">
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="200" OffsetY="150" OffsetZ="0">
             <ColorBrush Color="rgb {0, 0.502, 0}" />
           </wucSpriteVisual>
           <Visual Tag="PrependVisual">
             <Clip ClipLeft="0" ClipTop="0" ClipRight="-100" ClipBottom="-100" TransformMatrix="dxdy {10, 20}" />
             <TransformMatrix>
-              <Translate X="40" Y="30" Z="30" />
+              <Translate X="190" Y="130" Z="30" />
             </TransformMatrix>
             <Visual VisualId="1" Tag="PrimaryVisual">
               <Visual Tag="ContentVisual">

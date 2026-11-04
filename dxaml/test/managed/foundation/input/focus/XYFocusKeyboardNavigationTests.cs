@@ -509,7 +509,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Test that we cannot navigate to Enabled region within Disabled region. If we somehow focus within the inner Enabled region, we can navigate between elements in that region, but cannot leave")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CannotNavigateToEnabledRegionWithinDisabledRegion()
         {
             const string rootPanelXaml =

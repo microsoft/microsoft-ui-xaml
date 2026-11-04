@@ -498,6 +498,39 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        void ThemeResourcesTests::MarkupMissingKeyWithFormatTokensThrowsGenericError()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([&]()
+            {
+                DisableErrorReportingScopeGuard disableErrors;
+                String^ key = L"MissingResourceKey_%0_%1";
+                String^ extensions[] = { L"StaticResource", L"ThemeResource" };
+
+                for (auto extension : extensions)
+                {
+                    String^ xaml =
+                        L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Background='{" +
+                        extension + L" " + key + L"}'/>";
+                    Platform::Exception^ error = nullptr;
+                    try
+                    {
+                        XamlReader::Load(xaml);
+                    }
+                    catch (Platform::Exception^ ex)
+                    {
+                        error = ex;
+                    }
+
+                    VERIFY_IS_NOT_NULL(error, L"An unresolved required markup resource must throw.");
+                    VERIFY_ARE_EQUAL(static_cast<HRESULT>(0x802B000A), error->HResult, L"Markup resource misses retain the parse HRESULT.");
+                    String^ expected = L"Cannot find a Resource with the Name/Key " + key;
+                    VERIFY_IS_NOT_NULL(wcsstr(error->Message->Data(), expected->Data()), L"The generic error must preserve literal percent tokens in the key.");
+                }
+            });
+        }
+
         void ThemeResourcesTests::SetThemeResourceBindingLocalOverrideAndClear()
         {
             TestCleanupWrapper cleanup;

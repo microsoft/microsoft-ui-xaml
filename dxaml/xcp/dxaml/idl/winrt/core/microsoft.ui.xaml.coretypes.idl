@@ -2635,6 +2635,7 @@ namespace Microsoft.UI.Xaml
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
+    [contentproperty("Value")]
     runtimeclass Setter
         : Microsoft.UI.Xaml.SetterBase
     {

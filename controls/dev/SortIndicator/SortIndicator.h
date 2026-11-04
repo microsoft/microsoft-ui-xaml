@@ -26,6 +26,4 @@ public:
 
 private:
     void UpdateVisualState(bool useTransitions);
-    tracker_ref<winrt::FrameworkElement> m_layoutRoot{ this };
-    tracker_ref<winrt::FontIcon> m_glyphIcon{ this };
 };

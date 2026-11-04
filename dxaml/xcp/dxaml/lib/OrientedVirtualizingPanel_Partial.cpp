@@ -14,6 +14,7 @@
 //      - Implements IOrientedPanel interface for logical and physical Orientation
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "OrientedVirtualizingPanel.g.h"
 #include "ScrollViewer.g.h"
 #include "ScrollContentPresenter.g.h"
@@ -1149,11 +1150,11 @@ OrientedVirtualizingPanel::UpdateLogicalScrollData(
     wf::Size viewport = constraint;
     ScrollVector offset = m_ScrollData.get_Offset();
 
-    TraceUpdateLogicalScrollDataBegin();
+    XamlTelemetry::UpdateLogicalScrollDataBegin(GetHandle());
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
-        TraceUpdateLogicalScrollDataEnd();
+        XamlTelemetry::UpdateLogicalScrollDataEnd(GetHandle());
     });
 
     IFC_RETURN(get_RealizedChildren(&spRealizedChildren));
@@ -1474,7 +1475,7 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     _In_ BOOLEAN newlyRealized,
     _Inout_ BOOLEAN& visualOrderChanged)
 {
-    TraceVirtualizationAddBegin();
+    XamlTelemetry::VirtualizationAddBegin(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spChildren;
     ctl::ComPtr<xaml::IUIElement> spChildAtPosition;
@@ -1552,7 +1553,7 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     }
 
 Cleanup:
-    TraceVirtualizationAddEnd();
+    XamlTelemetry::VirtualizationAddEnd(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
     RRETURN(hr);
 }
 
@@ -1972,11 +1973,11 @@ OrientedVirtualizingPanel::CleanupContainers(
     _In_ xaml_controls::IItemsControl* pItemsControl,
     _In_ wf::Size constraint)
 {
-    TraceVirtualizationCleanupBegin();
+    XamlTelemetry::VirtualizationCleanupBegin(GetHandle());
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
-        TraceVirtualizationCleanupEnd();
+        XamlTelemetry::VirtualizationCleanupEnd(GetHandle());
     });
 
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spRealizedChildren;
@@ -2666,7 +2667,8 @@ OrientedVirtualizingPanel::MeasureChild(
     _In_ wf::Size layoutSlotSize,
     _Out_opt_ wf::Size* returnValue)
 {
-    TraceMeasureChildBegin();
+    XamlTelemetry::MeasureChildBegin(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
+
     HRESULT hr = S_OK;
     wf::Size childDesiredSize = {};
     wf::Size updatedDesiredSize = {};
@@ -2692,7 +2694,7 @@ OrientedVirtualizingPanel::MeasureChild(
     }
 
 Cleanup:
-    TraceMeasureChildEnd();
+    XamlTelemetry::MeasureChildEnd(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
     RRETURN(hr);
 }
 

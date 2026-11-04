@@ -39,6 +39,12 @@ typedef std::wstring string;
 
 #define VERIFYRETURNHR(cond) { HRESULT hr2 = (cond); VERIFYHR(hr2); if (SUCCEEDED(hr)) hr = hr2; }
 
+#define IFC_ORIGINATE_ERROR(errorCode, message) \
+    IFC(DirectUI::ErrorHelper::OriginateError((errorCode), (message)))
+
+#define IFC_RETURN_ORIGINATE_ERROR(errorCode, message) \
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateError((errorCode), (message)))
+
 // Argument checking macros.
 #define ARG_EXPECT(expr, parameterName) { if (!(expr)) { IFC(DirectUI::ErrorHelper::OriginateError(E_INVALIDARG, SZ_COUNT(parameterName), L##parameterName)); } }
 #define ARG_NOTNULL(parameter, parameterName) ARG_EXPECT(parameter, parameterName)
@@ -58,7 +64,7 @@ typedef std::wstring string;
     template<> _Check_return_ HRESULT DirectUI::ReferenceBase<TYPE>::GetRuntimeClassNameImpl(_Out_ HSTRING* pClassName)\
     {\
         HRESULT hr = S_OK;\
-        IFC(wrl_wrappers::HStringReference(L"Windows.Foundation.IReference`1<" NAME L">", SZ_COUNT(NAME) + 33).CopyTo(pClassName));\
+        IFC(WindowsCreateString(STR_LEN_PAIR(L"Windows.Foundation.IReference`1<" NAME L">"), pClassName));\
     Cleanup:\
         RRETURN(hr);\
     }\
