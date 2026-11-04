@@ -253,9 +253,13 @@ decoded with the kernel's manifest. `ProfilerEvent.TraceLogging` tells
 TraceLogging events from manifest events: the same field name can hold
 different objects in the two.
 
+Profiler tree and composition events carry identities, relationships and state,
+not debug labels, core allocation sizes or XAML source positions. Older traces'
+label metadata remains readable.
+
 While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML
 source position of the objects it parses, which `ElementCreatedWithSource`
-carries (along with `ElementEnteredTree`), and
+carries, and
 keeps setters and resource references for XAML diagnostics. That costs the
 target some memory and CPU time, as in any trace that enables the provider.
 Only XAML parsed while the provider is enabled has positions: a launch has them
@@ -394,18 +398,21 @@ visual surface events mention.
 
 - `ParentVisualId`, `ChildVisualId` and `VisualId` only ever hold an `IVisual`
   pointer, so a visual is known from its first mention.
-- Its insertion (`WucVisualChildInserted`, `WucVisualRootSet`) gives its type
-  and owner comp node. The owner's `CompPeerLinked` label (the element's
-  `x:Name`, or its class name) becomes the visual's name. A comp node usually
+- Tree events carry only visual/parent/child IDs and, for root changes, the
+  target ID. They do not capture visual types, properties, insertion indices
+  or owner comp-node IDs.
+- Older traces can also supply a visual's type and owner comp node. The
+  owner's `CompPeerLinked` label (the element's `x:Name`, or its class name)
+  becomes the visual's name. A comp node usually
   creates its visuals before it is linked, so the label is added when the link
   comes. Visuals inserted with owner 0, mostly leaf visuals, have no name.
-- An insertion with a different type or owner than the visual's last means a
-  new visual reused the pointer, so a new visual starts there. Visuals get their
+- In older traces, an insertion with a different type or owner means a new
+  visual reused the pointer, so a new visual starts there. Visuals get their
   children before they are inserted, so the old visual's mentions since it left
-  the tree move to the new one. Reuse by a visual of the same type and owner
-  can't be told apart. A hand-in or hand-off visual that its element's
-  re-created comp node inserts again also gets a new owner, so its history
-  splits there.
+  the tree move to the new one. Reuse by a visual without type/owner metadata,
+  or with the same type and owner, can't be told apart. A hand-in or hand-off
+  visual that its element's re-created comp node inserts again also gets a new
+  owner, so its history splits there.
 - `WucVisualChildrenCleared` names only the parent, so each child it removes
   gets a mention through the parent's field (`child of ParentVisualId`).
 

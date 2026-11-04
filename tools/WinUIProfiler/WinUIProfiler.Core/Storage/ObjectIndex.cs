@@ -23,12 +23,13 @@ namespace WinUIProfiler.Engine.Storage;
 // same type can't be detected.
 //
 // The fields that hold a visual (ParentVisualId, ChildVisualId, VisualId) only ever hold an IVisual pointer, so a visual
-// is known from its first mention. Its insertion (WucVisualChildInserted, WucVisualRootSet) reports its type and owner
-// comp node, and the owner's CompPeerLinked label becomes its name. An insertion with a different type or owner than the
-// visual's last means a new visual reused the pointer, so a new visual starts there. Visuals get their children before
-// they are inserted, so as with elements the old visual's mentions since it left the tree (removed, or its parent's
-// children cleared) move to the new one. Reuse by a visual of the same type and owner can't be detected. A hand-in or
-// hand-off visual that its element's re-created comp node inserts again also gets a new owner, so its history splits.
+// is known from its first mention. Current insertions (WucVisualChildInserted, WucVisualRootSet) report only identities.
+// Older traces also report the type and owner comp node, whose CompPeerLinked label becomes the visual's name.
+// A different known type or owner means a new visual reused the pointer, so a new visual starts there. Visuals get their
+// children before they are inserted, so as with elements the old visual's mentions since it left the tree (removed, or
+// its parent's children cleared) move to the new one. Reuse without type/owner metadata, or with the same type and owner,
+// can't be detected. A hand-in or hand-off visual that its element's re-created comp node inserts again also gets a new
+// owner, so its history splits.
 internal sealed class ObjectIndex : IDisposable
 {
     // Mentions held in memory per address: a UI element is confirmed within a few, other objects never are. Later ones
@@ -167,7 +168,7 @@ internal sealed class ObjectIndex : IDisposable
                     waiting.ForEach(visual => visual.AwaitingLabel = false);
                 }
             }
-            else if (fields[tree.Label].Value is string { Length: > 0 } label)
+            else if (tree.Label >= 0 && fields[tree.Label].Value is string { Length: > 0 } label)
             {
                 Link(compNode, label);
             }
@@ -175,8 +176,9 @@ internal sealed class ObjectIndex : IDisposable
 
         if (tree.Inserted >= 0 && Address(fields[tree.Inserted].Value) is var inserted && inserted != 0)
         {
-            ObserveInsertion(inserted, tree.Parent >= 0 ? Address(fields[tree.Parent].Value) : 0, fields[tree.Type].Value as string,
-                Address(fields[tree.Owner].Value), transaction);
+            ObserveInsertion(inserted, tree.Parent >= 0 ? Address(fields[tree.Parent].Value) : 0,
+                tree.Type >= 0 ? fields[tree.Type].Value as string : null,
+                tree.Owner >= 0 ? Address(fields[tree.Owner].Value) : 0, transaction);
         }
 
         foreach (var (field, role) in roles.Fields)

@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 #include "DCompTreeHost.h"
-#include "WucVisualTreeProfiler.h"
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>
@@ -990,7 +989,7 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
         // so a consumer can attach the island's WUC visual subtree to the right target.
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), 0 /* ownerCompNodeId unknown */);
+            XamlProfilerTracing::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent));
         }
     }
 
@@ -1076,14 +1075,12 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 renderData.contentConnected = true;
 
                 // Notify the XAML Profiler that this island root visual was connected to its
-                // ContentIsland target, including the owning comp node so the consumer can stitch
-                // the XamlIslandRoot's WUC subtree onto the island.
+                // ContentIsland target.
                 if (XamlProfilerTracing::IsEnabled())
                 {
-                    WucVisualTreeProfiler::NotifyRootSet(
+                    XamlProfilerTracing::NotifyRootSet(
                         wucVisual,
-                        reinterpret_cast<uint64_t>(xamlIslandRoot),
-                        reinterpret_cast<uint64_t>(compositionPeer));
+                        reinterpret_cast<uint64_t>(xamlIslandRoot));
                 }
 
                 // If this is our first island and we need a Frame visual then add it here.  Note that at this point the

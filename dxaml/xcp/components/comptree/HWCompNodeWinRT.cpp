@@ -31,7 +31,6 @@
 #include <TimeMgr.h>
 #include <FloatUtil.h>
 #include <RuntimeEnabledFeatures.h>
-#include "WucVisualTreeProfiler.h"
 #include <DependencyLocator.h>
 #include <XamlLightTargetMap.h>
 #include <XamlLightCollection.h>
@@ -425,7 +424,7 @@ void HWCompTreeNodeWinRT::InsertWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
     // consumer can reconstruct the full WUC visual tree (prepend -> primary -> content, etc).
     if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(parentVisual, childVisual, reinterpret_cast<uint64_t>(this), -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(parentVisual, childVisual);
     }
 }
 
@@ -439,7 +438,7 @@ void HWCompTreeNodeWinRT::RemoveWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
         IFCFAILFAST(childCollection->Remove(childVisual));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(parentVisual, childVisual);
+            XamlProfilerTracing::NotifyChildRemoved(parentVisual, childVisual);
         }
     }
 }
@@ -595,12 +594,12 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
         IFCFAILFAST(originalChildrenCollection->Remove(visual));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(oldParent, visual.get());
+            XamlProfilerTracing::NotifyChildRemoved(oldParent, visual.get());
         }
         IFCFAILFAST(newChildrenCollection->InsertAtTop(visual));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
+            XamlProfilerTracing::NotifyChildInserted(newParent, visual.get());
         }
     }
 }
@@ -2695,7 +2694,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         IFCFAILFAST(childCollection->InsertAtBottom(m_dmanipHitTestVisual.Get()));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
+            XamlProfilerTracing::NotifyChildInserted(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
         }
     }
 }
@@ -2709,7 +2708,7 @@ void HWCompTreeNodeWinRT::CleanupDManipHitTestVisual()
         IFCFAILFAST(childCollection->Remove(m_dmanipHitTestVisual.Get()));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
+            XamlProfilerTracing::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
         }
         m_dmanipHitTestVisual = nullptr;
     }
@@ -3287,7 +3286,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
             if (XamlProfilerTracing::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
+                XamlProfilerTracing::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
             }
         }
         if (currentHandInVisual != nullptr)
@@ -3309,7 +3308,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
             if (XamlProfilerTracing::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
+                XamlProfilerTracing::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get());
             }
         }
         m_handInVisual = currentHandInVisual;
@@ -3347,7 +3346,7 @@ void HWCompTreeNodeWinRT::CleanupHandInVisual()
         IFCFAILFAST_ALLOW_INVALIDARG(hr);
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
+            XamlProfilerTracing::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_handInVisual.Get());
         }
     }
 }
@@ -3479,10 +3478,7 @@ void HWCompTreeNodeWinRT::InsertChildSynchronous(
     // so it must emit the same event - otherwise an out-of-process profiler that
     // reconstructs the comp tree from these events would miss synchronously-inserted
     // nodes and become inconsistent with the real m_children structure.
-    // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(child)))
+    if (XamlProfilerTracing::IsEnabled())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -3598,11 +3594,10 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
         IFCFAILFAST(childCollection->InsertAbove(wucChild.Get(), wucPreviousSibling));
     }
 
-    // Notify the XAML Profiler of this inter-comp-node edge. The child WUC visual is owned by the
-    // child comp node, so pass the child comp node's pointer as the owner id.
+    // Notify the XAML Profiler of this inter-comp-node edge.
     if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get());
     }
 }
 
@@ -3623,7 +3618,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
     IFCFAILFAST(childCollection->InsertAtBottom(wucChild));
     if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(GetBottomMostVisual(), wucChild.get());
     }
 
     return S_OK;
@@ -3644,7 +3639,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::RemoveChildInternal(_In_ HWCompNode 
         IFCFAILFAST(childCollection->Remove(visualToRemove));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostVisual(), visualToRemove.get());
+            XamlProfilerTracing::NotifyChildRemoved(GetBottomMostVisual(), visualToRemove.get());
         }
 
         // If this is an inline popup nested inside a windowed popup, we just removed the inline popup's placeholder
@@ -3750,10 +3745,7 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
         // (which emits this event for the async path), so emit it here - otherwise an
         // out-of-process profiler reconstructing the comp tree would never learn that
         // this node left the tree and would keep it forever.
-        // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-        if (XamlProfilerTracing::IsEnabled() &&
-            !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(parentCompNode)) &&
-            !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)))
+        if (XamlProfilerTracing::IsEnabled())
         {
             XamlProfilerTracing::CompNodeChildRemoved(
                 reinterpret_cast<uint64_t>(parentCompNode),
@@ -3774,7 +3766,7 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
         IFCFAILFAST(childrenCollection->RemoveAll());
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildrenCleared(GetContainerVisualForChildren());
+            XamlProfilerTracing::NotifyChildrenCleared(GetContainerVisualForChildren());
         }
     }
     else if (hr != RO_E_CLOSED || !GetContext()->IsTearingDownTree())

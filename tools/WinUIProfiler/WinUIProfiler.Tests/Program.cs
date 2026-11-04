@@ -7,6 +7,7 @@ using XamlTimeline;
 
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
+var visualPath = Path.ChangeExtension(path, "visuals.sqlite");
 try
 {
     using (var writer = SessionWriter.Create(path, new(1, "CompatibilityTests", null, 1_000_000, 0, SessionCoverage.Trace)))
@@ -51,6 +52,85 @@ try
 
     Console.WriteLine("Passed: TraceLogging activity identity and new/legacy virtualization observations share one timeline.");
     Console.WriteLine("Passed: version-0 observations, storyboard IDs and other providers are not indexed as that element.");
+
+    const long parentVisual = 0x2000;
+    const long childVisual = 0x3000;
+    const long target = 0x4000;
+    const long legacyVisual = 0x5000;
+    const long linkedElement = 0x6000;
+    const long childElement = 0x7000;
+    const long owner = 0x9000;
+    using (var writer = SessionWriter.Create(visualPath, new(1, "VisualIdentityTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+    {
+        ProfilerEvent VisualEvent(string name, params EventField[] fields) =>
+            new(1, 0.001, 1, 1, XamlProvider.XamlProfiler, true, name, 0, fields);
+
+        writer.Process(1, VisualEvent("WucVisualRootSet", new("VisualId", parentVisual), new("TargetId", target)));
+        writer.Process(2, VisualEvent("WucVisualChildInserted",
+            new("ParentVisualId", parentVisual), new("ChildVisualId", childVisual)));
+        writer.Process(3, VisualEvent("WucVisualChildRemoved",
+            new("ParentVisualId", parentVisual), new("ChildVisualId", childVisual)));
+        writer.Process(4, VisualEvent("WucVisualChildInserted",
+            new("ParentVisualId", parentVisual), new("ChildVisualId", childVisual)));
+        writer.Process(5, VisualEvent("WucVisualChildrenCleared", new EventField("ParentVisualId", parentVisual)));
+        writer.Process(6, VisualEvent("WucVisualRootCleared", new EventField("TargetId", target)));
+        writer.Process(7, VisualEvent("WucVisualRootSet",
+            new("VisualId", legacyVisual), new("TargetId", target), new("OwnerCompNodeId", owner),
+            new("VisualType", "SpriteVisual")));
+        writer.Process(8, VisualEvent("CompPeerLinked",
+            new("UIElementId", linkedElement), new("CompNodeId", owner), new("ParentCompNodeId", 0L),
+            new("UIElementPeerHandle", 0xa000L)));
+        writer.Process(9, VisualEvent("CompPeerLinked",
+            new("UIElementId", linkedElement), new("CompNodeId", owner), new("ElementLabel", "LegacyOwner")));
+        writer.Process(10, VisualEvent("ElementEnteredTree",
+            new("ElementId", linkedElement), new("ParentId", 0L), new("IsLive", true),
+            new("IsTemplateChild", false), new("PeerHandle", 0xa000L)));
+        writer.Process(11, VisualEvent("ChildAdded",
+            new("ParentId", linkedElement), new("ChildId", childElement), new("Index", 0),
+            new("IsTemplateChild", false), new("ChildPeerHandle", 0xb000L)));
+        writer.Process(12, VisualEvent("ChildInserted",
+            new("ParentId", linkedElement), new("ChildId", childElement), new("Index", 0),
+            new("IsTemplateChild", false), new("ChildPeerHandle", 0xb000L)));
+        writer.Process(13, VisualEvent("ContentChanged",
+            new("ParentId", linkedElement), new("OldContentId", 0L), new("NewContentId", childElement),
+            new("NewContentPeerHandle", 0xb000L)));
+        writer.Process(14, VisualEvent("PopupOpened",
+            new("PopupId", linkedElement), new("ChildId", childElement), new("ChildPeerHandle", 0xb000L)));
+    }
+
+    var visuals = SessionFile.ReadObjects(visualPath, ObjectKind.Visual);
+    if (visuals.Count != 3 ||
+        visuals.Single(visual => visual.Address == parentVisual) is not { Type: null, Name: null, Events: 5 } ||
+        visuals.Single(visual => visual.Address == childVisual) is not { Type: null, Name: null, Events: 4 } ||
+        visuals.Single(visual => visual.Address == legacyVisual) is not { Type: "SpriteVisual", Name: "LegacyOwner" })
+    {
+        throw new InvalidOperationException("Identity-only visual events must be indexed without requiring legacy type or owner fields.");
+    }
+
+    var visualMentions = new List<string>();
+    SessionFile.ReadTimeline(visualPath, visuals.Single(visual => visual.Address == childVisual).ObjectId, 0, -1,
+        (profilerEvent, _, _) => visualMentions.Add(profilerEvent.Name));
+    if (!visualMentions.SequenceEqual(new[]
+        { "WucVisualChildInserted", "WucVisualChildRemoved", "WucVisualChildInserted", "WucVisualChildrenCleared" }))
+    {
+        throw new InvalidOperationException("Identity-only insert, remove and clear events must share the child's timeline.");
+    }
+
+    Console.WriteLine("Passed: identity-only visual events preserve tree history without type or owner metadata.");
+    Console.WriteLine("Passed: legacy visual type and owner labels remain supported.");
+
+    var linked = SessionFile.ReadObjects(visualPath, ObjectKind.Element, address: linkedElement).Single();
+    var linkedMentions = new List<string>();
+    SessionFile.ReadTimeline(visualPath, linked.ObjectId, 0, -1,
+        (profilerEvent, _, _) => linkedMentions.Add(profilerEvent.Name));
+    if (!linkedMentions.SequenceEqual(new[]
+        { "CompPeerLinked", "CompPeerLinked", "ElementEnteredTree", "ChildAdded", "ChildInserted", "ContentChanged", "PopupOpened" }) ||
+        SessionFile.ReadObjects(visualPath, ObjectKind.Element, address: childElement).Single().Events != 4)
+    {
+        throw new InvalidOperationException("Label-free composition links and tree events must preserve element timelines.");
+    }
+
+    Console.WriteLine("Passed: label-free composition links and UI tree events preserve element timelines.");
 
     var regions = new RegionsLoader().Load(Path.Combine(AppContext.BaseDirectory, "XAML.regions.complete.with.startup.xml"));
     string[] activities =
@@ -120,7 +200,7 @@ try
 }
 finally
 {
-    foreach (var file in new[] { path, path + "-wal", path + "-shm" })
+    foreach (var file in new[] { path, path + "-wal", path + "-shm", visualPath, visualPath + "-wal", visualPath + "-shm" })
     {
         File.Delete(file);
     }

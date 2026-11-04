@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 #include <DependencyLocator.h>
-#include <WucVisualTreeProfiler.h>
 #include <D2DUtils.h>
 #include <FrameworkTheming.h>
 #include <AutoReentrantReferenceLock.h>
@@ -551,8 +550,6 @@ _Check_return_ HRESULT CPopup::Open()
             XamlProfilerTracing::PopupOpened(
                 reinterpret_cast<uint64_t>(this),
                 reinterpret_cast<uint64_t>(m_pChild),
-                GetDebugLabel().GetBuffer(),
-                m_pChild ? m_pChild->GetDebugLabel().GetBuffer() : L"",
                 XamlProfilerGetPeerHandle(m_pChild));
         }
 
@@ -1469,7 +1466,7 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
         contentIslandExperimental->put_Root(nullptr);
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootCleared(reinterpret_cast<uint64_t>(m_contentIsland.Get()));
+            XamlProfilerTracing::NotifyRootCleared(reinterpret_cast<uint64_t>(m_contentIsland.Get()));
         }
     }
 
@@ -2270,7 +2267,7 @@ _Check_return_ HRESULT CPopup::SetRootVisualForWindowedPopupWindow(_In_ ixp::IVi
         IFCFAILFAST(visualChildren->InsertAtTop(m_publicRootVisual.Get()));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            XamlProfilerTracing::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get());
         }
 
         // Position & size window
@@ -2305,7 +2302,7 @@ void CPopup::AddAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* popupV
     IFCFAILFAST(visualChildren->InsertAtTop(popupVisual));
     if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual, 0 /* ownerCompNodeId */, -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual);
     }
 }
 
@@ -2322,7 +2319,7 @@ void CPopup::RemoveAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* pop
         IFCFAILFAST(visualChildren->Remove(popupVisual));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(m_animationRootVisual.Get(), popupVisual);
+            XamlProfilerTracing::NotifyChildRemoved(m_animationRootVisual.Get(), popupVisual);
         }
     }
 }
@@ -2393,7 +2390,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             IFCFAILFAST(animationVisualChildren->InsertAtBottom(m_systemBackdropPlacementVisual.Get()));
             if (XamlProfilerTracing::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+                XamlProfilerTracing::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get());
             }
         }
 
@@ -2402,7 +2399,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         IFCFAILFAST(visualChildren->InsertAtTop(animationV.Get()));
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            XamlProfilerTracing::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get());
         }
 
         if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableWindowedPopupDebugVisual))
@@ -2434,7 +2431,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
         if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()), 0 /* ownerCompNodeId */);
+            XamlProfilerTracing::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()));
         }
     }
 }

@@ -5,7 +5,6 @@
 #include "XamlTelemetry.h"
 
 #include "palgfx.h"
-#include "WucVisualTreeProfiler.h"
 
 #include "TimeMgr.h"
 #include "InputServices.h"
@@ -635,10 +634,7 @@ HWCompTreeNode::InsertChild(
 
     IFC_RETURN(InsertChildInternal(pDCompTreeHost, pChild, pReferenceNode, pElement));
 
-    // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+    if (XamlProfilerTracing::IsEnabled())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -680,10 +676,7 @@ HWCompTreeNode::InsertChildAtBeginning(
 
     IFC_RETURN(InsertChildAtBeginningInternal(pDCompTreeHost, pChild));
 
-    // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+    if (XamlProfilerTracing::IsEnabled())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -712,14 +705,9 @@ HWCompTreeNode::RemoveChild(
         {
             if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_VERBOSE, XamlTelemetry::DCompKeyword))
             {
-                const bool isProfilerSuppressed =
-                    XamlProfilerTracing::IsEnabled() &&
-                    (WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) ||
-                    WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)));
                 XamlTelemetry::CompTreeRemoveChild(
                     reinterpret_cast<uint64_t>(this),
-                    reinterpret_cast<uint64_t>(pChild),
-                    isProfilerSuppressed);
+                    reinterpret_cast<uint64_t>(pChild));
             }
 
             IFC_RETURN(RemoveChildInternal(pChild));
@@ -976,7 +964,7 @@ HWCompWinRTVisualRenderDataNode::ClearVisualContent()
     IFCFAILFAST(visualCollection->RemoveAll());
     if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildrenCleared(m_containerVisual.get());
+        XamlProfilerTracing::NotifyChildrenCleared(m_containerVisual.get());
     }
 }
 

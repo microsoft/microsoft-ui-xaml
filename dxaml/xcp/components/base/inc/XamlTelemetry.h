@@ -322,10 +322,9 @@ public:
             TraceLoggingValue(KeyboardSkin, "IKSkinValue"));
     }
 
-    DEFINE_TRACELOGGING_EVENT_PARAM3(CompTreeRemoveChild,
+    DEFINE_TRACELOGGING_EVENT_PARAM2(CompTreeRemoveChild,
         uint64_t, Parent,
         uint64_t, Child,
-        bool, IsProfilerSuppressed,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
         TraceLoggingKeyword(DCompKeyword));
 

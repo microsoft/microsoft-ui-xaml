@@ -328,7 +328,6 @@ CContentControl::Content(
                 reinterpret_cast<uint64_t>(pThis),
                 reinterpret_cast<uint64_t>(pOldContent),
                 reinterpret_cast<uint64_t>(pNewContent),
-                pNewContent ? pNewContent->GetDebugLabel().GetBuffer() : L"",
                 XamlProfilerGetPeerHandle(pNewContent));
         }
     }

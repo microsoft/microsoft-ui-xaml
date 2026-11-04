@@ -6,6 +6,7 @@
 #include <TraceLoggingInterop.h>
 #include <cstdint>
 #include <evntrace.h>
+#include <unknwn.h>
 
 namespace XcpAllocation
 {
@@ -42,9 +43,6 @@ class CDependencyObject;
 
 uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept;
 
-uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept;
-
-
 class XamlProfilerTracing final : public TelemetryBase
 {
     #pragma warning (suppress : 6387)
@@ -54,6 +52,12 @@ public:
 
     static void EnableAllocationProfiling(bool enabled) noexcept;
     static bool IsAllocationProfilingEnabled() noexcept;
+
+    static void NotifyChildInserted(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
+    static void NotifyChildRemoved(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
+    static void NotifyChildrenCleared(_In_opt_ IUnknown* parentVisual);
+    static void NotifyRootSet(_In_opt_ IUnknown* visual, uint64_t targetId);
+    static void NotifyRootCleared(uint64_t targetId);
 
     DEFINE_TRACELOGGING_EVENT_PARAM2(PeerAssociated,
         uint64_t, ElementId,
@@ -75,20 +79,18 @@ public:
         bool,     IsAlphaMask,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM6(ChildAdded,
+    DEFINE_TRACELOGGING_EVENT_PARAM5(ChildAdded,
         uint64_t, ParentId,
         uint64_t, ChildId,
         uint32_t, Index,
-        PCWSTR,   ChildLabel,
         bool,     IsTemplateChild,
         uint64_t, ChildPeerHandle,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM6(ChildInserted,
+    DEFINE_TRACELOGGING_EVENT_PARAM5(ChildInserted,
         uint64_t, ParentId,
         uint64_t, ChildId,
         uint32_t, Index,
-        PCWSTR,   ChildLabel,
         bool,     IsTemplateChild,
         uint64_t, ChildPeerHandle,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
@@ -98,17 +100,12 @@ public:
         uint64_t, ChildId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM10(ElementEnteredTree,
+    DEFINE_TRACELOGGING_EVENT_PARAM5(ElementEnteredTree,
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool,     IsLive,
-        PCWSTR,   Label,
         bool,     IsTemplateChild,
         uint64_t, PeerHandle,
-        uint64_t, CoreSize,
-        PCWSTR,   SourceFileUri,
-        uint32_t, SourceLine,
-        uint32_t, SourceColumn,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a UIElement leaves the live tree.
@@ -118,19 +115,16 @@ public:
         bool, IsLive,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM5(ContentChanged,
+    DEFINE_TRACELOGGING_EVENT_PARAM4(ContentChanged,
         uint64_t, ParentId,
         uint64_t, OldContentId,
         uint64_t, NewContentId,
-        PCWSTR,   NewContentLabel,
         uint64_t, NewContentPeerHandle,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM5(PopupOpened,
+    DEFINE_TRACELOGGING_EVENT_PARAM3(PopupOpened,
         uint64_t, PopupId,
         uint64_t, ChildId,
-        PCWSTR,   PopupLabel,
-        PCWSTR,   ChildLabel,
         uint64_t, ChildPeerHandle,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
@@ -139,11 +133,10 @@ public:
         uint64_t, ChildId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM5(CompPeerLinked,
+    DEFINE_TRACELOGGING_EVENT_PARAM4(CompPeerLinked,
         uint64_t, UIElementId,
         uint64_t, CompNodeId,
         uint64_t, ParentCompNodeId,
-        PCWSTR,   ElementLabel,
         uint64_t, UIElementPeerHandle,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
@@ -166,13 +159,9 @@ public:
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a WUC visual is inserted as a child of another WUC visual.
-    DEFINE_TRACELOGGING_EVENT_PARAM6(WucVisualChildInserted,
+    DEFINE_TRACELOGGING_EVENT_PARAM2(WucVisualChildInserted,
         uint64_t, ParentVisualId,
         uint64_t, ChildVisualId,
-        uint64_t, OwnerCompNodeId,
-        int32_t,  Index,
-        PCWSTR,   VisualType,
-        PCWSTR,   Properties,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a WUC visual is removed from its parent's children collection.
@@ -185,12 +174,9 @@ public:
         uint64_t, ParentVisualId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM5(WucVisualRootSet,
+    DEFINE_TRACELOGGING_EVENT_PARAM2(WucVisualRootSet,
         uint64_t, VisualId,
         uint64_t, TargetId,
-        uint64_t, OwnerCompNodeId,
-        PCWSTR,   VisualType,
-        PCWSTR,   Properties,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a composition target/island root is cleared (Root set to null).
