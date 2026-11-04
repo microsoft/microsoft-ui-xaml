@@ -709,6 +709,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        // App ReleasePointerCapture for an injected touch contact raised no PointerCaptureLost on the
+        // test VMs (OwnerTouchCaptureLostCount stayed 0 with and without the fix), the same limit as
+        // ChildTouchCaptureReleaseKeepsTouchHoldDrag. Kept for manual runs on touch hardware.
+        [TestProperty("Ignore", "True")]
         public void TouchOwnerCaptureLossDoesNotBlockMouseDrag()
         {
             using var mouseController = InputController.Activate(PointerInputType.Mouse);
