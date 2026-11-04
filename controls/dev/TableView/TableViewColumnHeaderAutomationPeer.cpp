@@ -255,7 +255,7 @@ void TableViewColumnHeaderAutomationPeer::SetFocusCore()
     {
         throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
     }
-    header.ClearValue(winrt::UIElement::IsTabStopProperty());
+    winrt::get_self<TableView>(owner)->ClearHeaderTabStopStampInternal(header);
     if (!header.Focus(winrt::FocusState::Programmatic) || header.FocusState() == winrt::FocusState::Unfocused)
     {
         throw winrt::hresult_error(UIA_E_INVALIDOPERATION);

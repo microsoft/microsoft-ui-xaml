@@ -660,6 +660,22 @@ TableView::TableView()
             })),
         true /* handledEventsToo */);
 
+    // The body scroller handles the wheel. A horizontal wheel scroll is the user's own, so Left no
+    // longer undoes the drill-in's bring-into-view.
+    AddHandler(
+        winrt::UIElement::PointerWheelChangedEvent(),
+        winrt::box_value(winrt::PointerEventHandler(
+            [weakThis](winrt::IInspectable const&, winrt::PointerRoutedEventArgs const& args)
+            {
+                auto const strongThis = weakThis.get();
+                if (strongThis && args.GetCurrentPoint(nullptr).Properties().IsHorizontalMouseWheel())
+                {
+                    strongThis->m_drillInOffset = -1.0;
+                    strongThis->m_drillRestoreOffset = -1.0;
+                }
+            })),
+        true /* handledEventsToo */);
+
     // Headers need no direction stamp (see RebuildHeaders); the rebuild keeps them in step with the body.
     RegisterPropertyChangedCallback(
         winrt::FrameworkElement::FlowDirectionProperty(),

@@ -2733,6 +2733,162 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a read-only cell whose TextBlock has a ContextFlyout binding that resolves to null, or fails and falls back to the built-in menu, is not actionable.")]
+        public void VerifyNullContextFlyoutBindingDoesNotMakeCellActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "NullMenu",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Name}"" ContextFlyout=""{Binding Tag, RelativeSource={RelativeSource Self}}""/>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "MissingMenu",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Name}"" ContextFlyout=""{Binding MissingMenu}""/>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                var nullMenu = FindVisualChildrenByType<TextBlock>(GetRowCell(row, 3)).First();
+                Verify.IsNotNull(nullMenu.GetBindingExpression(UIElement.ContextFlyoutProperty), "Precondition: the TextBlock's ContextFlyout is a local binding.");
+                Verify.IsFalse(nullMenu.ContextFlyout is MenuFlyout, "Precondition: the binding supplies no app menu.");
+                Verify.IsFalse(GetCellPeer(row, 3).IsKeyboardFocusable(), "A ContextFlyout binding that resolves to null is not a menu.");
+                Verify.IsFalse(GetCellPeer(row, 4).IsKeyboardFocusable(), "A failed ContextFlyout binding's built-in menu is not an app menu.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies refreshing the header tab stops keeps an app's local IsTabStop binding and honors an app's local IsTabStop=false.")]
+        public void VerifyHeaderTabStopRefreshKeepsAppLocalIsTabStop()
+        {
+            TableView tableView = null;
+            Control boundHeader = null;
+            Control optedOutHeader = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                boundHeader = (Control)GetHeaderCell(tableView, 0);
+                optedOutHeader = (Control)GetHeaderCell(tableView, 1);
+                boundHeader.SetBinding(UIElement.IsTabStopProperty, new Binding { Source = true });
+                optedOutHeader.IsTabStop = false;
+                // Restamps the header tab stops.
+                tableView.Columns[2].HeaderToolTip = "Tip";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(boundHeader.GetBindingExpression(UIElement.IsTabStopProperty), "The app's IsTabStop binding must survive the refresh.");
+                Verify.IsFalse(optedOutHeader.IsTabStop, "The app's local IsTabStop=false must survive the refresh.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(optedOutHeader).IsKeyboardFocusable(),
+                    "A header the app took out of the tab order is not keyboard-focusable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header whose only action would be resizing is not actionable while the column is resize-pinned (MinWidth equals MaxWidth, or a lone Star column), and becomes a tab stop once it can resize.")]
+        public void VerifyResizePinnedHeaderIsNotActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                var fixedColumn = MakeTextColumn("Name", width: new GridLength(120));
+                fixedColumn.CanSort = false;
+                fixedColumn.MinWidth = 120;
+                fixedColumn.MaxWidth = 120;
+                var starColumn = MakeTextColumn("Role", width: new GridLength(1, GridUnitType.Star));
+                starColumn.CanSort = false;
+                tableView.Columns.Add(fixedColumn);
+                tableView.Columns.Add(starColumn);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.CanUserResizeColumns, "Precondition: columns are user-resizable.");
+                for (int i = 0; i < 2; i++)
+                {
+                    var header = (Control)GetHeaderCell(tableView, i);
+                    Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(header).IsKeyboardFocusable(), $"Resize-pinned header {i} is not keyboard-focusable.");
+                    Verify.IsFalse(header.IsTabStop, $"Resize-pinned header {i} is not a tab stop.");
+                }
+                tableView.Columns[0].MaxWidth = 300;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A header that can resize again is a tab stop.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app ToolTip that renders through its own Template with null Content makes a header actionable, and an empty app ToolTip does not.")]
+        public void VerifyTemplatedAppToolTipWithoutContentMakesHeaderActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                tableView.Columns[1].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var templated = GetHeaderCell(tableView, 0);
+                var empty = GetHeaderCell(tableView, 1);
+                ToolTipService.SetToolTip(templated, new ToolTip
+                {
+                    Template = (ControlTemplate)XamlReader.Load(
+                        @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" TargetType=""ToolTip"">
+                              <TextBlock Text=""Templated help""/>
+                          </ControlTemplate>"),
+                });
+                ToolTipService.SetToolTip(empty, new ToolTip());
+                Verify.IsTrue(FrameworkElementAutomationPeer.CreatePeerForElement(templated).IsKeyboardFocusable(),
+                    "A templated app ToolTip with null Content makes the header actionable.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(empty).IsKeyboardFocusable(),
+                    "An app ToolTip with neither Content nor a Template is not an action.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a retained header peer reports IsKeyboardFocusable=false while HeadersVisibility hides the column headers, and the header is a tab stop again once they are shown.")]
         public void VerifyHiddenHeaderIsNotKeyboardFocusable()
         {

@@ -369,7 +369,7 @@ int32_t TableView::FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step)
         if (IsHeaderCellActionableInternal(cell))
         {
             // Drops a stamp made before the header's template content loaded.
-            cell.ClearValue(winrt::UIElement::IsTabStopProperty());
+            ClearHeaderTabStopStampInternal(cell);
             if (auto const element = cell.try_as<winrt::UIElement>();
                 element && element.Focus(winrt::FocusState::Keyboard))
             {
@@ -426,14 +426,15 @@ bool TableView::IsHeaderCellActionableInternal(const winrt::FrameworkElement& he
 
     auto const column = header.Tag().try_as<winrt::TableViewColumn>();
     auto const control = header.try_as<winrt::Control>();
-    // Our own IsTabStop stamp (a local value) is not the style's opt-out.
+    // Our own IsTabStop stamp is not the app's opt-out.
     if (!IsVisibleColumn(column) || (control && (!control.IsEnabled() ||
-        (!control.IsTabStop() && control.ReadLocalValue(winrt::UIElement::IsTabStopProperty()) == winrt::DependencyProperty::UnsetValue()))))
+        (!control.IsTabStop() && !HasHeaderTabStopStampInternal(header)))))
     {
         return false;
     }
 
-    if (IsColumnUserSortableInternal(column) || (CanUserResizeColumns() && column.CanResize()) ||
+    // Resizable only while the gripper is available: a pinned column cannot be resized.
+    if (IsColumnUserSortableInternal(column) || (IsColumnResizeAllowed(column) && !IsColumnResizePinned(column)) ||
         column.HeaderContextFlyout() || ContextFlyout() || header.ContextFlyout() ||
         TableViewDetails::HasEffectiveToolTip(header))
     {
@@ -662,27 +663,57 @@ void TableView::MoveFocusOffCollapsingHeaders()
             }
         });
 }
-// Inactive headers are taken out of the tab order like inactive cells. The local value marks ours, so
-// a style-set IsTabStop="False" is kept.
+// Our stamp is a local false; any other local value or binding there now is the app's.
+bool TableView::HasHeaderTabStopStampInternal(const winrt::FrameworkElement& header)
+{
+    auto const columnHeader = header ? header.try_as<winrt::TableViewColumnHeader>() : nullptr;
+    auto const headerImpl = columnHeader ? winrt::get_self<TableViewColumnHeader>(columnHeader) : nullptr;
+    if (!headerImpl || !headerImpl->OwnsTabStopStampInternal())
+    {
+        return false;
+    }
+
+    auto const local = header.ReadLocalValue(winrt::UIElement::IsTabStopProperty()).try_as<winrt::IReference<bool>>();
+    if (local && !local.Value())
+    {
+        return true;
+    }
+    headerImpl->SetOwnsTabStopStampInternal(false);
+    return false;
+}
+
+void TableView::ClearHeaderTabStopStampInternal(const winrt::FrameworkElement& header)
+{
+    if (HasHeaderTabStopStampInternal(header))
+    {
+        header.ClearValue(winrt::UIElement::IsTabStopProperty());
+        winrt::get_self<TableViewColumnHeader>(header.as<winrt::TableViewColumnHeader>())->SetOwnsTabStopStampInternal(false);
+    }
+}
+
+// Inactive headers are taken out of the tab order like inactive cells. Only our own stamp is cleared,
+// so a style-set or app-local IsTabStop is kept.
 void TableView::RefreshHeaderTabStopsInternal()
 {
     winrt::DependencyObject focusedInactive{ nullptr };
     for (auto const& cell : GetVisibleHeaderCells(m_headerHost.get()))
     {
-        auto const header = cell.try_as<winrt::Control>();
+        auto const header = cell.try_as<winrt::TableViewColumnHeader>();
         if (!header)
         {
             continue;
         }
-        const bool stamped = header.ReadLocalValue(winrt::UIElement::IsTabStopProperty()) != winrt::DependencyProperty::UnsetValue();
+        const bool stamped = HasHeaderTabStopStampInternal(cell);
         const bool actionable = IsHeaderCellActionableInternal(cell);
         if (actionable && stamped)
         {
-            header.ClearValue(winrt::UIElement::IsTabStopProperty());
+            ClearHeaderTabStopStampInternal(cell);
         }
-        else if (!actionable && !stamped && header.IsTabStop())
+        else if (!actionable && !stamped && header.IsTabStop() &&
+            header.ReadLocalValue(winrt::UIElement::IsTabStopProperty()) == winrt::DependencyProperty::UnsetValue())
         {
             header.IsTabStop(false);
+            winrt::get_self<TableViewColumnHeader>(header)->SetOwnsTabStopStampInternal(true);
         }
         if (!actionable && header.FocusState() != winrt::FocusState::Unfocused)
         {
@@ -3863,7 +3894,9 @@ bool TableView::ScrollBodyHorizontallyInternal(bool forward, bool toEdge, winrt:
     {
         auto const bounds = element.TransformToVisual(scroller).TransformBounds({ 0.0f, 0.0f, static_cast<float>(element.ActualWidth()), 0.0f });
         const double left = offset + bounds.X;
-        const double inView = forward ? std::min(target, left) : std::max(target, left + bounds.Width - scroller.ViewportWidth());
+        // The leading frozen band covers the start of the viewport.
+        const double inView = forward ? std::min(target, std::max(0.0, left - ComputeLeadingFrozenWidth()))
+            : std::max(target, left + bounds.Width - scroller.ViewportWidth());
         if (!toEdge && inView != target)
         {
             return false;

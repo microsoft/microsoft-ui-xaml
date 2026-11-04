@@ -110,7 +110,15 @@ namespace TableViewDetails
             {
                 return !text->empty();
             }
-            return content != nullptr;
+            if (content)
+            {
+                return true;
+            }
+            // An app ToolTip can render through its own template with no Content; ours never has one.
+            auto const record = GetRecord(element.try_as<winrt::FrameworkElement>());
+            return (!record || record->ToolTip != toolTip) &&
+                (toolTip.ReadLocalValue(winrt::Control::TemplateProperty()) != winrt::DependencyProperty::UnsetValue() ||
+                 toolTip.ReadLocalValue(winrt::FrameworkElement::StyleProperty()) != winrt::DependencyProperty::UnsetValue());
         }
 
         return true;
@@ -273,6 +281,9 @@ namespace TableViewDetails
         }
     }
 
+    // Defined by TableViewRow: a live value change can make the cell (in)actionable.
+    void OnCellToolTipValueAppliedInternal(const winrt::FrameworkElement& cell);
+
     // The whole per-cell update path: no event, no invalidation, no realization-time work.
     inline void OnCellToolTipValueChanged(
         const winrt::DependencyObject& sender,
@@ -295,6 +306,7 @@ namespace TableViewDetails
             {
                 ClearOwnedToolTip(element);
             }
+            OnCellToolTipValueAppliedInternal(element);
         }
         catch (...)
         {

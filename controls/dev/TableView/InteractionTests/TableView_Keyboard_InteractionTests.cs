@@ -2724,6 +2724,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(ReadScrollOffsetComponent(ReadScrollOffsets(), "H") <= start + 0.5, "Home must scroll back to the start.");
             }
         }
+
+        [TestMethod]
+        [TestProperty("Description", "End on the last actionable cell, right after a frozen column and before wide trailing content, keeps that cell clear of the frozen band.")]
+        public void EndKeepsLastActionableCellClearOfFrozenColumn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollCityMenuCheckBox, true)) { return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "Precondition: Right enters the frozen tooltip cell.");
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                double afterEnd = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Log.Comment("Offsets after End '{0}'; focused {1}.", ReadScrollOffsets(), DescribeFocused());
+                Verify.AreEqual(1, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "End must reach ScrollCity, the last actionable cell.");
+                // ScrollCity starts where the 180-DIP frozen column ends, so any scroll slides it under that column.
+                Verify.IsTrue(afterEnd <= 1.0, "End must not scroll the focused cell under the frozen column (offset " + afterEnd + ").");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A horizontal wheel scroll after Right drills in expires the one-step undo: Left then steps back through the user's scroll instead of jumping to the offset before the drill-in.")]
+        public void HorizontalWheelAfterDrillInExpiresLeftRestore()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "Precondition: Right enters the frozen tooltip cell.");
+
+                HorizontalWheelAtPoint(CentreOf(tableView), 5 * 120);
+                double scrolled = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Verify.IsTrue(scrolled > 60, "Precondition: the horizontal wheel scrolls the body (offset " + scrolled + ").");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                double afterLeft = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Log.Comment("Horizontal offset {0} -> {1}; focused {2}.", scrolled, afterLeft, DescribeFocused());
+                Verify.AreEqual(0, IndexOfFocusedCell(FindFocusedBodyElement(GetRowsHost(tableView))), "Left must keep the cell focused while the body can step back.");
+                Verify.IsTrue(afterLeft < scrolled && afterLeft > 0.5, "Left must step back one step, not jump to the offset before the drill-in.");
+            }
+        }
         [TestMethod]
         [TestProperty("Description", "In a read-only table whose only actionable column is not frozen, reading-order forward then back the same number of times returns to the row at the start of the scroll range (RTL).")]
         public void ForwardThenBackUndoesHorizontalScroll()

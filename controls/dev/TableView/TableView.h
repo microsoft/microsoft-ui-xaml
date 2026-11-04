@@ -425,6 +425,9 @@ public:
     bool IsColumnCellEditableInternal(winrt::TableViewColumn const& column);
     void RefreshCellFocusLevelsInternal();
     void RefreshHeaderTabStopsInternal();
+    // The inactive-header IsTabStop stamp; an app's local IsTabStop value or binding is never ours.
+    bool HasHeaderTabStopStampInternal(winrt::FrameworkElement const& header);
+    void ClearHeaderTabStopStampInternal(winrt::FrameworkElement const& header);
 
     // True when handled (menu shown, or suppressed: editing, nested or stale target); false lets the
     // request bubble to the native ContextFlyout chain.

@@ -454,6 +454,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        // MITA has no horizontal wheel, so this injects MOUSEEVENTF_HWHEEL directly. A positive delta scrolls right.
+        internal static void HorizontalWheelAtPoint(Point point, int delta)
+        {
+            Log.Comment("Rotate horizontal wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
+
+            PointerInput.Move(point);
+            var input = new NativeInput { type = 0 /* INPUT_MOUSE */, mi = new NativeMouseInput { mouseData = delta, dwFlags = 0x01000 /* MOUSEEVENTF_HWHEEL */ } };
+            Verify.AreEqual(1u, SendInput(1, new[] { input }, System.Runtime.InteropServices.Marshal.SizeOf<NativeInput>()),
+                "SendInput must inject the horizontal wheel.");
+            Wait.ForIdle();
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct NativeMouseInput
+        {
+            public int dx;
+            public int dy;
+            public int mouseData;
+            public uint dwFlags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct NativeInput
+        {
+            public uint type;
+            public NativeMouseInput mi;
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint count, NativeInput[] inputs, int size);
+
         internal static Point CentreOf(UIObject element)
         {
             var bounds = element.BoundingRectangle;

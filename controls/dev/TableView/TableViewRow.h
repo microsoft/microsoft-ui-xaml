@@ -123,6 +123,8 @@ public:
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
     void RefreshCellToolTips();
+    // A live tooltip value change restamps the cell level when the cell's actionability flipped.
+    void OnCellToolTipChangedInternal(const winrt::UIElement& cell);
     // Raises NameProperty changed on cell peers that already exist; creates none.
     void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 

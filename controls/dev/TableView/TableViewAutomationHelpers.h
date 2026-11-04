@@ -458,8 +458,14 @@ inline bool HasAppContextFlyout(winrt::UIElement const& element)
         element.try_as<winrt::RichTextBlockOverflow>() || element.try_as<winrt::TextBox>() ||
         element.try_as<winrt::RichEditBox>() || element.try_as<winrt::PasswordBox>())
     {
+        // A local binding that resolves to null, or fails, leaves the built-in menu in effect.
         auto const local = element.ReadLocalValue(winrt::UIElement::ContextFlyoutProperty());
-        return local && local != winrt::DependencyProperty::UnsetValue();
+        if (!local || local == winrt::DependencyProperty::UnsetValue())
+        {
+            return false;
+        }
+        auto const flyout = element.ContextFlyout();
+        return flyout && !(local.try_as<winrt::Microsoft::UI::Xaml::Data::BindingExpression>() && flyout.try_as<winrt::Microsoft::UI::Xaml::Controls::TextCommandBarFlyout>());
     }
     return element.ContextFlyout() != nullptr;
 }

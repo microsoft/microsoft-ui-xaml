@@ -2160,6 +2160,31 @@ void TableViewRow::RefreshCellToolTips()
     ApplyFocusLevelInternal();
 }
 
+void TableViewRow::OnCellToolTipChangedInternal(const winrt::UIElement& cell)
+{
+    // Restamps every row and hands a focused cell that lost its only action to its row.
+    auto const owner = m_owningTableView.get();
+    if (m_isCellLevel && owner && cell.IsTabStop() != IsCellActionableInternal(cell))
+    {
+        winrt::get_self<TableView>(owner)->RefreshCellFocusLevelsInternal();
+    }
+}
+
+namespace TableViewDetails
+{
+    void OnCellToolTipValueAppliedInternal(const winrt::FrameworkElement& cell)
+    {
+        for (auto node = winrt::VisualTreeHelper::GetParent(cell); node; node = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (auto const row = node.try_as<winrt::TableViewRow>())
+            {
+                winrt::get_self<TableViewRow>(row)->OnCellToolTipChangedInternal(cell);
+                return;
+            }
+        }
+    }
+}
+
 void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
 {
     auto const children = host.Children();

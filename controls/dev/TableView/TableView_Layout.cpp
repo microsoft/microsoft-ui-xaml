@@ -672,6 +672,7 @@ void TableView::RefreshResizeGripperAvailability()
         return m_headerHost.get() == host && winrt::VisualTreeHelper::GetParent(headerCell) == host;
     };
 
+    bool flipped = false;
     for (auto const& headerCell : headerCells)
     {
         if (!isHosted(headerCell))
@@ -723,6 +724,13 @@ void TableView::RefreshResizeGripperAvailability()
                     winrt::box_value(canResize));
             }
         }
+        flipped = true;
+    }
+
+    // Resizing can be a header's only action.
+    if (flipped)
+    {
+        RefreshHeaderTabStopsInternal();
     }
 }
 

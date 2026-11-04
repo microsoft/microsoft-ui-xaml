@@ -1111,6 +1111,15 @@ namespace MUXControlsTestApp
             }
         }
 
+        // Read-only, ScrollCity is then the last actionable column, right after the frozen one, with
+        // wide trailing content.
+        private void OnScrollCityMenuToggled(object sender, RoutedEventArgs e)
+        {
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "City" });
+            ScrollingTableView.Columns[1].CellContextFlyout = ((CheckBox)sender).IsChecked == true ? menu : null;
+        }
+
         // Page switching without a Pivot: hosting the TableViews in a Pivot asserts in
         // Microsoft.UI.Xaml.Phone.dll (0xC0000420) on the second navigation to this page. These
         // buttons are reachable by AutomationId, which also keeps switching off the name-based UIA

@@ -143,7 +143,8 @@ the same order; an empty table's `EmptyTemplate` content is the stop instead (it
 
 Takes keyboard focus:
 
-- Actionable headers: sort (with a sort key), resize, context menu, tooltip, or interactive content.
+- Actionable headers: sort (with a sort key), resize (while the column can actually be resized),
+  context menu, tooltip, or interactive content.
 - Rows.
 - Actionable cells: editable (a `CellEditingTemplate`, or a text column with a `Binding`, in an
   editable table and column), interactive content (a control, an inline `Hyperlink`, or a nested

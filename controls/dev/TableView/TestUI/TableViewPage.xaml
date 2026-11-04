@@ -180,6 +180,12 @@
                       IsTabStop="False"
                       Checked="OnScrollFixturesToggled"
                       Unchecked="OnScrollFixturesToggled" />
+            <CheckBox Content="ScrollCity menu"
+                      AutomationProperties.Name="ScrollCityMenuCheckBox"
+                      AutomationProperties.AutomationId="ScrollCityMenuCheckBox"
+                      IsTabStop="False"
+                      Checked="OnScrollCityMenuToggled"
+                      Unchecked="OnScrollCityMenuToggled" />
             <Button Content="Toggle Name CanResize"
                     AutomationProperties.Name="ToggleNameCanResizeButton"
                     AutomationProperties.AutomationId="ToggleNameCanResizeButton"
