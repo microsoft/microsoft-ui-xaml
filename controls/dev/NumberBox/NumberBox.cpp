@@ -378,10 +378,10 @@ void NumberBox::ReevaluateForwardedUIAProperties()
         const auto name = winrt::AutomationProperties::GetName(*this);
         const auto minimum = Minimum() == -std::numeric_limits<double>::max() ?
             winrt::hstring{} :
-            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + StringUtil::FormatDouble(Minimum()) };
         const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
             winrt::hstring{} :
-            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + StringUtil::FormatDouble(Maximum()) };
 
         if (!name.empty())
         {

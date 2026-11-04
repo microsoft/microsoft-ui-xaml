@@ -16,6 +16,8 @@ namespace StringUtil
     /// <returns>The formatted string.</returns>
     winrt::hstring FormatString(std::wstring_view formatString, ...);
 
+    winrt::hstring FormatDouble(double value);
+
     std::wstring Utf8ToUtf16(const std::string_view& utf8Str);
     std::string Utf16ToUtf8(const std::wstring_view& utf16Str);
 }

@@ -6,6 +6,7 @@
 #include "MapControl.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "Utils.h"
 #include "WebView2.h"
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Windows.Devices.Geolocation.h>
@@ -84,13 +85,13 @@ winrt::IAsyncOperation<winrt::hstring> MapControl::InitializeWebMap()
     if (center != nullptr)
     {
         const auto centerPosition = center.Position();
-        pos = std::format(L"{},{}", centerPosition.Longitude, centerPosition.Latitude);
+        pos = StringUtil::FormatDouble(centerPosition.Longitude) + L"," + StringUtil::FormatDouble(centerPosition.Latitude);
     }
 
     auto token = winrt::Windows::Data::Json::JsonValue::CreateStringValue(MapServiceToken());
     // Initializing Azure Maps on WebView
     // params: longitude, latitude, mapServiceToken
-    auto script = std::format(L"initializeMap({},{});", pos, token.Stringify().c_str());
+    auto script = L"initializeMap(" + pos + L"," + token.Stringify() + L");";
 
     if (auto webView = m_webView.get())
     {
@@ -140,7 +141,7 @@ winrt::fire_and_forget MapControl::UpdateMapServiceTokenInWebPage()
         // Sends new token to WebView
         // params: mapServiceToken
         auto token = winrt::Windows::Data::Json::JsonValue::CreateStringValue(MapServiceToken());
-        auto script = std::format(L"updateMapServiceToken({});", token.Stringify().c_str());
+        auto script = L"updateMapServiceToken(" + token.Stringify() + L");";
         co_await core.ExecuteScriptAsync(script);
 
         for (uint32_t i = 0; i < Layers().Size(); i++)
@@ -162,7 +163,7 @@ winrt::fire_and_forget MapControl::UpdateCenterInWebPage()
         auto core = co_await GetCoreWebView2();
 
         auto newCenter = Center().Position();
-        auto pos = std::format(L"{},{}", newCenter.Longitude, newCenter.Latitude);
+        auto pos = StringUtil::FormatDouble(newCenter.Longitude) + L"," + StringUtil::FormatDouble(newCenter.Latitude);
         // Updates center of map in WebView
         // params: longitude, latitude
         co_await core.ExecuteScriptAsync(L"updateCenter(" + pos + L")");
@@ -174,7 +175,7 @@ winrt::fire_and_forget MapControl::UpdateZoomLevelInWebPage()
     if (auto webView = m_webView.get())
     {
         auto core = co_await GetCoreWebView2();
-        core.ExecuteScriptAsync(L"updateZoom(" + winrt::to_hstring(ZoomLevel()) + L")");
+        core.ExecuteScriptAsync(L"updateZoom(" + StringUtil::FormatDouble(ZoomLevel()) + L")");
     }
 }
 
@@ -268,7 +269,7 @@ void MapControl::WebMessageReceived(winrt::WebView2 sender, winrt::CoreWebView2W
                 for (uint32_t i = 0; i < elements.Size(); i++)
                 {
                     auto elem = elements.GetAt(i);
-                    if (winrt::get_self<MapElement>(elem)->Id == winrt::to_hstring(*pointId))
+                    if (winrt::get_self<MapElement>(elem)->Id == StringUtil::FormatDouble(*pointId))
                     {
                         clickedElement = elem.try_as<winrt::MapElement>();
                     }
@@ -371,8 +372,8 @@ winrt::IAsyncOperation<winrt::hstring> MapControl::AddMapIcon(winrt::MapIcon map
         auto core = co_await GetCoreWebView2();
 
         const auto mapIconPosition = mapIcon.Location().Position();
-        const auto latitude = winrt::to_hstring(mapIconPosition.Latitude);
-        const auto longitude = winrt::to_hstring(mapIconPosition.Longitude);
+        const auto latitude = StringUtil::FormatDouble(mapIconPosition.Latitude);
+        const auto longitude = StringUtil::FormatDouble(mapIconPosition.Longitude);
 
         // Prefer the app-provided accessible name; otherwise fall back to a localized
         // default so screen readers never announce an empty or hard-coded pin name.
@@ -406,8 +407,8 @@ winrt::fire_and_forget MapControl::UpdateMapIcon(winrt::Geopoint mapIconPoint, w
         auto core = co_await GetCoreWebView2();
 
         const auto mapIconPosition = mapIconPoint.Position();
-        const auto latitude = winrt::to_hstring(mapIconPosition.Latitude);
-        const auto longitude = winrt::to_hstring(mapIconPosition.Longitude);
+        const auto latitude = StringUtil::FormatDouble(mapIconPosition.Latitude);
+        const auto longitude = StringUtil::FormatDouble(mapIconPosition.Longitude);
 
         co_await core.ExecuteScriptAsync(L"updatePoint(" + longitude + L", " + latitude + L"," + pointId + L"," + layerId + L");");
     }

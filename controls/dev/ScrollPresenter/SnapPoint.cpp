@@ -805,8 +805,8 @@ std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualApplicableZon
         throw winrt::hresult_invalid_argument(
             StringUtil::FormatString(
                 L"Adjacent repeated ScrollSnapPoints cannot have the same range [%1!s!, %2!s!].",
-                winrt::to_hstring(ActualStart()).c_str(),
-                winrt::to_hstring(ActualEnd()).c_str()));
+                StringUtil::FormatDouble(ActualStart()).c_str(),
+                StringUtil::FormatDouble(ActualEnd()).c_str()));
     }
 
     return actualApplicableZoneReturned;
@@ -992,9 +992,9 @@ double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint) const
         throw winrt::hresult_invalid_argument(
             StringUtil::FormatString(
                 L"A snap point at %1!s! cannot lie inside repeated ScrollSnapPoint range [%2!s!, %3!s!].",
-                winrt::to_hstring(edgeOfMidpoint).c_str(),
-                winrt::to_hstring(actualStart).c_str(),
-                winrt::to_hstring(actualEnd).c_str()));
+                StringUtil::FormatDouble(edgeOfMidpoint).c_str(),
+                StringUtil::FormatDouble(actualStart).c_str(),
+                StringUtil::FormatDouble(actualEnd).c_str()));
     }
     return 0.0;
 }
@@ -1032,8 +1032,8 @@ void RepeatedScrollSnapPoint::Combine(
     throw winrt::hresult_invalid_argument(
         StringUtil::FormatString(
             L"Cannot combine a snap point with repeated ScrollSnapPoint range [%1!s!, %2!s!].",
-            winrt::to_hstring(ActualStart()).c_str(),
-            winrt::to_hstring(ActualEnd()).c_str()));
+            StringUtil::FormatDouble(ActualStart()).c_str(),
+            StringUtil::FormatDouble(ActualEnd()).c_str()));
 }
 
 int RepeatedScrollSnapPoint::SnapCount() const
@@ -1705,8 +1705,8 @@ std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualApplicableZone(
         throw winrt::hresult_invalid_argument(
             StringUtil::FormatString(
                 L"Adjacent repeated ZoomSnapPoints cannot have the same range [%1!s!, %2!s!].",
-                winrt::to_hstring(m_start).c_str(),
-                winrt::to_hstring(m_end).c_str()));
+                StringUtil::FormatDouble(m_start).c_str(),
+                StringUtil::FormatDouble(m_end).c_str()));
     }
 
     return actualApplicableZoneReturned;
@@ -1864,9 +1864,9 @@ double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint) const
         throw winrt::hresult_invalid_argument(
             StringUtil::FormatString(
                 L"A snap point at %1!s! cannot lie inside repeated ZoomSnapPoint range [%2!s!, %3!s!].",
-                winrt::to_hstring(edgeOfMidpoint).c_str(),
-                winrt::to_hstring(m_start).c_str(),
-                winrt::to_hstring(m_end).c_str()));
+                StringUtil::FormatDouble(edgeOfMidpoint).c_str(),
+                StringUtil::FormatDouble(m_start).c_str(),
+                StringUtil::FormatDouble(m_end).c_str()));
     }
     return 0.0;
 }
@@ -1904,8 +1904,8 @@ void RepeatedZoomSnapPoint::Combine(
     throw winrt::hresult_invalid_argument(
         StringUtil::FormatString(
             L"Cannot combine a snap point with repeated ZoomSnapPoint range [%1!s!, %2!s!].",
-            winrt::to_hstring(m_start).c_str(),
-            winrt::to_hstring(m_end).c_str()));
+            StringUtil::FormatDouble(m_start).c_str(),
+            StringUtil::FormatDouble(m_end).c_str()));
 }
 
 int RepeatedZoomSnapPoint::SnapCount() const

@@ -4,6 +4,41 @@
 #include "pch.h"
 #include "Utils.h"
 
+#include <locale.h>
+#include <memory>
+
+winrt::hstring StringUtil::FormatDouble(double value)
+{
+    static const auto cLocale = []
+    {
+        std::unique_ptr<std::remove_pointer_t<_locale_t>, decltype(&_free_locale)> locale(
+            _create_locale(LC_NUMERIC, "C"), &_free_locale);
+        if (!locale)
+        {
+            winrt::throw_hresult(E_OUTOFMEMORY);
+        }
+        return locale;
+    }();
+
+    wchar_t buffer[32];
+    // Keep ordinary values readable, increasing printf's default precision only when
+    // necessary to round-trip. The dynamically linked UCRT avoids STL conversion tables.
+    for (int precision = 6; precision <= std::numeric_limits<double>::max_digits10; ++precision)
+    {
+        const int length = _swprintf_s_l(buffer, ARRAYSIZE(buffer), L"%.*g", cLocale.get(), precision, value);
+        if (length < 0)
+        {
+            winrt::throw_hresult(E_UNEXPECTED);
+        }
+        if (!std::isfinite(value) || _wcstod_l(buffer, nullptr, cLocale.get()) == value)
+        {
+            return winrt::hstring{ buffer, static_cast<uint32_t>(length) };
+        }
+    }
+
+    winrt::throw_hresult(E_UNEXPECTED);
+}
+
 winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
 {
     va_list pArgs;
