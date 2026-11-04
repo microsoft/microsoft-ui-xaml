@@ -1478,22 +1478,25 @@ void NavigationView::UpdateRootSplitViewClip(winrt::Size const& size)
     if (auto splitView = m_rootSplitView.get())
     {
         auto clip = m_rootSplitViewClip.get();
-        const auto currentClip = splitView.Clip();
-        if (currentClip && currentClip != clip)
-        {
-            // A custom template (or app code) set its own clip on RootSplitView; leave it alone.
-            return;
-        }
+        const auto localClip = splitView.ReadLocalValue(winrt::UIElement::ClipProperty());
+        const bool ownsClip = clip && localClip && localClip.try_as<winrt::RectangleGeometry>() == clip;
 
-        if (!clip)
+        if (!ownsClip)
         {
+            // Only install our clip if nothing else provides one: no local value, Binding or TemplateBinding
+            // (ReadLocalValue returns the expression, or null for a TemplateBinding) and no style/VSM value.
+            if (localClip != winrt::DependencyProperty::UnsetValue() || splitView.Clip())
+            {
+                return;
+            }
+
             clip = winrt::RectangleGeometry{};
             m_rootSplitViewClip.set(clip);
         }
 
         clip.Rect({ 0.0f, -size.Height, size.Width, size.Height * 3.0f });
 
-        if (!currentClip)
+        if (!ownsClip)
         {
             splitView.Clip(clip);
         }

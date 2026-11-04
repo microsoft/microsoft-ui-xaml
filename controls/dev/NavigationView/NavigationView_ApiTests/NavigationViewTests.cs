@@ -3924,6 +3924,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationView's #10983 clip does not replace a binding on RootSplitView.Clip whose value is null.")]
+        public void VerifyNavigationViewDoesNotReplaceBoundRootSplitViewClip()
+        {
+            NavigationView navView = null;
+            SplitView splitView = null;
+            Border clipSource = null;
+            RectangleGeometry providedClip = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView()
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    Width = 500.0,
+                    Height = 300.0,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Content = new Grid(),
+                };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                Verify.IsNotNull(splitView.Clip, "Precondition: by default NavigationView clips RootSplitView");
+
+                // Like a custom template with Clip="{Binding ..., Mode=OneWay}" whose source starts out null.
+                clipSource = new Border();
+                splitView.SetBinding(UIElement.ClipProperty, new global::Microsoft.UI.Xaml.Data.Binding()
+                {
+                    Source = clipSource,
+                    Path = new PropertyPath("Tag"),
+                    Mode = global::Microsoft.UI.Xaml.Data.BindingMode.OneWay,
+                });
+                Verify.IsNull(splitView.Clip, "Precondition: the bound value is null");
+
+                navView.Width = 600.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(600.0, splitView.ActualWidth, "Precondition: RootSplitView was resized (SizeChanged raised)");
+                Verify.IsNull(splitView.Clip, "NavigationView must not install its clip over a bound RootSplitView.Clip");
+                Verify.IsNotNull(splitView.GetBindingExpression(UIElement.ClipProperty), "The binding on RootSplitView.Clip must survive");
+
+                providedClip = new RectangleGeometry() { Rect = new global::Windows.Foundation.Rect(0, 0, 10, 10) };
+                clipSource.Tag = providedClip;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(providedClip, splitView.Clip, "The bound clip takes effect");
+            });
+        }
+
         private void VerifyContentIsClippedHorizontallyDuringPaneCloseTransition(FlowDirection flowDirection)
         {
             var splitView = SetupClosedExpandedNavigationView(flowDirection, out Grid contentMarker, out Grid host);
