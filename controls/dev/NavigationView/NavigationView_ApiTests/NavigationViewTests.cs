@@ -525,6 +525,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Pins the intended behavior: NavigationBackButtonNormalStyle/SmallStyle from app XAML always draw the animated back icon at NavigationView's back button size, even with custom Content/FontSize (the old framework copies drew Content as a FontIcon glyph).")]
+        public void VerifyNavigationBackButtonStylesFromAppScopeIgnoreCustomContentAndFontSize()
+        {
+            var root = LoadIntoContent(@"
+                <StackPanel
+                    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    <controls:NavigationView x:Name='navView' IsBackButtonVisible='Visible' PaneDisplayMode='Left' Width='400' Height='200' />
+                    <Button x:Name='normalButton' Style='{StaticResource NavigationBackButtonNormalStyle}' Content='&#xE72A;' FontSize='24' />
+                    <Button x:Name='smallButton' Style='{StaticResource NavigationBackButtonSmallStyle}' Content='&#xE72A;' FontSize='10' />
+                </StackPanel>");
+
+            RunOnUIThread.Execute(() =>
+            {
+                var navViewBackButton = (Button)VisualTreeUtils.FindVisualChildByName((NavigationView)root.FindName("navView"), "NavigationViewBackButton");
+                var navViewGlyph = GetBackButtonGlyph(navViewBackButton);
+
+                foreach (var name in new[] { "normalButton", "smallButton" })
+                {
+                    var button = (Button)root.FindName(name);
+                    var glyph = GetBackButtonGlyph(button);
+                    Log.Comment($"{name}: glyph {glyph.GetType().Name} {glyph.ActualWidth}x{glyph.ActualHeight}, button {button.ActualWidth}x{button.ActualHeight}, Margin {button.Margin}");
+                    Verify.IsTrue(glyph is AnimatedIcon, name + " draws the animated back icon even with custom Content, actual: " + glyph.GetType().Name);
+                    Verify.IsNull(VisualTreeUtils.FindVisualChildByType<FontIcon>(button), name + " has no FontIcon showing the custom Content glyph");
+                    Verify.AreEqual(navViewGlyph.ActualWidth, glyph.ActualWidth, name + " glyph width matches NavigationView's back button");
+                    Verify.AreEqual(navViewGlyph.ActualHeight, glyph.ActualHeight, name + " glyph height matches NavigationView's back button");
+                    Verify.AreEqual(navViewBackButton.ActualHeight, button.ActualHeight, name + " height matches NavigationView's back button");
+                }
+
+                Verify.AreEqual(navViewBackButton.Margin, ((Button)root.FindName("normalButton")).Margin, "Normal style Margin matches NavigationView's back button (Left mode)");
+                Verify.AreEqual(new Thickness(4, 2, 0, 2), ((Button)root.FindName("smallButton")).Margin, "Small style Margin");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "A NavigationView template defined in app XAML that references NavigationBackButtonNormalStyle gets the same back/close button style as the default template (#10973).")]
         public void VerifyNavigationViewTemplateFromAppScopeUsesControlsBackButtonStyle()
         {
