@@ -577,7 +577,7 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
   children (and whether it has any) when the node is expanded, with the eager index as one
   implementation.
 - **Incremental source changes.** Add or remove of a leaf whose parent is collapsed can skip the
-  rebuild. v1 always rebuilds, as grouping does.
+  rebuild. v1 always rebuilds (grouping without a hierarchy appends and removes in place).
 - **Grouped toggle cost.** Under `GroupBy`, one node toggle re-slices every group, and each
   `ShapedGroup::SetItems` makes the grouped adapter rebuild the grouped axis. Batch the re-slice:
   update only the slices that changed, then rebuild once.

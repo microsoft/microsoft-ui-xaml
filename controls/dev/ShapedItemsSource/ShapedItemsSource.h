@@ -218,20 +218,29 @@ private:
     void ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     bool TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void AbandonIncrementalCommit() noexcept;
+    bool TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     bool TryReshapeStaleSortedFlatProjection();
     // False when an unobserved edit or a failed rebuild may have left the retained state stale.
-    bool IsFilterMembershipCurrent() const;
+    bool AreShapeInputsCurrent() const;
     bool IsFlatProjectionSorted() const;
     bool IsFlatRowInSortOrderWithNeighbours(uint32_t index) const;
     void TrackFlatItemPropertyChanged(winrt::IInspectable const& item);
     void UntrackFlatItemPropertyChanged(winrt::IInspectable const& item);
     void ClearFlatItemPropertyChangedTracking();
     void RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows);
-    // Live shaping already observes every item, so it owns staleness then. Filter tracking costs a
-    // subscription per item, so it waits until the source has changed incrementally.
+    // Live shaping already observes every item, so it owns staleness then. Filter and group tracking
+    // costs a subscription per item, so it waits until the source has changed incrementally.
     bool ShouldTrackItemPropertyChanges() const
     {
-        return (HasActiveSort() || (m_pipeline.HasFilter() && m_sourceChangesIncrementally)) && !IsLiveShapingEnabled();
+        if (IsLiveShapingEnabled())
+        {
+            return false;
+        }
+        if (m_groupSelector)
+        {
+            return m_sourceChangesIncrementally;
+        }
+        return HasActiveSort() || (m_pipeline.HasFilter() && m_sourceChangesIncrementally);
     }
     // Under a filter, excluded items are observed too: an edit can admit them.
     std::vector<winrt::IInspectable> const& FlatItemsToTrack() const noexcept
@@ -249,7 +258,7 @@ private:
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows, std::vector<winrt::IInspectable> unfilteredRows);
-    void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
+    void RebuildGrouped(std::vector<winrt::IInspectable>& rows, std::vector<winrt::IInspectable> const& unfilteredRows);
     void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
     // Both axes: buckets the roots, one adapter segment and one group per bucket.
     void RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
@@ -427,8 +436,8 @@ private:
     // locate a removed row without an O(n) WinRT ABI scan.
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
-    // Sort- and filter-key changes raise no collection notification, so while sorted or filtered, INPC
-    // items are observed and an edit marks the row dirty or the membership stale.
+    // Sort-, filter- and group-key changes raise no collection notification, so while shaped, INPC
+    // items are observed and an edit marks the row dirty or the shape inputs stale.
     // Keyed by IUnknown address (stable across re-orders); holding Item keeps the address unique.
     struct FlatItemPropertyChangedSubscription
     {
@@ -439,10 +448,10 @@ private:
     bool m_flatItemPropertyChangedTrackingActive{ false };
     // Some tracked item cannot report its edits (no INPC, or one object on two source slots).
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
-    // A tracked item changed while filtered: the predicate may now disagree with the membership.
-    bool m_filterMembershipMayBeStale{ false };
-    // Set by the first collection change; only then is a filtered projection's in-place state kept,
-    // so a source that never changes pays nothing for it.
+    // A tracked item changed while filtered or grouped: the predicate or group key may now disagree.
+    bool m_shapeInputsMayBeStale{ false };
+    // Set by the first collection change; only then is a filtered or grouped projection's in-place
+    // state kept, so a source that never changes pays nothing for it.
     bool m_sourceChangesIncrementally{ false };
     // First path segment of each active sort axis' SortMemberPath.
     std::unordered_set<winrt::hstring> m_sortKeyPropertyNames;
@@ -471,6 +480,8 @@ private:
     void PostPendingRefresh() noexcept;
     bool m_refreshReplayScheduled{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
+    // Object addresses of the rows in a Grouped projection, to refuse one object on two rows.
+    std::unordered_set<uintptr_t> m_groupedRowAddresses;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
     std::shared_ptr<LiveShapingTracker> m_liveShaping{ std::make_shared<LiveShapingTracker>() };
     // Owning thread (m_rows is bound to it); PropertyChanged is always handled here. Null off a

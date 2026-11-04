@@ -67,6 +67,16 @@ private:
     // moves) never take this path — they stay a single Reset.
     bool TryApplyExpansionSplice(winrt::hstring const& intentKey, bool expand);
 
+    // Splices a single row inserted into or removed from one group. Returns false, having changed
+    // nothing, when it can't; the caller then rebuilds.
+    void OnGroupItemsChanged(
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+        winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+    bool TryApplyGroupItemsSplice(
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+        winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+    void EnsureGroupHeaderSlots();
+
     void AttachToSource();
     void DetachFromSource();
     void SubscribeToGroup(winrt::IInspectable const& group);
@@ -109,6 +119,18 @@ private:
         winrt::event_token BindableToken{};
     };
     std::vector<InnerGroupSubscription> m_innerSubscriptions;
+
+    // Each group's header index in m_entries, so a change inside a group is located without a scan.
+    struct GroupHeaderSlot
+    {
+        winrt::IInspectable Group{ nullptr };
+        winrt::IInspectable Items{ nullptr };
+        // Canonical IUnknown of Items, which keeps it alive.
+        void* ItemsIdentity{};
+        uint32_t EntryIndex{};
+    };
+    std::vector<GroupHeaderSlot> m_groupHeaderSlots;
+    bool m_groupHeaderSlotsValid{ false };
 
     // Simple re-entrancy guard: a change notification raised synchronously inside ReplaceAll must
     // not start a nested Rebuild. The re-entrant request is remembered and run once after unwind.

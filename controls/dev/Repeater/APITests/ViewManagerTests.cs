@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
@@ -1129,6 +1129,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreSame(element90, repeater.TryGetElement(91), "The pinned element is reused at its updated index.");
                 Verify.AreEqual("Item #90", element90.Content);
                 Verify.AreSame(element90, FocusManager.GetFocusedElement(repeater.XamlRoot));
+            });
+        }
+
+        // Scenario: focus a realized element, remove an item, replace the first one and lay out (only the replacement is
+        //           created), then insert ahead of the focused element.
+        // Expected: every realized element, the focused one included, shows the item at its index, and focus stays.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a focused element and the other realized elements move with their items on an insert after a remove and a replace.")]
+        public void VerifyFocusedElementKeepsItsItemAcrossRemoveReplaceAndInsert()
+        {
+            // Few enough items that all are realized, so laying out the replacement creates no other element.
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button focused = null;
+            var gotFocus = new ManualResetEvent(false);
+
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            repeater = SetupRepeater(data, layout, @"<Button Content='{Binding}' Height='30'/>", out _);
+            RunOnUIThread.Execute(() =>
+            {
+                focused = (Button)repeater.TryGetElement(2);
+                Verify.IsNotNull(focused);
+                focused.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(focused.Focus(FocusState.Programmatic));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for element 2 to get focus.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                data.RemoveAt(4);
+                data[0] = "Replaced";
+                repeater.UpdateLayout();
+                data.Insert(1, "Inserted");
+                repeater.UpdateLayout();
+
+                var realized = 0;
+                for (var i = 0; i < data.Count; i++)
+                {
+                    if (repeater.TryGetElement(i) is Button element)
+                    {
+                        realized++;
+                        Verify.AreEqual(data[i], element.Content, $"Element {i} shows item {i}.");
+                    }
+                }
+                Verify.AreEqual(data.Count, realized, "Every item is realized.");
+                Verify.AreSame(focused, repeater.TryGetElement(3), "The focused element moved with its item.");
+                Verify.AreEqual("Item #2", focused.Content);
+                Verify.AreSame(focused, FocusManager.GetFocusedElement(repeater.XamlRoot));
             });
         }
 

@@ -2172,6 +2172,156 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies adding rows one at a time to a grouped source keys only the added row and never resets the rows (#12472).")]
+        public void VerifyGroupedAddsKeyOnlyTheAddedRows()
+        {
+            const int initialCount = 30;
+            const int addCount = 30;
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var keyCalls = 0;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(Enumerable.Range(0, initialCount).Select(MakeGroupedPerson));
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => { keyCalls++; return Person(o).Role; }));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                keyCalls = 0;
+                for (var k = initialCount; k < initialCount + addCount; k++)
+                {
+                    items.Add(MakeGroupedPerson(k));
+                }
+
+                Log.Comment($"{addCount} adds over {initialCount} rows ran the group key {keyCalls} times.");
+                Verify.IsLessThanOrEqual(keyCalls, 2 * addCount,
+                    "Each add must key the added row only, not regroup every row (O(n) per add).");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGroupedData(tableView, items, p => true, rows => rows);
+                Verify.AreEqual(0, actions.Count(a => a == "Reset"), "A single-row add must not reset the rows.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies adds to a filtered, grouped source sorted within groups run the filter and group key only for the added rows and land in sorted position.")]
+        public void VerifyFilteredGroupedSortedAddsEvaluateOnlyTheAddedRows()
+        {
+            const int initialCount = 30;
+            const int addCount = 30;
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var calls = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(Enumerable.Range(0, initialCount).Select(MakeGroupedPerson));
+                var source = TableViewSource
+                    .From(items)
+                    .Filter(o => { calls++; return !Person(o).Name.EndsWith("5", StringComparison.Ordinal); })
+                    .GroupBy(o => { calls++; return Person(o).Role; })
+                    .Sort("Name", SortDirection.Descending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                calls = 0;
+                for (var k = initialCount; k < initialCount + addCount; k++)
+                {
+                    items.Add(MakeGroupedPerson(k));
+                }
+
+                Log.Comment($"{addCount} adds over {initialCount} rows ran the filter and group key {calls} times.");
+                Verify.IsLessThanOrEqual(calls, 3 * addCount,
+                    "Each add must filter and key the added row only, not reshape every row (O(n) per add).");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGroupedData(tableView, items, p => !p.Name.EndsWith("5", StringComparison.Ordinal),
+                    rows => rows.OrderByDescending(p => p.Name, StringComparer.Ordinal));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removals while grouped keep groups in first-appearance order and drop an emptied group.")]
+        public void VerifyGroupedRemovesKeepFirstAppearanceOrder()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Designer: Asha, Ines; Engineer: Diego, Rafa, Owen; Architect: Mei.
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+
+                // Rafa is not his group's first row; Mei empties hers; Asha is the first Designer, so
+                // Designer now first appears after Engineer.
+                items.Remove(items.First(p => p.Name == "Rafa"));
+                items.Remove(items.First(p => p.Name == "Mei"));
+                items.Remove(items.First(p => p.Name == "Asha"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Engineer(2)", "Diego", "Owen", "#Designer(1)", "Ines" },
+                    "removals must leave the groups exactly as a regroup of the remaining rows would");
+            });
+        }
+
+        // 37 and 120 are coprime, so names are distinct and adds interleave the existing rows.
+        private static ShapedPerson MakeGroupedPerson(int k)
+            => new ShapedPerson($"N{(k * 37) % 120:D3}", new[] { "Designer", "Engineer", "Architect" }[k % 3], "Platform");
+
+        // Groups in first-appearance order of the kept rows, each group's rows ordered by `order`.
+        private static void VerifyGroupedData(
+            TableView tableView,
+            IEnumerable<ShapedPerson> source,
+            Func<ShapedPerson, bool> keep,
+            Func<IEnumerable<ShapedPerson>, IEnumerable<ShapedPerson>> order)
+        {
+            var kept = source.Where(keep).ToList();
+            var keys = kept.Select(p => p.Role).Distinct().ToList();
+            var expected = keys.SelectMany(key => order(kept.Where(p => p.Role == key))).Select(p => p.Name).ToList();
+            var projected = GetProjectedItems(tableView);
+            VerifySequence(expected, projected.OfType<ShapedPerson>().Select(p => p.Name).ToList(),
+                "every add must land in its group at its position");
+            Verify.AreEqual(keys.Count, projected.Count(o => !(o is ShapedPerson)), "one header per group");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a filtered Add whose rows listener throws leaves the rows matching the source.")]
         public void VerifyFilteredAddSurvivesAThrowingRowsListener()
         {
@@ -2650,6 +2800,371 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Rafa" },
                     "the remove must rebuild from the source, not edit the projection the failed rebuild left");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped Add whose rows listener throws leaves the rows matching the source.")]
+        public void VerifyGroupedAddSurvivesAThrowingRowsListener()
+        {
+            VerifyGroupedChangeSurvivesAThrowingRowsListener("Add",
+                items => items.Add(new ShapedPerson("Nadia", "Engineer", "Platform")),
+                new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(4)", "Diego", "Rafa", "Owen", "Nadia", "#Architect(1)", "Mei" });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped Remove whose rows listener throws leaves the rows matching the source.")]
+        public void VerifyGroupedRemoveSurvivesAThrowingRowsListener()
+        {
+            VerifyGroupedChangeSurvivesAThrowingRowsListener("Remove",
+                items => items.Remove(items.First(p => p.Name == "Rafa")),
+                new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(2)", "Diego", "Owen", "#Architect(1)", "Mei" });
+        }
+
+        private void VerifyGroupedChangeSurvivesAThrowingRowsListener(
+            string throwOnAction, Action<ObservableCollection<ShapedPerson>> change, List<string> expected)
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                RunWithThrowingRowsListener(tableView, throwOnAction, () => change(items));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, expected, "after the throwing listener");
+                items.Add(new ShapedPerson("Zoe", "Architect", "Research"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, expected.Concat(new[] { "Zoe" }).Select(l => l == "#Architect(1)" ? "#Architect(2)" : l).ToList(),
+                    "a later add");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped Remove reported with an equal copy of the item, not the item itself, leaves no ghost row.")]
+        public void VerifyGroupedRemoveReportedWithACopyLeavesNoGhostRow()
+        {
+            TableView tableView = null;
+            CopyReportingCollection items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new CopyReportingCollection(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                items.Remove(items.First(p => p.Name == "Rafa"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(2)", "Diego", "Owen", "#Architect(1)", "Mei" },
+                    "the removed row must go even though OldItems held a copy");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped Remove from a source of strings, which are boxed afresh, leaves no ghost row.")]
+        public void VerifyGroupedRemoveOfAStringLeavesNoGhostRow()
+        {
+            TableView tableView = null;
+            ObservableCollection<string> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<string> { "apple", "avocado", "banana", "blueberry", "cherry" };
+                var source = TableViewSource.From(items).GroupBy(o => ((string)o).Substring(0, 1));
+                // Strings report no edits, so only live shaping lets the in-place path run.
+                source.IsLiveShaping = true;
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Remove("avocado");
+                items.Add("cranberry");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var projected = GetProjectedItems(tableView);
+                VerifySequence(new List<string> { "apple", "banana", "blueberry", "cherry", "cranberry" },
+                    projected.OfType<string>().ToList(), "the removed string must not stay as a ghost row");
+                Verify.AreEqual(3, projected.Count(o => !(o is string)), "one header per group");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an Add that opens a group and a Remove that empties one are correct and re-publish the grouped rows once each.")]
+        public void VerifyGroupedAddOpeningAGroupAndRemoveEmptyingOneResetOnce()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                items.Add(new ShapedPerson("Kai", "Manager", "Office"));
+                Verify.AreEqual(1, actions.Count(a => a == "Reset"), "Opening a new group re-publishes the grouped rows once.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Architect(1)", "Mei", "#Manager(1)", "Kai" },
+                    "the new group is last");
+                actions.Clear();
+                items.Remove(items.First(p => p.Name == "Mei"));
+                Verify.AreEqual(1, actions.Count(a => a == "Reset"), "Emptying a group re-publishes the grouped rows once.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Manager(1)", "Kai" },
+                    "the emptied group is dropped");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an INPC group-key edit is applied by the next grouped Add.")]
+        public void VerifyGroupKeyEditIsAppliedByTheNextGroupedAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                items.First(p => p.Name == "Rafa").Role = "Architect";
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Owen", "Zoe", "#Architect(2)", "Mei", "Rafa" },
+                    "the edited row must move to its new group");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies grouped Adds and Removes in a later group after an earlier group is collapsed, then expanded, show the right rows.")]
+        public void VerifyGroupedChangesAfterAnEarlierGroupIsCollapsedAndExpanded()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => StartIncrementalChanges(items));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => GetExpandCollapseProvider(tableView, 0).Collapse());
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+                items.Remove(items.First(p => p.Name == "Owen"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "#Engineer(3)", "Diego", "Rafa", "Zoe", "#Architect(1)", "Mei" },
+                    "changes after collapsing an earlier group");
+                GetExpandCollapseProvider(tableView, 0).Expand();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Add(new ShapedPerson("Kai", "Architect", "Research"));
+                items.Remove(items.First(p => p.Name == "Rafa"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(2)", "Diego", "Zoe", "#Architect(2)", "Mei", "Kai" },
+                    "changes after expanding it again");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an Add to a collapsed group updates its count without a reset and shows the row once expanded.")]
+        public void VerifyGroupedAddToACollapsedGroup()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => StartIncrementalChanges(items));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => GetExpandCollapseProvider(tableView, 1).Collapse());
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+                Verify.AreEqual(0, actions.Count(a => a == "Reset"), "An add to an existing group must not reset the rows.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(4)", "#Architect(1)", "Mei" },
+                    "a collapsed group counts the added row without showing it");
+                GetExpandCollapseProvider(tableView, 1).Expand();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(4)", "Diego", "Rafa", "Owen", "Zoe", "#Architect(1)", "Mei" },
+                    "expanding shows the added row");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped Add whose item subscription throws before the row is spliced is repaired by a full refresh.")]
+        public void VerifyGroupedAddRecoversFromAThrowingItemSubscription()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                StartIncrementalChanges(items);
+                var threw = false;
+                try
+                {
+                    items.Add(new ShapedPerson("Nadia", "Engineer", "Platform") { ThrowOnNextSubscribe = true });
+                }
+                catch (global::System.Exception)
+                {
+                    threw = true;
+                }
+                Verify.IsTrue(threw, "The subscription's exception must reach the caller.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(4)", "Diego", "Rafa", "Owen", "Nadia", "#Architect(1)", "Mei" },
+                    "the added row must be shown once the failed commit is repaired");
+            });
+        }
+        // Reports a Remove with an equal copy of the removed item in OldItems.
+        private sealed class CopyReportingCollection : ObservableCollection<ShapedPerson>
+        {
+            public CopyReportingCollection(IEnumerable<ShapedPerson> items) : base(items) { }
+
+            protected override void OnCollectionChanged(global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+            {
+                if (e.Action == global::System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+                {
+                    var removed = (ShapedPerson)e.OldItems[0];
+                    e = new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                        global::System.Collections.Specialized.NotifyCollectionChangedAction.Remove,
+                        new ShapedPerson(removed.Name, removed.Role, removed.DepartmentName),
+                        e.OldStartingIndex);
+                }
+                base.OnCollectionChanged(e);
+            }
         }
 
         private static string PlainNames(TableView tableView)

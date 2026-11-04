@@ -161,9 +161,34 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
         {
             RebuildFlatItemPropertyChangedTracking(FlatItemsToTrack());
             // A pending restore, or a worker edit still queued for the live handler (which now
-            // ignores it), leaves an edit unapplied; let the next change re-filter and re-check order.
-            m_filterMembershipMayBeStale = true;
+            // ignores it), leaves an edit unapplied; let the next change re-check its inputs and order.
+            m_shapeInputsMayBeStale = true;
             m_sortDirtyOverflow = HasActiveSort();
+        }
+        else if (m_kind == ProjectionKind::Grouped && !m_parentKeySelector && m_rows && m_sourceChangesIncrementally)
+        {
+            // Grouping keeps no unfiltered copy; re-read the source, as the rebuild would. On
+            // failure tracking stays off, so the next change rebuilds.
+            try
+            {
+                std::vector<winrt::IInspectable> items;
+                if (m_pipeline.HasFilter())
+                {
+                    items = Materialize(m_source);
+                }
+                else
+                {
+                    items.resize(m_rows.Size(), nullptr);
+                    m_rows.GetMany(0, items);
+                }
+                RebuildFlatItemPropertyChangedTracking(items);
+                // As for a flat projection, a queued worker edit may still be unapplied.
+                m_shapeInputsMayBeStale = true;
+            }
+            catch (...)
+            {
+                ClearFlatItemPropertyChangedTracking();
+            }
         }
     }
 }
@@ -625,6 +650,11 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
+    if (m_groupSelector && !m_parentKeySelector && !m_isRefreshing && TryApplyIncrementalGroupedChange(args))
+    {
+        return;
+    }
+
     // Full rebuild unless there is a live flat projection. A hierarchy always re-indexes: any
     // change can move rows anywhere in the tree.
     if (m_isRefreshing || m_groupSelector || m_parentKeySelector || !m_rows || m_kind == ProjectionKind::None)
@@ -655,7 +685,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
         // re-shapes (or re-degrades) coherently.
         if (canTryInPlace &&
             m_kind == ProjectionKind::Flat &&
-            IsFilterMembershipCurrent() &&
+            AreShapeInputsCurrent() &&
             TryReshapeStaleSortedFlatProjection() &&
             TryApplyIncrementalFlatShapedChange(args))
         {
@@ -1001,7 +1031,7 @@ bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
     return true;
 }
 
-bool ShapedItemsSource::IsFilterMembershipCurrent() const
+bool ShapedItemsSource::AreShapeInputsCurrent() const
 {
     // Checked first, sort-only too: a failed rebuild kept shaping state that no longer describes the source.
     if (m_validatedSourceStamp == ~uint64_t{ 0 })
@@ -1009,13 +1039,13 @@ bool ShapedItemsSource::IsFilterMembershipCurrent() const
         return false;
     }
 
-    if (!m_pipeline.HasFilter())
+    if (!m_pipeline.HasFilter() && !m_groupSelector)
     {
         return true;
     }
 
-    // The unfiltered source is kept only once the source has changed incrementally.
-    if (m_shapingState.Source.size() != m_refreshSourceRowCount)
+    // A flat filtered projection keeps the unfiltered source only once the source changes incrementally.
+    if (!m_groupSelector && m_shapingState.Source.size() != m_refreshSourceRowCount)
     {
         return false;
     }
@@ -1026,7 +1056,7 @@ bool ShapedItemsSource::IsFilterMembershipCurrent() const
     }
 
     return m_flatItemPropertyChangedTrackingActive &&
-        !m_filterMembershipMayBeStale &&
+        !m_shapeInputsMayBeStale &&
         !m_flatItemsMayChangeSortWithoutNotification;
 }
 
@@ -1092,10 +1122,10 @@ void ShapedItemsSource::OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::
     // Beyond this, one linear check is cheaper than per-row lookups.
     constexpr size_t c_maxIndividuallyTrackedDirtyRows = 256;
 
-    // The predicate is a delegate, so any property may decide membership.
-    if (m_pipeline.HasFilter())
+    // The predicate and group key are delegates, so any property may decide them.
+    if (m_pipeline.HasFilter() || m_groupSelector)
     {
-        m_filterMembershipMayBeStale = true;
+        m_shapeInputsMayBeStale = true;
     }
 
 
@@ -1196,7 +1226,7 @@ void ShapedItemsSource::ClearFlatItemPropertyChangedTracking()
     m_flatItemPropertyChangedRevokers.clear();
     m_flatItemPropertyChangedTrackingActive = false;
     m_flatItemsMayChangeSortWithoutNotification = false;
-    m_filterMembershipMayBeStale = false;
+    m_shapeInputsMayBeStale = false;
     ClearSortDirtyRows();
 }
 
@@ -1239,7 +1269,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
         !m_shapingState.HasProjection ||
         m_shapingState.IsGrouped ||
         m_shapingState.Items.size() != m_rows.Size() ||
-        !IsFilterMembershipCurrent())
+        !AreShapeInputsCurrent())
     {
         return false;
     }
@@ -1639,6 +1669,215 @@ void ShapedItemsSource::AbandonIncrementalCommit() noexcept
     PostPendingRefresh();
 }
 
+// Group order is each key's first appearance (no sort ahead of the group verb). Only an append or a
+// removal is applied in place; nothing is mutated until the plan is complete.
+bool ShapedItemsSource::TryApplyIncrementalGroupedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    if (m_kind != ProjectionKind::Grouped ||
+        !m_projectedAsGrouped ||
+        !m_groupSelector ||
+        m_parentKeySelector ||
+        !m_groupSource ||
+        !m_groupedAdapter ||
+        !m_rows ||
+        !AreShapeInputsCurrent() ||
+        !m_pipeline.ActiveSortAxes(-1, m_pipeline.GroupOrder()).empty())
+    {
+        return false;
+    }
+
+    const bool isAdd = args.Action() == NotifyCollectionChangedAction::Add;
+    if (!isAdd && args.Action() != NotifyCollectionChangedAction::Remove)
+    {
+        return false;
+    }
+
+    auto const changed = isAdd ? args.NewItems() : args.OldItems();
+    auto const item = changed && changed.Size() == 1 ? changed.GetAt(0) : nullptr;
+    const uint32_t sourceCount = m_refreshSourceRowCount;
+    uint32_t liveCount = 0;
+    if (!item || !TryGetSourceItemCount(liveCount))
+    {
+        return false;
+    }
+
+    // Only an append is last in source order, which is where a new row's tie position and its
+    // position in an unsorted group come from.
+    if (isAdd
+            ? (args.NewStartingIndex() != static_cast<int32_t>(sourceCount) || liveCount != sourceCount + 1)
+            : (args.OldStartingIndex() < 0 || static_cast<uint32_t>(args.OldStartingIndex()) >= sourceCount || liveCount + 1 != sourceCount))
+    {
+        return false;
+    }
+
+    const uint64_t generation = m_projectionGeneration;
+    auto const address = RowIdentity::GetObjectAddress(item);
+    const bool isRow = m_groupedRowAddresses.find(address) != m_groupedRowAddresses.end();
+    if (isAdd && isRow)
+    {
+        return false; // one object on two rows: the rebuild reports it
+    }
+
+    const bool inProjection = isAdd ? m_pipeline.PassesFilter(item) : isRow;
+    // A removed item that passes the filter but is no row was reported as another object (a boxed value, an equal copy).
+    if (!isAdd && !isRow && (!m_pipeline.HasFilter() || m_pipeline.PassesFilter(item)))
+    {
+        return false;
+    }
+
+    winrt::IInspectable key{ nullptr };
+    winrt::hstring groupIdentity;
+    winrt::com_ptr<ShapedGroup> group;
+    uint32_t groupIndex = 0;
+    uint32_t groupSize = 0;
+    uint32_t position = 0;
+    uint32_t flatIndex = 0;
+    if (inProjection)
+    {
+        try { key = m_groupSelector(item); }
+        catch (...) { m_pipeline.SwallowedFaultsTally().Note(); key = nullptr; }
+
+        wchar_t const* reason = nullptr;
+        if (!TryGetGroupIdentity(key, groupIdentity, reason))
+        {
+            return false;
+        }
+
+        if (auto const cached = m_groupCache.find(groupIdentity); cached != m_groupCache.end())
+        {
+            group = cached->second;
+            // Same collision rule as the bucketizer.
+            if ((isAdd && !m_groupIdentitySelector && !RowIdentity::GroupKeysEqual(group->Group(), key)) ||
+                !m_groupSource.IndexOf(group.as<winrt::IInspectable>(), groupIndex))
+            {
+                return false;
+            }
+
+            auto const groupItems = group->GroupItems();
+            groupSize = groupItems.Size();
+            if (isAdd)
+            {
+                position = groupSize;
+                if (HasActiveSort())
+                {
+                    position = m_pipeline.SortedInsertPlacementFor(item, groupSize,
+                        [&groupItems](uint32_t index) { return groupItems.GetAt(index); }).Index;
+                }
+            }
+            else if (!groupItems.IndexOf(item, position))
+            {
+                return false;
+            }
+            // Removing a group's first item can move its first appearance past a later group's, unless
+            // the group goes away or is already last.
+            else if (groupSize > 1 && groupIndex + 1 < m_groupSource.Size() && (HasActiveSort() || position == 0))
+            {
+                return false;
+            }
+
+            for (uint32_t i = 0; i < groupIndex; ++i)
+            {
+                flatIndex += m_groupSource.GetAt(i).as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>().GroupItems().Size();
+            }
+            flatIndex += position;
+        }
+        else if (isAdd)
+        {
+            groupIndex = m_groupSource.Size();
+            flatIndex = m_rows.Size();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // The filter, key and sort calls above are app code.
+    if (generation != m_projectionGeneration ||
+        m_kind != ProjectionKind::Grouped ||
+        !AreShapeInputsCurrent() ||
+        (group && (groupIndex >= m_groupSource.Size() || group->GroupItems().Size() != groupSize)) ||
+        (isAdd ? flatIndex > m_rows.Size() : flatIndex >= m_rows.Size()))
+    {
+        return false;
+    }
+
+    // From here a throw leaves the projection part-changed, and a listener can rebuild re-entrantly,
+    // after which the rest of the commit would duplicate this change.
+    auto const rebuiltByListener = [&]() { return generation != m_projectionGeneration; };
+    try
+    {
+        if (isAdd)
+        {
+            ++m_refreshSourceRowCount;
+            if (m_flatItemPropertyChangedTrackingActive)
+            {
+                TrackFlatItemPropertyChanged(item);
+            }
+            if (!inProjection)
+            {
+                return true;
+            }
+
+            m_groupedRowAddresses.insert(address);
+            m_rows.InsertAt(flatIndex, item);
+            if (rebuiltByListener())
+            {
+                return false;
+            }
+            if (group)
+            {
+                group->GroupItems().InsertAt(position, item);
+            }
+            else
+            {
+                auto const newGroup = AcquireCachedGroup({ key, groupIdentity, { item } });
+                newGroup->SetItems({ item });
+                m_groupSource.Append(newGroup.as<winrt::IInspectable>());
+            }
+            return true;
+        }
+
+        --m_refreshSourceRowCount;
+        UntrackFlatItemPropertyChanged(item);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(item, {});
+        }
+        if (!inProjection)
+        {
+            return true;
+        }
+        if (rebuiltByListener())
+        {
+            return false;
+        }
+
+        m_groupedRowAddresses.erase(address);
+        m_rows.RemoveAt(flatIndex);
+        if (rebuiltByListener())
+        {
+            return false;
+        }
+        if (groupSize == 1)
+        {
+            m_groupSource.RemoveAt(groupIndex);
+            m_groupCache.erase(groupIdentity);
+        }
+        else
+        {
+            group->GroupItems().RemoveAt(position);
+        }
+        return true;
+    }
+    catch (...)
+    {
+        AbandonIncrementalCommit();
+        throw;
+    }
+}
 
 bool ShapedItemsSource::HasActiveSort() const
 {
@@ -1901,6 +2140,7 @@ void ShapedItemsSource::ReleaseGroupedProjection()
         m_groupSource.Clear();
     }
     m_groupCache.clear();
+    m_groupedRowAddresses.clear();
 }
 
 void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason)
@@ -1985,7 +2225,7 @@ void ShapedItemsSource::Refresh()
             std::vector<winrt::IInspectable> unfilteredRows;
             if (!m_parentKeySelector)
             {
-                if (!m_groupSelector && m_pipeline.HasFilter() && m_sourceChangesIncrementally)
+                if (m_pipeline.HasFilter() && m_sourceChangesIncrementally)
                 {
                     unfilteredRows = rows;
                 }
@@ -2036,7 +2276,7 @@ void ShapedItemsSource::Refresh()
             }
             else if (m_groupSelector)
             {
-                RebuildGrouped(rows);
+                RebuildGrouped(rows, unfilteredRows);
             }
             else
             {
@@ -2202,12 +2442,16 @@ std::vector<winrt::IInspectable> ShapedItemsSource::Materialize(winrt::IInspecta
     return ShapingHelpers::EnumerateInspectableItems(source, true, ShapingHelpers::CollectionOwner::Caller);
 }
 
-void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
+void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows, std::vector<winrt::IInspectable> const& unfilteredRows)
 {
     // The grouped projection is materialized through the group adapter, not from the retained
     // layer-1 state, so leaving that state live would let the in-place path re-sort a flat
-    // projection that is no longer the one being shown.
-    InvalidateShapingState();
+    // projection that is no longer the one being shown. Item subscriptions survive the rebuild.
+    auto trackedItems = std::move(m_flatItemPropertyChangedRevokers);
+    {
+        auto restoreTrackedItems = wil::scope_exit([&]() noexcept { m_flatItemPropertyChangedRevokers = std::move(trackedItems); });
+        InvalidateShapingState();
+    }
     // A grouped projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
     // Sorts requested before GroupBy establish the group order. Sorts requested after GroupBy
@@ -2282,6 +2526,14 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
 
     PruneGroupCache(liveKeys);
     AttachGroupSource(groups);
+
+    m_groupedRowAddresses.clear();
+    m_groupedRowAddresses.reserve(flatRows.size());
+    for (auto const& row : flatRows)
+    {
+        m_groupedRowAddresses.insert(RowIdentity::GetObjectAddress(row));
+    }
+    RebuildFlatItemPropertyChangedTracking(m_pipeline.HasFilter() ? unfilteredRows : flatRows);
 
     m_kind = ProjectionKind::Grouped;
     m_projectedAsGrouped = true;
