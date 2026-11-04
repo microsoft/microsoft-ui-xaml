@@ -2104,14 +2104,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies that collapsing a top-level item gives its children's space back after an earlier expand/collapse cycle while NavigationView gets unconstrained height from a StackPanel (#8291). The test never calls UpdateLayout, so only the control's own invalidation can update the layout.")]
+        [TestProperty("Description", "Verifies that collapsing a top-level item gives its children's space back after an earlier expand/collapse cycle while the pane row is sized by its content: unconstrained height from a StackPanel, or a finite host with VerticalAlignment Top/Center (#8291). The test never calls UpdateLayout, so only the control's own invalidation can update the layout.")]
         public void VerifyCollapsingItemGivesSpaceBackInStackPanelHost()
         {
-            // Negative control first: a fixed-height host gives the space back on main too.
-            foreach (bool useStackPanelHost in new[] { false, true })
+            // Negative control first: a fixed-height host gives the space back on main too. The Top/Center cases are finite
+            // hosts where NavigationView is arranged at its content height, so the pane row is sized by the menu as in a StackPanel.
+            var hosts = new (string Name, bool UseStackPanelHost, VerticalAlignment? Alignment)[]
             {
-                string host = useStackPanelHost ? "StackPanel host" : "Fixed-height host";
-                var navView = SetupHierarchicalNavigationViewFor8291(useStackPanelHost, out var parent, out _, out var create);
+                ("Fixed-height host", false, null),
+                ("StackPanel host", true, null),
+                ("Top-aligned in finite host", false, VerticalAlignment.Top),
+                ("Center-aligned in finite host", false, VerticalAlignment.Center),
+            };
+            foreach (var (host, useStackPanelHost, alignment) in hosts)
+            {
+                var navView = SetupHierarchicalNavigationViewFor8291(useStackPanelHost, out var parent, out _, out var create, alignment);
 
                 double collapsedCreateTop = 0;
                 double collapsedParentHeight = 0;
@@ -2140,7 +2147,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Repro from #8291: settings item hidden (with it the bug looks different) and no Height on NavigationView,
         // so a StackPanel host measures it with infinite height. Left maps to the same Expanded/CompactInline layout
         // as the issue's Auto mode in a wide window.
-        private NavigationView SetupHierarchicalNavigationViewFor8291(bool useStackPanelHost, out NavigationViewItem parent, out NavigationViewItem firstChild, out NavigationViewItem create)
+        private NavigationView SetupHierarchicalNavigationViewFor8291(bool useStackPanelHost, out NavigationViewItem parent, out NavigationViewItem firstChild, out NavigationViewItem create, VerticalAlignment? alignmentInFiniteHost = null)
         {
             NavigationView navView = null;
             NavigationViewItem parentLocal = null;
@@ -2162,7 +2169,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItems.Add(parentLocal);
                 navView.MenuItems.Add(createLocal);
 
-                if (useStackPanelHost)
+                if (alignmentInFiniteHost.HasValue)
+                {
+                    // Finite host, but NavigationView is arranged at its content height.
+                    navView.VerticalAlignment = alignmentInFiniteHost.Value;
+                    Content = new Grid { Height = 500.0, Children = { navView } };
+                }
+                else if (useStackPanelHost)
                 {
                     var host = new StackPanel();
                     host.Children.Add(navView);
