@@ -1423,6 +1423,7 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
     m_layoutUpdatedToken.revoke();
     m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
 
+    m_lastMeasureAvailableHeight = availableSize.Height;
     const bool isHeightUnconstrained = availableSize.Height == std::numeric_limits<float>::infinity();
     if (m_isHeightUnconstrained != isHeightUnconstrained)
     {
@@ -1603,7 +1604,12 @@ void NavigationView::UpdatePaneLayout()
                     }
                     return 0.0;
                 }();
-                return paneContentRow.ActualHeight() - itemsContainerMargin;
+                // When NavigationView is arranged shorter than it was offered (VerticalAlignment Top/Center/Bottom), the
+                // row is only as tall as its content. Count the unused height too, otherwise the cap below would only let
+                // the menu grow a few pixels per layout pass (#8291).
+                const double actualHeight = ActualHeight();
+                const double unusedHeight = actualHeight > 0 ? std::max(0.0, m_lastMeasureAvailableHeight - actualHeight) : 0.0;
+                return paneContentRow.ActualHeight() + unusedHeight - itemsContainerMargin;
             }
             return 0.0;
         }();

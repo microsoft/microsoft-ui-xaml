@@ -474,6 +474,8 @@ private:
     bool m_initialListSizeStateSet{ false };
     // True when the last measure gave NavigationView unlimited height (for example inside a vertical StackPanel).
     bool m_isHeightUnconstrained{ false };
+    // Height NavigationView was offered in the last measure; it can be arranged shorter (non-Stretch VerticalAlignment).
+    double m_lastMeasureAvailableHeight{ 0.0 };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
