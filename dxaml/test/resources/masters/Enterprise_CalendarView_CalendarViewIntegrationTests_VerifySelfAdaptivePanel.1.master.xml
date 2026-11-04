@@ -201,7 +201,7 @@
                               </ExpressionAnimation>
                             </TransformMatrix>
                             <Visual Tag="ContentVisual">
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="37.5" OffsetY="1" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -221,7 +221,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="184.5" OffsetY="1" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -241,7 +241,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="37.5" OffsetY="75" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -261,7 +261,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="184.5" OffsetY="75" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -281,7 +281,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="37.5" OffsetY="149" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -301,7 +301,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="184.5" OffsetY="149" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -321,7 +321,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="37.5" OffsetY="223" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
@@ -341,7 +341,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <Visual Tag="PrependVisual" SizeX="72" SizeY="72">
+                              <Visual Tag="PrependVisual">
                                 <Visual Tag="PrimaryVisual" SizeX="72" SizeY="72" OffsetX="184.5" OffsetY="223" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="72" ClipBottom="72" ClipTopLeftRadiusX="36" ClipTopLeftRadiusY="36" ClipTopRightRadiusX="36" ClipTopRightRadiusY="36" ClipBottomLeftRadiusX="36" ClipBottomLeftRadiusY="36" ClipBottomRightRadiusX="36" ClipBottomRightRadiusY="36" TransformMatrix="Identity" />
