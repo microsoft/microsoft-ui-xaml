@@ -639,10 +639,11 @@ void TableViewRow::ApplyFocusLevelInternal()
     // target during the handoff.
     if (m_isCellLevel)
     {
-        SetCellsTabStopInternal(true);
-        if (IsTabStop())
+        // With no actionable cell left, the row stays the tab stop, or Tab could skip the table.
+        const bool rowIsTabStop = !SetCellsTabStopInternal(true);
+        if (IsTabStop() != rowIsTabStop)
         {
-            IsTabStop(false);
+            IsTabStop(rowIsTabStop);
         }
     }
     else
@@ -655,8 +656,9 @@ void TableViewRow::ApplyFocusLevelInternal()
     }
 }
 
-void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
+bool TableViewRow::SetCellsTabStopInternal(bool isTabStop)
 {
+    bool anyTabStop = false;
     if (auto const host = m_cellsHost.get())
     {
         auto const children = host.Children();
@@ -671,9 +673,11 @@ void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
                 {
                     child.IsTabStop(cellIsTabStop);
                 }
+                anyTabStop = anyTabStop || cellIsTabStop;
             }
         }
     }
+    return anyTabStop;
 }
 
 // Focus inside a cell's content (drilled in via Enter, or an editor) is not grid level: that

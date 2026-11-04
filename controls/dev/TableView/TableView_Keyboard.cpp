@@ -419,7 +419,7 @@ int32_t TableView::FindActionableHeaderIndex(
 // focusable content. A style-set IsTabStop="False" still wins.
 bool TableView::IsHeaderCellActionableInternal(const winrt::FrameworkElement& header)
 {
-    if (!header || header.Visibility() != winrt::Visibility::Visible)
+    if (!header || header.Visibility() != winrt::Visibility::Visible || !ShouldShowColumnHeaders())
     {
         return false;
     }
@@ -599,12 +599,18 @@ void TableView::MoveFocusOffCollapsingHeaders()
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>();
     auto const focusState = focused ? focused.FocusState() : winrt::FocusState::Programmatic;
     m_headerCollapseFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
-        [weakThis = get_weak()](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+        [weakThis = get_weak(), weakHeader = winrt::make_weak(header)](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
         {
-            if (auto const strongThis = weakThis.get(); strongThis && !strongThis->IsElementInBody(args.NewFocusedElement()))
+            // One-shot: only the first move off the hidden header is XAML's rescue.
+            if (auto const strongThis = weakThis.get())
             {
+                auto const originHeader = weakHeader.get();
+                auto const oldFocus = args.OldFocusedElement();
                 strongThis->m_headerCollapseFocusRevoker.revoke();
-                strongThis->TrySetBodyEntryTarget(args);
+                if ((!oldFocus || oldFocus == originHeader) && !strongThis->IsElementInBody(args.NewFocusedElement()))
+                {
+                    strongThis->TrySetBodyEntryTarget(args);
+                }
             }
         });
     queue.TryEnqueue([weakThis = get_weak(), weakHeader = winrt::make_weak(header), focusState]()
@@ -709,12 +715,22 @@ bool TableView::TrySetBodyEntryTarget(const winrt::Microsoft::UI::Xaml::Input::G
             return false;
         }
 
-        // Only one level of a row is focusable at a time; arm the target's level first.
+        // Only one level of a row is focusable at a time; arm the target's level first. A cell-level target
+        // also takes ownership of the armed row so later row-level cleanup disarms the right row.
         auto const rowImpl = entry.Row ? winrt::get_self<TableViewRow>(entry.Row) : nullptr;
         const bool wasCellLevel = rowImpl && rowImpl->IsCellLevelInternal();
+        auto const previousOwner = m_cellLevelRow.get();
+        const bool previousCursorActive = m_cellCursorActive;
         if (rowImpl)
         {
-            rowImpl->SetCellLevelInternal(entry.CellLevel);
+            if (entry.CellLevel)
+            {
+                ArmCellLevelRowInternal(entry.Row);
+            }
+            else
+            {
+                rowImpl->SetCellLevelInternal(false);
+            }
         }
 
         winrt::DependencyObject const target = entry.Element;
@@ -732,6 +748,15 @@ bool TableView::TrySetBodyEntryTarget(const winrt::Microsoft::UI::Xaml::Input::G
         if (rowImpl)
         {
             rowImpl->SetCellLevelInternal(wasCellLevel);
+            if (entry.CellLevel)
+            {
+                if (previousOwner && previousOwner != entry.Row)
+                {
+                    winrt::get_self<TableViewRow>(previousOwner)->SetCellLevelInternal(true);
+                }
+                m_cellLevelRow = previousOwner ? winrt::make_weak(previousOwner) : winrt::weak_ref<winrt::TableViewRow>{};
+                m_cellCursorActive = previousCursorActive;
+            }
         }
         return false;
     };
@@ -757,8 +782,8 @@ TableView::FocusEntryTarget TableView::ResolveBodyEntryTarget(bool last)
     FocusEntryTarget result{};
     if (auto const emptyState = m_emptyStatePresenter.get(); emptyState && emptyState.Visibility() == winrt::Visibility::Visible)
     {
-        result.Element = (last ? winrt::FocusManager::FindLastFocusableElement(emptyState)
-                               : winrt::FocusManager::FindFirstFocusableElement(emptyState)).try_as<winrt::UIElement>();
+        result.Element = last ? winrt::FocusManager::FindLastFocusableElement(emptyState)
+                              : winrt::FocusManager::FindFirstFocusableElement(emptyState);
         return result;
     }
 
@@ -809,7 +834,14 @@ bool TableView::FocusBodyEntryTarget(bool select, winrt::FocusState focusState)
     {
         if (auto const selected = GetRealizedRowAt(selectedIndex); !selected || !IsRowElementInViewport(selected))
         {
-            return FocusRow(selectedIndex);
+            auto const root = XamlRoot();
+            auto const origin = root ? winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() : nullptr;
+            const bool moved = FocusRow(selectedIndex);
+            if (moved && origin && m_pendingReshapeFocusRow >= 0)
+            {
+                m_pendingBodyFocusOrigin = winrt::make_weak(origin);
+            }
+            return moved;
         }
     }
 
@@ -821,9 +853,14 @@ bool TableView::FocusBodyEntryTarget(bool select, winrt::FocusState focusState)
 
     if (!entry.Row)
     {
-        return entry.Element.try_as<winrt::TableViewGroupHeader>()
-            ? FocusRowContainerInternal(entry.Element, focusState)
-            : entry.Element.Focus(focusState);
+        if (auto const link = entry.Element.try_as<winrt::Microsoft::UI::Xaml::Documents::Hyperlink>())
+        {
+            return link.Focus(focusState);
+        }
+        auto const element = entry.Element.try_as<winrt::UIElement>();
+        return element && (element.try_as<winrt::TableViewGroupHeader>()
+            ? FocusRowContainerInternal(element, focusState)
+            : element.Focus(focusState));
     }
 
     // An edge row standing in at cell level takes the actionable cell nearest the column.
@@ -1876,6 +1913,7 @@ void TableView::RestoreBodyFocusAfterReshape()
     m_pendingReshapeFocusAlign.reset();
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
+    m_pendingBodyFocusOrigin = nullptr;
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -1969,6 +2007,7 @@ void TableView::CancelReshapeFocusRestore()
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
+    m_pendingBodyFocusOrigin = nullptr;
     m_requestedBodyVerticalOffset.reset();
     m_reshapeFocusWaitForLayout = false;
     m_reshapeFocusAttemptsLeft = 0;
@@ -2015,7 +2054,10 @@ void TableView::OnReshapeFocusAttempt()
     --m_reshapeFocusAttemptsLeft;
 
     // Checked before every aim: focus the user or app moved outside the body is never pulled back.
-    if (IsFocusOnNonBodyElement())
+    auto const origin = m_pendingBodyFocusOrigin.get();
+    auto const root = origin ? XamlRoot() : nullptr;
+    const bool onOrigin = root && winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() == origin;
+    if (!onOrigin && IsFocusOnNonBodyElement())
     {
         CancelReshapeFocusRestore();
         return;
@@ -2153,6 +2195,7 @@ void TableView::BeginPendingBodyFocus(
     // A caller that ran layout passes the item it captured before; the row may now hold another.
     m_pendingBodyFocusItem = item ? item : GetRowsSourceItemAt(row);
     m_pendingBodyFocusFromKeyboard = true;
+    m_pendingBodyFocusOrigin = nullptr;
     m_reshapeFocusAttemptsLeft = s_keyboardFocusAttempts;
     ArmReshapeFocusAttempt();
 }
@@ -2779,9 +2822,12 @@ winrt::TableViewRow TableView::GetRealizedRowAt(int32_t rowIndex) const
 }
 
 // A refused target can be substituted by one that lands back on a row and re-enters the redirect.
-bool TableView::IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
+bool TableView::IsEntryRedirectTargetFocusable(winrt::DependencyObject const& targetObject, winrt::DependencyObject const& owner)
 {
-    if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !target.IsTabStop())
+    // A Hyperlink is checked through its host text element.
+    auto const link = targetObject.try_as<winrt::Microsoft::UI::Xaml::Documents::Hyperlink>();
+    auto const target = link ? link.ContentStart().VisualParent().try_as<winrt::UIElement>() : targetObject.try_as<winrt::UIElement>();
+    if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !(link ? link.IsTabStop() : target.IsTabStop()))
     {
         return false;
     }
@@ -2813,13 +2859,14 @@ winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool incl
 {
     auto const repeater = m_rowsRepeater.get();
     auto const scroller = m_bodyScroller.get();
-    if (!repeater || !scroller)
+    if (!repeater)
     {
         return nullptr;
     }
 
-    const double viewportHeight = scroller.ViewportHeight();
-    if (!(viewportHeight > 0.0))
+    // A template without a body scroller has no viewport; every realized row counts as in view.
+    const double viewportHeight = scroller ? scroller.ViewportHeight() : 0.0;
+    if (scroller && !(viewportHeight > 0.0))
     {
         return nullptr;
     }
@@ -2849,6 +2896,16 @@ winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool incl
         const double height = element.ActualHeight();
         if (index < 0 || !(height > 0.0))
         {
+            continue;
+        }
+
+        if (!scroller)
+        {
+            if (better(index, fullyVisibleIndex))
+            {
+                fullyVisible = element;
+                fullyVisibleIndex = index;
+            }
             continue;
         }
 

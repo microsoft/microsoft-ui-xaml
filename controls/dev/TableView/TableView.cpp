@@ -1343,6 +1343,11 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     }
 
     UpdateHeaderVisibility();
+    if (ShouldShowColumnHeaders())
+    {
+        // Hidden headers are inactive; restore the tab stops stamped while they were hidden.
+        RefreshHeaderTabStopsInternal();
+    }
     InvalidateMeasure();
     QueueTerminalGridLineRefresh();
 

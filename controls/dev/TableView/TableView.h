@@ -367,12 +367,13 @@ public:
     struct FocusEntryTarget
     {
         winrt::TableViewRow Row{ nullptr };
-        winrt::UIElement Element{ nullptr };
+        // A UIElement, or a Hyperlink in the empty-state content.
+        winrt::DependencyObject Element{ nullptr };
         bool CellLevel{ false };
         bool Remembered{ false };
     };
 
-    static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
+    static bool IsEntryRedirectTargetFocusable(winrt::DependencyObject const& target, winrt::DependencyObject const& owner);
     winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const;
 
     // A redirect re-raises GettingFocus with the same CorrelationId; redirect once to avoid a loop.
@@ -1344,6 +1345,8 @@ private:
     winrt::IInspectable m_pendingBodyFocusItem{ nullptr };
     // Set by BeginPendingBodyFocus: a keyboard move scrolling to its row, not a re-shape restore.
     bool m_pendingBodyFocusFromKeyboard{ false };
+    // Where a pending keyboard move started (the header for Down); focus still there does not cancel it.
+    winrt::weak_ref<winrt::DependencyObject> m_pendingBodyFocusOrigin{ nullptr };
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
     // Set for the turn a restore is armed in; that turn's input triggered the re-shape.
     bool m_reshapeFocusArmedThisTurn{ false };

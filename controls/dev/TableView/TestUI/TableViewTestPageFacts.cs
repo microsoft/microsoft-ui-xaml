@@ -42,6 +42,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ToggleScorePinButton = "ToggleScorePinButton";
         internal const string FilterSourceButton = "FilterSourceButton";
         internal const string SingleGroupedRowFilterButton = "SingleGroupedRowFilterButton";
+        internal const string SelectScrollingRow3Button = "SelectScrollingRow3Button";
         internal const string ExpandAllGroupsButton = "ExpandAllGroupsButton";
         internal const string CollapseAllGroupsButton = "CollapseAllGroupsButton";
         internal const string DelayedUnloadButton = "DelayedUnloadButton";

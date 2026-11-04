@@ -1130,6 +1130,11 @@ namespace MUXControlsTestApp
             _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
         }
 
+        private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.Select(3);
+        }
+
         private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)
         {
             TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");

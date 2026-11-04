@@ -2580,6 +2580,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "One Down from the header row reaches a newer selection that was scrolled out of the realized rows.")]
+        public void DownFromHeaderReachesUnrealizedNewerSelection()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+
+                // Focus leaves the body first, so scrolling cannot recycle the focused row and move focus, and the
+                // selection made afterward is newer than the remembered row.
+                UIObject header = GetHeader(ScrollingTable, "FrozenName");
+                if (header == null) { Verify.Fail("The FrozenName header was not found."); return; }
+                header.SetFocus();
+                Wait.ForIdle();
+                UIObject selected = GetRowsHost(tableView).Children[3];
+                string selectedName = selected.Name;
+                var select = FindElement.ById<Button>(SelectScrollingRow3Button);
+                if (select == null) { Verify.Fail(SelectScrollingRow3Button + " was not found."); return; }
+                select.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsTrue(IsSelected(GetRowsHost(tableView).Children[3]), "Precondition: the app selected row 3.");
+
+                for (int i = 0; i < 8; i++)
+                {
+                    WheelAtPoint(CentreOf(tableView), -10 * 120);
+                }
+                double offset = ReadScrollOffsetComponent(ReadScrollOffsets(), "V");
+                Verify.IsTrue(offset > 1000, "Precondition: the body is scrolled far past the selected row, which is no longer realized (offset " + offset + ").");
+                Verify.IsNotNull(FindFocusedHeader(ScrollingTable), "Precondition: the header row has focus.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Log.Comment("After Down: focused element {0}.", DescribeFocused());
+                Verify.IsNull(FindFocusedHeader(ScrollingTable), "One Down must move focus off the header row.");
+                UIObject focused = UIObject.Focused;
+                Verify.AreEqual(selectedName, focused == null ? null : focused.Name, "Down must land on the selected row.");
+                Verify.IsTrue(IsSelected(focused), "The selected row must stay selected.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "With no rows, focusable EmptyTemplate content is the body: Down from the header row and body entry reach it, and Tab walks its controls before leaving the table.")]
         public void EmptyTemplateContentIsReachableByKeyboard()
         {

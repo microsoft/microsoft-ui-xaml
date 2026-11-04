@@ -464,11 +464,11 @@ inline bool HasAppContextFlyout(winrt::UIElement const& element)
     return element.ContextFlyout() != nullptr;
 }
 
-// An inline Hyperlink (directly or in one Span) in a TextBlock or a RichTextBlock paragraph.
+// An inline Hyperlink (directly or in nested Spans such as Bold/Italic) in a TextBlock or a RichTextBlock paragraph.
 inline winrt::Microsoft::UI::Xaml::Documents::Hyperlink FindHyperlink(winrt::UIElement const& element)
 {
     using namespace winrt::Microsoft::UI::Xaml::Documents;
-    auto const findLink = [](InlineCollection const& inlines) -> Hyperlink
+    std::function<Hyperlink(InlineCollection const&, int32_t)> findLink = [&findLink](InlineCollection const& inlines, int32_t depth) -> Hyperlink
     {
         for (auto const& item : inlines)
         {
@@ -476,22 +476,20 @@ inline winrt::Microsoft::UI::Xaml::Documents::Hyperlink FindHyperlink(winrt::UIE
             {
                 return link;
             }
-            if (auto const span = item.try_as<Span>())
+            if (auto const span = item.try_as<Span>(); span && depth > 0)
             {
-                for (auto const& inner : span.Inlines())
+                if (auto const link = findLink(span.Inlines(), depth - 1))
                 {
-                    if (auto const link = inner.try_as<Hyperlink>())
-                    {
-                        return link;
-                    }
+                    return link;
                 }
             }
         }
         return nullptr;
     };
+    constexpr int32_t maxSpanDepth = 4;
     if (auto const textBlock = element.try_as<winrt::TextBlock>())
     {
-        return findLink(textBlock.Inlines());
+        return findLink(textBlock.Inlines(), maxSpanDepth);
     }
     if (auto const richText = element.try_as<winrt::RichTextBlock>())
     {
@@ -499,7 +497,7 @@ inline winrt::Microsoft::UI::Xaml::Documents::Hyperlink FindHyperlink(winrt::UIE
         {
             if (auto const paragraph = block.try_as<Paragraph>())
             {
-                if (auto const link = findLink(paragraph.Inlines()))
+                if (auto const link = findLink(paragraph.Inlines(), maxSpanDepth))
                 {
                     return link;
                 }
@@ -534,14 +532,17 @@ inline bool HasActionableContent(
             continue;
         }
         --budget;
-        if (IsFocusableCellContent(child) || HasAppContextFlyout(child) || child.try_as<winrt::TableView>() ||
+        // A non-Control UIElement (Grid, Border) with IsTabStop is focusable too, as Enter's FindFirstFocusableElement sees it.
+        if (IsFocusableCellContent(child) || (!child.try_as<winrt::Control>() && child.IsTabStop()) ||
+            HasAppContextFlyout(child) || child.try_as<winrt::TableView>() ||
             (isSuppressed && isSuppressed(child)) || HasHyperlink(child) ||
             HasActionableContent(child, depth - 1, budget, isSuppressed))
         {
             return true;
         }
     }
-    return false;
+    // Children past the per-level cap were not scanned; like an over-budget subtree, assume interactive.
+    return count > c_maxCellContentChildrenPerLevel;
 }
 
 inline void SetAccessibilityViewIfNeeded(

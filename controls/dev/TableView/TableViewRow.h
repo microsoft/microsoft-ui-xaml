@@ -158,7 +158,7 @@ private:
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
-    void SetCellsTabStopInternal(bool isTabStop);
+    bool SetCellsTabStopInternal(bool isTabStop);
 
     bool IsGridLevelFocusInternal();
 

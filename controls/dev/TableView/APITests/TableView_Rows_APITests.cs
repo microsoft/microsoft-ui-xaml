@@ -619,6 +619,257 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Body Tab entry must land inside the viewport, not on a cache group header.");
             });
         }
+
+        private (TableView Table, Button Before, StackPanel Panel) LoadFocusFixture(TableView tableView)
+        {
+            var before = new Button { Content = "Before" };
+            var panel = new StackPanel();
+            panel.Children.Add(before);
+            panel.Children.Add(tableView);
+            panel.Children.Add(new Button { Content = "After" });
+            LoadContent(panel);
+            return (tableView, before, panel);
+        }
+
+        private static bool IsWithin(DependencyObject element, DependencyObject ancestor)
+        {
+            for (var node = element; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node == ancestor)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a template without a body ScrollViewer, hiding the column headers while a header is focused moves focus to a row.")]
+        public void VerifyHidingHeadersWithoutBodyScrollerMovesFocusToRow()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(height: 200);
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                tableView.Template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                       xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                       xmlns:t=""using:Microsoft.UI.Xaml.Controls.Tabular""
+                                       TargetType=""t:TableView"">
+                          <Grid>
+                              <Grid.RowDefinitions><RowDefinition Height=""Auto""/><RowDefinition Height=""*""/></Grid.RowDefinitions>
+                              <Border x:Name=""PART_HeaderRow"">
+                                  <ScrollViewer x:Name=""PART_HeaderScroller"" HorizontalScrollMode=""Disabled"" VerticalScrollMode=""Disabled""
+                                                HorizontalScrollBarVisibility=""Hidden"" VerticalScrollBarVisibility=""Disabled"">
+                                      <t:TableViewCellsPanel x:Name=""PART_HeaderHost"" HorizontalAlignment=""Left""/>
+                                  </ScrollViewer>
+                              </Border>
+                              <Grid Grid.Row=""1"">
+                                  <ItemsRepeater x:Name=""PART_RowsRepeater""><ItemsRepeater.Layout><StackLayout/></ItemsRepeater.Layout></ItemsRepeater>
+                                  <ContentControl x:Name=""PART_EmptyStatePresenter"" Visibility=""Collapsed"" IsTabStop=""False""/>
+                              </Grid>
+                          </Grid>
+                      </ControlTemplate>");
+                LoadFocusFixture(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(tableView.FindVisualChildByName("PART_BodyScroller"), "Precondition: the template has no body scroller.");
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.IsTrue(focused is TableViewRow && IsWithin(focused, tableView), "Focus must move to a row of the table.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that hiding the column headers of an empty table while a header is focused moves focus to an EmptyTemplate Hyperlink.")]
+        public void VerifyHidingHeadersOverEmptyStateFocusesHyperlink()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var emptyTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <TextBlock>No people. <Hyperlink><Run Text=""Add one""/></Hyperlink></TextBlock>
+                      </DataTemplate>");
+                tableView = CreateTableView(itemsSource: new List<Person>(), emptyTemplate: emptyTemplate, height: 200);
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                LoadFocusFixture(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.IsTrue(focused is Microsoft.UI.Xaml.Documents.Hyperlink, "Focus must move to the empty-state Hyperlink.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that once focus has left a header being hidden for the body, a later Tab out of the body in the same turn is not redirected back into the table.")]
+        public void VerifyHeaderCollapseDoesNotRedirectLaterAppFocus()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(height: 200);
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                // Local tab navigation makes XAML's rescue off the hidden header land in the body.
+                tableView.TabNavigation = KeyboardNavigationMode.Local;
+                LoadFocusFixture(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                // The last row, not the first: a stale handler would redirect to the first row in view.
+                Verify.IsTrue(((TableViewRow)GetRowsRepeater(tableView).TryGetElement(2)).Focus(FocusState.Programmatic), "Precondition: focus moves into the body.");
+                FocusManager.TryMoveFocus(FocusNavigationDirection.Next, new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as Button;
+                Log.Comment($"Focused {focused?.Content}.");
+                Verify.AreEqual("After", focused?.Content as string, "A later Tab out of the body must not be redirected back into the table.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell-level body entry that another GettingFocus handler cancels leaves only the entry row armed at cell level.")]
+        public void VerifyCancelledCellEntryLeavesOneCellLevelRow()
+        {
+            TableView tableView = null;
+            Button before = null;
+            StackPanel panel = null;
+            TableViewRow first = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(MakeItems(), height: 300, columns: new[]
+                {
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)),
+                });
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                tableView.IsReadOnly = false;
+                (_, before, panel) = LoadFocusFixture(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                first = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(0);
+                GetCellPeer(first, 1).SetFocus();
+                Verify.IsFalse(first.IsTabStop, "Precondition: the first row is at cell level.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var third = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(2);
+                var provider = GetRowPeer(third).GetPattern(Microsoft.UI.Xaml.Automation.Peers.PatternInterface.SelectionItem)
+                    as Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider;
+                provider.Select();
+                Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: Before takes focus.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                TypedEventHandler<UIElement, GettingFocusEventArgs> cancel = (s, e) =>
+                {
+                    if (e.NewFocusedElement is DependencyObject target && IsWithin(target, tableView))
+                    {
+                        e.Cancel = true;
+                    }
+                };
+                panel.GettingFocus += cancel;
+                try
+                {
+                    FocusManager.TryMoveFocus(FocusNavigationDirection.Next, new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+                }
+                finally
+                {
+                    panel.GettingFocus -= cancel;
+                }
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(before, FocusManager.GetFocusedElement(tableView.XamlRoot), "Precondition: the app cancelled the entry.");
+                var armed = GetRealizedRows(tableView).Where(row => !row.IsTabStop).ToList();
+                Log.Comment($"Rows at cell level: {armed.Count}.");
+                Verify.IsTrue(first.IsTabStop, "The previously armed row must be released when the entry arms another row.");
+                Verify.IsLessThanOrEqual(armed.Count, 1, "At most one row may be at cell level.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a one-row, headers-hidden table left at cell level stays reachable by Tab after IsReadOnly makes every cell inactive.")]
+        public void VerifyCellLevelRowWithNoActionableCellStaysTabStop()
+        {
+            TableView tableView = null;
+            Button before = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(new List<Person> { new Person { Name = "Solo", Role = "Only" } }, height: 200);
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                tableView.IsReadOnly = false;
+                before = LoadFocusFixture(tableView).Before;
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetCellPeer(RequireFirstRow(tableView), 0).SetFocus();
+                Verify.IsFalse(FocusManager.GetFocusedElement(tableView.XamlRoot) is TableViewRow, "Precondition: a cell has focus.");
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: Before takes focus."));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.IsReadOnly = true);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                FocusManager.TryMoveFocus(FocusNavigationDirection.Next, new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.IsTrue(focused is TableViewRow && IsWithin(focused, tableView), "Tab from Before must enter the table at its row.");
+            });
+        }
     }
 
     // Category 5.2 of the TableView test plan: generated cell content.

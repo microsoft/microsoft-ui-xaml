@@ -97,6 +97,12 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnSingleGroupedRowFilterClick" />
+            <Button Content="Select scrolling row 3 (focus-neutral)"
+                    AutomationProperties.Name="SelectScrollingRow3Button"
+                    AutomationProperties.AutomationId="SelectScrollingRow3Button"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnSelectScrollingRow3Click" />
             <Button Content="Filter Source (focus-neutral)"
                     AutomationProperties.Name="FocusNeutralFilterSourceButton"
                     AutomationProperties.AutomationId="FocusNeutralFilterSourceButton"

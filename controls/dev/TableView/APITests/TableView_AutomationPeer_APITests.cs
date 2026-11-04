@@ -1911,6 +1911,98 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell is actionable when its only interactive content is a Hyperlink inside nested Spans, a focusable non-Control element, or content past the per-level scan cap.")]
+        public void VerifyCellActionabilityCoversNestedLinksFocusablePanelsAndUnscannedChildren()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "NestedLink",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock><Bold><Italic><Hyperlink><Run Text=""details""/></Hyperlink></Italic></Bold></TextBlock>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Tile",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <Grid IsTabStop=""True"" Background=""Transparent""><TextBlock Text=""tile""/></Grid>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Many",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <StackPanel Orientation=""Horizontal"">" +
+                                  string.Concat(Enumerable.Repeat(@"<TextBlock Text=""x""/>", 40)) +
+                                  @"<Button Content=""Go""/>
+                              </StackPanel>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A Hyperlink inside nested Bold/Italic spans makes the cell actionable.");
+                Verify.IsTrue(GetCellPeer(row, 4).IsKeyboardFocusable(), "A focusable Grid (IsTabStop) makes the cell actionable.");
+                Verify.IsTrue(GetCellPeer(row, 5).IsKeyboardFocusable(), "Children past the per-level scan cap are assumed actionable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a retained header peer reports IsKeyboardFocusable=false while HeadersVisibility hides the column headers, and the header is a tab stop again once they are shown.")]
+        public void VerifyHiddenHeaderIsNotKeyboardFocusable()
+        {
+            TableView tableView = null;
+            AutomationPeer peer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0));
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "Precondition: a sortable header is keyboard-focusable.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(peer.IsKeyboardFocusable(), "A hidden header is not keyboard-focusable.");
+                // Restamps the header tab stops while the headers are hidden.
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "A shown header is keyboard-focusable again.");
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A shown actionable header is a tab stop again.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a text column with no Binding has no editor, so its cells are not actionable in an editable table, and UIA SetFocus on an editable cell focuses that exact cell.")]
         public void VerifyUnboundTextColumnCellIsNotActionable()
         {
