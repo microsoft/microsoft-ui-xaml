@@ -122,9 +122,14 @@ void XamlDiagnostics::AddElementToLVT(const std::shared_ptr<Diagnostics::Runtime
         }
 
         wrl::ComPtr<xaml::IDependencyObject> parentDo;
-        if (SUCCEEDED(parentElement->GetBackingObject().As(&parentDo)))
+        // Resolve once: roots are observed weakly, so the parent's backing object may already be
+        // gone, and ComPtr::As dereferences the held pointer so it must not run on an empty ComPtr.
+        if (const auto parentBackingObject = parentElement->GetBackingObject())
         {
-            AddDependencyObjectToMap(parentDo.Get());
+            if (SUCCEEDED(parentBackingObject.As(&parentDo)))
+            {
+                AddDependencyObjectToMap(parentDo.Get());
+            }
         }
     }
 
@@ -237,9 +242,14 @@ XamlDiagnostics::PopulateElementAndRelationCache(
 {
     std::queue<std::shared_ptr<RuntimeElement>> processingQueue;
     wrl::ComPtr<xaml::IDependencyObject> backingDO;
-    if (SUCCEEDED(obj->GetBackingObject().As(&backingDO)))
+    // Resolve once: roots are observed weakly, so the backing object may already be gone, and
+    // ComPtr::As dereferences the held pointer so it must not run on an empty ComPtr.
+    if (const auto backingObject = obj->GetBackingObject())
     {
-        AddDependencyObjectToMap(backingDO.Get());
+        if (SUCCEEDED(backingObject.As(&backingDO)))
+        {
+            AddDependencyObjectToMap(backingDO.Get());
+        }
     }
 
     // Set up the breadth-first processor.
@@ -372,6 +382,12 @@ XamlDiagnostics::GiveRootsToCallback(
         // Since these are the top level roots, the relation is empty.
         ParentChildRelation emptyRelation = {};
         IFC_RETURN(GiveRootToCallback(rootElement, callback.Get(), emptyRelation));
+
+        // Match the Add path. Bare XamlIsland peers can rely on diagnostics for ownership.
+        if (rootElement && (rootElement->IsWindow() || rootElement->IsDesktopWindowXamlSource()))
+        {
+            rootElement->TryMakeBackingReferenceWeak();
+        }
     }
 
     m_enabledThreads.emplace(GetCurrentThreadId());
@@ -393,6 +409,13 @@ void XamlDiagnostics::SignalRootMutation(_In_opt_ IInspectable* root, _In_ Visua
             // Since these are the top level roots, the relation is empty.
             ParentChildRelation emptyRelation = {};
             VERIFYHR(GiveRootToCallback(rootElement, m_visualTreeCallback.Get(), emptyRelation));
+        }
+
+        // A strong reference prevents an abandoned source's destructor from raising Remove.
+        // Observe host-owned roots weakly, but preserve ownership of bare XamlIsland peers.
+        if (rootElement && (rootElement->IsWindow() || rootElement->IsDesktopWindowXamlSource()))
+        {
+            rootElement->TryMakeBackingReferenceWeak();
         }
     }
 }
@@ -459,10 +482,24 @@ XamlDiagnostics::PopulateElementInfo(
     _Inout_ VisualElement& element)
 {
     wrl_wrappers::HString typeName;
+
+    // Resolve the backing object once. GetBackingObject() hands back a ComPtr by value and, for a
+    // weakly observed root, re-resolves the weak reference each time it's called, so holding it in a
+    // local is what keeps the object alive for the rest of this method. It can also already be gone,
+    // and everything below dereferences it.
+    const auto backingObject = runtimeElement->GetBackingObject();
+    if (!backingObject)
+    {
+        // Report the handle so the caller can still correlate this element with an earlier
+        // notification, and leave the descriptive fields empty.
+        element.Handle = runtimeElement->GetHandle();
+        return;
+    }
+
     if (runtimeElement->IsWindow())
     {
         wrl::ComPtr<xaml::IWindow> currentWindow;
-        IFCFAILFAST(runtimeElement->GetBackingObject().As(&currentWindow));
+        IFCFAILFAST(backingObject.As(&currentWindow));
         wil::unique_bstr windowTitle;
         VERIFYHR(GetWindowText(currentWindow, windowTitle));
         element.Name = windowTitle.release();
@@ -473,17 +510,17 @@ XamlDiagnostics::PopulateElementInfo(
         wrl_wrappers::HString strName;
         if (runtimeElement->IsDesktopWindowXamlSource() || runtimeElement->IsXamlIsland())
         {
-            VERIFYHR(runtimeElement->GetBackingObject()->GetRuntimeClassName(typeName.GetAddressOf()));
+            VERIFYHR(backingObject->GetRuntimeClassName(typeName.GetAddressOf()));
         }
         else
         {
-            VERIFYHR(m_spDiagInterop->GetTypeNameFor(runtimeElement->GetBackingObject().Get(), typeName.GetAddressOf()));
+            VERIFYHR(m_spDiagInterop->GetTypeNameFor(backingObject.Get(), typeName.GetAddressOf()));
         }
 
-        VERIFYHR(m_spDiagInterop->GetName(runtimeElement->GetBackingObject().Get(), strName.GetAddressOf()));
+        VERIFYHR(m_spDiagInterop->GetName(backingObject.Get(), strName.GetAddressOf()));
 
         wrl::ComPtr<xaml::ISourceInfoPrivate> sourceInfo;
-        if (SUCCEEDED(runtimeElement->GetBackingObject().As(&sourceInfo)))
+        if (SUCCEEDED(backingObject.As(&sourceInfo)))
         {
             element.SrcInfo = GetSourceInfo(sourceInfo.Get()).release();
         }
