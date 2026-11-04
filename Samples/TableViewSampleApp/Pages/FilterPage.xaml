@@ -36,17 +36,26 @@
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
-            <!-- Columns are added in code: see BuildColumns. -->
             <tv:TableView
                 x:Name="FilterTable"
                 AutomationProperties.AutomationId="FilterTable"
                 AutomationProperties.Name="Filtered people"
                 ItemsSource="{x:Bind Source}"
                 SelectionMode="Single"
-                SelectionChanged="OnTableSelectionChanged"
                 EmptyTemplate="{StaticResource FilterEmptyTemplate}"
                 VerticalAlignment="Stretch"
-                MinHeight="320"/>
+                MinHeight="320">
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"
+                                            HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <!-- A template column sorts by SortMemberPath, the value behind the template. -->
+                <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
+                                            HeaderToolTip="Read-only chip. The query matches on it."/>
+                <tv:TableViewTemplateColumn Header="Role" Width="200" CellTemplate="{StaticResource RoleTextBoxTemplate}" SortMemberPath="Role"
+                                            HeaderToolTip="Editable free text. The query matches on it, so retyping a role can push the row out of the filtered view."/>
+                <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"
+                                            HeaderToolTip="Editable CheckBox. Clearing it while Active only is on removes the row from the filtered view."/>
+            </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
 

@@ -62,6 +62,26 @@ extends:
         pipelineKind: Localization
         signOutput: true # this is true for official builds
         runStaticAnalysis: false
+        # InteractiveExperiences (IXP) binaries that the build copies unchanged from the IXP package.
+        # WinUI doesn't sign them, and the dev mono-build IXP package that eng\Versions.props falls back
+        # to is test-signed, so CodeSign Validation reports CodeSign.NoMatchingPolicy for them. Remove
+        # once that fallback is a production-signed IXP package.
+        codeSignValidationExcludes:
+        - '**\CoreMessagingXP.dll'
+        - '**\dcompi.dll'
+        - '**\dwmcorei.dll'
+        - '**\DwmSceneI.dll'
+        - '**\marshal.dll'
+        - '**\Microsoft.DirectManipulation.dll'
+        - '**\Microsoft.Graphics.Display.dll'
+        - '**\Microsoft.InputStateManager.dll'
+        - '**\Microsoft.UI.Composition.OSSupport.dll'
+        - '**\Microsoft.UI.Designer.dll'
+        - '**\Microsoft.UI.dll'
+        - '**\Microsoft.UI.Input.dll'
+        - '**\Microsoft.UI.Windowing.Core.dll'
+        - '**\Microsoft.UI.Windowing.dll'
+        - '**\wuceffectsi.dll'
 
     - template: AzurePipelinesTemplates\WinUI-Localization-Stage.yml
       parameters:

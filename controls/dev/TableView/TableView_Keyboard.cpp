@@ -995,7 +995,7 @@ void TableView::OnKeyDownForNavigation(
 
     int32_t newRow = currentRow;
     bool consumeKey = true;
-    // Absolute/page keys are consumed at boundaries; Up/Down may escape the table.
+    // Absolute/page keys are consumed at boundaries; cell-level Up/Down may escape the table.
     bool absoluteRowNav = false;
     std::optional<double> alignRatio{};
 
@@ -1058,9 +1058,23 @@ void TableView::OnKeyDownForNavigation(
         {
             // Up/Down preserve the starting level per ARIA treegrid: row-to-row or same-column
             // cell-to-cell.
-            const bool moved = hasCellAnchor
+            bool moved = hasCellAnchor
                 ? FocusCell(newRow, anchorColumn, alignRatio)
                 : FocusRowContainer(newRow, alignRatio);
+            // Row-level Up/Down steps over rows that refuse focus (disabled), as ListView does.
+            if (!moved && !hasCellAnchor && !absoluteRowNav)
+            {
+                const int32_t step = newRow > currentRow ? 1 : -1;
+                for (int32_t next = newRow + step; next >= 0 && next < rowCount; next += step)
+                {
+                    if (FocusRowContainer(next, alignRatio))
+                    {
+                        newRow = next;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
             if (moved)
             {
                 if (!isControlDown)
@@ -1080,12 +1094,19 @@ void TableView::OnKeyDownForNavigation(
         {
             args.Handled(true);
         }
+
+        // Unhandled, the body scroller would focus a control inside this row's cells.
+        if (!args.Handled() && m_navKeyHandledEarly && !hasCellAnchor &&
+            (key == winrt::Windows::System::VirtualKey::Up || key == winrt::Windows::System::VirtualKey::Down))
+        {
+            args.Handled(true);
+        }
     }
 }
 
-// Rows forward Left/Right before PART_BodyScroller scrolls on them; the handledEventsToo KeyDown
-// then skips the key, since hierarchy Left/Right is not idempotent.
-void TableView::HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
+// Rows forward Left/Right (and row-level Up/Down) before PART_BodyScroller acts on them; the
+// handledEventsToo KeyDown then skips the key, since hierarchy Left/Right is not idempotent.
+void TableView::HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = true;
     OnKeyDownForNavigation(nullptr, args);

@@ -48,6 +48,10 @@ NavigationViewItem::NavigationViewItem()
     m_isEnabledPropertyChangedRevoker = RegisterPropertyChanged(*this, winrt::Control::IsEnabledProperty(), { this, &NavigationViewItem::OnIsEnabledPropertyChanged });
     // Leaving the tree drops capture without a reliable notification.
     Unloaded({ this, &NavigationViewItem::OnUnloaded });
+
+    // Items outside a NavigationView-owned repeater are only prepared on load (see OnLoaded), and they can be
+    // moved to a different host later (for example from MenuItems to PaneFooter or Content).
+    Loaded({ this, &NavigationViewItem::OnLoaded });
 }
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -64,6 +68,16 @@ void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
 void NavigationViewItem::OnNavigationViewItemBaseIsSelectedChanged()
 {
     UpdateVisualStateForPointer();
+    // Cleared and removed containers keep their weak owner, so check membership before its SelectionModel is read.
+    if (!IsInNavigationViewOwnedRepeater() && IsInNavigationViewMenu())
+    {
+        winrt::get_self<NavigationView>(GetNavigationView())->OnNavigationViewItemIsSelectedPropertyChanged(*this, s_IsSelectedProperty);
+    }
+}
+
+void NavigationViewItem::OnNavigationViewItemBaseParentChanged()
+{
+    UpdateRepeaterItemsSource();
 }
 
 void NavigationViewItem::OnNavigationViewItemBasePositionChanged()
@@ -106,12 +120,6 @@ void NavigationViewItem::OnApplyTemplate()
     if (auto splitView = GetSplitView())
     {
         PrepNavigationViewItem(splitView);
-    }
-    else
-    {
-        // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView. So check OnLoaded
-        // if it the reference has been manually set in NavigationViewItemBase::OnLoaded(). 
-        Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
     if (HasPotentialChildren())
@@ -181,9 +189,14 @@ void NavigationViewItem::LoadMenuItemsHost()
 
 void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
+    // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView, so it is prepared here once
+    // NavigationViewItemBase::OnLoaded() has set the NavigationView. This also runs again when the item is loaded in a new host
+    // (for example moved between MenuItems, PaneFooter, Content or another NavigationView), so the SplitView subscriptions and
+    // the closed compact state follow the new host. Re-preparing replaces the previous SplitView subscriptions.
     if (auto splitView = GetSplitView())
     {
         PrepNavigationViewItem(splitView);
+        ReparentRepeater();
     }
 
     UpdateVisualStateForChevron();
@@ -191,25 +204,140 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
 {
+    m_itemsSourceViewCollectionChangedRevoker.revoke();
+    m_itemsSourceView.set(nullptr);
+    if (!m_repeater && !GetNavigationView())
+    {
+        return;
+    }
+
+    winrt::ItemsSourceView items{ nullptr };
     if (auto repeater = m_repeater.get())
     {
-        auto const itemsSource = [this]()
-        {
-            if (auto const menuItemsSource = MenuItemsSource())
+        repeater.ItemsSource(GetChildrenSource());
+        items = repeater.ItemsSourceView();
+    }
+    else if (MenuItemsSource())
+    {
+        // The revoker only holds the view weakly, so keep it alive while this unrealized item observes it.
+        items = GetChildrenItemsSourceView();
+        m_itemsSourceView.set(items);
+    }
+
+    if (items)
+    {
+        m_itemsSourceViewCollectionChangedRevoker = items.CollectionChanged(winrt::auto_revoke,
+            [weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)](const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
             {
-                return menuItemsSource;
+                if (auto const item = weakThis.get())
+                {
+                    winrt::get_self<NavigationViewItem>(item)->OnItemsSourceViewChanged(sender, args);
+                }
+            });
+    }
+
+    UpdateNavigationViewForChildren();
+}
+
+winrt::IInspectable NavigationViewItem::GetChildrenSource()
+{
+    if (auto const menuItemsSource = MenuItemsSource())
+    {
+        return menuItemsSource;
+    }
+    return MenuItems().as<winrt::IInspectable>();
+}
+
+// A new view is used because a vector notification can arrive before the repeater's view updates its cached count.
+winrt::ItemsSourceView NavigationViewItem::GetChildrenItemsSourceView()
+{
+    auto const itemsSource = GetChildrenSource();
+    if (auto const itemsSourceView = itemsSource.try_as<winrt::ItemsSourceView>())
+    {
+        return itemsSourceView;
+    }
+    return winrt::ItemsSourceView(itemsSource);
+}
+
+bool NavigationViewItem::IsInNavigationViewMenu()
+{
+    if (auto const navigationView = GetNavigationView())
+    {
+        auto const navigationViewImpl = winrt::get_self<NavigationView>(navigationView);
+        // A cleared container stays in its repeater until it is recycled, but its index is no longer valid.
+        if (auto const parentRepeater = navigationViewImpl->GetParentItemsRepeaterForContainer(*this))
+        {
+            if (parentRepeater.GetElementIndex(*this) < 0)
+            {
+                return false;
             }
-            return MenuItems().as<winrt::IInspectable>();
-        }();
-        m_itemsSourceViewCollectionChangedRevoker.revoke();
-        repeater.ItemsSource(itemsSource);
-        m_itemsSourceViewCollectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
+        }
+
+        auto const indexPath = navigationViewImpl->GetIndexPathForContainer(*this);
+        if (indexPath.GetSize() < 2)
+        {
+            return false;
+        }
+        for (int i = 0; i < indexPath.GetSize(); i++)
+        {
+            if (indexPath.GetAt(i) < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void NavigationViewItem::UpdateNavigationViewForChildren()
+{
+    if (!MenuItemsSource() && MenuItems().Size() == 0)
+    {
+        return;
+    }
+
+    if (auto const navigationView = GetNavigationView())
+    {
+        // Selecting during a collection notification can reset SelectionModel nodes whose handlers have not run yet,
+        // including while the NavigationView is unloaded, so the scan always runs after the current notification.
+        DispatcherQueue().TryEnqueue(
+            winrt::DispatcherQueuePriority::Low,
+            winrt::DispatcherQueueHandler([weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)]()
+            {
+                if (auto const item = weakThis.get())
+                {
+                    winrt::get_self<NavigationViewItem>(item)->SelectPreselectedChildren();
+                }
+            }));
+        SetNavigationViewParentForItems(GetChildrenSource(), navigationView);
+    }
+}
+
+void NavigationViewItem::SelectPreselectedChildren()
+{
+    for (auto const& item : GetMenuItems(GetChildrenSource()))
+    {
+        if (auto const child = item.try_as<winrt::NavigationViewItem>())
+        {
+            // Resolving this item's index path can walk the whole menu, so only do it when a child is preselected.
+            if (child.IsSelected())
+            {
+                if (IsInNavigationViewMenu())
+                {
+                    auto const navigationView = GetNavigationView();
+                    winrt::get_self<NavigationView>(navigationView)->UpdateSelectedItemFromMenuItems(GetChildrenItemsSourceView(), navigationView.SelectedItem() != nullptr);
+                }
+                return;
+            }
+        }
     }
 }
 
 void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
 {
-    UpdateVisualStateForChevron();
+    UpdateNavigationViewForChildren();
+    OnChildrenChanged(true /*isCollectionChange*/);
 }
  
 winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
@@ -355,17 +483,20 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateNoTransition();
+    InvalidateTopNavigationItemWidth();
 }
 
 void NavigationViewItem::OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateForInfoBadge();
+    InvalidateTopNavigationItemWidth();
 }
 
 void NavigationViewItem::OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
+    OnChildrenChanged(true /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -385,20 +516,21 @@ void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPrope
     }
     
     UpdateRepeaterItemsSource();
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
-    UpdateVisualStateForChevron();
+    UpdateRepeaterItemsSource();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::ShowSelectionIndicator(bool visible)
@@ -431,7 +563,18 @@ void NavigationViewItem::UpdateVisualStateForClosedCompact()
 {
     if (const auto presenter = GetPresenter())
     {
-        presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
+        // Items placed directly in PaneFooter or PaneCustomContent are not prepared by a NavigationView-owned
+        // repeater, so IsTopLevelItem() is never set for them. They are still shown at the root level of the pane
+        // and need the same closed compact layout as top-level menu items, otherwise the icon gets clipped.
+        bool isRootLevelItem = IsTopLevelItem();
+        if (!isRootLevelItem && m_isClosedCompact && !IsInNavigationViewOwnedRepeater())
+        {
+            if (auto const nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
+            {
+                isRootLevelItem = nvImpl->IsInLeftPaneFooterOrCustomContent(*this);
+            }
+        }
+        presenter->UpdateClosedCompactVisualState(isRootLevelItem, m_isClosedCompact);
     }
 }
 
@@ -719,6 +862,30 @@ void NavigationViewItem::UpdateVisualStateForChevron()
     }
 }
 
+void NavigationViewItem::OnChildrenChanged(bool isCollectionChange)
+{
+    UpdateVisualStateForChevron();
+    InvalidateTopNavigationItemWidth(isCollectionChange);
+}
+
+void NavigationViewItem::InvalidateTopNavigationItemWidth(bool isCollectionChange)
+{
+    if (m_appliedTemplate && !IsOnLeftNav())
+    {
+        if (auto navView = GetNavigationView())
+        {
+            const auto navViewImpl = winrt::get_self<NavigationView>(navView);
+            // Ignore property changes caused by recycling a data-templated container.
+            if (isCollectionChange || IsInNavigationViewOwnedRepeater() ||
+                navViewImpl->GetTopDataProvider().IndexOf(*this) != -1)
+            {
+                // Overflow items are not measured by UpdateTopNavigationWidthCache.
+                navViewImpl->TopNavigationViewItemContentChanged(true /*forceInvalidateWidthCache*/);
+            }
+        }
+    }
+}
+
 bool NavigationViewItem::HasChildren()
 {
     return (MenuItems() != nullptr && MenuItems().Size() > 0) || 
@@ -965,14 +1132,7 @@ void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent,
     SuggestedToolTipChanged(newContent);
     UpdateVisualStateNoTransition();
 
-    if (!IsOnLeftNav())
-    {
-        // Content has changed for the item, so we want to trigger a re-measure
-        if (auto navView = GetNavigationView())
-        {
-            winrt::get_self<NavigationView>(navView)->TopNavigationViewItemContentChanged();
-        }
-    }
+    InvalidateTopNavigationItemWidth();
 }
 
 void NavigationViewItem::OnGotFocus(winrt::RoutedEventArgs const& e)
@@ -1470,6 +1630,7 @@ void NavigationViewItem::UnhookEventsAndClearFields()
     m_navigationViewItemPresenter.set(nullptr);
     m_toolTip.set(nullptr);
     m_repeater.set(nullptr);
+    m_itemsSourceView.set(nullptr);
     m_flyoutContentGrid.set(nullptr);
 }
 

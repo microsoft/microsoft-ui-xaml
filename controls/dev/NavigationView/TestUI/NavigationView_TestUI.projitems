@@ -14,6 +14,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPointerFocusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -141,6 +145,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewDragPage.xaml.cs">
       <DependentUpon>NavigationViewDragPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPointerFocusPage.xaml.cs">
+      <DependentUpon>NavigationViewPointerFocusPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml.cs">
       <DependentUpon>NavigationViewInfoBadge.xaml</DependentUpon>

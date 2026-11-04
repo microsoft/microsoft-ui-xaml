@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ItemsControl.g.h"
 #include "ItemsControlAutomationPeer.g.h"
 #include "ItemCollection.g.h"
@@ -1816,7 +1817,8 @@ ItemsControl::PrepareItemContainer(
     _In_ xaml::IDependencyObject* pContainer,
     _In_ IInspectable* pItem)
 {
-    TracePrepareContainerBegin();
+    XamlTelemetry::PrepareContainerBegin(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
+
     HRESULT hr = S_OK;
     ctl::ComPtr<IGroupItem> spGroupItem;
 
@@ -1846,7 +1848,7 @@ ItemsControl::PrepareItemContainer(
     }
 
 Cleanup:
-    TracePrepareContainerEnd();
+    XamlTelemetry::PrepareContainerEnd(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
     RRETURN(hr);
 }
 

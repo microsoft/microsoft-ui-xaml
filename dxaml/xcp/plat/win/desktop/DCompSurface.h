@@ -236,12 +236,7 @@ private:
         bool increase
         );
 
-#ifdef XAMLPROFILER_ENABLED
-    void TraceProfilerMemoryChange(bool isAllocation);
-    void TraceProfilerTextureObserved(
-        _In_ IUnknown* updateObject,
-        const POINT& offset) noexcept;
-#endif
+    void TraceSurfaceInit(DXGI_FORMAT format);
 
     _Check_return_ HRESULT CopySubresource(
         _In_ const XRECT& destRect,

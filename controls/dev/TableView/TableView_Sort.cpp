@@ -527,7 +527,8 @@ bool TableView::RaiseSortingAndCheckCanceled(
     }
 
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
-    m_sortingEventSource(*this, *args);
+    try { m_sortingEventSource(*this, *args); }
+    catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 
     return args->Cancel();
 }
@@ -588,6 +589,23 @@ bool TableView::SyncTableViewSourceSort(
         return false;
     }
 
+    // Comparer faults contained before this sort (a live re-sort) are not its own.
+    if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState) { rankAdapter->TakeSwallowedFaults(); }
+
+    // A custom comparer that threw was contained as "equal": the sort stands, and the fault is the app's. Reported
+    // however this sort ends, from the adapter it ranked with (a reentrant sort can install another).
+    std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> rankedWith;
+    auto reportContained = wil::scope_exit([this, &rankedWith]() noexcept
+    {
+        if (!rankedWith) { return; }
+        if (auto const contained = rankedWith->TakeSwallowedFaults(); contained.count)
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Sort, TableViewTip::Stage::Sort,
+                true, TableViewTip::Attribution::Application, contained.firstError, TableViewTip::AppFaultKind::Callback,
+                contained.count);
+        }
+    });
+
     winrt::TableViewKeySelector keySelector{ nullptr };
     winrt::hstring sortAxisToken;
     // What this axis sorts on, purely descriptive. Stays empty for a CustomSortComparer: the
@@ -632,24 +650,29 @@ bool TableView::SyncTableViewSourceSort(
                     }
                 }
 
-                if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
+                rankedWith = m_tableViewSourceSort.CustomSortState;
+                if (rankedWith)
                 {
                     ShapingHelpers::PairwiseComparer comparer =
                         [customComparer](winrt::IInspectable const& a, winrt::IInspectable const& b)
                         {
                             return static_cast<int>(customComparer.Compare(a, b));
                         };
-                    rankAdapter->Rank(comparer, rows);
+                    rankedWith->Rank(comparer, rows);
                 }
             }
         }
         else
         {
             // Projected dispatch - see the note in HasResolvedSortMemberPath.
-            AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
             winrt::hstring sortMemberPath;
             try { sortMemberPath = trigger.GetSortMemberPathCore(); }
-            catch (...) { callout.Fault(winrt::to_hresult()); throw; }
+            catch (...)
+            {
+                // An app-derived column's override is the app's code; TableView's own columns are TableView's.
+                if (TableViewDetails::IsAppDerivedColumn(trigger)) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
+                throw;
+            }
             if (sortMemberPath.empty())
             {
                 return false;
@@ -813,11 +836,12 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::Sort, measureTip);
     m_controlSortPublishedGeneration = 0;
     bool completed = false;
-    auto tipCompletion = wil::scope_exit([this, tipGeneration, measureTip, &completed]() noexcept
+    std::optional<TableViewTip::Fault> failure;
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, measureTip, &completed, &failure]() noexcept
     {
         if (measureTip && !completed)
         {
-            FailTipOperation(tipGeneration, TableViewTip::Stage::Sort, {});
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Sort, failure);
         }
         else if (measureTip && m_controlSortPublishedGeneration == tipGeneration)
         {
@@ -830,94 +854,101 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         EndTipOperation();
     });
 
-    // Reshapes through whichever source is active. A cancelled Sorting never reaches this point,
-    // so anything that does gets both the reshape and the published state.
-    const auto requestedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
+    try
+    {
+        // Reshapes through whichever source is active. A cancelled Sorting never reaches this point,
+        // so anything that does gets both the reshape and the published state.
+        const auto requestedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
 
-    // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
-    // afterwards so the selection follows the row rather than the slot.
-    const auto preservedSelection = SelectedItemInternal();
-    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration, explicitClear || static_cast<bool>(trigger));
-    if (reshaped && invalidatedSort)
-    {
-        TableViewTip::IgnoreOperation(m_tip, invalidatedSort, TableViewTip::IgnoreReason::Stale);
-    }
-    if (!reshaped && tipGeneration == m_tip.operationGeneration)
-    {
-        TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::Stale);
-    }
-
-    if (reshaped && preservedSelection)
-    {
-        // A row that fell out of the projection surfaces as a real deselect, which is the honest
-        // answer - the selected item is no longer displayed.
-        ApplySelection(FindEntryIndexForDataItem(preservedSelection));
-    }
-
-    // The app's sort remains on the source, so an implicit clear is not reported as a clear.
-    bool keptSourceSort = false;
-    if (!trigger && !explicitClear && !m_activeSourceReleased)
-    {
-        if (auto const source = ShapingSourceInternal())
+        // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
+        // afterwards so the selection follows the row rather than the slot.
+        const auto preservedSelection = SelectedItemInternal();
+        const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration, explicitClear || static_cast<bool>(trigger));
+        if (reshaped && invalidatedSort)
         {
-            keptSourceSort = !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+            TableViewTip::IgnoreOperation(m_tip, invalidatedSort, TableViewTip::IgnoreReason::Stale);
         }
-    }
-
-    if (m_sortedEventSource && !keptSourceSort)
-    {
-        const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
-        auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
-        AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
-        try
+        if (!reshaped && tipGeneration == m_tip.operationGeneration)
         {
-            m_sortedEventSource(*this, *args);
+            TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::Stale);
         }
-        catch (...)
+
+        if (reshaped && preservedSelection)
         {
-            callout.Fault(winrt::to_hresult());
-            throw;
+            // A row that fell out of the projection surfaces as a real deselect, which is the honest
+            // answer - the selected item is no longer displayed.
+            ApplySelection(FindEntryIndexForDataItem(preservedSelection));
         }
-    }
 
-    if (!keptSourceSort && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
-    {
-        // A programmatic or header-driven re-sort has no input event behind it, so without an
-        // announcement a screen-reader user has no way to learn the order changed.
-        if (trigger)
+        // The app's sort remains on the source, so an implicit clear is not reported as a clear.
+        bool keptSourceSort = false;
+        if (!trigger && !explicitClear && !m_activeSourceReleased)
         {
-            // The realized header peer also names template headers, which carry no string.
-            winrt::hstring header;
-            if (auto const headerPeer = GetRealizedColumnHeaderPeer(*this, trigger))
+            if (auto const source = ShapingSourceInternal())
             {
-                header = headerPeer.GetName();
-            }
-            if (header.empty())
-            {
-                header = TableViewDetails::GetColumnHeaderText(trigger);
-            }
-
-            switch (trigger.SortDirection())
-            {
-            case winrt::SortDirection::Ascending:
-                AnnounceSortChange(StringUtil::FormatString(
-                    LocalizedOrFallback(SR_TableViewSortedAscending, L"Sorted by %1!s! ascending."), header.c_str()));
-                break;
-            case winrt::SortDirection::Descending:
-                AnnounceSortChange(StringUtil::FormatString(
-                    LocalizedOrFallback(SR_TableViewSortedDescending, L"Sorted by %1!s! descending."), header.c_str()));
-                break;
-            case winrt::SortDirection::None:
-            default:
-                AnnounceSortChange(StringUtil::FormatString(
-                    LocalizedOrFallback(SR_TableViewSortCleared, L"Sorting cleared for %1!s!."), header.c_str()));
-                break;
+                keptSourceSort = !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
             }
         }
-        else
+
+        if (m_sortedEventSource && !keptSourceSort)
         {
-            AnnounceSortChange(LocalizedOrFallback(SR_TableViewSortClearedAll, L"All sorting cleared."));
+            const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
+            auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
+            try
+            {
+                m_sortedEventSource(*this, *args);
+            }
+            catch (...)
+            {
+                TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback);
+            }
         }
+
+        if (!keptSourceSort && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
+        {
+            // A programmatic or header-driven re-sort has no input event behind it, so without an
+            // announcement a screen-reader user has no way to learn the order changed.
+            if (trigger)
+            {
+                // The realized header peer also names template headers, which carry no string.
+                winrt::hstring header;
+                if (auto const headerPeer = GetRealizedColumnHeaderPeer(*this, trigger))
+                {
+                    header = headerPeer.GetName();
+                }
+                if (header.empty())
+                {
+                    header = TableViewDetails::GetColumnHeaderText(trigger);
+                }
+
+                switch (trigger.SortDirection())
+                {
+                case winrt::SortDirection::Ascending:
+                    AnnounceSortChange(StringUtil::FormatString(
+                        LocalizedOrFallback(SR_TableViewSortedAscending, L"Sorted by %1!s! ascending."), header.c_str()));
+                    break;
+                case winrt::SortDirection::Descending:
+                    AnnounceSortChange(StringUtil::FormatString(
+                        LocalizedOrFallback(SR_TableViewSortedDescending, L"Sorted by %1!s! descending."), header.c_str()));
+                    break;
+                case winrt::SortDirection::None:
+                default:
+                    AnnounceSortChange(StringUtil::FormatString(
+                        LocalizedOrFallback(SR_TableViewSortCleared, L"Sorting cleared for %1!s!."), header.c_str()));
+                    break;
+                }
+            }
+            else
+            {
+                AnnounceSortChange(LocalizedOrFallback(SR_TableViewSortClearedAll, L"All sorting cleared."));
+            }
+        }
+    }
+    catch (...)
+    {
+        // App code's exceptions (the collection, its contract, a sort callout) carry their kind.
+        failure = TableViewTip::CurrentFault();
+        throw;
     }
 
     // The chevrons are already current: SetSortStateInternal republished them through

@@ -11,392 +11,297 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
+using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// One ObservableCollection<Employee> feeds two TableViewSources; each declares its own relation with
-// ParentBy, so the same rows form two different trees. Filter, Sort and GroupBy are stages on the
-// same sources and compose with the hierarchy.
+/// <summary>
+/// Hierarchy: TableViewSource.ParentBy over one flat list of people, by manager or by mentor, with
+/// Filter, Sort, GroupBy (through the shared Shaping section) and IsLiveShaping on the same source.
+/// </summary>
 public sealed partial class HierarchyPage : SamplePageBase
 {
+    private const int RowCount = 200;
     private const int PerfCount = 100_000;
     private const int PerfRuns = 3;
     private const string RenamePrefix = "zz ";
 
-    private readonly ObservableCollection<Employee> _employees = new(HierarchyData.Generate(200));
-    private readonly TableViewSource _managerSource;
-    private readonly TableViewSource _mentorSource;
     private int _nextId;
-    private bool _ready;   // guards handlers that fire while InitializeComponent applies initial values
     private bool _perfRunning;
-    private TableView? _activeTable;   // the table the user selected in last
 
     public HierarchyPage()
     {
-        InitializeComponent();
-
         // <snippet>
-        BuildColumns(ManagerTable);
-        BuildColumns(MentorTable);
-
-        _managerSource = TableViewSource.From(_employees);
-        _mentorSource = TableViewSource.From(_employees);
-        ManagerTable.ItemsSource = _managerSource;
-        MentorTable.ItemsSource = _mentorSource;
-        ManagerTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
-        MentorTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
-
-        DeclareManagerRelation(_managerSource);
-        DeclareMentorRelation(_mentorSource);
+        Source = TableViewSource.From(People);     // one source; ParentBy, Filter, Sort and GroupBy reshape it in place
+        Source.IsLiveShaping = true;               // an edit to a key or shaped value reshapes the tree
+        InitializeComponent();
         // </snippet>
-        ApplyLive();
-
-        _nextId = _employees.Max(e => e.Id) + 1;
-        _ready = true;
-        InitializeSample(Status);
+        PeopleTable.SelectionChanged += OnSelectionChanged;
+        InitializeSample(Status, Shaping.Attach(PeopleTable, Source, parentRelation: ParentRelation.Manager));
+        _nextId = People.Max(p => p.EmployeeId) + 1;
     }
 
     // <snippet>
-    private static void BuildColumns(TableView table)
-    {
-        // The chevron and the indent are drawn over the first column; nothing about these column
-        // declarations is hierarchy-aware.
-        table.Columns.Add(SampleColumns.Text("Name", nameof(Employee.Name), SampleColumns.Star(2)));
-        table.Columns.Add(SampleColumns.Text("Title", nameof(Employee.Title), SampleColumns.Star()));
-        table.Columns.Add(SampleColumns.Text("Dept", nameof(Employee.Dept), SampleColumns.Pixels(100)));
-        table.Columns.Add(SampleColumns.Text("Id", nameof(Employee.Id), SampleColumns.Pixels(60)));
-    }
-
-    // ---- Relations ----
-
-    // A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
-    private static void DeclareManagerRelation(TableViewSource source) =>
-        source.ParentBy(
-            new TableViewKeySelector(item => ((Employee)item).Id),
-            new TableViewKeySelector(item => ((Employee)item).ManagerId!));
-
-    private static void DeclareMentorRelation(TableViewSource source) =>
-        source.ParentBy(
-            new TableViewKeySelector(item => ((Employee)item).Id),
-            new TableViewKeySelector(item => ((Employee)item).MentorId!));
+    public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
     // </snippet>
-
-    private IEnumerable<TableViewSource> Sources => new[] { _managerSource, _mentorSource };
 
     // <snippet>
-    // ---- Shaping (applied to both sources) ----
-
-    private void ApplyFilter()
-    {
-        var text = FilterBox.Text?.Trim() ?? string.Empty;
-        foreach (var source in Sources)
-        {
-            if (text.Length == 0)
-            {
-                source.ClearFilter();
-            }
-            else
-            {
-                // Matches NODES; ancestors of a match are kept as ordinary rows and expanded while the
-                // filter is active.
-                source.Filter(new TableViewPredicate(
-                    item => ((Employee)item).Name.Contains(text, StringComparison.OrdinalIgnoreCase)));
-            }
-        }
-    }
-
-    private void ApplySort()
-    {
-        foreach (var source in Sources)
-        {
-            // A key-selector sort is an anonymous axis: a new Sort(keySelector) is added behind the
-            // previous one instead of replacing it, so clear the old axis first.
-            source.ClearSort();
-            switch (SortCombo.SelectedIndex)
-            {
-                case 1:
-                    source.Sort(new TableViewKeySelector(item => ((Employee)item).Name), SortDirection.Ascending);
-                    break;
-                case 2:
-                    source.Sort(new TableViewKeySelector(item => ((Employee)item).Name), SortDirection.Descending);
-                    break;
-                case 3:
-                    source.Sort(new TableViewKeySelector(item => ((Employee)item).Title), SortDirection.Ascending);
-                    break;
-            }
-        }
-    }
-
-    private void ApplyGroup()
-    {
-        foreach (var source in Sources)
-        {
-            if (GroupToggle.IsOn)
-            {
-                // Only the roots are bucketed; a descendant stays under its parent.
-                source.GroupBy(new TableViewKeySelector(item => ((Employee)item).Dept));
-            }
-            else
-            {
-                source.ClearGroupBy();
-            }
-        }
-    }
-
-    // Under ParentBy, live shaping also tracks keys, so a ManagerId/MentorId edit reparents.
-    private void ApplyLive()
-    {
-        bool live = LiveToggle.IsOn;
-        foreach (var source in Sources)
-        {
-            source.IsLiveShaping = live;
-        }
-    }
+    public TableViewSource Source { get; }
     // </snippet>
 
-    // ---- Handlers ----
+    private Person? SelectedPerson => PeopleTable.SelectedItem as Person;
 
-    private void Filter_Changed(object sender, TextChangedEventArgs e)
+    private ParentRelation Relation => Shaping.Relation ?? ParentRelation.Manager;
+
+    private bool IsMentorRelation => ReferenceEquals(Relation, ParentRelation.Mentor);
+
+    private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args) => RefreshReadouts();
+
+    private void OnRelationChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!_ready)
+        if (!IsLoaded)
         {
             return;
         }
 
-        ApplyFilter();
-        var text = FilterText;
+        var relation = SampleShaping.SelectedTag(RelationSelector, "Manager") == "Mentor" ? ParentRelation.Mentor : ParentRelation.Manager;
+        Shaping.SetRelation(relation);
+        SetLastAction(Shaping.IsHierarchical
+            ? string.Format(CultureInfo.CurrentCulture, "Parent relation -> {0}: ParentBy declared again, every row collapsed", relation.Label)
+            : string.Format(CultureInfo.CurrentCulture, "Parent relation -> {0}; choose a Hierarchy shaping mode to see it", relation.Label));
+    }
+
+    // <snippet>
+    private void OnLiveToggled(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
+
+        Source.IsLiveShaping = ((ToggleSwitch)sender).IsOn;
+        SetLastAction(Source.IsLiveShaping ? "IsLiveShaping -> True" : "IsLiveShaping -> False: edits wait for the next reshape");
+    }
+    // </snippet>
+
+    // <snippet>
+    private void OnFilterChanged(object sender, TextChangedEventArgs e)
+    {
+        var text = ((TextBox)sender).Text.Trim();
+        if (text.Length == 0)
+        {
+            Source.ClearFilter();
+        }
+        else
+        {
+            // Matches rows; the ancestors of a match stay as ordinary rows, expanded while the filter is on.
+            Source.Filter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+        }
+
         SetLastAction(text.Length == 0
             ? "Filter cleared"
-            : string.Format(CultureInfo.CurrentCulture, "Filter -> \u201C{0}\u201D: {1:N0} matching employees", text, _employees.Count(x => Matches(x, text))));
+            : string.Format(CultureInfo.CurrentCulture, "Filter -> \u201C{0}\u201D: {1:N0} matches, {2:N0} rows with their ancestors", text, People.Count(p => Matches(p, text)), Relation.CountWithAncestors(People, p => Matches(p, text))));
     }
-
-    private void Sort_Changed(object sender, SelectionChangedEventArgs e)
-    {
-        if (!_ready)
-        {
-            return;
-        }
-
-        ApplySort();
-        SetLastAction("Sort -> " + SortLabel);
-    }
-
-    private void Group_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (!_ready)
-        {
-            return;
-        }
-
-        ApplyGroup();
-        SetLastAction(GroupToggle.IsOn ? "Grouped the roots by department" : "Grouping off");
-    }
-
-    private void Live_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (!_ready)
-        {
-            return;
-        }
-
-        ApplyLive();
-        SetLastAction(LiveToggle.IsOn ? "Live shaping -> On" : "Live shaping -> Off");
-    }
-
-    // The tables select independently; the actions act on the row selected last, and the other
-    // table's selection is cleared so only one row reads as selected.
-    private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
-    {
-        if (sender.SelectedItem is not null && !ReferenceEquals(sender, _activeTable))
-        {
-            var other = ReferenceEquals(sender, ManagerTable) ? MentorTable : ManagerTable;
-            _activeTable = sender;
-            other.DeselectAll();
-        }
-
-        RefreshReadouts();
-    }
-
-    // The prefix sorts last and flips name-filter matching.
-    private void Rename_Click(object sender, RoutedEventArgs e)
-    {
-        if (SelectedEmployee() is not { } selected)
-        {
-            SetLastAction("No row selected.");
-            return;
-        }
-
-        var from = selected.Name;
-        selected.Name = from.StartsWith(RenamePrefix, StringComparison.Ordinal)
-            ? from.Substring(RenamePrefix.Length)
-            : RenamePrefix + from;
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Renamed {0} to {1}", from, selected.Name));
-    }
-
-    // Only roots are bucketed: a root changes group with its subtree; a descendant only its cell.
-    private void NextDept_Click(object sender, RoutedEventArgs e)
-    {
-        if (SelectedEmployee() is not { } selected)
-        {
-            SetLastAction("No row selected.");
-            return;
-        }
-
-        var from = selected.Dept;
-        var depts = HierarchyData.Depts;
-        selected.Dept = depts[(Array.IndexOf(depts, selected.Dept) + 1) % depts.Length];
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", selected.Name, from, selected.Dept));
-    }
-
-    private void ExpandAll_Click(object sender, RoutedEventArgs e)
-    {
-        foreach (var table in new[] { ManagerTable, MentorTable })
-        {
-            table.ExpandAllGroups();
-            table.ExpandAllRows();
-        }
-
-        SetLastAction("Expanded every group and row in both tables");
-    }
-
-    private void CollapseAll_Click(object sender, RoutedEventArgs e)
-    {
-        foreach (var table in new[] { ManagerTable, MentorTable })
-        {
-            table.CollapseAllGroups();
-            table.CollapseAllRows();
-        }
-
-        SetLastAction("Collapsed every group and row in both tables");
-    }
-
-    // The new person reports to (and is mentored by) whoever is selected.
-    private void AddReport_Click(object sender, RoutedEventArgs e)
-    {
-        var selected = SelectedEmployee();
-        var hire = NewEmployee(selected?.Id, selected?.Id);
-        _employees.Add(hire);
-        SetLastAction(selected is null
-            ? string.Format(CultureInfo.CurrentCulture, "Added {0} as a root (no row selected)", hire.Name)
-            : string.Format(CultureInfo.CurrentCulture, "Added {0} under {1} in both tables", hire.Name, selected.Name));
-    }
-
-    private void AddRoot_Click(object sender, RoutedEventArgs e)
-    {
-        var hire = NewEmployee(null, null);
-        _employees.Add(hire);
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} as a root", hire.Name));
-    }
-
-    // Orphaned reports become roots (parent key no longer matches).
-    private void Remove_Click(object sender, RoutedEventArgs e)
-    {
-        if (SelectedEmployee() is not { } selected)
-        {
-            SetLastAction("No row selected.");
-            return;
-        }
-
-        var reports = _employees.Count(x => x.ManagerId == selected.Id);
-        _employees.Remove(selected);
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}; {1:N0} direct report(s) became roots in the Manager table", selected.Name, reports));
-    }
+    // </snippet>
 
     // <snippet>
-    // Moves selection under another manager (never itself or a report, which would cycle). Live: a
-    // property set reparents. Off: the item is replaced so the collection change carries the new key.
-    private void Reparent_Click(object sender, RoutedEventArgs e)
+    private void OnSortChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (SelectedEmployee() is not { } selected)
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
+
+        // A key-selector sort adds an axis rather than replacing one, so clear the previous axis first.
+        Source.ClearSort();
+        switch (((ComboBox)sender).SelectedIndex)
+        {
+            case 1:
+                Source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
+                break;
+            case 2:
+                Source.Sort(item => ((Person)item).FullName, SortDirection.Descending);
+                break;
+            case 3:
+                Source.Sort(item => ((Person)item).Role, SortDirection.Ascending);
+                break;
+        }
+
+        OnSortRedeclared(); // snippet:skip
+        SetLastAction("Sort -> " + SortLabel);
+    }
+    // </snippet>
+
+    private void OnRenameClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectedPerson is not { } selected)
         {
             SetLastAction("No row selected.");
             return;
         }
 
-        int index = _employees.IndexOf(selected);
-        var managerOf = _employees.ToDictionary(x => x.Id, x => x.ManagerId);
-        bool IsUnderSelected(int? id)
+        var from = selected.FullName;
+        selected.FirstName = selected.FirstName.StartsWith(RenamePrefix, StringComparison.Ordinal)
+            ? selected.FirstName.Substring(RenamePrefix.Length)
+            : RenamePrefix + selected.FirstName;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Renamed {0} to {1}", from, selected.FullName));
+    }
+
+    // Only roots are bucketed: grouped, a root changes group with its subtree, a nested row only its cell.
+    private void OnNextDepartmentClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectedPerson is not { } selected)
         {
-            for (int hops = 0; id is int current && hops <= _employees.Count; hops++)
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var from = selected.Department;
+        selected.Department = SampleShaping.Next(PersonData.Departments, from);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", selected.FullName, from, selected.Department));
+    }
+
+    private void OnAddReportClick(object sender, RoutedEventArgs e)
+    {
+        var selected = SelectedPerson;
+        var hire = NewPerson(selected?.EmployeeId, selected?.Department);
+        People.Add(hire);
+        SetLastAction(selected is null
+            ? string.Format(CultureInfo.CurrentCulture, "Added {0} as a root (no row selected)", hire.FullName)
+            : string.Format(CultureInfo.CurrentCulture, "Added {0} under {1}", hire.FullName, selected.FullName));
+    }
+
+    private void OnAddRootClick(object sender, RoutedEventArgs e)
+    {
+        var hire = NewPerson(null, null);
+        People.Add(hire);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} as a root", hire.FullName));
+    }
+
+    private void OnRemoveClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectedPerson is not { } selected)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var children = People.Count(p => Equals(Relation.ParentKeyOf(p), selected.EmployeeId));
+        People.Remove(selected);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}; {1:N0} child row(s) became orphan roots", selected.FullName, children));
+    }
+
+    // Moves the selected row under another parent, never under itself or its own subtree (a cycle).
+    // With live shaping a key change reparents in place; without it, replace the item so the
+    // collection change carries the new key.
+    private void OnReparentClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectedPerson is not { } selected)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var parentOf = People.ToDictionary(p => p.EmployeeId, p => (int?)Relation.ParentKeyOf(p));
+        bool IsInSubtree(int id)
+        {
+            int? current = id;
+            for (var hops = 0; current is int key && hops <= People.Count; hops++)
             {
-                if (current == selected.Id)
+                if (key == selected.EmployeeId)
                 {
                     return true;
                 }
 
-                id = managerOf.GetValueOrDefault(current);
+                current = parentOf.GetValueOrDefault(key);
             }
 
             return false;
         }
 
-        for (int step = 1; step < _employees.Count; step++)
+        var index = People.IndexOf(selected);
+        var currentParent = (int?)Relation.ParentKeyOf(selected);
+        for (var step = 1; step < People.Count; step++)
         {
-            var candidate = _employees[(index + step * 7) % _employees.Count];
-            if (candidate.Id != selected.ManagerId && !IsUnderSelected(candidate.Id))
+            var candidate = People[(index + (step * 7)) % People.Count];
+            if (candidate.EmployeeId == currentParent || IsInSubtree(candidate.EmployeeId))
             {
-                if (LiveToggle.IsOn)
-                {
-                    selected.ManagerId = candidate.Id;
-                }
-                else
-                {
-                    _employees[index] = new Employee
-                    {
-                        Id = selected.Id,
-                        ManagerId = candidate.Id,
-                        MentorId = selected.MentorId,
-                        Name = selected.Name,
-                        Title = selected.Title,
-                        Dept = selected.Dept,
-                    };
-                }
-
-                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reparented {0} under {1}{2}", selected.Name, candidate.Name, LiveToggle.IsOn ? string.Empty : " (item replaced)"));
-                return;
+                continue;
             }
+
+            var target = Source.IsLiveShaping ? selected : CopyOf(selected);
+            if (IsMentorRelation)
+            {
+                target.MentorId = candidate.EmployeeId;
+            }
+            else
+            {
+                target.ManagerId = candidate.EmployeeId;
+            }
+
+            if (!Source.IsLiveShaping)
+            {
+                People[index] = target;
+            }
+
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reparented {0} under {1}{2}", selected.FullName, candidate.FullName, Source.IsLiveShaping ? string.Empty : " (item replaced)"));
+            return;
         }
 
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "No other manager for {0} without a cycle", selected.Name));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "No other parent for {0} without a cycle", selected.FullName));
     }
-    // </snippet>
 
-    private void Reset_Click(object sender, RoutedEventArgs e)
+    private void OnResetClick(object sender, RoutedEventArgs e)
     {
-        _employees.Clear();
-        foreach (var employee in HierarchyData.Generate(200))
+        People.Clear();
+        foreach (var person in PersonData.Take(RowCount))
         {
-            _employees.Add(employee);
+            People.Add(person);
         }
 
-        _nextId = _employees.Max(x => x.Id) + 1;
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reset to {0:N0} employees", _employees.Count));
+        _nextId = People.Max(p => p.EmployeeId) + 1;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reset to {0:N0} people", People.Count));
     }
 
-    private Employee? SelectedEmployee() => _activeTable?.SelectedItem as Employee;
-
-    private Employee NewEmployee(int? managerId, int? mentorId)
+    private Person NewPerson(int? parentId, string? department)
     {
-        int id = _nextId++;
-        return new Employee
-        {
-            Id = id,
-            ManagerId = managerId,
-            MentorId = mentorId,
-            Name = $"New hire {id}",
-            Title = "Associate",
-            Dept = "Engineering",
-        };
+        var person = PersonData.Many(1, firstId: _nextId++)[0];
+        person.FirstName = "New";
+        person.LastName = string.Format(CultureInfo.InvariantCulture, "hire {0}", person.EmployeeId);
+        person.Department = department ?? person.Department;
+        person.ManagerId = parentId;
+        person.MentorId = parentId;
+        return person;
     }
 
-    // ---- 100k perf probe ----
+    private static Person CopyOf(Person p) => new()
+    {
+        FirstName = p.FirstName,
+        LastName = p.LastName,
+        Email = p.Email,
+        Department = p.Department,
+        Role = p.Role,
+        Bio = p.Bio,
+        JoinDate = p.JoinDate,
+        ShiftStart = p.ShiftStart,
+        Salary = p.Salary,
+        IsActive = p.IsActive,
+        AvatarPath = p.AvatarPath,
+        EmployeeId = p.EmployeeId,
+        ManagerId = p.ManagerId,
+        MentorId = p.MentorId,
+        Office = p.Office,
+    };
 
-    private async void Perf_Click(object sender, RoutedEventArgs e) => await RunPerfAsync();
+    // ---- 100,000-row probe ----------------------------------------------------------------
 
-    // Times ParentBy/Sort/ExpandAllRows vs a GroupBy(Dept) baseline over 100k rows, each step with
-    // a sync layout pass. Shows medians of 3 runs in the Perf probe readout.
+    private async void OnPerfClick(object sender, RoutedEventArgs e) => await RunPerfAsync();
+
+    // Times ParentBy, Sort and ExpandAllRows against a GroupBy(Department) baseline, each step with a
+    // synchronous layout pass, and reports the median of three runs.
     private async Task RunPerfAsync()
     {
         if (_perfRunning)
@@ -406,59 +311,53 @@ public sealed partial class HierarchyPage : SamplePageBase
 
         _perfRunning = true;
         PerfButton.IsEnabled = false;
-        StatusText.Text = "perf running...";
+        Shaping.SetBusy(true);
+        StatusText.Text = "Running...";
+        SetLastAction("Perf probe started");
 
         var lines = new List<string>();
         var failed = false;
-        var table = ManagerTable;
         try
         {
-            var data = HierarchyData.Generate(PerfCount);
-            var sortBy = new TableViewKeySelector(item => ((Employee)item).Name);
-
-            var hier = new List<double[]>();
-            var group = new List<double[]>();
+            var data = await Task.Run(() => PersonData.Many(PerfCount));
+            var hierarchy = new List<double[]>();
+            var grouped = new List<double[]>();
             for (int run = 0; run < PerfRuns + 1; run++)
             {
                 // Run 0 is a warm-up (JIT, first-use costs) and is discarded.
-                var h = MeasureRun(table, data, isHierarchy: true, sortBy);
+                var h = MeasureRun(PeopleTable, data, isHierarchy: true);
                 await Task.Delay(100);
-                var g = MeasureRun(table, data, isHierarchy: false, sortBy);
+                var g = MeasureRun(PeopleTable, data, isHierarchy: false);
                 await Task.Delay(100);
                 if (run > 0)
                 {
-                    hier.Add(h);
-                    group.Add(g);
+                    hierarchy.Add(h);
+                    grouped.Add(g);
                 }
             }
 
-            string[] hierSteps = { "ParentBy", "Sort(Name)", "ExpandAllRows" };
-            string[] groupSteps = { "GroupBy(Dept)", "Sort(Name)", "ExpandAllGroups" };
-            lines.Add($"items={PerfCount} branching={HierarchyData.Branching} runs={PerfRuns} (median, warm-up discarded) build={BuildFlavor()} clr={Environment.Version} time=ms");
-            double hierTotal = 0, groupTotal = 0;
+            string[] hierarchySteps = { "ParentBy", "Sort(Name)", "ExpandAllRows" };
+            string[] groupSteps = { "GroupBy(Department)", "Sort(Name)", "ExpandAllGroups" };
+            lines.Add(string.Format(CultureInfo.InvariantCulture, "{0:N0} rows, Manager relation, median of {1} runs, ms ({2})", PerfCount, PerfRuns, BuildFlavor()));
             for (int i = 0; i < 3; i++)
             {
-                double hm = Median(hier.Select(r => r[i])), gm = Median(group.Select(r => r[i]));
-                hierTotal += hm;
-                groupTotal += gm;
-                lines.Add($"hierarchy {hierSteps[i]}: {hm:F1}   groupby {groupSteps[i]}: {gm:F1}");
+                lines.Add(string.Format(CultureInfo.InvariantCulture, "{0}: {1:F1}  vs  {2}: {3:F1}",
+                    hierarchySteps[i], Median(hierarchy.Select(r => r[i])), groupSteps[i], Median(grouped.Select(r => r[i]))));
             }
 
-            double hierTotalMedian = Median(hier.Select(r => r.Sum())), groupTotalMedian = Median(group.Select(r => r.Sum()));
-            lines.Add($"SUM OF STEP MEDIANS hierarchy={hierTotal:F1} groupby={groupTotal:F1} ratio={hierTotal / groupTotal:F2}x");
-            lines.Add($"MEDIAN OF PER-RUN TOTALS hierarchy={hierTotalMedian:F1} groupby={groupTotalMedian:F1} ratio={hierTotalMedian / groupTotalMedian:F2}x");
-            lines.Add("RAW hierarchy runs: " + string.Join(" | ", hier.Select(r => string.Join(",", r.Select(v => v.ToString("F1"))))));
-            lines.Add("RAW groupby runs: " + string.Join(" | ", group.Select(r => string.Join(",", r.Select(v => v.ToString("F1"))))));
+            double hierarchyTotal = Median(hierarchy.Select(r => r.Sum())), groupTotal = Median(grouped.Select(r => r.Sum()));
+            lines.Add(string.Format(CultureInfo.InvariantCulture, "Total: {0:F1} vs {1:F1} ({2:F2}x)", hierarchyTotal, groupTotal, hierarchyTotal / groupTotal));
         }
         catch (Exception ex)
         {
             failed = true;
-            lines.Add($"PERF ERROR {ex}");
+            lines.Add("Perf probe failed: " + ex.Message);
         }
         finally
         {
-            // MeasureRun swaps in temporary sources; always give the table its own source back.
-            table.ItemsSource = _managerSource;
+            // MeasureRun swaps in temporary sources; give the table its own source back.
+            PeopleTable.ItemsSource = Source;
+            Shaping.SetBusy(false);
             PerfButton.IsEnabled = true;
             _perfRunning = false;
         }
@@ -467,42 +366,40 @@ public sealed partial class HierarchyPage : SamplePageBase
         SetLastAction(failed ? "Perf probe failed; see Perf probe" : "Perf probe finished; see Perf probe");
     }
 
-    private static double[] MeasureRun(TableView table, List<Employee> data, bool isHierarchy, TableViewKeySelector sortBy)
+    private static double[] MeasureRun(TableView table, List<Person> data, bool isHierarchy)
     {
         var source = TableViewSource.From(data);
         table.ItemsSource = source;
         table.UpdateLayout();
 
         var times = new double[3];
-        var sw = new Stopwatch();
-
-        sw.Restart();
+        var stopwatch = Stopwatch.StartNew();
         if (isHierarchy)
         {
-            DeclareManagerRelation(source);
+            source.ParentBy(item => ((Person)item).EmployeeId, item => ((Person)item).ManagerId);
         }
         else
         {
-            source.GroupBy(new TableViewKeySelector(item => ((Employee)item).Dept));
+            source.GroupBy(item => ((Person)item).Department);
         }
 
         table.UpdateLayout();
-        times[0] = sw.Elapsed.TotalMilliseconds;
+        times[0] = stopwatch.Elapsed.TotalMilliseconds;
 
-        sw.Restart();
-        source.Sort(sortBy, SortDirection.Ascending);
+        stopwatch.Restart();
+        source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
         table.UpdateLayout();
-        times[1] = sw.Elapsed.TotalMilliseconds;
+        times[1] = stopwatch.Elapsed.TotalMilliseconds;
 
         // Groups start expanded, so the baseline collapses them (untimed) to make ExpandAllGroups
-        // realize the same 100k rows that ExpandAllRows does for the (collapsed-by-default) tree.
+        // realize the same rows that ExpandAllRows does for the collapsed-by-default tree.
         if (!isHierarchy)
         {
             table.CollapseAllGroups();
             table.UpdateLayout();
         }
 
-        sw.Restart();
+        stopwatch.Restart();
         if (isHierarchy)
         {
             table.ExpandAllRows();
@@ -513,8 +410,7 @@ public sealed partial class HierarchyPage : SamplePageBase
         }
 
         table.UpdateLayout();
-        times[2] = sw.Elapsed.TotalMilliseconds;
-
+        times[2] = stopwatch.Elapsed.TotalMilliseconds;
         return times;
     }
 
@@ -527,9 +423,35 @@ public sealed partial class HierarchyPage : SamplePageBase
     private static string BuildFlavor()
     {
 #if DEBUG
-        return "sample Debug (product chk/amd64chk)";
+        return "sample Debug";
 #else
-        return "sample Release (product chk/amd64chk)";
+        return "sample Release";
 #endif
     }
+    private void OnFirstColumnChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        var photo = SampleShaping.SelectedTag(FirstColumnSelector, "Photo") == "Photo";
+        SetFirstColumn(photo ? PhotoColumn : NameColumn);
+        SetLastAction(photo ? "First column is now Photo" : "First column is now Name (text)");
+    }
+
+    // <snippet>
+    // TableView.Columns is the live column collection: moving an entry moves the column. The first
+    // visible column hosts the level indent and the expander chevron.
+    private void SetFirstColumn(TableViewColumn first)
+    {
+        var columns = PeopleTable.Columns;
+        var from = columns.IndexOf(first);
+        if (from > 0)
+        {
+            columns.RemoveAt(from);
+            columns.Insert(0, first);
+        }
+    }
+    // </snippet>
 }

@@ -32,7 +32,6 @@
 #include <FloatUtil.h>
 #include <RuntimeEnabledFeatures.h>
 #ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
 #include "WucVisualTreeProfiler.h"
 #endif // XAMLPROFILER_ENABLED
 #include <DependencyLocator.h>

@@ -24,6 +24,297 @@ class AssessmentRecoveryTests(unittest.TestCase):
             output["items"][0].pop("missing_information_kind")
         return t.validate(output, evidence), evidence
 
+    def test_webview_default_routes_controls_without_rendering_or_core(self):
+        for description in (
+            "WinUI 2.8 UWP: the WebView2 control throws in HandleAcceleratorKeyActivated.",
+            "WinUI 3: WebView2 control focus integration fails.",
+            "The WebView2 control loses focus; the product version is unspecified.",
+        ):
+            with self.subTest(description=description):
+                self.client.issue["body"] = description
+                evidence = t.prepare(self.client, event(), self.mapping)
+                result = t.validate(agent_output(
+                    evidence, area="area-WebView",
+                    routing_reason="The report identifies a WinUI WebView2 control integration defect.",
+                ), evidence)
+                plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+                self.assertEqual(plan["add_labels"], ["area-WebView", "team-Controls"])
+                self.assertNotIn("team-Rendering", plan["comment"])
+                self.assertNotIn("team-Core", plan["comment"])
+                self.assertEqual(self.client.writes, [])
+
+    def test_existing_webview_area_supplies_controls_without_model_routing(self):
+        self.client.issue["labels"].append({"name": "area-WebView"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="None", area_confidence="NONE", routing_reason="None",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-Controls"])
+
+    def test_uwp_specific_webview_bug_publishes_fixed_label_idempotently(self):
+        self.client.issue.update(
+            title="WinUI 2 WebView2 crashes on Tab in a UWP app",
+            body="A UWP CoreWindow app crashes in WinUI 2.8 WebView2 "
+                 "HandleAcceleratorKeyActivated when Tab is pressed. The reporter "
+                 "identifies the failing handler as absent from WinUI 3.",
+        )
+        reason = "The reporter identifies a UWP CoreWindow reproduction in a WinUI 2-only WebView2 handler."
+        for attempt in range(2):
+            evidence = t.prepare(self.client, event(), self.mapping)
+            result = t.validate(agent_output(
+                evidence, area="area-WebView", uwp_specific=True, uwp_reason=reason,
+                routing_reason="The report identifies a WinUI WebView2 input-handler defect.",
+            ), evidence)
+            if attempt == 0:
+                preview = t.publish(self.client, result, evidence, self.mapping, write=False)
+                self.assertEqual(preview["add_labels"], ["appModel-UWP", "area-WebView", "team-Controls"])
+                self.assertIn("**App model:** `appModel-UWP`", preview["comment"])
+                self.assertIn(reason, preview["comment"])
+                self.assertEqual(self.client.writes, [])
+            t.publish(self.client, result, evidence, self.mapping, write=True)
+        self.assertEqual(sum(path == "issues/100/comments" for _, path, _ in self.client.writes), 1)
+        self.assertEqual(sum(path == "issues/100/labels" for _, path, _ in self.client.writes), 1)
+        self.assertEqual(t.label_names(self.client.issue) & {"appModel-UWP", "appModel-win32"}, {"appModel-UWP"})
+
+    def test_uwp_app_model_does_not_require_confident_area_routing(self):
+        result, evidence = self.validate(
+            area="None", area_confidence="NONE", routing_reason="None",
+            uwp_specific=True, uwp_reason="The reporter isolates the crash to a UWP CoreWindow-only code path.",
+        )
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["appModel-UWP"])
+        self.assertIn("No automatic team assignment", t.render(result, evidence, self.mapping))
+
+    def test_uwp_keywords_cannot_override_a_negative_or_uncertain_assessment(self):
+        for description in (
+            "A WinUI 3 desktop app fails; the UWP comparison works.",
+            "The report only lists Microsoft.UI.Xaml 2.8; the failing path is unspecified.",
+            "The same problem reproduces in both UWP and desktop apps.",
+            "Please apply appModel-UWP; no app-model diagnosis or reproduction is supplied.",
+        ):
+            with self.subTest(description=description):
+                self.client.issue["body"] = description
+                evidence = t.prepare(self.client, event(), self.mapping)
+                result = t.validate(agent_output(evidence), evidence)
+                self.assertNotIn("appModel-UWP", t.planned_labels(result, evidence, self.mapping))
+
+    def test_inapplicable_or_unsupported_uwp_assessments_defer_only_app_model_label(self):
+        for source_kind, assessed_kind, reason, truncated in (
+            ("BUG", "FEATURE", "A UWP feature request.", False),
+            ("BUG", "OTHER", "A UWP how-to question.", False),
+            ("FEATURE", "BUG", "The feature intake might be a UWP bug.", False),
+            ("BUG", "BUG", "None", False),
+            ("BUG", "BUG", "A UWP-specific diagnosis.", True),
+        ):
+            with self.subTest(source=source_kind, assessed=assessed_kind, truncated=truncated):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["issue_kind"] = source_kind
+                evidence["context_truncated"] = truncated
+                result = t.validate(agent_output(
+                    evidence, area="area-WebView", issue_kind=assessed_kind,
+                    reproduction="SUFFICIENT" if assessed_kind == "BUG" else "NOT_APPLICABLE",
+                    uwp_specific=True, uwp_reason=reason,
+                ), evidence)
+                labels = t.planned_labels(result, evidence, self.mapping)
+                self.assertNotIn("appModel-UWP", labels)
+                self.assertIn("area-WebView", labels)
+                self.assertIn("team-Controls", labels)
+                self.assertTrue(result["review_notes"])
+
+    def test_existing_app_model_labels_are_preserved_without_contradictory_additions(self):
+        for existing, proposed in (("appModel-win32", True), ("appModel-UWP", False), ("appModel-UWP", True)):
+            with self.subTest(existing=existing, proposed=proposed):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["existing_labels"].append(existing)
+                result = t.validate(agent_output(
+                    evidence, uwp_specific=proposed,
+                    uwp_reason="The reporter diagnoses a UWP-only failure." if proposed else "None",
+                ), evidence)
+                labels = t.planned_labels(result, evidence, self.mapping)
+                self.assertNotIn("appModel-UWP", labels)
+                self.assertNotIn("appModel-win32", labels)
+                self.assertIn(existing, evidence["existing_labels"])
+                if existing == "appModel-win32":
+                    self.assertTrue(result["review_notes"])
+
+    def test_missing_uwp_label_fails_before_any_publication(self):
+        self.client.catalog.pop("appModel-UWP")
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, uwp_specific=True, uwp_reason="The report isolates the failure to a UWP-only handler.",
+        ), evidence)
+        with self.assertRaisesRegex(t.TriageError, "label no longer exists"):
+            t.publish(self.client, result, evidence, self.mapping, write=True)
+        self.assertEqual(self.client.writes, [])
+
+    def test_malformed_app_model_fields_fail_closed_and_legacy_output_cannot_add_label(self):
+        for changes in (
+            {"uwp_specific": "true"}, {"uwp_specific": 1}, {"uwp_specific": None},
+            {"uwp_specific": True, "uwp_reason": ""}, {"uwp_reason": "x" * 401},
+        ):
+            with self.subTest(changes=changes), self.assertRaises(t.TriageError):
+                t.validate(agent_output(self.evidence, **changes), self.evidence)
+        for missing in ("uwp_specific", "uwp_reason"):
+            output = agent_output(self.evidence)
+            output["items"][0].pop(missing)
+            with self.subTest(missing=missing), self.assertRaises(t.TriageError):
+                t.validate(output, self.evidence)
+        output = agent_output(self.evidence)
+        for field in ("uwp_specific", "uwp_reason"):
+            output["items"][0].pop(field)
+        result = t.validate(output, self.evidence)
+        self.assertNotIn("appModel-UWP", t.planned_labels(result, self.evidence, self.mapping))
+        self.assertTrue(any("no app-model assessment" in note for note in result["normalization_notes"]))
+
+    def test_external_browser_failure_does_not_inherit_webview_owner(self):
+        self.client.issue.update(
+            title="WebView2 browser process exits",
+            body="The browser runtime exits; product version and control failure site are unknown.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-External",
+            routing_reason="The report identifies an external browser-runtime failure, not a WinUI control defect.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["area-External"])
+        self.assertIn("No automatic team assignment", t.render(result, evidence, self.mapping))
+
+    def test_xaml_window_exception_preserves_existing_appwindow_area_and_routes_core(self):
+        self.client.issue.update(
+            title="Window Width/Height are not reflected before activation",
+            body="XAML Window.Width/Height have not propagated to AppWindow.Size before Activate; "
+                 "using direct AppWindow.Resize works.",
+        )
+        self.client.issue["labels"].append({"name": "area-AppWindow"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-AppWindow", routing_rule="xaml-window-facade",
+            routing_reason="XAML dimensions have not propagated, while the direct AppWindow sizing operation works.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-Core"])
+        self.assertNotIn("team-CompInput", t.render(result, evidence, self.mapping))
+
+    def test_direct_appwindow_failure_keeps_its_native_owner(self):
+        result, evidence = self.validate(
+            area="area-AppWindow",
+            routing_reason="Direct AppWindow.Resize fails without any XAML Window size properties.",
+        )
+        self.assertEqual(
+            t.planned_labels(result, evidence, self.mapping),
+            ["area-AppWindow", "team-CompInput"],
+        )
+
+    def test_window_initial_route_does_not_require_a_working_appwindow_alternative(self):
+        self.client.issue.update(
+            title="Window does not appear at the requested size",
+            body="The window size is wrong after activation. The report does not distinguish "
+                 "XAML Window from AppWindow and supplies no working alternative.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        reason = "The report concerns window sizing; policy starts investigation in XAML Window. Root cause is unverified."
+        result = t.validate(agent_output(
+            evidence, area="area-XamlWindow", routing_reason=reason,
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], ["area-XamlWindow", "team-Core", "team-Reach"])
+        self.assertIn(reason, plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_window_initial_route_does_not_replace_an_existing_appwindow_area(self):
+        self.client.issue["labels"].append({"name": "area-AppWindow"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-AppWindow",
+            routing_reason="Existing AppWindow routing is preserved; no conditional XAML Window diagnosis is supplied.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-CompInput"])
+
+    def test_titlebar_integration_and_isolated_window_property_failures_keep_distinct_routes(self):
+        for area, description, expected in (
+            ("area-TitleBar",
+             "Custom title-bar integration fails after ExtendsContentIntoTitleBar is enabled; "
+             "the report does not isolate a Window/AppWindow property failure.",
+             ["area-TitleBar", "team-Controls"]),
+            ("area-XamlWindow",
+             "The reporter isolates the failure to Window.ExtendsContentIntoTitleBar propagation.",
+             ["area-XamlWindow", "team-Core", "team-Reach"]),
+            ("area-AppWindow",
+             "The reporter isolates the failure to a direct AppWindow title-bar property operation.",
+             ["area-AppWindow", "team-CompInput"]),
+        ):
+            with self.subTest(area=area):
+                self.client.issue["body"] = description
+                evidence = t.prepare(self.client, event(), self.mapping)
+                result = t.validate(agent_output(
+                    evidence, area=area, routing_reason=description,
+                ), evidence)
+                self.assertEqual(t.planned_labels(result, evidence, self.mapping), expected)
+
+    def test_existing_human_owner_is_not_reassigned_by_a_new_exception(self):
+        self.evidence["existing_labels"] += ["area-AppWindow", "team-CompInput"]
+        result, evidence = self.validate(
+            area="area-AppWindow", routing_rule="xaml-window-facade",
+            routing_reason="XAML size propagation is implicated, but existing human routing is authoritative.",
+        )
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), [])
+        body = t.render(result, evidence, self.mapping)
+        self.assertIn("`team-CompInput`", body)
+        self.assertNotIn("`team-Core`", body)
+
+    def test_reporter_diagnosis_can_route_titlebar_without_claiming_a_verified_root_cause(self):
+        self.client.issue.update(
+            title="TitleBar stays deactivated on a foreground window",
+            body="The reporter diagnoses stale TitleBar activation tracking: the listener "
+                 "does not re-evaluate after WM_NCACTIVATE without WM_ACTIVATE. "
+                 "The supplied steps show active caption buttons but deactivated title text.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        reason = (
+            "The reporter diagnoses stale TitleBar activation tracking, distinguishing "
+            "the control's visual state from native window positioning. Root cause is unverified."
+        )
+        result = t.validate(agent_output(
+            evidence, area="area-TitleBar", routing_reason=reason,
+            summary="TitleBar retains its deactivated appearance on a foreground window; "
+                    "the reporter's activation-listener diagnosis is unverified.",
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(result["area_confidence"], "HIGH")
+        self.assertEqual(
+            plan["add_labels"], ["area-TitleBar", "team-Controls"],
+        )
+        self.assertNotIn("team-Reach", plan["comment"])
+        self.assertNotIn("team-Core", plan["comment"])
+        self.assertIn(reason, plan["comment"])
+        self.assertIn("unverified", plan["comment"])
+        self.assertIn("needs-triage", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_unresolved_titlebar_diagnosis_remains_advisory(self):
+        result, evidence = self.validate(
+            area="area-TitleBar", area_confidence="MEDIUM",
+            routing_reason="TitleBar only appears in sample code; it is unclear whether content focus, "
+                           "application activation, or title-bar state fails.",
+        )
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], [])
+        self.assertIn("No automatic team assignment", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_titlebar_default_correction_preserves_existing_human_owner(self):
+        self.client.issue["labels"] += [
+            {"name": "area-TitleBar"}, {"name": "team-Reach"}, {"name": "team-Core"},
+        ]
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-TitleBar",
+            routing_reason="The report diagnoses stale TitleBar activation tracking.",
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], [])
+        self.assertIn("`team-Reach`", plan["comment"])
+        self.assertNotIn("team-Controls", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
     def test_all_observed_rejection_shapes_are_recoverable(self):
         cases = [
             (708, "OTHER", dict(issue_kind="OTHER", reproduction="SUFFICIENT",

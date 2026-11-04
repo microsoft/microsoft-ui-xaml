@@ -15,6 +15,7 @@
 #include <WindowAutoCloser.h>
 #include <SafeEventRegistration.h>
 #include <FocusTestHelper.h>
+#include <cmath>
 
 using namespace ::Windows::UI;
 using namespace Microsoft::UI::Xaml;
@@ -141,6 +142,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
         canvas->Children->Append(rectangle);
 
         popup = ref new Popup();
+        popup->XamlRoot = root->XamlRoot;
         popup->Child = canvas;
         popup->IsOpen = true;
 
@@ -156,6 +158,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
         canvas2->Children->Append(rectangle2);
 
         windowedPopup = ref new Popup();
+        windowedPopup->XamlRoot = root->XamlRoot;
         wh->Popup_SetWindowed(windowedPopup);
         windowedPopup->Child = canvas2;
         windowedPopup->IsOpen = true;
@@ -166,7 +169,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"  > Device lost");
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -175,7 +178,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
     {
         LOG_OUTPUT(L"  > 2.0 zoom scale");
         wh->SetWindowSizeOverrideWithScale(wf::Size(400, 300), 2.0f);
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
@@ -183,7 +186,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"  > Device lost");
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
@@ -1221,6 +1224,93 @@ void PopupTests::WindowedPopupAncestorScale()
     ih->Tap(clickTarget);
 
     pointerPressedEvent->WaitForDefault();
+}
+
+void PopupTests::WindowedPopupInputScaleAtOrigin()
+{
+    const auto& wh = TestServices::WindowHelper;
+    const auto& ih = TestServices::InputHelper;
+    TestCleanupWrapper cleanupWrapper;
+
+    Canvas^ root;
+    Border^ border;
+    Popup^ popup;
+    float overrideScale = 0;
+    wf::Point pointerPosition = {};
+
+    auto pointerPressedRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerPressed);
+    auto pointerPressedEvent = std::make_shared<Event>();
+
+    RunOnUIThread([&]()
+    {
+        root = ref new Canvas();
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        overrideScale = static_cast<float>(2 * root->XamlRoot->RasterizationScale);
+        wh->SetWindowSizeOverrideWithScale(wf::Size(400, 300), overrideScale);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        border = ref new Border();
+        border->Width = 200;
+        border->Height = 200;
+        border->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+
+        pointerPressedRegistration.Attach(
+            border,
+            ref new xaml_input::PointerEventHandler(
+            [&](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
+        {
+            pointerPosition = args->GetCurrentPoint(border)->Position;
+            LOG_OUTPUT(L"PointerPressed at (%f, %f), expecting (50, 50).", pointerPosition.X, pointerPosition.Y);
+            pointerPressedEvent->Set();
+        }));
+
+        popup = ref new Popup();
+        wh->Popup_SetWindowed(popup);
+        popup->XamlRoot = root->XamlRoot;
+        popup->ShouldConstrainToRootBounds = false;
+        popup->Child = border;
+
+        // The medium shadow insets are left=10, top=2 in CThemeShadow::GetInsetsForWindowedPopup (ThemeShadow.cpp).
+        // Round as in CPopup::GetInsetsForDropShadow (Popup.cpp) and cancel them to make the input offset (0, 0).
+        popup->HorizontalOffset = std::ceil(10 * overrideScale) / overrideScale;
+        popup->VerticalOffset = std::ceil(2 * overrideScale) / overrideScale;
+        popup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        auto verifier = VisualTreeVerifier::CreateFromElement(popup);
+        verifier->VerifyTransformMatrix_Scale(2, 2);
+
+        auto mainIslandOrigin = wh->ConvertToPhysicalDisplayLocation(wf::Point(0, 0));
+        RECT popupRect = {};
+        VERIFY_IS_TRUE(::GetWindowRect(reinterpret_cast<HWND>(wh->Popup_GetWindow(popup)), &popupRect));
+        LOG_OUTPUT(L"Main island origin: (%f, %f); popup HWND origin: (%ld, %ld).",
+            mainIslandOrigin.X, mainIslandOrigin.Y, popupRect.left, popupRect.top);
+        VERIFY_ARE_EQUAL(mainIslandOrigin.X, static_cast<float>(popupRect.left));
+        VERIFY_ARE_EQUAL(mainIslandOrigin.Y, static_cast<float>(popupRect.top));
+    });
+
+    ih->Tap(border, 0.25f, 0.25f);
+    pointerPressedEvent->WaitForDefault();
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        popup->IsOpen = false;
+    });
+
+    VERIFY_IS_TRUE(std::abs(pointerPosition.X - 50) < 1.5f, L"Popup input should compensate for the root scale.");
+    VERIFY_IS_TRUE(std::abs(pointerPosition.Y - 50) < 1.5f, L"Popup input should compensate for the root scale.");
 }
 
 void PopupTests::NoXamlRoot()
