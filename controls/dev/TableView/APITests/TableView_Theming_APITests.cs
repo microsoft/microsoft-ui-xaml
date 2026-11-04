@@ -2808,8 +2808,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.AreEqual(expectedBounds.TransformToVisual(row).TransformPoint(new Point()),
                             backplate.TransformToVisual(row).TransformPoint(new Point()),
                             $"{theme}/{testCase.Density}/{state}: backplate must not extend outside its visual bounds.");
-                        Verify.AreEqual(contained ? outline.BorderThickness : new Thickness(0), backplate.BorderThickness,
-                            "Hover, pressed, and selected fills must share the selection outline's inner edge.");
+                        Verify.AreEqual(selected ? outline.BorderThickness : new Thickness(0), backplate.BorderThickness,
+                            "Only selected fills reserve the stroke; unselected hover/pressed fills reach the outline's outer edge.");
                         Verify.AreEqual(BackgroundSizing.InnerBorderEdge, backplate.BackgroundSizing);
                         Verify.AreEqual(outline.CornerRadius, backplate.CornerRadius);
                         Verify.IsNull(backplate.BorderBrush, "The backplate must not paint a second selection stroke.");

@@ -915,7 +915,7 @@ Template parts:
 
 | Part | Type | Description |
 |---|---|---|
-| `PART_RootBorder` | `Border` | Row backplate. Its `Background` is driven by `CommonStates`; hover, pressed, and selected states inset it to the selection outline and reserve the 1px stroke with `BorderThickness`. |
+| `PART_RootBorder` | `Border` | Row backplate. Its `Background` is driven by `CommonStates`; hover, pressed, and selected states inset it to the selection outline. Only selected states reserve the 1px stroke with `BorderThickness`. |
 | `PART_RowChrome` | `Grid` | Optional native-focus target and selection host. Its margin excludes effective horizontal separator thickness, including terminal-line suppression. Templates without this part retain full-row focus geometry. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Border` | **Required by the default state definitions.** Rounded whole-row selection outline; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `BorderBrush`. Custom templates using other indicator types must adapt the corresponding state targets. |
@@ -930,8 +930,9 @@ Selected states share the one group rather than living in a second, overlapping 
 
 Hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TabularSurfaceSelectionIndicatorBrush`; `SelectedDisabled` uses `TabularSurfaceSelectionIndicatorDisabledBrush`.
 
-Unselected hover/pressed and all `Selected*` backplates share the selection outline's inner edge,
-including its rounded corners, so selecting a hovered or pressed row does not resize its fill.
+Unselected hover/pressed backplates fill to the selection outline's outer edge, including the
+space occupied by its 1px stroke when selected. All `Selected*` backplates reserve that stroke
+and fill to its inner edge. Both use the same inset bounds and rounded outer corners.
 Resting backgrounds, including banded rows, and unselected-disabled backgrounds retain the full
 divider-free row area. This changes only fill geometry; content, row height, hit targets,
 gridlines, and focus geometry are unchanged.

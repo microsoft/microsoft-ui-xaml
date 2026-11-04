@@ -277,7 +277,6 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
-                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
@@ -294,7 +293,6 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
-                                        <Setter Target="PART_RootBorder.BorderThickness" Value="1" />
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
@@ -444,7 +442,7 @@
 
                         <Border Margin="{Binding Margin, ElementName=PART_RowChrome}"
                                 IsHitTestVisible="False">
-                            <!-- Interaction fills share the outline's inner edge without moving content or focus. -->
+                            <!-- Unselected interaction fills reach the outline's outer edge; selected fills reserve its stroke. -->
                             <Border x:Name="PART_RootBorder"
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
