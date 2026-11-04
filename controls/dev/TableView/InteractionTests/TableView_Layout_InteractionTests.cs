@@ -890,6 +890,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         Verify.IsTrue(Math.Abs(after[column].Actual - before[column].Actual) <= 1.0,
                             "Precondition: fitting the Auto column must not change its size.");
                     }
+                    else
+                    {
+                        Verify.IsTrue(Math.Abs(after[column].Actual - before[column].Actual) > 1.0,
+                            "Fitting the Star column must change its size from its Star share to its content width.");
+                    }
                 }
             }
         }
