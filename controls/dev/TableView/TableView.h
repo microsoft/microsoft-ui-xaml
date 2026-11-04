@@ -1558,6 +1558,10 @@ private:
     // Horizontal offset before row-level Right drilled in, so Left can undo it in one step.
     double m_drillInOffset{ -1.0 };
     int32_t m_drillInRow{ -1 };
+    // The offset our own reveals left after the drill-in; any other horizontal scroll (a touchpad pan,
+    // app code) moves the body off it and expires the restore.
+    double m_drillSettledOffset{ -1.0 };
+    bool m_drillRevealPending{ false };
     // The popped-out row's own focus bring-into-view arrives later and would undo the restore.
     winrt::weak_ref<winrt::UIElement> m_drillRestoreRow{};
     double m_drillRestoreOffset{ -1.0 };

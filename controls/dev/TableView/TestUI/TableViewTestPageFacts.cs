@@ -67,6 +67,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string EmptyStateImportButton = "EmptyStateImportButton";
         internal const string ScrollFixturesCheckBox = "ScrollFixturesCheckBox";
         internal const string ScrollCityMenuCheckBox = "ScrollCityMenuCheckBox";
+        internal const string ScrollScrollingBodyButton = "ScrollScrollingBodyButton";
         internal const string CellHyperlink = "CellHyperlink";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";

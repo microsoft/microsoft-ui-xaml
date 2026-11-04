@@ -186,6 +186,12 @@
                       IsTabStop="False"
                       Checked="OnScrollCityMenuToggled"
                       Unchecked="OnScrollCityMenuToggled" />
+            <Button Content="Scroll scrolling body right (focus-neutral)"
+                    AutomationProperties.Name="ScrollScrollingBodyButton"
+                    AutomationProperties.AutomationId="ScrollScrollingBodyButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnScrollScrollingBodyClick" />
             <Button Content="Toggle Name CanResize"
                     AutomationProperties.Name="ToggleNameCanResizeButton"
                     AutomationProperties.AutomationId="ToggleNameCanResizeButton"

@@ -2771,6 +2771,29 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         return;
     }
 
+    // Our own reveal after a drill-in: a scroll it causes is recorded, not taken as the user's.
+    auto noteDrillReveal = wil::scope_exit([this, &args, &target]() noexcept
+    {
+        auto const scroller = m_bodyScroller.get();
+        if (m_drillInOffset < 0.0 || args.Handled() || !scroller)
+        {
+            return;
+        }
+        try
+        {
+            // Only a reveal the scroller can still perform scrolls (padding at an edge does not).
+            auto const bounds = target.TransformToVisual(scroller).TransformBounds(args.TargetRect());
+            const double offset = scroller.HorizontalOffset();
+            m_drillRevealPending = m_drillRevealPending ||
+                (bounds.X < -0.5f && offset > 0.5) ||
+                (bounds.X + bounds.Width > static_cast<float>(scroller.ViewportWidth()) + 0.5f && offset < scroller.ScrollableWidth() - 0.5);
+        }
+        catch (...)
+        {
+            m_drillRevealPending = true;
+        }
+    });
+
     winrt::UIElement bodyItem{ nullptr };
     for (winrt::DependencyObject node = target; node; node = winrt::VisualTreeHelper::GetParent(node))
     {
@@ -3811,6 +3834,8 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
             // Remembered so Left can undo the bring-into-view in one step.
             auto const scroller = m_bodyScroller.get();
             m_drillInOffset = scroller ? scroller.HorizontalOffset() : -1.0;
+            m_drillSettledOffset = m_drillInOffset;
+            m_drillRevealPending = false;
             m_drillInRow = m_navAnchorRowContainer;
             rowImpl->FocusVisibleCellInternal(first, winrt::FocusState::Keyboard);
         }
@@ -3834,7 +3859,10 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
     // Right and Left stay inverses across a horizontal scroll: the drill-in's bring-into-view is undone
     // in one step, else the body steps back while the cell stays in view.
     auto const scroller = m_bodyScroller.get();
-    const double restoreOffset = m_drillInRow == m_navAnchorCellRow ? m_drillInOffset : -1.0;
+    // A scroll since our own reveals settled was the user's (or the app's): step back through it instead.
+    const bool scrolledSinceDrill = scroller && !m_drillRevealPending &&
+        std::abs(scroller.HorizontalOffset() - m_drillSettledOffset) > 8.0;
+    const double restoreOffset = m_drillInRow == m_navAnchorCellRow && !scrolledSinceDrill ? m_drillInOffset : -1.0;
     if (restoreOffset < 0.0 &&
         ScrollBodyHorizontallyInternal(false, false, winrt::get_self<TableViewRow>(anchorRow)->GetVisibleCellInternal(m_navAnchorCellColumn)))
     {

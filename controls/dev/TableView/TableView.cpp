@@ -660,15 +660,15 @@ TableView::TableView()
             })),
         true /* handledEventsToo */);
 
-    // The body scroller handles the wheel. A horizontal wheel scroll is the user's own, so Left no
-    // longer undoes the drill-in's bring-into-view.
+    // The body scroller handles the wheel. Any wheel scroll is the user's own, so Left no longer undoes
+    // the drill-in's reveal; Ctrl+wheel zooms rather than scrolls.
     AddHandler(
         winrt::UIElement::PointerWheelChangedEvent(),
         winrt::box_value(winrt::PointerEventHandler(
             [weakThis](winrt::IInspectable const&, winrt::PointerRoutedEventArgs const& args)
             {
                 auto const strongThis = weakThis.get();
-                if (strongThis && args.GetCurrentPoint(nullptr).Properties().IsHorizontalMouseWheel())
+                if (strongThis && (args.KeyModifiers() & winrt::Windows::System::VirtualKeyModifiers::Control) != winrt::Windows::System::VirtualKeyModifiers::Control)
                 {
                     strongThis->m_drillInOffset = -1.0;
                     strongThis->m_drillRestoreOffset = -1.0;
@@ -1213,12 +1213,18 @@ bool TableView::HasRowsViewport()
 
 void TableView::OnBodyScrollerViewChanged(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollViewerViewChangedEventArgs& /*args*/)
+    const winrt::ScrollViewerViewChangedEventArgs& args)
 {
     auto bodyScroller = m_bodyScroller.get();
     if (!bodyScroller)
     {
         return;
+    }
+
+    if (m_drillRevealPending && !args.IsIntermediate())
+    {
+        m_drillRevealPending = false;
+        m_drillSettledOffset = bodyScroller.HorizontalOffset();
     }
 
     // A keyboard move's ChangeView has applied; its pending focus may re-measure positions now.

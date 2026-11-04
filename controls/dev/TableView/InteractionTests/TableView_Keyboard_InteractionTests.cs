@@ -2756,6 +2756,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A horizontal wheel scroll after Right drills in expires the one-step undo: Left then steps back through the user's scroll instead of jumping to the offset before the drill-in.")]
         public void HorizontalWheelAfterDrillInExpiresLeftRestore()
         {
+            VerifyScrollAfterDrillInExpiresLeftRestore(tableView => HorizontalWheelAtPoint(CentreOf(tableView), 5 * 120));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A horizontal scroll with no pointer or wheel input (app code, like a touchpad pan) after a drill-in moves the body off the offset the drill-in left, so Left steps back instead of restoring.")]
+        public void ScrollWithoutInputAfterDrillInExpiresLeftRestore()
+        {
+            VerifyScrollAfterDrillInExpiresLeftRestore(tableView =>
+            {
+                var scroll = FindElement.ById<Button>(ScrollScrollingBodyButton);
+                if (scroll == null) { Verify.Fail(ScrollScrollingBodyButton + " was not found."); return; }
+                scroll.InvokeAndWait();
+                Wait.ForIdle();
+            });
+        }
+
+        private void VerifyScrollAfterDrillInExpiresLeftRestore(Action<UIObject> scroll)
+        {
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
@@ -2769,9 +2787,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.AreEqual(0, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "Precondition: Right enters the frozen tooltip cell.");
 
-                HorizontalWheelAtPoint(CentreOf(tableView), 5 * 120);
+                scroll(tableView);
                 double scrolled = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
-                Verify.IsTrue(scrolled > 60, "Precondition: the horizontal wheel scrolls the body (offset " + scrolled + ").");
+                Verify.IsTrue(scrolled > 60, "Precondition: the body scrolled horizontally (offset " + scrolled + ").");
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
