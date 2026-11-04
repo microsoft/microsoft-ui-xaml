@@ -14,10 +14,13 @@ using WinUIProfiler.Engine.Storage;
 namespace WinUIProfiler.App.Views;
 
 // The Frames tab: a session file's UI-thread ticks, the regions of interest in them, and the events of the selected row.
-// It reads the file, not the live pipeline, so it shows a session being recorded and a saved one the same way.
+// It reads the file, not the live pipeline, so it shows a session being recorded and a saved one the same way. The list,
+// the Show filter, a region's rows and the launch summary come from the file's views (FrameList, InterestingRows,
+// LaunchSummary), the same rows the CLI and other readers get; this tab only shows them.
 public sealed partial class FramesView : UserControl
 {
     private const int PageSize = 100;
+    // The LaunchSummary view lists at most this many ticks; once it has them, it does not change.
     private const int LaunchFrames = 10;
 
     // The Show filter's choices, in order.
@@ -31,26 +34,21 @@ public sealed partial class FramesView : UserControl
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
     private readonly DispatcherQueueTimer refreshTimer;
     private readonly DispatcherQueueTimer filterTimer;
-    private readonly Dictionary<long, FrameRow> rows = [];
-    // The ticks in the order they were first seen, and each by its thread and latest event: a region ends with a tick's
-    // stop.
-    private readonly List<FrameRow> ticks = [];
-    private readonly Dictionary<(int Thread, long Seq), FrameRow> ticksByLastEvent = [];
-    // Every row the list can show, by when it starts: the ticks, each region of interest right above the tick it ends
-    // with, and the interesting rows outside the regions. The list shows the ones the Show filter keeps.
-    private readonly List<object> all = [];
-    // Every interesting row read, and the regions among them, for the rows of a selected region.
-    private readonly List<InterestingRow> interestingRows = [];
-    private readonly List<InterestingRow> regions = [];
+    // The rows read, by tick and by interesting row, so each read reuses them and the selection and scroll position stay.
+    private Dictionary<long, FrameRow> ticks = [];
+    private Dictionary<(InterestingRowType Type, long StartSeq), InterestingRowItem> interestingItems = [];
+    // Every row the list can show, in the FrameList view's order, and each row's item in it, for the Show filter.
+    private List<object> all = [];
+    private Dictionary<object, FrameListItem> listed = [];
+    private IReadOnlyList<LaunchFrame> launch = [];
     private ObservableCollection<object> shownRows = [];
-    private InterestingRows interesting = new();
     private Filter filter;
     private SessionSource? source;
     private string? path;
     // Counts the files shown, so a read of an earlier one, or of this one before it was reopened, is dropped.
     private int shown;
-    // The latest event the last read saw, and where the file was complete from then: trimming the oldest events changes it.
-    private long? readSeq;
+    // How many events the last read saw, and where the file was complete from then: trimming the oldest events changes it.
+    private long? storedEvents;
     private long? trimmedBefore;
     private long? reselect;
     private bool reading;
@@ -138,17 +136,16 @@ public sealed partial class FramesView : UserControl
         path = sessionPath;
         shown++;
         reselect = null;
-        rows.Clear();
-        ticks.Clear();
-        ticksByLastEvent.Clear();
-        all.Clear();
-        interestingRows.Clear();
-        regions.Clear();
-        interesting = new();
+        ticks = [];
+        interestingItems = [];
+        all = [];
+        listed = [];
+        launch = [];
         fileRead = false;
         FrameList.ItemsSource = shownRows = [];
         UpdateEmpty();
-        readSeq = null;
+        storedEvents = null;
+        trimmedBefore = null;
         ReadError.IsOpen = false;
         FileSummary.Text = path is null ? Text("FramesNoFile") : Path.GetFileName(path);
         ToolTipService.SetToolTip(FileSummary, path);
@@ -173,24 +170,23 @@ public sealed partial class FramesView : UserControl
         reading = true;
         try
         {
-            var after = readSeq;
             var current = shown;
-            var reader = interesting;
-            var live = source?.Live == true;
-            var (info, (frames, seq), newRows) = await Task.Run(() =>
+            var known = storedEvents;
+            var readLaunch = launch.Count < LaunchFrames;
+            var (info, list, launchFrames) = await Task.Run(() =>
             {
                 var info = SessionFile.ReadInfo(file);
-                var changed = SessionFile.ReadChangedFrames(file, after);
-                // While the file grows, only up to the ticks just read, so a region's tick is listed when the region is.
-                // Before the first tick, that is nothing.
-                return (info, changed, reader.Read(file, live ? changed.LastSeq ?? 0 : null));
+                // Without new events, the list and the summary are the same as last time.
+                return info.StoredEvents == known
+                    ? (info, null, null)
+                    : (info, SessionFile.ReadFrameList(file), readLaunch ? SessionFile.ReadLaunchSummary(file) : null);
             });
             if (current != shown)
             {
                 return;
             }
 
-            if (after is not null && info.CompleteFromSeq != trimmedBefore)
+            if (fileRead && info.CompleteFromSeq != trimmedBefore)
             {
                 // The writer deleted the oldest events, and the ticks left without any, so read the file again.
                 var keep = (selected as FrameRow)?.Frame.FrameId;
@@ -200,50 +196,15 @@ public sealed partial class FramesView : UserControl
             }
 
             trimmedBefore = info.CompleteFromSeq;
-            readSeq = seq;
-            var changedRows = newRows.Count > 0;
-            foreach (var frame in frames)
+            if (list is not null)
             {
-                if (!rows.TryGetValue(frame.FrameId, out var row))
+                storedEvents = info.StoredEvents;
+                launch = launchFrames ?? launch;
+                Update(list);
+                if (selected is InterestingRowItem { IsRegion: true } region)
                 {
-                    rows.Add(frame.FrameId, row = new(frame));
-                    ticks.Add(row);
-                    Insert(row);
-                    changedRows = true;
+                    ShowRegionRows(region);
                 }
-                else
-                {
-                    var grew = row.Frame.Events != frame.Events;
-                    var wasSlow = row.IsSlow;
-                    ticksByLastEvent.Remove((row.Frame.ThreadId, row.Frame.LastSeq));
-                    row.Update(frame);
-                    changedRows |= row.IsSlow != wasSlow;
-                    if (row == selected)
-                    {
-                        UpdateTitle();
-                        if (grew)
-                        {
-                            ShowEvents(offset, grew: true);
-                        }
-                    }
-                }
-
-                ticksByLastEvent[(frame.ThreadId, frame.LastSeq)] = row;
-            }
-
-            foreach (var row in newRows)
-            {
-                AddInteresting(row);
-            }
-
-            if (changedRows)
-            {
-                Sync();
-            }
-
-            if (newRows.Count > 0 && selected is InterestingRowItem { IsRegion: true } region)
-            {
-                ShowRegionRows(region);
             }
 
             fileRead = true;
@@ -251,7 +212,7 @@ public sealed partial class FramesView : UserControl
             if (reselect is { } id)
             {
                 reselect = null;
-                if (rows.GetValueOrDefault(id) is { } row && shownRows.Contains(row))
+                if (ticks.GetValueOrDefault(id) is { } row && shownRows.Contains(row))
                 {
                     FrameList.SelectedItem = row;
                 }
@@ -275,76 +236,90 @@ public sealed partial class FramesView : UserControl
         }
     }
 
-    // A region goes right above the tick it ends with, and takes the interesting rows that start in it out of the list;
-    // they show when the region is selected. A tick's interesting row is not listed: the tick is.
-    private void AddInteresting(InterestingRow row)
+    // Takes the list the FrameList view gives. A tick or interesting row read before keeps its object, updated in place,
+    // so the selection and the scroll position stay. A region's tick gets the region, for its tint.
+    private void Update(IReadOnlyList<FrameListItem> list)
     {
-        interestingRows.Add(row);
-        if (row.Type == InterestingRowType.Frame)
+        var nextTicks = new Dictionary<long, FrameRow>();
+        var nextItems = new Dictionary<(InterestingRowType Type, long StartSeq), InterestingRowItem>();
+        var regionItems = new Dictionary<long, InterestingRowItem>();
+        all = new(list.Count);
+        listed = new(list.Count);
+        foreach (var item in list)
         {
-            return;
-        }
-
-        if (row.Type != InterestingRowType.Region)
-        {
-            if (!regions.Any(region => Contains(region, row)))
+            object row;
+            if (item.Tick is { } frame)
             {
-                Insert(new InterestingRowItem(row, Format("InterestingTextFormat", row.Name, row.ThreadId, row.StartMilliseconds,
-                    row.StopMilliseconds, row.DurationMilliseconds)));
+                if (!ticks.TryGetValue(frame.FrameId, out var tick))
+                {
+                    tick = new(frame);
+                }
+                else if (tick.Frame != frame)
+                {
+                    var grew = tick.Frame.Events != frame.Events;
+                    tick.Update(frame);
+                    if (tick == selected)
+                    {
+                        UpdateTitle();
+                        if (grew)
+                        {
+                            ShowEvents(offset, grew: true);
+                        }
+                    }
+                }
+
+                nextTicks[frame.FrameId] = tick;
+                row = tick;
+            }
+            else
+            {
+                var interesting = item.Row!;
+                var key = (interesting.Type, interesting.StartSeq);
+                if (!interestingItems.TryGetValue(key, out var rowItem) || rowItem.Row != interesting)
+                {
+                    rowItem = new(interesting, interesting.Type == InterestingRowType.Region
+                        ? Format("RegionTextFormat", interesting.Trigger ?? interesting.Name, interesting.StartMilliseconds,
+                            interesting.StopMilliseconds, interesting.DurationMilliseconds)
+                        : Format("InterestingTextFormat", interesting.Name, interesting.ThreadId, interesting.StartMilliseconds,
+                            interesting.StopMilliseconds, interesting.DurationMilliseconds));
+                }
+
+                nextItems[key] = rowItem;
+                if (rowItem.IsRegion && item.RegionId is { } regionId)
+                {
+                    regionItems[regionId] = rowItem;
+                }
+
+                row = rowItem;
             }
 
-            return;
+            all.Add(row);
+            listed[row] = item;
         }
 
-        regions.Add(row);
-        all.RemoveAll(item => item is InterestingRowItem { IsRegion: false } other && Contains(row, other.Row));
-        var item = new InterestingRowItem(row, Format("RegionTextFormat", row.Trigger ?? row.Name, row.StartMilliseconds,
-            row.StopMilliseconds, row.DurationMilliseconds));
-        if (!ticksByLastEvent.TryGetValue((row.ThreadId, row.StopSeq), out var tick))
+        ticks = nextTicks;
+        interestingItems = nextItems;
+        foreach (var tick in ticks.Values)
         {
-            Insert(item);
-            return;
+            var region = listed[tick].RegionId is { } regionId ? regionItems.GetValueOrDefault(regionId) : null;
+            if (tick.Region != region)
+            {
+                tick.Region = region;
+                // The tick may be listed already, without the region's tint.
+                if (FrameList.ContainerFromItem(tick) is ListViewItem container)
+                {
+                    container.Style = Styles.SelectStyle(tick, container);
+                }
+            }
         }
 
-        item.Tick = tick;
-        tick.Region = item;
-        all.Insert(all.LastIndexOf(tick), item);
-        // The tick may be listed already, without the region's tint.
-        if (FrameList.ContainerFromItem(tick) is ListViewItem container)
-        {
-            container.Style = Styles.SelectStyle(tick, container);
-        }
+        Sync();
     }
-
-    private static bool Contains(InterestingRow region, InterestingRow row) =>
-        row.ThreadId == region.ThreadId && row.StartSeq >= region.StartSeq && row.StartSeq <= region.StopSeq;
-
-    // Inserts a row after the rows that start no later. Rows mostly arrive in that order.
-    private void Insert(object item)
-    {
-        var key = Key(item);
-        var index = all.Count;
-        while (index > 0 && Key(all[index - 1]) > key)
-        {
-            index--;
-        }
-
-        all.Insert(index, item);
-    }
-
-    // When a row starts. A region above its tick sorts with the tick; a tick whose start is not stored sorts by its end.
-    private static double Key(object item) => item switch
-    {
-        FrameRow tick => tick.Frame.StartMilliseconds ?? tick.Frame.EndMilliseconds ?? double.MaxValue,
-        InterestingRowItem { Tick: { } tick } => Key(tick),
-        InterestingRowItem other => other.Row.StartMilliseconds,
-        _ => double.MaxValue
-    };
 
     private bool Shows(object item) => filter switch
     {
-        Filter.Interesting => item is not FrameRow tick || tick.Region is not null,
-        Filter.Slow => item is FrameRow { IsSlow: true },
+        Filter.Interesting => listed[item].InInteresting,
+        Filter.Slow => listed[item].InSlow,
         _ => true
     };
 
@@ -396,26 +371,15 @@ public sealed partial class FramesView : UserControl
         EmptyText.Visibility = fileRead && filter != Filter.All && shownRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    // Shows when the first drawing ticks of the first UI thread ended: from process start if the recording saw it,
-    // otherwise from the start of the recording. Not shown for a trimmed file, which no longer has them.
+    // Shows when the first drawing ticks of the first UI thread ended (the LaunchSummary view): from process start if the
+    // recording saw it, otherwise from the start of the recording. The view has none for a trimmed file.
     private void ShowSummary(SessionFileInfo info)
     {
         FileSummary.Text = Format(info.CompleteFromSeq is null ? "FramesFileFormat" : "FramesFileTrimmedFormat",
             Path.GetFileName(path), info.Frames);
-        if (ticks.Count == 0 || info.CompleteFromSeq is not null)
-        {
-            SetLine(LaunchSummary, "");
-            return;
-        }
-
-        var origin = info.Coverage == SessionCoverage.ProcessStart ? info.ProcessStartMilliseconds : null;
-        var thread = ticks[0].Frame.ThreadId;
-        var drawn = ticks.Select(row => row.Frame)
-            .Where(frame => frame.ThreadId == thread && frame.Drawn == true && frame.EndMilliseconds is not null)
-            .Take(LaunchFrames)
-            .Select(frame => Format("LaunchItemFormat", frame.FrameNumber, frame.EndMilliseconds - (origin ?? 0)));
-        var items = string.Join(" · ", drawn);
-        SetLine(LaunchSummary, items.Length == 0 ? "" : Format(origin is null ? "LaunchFromRecordingFormat" : "LaunchFromProcessFormat", items));
+        var items = string.Join(" · ", launch.Select(frame => Format("LaunchItemFormat", frame.FrameNumber, frame.Milliseconds)));
+        SetLine(LaunchSummary, items.Length == 0 ? ""
+            : Format(launch[0].FromProcessStart ? "LaunchFromProcessFormat" : "LaunchFromRecordingFormat", items));
     }
 
     // A one-line text that may be cut off; its tooltip shows all of it.
@@ -461,19 +425,33 @@ public sealed partial class FramesView : UserControl
         });
     }
 
-    // Lists the interesting rows in the selected region: the rows on its thread that start in it.
-    private void ShowRegionRows(InterestingRowItem? item)
+    // Lists the interesting rows in the selected region: those of the InterestingRows view with its RegionId.
+    private async void ShowRegionRows(InterestingRowItem? item)
     {
-        if (item is not { IsRegion: true, Row: var region })
+        if (item is not { IsRegion: true, Row: var region } || path is not { } file)
         {
             RegionPanel.Visibility = Visibility.Collapsed;
             RegionRows.ItemsSource = null;
             return;
         }
 
-        RegionRows.ItemsSource = interestingRows.Where(row => row.Type != InterestingRowType.Region && Contains(region, row))
-            .OrderBy(row => row.StartSeq).Select(row => new InterestingRowItem(row, row.Name)).ToList();
-        RegionPanel.Visibility = Visibility.Visible;
+        var current = shown;
+        try
+        {
+            var rows = await Task.Run(() => SessionFile.ReadInterestingRows(file, region.RegionId));
+            if (current != shown || selected != item)
+            {
+                return;
+            }
+
+            RegionRows.ItemsSource = rows.Where(row => row.Type != InterestingRowType.Region)
+                .Select(row => new InterestingRowItem(row, row.Name)).ToList();
+            RegionPanel.Visibility = Visibility.Visible;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            ShowError(error);
+        }
     }
 
     // Shows a page of the selected tick's events, or of the selected interesting row's thread in its span, in the

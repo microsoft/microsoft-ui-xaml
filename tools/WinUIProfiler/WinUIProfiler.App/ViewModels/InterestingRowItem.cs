@@ -13,8 +13,6 @@ public sealed class InterestingRowItem(InterestingRow row, string text)
     public InterestingRow Row { get; } = row;
     public string Text { get; } = text;
     public bool IsRegion => Row.Type == InterestingRowType.Region;
-    // The tick a region ends with, when it is listed.
-    public FrameRow? Tick { get; set; }
     public string Start => Row.StartMilliseconds.ToString("N1", CultureInfo.CurrentCulture);
     public string Duration => Row.DurationMilliseconds.ToString("N1", CultureInfo.CurrentCulture);
     public string Frame => Row.FrameNumber?.ToString("N0", CultureInfo.CurrentCulture) ?? "";

@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
@@ -12,6 +14,8 @@ internal static class CliApplication
 {
     private const int DefaultDumpLimit = 1000;
 
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
+
     private const string Usage = """
         Usage:
           WinUIProfiler.Cli processes <trace.etl | session.sqlite>
@@ -21,7 +25,8 @@ internal static class CliApplication
           WinUIProfiler.Cli objects <session.sqlite> [--kind element|visual] [--type <text>] [--name <text>]
           WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other] [--filter <text>]]
-          WinUIProfiler.Cli interesting <session.sqlite>
+                                                    [--list [--show interesting|slow]] [--json]
+          WinUIProfiler.Cli interesting <session.sqlite> [--region <id>] [--json]
 
           processes  Counts the events of each process with XAML events, to find the target PID.
                      A session file shows its process.
@@ -33,11 +38,17 @@ internal static class CliApplication
           objects    Lists the UI elements and composition visuals in a session file. --kind keeps one kind;
                      --type and --name filter them (a visual's name is its owner element's).
           timeline   Prints the events that mention one object, marking the field that holds it.
-          frames     Lists the ticks per UI thread, one row each. --frame prints one tick's events: --bucket keeps
-                     one bucket; --filter keeps events whose name or a field value contains <text>
-                     (a number matches a field with exactly that value).
+          frames     Lists the ticks per UI thread, one row each (the Ticks view). --frame prints one tick's events:
+                     --bucket keeps one bucket; --filter keeps events whose name or a field value contains <text>
+                     (a number matches a field with exactly that value). --list prints the Frames tab's list instead
+                     (the FrameList view); its ID is a tick's ID, a region's ID or another row's start Seq. --show
+                     keeps what the tab's Show filter keeps.
           interesting  Lists the regions of interest (see the README) in file order, with what started each
-                     one, and the ticks, layout passes, operations, navigations and focus changes in them.
+                     one, and the ticks, layout passes, operations, navigations and focus changes in them (the
+                     InterestingRows view). --region keeps one region (an ID from 'frames --list') and its rows.
+
+          --json prints the rows of frames and interesting as JSON, with the views' values.
+          The views are in the session file: any SQLite reader gets the same rows (see the README).
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
           and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), the kernel's
@@ -47,7 +58,7 @@ internal static class CliApplication
 
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
         string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket,
-        string? EventFilter, ObjectKind? Kind)
+        string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -78,7 +89,7 @@ internal static class CliApplication
                 "objects" => Objects(options, output),
                 "timeline" => Timeline(options, output, cancellationToken),
                 "frames" => Frames(options, output, cancellationToken),
-                "interesting" => Interesting(options, output, cancellationToken),
+                "interesting" => Interesting(options, output),
                 _ => Dump(options, output, cancellationToken)
             };
         }
@@ -112,10 +123,27 @@ internal static class CliApplication
         string? bucket = null;
         string? eventFilter = null;
         ObjectKind? kind = null;
+        long? regionId = null;
+        var json = false;
+        var list = false;
+        string? show = null;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
         for (var i = 2; i < args.Length; i++)
         {
+            // Flags, without a value.
+            if (args[i] == "--json" && args[0] is "frames" or "interesting")
+            {
+                json = true;
+                continue;
+            }
+
+            if (args[i] == "--list" && args[0] == "frames")
+            {
+                list = true;
+                continue;
+            }
+
             var value = i + 1 < args.Length ? args[i + 1] : throw new ArgumentException($"Missing value for {args[i]}.");
             switch (args[i])
             {
@@ -162,6 +190,14 @@ internal static class CliApplication
                 case "--filter" when args[0] == "frames":
                     eventFilter = value;
                     break;
+                case "--show" when args[0] == "frames":
+                    show = Array.Find(["interesting", "slow"], name => name.Equals(value, StringComparison.OrdinalIgnoreCase))
+                        ?? throw new ArgumentException("--show must be interesting or slow.");
+                    break;
+                case "--region" when args[0] == "interesting":
+                    regionId = long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var region) && region > 0
+                        ? region : throw new ArgumentException("--region must be a region ID from 'frames --list'.");
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option {args[i]}.");
             }
@@ -170,7 +206,7 @@ internal static class CliApplication
         }
 
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
-            typeFilter, objectId, address, frameId, bucket, eventFilter, kind);
+            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show);
         if (options.Command is "objects" or "timeline" or "frames" or "interesting" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
@@ -184,6 +220,16 @@ internal static class CliApplication
         if ((bucket ?? eventFilter) is not null && frameId is null)
         {
             throw new ArgumentException("--bucket and --filter need --frame <id>.");
+        }
+
+        if (show is not null && !list)
+        {
+            throw new ArgumentException("--show needs --list.");
+        }
+
+        if (frameId is not null && (list || json))
+        {
+            throw new ArgumentException("--list and --json can't be used with --frame.");
         }
 
         if (options.Command is "summary" or "dump" or "record" && !options.IsSessionFile && processId is null)
@@ -394,7 +440,18 @@ internal static class CliApplication
 
     private static int Frames(Options options, TextWriter output, CancellationToken cancellationToken)
     {
+        if (options.List)
+        {
+            return FrameList(options, output);
+        }
+
         var frames = SessionFile.ReadFrames(options.InputPath, options.FrameId);
+        if (options.Json)
+        {
+            output.WriteLine(JsonSerializer.Serialize(frames, JsonOptions));
+            return 0;
+        }
+
         if (options.FrameId is not { } frameId)
         {
             output.WriteLine($"{"ID",7} {"Thread",7} {"Frame",7} {"Start (ms)",12} {"End (ms)",12} {"Tick (ms)",10} {"Drew",5} " +
@@ -426,6 +483,39 @@ internal static class CliApplication
         return 0;
     }
 
+    // The Frames tab's list, as the Show filter keeps it. ID is a tick's ID (frames --frame) or a region's (interesting
+    // --region).
+    private static int FrameList(Options options, TextWriter output)
+    {
+        var items = SessionFile.ReadFrameList(options.InputPath)
+            .Where(item => options.Show switch { "interesting" => item.InInteresting, "slow" => item.InSlow, _ => true }).ToList();
+        if (options.Json)
+        {
+            output.WriteLine(JsonSerializer.Serialize(items, JsonOptions));
+            return 0;
+        }
+
+        output.WriteLine($"{"Item",6} {"Kind",-6} {"ID",7} {"Thread",7} {"Frame",7} {"Start (ms)",12} {"Stop (ms)",12} {"Duration",10} " +
+            $"{"Drew",5} {"Slow",5}  Name");
+        foreach (var item in items)
+        {
+            var (id, start, stop, duration, name) = item.Tick is { } tick
+                ? (tick.FrameId, tick.StartMilliseconds, tick.EndMilliseconds, tick.TickMilliseconds,
+                    item.RegionId is { } region ? $"ends region {region}" : "")
+                : (item.Row!.Type == InterestingRowType.Region ? item.RegionId ?? 0 : item.Row.StartSeq, item.Row.StartMilliseconds,
+                    item.Row.StopMilliseconds, item.Row.DurationMilliseconds,
+                    $"{item.Row.Name}{(item.Row.Trigger is null ? "" : $" ({item.Row.Trigger})")}");
+            output.WriteLine($"{item.ListIndex,6} {item.ItemType,-6} {id,7} {item.Tick?.ThreadId ?? item.Row!.ThreadId,7} " +
+                $"{item.Tick?.FrameNumber.ToString(CultureInfo.InvariantCulture) ?? "",7} {Milliseconds(start),12} {Milliseconds(stop),12} " +
+                $"{Milliseconds(duration),10} {(item.Tick is { } t ? Drew(t.Drawn) : ""),5} {(item.Tick?.Slow == true ? "yes" : ""),5}  {name}");
+        }
+
+        output.WriteLine($"{items.Count} items: {items.Count(item => item.ItemType == FrameListItemType.Tick)} ticks, " +
+            $"{items.Count(item => item.ItemType == FrameListItemType.Region)} regions, " +
+            $"{items.Count(item => item.ItemType == FrameListItemType.Row)} other interesting rows.");
+        return 0;
+    }
+
     private static string Drew(bool? drawn) => drawn switch
     {
         true => "yes",
@@ -433,11 +523,16 @@ internal static class CliApplication
         null => "?"
     };
 
-    private static int Interesting(Options options, TextWriter output, CancellationToken cancellationToken)
+    private static int Interesting(Options options, TextWriter output)
     {
         // In file order, a region before the rows that start with it.
-        var rows = new InterestingRows().Read(options.InputPath, cancellationToken: cancellationToken)
-            .OrderBy(row => row.StartSeq).ThenBy(row => row.Type != InterestingRowType.Region).ToList();
+        var rows = SessionFile.ReadInterestingRows(options.InputPath, options.RegionId);
+        if (options.Json)
+        {
+            output.WriteLine(JsonSerializer.Serialize(rows, JsonOptions));
+            return 0;
+        }
+
         output.WriteLine($"{"Start (ms)",12} {"Stop (ms)",12} {"Duration",10} {"Thread",7} {"Frame",7}  Type");
         foreach (var row in rows)
         {

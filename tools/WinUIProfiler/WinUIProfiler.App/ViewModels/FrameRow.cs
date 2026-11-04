@@ -14,15 +14,14 @@ public sealed class FrameRow(SessionFrame frame) : INotifyPropertyChanged
     // A tick this long fills the bar.
     private const double FullBarMilliseconds = 50;
     private const double BarWidthPixels = 72;
-    // At 60 frames a second, a frame has 16.7 ms.
-    private const double FrameBudgetMilliseconds = 1000.0 / 60;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public SessionFrame Frame { get; private set; } = frame;
     // The region of interest that ends with this tick, if any.
     public InterestingRowItem? Region { get; set; }
-    public bool IsSlow => Frame.TickMilliseconds > FrameBudgetMilliseconds;
+    // Whether the tick took more than a 60 Hz frame (the Ticks view's Slow).
+    public bool IsSlow => Frame.Slow;
     public string Number => Frame.FrameNumber.ToString("N0", CultureInfo.CurrentCulture);
     public string Start => Milliseconds(Frame.StartMilliseconds);
     public string End => Milliseconds(Frame.EndMilliseconds);

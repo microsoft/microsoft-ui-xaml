@@ -361,6 +361,37 @@ timestamp order, but ETW does not guarantee that across processors, and two
 events can have the same timestamp: to order events by time, sort by `Qpc`,
 then `Seq`.
 
+### Shared queries (views)
+
+The rules that turn the tables into the Frames tab's data are SQL views in the
+session file (`Storage\SessionSchema.cs`), not C# code. The app, the CLI and
+any SQLite reader, such as an AI agent with only the file, read the same rows
+from them. Each view's description is inside its definition, so
+`SELECT sql FROM sqlite_master WHERE type = 'view'` shows it, and
+`SELECT * FROM QueryCatalog` lists the views with an example query each.
+Times are in ms from the start of the recording.
+
+| View | Rows | Used by |
+| --- | --- | --- |
+| `EventDetails` | Every event, with its fields by name (JSON object), its tick and bucket, and the UI elements and visuals it mentions | The events of a region or row |
+| `TickEvents` | The same columns for each tick's events, read through the tick's index | The events of a tick, `frames --frame` |
+| `Ticks` | Every tick: times, `Drew`, `Slow` (over 16.7 ms), event counts by bucket | `frames` |
+| `InterestingRows` | The regions of interest and the interesting rows (rules in Frames tab below), with `RegionId` and `TickId` | `interesting`, a region's rows |
+| `InterestingRowEvents` | The events of each interesting row | Agents |
+| `FrameList` | The Frames tab's list in order, with what each Show choice keeps (`InInteresting`, `InSlow`) | The Frames tab, `frames --list` |
+| `LaunchSummary` | When the first 10 ticks that drew ended, from process start or recording start | The Frames tab |
+| `QueryCatalog` | The views and an example query each | Agents |
+
+```sql
+SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex;                 -- the tab with Show = Regions of interest
+SELECT * FROM InterestingRows WHERE RegionId = :region ORDER BY StartSeq;       -- a region and the rows in it
+SELECT Seq, Ms, Name, Bucket, Fields FROM TickEvents WHERE TickId = :tick ORDER BY Seq;   -- a tick's events
+```
+
+`InterestingRows` uses the `EventsByType` index. On a 148 MB file, it takes
+about 0.15 s, and `FrameList` about 0.65 s. Files written before the views were
+added are not read; record them again.
+
 ### UI elements
 
 While saving events, the writer also indexes the UI elements they mention
@@ -444,11 +475,12 @@ The writer also records which UI-thread tick each event belongs to
 
 The app's Frames tab (`Views\FramesView.xaml`) reads the session file of the
 connection, or of the trace being read, once a second until the connection or
-the reading ends: only the ticks that changed since the last read
-(`SessionFile.ReadChangedFrames`). When the writer trims the oldest events, the
-tab reads the file again. **Open session file...** shows a saved file instead,
-in this tab and the Objects tab, until the next connection or trace read. A new
-connection or trace read clears both tabs right away.
+the reading ends: the `FrameList` view, when the file has new events. It keeps
+the rows it read before, so the selection and the scroll position stay. When the
+writer trims the oldest events, the tab reads the file again. **Open session
+file...** shows a saved file instead, in this tab and the Objects tab, until the
+next connection or trace read. A new connection or trace read clears both tabs
+right away.
 
 The list has one row for each tick, in time order. **Show** selects the rows:
 
@@ -457,7 +489,7 @@ The list has one row for each tick, in time order. **Show** selects the rows:
   interesting row outside the regions, such as graphics device creation on a
   worker thread, is a gray row.
 - **Regions of interest**: only the regions, their ticks and the gray rows.
-  `Storage\InterestingRows.cs` finds them with the rules below.
+  The `InterestingRows` view finds them with the rules below.
 - **Slow ticks (over 16.7 ms)**: only the ticks that took more than 16.7 ms.
 
 A tick shows its frame number, when it started, how long it took, a check mark
@@ -480,8 +512,10 @@ are in `App.xaml`. They give way to the list's hover and selection colors.
 - For a launch recorded from process start, the tab gives when the first ten
   ticks that drew on the first UI thread ended, from the process's creation;
   otherwise from the start of the recording. A trimmed file no longer has them.
-- `WinUIProfiler.Cli frames` prints the ticks, and `interesting` prints the
-  interesting rows.
+- `WinUIProfiler.Cli frames` prints the ticks, `frames --list` the tab's list
+  (`--show interesting` or `slow` as the Show filter), and `interesting` the
+  interesting rows (`--region <id>` for one region). `--json` prints the views'
+  values.
 
 The regions answer a different question from the tick time: which ticks
 render a large change to the tree, not which ticks were slow. A slow tick with
@@ -522,8 +556,7 @@ keeps the objects whose type, name or address contains the text. Selecting one
 shows its history: the events that mention it, 100 per page, each with the
 frame it belongs to. While connected or reading a trace, the tab reads the file
 once a second while it is shown, keeping the list's scroll position and
-selection. Session files written before visuals were indexed show all their
-objects as elements.
+selection.
 
 Each row starts with an Element or Visual badge, and element rows have a light
 blue background, visual rows a light amber one (darker shades in the dark
@@ -585,6 +618,8 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli frames session.sqlite                   # ticks per UI thread, with timing, whether each drew, and events per bucket
 & $cli frames session.sqlite --frame <id> --bucket Xaml --filter Measure   # one tick's events, as in the Frames tab
 & $cli interesting session.sqlite              # the regions of interest and the interesting rows in them, with what started each region
+& $cli frames session.sqlite --list --show interesting   # the Frames tab's list, as Show = Regions of interest keeps it, with region IDs
+& $cli interesting session.sqlite --region <id> --json   # one region and its rows, as JSON
 ```
 
 The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
