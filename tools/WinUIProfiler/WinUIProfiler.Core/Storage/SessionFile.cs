@@ -62,9 +62,9 @@ public sealed record FrameListItem(long ListIndex, FrameListItemType ItemType, S
 // or from the start of the recording.
 public sealed record LaunchFrame(long FrameNumber, double Milliseconds, bool FromProcessStart);
 
-// The first frame drawn on the first UI thread: its number and when its last tick ended, in milliseconds from the start of
-// the recording.
-public sealed record DrawnFrame(int ThreadId, long FrameNumber, double EndMilliseconds);
+// The first frame drawn on the first UI thread: its number and when its last tick ended, as a QPC timestamp of the events'
+// clock (SessionFile.Snapshot.Milliseconds converts it).
+public sealed record DrawnFrame(int ThreadId, long FrameNumber, long EndQpc);
 
 // Reads a session file written by SessionWriter, also while it is still being written.
 public static class SessionFile
@@ -83,74 +83,105 @@ public static class SessionFile
             (profilerEvent, _) => sink(profilerEvent), cancellationToken);
     }
 
-    // Delivers the stored events of some types after a Seq (null for all), in Seq order. Returns the last Seq stored (null
-    // when there is none), to pass next time, and the file's CompleteFromSeq as the events were read: when it is more than
-    // one after the Seq passed, events after that Seq were deleted, to stay within the size limit, before they were read. A
-    // type is a provider's ETW ID and an event name, which matches case-insensitively.
-    public static (long? LastSeq, long? CompleteFromSeq) ReadEvents(string path,
-        IReadOnlyCollection<(Guid ProviderId, string Name)> eventTypes, long? afterSeq, Action<ProfilerEvent> sink,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(eventTypes);
-        ArgumentNullException.ThrowIfNull(sink);
-        long? lastSeq = null;
-        long? completeFromSeq = null;
-        ReadEvents(path, (connection, transaction, types) =>
-            {
-                // The same snapshot as the events read, so the next read starts right after them, and a deletion is seen
-                // along with the events it left.
-                using (var command = Command(connection, transaction,
-                    "SELECT (SELECT MAX(Seq) FROM Events), (SELECT CompleteFromSeq FROM SessionInfo)"))
-                {
-                    using var reader = command.ExecuteReader();
-                    reader.Read();
-                    lastSeq = reader.IsDBNull(0) ? null : reader.GetInt64(0);
-                    completeFromSeq = reader.IsDBNull(1) ? null : reader.GetInt64(1);
-                }
+    // Opens one consistent snapshot of the session file, also of one that is still being written.
+    public static Snapshot OpenSnapshot(string path) => new(path);
 
-                var ids = types.Where(type => eventTypes.Any(wanted => wanted.ProviderId == type.Value.ProviderId &&
-                        string.Equals(wanted.Name, type.Value.Name, StringComparison.OrdinalIgnoreCase)))
-                    .Select(type => type.Key.ToString(CultureInfo.InvariantCulture)).ToArray();
-                return $"""
-                    SELECT Qpc, ThreadId, TypeId, Payload FROM Events
-                    WHERE {(ids.Length == 0 ? "0" : $"TypeId IN ({string.Join(',', ids)})")} AND Seq > $after
-                    ORDER BY Seq
-                    """;
-            }, [("$after", afterSeq ?? 0)], (profilerEvent, _) => sink(profilerEvent), cancellationToken);
-        return (lastSeq, completeFromSeq);
-    }
-
-    // The first tick that drew on the UI thread with the first stored tick, the first of the ticks the Frames tab's launch
-    // line gives (the LaunchSummary view); null while there is none, and once the file has deleted its oldest events to
-    // stay within its size limit, since the first ticks may have been among them (the Frames tab then shows no launch line
-    // either). A tick drew when the thread's next tick has a higher frame number, as in the Ticks view: several ticks can
-    // carry a number, and only the last one draws.
-    public static DrawnFrame? ReadFirstDrawnFrame(string path)
+    // What a session file held at one moment: its info, events and frames, and the clock its events are timed by, which
+    // for a recorded trace whose frequency was not given changes once the events span a second (SessionWriter). Dispose it
+    // once read, so the file's write-ahead log can be checkpointed.
+    public sealed class Snapshot : IDisposable
     {
-        using var connection = Open(path);
-        using var transaction = connection.BeginTransaction(deferred: true);
-        var (info, frequency, startQpc) = ReadSession(connection, transaction);
-        if (info.CompleteFromSeq is not null)
+        private readonly SqliteConnection connection;
+        private readonly SqliteTransaction transaction;
+        private readonly long frequency;
+        private readonly long? startQpc;
+
+        internal Snapshot(string path)
         {
-            return null;
+            connection = Open(path);
+            try
+            {
+                transaction = connection.BeginTransaction(deferred: true);
+                (Info, frequency, startQpc) = ReadSession(connection, transaction);
+            }
+            catch
+            {
+                connection.Dispose();
+                throw;
+            }
         }
 
-        using var command = Command(connection, transaction, """
-            WITH FramesDrawn AS (
-                    SELECT FrameId, ThreadId, FrameNumber, EndQpc,
-                        LEAD(FrameNumber) OVER (PARTITION BY ThreadId ORDER BY FrameId) > FrameNumber AS Drawn
-                    FROM Frames
-                    WHERE ThreadId = (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1))
-            SELECT ThreadId, FrameNumber, EndQpc
-            FROM FramesDrawn
-            WHERE Drawn AND EndQpc IS NOT NULL
-            ORDER BY FrameId
-            LIMIT 1
-            """);
-        using var reader = command.ExecuteReader();
-        return reader.Read() && startQpc is { } start
-            ? new(reader.GetInt32(0), reader.GetInt64(1), (reader.GetInt64(2) - start) * 1000.0 / frequency)
-            : null;
+        public SessionFileInfo Info { get; }
+
+        // A QPC timestamp of the events' clock, read from this snapshot or an earlier one of the file (whose start never
+        // changes), in milliseconds from the start of the recording, as this snapshot's events are timed.
+        public double Milliseconds(long qpc) => startQpc is { } start
+            ? (qpc - start) * 1000.0 / frequency
+            : throw new InvalidDataException("The session file has no start time.");
+
+        // Delivers the stored events of some types after a Seq (null for all), in Seq order, and returns the last Seq
+        // stored (null when there is none), to pass next time. When Info.CompleteFromSeq is more than one after the Seq
+        // passed, events after that Seq were deleted, to stay within the size limit, before they were read. A type is a
+        // provider's ETW ID and an event name, which matches case-insensitively.
+        public long? ReadEvents(IReadOnlyCollection<(Guid ProviderId, string Name)> eventTypes, long? afterSeq,
+            Action<ProfilerEvent> sink, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(eventTypes);
+            ArgumentNullException.ThrowIfNull(sink);
+            long? lastSeq;
+            using (var command = Command(connection, transaction, "SELECT MAX(Seq) FROM Events"))
+            {
+                var value = command.ExecuteScalar();
+                lastSeq = value is null or DBNull ? null : Convert.ToInt64(value, CultureInfo.InvariantCulture);
+            }
+
+            SessionFile.ReadEvents(connection, transaction, Info, frequency, startQpc, (_, _, types) =>
+                {
+                    var ids = types.Where(type => eventTypes.Any(wanted => wanted.ProviderId == type.Value.ProviderId &&
+                            string.Equals(wanted.Name, type.Value.Name, StringComparison.OrdinalIgnoreCase)))
+                        .Select(type => type.Key.ToString(CultureInfo.InvariantCulture)).ToArray();
+                    return $"""
+                        SELECT Qpc, ThreadId, TypeId, Payload FROM Events
+                        WHERE {(ids.Length == 0 ? "0" : $"TypeId IN ({string.Join(',', ids)})")} AND Seq > $after
+                        ORDER BY Seq
+                        """;
+                }, [("$after", afterSeq ?? 0)], (profilerEvent, _) => sink(profilerEvent), cancellationToken);
+            return lastSeq;
+        }
+
+        // The first tick that drew on the UI thread with the first stored tick, the first of the ticks the Frames tab's
+        // launch line gives (the LaunchSummary view); null while there is none, and once the file has deleted its
+        // oldest events to stay within its size limit, since the first ticks may have been among them (the Frames tab
+        // then shows no launch line either). A tick drew when the thread's next tick has a higher frame number, as in
+        // the Ticks view: several ticks can carry a number, and only the last one draws.
+        public DrawnFrame? ReadFirstDrawnFrame()
+        {
+            if (Info.CompleteFromSeq is not null)
+            {
+                return null;
+            }
+
+            using var command = Command(connection, transaction, """
+                WITH FramesDrawn AS (
+                        SELECT FrameId, ThreadId, FrameNumber, EndQpc,
+                            LEAD(FrameNumber) OVER (PARTITION BY ThreadId ORDER BY FrameId) > FrameNumber AS Drawn
+                        FROM Frames
+                        WHERE ThreadId = (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1))
+                SELECT ThreadId, FrameNumber, EndQpc
+                FROM FramesDrawn
+                WHERE Drawn AND EndQpc IS NOT NULL
+                ORDER BY FrameId
+                LIMIT 1
+                """);
+            using var reader = command.ExecuteReader();
+            return reader.Read() ? new(reader.GetInt32(0), reader.GetInt64(1), reader.GetInt64(2)) : null;
+        }
+
+        public void Dispose()
+        {
+            transaction.Dispose();
+            connection.Dispose();
+        }
     }
 
     // The objects with stored events, in the order they were first seen: all, those of one kind, or the one with an ID or
@@ -510,6 +541,14 @@ public static class SessionFile
         // type is among the types read.
         using var transaction = connection.BeginTransaction(deferred: true);
         var (info, frequency, startQpc) = ReadSession(connection, transaction);
+        return ReadEvents(connection, transaction, info, frequency, startQpc, query, parameters, sink, cancellationToken);
+    }
+
+    // The same, in a read transaction that has read the session.
+    private static long ReadEvents(SqliteConnection connection, SqliteTransaction transaction, SessionFileInfo info,
+        long frequency, long? startQpc, Func<SqliteConnection, SqliteTransaction, IReadOnlyDictionary<long, StoredType>, string> query,
+        (string Name, object? Value)[] parameters, Action<ProfilerEvent, SqliteDataReader> sink, CancellationToken cancellationToken)
+    {
         // Files written before marker providers were added have no events from them.
         var marker = HasColumn(connection, transaction, "EventTypes", "ProviderId") ? "ProviderName, ProviderId" : "NULL, NULL";
         var types = new Dictionary<long, StoredType>();

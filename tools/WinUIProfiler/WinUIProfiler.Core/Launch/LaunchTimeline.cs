@@ -53,7 +53,8 @@ public sealed record LaunchTimeline(SessionFileInfo Session, LaunchOrigin Origin
 public sealed class LaunchTimelineReader
 {
     private readonly string path;
-    // The first event of each milestone found so far, by the index of its definition and its label.
+    // The first event of each milestone found so far, by the index of its definition and its label. Times are kept on the
+    // events' clock and converted on each Read, as a recorded trace's frequency can become known after the events were read.
     private Dictionary<(int Definition, string Label), Reached> reached = [];
     private DrawnFrame? firstFrame;
     private long? lastSeq;
@@ -71,7 +72,9 @@ public sealed class LaunchTimelineReader
 
     public LaunchTimeline Read(CancellationToken cancellationToken = default)
     {
-        var session = SessionFile.ReadInfo(path);
+        // One snapshot, so the session's info, its events and frames, and the clock they are timed by agree.
+        using var snapshot = SessionFile.OpenSnapshot(path);
+        var session = snapshot.Info;
         var definitions = Config.Milestones
             .Select((definition, index) => (Definition: definition, Index: index))
             .Where(entry => entry.Definition.AppliesTo(session.ProcessName))
@@ -83,22 +86,22 @@ public sealed class LaunchTimelineReader
             .ToArray();
         // Kept only once the read completes, so a read that is cancelled or fails can be repeated.
         var found = new Dictionary<(int Definition, string Label), Reached>(reached);
-        var read = SessionFile.ReadEvents(path, eventTypes, lastSeq, profilerEvent => Add(found, profilerEvent, definitions),
+        var readSeq = snapshot.ReadEvents(eventTypes, lastSeq, profilerEvent => Add(found, profilerEvent, definitions),
             cancellationToken);
         var attached = session.Coverage == SessionCoverage.Connection;
         var firstFrameWanted = !attached && definitions.Any(entry => entry.Definition.BuiltIn == BuiltInMilestone.FirstFrameDrawn);
         // The file deleted its oldest events by the time of this read: events not read yet were among them, or, while the
         // first frame drawn is not found, its frames may have been.
-        if (read.CompleteFromSeq is { } completeFrom && (completeFrom > (lastSeq ?? 0) + 1 || (firstFrameWanted && firstFrame is null)))
+        if (session.CompleteFromSeq is { } completeFrom && (completeFrom > (lastSeq ?? 0) + 1 || (firstFrameWanted && firstFrame is null)))
         {
             trimmed = true;
         }
 
         reached = found;
-        lastSeq = read.LastSeq ?? lastSeq;
+        lastSeq = readSeq ?? lastSeq;
         if (firstFrameWanted && firstFrame is null && !trimmed)
         {
-            firstFrame = SessionFile.ReadFirstDrawnFrame(path);
+            firstFrame = snapshot.ReadFirstDrawnFrame();
         }
 
         var origin = session.ProcessStartMilliseconds ?? 0;
@@ -113,14 +116,15 @@ public sealed class LaunchTimelineReader
                     milestones.Add(new(definition.Label!, definition, 0, null, 1, null));
                     break;
                 case BuiltInMilestone.FirstFrameDrawn when firstFrame is { } frame:
-                    milestones.Add(new(definition.Label!, definition, frame.EndMilliseconds - origin, null, 1, frame.ThreadId));
+                    milestones.Add(new(definition.Label!, definition, snapshot.Milliseconds(frame.EndQpc) - origin, null, 1,
+                        frame.ThreadId));
                     break;
                 case null:
                     var count = milestones.Count;
                     milestones.AddRange(reached
                         .Where(entry => entry.Key.Definition == index)
-                        .Select(entry => new LaunchMilestone(entry.Key.Label, definition, entry.Value.Milliseconds - origin, null,
-                            entry.Value.Count, entry.Value.ThreadId)));
+                        .Select(entry => new LaunchMilestone(entry.Key.Label, definition, snapshot.Milliseconds(entry.Value.Qpc) - origin,
+                            null, entry.Value.Count, entry.Value.ThreadId)));
                     // Another app's milestone isn't missing when the process's name, and so its app, isn't known.
                     if (milestones.Count == count && (definition.Process is null || session.ProcessName is not null))
                     {
@@ -187,12 +191,12 @@ public sealed class LaunchTimelineReader
 
             // Events are stored in the order they arrived, which can differ a little from time order.
             var key = (index, label!);
-            var time = profilerEvent.RelativeMilliseconds;
+            var qpc = profilerEvent.TimestampQpc;
             found[key] = found.TryGetValue(key, out var first)
-                ? time < first.Milliseconds ? new(time, profilerEvent.ThreadId, first.Count + 1) : first with { Count = first.Count + 1 }
-                : new(time, profilerEvent.ThreadId, 1);
+                ? qpc < first.Qpc ? new(qpc, profilerEvent.ThreadId, first.Count + 1) : first with { Count = first.Count + 1 }
+                : new(qpc, profilerEvent.ThreadId, 1);
         }
     }
 
-    private readonly record struct Reached(double Milliseconds, int ThreadId, long Count);
+    private readonly record struct Reached(long Qpc, int ThreadId, long Count);
 }

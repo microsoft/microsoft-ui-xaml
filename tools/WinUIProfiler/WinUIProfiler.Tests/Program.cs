@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Contracts;
@@ -270,3 +271,72 @@ foreach (var capture in new SnapshotResourceCapture?[] { null, unavailableResour
     }
 }
 Console.WriteLine("Passed: older/unavailable/empty captures retain all four groups without fabricating graphics rows.");
+
+// A recorded trace's session file times its events with this machine's frequency until they span a second and it derives
+// the trace's, so a launch timeline that follows the file must not keep times from before.
+var launchPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-LaunchTimeline-{Guid.NewGuid():N}.sqlite");
+try
+{
+    var traceFrequency = System.Diagnostics.Stopwatch.Frequency == 10_000_000 ? 20_000_000L : 10_000_000L;
+    long Qpc(double milliseconds) => 1_000_000_000L + (long)Math.Round(milliseconds * traceFrequency / 1000);
+    ProfilerEvent Frame(double milliseconds, uint number, bool start) => new(Qpc(milliseconds), milliseconds, 200, 1,
+        XamlProvider.Xaml, true, "CoreServices_Frame", 0, [new("FrameNumber", number), new("IsStart", start)]);
+    var contoso = new MarkerProvider("Contoso.Launch", Guid.Parse("0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d"));
+    var config = MarkerConfig.Parse("""
+        {
+          "version": 1,
+          "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
+          "milestones": [
+            { "builtin": "ProcessCreated" },
+            { "label": "Ready", "provider": "Contoso.Launch", "event": "Ready" },
+            { "builtin": "FirstFrameDrawn" }
+          ]
+        }
+        """);
+    static string Describe(LaunchTimeline timeline) =>
+        string.Join(", ", timeline.Milestones.Select(milestone => $"{milestone.Label} {milestone.Milliseconds:R} ms"));
+
+    using var writer = SessionWriter.Create(launchPath, new(200, "Contoso", null, null, null, SessionCoverage.Trace, @"C:\trace.etl"));
+    void Store(params ProfilerEvent[] events)
+    {
+        var stored = writer.Status.StoredEvents;
+        foreach (var profilerEvent in events)
+        {
+            writer.Process(++stored, profilerEvent);
+        }
+
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while (writer.Status.StoredEvents < stored)
+        {
+            if (writer.Failure is not null || DateTime.UtcNow > deadline)
+            {
+                throw new InvalidOperationException("The session writer did not store the events.", writer.Failure);
+            }
+
+            Thread.Sleep(10);
+        }
+    }
+
+    writer.SetProcessStart(Qpc(-5), "Contoso");
+    Store(Frame(0, 1, true), Frame(40, 1, false), Frame(60, 2, true),
+        new(Qpc(100), 100, 200, 1, XamlProvider.Marker, true, "Ready", 0, [], contoso));
+    var following = new LaunchTimelineReader(launchPath, config);
+    following.Read();
+    Store(Frame(1500, 2, false));
+    var followed = Describe(following.Read());
+    var fresh = Describe(new LaunchTimelineReader(launchPath, config).Read());
+    if (followed != fresh || fresh != "Process created 0 ms, First frame drawn 45 ms, Ready 105 ms")
+    {
+        throw new InvalidOperationException(
+            $"A launch timeline read before the trace's frequency was known must be timed with it once it is: followed '{followed}', afresh '{fresh}'.");
+    }
+
+    Console.WriteLine("Passed: a launch timeline that follows a recorded trace's session file is retimed once its frequency is known.");
+}
+finally
+{
+    foreach (var file in new[] { launchPath, launchPath + "-wal", launchPath + "-shm" })
+    {
+        File.Delete(file);
+    }
+}
