@@ -3,9 +3,6 @@
 
 #include "precomp.h"
 #include <ParserAPI.h>
-#ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
-#endif // XAMLPROFILER_ENABLED
 
 CContentControl::~CContentControl()
 {

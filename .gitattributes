@@ -1,6 +1,9 @@
 * text=auto
 
 # Force specific files that git doesn't know should always be CRLF
+*.xml text eol=crlf
+*.xaml text eol=crlf
+*.tt text eol=crlf
 *.idl text eol=crlf
 *.h text eol=crlf
 *.cpp text eol=crlf
@@ -10,3 +13,5 @@
 *proj text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
+
+.github/workflows/*.lock.yml linguist-generated=true

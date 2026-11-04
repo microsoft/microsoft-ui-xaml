@@ -55,7 +55,7 @@ public:
     BEGIN_TEST_METHOD(RegenerateVisual)
         TEST_METHOD_PROPERTY(L"Description", L"Tests that a VSIS doesn't regenerate its SpriteVisual unless the surface changes.")
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // MockDComp isn't injected on OneCore, so we can't count the number of sprite visuals cleaned up
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Visual count mismatch
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
 private:

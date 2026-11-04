@@ -54,16 +54,35 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         bool TraceConsumerRoutineHelper::s_guidProvided = false;
         // EventId map for keeping count of non-telementry events
         std::map<int, unsigned int> TraceConsumerRoutineHelper::s_IdCountMap;
+        std::mutex TraceConsumerRoutineHelper::s_eventMutex;
+        TraceEventScope TraceConsumerRoutineHelper::s_eventScope;
 
         // Process thread sync event
         Event TraceConsumerRoutineHelper::s_syncEvent(L"TraceConsumerRoutineSync");
         void TraceConsumerRoutineHelper::EnableTracingByEventId(int eventId)
         {
+            std::lock_guard<std::mutex> lock(s_eventMutex);
             Throw::If((s_IdCountMap.find(eventId) != s_IdCountMap.end()), E_INVALIDARG,
                 L"The event you are trying to enable has already been enabled!");
             s_IdCountMap.insert(std::pair<int, unsigned int>(eventId, 0));
 
         }
+
+        void TraceConsumerRoutineHelper::BeginCountingForProcess(unsigned int processId, __int64 startTimestamp)
+        {
+            Throw::IfFalse(s_processing, E_FAIL, L"Start tracing before beginning a counting scope.");
+            Throw::If(processId == 0 || startTimestamp <= 0, E_INVALIDARG, L"A counting scope requires a process and QPC timestamp.");
+
+            std::lock_guard<std::mutex> lock(s_eventMutex);
+            s_eventScope = {processId, startTimestamp};
+            s_events.clear();
+            for (auto& entry : s_IdCountMap)
+            {
+                entry.second = 0;
+            }
+            LOG_OUTPUT(L"TraceConsumer counting scope: pid=%u startQpc=%I64d", processId, startTimestamp);
+        }
+
         void TraceConsumerRoutineHelper::Start()
         {
             Throw::If(s_processing, E_FAIL, L"TraceConsumer::Start has already been called");
@@ -76,8 +95,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // set processing flag
             s_processing = true;
             // ensure s_events is cleared before starting.
-            s_events.clear();
-            s_IdCountMap.clear();
+            {
+                std::lock_guard<std::mutex> lock(s_eventMutex);
+                s_eventScope = {};
+                s_events.clear();
+                s_IdCountMap.clear();
+            }
             s_syncEvent.Reset();
 
             ++s_traceCounter;
@@ -138,8 +161,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TraceConsumerRoutineHelper::Stop()
         {
             Throw::IfFalse(s_processing, E_FAIL, L"TraceConsumer::Start was never called");
-            Throw::If(s_IdCountMap.size() == 0 && s_guidProvided, E_FAIL,
-                L"If not using telemetry provider, must call TraceConsumer::AddEventToList to add events to test before stopping trace");
+            {
+                std::lock_guard<std::mutex> lock(s_eventMutex);
+                Throw::If(s_IdCountMap.size() == 0 && s_guidProvided, E_FAIL,
+                    L"If not using telemetry provider, must call TraceConsumer::AddEventToList to add events to test before stopping trace");
+            }
             // todo: [investigate] right now close trace needs to be called before s_consumer->SetEventRecordCallback is raised.
             //       this does not seem right. i expected s_consumer->SetEventRecordCallback to be raised as events are fired
             // Wait for processing to finish
@@ -157,6 +183,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TraceConsumerRoutineHelper::VerifyEventTraced(int eventId, unsigned int count)
         {
             Throw::If(s_processing, E_FAIL, L"TraceConsumer::Stop needs to be called before TraceConsumerRoutineHelper::VerifyEventTraced can be called");
+            std::lock_guard<std::mutex> lock(s_eventMutex);
 
             if (s_IdCountMap[eventId] != count)
             {
@@ -169,6 +196,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TraceConsumerRoutineHelper::VerifyEventTraced(int eventId)
         {
             Throw::If(s_processing, E_FAIL, L"TraceConsumer::Stop needs to be called before TraceConsumerRoutineHelper::VerifyEventTraced can be called");
+            std::lock_guard<std::mutex> lock(s_eventMutex);
 
             if (s_IdCountMap[eventId] == 0)
             {
@@ -183,6 +211,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TraceConsumerRoutineHelper::VerifyEventTraced(const wchar_t* eventName, unsigned int count)
         {
             Throw::If(s_processing, E_FAIL, L"TraceConsumer::Stop needs to be called before TraceConsumerRoutineHelper::VerifyEventTraced can be called");
+            std::lock_guard<std::mutex> lock(s_eventMutex);
 
             LOG_OUTPUT(L"verify event '%s' was traced '%d' time(s)", eventName, count);
 
@@ -230,6 +259,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //       currently you can see the part c data field names, but work needs to be done to properly decode values
         void TraceConsumerRoutineHelper::DecodeEtwEvents(const PEVENT_RECORD pevent_record)
         {
+            std::lock_guard<std::mutex> lock(s_eventMutex);
+            // ETW delivers buffered records after subscription; filter by emission time, not delivery time.
+            if (!s_eventScope.Includes(pevent_record->EventHeader.ProcessId, pevent_record->EventHeader.TimeStamp.QuadPart))
+            {
+                return;
+            }
+
             std::unique_ptr<TRACE_EVENT_INFO> traceEventInfo;
             unsigned long dataSize = 0;
             // Pass in null for buffer to get the required capacity

@@ -148,10 +148,10 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestLTE)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // LTE test hook can't add to transition root of island's popup root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestLTE3D)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // LTE test hook can't add to transition root of island's popup root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(NewLTETargetingExisting3D)

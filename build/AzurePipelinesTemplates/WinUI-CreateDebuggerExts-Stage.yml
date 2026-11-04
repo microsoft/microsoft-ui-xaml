@@ -1,0 +1,52 @@
+# DebuggerExts (XamlThread) build/sign/publish stage. Lives in a template so the ESRP wrapper resolves via a same-repo relative path (no @self needed).
+stages:
+- stage: BuildDebuggerExtsNuget
+  jobs:
+  - job: BuildDebuggerExtsNuget
+    pool:
+      type: windows
+    timeoutInMinutes: 30
+    variables:
+      ob_outputDirectory: '$(Build.ArtifactStagingDirectory)'
+      ob_artifactBaseName: 'BuildPerf'
+      ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**'
+    steps:
+    - template: WinUI-EsrpCodeSigning-Wrapper.yml
+      parameters:
+        InnerParams:
+          FolderPath: '$(Build.SourcesDirectory)\dbgext\xamlthread'
+          Pattern: |
+            xamlthread.js
+          KeyCode: 'CP-230012'
+          UseMinimatch: true
+          DisplayName: 'CodeSign'
+
+    - task: NuGetCommand@2
+      displayName: 'Pack nupkg'
+      inputs:
+        command: 'pack'
+        packagesToPack: '$(Build.SourcesDirectory)/dbgext/Microsoft.Internal.DbgExt-XamlThread.nuspec'
+        packDestination: '$(ob_outputDirectory)'
+        versioningScheme: 'byPrereleaseNumber'
+        majorVersion: '$(DbgExtMajorVersion)'
+        minorVersion: '$(DbgExtMinorVersion)'
+        patchVersion: '$(Revision)'
+
+    - template: WinUI-EsrpCodeSigning-Wrapper.yml
+      parameters:
+        InnerParams:
+          FolderPath: '$(ob_outputDirectory)'
+          Pattern: |
+            **/*.nupkg
+          KeyCode: 'CP-401405'
+          UseMinimatch: true
+          DisplayName: 'CodeSign'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet push to feed'
+      inputs:
+        command: 'push'
+        packagesToPush: '$(ob_outputDirectory)/*.nupkg'
+        verbosityPush: 'Detailed'
+        nuGetFeedType: 'internal'
+        publishVstsFeed: 'WinUI/WinUI.DebuggerExtensions.XamlThread'

@@ -1,0 +1,36 @@
+<!-- With the headers hidden, the editor's own name is the only column context a screen reader announces. -->
+<DataTemplate x:Key="DueDateTemplate" x:DataType="models:SupportTicket">
+    <CalendarDatePicker
+        Date="{x:Bind DueOrNull, Mode=TwoWay}"
+        DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+        Margin="6,2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        AutomationProperties.Name="{x:Bind DueAutomationName, Mode=OneWay}"/>
+</DataTemplate>
+
+<DataTemplate x:Key="ResolvedTemplate" x:DataType="models:SupportTicket">
+    <CheckBox
+        IsChecked="{x:Bind IsResolved, Mode=TwoWay}"
+        MinWidth="0"
+        Margin="14,2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Left"
+        AutomationProperties.Name="{x:Bind ResolvedAutomationName, Mode=OneWay}"/>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="TicketsTable"
+    AutomationProperties.Name="Support tickets"
+    ItemsSource="{x:Bind Source}"
+    HeadersVisibility="Column"
+    SelectionMode="Single"
+    IsReadOnly="True">
+    <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
+    <tv:TableViewTextColumn Header="Ticket" Width="80" Binding="{Binding TicketId}"/>
+    <tv:TableViewTemplateColumn Header="Assignee" Width="100" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}"/>
+    <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="140" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
+    <tv:TableViewTemplateColumn Header="Priority" Width="100" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority"/>
+    <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="170" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due"/>
+    <tv:TableViewTemplateColumn Header="Resolved" Width="96" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved"/>
+</tv:TableView>

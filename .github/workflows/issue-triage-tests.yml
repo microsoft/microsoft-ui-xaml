@@ -1,0 +1,42 @@
+name: Issue triage tests
+
+on:
+  pull_request:
+    paths:
+      - .github/scripts/issue-triage/**
+      - .github/workflows/issue-triage*
+      - .github/aw/**
+  push:
+    branches: [main]
+    paths:
+      - .github/scripts/issue-triage/**
+      - .github/workflows/issue-triage*
+      - .github/aw/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Test deterministic triage and publication
+        run: python -m unittest discover -s .github/scripts/issue-triage/tests -v
+      - name: Install pinned workflow compiler
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh extension install github/gh-aw --pin v0.89.21
+      - name: Verify generated workflow is current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh aw compile issue-triage --strict --no-check-update
+          git diff --exit-code -- .github/workflows/issue-triage.lock.yml .github/aw

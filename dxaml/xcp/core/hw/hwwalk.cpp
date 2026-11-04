@@ -963,6 +963,29 @@ HWWalk::RenderProperties(
             // to get the root scroll viewer.
             myRP.m_skipLightsOnThisElementNoRef = rootScrollViewerOrCanvas;
         }
+        else if (pUIElement->OfTypeByIndex<KnownTypeIndex::XamlIslandRoot>())
+        {
+            // If there are lights set on the root scroll viewer, we assume that the app put them there with the intention of
+            // applying them to the entire tree, and only placed them there because that's as high as the app can reach in the
+            // public UIElement tree. Fish out those lights and put them at the real root, which is above the root scroll viewer.
+            // This way those lights can reach the popup root, the full window media root, and the LTE root as well. Note that if
+            // Window.Content is a canvas, then there will be no root scroll viewer, and we'll peek at the canvas instead.
+            CXamlIslandRoot* xamlIslandRoot = static_cast<CXamlIslandRoot*>(pUIElement);
+            CUIElement* rootScrollViewerOrPublicRoot = xamlIslandRoot->GetRootScrollViewerOrPublicRoot();
+            if (rootScrollViewerOrPublicRoot != nullptr)
+            {
+                hasLightEnteredTree = AccumulateLightsAndCheckLightsEnteringTree(
+                    rootScrollViewerOrPublicRoot,
+                    xamlIslandRoot,
+                    &myLights,
+                    true /* isInXamlIsland */);
+            }
+
+            // Also remember what the root scroll viewer (or public root) is. When we render it for real we want to skip its light collection
+            // so that it doesn't get added twice. We cache it in the render params to avoid doing a walk up on every single element
+            // to get the root scroll viewer.
+            myRP.m_skipLightsOnThisElementNoRef = rootScrollViewerOrPublicRoot;
+        }
         else if (pUIElement != myRP.m_skipLightsOnThisElementNoRef)
         {
             hasLightEnteredTree = AccumulateLightsAndCheckLightsEnteringTree(pUIElement, pUIElement, &myLights, myRP.m_isInXamlIsland);
@@ -2006,14 +2029,16 @@ HWWalk::RenderConnectedAnimationUnloadingElements(
 {
     if (pRoot->NeedsUnloadingHWWalk())
     {
-        ASSERT(pRoot->GetContext()->GetConnectedAnimationServiceNoRef());
+        auto connectedAnimationService = pRoot->GetContext()->GetConnectedAnimationServiceNoRef();
+        ASSERT(connectedAnimationService);
         // We only need to walk elements that haven't been prevously walked.  Mostly, these elements
         // will get walked with the unloading storage from their parent elements, however, there are cases
         // (such as popups) where whole branches of the tree may be ignored and if our animation element
         // is buried under there, then those unloading storage elements won't get walked.
         for (auto& element : pRoot->GetUnloadingElements())
         {
-            if (element->GetCompositionPeer() == nullptr)
+            if (connectedAnimationService->IsUnloadingElementForRoot(element, pRoot) &&
+                element->GetCompositionPeer() == nullptr)
             {
                 IFC_RETURN(Render(element, rp, FALSE /* redirectedDraw */));
             }
@@ -4307,4 +4332,3 @@ bool ShouldOverrideRenderOpacity(float opacity, CUIElement *pUIElement)
 
     return false;
 }
-

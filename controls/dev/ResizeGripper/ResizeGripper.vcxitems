@@ -38,6 +38,10 @@
       <Version>RS1</Version>
       <Type>StylePerf2026</Type>
     </Page>
+    <!-- Must be a ThemeResources page, or its keys never reach the generated themeresources.xaml. -->
+    <Page Include="$(MSBuildThisFileDirectory)ResizeGripper_themeresources.xaml">
+      <Type>ThemeResources</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ResizeGripper.idl" />

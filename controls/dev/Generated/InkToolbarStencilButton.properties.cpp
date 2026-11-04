@@ -36,7 +36,7 @@ void InkToolbarStencilButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarStencilButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsProtractorItemVisiblePropertyChanged));
     }
     if (!s_IsRulerItemVisibleProperty)
     {
@@ -47,7 +47,7 @@ void InkToolbarStencilButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarStencilButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsRulerItemVisiblePropertyChanged));
     }
     if (!s_ProtractorProperty)
     {
@@ -58,7 +58,7 @@ void InkToolbarStencilButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarStencilButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkPresenterProtractor>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnProtractorPropertyChanged));
     }
     if (!s_RulerProperty)
     {
@@ -69,7 +69,7 @@ void InkToolbarStencilButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarStencilButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkPresenterRuler>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnRulerPropertyChanged));
     }
     if (!s_SelectedStencilProperty)
     {
@@ -80,7 +80,7 @@ void InkToolbarStencilButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarStencilButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkToolbarStencilKind>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSelectedStencilPropertyChanged));
     }
 }
 
@@ -92,6 +92,46 @@ void InkToolbarStencilButtonProperties::ClearProperties()
     s_RulerProperty = nullptr;
     s_SelectedStencilProperty = nullptr;
     InkToolbarMenuButton::ClearProperties();
+}
+
+void InkToolbarStencilButtonProperties::OnIsProtractorItemVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarStencilButton>();
+    winrt::get_self<InkToolbarStencilButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarStencilButtonProperties::OnIsRulerItemVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarStencilButton>();
+    winrt::get_self<InkToolbarStencilButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarStencilButtonProperties::OnProtractorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarStencilButton>();
+    winrt::get_self<InkToolbarStencilButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarStencilButtonProperties::OnRulerPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarStencilButton>();
+    winrt::get_self<InkToolbarStencilButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarStencilButtonProperties::OnSelectedStencilPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarStencilButton>();
+    winrt::get_self<InkToolbarStencilButton>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarStencilButtonProperties::IsProtractorItemVisible(bool value)

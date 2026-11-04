@@ -4738,7 +4738,7 @@ void DoubleAnimationTests::DeviceLostDuringAnimationWUCFull()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"[Device lost, detach animating object in the same frame, don't crash]");
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
         root->Children->Clear();
     });
 
