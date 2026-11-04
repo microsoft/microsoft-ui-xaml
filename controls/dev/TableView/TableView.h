@@ -1136,6 +1136,7 @@ private:
         uint64_t bulkGeneration,
         bool subtree = false);
     void RaiseGroupStructureChanged();
+    void AnnounceRowExpansionChange(winrt::hstring const& identity);
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
     void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);
