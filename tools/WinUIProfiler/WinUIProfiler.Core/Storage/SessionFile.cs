@@ -120,9 +120,11 @@ public static class SessionFile
         return (lastSeq, completeFromSeq);
     }
 
-    // The first frame drawn on the UI thread with the first stored frame, as the Frames tab's launch line shows; null
-    // while there is none, and once the file has deleted its oldest events to stay within its size limit, since the first
-    // frames may have been among them (the Frames tab then shows no launch line either).
+    // The first tick that drew on the UI thread with the first stored tick, the first of the ticks the Frames tab's launch
+    // line gives (the LaunchSummary view); null while there is none, and once the file has deleted its oldest events to
+    // stay within its size limit, since the first ticks may have been among them (the Frames tab then shows no launch line
+    // either). A tick drew when the thread's next tick has a higher frame number, as in the Ticks view: several ticks can
+    // carry a number, and only the last one draws.
     public static DrawnFrame? ReadFirstDrawnFrame(string path)
     {
         using var connection = Open(path);
@@ -134,12 +136,15 @@ public static class SessionFile
         }
 
         using var command = Command(connection, transaction, """
-            WITH Thread AS (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1)
-            SELECT f.ThreadId, f.FrameNumber, f.EndQpc
-            FROM Frames f JOIN Thread t ON t.ThreadId = f.ThreadId
-            WHERE f.EndQpc IS NOT NULL
-                AND f.FrameNumber < (SELECT MAX(p.FrameNumber) FROM Frames p WHERE p.ThreadId = f.ThreadId)
-            ORDER BY f.FrameId
+            WITH FramesDrawn AS (
+                    SELECT FrameId, ThreadId, FrameNumber, EndQpc,
+                        LEAD(FrameNumber) OVER (PARTITION BY ThreadId ORDER BY FrameId) > FrameNumber AS Drawn
+                    FROM Frames
+                    WHERE ThreadId = (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1))
+            SELECT ThreadId, FrameNumber, EndQpc
+            FROM FramesDrawn
+            WHERE Drawn AND EndQpc IS NOT NULL
+            ORDER BY FrameId
             LIMIT 1
             """);
         using var reader = command.ExecuteReader();
