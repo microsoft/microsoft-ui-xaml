@@ -4,11 +4,14 @@
 using System;
 using Common;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Storage;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -65,6 +68,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var image = (Image)VisualTreeHelper.GetChild(imageIcon, 0);
                 Verify.IsTrue(image.IsLoaded);
             });
+        }
+
+        [TestMethod]
+        public void ImageIconAppDataSourceDoesNotLockFile()
+        {
+            // An image loaded from ms-appdata must not keep its file locked (GitHub #633).
+            const string fileName = "ImageIconAppDataSource.png";
+            var asset = StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/rating_set.png")).AsTask().Result;
+            var file = asset.CopyAsync(ApplicationData.Current.LocalFolder, fileName, NameCollisionOption.ReplaceExisting).AsTask().Result;
+
+            using var opened = new ManualResetEvent(false);
+            BitmapImage bitmap = null;
+            RunOnUIThread.Execute(() =>
+            {
+                bitmap = new BitmapImage(new Uri("ms-appdata:///local/" + fileName));
+                bitmap.ImageOpened += (s, e) => opened.Set();
+                Content = new ImageIcon { Width = 32, Height = 32, Source = bitmap };
+                Content.UpdateLayout();
+            });
+            Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "The ms-appdata image should open.");
+
+            Log.Comment("Overwrite the file while the image is still alive.");
+            File.WriteAllBytes(file.Path, new byte[] { 0 });
+            GC.KeepAlive(bitmap);
         }
     }
 }
