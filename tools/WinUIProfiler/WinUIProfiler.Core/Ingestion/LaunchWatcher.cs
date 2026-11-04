@@ -9,15 +9,28 @@ using WinUIProfiler.Engine.Storage;
 namespace WinUIProfiler.Engine.Ingestion;
 
 // Watches a trace for one process's launch: the kernel's event for its creation, which names the process that created
-// it, its launcher, and the launcher's events from the launcher providers (MarkerProviderSettings.Launcher) that are part
-// of the launch: within LauncherWindow of the creation, and nearer it than the creation of any other process the launcher
-// created, as when File Explorer or a script launches several apps. A process ID can be reused within a trace, so the
-// process's creation is the last one before its first event. The launcher is known for certain only then, so until then
-// the launcher providers' events of every other process are kept: those since LauncherWindow before the creation once it
-// was read, otherwise those of the last LauncherWindow, and at most MaxKept. A launcher's event after the creation waits
-// until the launcher creates another process, or until the trace is far enough past it that a later creation couldn't be
-// nearer, or until Complete. Only a trace with the kernel's process events has the creation, and so the launcher's events.
-// Not thread-safe: TraceEvent calls it on the thread that reads the trace.
+// it, its launcher, and the launcher's events from the launcher providers (MarkerProviderSettings.Launcher) that are
+// part of the launch, those within LauncherWindow of the creation that are:
+// - An event of an activity, when the launcher created the process during the activity and no other process after it
+//   before the activity's stop event. An event with an activity ID, such as ShellExecuteExW/Start and /Stop, is of that
+//   activity; one without is of the activity of its thread's latest event with one, if the activity's start event was
+//   read and its stop event isn't earlier, as AppLaunch_UserClick, which ShellExecuteExW writes on a thread of its own
+//   for Start-Process ms-settings:, a call that creates no process itself. A call that creates a process, such as
+//   ShellExecuteExW, starts up to hundreds of milliseconds before the creation and stops after it, so its start event
+//   can be nearer the launcher's previous creation, as when a script launches apps one after another; and a call can
+//   start a launch whose process another process creates, as File Explorer's for a UWP app, which a Windows service
+//   creates.
+// - A start event of no activity, or whose activity's stop event wasn't read by LauncherWindow after the creation, when
+//   the process was the first the launcher created after it.
+// - Any other event, when it is nearer the creation than the launcher's creation of any other process, as
+//   AppLaunch_UserClick, which File Explorer writes after it creates the process.
+// A process ID can be reused within a trace, so the process's creation is the last one before its first event, and the
+// launcher's events are those its process ID wrote from the launcher's start until its end. The launcher is known for
+// certain only at that first event, so until then the launcher providers' events of every other process are kept for
+// LauncherWindow, at most MaxKept, and the launcher's from LauncherWindow before the creation once it was read. An
+// event whose part in the launch isn't known yet waits for its stop event, the launcher's next creation or its end, or
+// the trace to be far enough past it, or for Complete. Only a trace with the kernel's process events has the creation,
+// and so the launcher's events. Not thread-safe: TraceEvent calls it on the thread that reads the trace.
 internal sealed class LaunchWatcher
 {
     private const int MaxKept = 10_000;
@@ -28,13 +41,24 @@ internal sealed class LaunchWatcher
     private readonly double window = MarkerProviderSettings.LauncherWindow.TotalMilliseconds;
     // The executable name of each process ID, from its latest start.
     private readonly Dictionary<int, string> names = [];
-    // When each process last created another, until the process's first event.
+    // Until the process's first event: when the latest process with each ID started, if the trace has it, and when it
+    // last created another process.
+    private readonly Dictionary<int, double> startedAt = [];
     private readonly Dictionary<int, double> lastCreated = [];
-    private readonly Queue<ProfilerEvent> kept = new();
-    // The launcher's events after the process's creation that its next creation may yet be nearer.
-    private readonly List<ProfilerEvent> waiting = [];
+    // Until the process's first event: the launcher providers' events of every other process of the last
+    // LauncherWindow, and the launcher's from LauncherWindow before the creation.
+    private readonly Queue<LauncherProviderEvent> kept = new();
+    private readonly List<LauncherProviderEvent> launcherKept = [];
+    // The launcher's events whose part in the launch isn't known yet, when each of its activities started and stopped,
+    // and the activity of each of its threads' latest event with an activity ID.
+    private readonly List<LauncherProviderEvent> waiting = [];
+    private readonly Dictionary<Guid, double> starts = [];
+    private readonly Dictionary<Guid, double> stops = [];
+    private readonly Dictionary<int, Guid> threadActivities = [];
     private TraceProcessStart? start;
     private double createdMilliseconds;
+    private double? launcherStartedMilliseconds;
+    private bool launcherEnded;
     // When the launcher created other processes, just before and after this one.
     private double? previousCreatedMilliseconds;
     private double? nextCreatedMilliseconds;
@@ -50,29 +74,36 @@ internal sealed class LaunchWatcher
         this.started = started;
         this.deliver = deliver;
         source.Kernel.ProcessStartGroup += OnProcessStart;
+        source.Kernel.ProcessEndGroup += OnProcessEnd;
     }
 
-    // Call after delivering each of the process's events, with its time. The first time, delivers the launcher's events
-    // kept from LauncherWindow before the process's creation that are part of the launch. They are earlier than that
-    // first event, but come after it, so a session file's times still start from the process's first event.
+    // Call after delivering each event the process wrote, with its time, but not one another process wrote about it,
+    // such as the System process's GPU memory event for an earlier process with its ID. The first time, delivers the
+    // launcher's events kept from LauncherWindow before the process's creation that are part of the launch. They are
+    // earlier than that first event, but come after it, so a session file's times still start from the process's
+    // first event.
     public void ProcessEvent(double milliseconds)
     {
         if (!processSeen)
         {
             processSeen = true;
-            if (start is { } launch)
+            // An activity's stop event can come after its other events among them.
+            for (var index = 0; index < launcherKept.Count; index++)
             {
-                foreach (var profilerEvent in kept)
-                {
-                    if (profilerEvent.ProcessId == launch.LauncherProcessId)
-                    {
-                        Consider(profilerEvent, milliseconds);
-                    }
-                }
+                launcherKept[index] = NoteActivity(launcherKept[index]);
+            }
+
+            foreach (var launcherEvent in launcherKept)
+            {
+                Consider(launcherEvent, milliseconds);
             }
 
             kept.Clear();
             kept.TrimExcess();
+            launcherKept.Clear();
+            launcherKept.TrimExcess();
+            startedAt.Clear();
+            startedAt.TrimExcess();
             lastCreated.Clear();
             lastCreated.TrimExcess();
         }
@@ -83,65 +114,205 @@ internal sealed class LaunchWatcher
     // Call with each event of a launcher provider from another process (XamlEventSubscription.Match's otherProcess).
     public void OtherProcessEvent(TraceEvent data, MarkerProvider marker)
     {
-        var time = data.TimeStampRelativeMSec;
-        if (processSeen)
+        // Once the process's first event was read, only the launcher's events can still be part of the launch.
+        if (processSeen && !IsLaunchers(data.ProcessID, data.TimeStampRelativeMSec))
         {
-            if (start is { } launch && data.ProcessID == launch.LauncherProcessId)
-            {
-                Consider(XamlEventSubscription.Capture(data, XamlProvider.Marker, marker, data.ProcessID), time);
-            }
-
-            Settle(time);
+            Settle(data.TimeStampRelativeMSec);
             return;
         }
 
-        kept.Enqueue(XamlEventSubscription.Capture(data, XamlProvider.Marker, marker, data.ProcessID));
-        var oldest = (start is null ? time : createdMilliseconds) - window;
-        while (kept.Count > MaxKept || (kept.TryPeek(out var first) && first.RelativeMilliseconds < oldest))
+        ReadLauncherProviderEvent(XamlEventSubscription.Capture(data, XamlProvider.Marker, marker, data.ProcessID),
+            data.ActivityID);
+    }
+
+    // Call when the whole trace was read: no later event can change whether the events still waiting are part of the
+    // launch.
+    public void Complete() => Settle(double.PositiveInfinity);
+
+    private void OnProcessStart(ProcessTraceData data)
+    {
+        var name = OfflineEtlSource.ExecutableName(data);
+        if (name is not null)
         {
-            kept.Dequeue();
+            names[data.ProcessID] = name;
+        }
+
+#pragma warning disable CS0618 // The raw QPC timestamp is the clock the process's events are stored with.
+        var qpc = data.TimeStampQPC;
+#pragma warning restore CS0618
+        // A process that was running when the trace started has a rundown event instead, which doesn't say when it
+        // was created.
+        if (data.Opcode == TraceEventOpcode.Start && qpc > 0)
+        {
+            ReadCreation(data.ProcessID, data.ParentID, name, qpc, data.TimeStampRelativeMSec);
         }
     }
 
-    // Call when the whole trace was read: the launcher created no other process nearer the events still waiting.
-    public void Complete()
+    private void OnProcessEnd(ProcessTraceData data)
     {
-        foreach (var profilerEvent in waiting)
+        // Not the rundown event of a process still running when the trace ended.
+        if (data.Opcode == TraceEventOpcode.Stop)
         {
-            deliver(profilerEvent);
+            ReadEnd(data.ProcessID, data.TimeStampRelativeMSec);
         }
-
-        waiting.Clear();
     }
 
-    // Delivers the launcher's event if it is part of the launch, or keeps it waiting while that's not known yet.
-    private void Consider(ProfilerEvent profilerEvent, double now)
+    // A process's creation at time, by the process parentId.
+    private void ReadCreation(int id, int parentId, string? name, long qpc, double time)
     {
-        switch (PartOfLaunch(profilerEvent.RelativeMilliseconds, now))
+        if (!processSeen)
+        {
+            // A new process with this ID: what an earlier one did isn't its.
+            startedAt[id] = time;
+            lastCreated.Remove(id);
+            if (id == processId)
+            {
+                start = new(qpc, name, parentId, names.GetValueOrDefault(parentId));
+                createdMilliseconds = time;
+                launcherStartedMilliseconds = startedAt.TryGetValue(parentId, out var launcherStarted) ? launcherStarted : null;
+                launcherEnded = false;
+                previousCreatedMilliseconds = lastCreated.TryGetValue(parentId, out var previous) ? previous : null;
+                nextCreatedMilliseconds = null;
+                launcherKept.Clear();
+                launcherKept.AddRange(kept.Where(launcherEvent =>
+                    IsLaunchers(launcherEvent.Event.ProcessId, launcherEvent.Event.RelativeMilliseconds)));
+                started?.Invoke(start);
+            }
+
+            lastCreated[parentId] = time;
+        }
+
+        if (start is { } launch && !launcherEnded && time > createdMilliseconds)
+        {
+            if (id == launch.LauncherProcessId)
+            {
+                // A new process with the launcher's ID: the launcher ended, though the trace lost its end event.
+                launcherEnded = true;
+            }
+            else if (parentId == launch.LauncherProcessId)
+            {
+                nextCreatedMilliseconds ??= time;
+            }
+        }
+
+        Settle(time);
+    }
+
+    // A process's end at time. Its ID can then be reused by another process.
+    private void ReadEnd(int id, double time)
+    {
+        if (start is { } launch && id == launch.LauncherProcessId && time >= createdMilliseconds && !launcherEnded)
+        {
+            launcherEnded = true;
+            Settle(time);
+        }
+    }
+
+    // A launcher provider's event from another process, and its activity ID.
+    private void ReadLauncherProviderEvent(ProfilerEvent profilerEvent, Guid activity)
+    {
+        var time = profilerEvent.RelativeMilliseconds;
+        var launcherEvent = new LauncherProviderEvent(profilerEvent, activity);
+        if (!processSeen)
+        {
+            kept.Enqueue(launcherEvent);
+            while (kept.Count > MaxKept || (kept.TryPeek(out var oldest) && oldest.Event.RelativeMilliseconds < time - window))
+            {
+                kept.Dequeue();
+            }
+
+            if (launcherKept.Count < MaxKept && IsLaunchers(profilerEvent.ProcessId, time))
+            {
+                launcherKept.Add(launcherEvent);
+            }
+
+            return;
+        }
+
+        if (IsLaunchers(profilerEvent.ProcessId, time))
+        {
+            Consider(NoteActivity(launcherEvent), time);
+        }
+
+        Settle(time);
+    }
+
+    // Whether an event of process id at time is the launcher's, within LauncherWindow of the creation.
+    private bool IsLaunchers(int id, double time) =>
+        start is { } launch && id == launch.LauncherProcessId && !launcherEnded &&
+        (launcherStartedMilliseconds is not { } launcherStarted || time >= launcherStarted) &&
+        Math.Abs(time - createdMilliseconds) <= window;
+
+    // Notes when the launcher's activity started or stopped, and the activity of its thread's latest event with an
+    // activity ID. Call in the order of the launcher's events. Returns an event without one with that of its thread.
+    private LauncherProviderEvent NoteActivity(LauncherProviderEvent launcherEvent)
+    {
+        var thread = launcherEvent.Event.ThreadId;
+        if (launcherEvent.Activity == Guid.Empty)
+        {
+            return threadActivities.TryGetValue(thread, out var threadActivity)
+                ? launcherEvent with { ThreadActivity = threadActivity }
+                : launcherEvent;
+        }
+
+        threadActivities[thread] = launcherEvent.Activity;
+        switch (launcherEvent.Event.Opcode)
+        {
+            case (int)TraceEventOpcode.Start:
+                starts.TryAdd(launcherEvent.Activity, launcherEvent.Event.RelativeMilliseconds);
+                break;
+            case (int)TraceEventOpcode.Stop:
+                stops.TryAdd(launcherEvent.Activity, launcherEvent.Event.RelativeMilliseconds);
+                break;
+        }
+
+        return launcherEvent;
+    }
+
+    // The launcher's event's activity: its activity ID, or for an event without one, its thread's activity, if that
+    // started and hadn't stopped before the event. Empty when it has none.
+    private Guid ActivityOf(LauncherProviderEvent launcherEvent)
+    {
+        if (launcherEvent.Activity != Guid.Empty)
+        {
+            return launcherEvent.Activity;
+        }
+
+        var threadActivity = launcherEvent.ThreadActivity;
+        return threadActivity != Guid.Empty && starts.ContainsKey(threadActivity) &&
+            (!stops.TryGetValue(threadActivity, out var stop) || stop >= launcherEvent.Event.RelativeMilliseconds)
+            ? threadActivity
+            : Guid.Empty;
+    }
+
+    // Delivers the launcher's event if it is part of the launch, or keeps it waiting while that isn't known yet.
+    private void Consider(LauncherProviderEvent launcherEvent, double now)
+    {
+        switch (PartOfLaunch(launcherEvent, now))
         {
             case true:
-                deliver(profilerEvent);
+                deliver(launcherEvent.Event);
                 break;
             case null:
-                waiting.Add(profilerEvent);
+                waiting.Add(launcherEvent);
                 break;
         }
     }
 
-    // Delivers or drops the waiting events whose launch is known by now.
+    // Delivers or drops the waiting events whose part in the launch is known by now.
     private void Settle(double now)
     {
         var stillWaiting = 0;
         for (var index = 0; index < waiting.Count; index++)
         {
-            var profilerEvent = waiting[index];
-            switch (PartOfLaunch(profilerEvent.RelativeMilliseconds, now))
+            var launcherEvent = waiting[index];
+            switch (PartOfLaunch(launcherEvent, now))
             {
                 case true:
-                    deliver(profilerEvent);
+                    deliver(launcherEvent.Event);
                     break;
                 case null:
-                    waiting[stillWaiting++] = profilerEvent;
+                    waiting[stillWaiting++] = launcherEvent;
                     break;
             }
         }
@@ -149,15 +320,40 @@ internal sealed class LaunchWatcher
         waiting.RemoveRange(stillWaiting, waiting.Count - stillWaiting);
     }
 
-    // Whether the launcher's event at time is part of the process's launch: within LauncherWindow of its creation, and
-    // nearer it than the launcher's creations of other processes; at the same distance, the earlier creation's. Null when
-    // the launcher may still create a process nearer it, now being the trace's time.
-    private bool? PartOfLaunch(double time, double now)
+    // Whether the launcher's event is part of the process's launch (see above), or null while that isn't known yet, now
+    // being the trace's time. At the same distance from two creations, an event is the earlier one's.
+    private bool? PartOfLaunch(LauncherProviderEvent launcherEvent, double now)
     {
+        var time = launcherEvent.Event.RelativeMilliseconds;
         var sinceCreated = time - createdMilliseconds;
-        if (Math.Abs(sinceCreated) > window)
+        var isStart = launcherEvent.Event.Opcode == (int)TraceEventOpcode.Start;
+        if (Math.Abs(sinceCreated) > window || (isStart && sinceCreated > 0))
         {
             return false;
+        }
+
+        var activity = ActivityOf(launcherEvent);
+        if (activity != Guid.Empty)
+        {
+            if (starts.TryGetValue(activity, out var activityStarted) && activityStarted > createdMilliseconds)
+            {
+                return false;
+            }
+
+            if (stops.TryGetValue(activity, out var stop))
+            {
+                return stop >= createdMilliseconds && (nextCreatedMilliseconds is not { } nextCreated || nextCreated > stop);
+            }
+
+            if (!launcherEnded && now <= createdMilliseconds + window)
+            {
+                return null;
+            }
+        }
+
+        if (isStart)
+        {
+            return previousCreatedMilliseconds is not { } previousCreated || previousCreated < time;
         }
 
         if (sinceCreated <= 0)
@@ -170,45 +366,10 @@ internal sealed class LaunchWatcher
             return sinceCreated <= next - time;
         }
 
-        return now - time >= sinceCreated ? true : null;
+        return launcherEnded || now - time >= sinceCreated ? true : null;
     }
 
-    private void OnProcessStart(ProcessTraceData data)
-    {
-        if (OfflineEtlSource.ExecutableName(data) is { } name)
-        {
-            names[data.ProcessID] = name;
-        }
-
-#pragma warning disable CS0618 // The raw QPC timestamp is the clock the process's events are stored with.
-        var qpc = data.TimeStampQPC;
-#pragma warning restore CS0618
-        // A process that was running when the trace started has a rundown event instead, which doesn't say when it
-        // was created.
-        if (data.Opcode != TraceEventOpcode.Start || qpc <= 0)
-        {
-            return;
-        }
-
-        var time = data.TimeStampRelativeMSec;
-        if (!processSeen && data.ProcessID == processId)
-        {
-            start = new(qpc, OfflineEtlSource.ExecutableName(data), data.ParentID, names.GetValueOrDefault(data.ParentID));
-            createdMilliseconds = time;
-            previousCreatedMilliseconds = lastCreated.TryGetValue(data.ParentID, out var previous) ? previous : null;
-            nextCreatedMilliseconds = null;
-            started?.Invoke(start);
-        }
-        else if (start is { } launch && data.ParentID == launch.LauncherProcessId && time > createdMilliseconds)
-        {
-            nextCreatedMilliseconds ??= time;
-        }
-
-        if (!processSeen)
-        {
-            lastCreated[data.ParentID] = time;
-        }
-
-        Settle(time);
-    }
+    // Activity is the event's activity ID, which an activity's start and stop events share; empty when it has none.
+    // ThreadActivity is, for an event without one, the activity of its thread's latest earlier event with one.
+    private readonly record struct LauncherProviderEvent(ProfilerEvent Event, Guid Activity, Guid ThreadActivity = default);
 }

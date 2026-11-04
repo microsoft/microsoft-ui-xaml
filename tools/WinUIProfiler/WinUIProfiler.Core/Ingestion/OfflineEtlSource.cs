@@ -190,7 +190,11 @@ public static class OfflineEtlSource
             XamlEventSubscription.Match(source, id, markers, (data, provider, marker, owner) =>
                 {
                     Deliver(XamlEventSubscription.Capture(data, provider, marker, owner));
-                    launch.ProcessEvent(data.TimeStampRelativeMSec);
+                    // Not an event another process wrote about it, such as the System process's GPU memory event.
+                    if (data.ProcessID == id)
+                    {
+                        launch.ProcessEvent(data.TimeStampRelativeMSec);
+                    }
                 },
                 launch.OtherProcessEvent);
         }

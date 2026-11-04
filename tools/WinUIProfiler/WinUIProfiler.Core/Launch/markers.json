@@ -25,8 +25,9 @@
   // above, or a XAML provider such as Microsoft.UI.Xaml) whose fields have the values in "where", if given. "label" names
   // it; with "labelFrom" instead, the first event with each value of that field is a milestone named by the value.
   // "process" (an executable name, with or without .exe) shows the milestone for that app only. "from": "launcher" takes
-  // the event from the process that launched the app instead: the one nearest the app's creation, within 10 seconds of
-  // it. The timeline's times are from the earliest launcher milestone before the creation, or else from the creation.
+  // the event from the process that launched the app instead: of its events within 10 seconds of the app's creation
+  // that are part of the launch, the one nearest the creation (see "Launcher milestones" in the README). The timeline's
+  // times are from the earliest launcher milestone before the creation, or else from the creation.
   "milestones": [
     // The shell's event for a user's click that launched the app (not written for a launch by UI Automation).
     { "provider": "Microsoft.Windows.AppLifeCycle.UI", "event": "AppLaunch_UserClick", "label": "User click", "from": "launcher" },

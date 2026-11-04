@@ -22,7 +22,8 @@ public enum MilestoneSource
 {
     // The target process.
     App,
-    // The target's launcher, the process that created it, such as File Explorer, a shell or the profiler.
+    // The target's launcher, the process that launched it: the profiler for a launch from the app, or in a trace, the
+    // process that created it, such as File Explorer or a shell.
     Launcher
 }
 

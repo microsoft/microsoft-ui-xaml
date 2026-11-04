@@ -223,7 +223,7 @@ public sealed class TraceReplay : IAsyncDisposable
 
             if (!halted)
             {
-                // The launcher's events that waited for whether it created another process nearer them.
+                // The launcher's events that waited for whether they are part of the launch.
                 launch.Complete();
             }
 
@@ -273,7 +273,11 @@ public sealed class TraceReplay : IAsyncDisposable
 
             lastQpc = profilerEvent.TimestampQpc;
             Post(profilerEvent);
-            launch.ProcessEvent(data.TimeStampRelativeMSec);
+            // Not an event another process wrote about it, such as the System process's GPU memory event.
+            if (data.ProcessID == ProcessId)
+            {
+                launch.ProcessEvent(data.TimeStampRelativeMSec);
+            }
         }
         catch (Exception error)
         {

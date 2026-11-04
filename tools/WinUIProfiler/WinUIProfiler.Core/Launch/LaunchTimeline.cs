@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Globalization;
+using Microsoft.Diagnostics.Tracing;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
 
@@ -40,14 +41,15 @@ public enum LaunchNotes
 // A milestone the session reached: Label, and Definition, the milestone of the configuration it is (for one with
 // LabelFrom, one of its values); when, in milliseconds from the timeline's origin and since the milestone before it; how
 // many events matched (1 for a built-in milestone), and the thread of the first, null for the process's creation. For a
-// launcher milestone (MilestoneSource.Launcher), the events are the launcher's within MarkerProviderSettings.LauncherWindow
-// of the process's creation (in a recorded trace, only those nearer it than the launcher's creation of any other process),
-// and the one nearest the creation marks it.
+// launcher milestone (MilestoneSource.Launcher), the events are the launcher's within
+// MarkerProviderSettings.LauncherWindow of the process's creation (from a recorded trace, those that are part of the
+// launch: LaunchWatcher), but not a start event after the creation, which started something else, as a call that
+// launches the process starts before it; the one nearest the creation marks it.
 public sealed record LaunchMilestone(string Label, MilestoneDefinition Definition, double Milliseconds,
     double? SincePreviousMilliseconds, long Count, int? ThreadId);
 
 // A session's launch timeline: the milestones reached in time order, and those not reached in the configuration's order,
-// without those of a "process" when the session's process name is not known.
+// without those of a "process" when the session's process name is not known, or the launcher's when its launcher is not.
 // RecordingStartMilliseconds is when the recording started, from the origin; null for a recorded trace, which was
 // recording before its process's first event. OriginLabel is the label of the launcher milestone the times are from, for
 // LaunchOrigin.LauncherMilestone; the session names the launcher (SessionFileInfo.LauncherProcessId).
@@ -147,7 +149,7 @@ public sealed class LaunchTimelineReader
                         {
                             var near = events
                                 .Select(launcherEvent => (Milliseconds: snapshot.Milliseconds(launcherEvent.Qpc), Event: launcherEvent))
-                                .Where(timed => Math.Abs(timed.Milliseconds - launched) <= LauncherWindow)
+                                .Where(timed => PartOfLaunch(timed.Milliseconds, timed.Event.Start, launched))
                                 .ToArray();
                             if (near.Length > 0)
                             {
@@ -166,8 +168,10 @@ public sealed class LaunchTimelineReader
                     break;
             }
 
-            // Another app's milestone isn't missing when the process's name, and so its app, isn't known.
-            if (milestones.Count == count && (definition.Process is null || session.ProcessName is not null))
+            // Another app's milestone isn't missing when the process's name, and so its app, isn't known, nor a launcher
+            // milestone when the launcher isn't, as for an attach.
+            if (milestones.Count == count && (definition.Process is null || session.ProcessName is not null) &&
+                (definition.From != MilestoneSource.Launcher || session.LauncherProcessId is not null))
             {
                 notReached.Add(definition);
             }
@@ -260,7 +264,8 @@ public sealed class LaunchTimelineReader
             var qpc = profilerEvent.TimestampQpc;
             if (source == MilestoneSource.Launcher)
             {
-                foundLauncher[key] = (foundLauncher.GetValueOrDefault(key) ?? []).Add(new(qpc, profilerEvent.ThreadId));
+                foundLauncher[key] = (foundLauncher.GetValueOrDefault(key) ?? []).Add(new(qpc, profilerEvent.ThreadId,
+                    profilerEvent.Opcode == (int)TraceEventOpcode.Start));
                 continue;
             }
 
@@ -271,7 +276,14 @@ public sealed class LaunchTimelineReader
         }
     }
 
+    // Whether the launcher's event at milliseconds, a start event or not, can be part of the launch of the process it
+    // created at launched: within LauncherWindow of the creation, and not a start event after it, such as the profiler's
+    // ShellExecuteExW/Start when Edit markers opens the configuration.
+    private static bool PartOfLaunch(double milliseconds, bool start, double launched) =>
+        Math.Abs(milliseconds - launched) <= LauncherWindow && !(start && milliseconds > launched);
+
     private readonly record struct Reached(long Qpc, int ThreadId, long Count);
 
-    private readonly record struct LauncherEvent(long Qpc, int ThreadId);
+    // Start: whether it is a start event.
+    private readonly record struct LauncherEvent(long Qpc, int ThreadId, bool Start);
 }
