@@ -3482,6 +3482,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         Window_MaxWidth = 2472,
         Window_MinHeight = 2473,
         Window_MinWidth = 2474,
+        Image_CornerRadius = 2475,
     }
 
     // Define the stable XBF event indices
@@ -5622,6 +5623,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.GradientStopCollection_ContentProperty, new XamlPropertyInfo("Microsoft.UI.Xaml.Media.GradientStopCollection.ContentProperty", StableXbfTypeIndex.GradientStop, StableXbfTypeIndex.GradientStopCollection, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.HubSectionCollection_ContentProperty, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.HubSectionCollection.ContentProperty", StableXbfTypeIndex.DependencyObject, StableXbfTypeIndex.HubSectionCollection, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.IconElement_Foreground, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.IconElement.Foreground", StableXbfTypeIndex.Brush, StableXbfTypeIndex.IconElement, XamlPropertyFlags.IsVisualTreeProperty) },
+            { StableXbfPropertyIndex.Image_CornerRadius, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Image.CornerRadius", StableXbfTypeIndex.CornerRadius, StableXbfTypeIndex.Image, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Image_NineGrid, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Image.NineGrid", StableXbfTypeIndex.Thickness, StableXbfTypeIndex.Image, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Image_Source, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Image.Source", StableXbfTypeIndex.ImageSource, StableXbfTypeIndex.Image, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.Image_Stretch, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Image.Stretch", StableXbfTypeIndex.Stretch, StableXbfTypeIndex.Image, XamlPropertyFlags.None) },

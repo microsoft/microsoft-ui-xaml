@@ -449,6 +449,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             TEST_METHOD(DecodeToRenderSizeUnderCollapsedSubtree)
 
+            BEGIN_TEST_METHOD(CornerRadius)
+                TEST_METHOD_PROPERTY(L"Description", L"Image.CornerRadius clips the visible image with a rounded corner clip.")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            END_TEST_METHOD()
+
         private:
             void BaseImageTestEngineInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering rendering);
             void DecodePixelWidthAndHeightInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering rendering);

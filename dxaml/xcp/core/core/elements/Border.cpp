@@ -795,6 +795,12 @@ bool CBorder::HitTestRoundedCornerClipImpl(
     actualBounds.Width  = element->GetActualWidth();
     actualBounds.Height = element->GetActualHeight();
 
+    // Match the cropped Image clip in HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
+    if (element->OfTypeByIndex<KnownTypeIndex::Image>() && element->HasLayoutClip())
+    {
+        IntersectRect(&actualBounds, &element->LayoutClipGeometry->m_rc);
+    }
+
     IFCFAILFAST(CBorder::CreateHitTestGeometrySink(target, 0.25f, nullptr, hitTestSink.ReleaseAndGetAddressOf()));
 
     IFCFAILFAST(CGeometryBuilder::DrawRoundedCornersRectangle(hitTestSink, actualBounds, element->GetCornerRadius(), nullptr, FALSE));

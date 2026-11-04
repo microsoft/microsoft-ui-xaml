@@ -2518,6 +2518,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Guids(ClassGuid = "c4d89a08-d1fc-4c96-9e52-8033e4803cf2")]
     [CodeGen(partial: true)]
     [NativeName("CImage")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public sealed class Image
      : Microsoft.UI.Xaml.FrameworkElement
     {
@@ -2549,6 +2550,16 @@ namespace Microsoft.UI.Xaml.Controls
         [RenderDirtyFlagClassName("CUIElement")]
         [RenderDirtyFlagMethodName("NWSetContentDirty")]
         public Microsoft.UI.Xaml.Thickness NineGrid
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [NativeStorageType(ValueType.valueCornerRadius)]
+        [RenderDirtyFlagClassName("CUIElement")]
+        [RenderDirtyFlagMethodName("NWSetContentDirty")]
+        public Microsoft.UI.Xaml.CornerRadius CornerRadius
         {
             get;
             set;

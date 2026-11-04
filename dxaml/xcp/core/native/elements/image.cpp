@@ -310,3 +310,10 @@ _Check_return_ HRESULT CImage::GetAlphaMask(
 
     return S_OK;
 }
+
+XCORNERRADIUS CImage::GetCornerRadius() const
+{
+    CValue result;
+    VERIFYHR(GetValueByIndex(KnownPropertyIndex::Image_CornerRadius, &result));
+    return *(result.AsCornerRadius());
+}

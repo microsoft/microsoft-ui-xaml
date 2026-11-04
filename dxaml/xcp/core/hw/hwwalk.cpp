@@ -1683,8 +1683,8 @@ HWWalk::PopupRenderChild(
                 {
                     // CListViewBaseItemChrome deriving from CContentPresenter, ListViewItemPresenter/GridViewItemPresenter can get a CornerRadius.
                     // The CListViewBaseItemChrome's inner/outer borders and backplate apply the CornerRadius instead of the parent ContentPresenter
-                    // so the BorderLikeElementPostChildrenRender call is skipped.
-                    ASSERT(typeIndex == KnownTypeIndex::ListViewItemPresenter || typeIndex == KnownTypeIndex::GridViewItemPresenter);
+                    // so the BorderLikeElementPostChildrenRender call is skipped. Image has no border to draw on top of its content.
+                    ASSERT(typeIndex == KnownTypeIndex::ListViewItemPresenter || typeIndex == KnownTypeIndex::GridViewItemPresenter || typeIndex == KnownTypeIndex::Image);
                 }
             }
             else

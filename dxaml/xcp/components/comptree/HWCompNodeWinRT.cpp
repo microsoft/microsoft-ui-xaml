@@ -3169,9 +3169,18 @@ void HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual(_In_ DCompTreeHost* dcom
         ixp::IVisual* roundedCornerClipVisual = EnsureBottomClipVisual(dcompTreeHost, BOTTOMCLIP_RoundedCorners, s_roundedCornerClipVisualTag);
         DCompTreeHost::SetTagIfEnabled(roundedCornerClipVisual, VisualDebugTags::CompNode_RoundedCornerClipVisual);
 
+        XRECTF bounds = { 0.0f, 0.0f, m_pUIElementNoRef->GetActualWidth(), m_pUIElementNoRef->GetActualHeight() };
+
+        // An Image's render size is its stretched source, which its layout clip can crop (e.g. Stretch="UniformToFill").
+        // Round the visible part instead.
+        if (targetElement->OfTypeByIndex<KnownTypeIndex::Image>() && targetElement->HasLayoutClip())
+        {
+            IntersectRect(&bounds, &targetElement->LayoutClipGeometry->m_rc);
+        }
+
         wfn::Vector2 size;
-        size.X = m_pUIElementNoRef->GetActualWidth();
-        size.Y = m_pUIElementNoRef->GetActualHeight();
+        size.X = bounds.Width;
+        size.Y = bounds.Height;
 
         // Get a RectangleClip for this visual, creating if necessary.
         wrl::ComPtr<ixp::ICompositionClip> clip;
@@ -3193,10 +3202,10 @@ void HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual(_In_ DCompTreeHost* dcom
 
         // Propagate the rounded corner clip information into the RectangleClip.
         // Note carefully that RectangleClip is not an InsetClip, its size is "absolute".
-        IFCFAILFAST(rectangleClip->put_Left(0));
-        IFCFAILFAST(rectangleClip->put_Top(0));
-        IFCFAILFAST(rectangleClip->put_Right(size.X));
-        IFCFAILFAST(rectangleClip->put_Bottom(size.Y));
+        IFCFAILFAST(rectangleClip->put_Left(bounds.X));
+        IFCFAILFAST(rectangleClip->put_Top(bounds.Y));
+        IFCFAILFAST(rectangleClip->put_Right(bounds.X + bounds.Width));
+        IFCFAILFAST(rectangleClip->put_Bottom(bounds.Y + bounds.Height));
 
         ASSERT(targetElement->OfTypeByIndex<KnownTypeIndex::FrameworkElement>());
         CFrameworkElement* frameworkElement = static_cast<CFrameworkElement*>(targetElement);

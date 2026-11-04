@@ -364,6 +364,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy ILayoutStrategy;
     typedef ABI::Microsoft::UI::Xaml::Controls::IListViewBasePrivate IListViewBasePrivate;
     typedef ABI::Microsoft::UI::Xaml::Controls::IImage IImage;
+    typedef ABI::Microsoft::UI::Xaml::Controls::IImageFeature_ExperimentalApi IImageFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenu IMenu;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuPresenter IMenuPresenter;
     typedef ABI::Microsoft::UI::Xaml::Controls::INavigate INavigate;

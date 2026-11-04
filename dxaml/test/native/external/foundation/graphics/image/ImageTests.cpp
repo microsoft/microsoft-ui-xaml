@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -19,6 +19,7 @@
 #include <robuffer.h>
 #include <MUX-ETWEvents.h>
 #include <TestComparisonGuards.h>
+#include "VisualDebugTags.h"
 
 #undef GetClassName // Conflicts with automation peer method of the same name
 
@@ -1784,6 +1785,91 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
     // This has a visual despite the bug
     wh->GetElementRenderedVisuals(workaroundBorder, visuals2);
     VERIFY_IS_TRUE(visuals2->Size == 1);
+}
+
+void ImageTests::CornerRadius()
+{
+    TestCleanupWrapper cleanup;
+    auto wh = TestServices::WindowHelper;
+
+    Microsoft::UI::Xaml::Controls::Image^ image;
+    Microsoft::UI::Xaml::Controls::Image^ croppedImage;
+    Microsoft::UI::Xaml::Controls::Image^ centeredImage;
+
+    RunOnUIThread([&]()
+    {
+        auto root = safe_cast<StackPanel^>(XamlReader::Load(
+            L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+            L"    <Image Width='100' Height='100' Stretch='Fill' CornerRadius='8' />"
+            L"    <Image Width='48' Height='48' Stretch='UniformToFill' CornerRadius='24' />"
+            L"    <Grid Width='48' Height='48'>"
+            L"        <Image Stretch='UniformToFill' HorizontalAlignment='Center' CornerRadius='24' />"
+            L"    </Grid>"
+            L"</StackPanel>"));
+
+        image = safe_cast<Microsoft::UI::Xaml::Controls::Image^>(root->Children->GetAt(0));
+        image->Source = CreateSolidColorWriteableBitmap(10, 10, 0xFFFF0000);
+
+        // A 2:1 source stretched to fill 48x48 renders at 96x48 and is cropped by the layout clip.
+        croppedImage = safe_cast<Microsoft::UI::Xaml::Controls::Image^>(root->Children->GetAt(1));
+        croppedImage->Source = CreateSolidColorWriteableBitmap(20, 10, 0xFFFF0000);
+
+        // Centered in its 48x48 cell, the visible part of the 96x48 render starts at x=24.
+        centeredImage = safe_cast<Microsoft::UI::Xaml::Controls::Image^>(safe_cast<Grid^>(root->Children->GetAt(2))->Children->GetAt(0));
+        centeredImage->Source = CreateSolidColorWriteableBitmap(20, 10, 0xFFFF0000);
+
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Rounded corner clip on the image.");
+        VisualTreeVerifier^ verifier = VisualTreeVerifier::CreateFromElement(image);
+        verifier
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_PrimaryVisual))
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_RoundedCornerClipVisual));
+        verifier->VerifyRoundedCornerClip(0, 0, 100, 100, 8);
+
+        LOG_OUTPUT(L"> Rounded corner clip on the visible part of a cropped image.");
+        VisualTreeVerifier^ croppedVerifier = VisualTreeVerifier::CreateFromElement(croppedImage);
+        croppedVerifier
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_PrimaryVisual))
+            ->WalkToChildAtIndex(0, 1) // Layout clip visual
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_RoundedCornerClipVisual));
+        croppedVerifier->VerifyRoundedCornerClip(0, 0, 48, 48, 24);
+
+        VisualTreeVerifier^ centeredVerifier = VisualTreeVerifier::CreateFromElement(centeredImage);
+        centeredVerifier
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_PrimaryVisual))
+            ->WalkToChildAtIndex(0, 1) // Layout clip visual
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_RoundedCornerClipVisual));
+        centeredVerifier->VerifyRoundedCornerClip(24, 0, 72, 48, 24);
+
+        image->CornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(16);
+        image->Width = 200;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Rounded corner clip follows CornerRadius and size changes.");
+        VisualTreeVerifier^ verifier = VisualTreeVerifier::CreateFromElement(image);
+        verifier
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_PrimaryVisual))
+            ->WalkToTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_RoundedCornerClipVisual));
+        verifier->VerifyRoundedCornerClip(0, 0, 200, 100, 16);
+
+        image->CornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(0);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> A zero CornerRadius no longer needs a comp node.");
+        VisualTreeVerifier^ verifier = VisualTreeVerifier::CreateFromElement(image);
+        verifier->VerifyNoTaggedChild(static_cast<UINT>(VisualDebugTags::CompNode_PrimaryVisual));
+    });
 }
 
 void ImageTests::DontReloadImageFromStream()

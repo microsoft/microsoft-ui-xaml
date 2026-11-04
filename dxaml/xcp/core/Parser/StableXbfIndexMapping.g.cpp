@@ -4483,6 +4483,7 @@ namespace Parser
         KnownPropertyIndex::Window_MaxWidth,
         KnownPropertyIndex::Window_MinHeight,
         KnownPropertyIndex::Window_MinWidth,
+        KnownPropertyIndex::Image_CornerRadius,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -5374,6 +5375,7 @@ namespace Parser
         StableXbfPropertyIndex::GradientStopCollection_ContentProperty,
         StableXbfPropertyIndex::HubSectionCollection_ContentProperty,
         StableXbfPropertyIndex::IconElement_Foreground,
+        StableXbfPropertyIndex::Image_CornerRadius,
         StableXbfPropertyIndex::Image_NineGrid,
         StableXbfPropertyIndex::Image_Source,
         StableXbfPropertyIndex::Image_Stretch,
