@@ -4387,6 +4387,9 @@ bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
     return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi), true /* commitPixelWidth */);
 }
 
+// Host-driven cancels: Escape, and the table's Unloaded. The table's Unloaded is dispatched before
+// the gripper's, so a removed table reverts the drag even if the app goes idle between the two; the
+// gripper's later Unloaded then finds no drag. Idempotent - EndDrag no-ops when no drag is in flight.
 void TableView::CancelColumnResizeDrag()
 {
     auto const state = m_activeColumnResizeDrag;
