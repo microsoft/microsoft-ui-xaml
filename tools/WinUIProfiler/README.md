@@ -837,20 +837,23 @@ says which, and names the launcher.
   - An event with an activity ID, as the start and stop events of
     `ShellExecuteExW` and `TryActivateDesktopAppXApplication` have, counts
     when the launcher created the process during the activity, and no other
-    process after it before the activity's stop event. Such a call starts up
-    to hundreds of milliseconds before the creation, so its start can be
-    nearer the launcher's previous creation; and a call that created no
-    process, as when the launch's process is created by another process,
-    doesn't count for a process the launcher creates later.
+    process after it before the activity's stop event, when that is at most
+    10 seconds after the creation. Such a call starts up to hundreds of
+    milliseconds before the creation, so its start can be nearer the
+    launcher's previous creation; and a call that created no process, as
+    when the launch's process is created by another process, doesn't count
+    for a process the launcher creates later.
   - An event without an activity ID counts as an event of the activity its
     thread was in: that of the thread's latest event with an activity ID,
-    when the trace has the activity's start event and the activity hadn't
-    stopped before it. `ShellExecuteExW` writes `AppLaunch_UserClick` without
-    one on a thread of its own, as for PowerShell's
-    `Start-Process ms-settings:`, a call that creates no process itself, so
-    that click doesn't count for a process PowerShell creates later.
-  - A start event of no activity, or whose stop event the trace doesn't have,
-    counts when the process was the first the launcher created after it.
+    when the activity's start event is one of the launcher's events within 10
+    seconds of the creation and the activity hadn't stopped before it.
+    `ShellExecuteExW` writes `AppLaunch_UserClick` without one on a thread of
+    its own, as for PowerShell's `Start-Process ms-settings:`, a call that
+    creates no process itself, so that click doesn't count for a process
+    PowerShell creates later.
+  - A start event of no activity, or whose stop event is more than 10 seconds
+    after the creation or not in the trace, counts when the process was the
+    first the launcher created after it.
   - Any other event counts when it is nearer the creation than the launcher's
     creation of any other process.
   - The launcher is the process with its ID from its start until its end, so
