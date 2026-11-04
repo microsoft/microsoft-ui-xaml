@@ -95,6 +95,7 @@ void NavigationViewItem::OnApplyTemplate()
     winrt::IControlProtected controlProtected = *this;
     m_helper.Init(controlProtected);
 
+    winrt::FlyoutBase childrenFlyout{ nullptr };
     if (auto rootGrid = GetTemplateChildT<winrt::Grid>(c_rootGrid, controlProtected))
     {
         m_rootGrid.set(rootGrid);
@@ -102,12 +103,8 @@ void NavigationViewItem::OnApplyTemplate()
         if (auto flyoutBase = winrt::FlyoutBase::GetAttachedFlyout(rootGrid))
         {
             m_flyoutClosingRevoker = flyoutBase.Closing(winrt::auto_revoke, { this, &NavigationViewItem::OnFlyoutClosing });
+            childrenFlyout = flyoutBase;
         }
-        m_childrenFlyoutBackgroundHelper.Attach(winrt::FlyoutBase::GetAttachedFlyout(rootGrid));
-    }
-    else
-    {
-        m_childrenFlyoutBackgroundHelper.Attach(nullptr);
     }
 
     HookInputEvents(controlProtected);
@@ -128,6 +125,7 @@ void NavigationViewItem::OnApplyTemplate()
     }
 
     m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
+    m_childrenFlyoutBackgroundHelper.Attach(childrenFlyout, m_flyoutContentGrid.get());
 
     m_appliedTemplate = true;
 

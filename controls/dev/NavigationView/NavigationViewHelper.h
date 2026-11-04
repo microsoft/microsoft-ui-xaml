@@ -55,9 +55,10 @@ private:
 // Applies a NavigationView flyout background key (NavigationViewItemChildrenMenuFlyoutBackground or
 // TopNavigationViewOverflowMenuBackground) to the flyout's FlyoutPresenter.Background.
 // The template carries the key as {ThemeResource} on the flyout content's Tag, so the framework resolves it from the
-// owner's resource scope and re-resolves it on theme/high contrast changes. The default value is a fully transparent
-// SolidColorBrush, which means "not customized": the presenter then keeps FlyoutPresenterBackground from its default
-// style, so existing app overrides of that key keep working.
+// owner's resource scope and re-resolves it on theme/high contrast changes. A second element in the flyout carries the
+// matching "...Default" key, a StaticResource alias that always resolves to NavigationView's own default instance.
+// When both are the same instance the key isn't customized and the presenter keeps FlyoutPresenterBackground from its
+// default style (so app overrides of that key keep working); any other brush, including a transparent one, replaces it.
 class NavigationViewFlyoutBackgroundHelper
 {
 public:
@@ -65,13 +66,15 @@ public:
     {
     }
 
-    void Attach(const winrt::FlyoutBase& flyoutBase)
+    void Attach(const winrt::FlyoutBase& flyoutBase, const winrt::FrameworkElement& defaultValueCarrier)
     {
         m_flyoutOpeningRevoker.revoke();
         m_flyoutOpenedRevoker.revoke();
         m_contentTagChangedRevoker.revoke();
+        m_defaultTagChangedRevoker.revoke();
         m_appliedBackground.set(nullptr);
         m_flyout.set(flyoutBase.try_as<winrt::Flyout>());
+        m_defaultValueCarrier.set(defaultValueCarrier);
 
         if (auto const flyout = m_flyout.get())
         {
@@ -80,6 +83,11 @@ public:
             if (auto const content = flyout.Content().try_as<winrt::FrameworkElement>())
             {
                 m_contentTagChangedRevoker = RegisterPropertyChanged(content, winrt::FrameworkElement::TagProperty(),
+                    [this](auto const&, auto const&) { Apply(); });
+            }
+            if (defaultValueCarrier)
+            {
+                m_defaultTagChangedRevoker = RegisterPropertyChanged(defaultValueCarrier, winrt::FrameworkElement::TagProperty(),
                     [this](auto const&, auto const&) { Apply(); });
             }
         }
@@ -96,7 +104,9 @@ public:
         }
 
         auto const background = content.Tag().try_as<winrt::Brush>();
-        if (IsCustomBackground(background))
+        auto const defaultValueCarrier = m_defaultValueCarrier.get();
+        auto const defaultBackground = defaultValueCarrier ? defaultValueCarrier.Tag() : nullptr;
+        if (background && background != defaultBackground)
         {
             if (presenter.Background() != background)
             {
@@ -116,19 +126,6 @@ public:
     }
 
 private:
-    static bool IsCustomBackground(const winrt::Brush& brush)
-    {
-        if (!brush)
-        {
-            return false;
-        }
-        if (auto const solidBrush = brush.try_as<winrt::SolidColorBrush>())
-        {
-            return solidBrush.Color().A != 0;
-        }
-        return true;
-    }
-
     static winrt::FlyoutPresenter FindFlyoutPresenter(const winrt::FrameworkElement& content)
     {
         if (!content)
@@ -151,10 +148,12 @@ private:
 
     const ITrackerHandleManager* m_owner;
     tracker_ref<winrt::Flyout> m_flyout{ m_owner };
+    tracker_ref<winrt::FrameworkElement> m_defaultValueCarrier{ m_owner };
     tracker_ref<winrt::Brush> m_appliedBackground{ m_owner };
     winrt::FlyoutBase::Opening_revoker m_flyoutOpeningRevoker{};
     winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
     PropertyChanged_revoker m_contentTagChangedRevoker{};
+    PropertyChanged_revoker m_defaultTagChangedRevoker{};
 };
 
 inline constexpr wstring_view c_OnLeftNavigationReveal = L"OnLeftNavigationReveal"sv;

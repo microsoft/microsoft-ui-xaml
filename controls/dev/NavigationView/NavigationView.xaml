@@ -261,7 +261,7 @@
                         </Flyout.FlyoutPresenterStyle>
                         <controls:ItemsRepeaterScrollHost Tag="{ThemeResource TopNavigationViewOverflowMenuBackground}">
                           <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <controls:ItemsRepeater AutomationProperties.AccessibilityView="Content" x:Name="TopNavMenuItemsOverflowHost">
+                            <controls:ItemsRepeater AutomationProperties.AccessibilityView="Content" x:Name="TopNavMenuItemsOverflowHost" Tag="{ThemeResource TopNavigationViewOverflowMenuBackgroundDefault}">
                               <controls:ItemsRepeater.Layout>
                                 <controls:StackLayout />
                               </controls:ItemsRepeater.Layout>
@@ -490,7 +490,7 @@
                   </Style>
                 </Flyout.FlyoutPresenterStyle>
                 <Grid x:Name="FlyoutRootGrid" Tag="{ThemeResource NavigationViewItemChildrenMenuFlyoutBackground}">
-                  <Grid x:Name="FlyoutContentGrid" />
+                  <Grid x:Name="FlyoutContentGrid" Tag="{ThemeResource NavigationViewItemChildrenMenuFlyoutBackgroundDefault}" />
                 </Grid>
               </Flyout>
             </FlyoutBase.AttachedFlyout>
