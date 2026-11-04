@@ -236,6 +236,8 @@ private:
         bool increase
         );
 
+    void TraceSurfaceInit(DXGI_FORMAT format);
+
     _Check_return_ HRESULT CopySubresource(
         _In_ const XRECT& destRect,
         _In_ SystemMemoryBits *pSource
@@ -367,4 +369,3 @@ private:
     IDXGISurface *m_pDxgiSurface;
     XUINT32 m_stride;
 };
-

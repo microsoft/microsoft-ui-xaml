@@ -70,6 +70,12 @@ cache from the machine (e.g. `C:\Users\alias\.nuget\packages`). This is importan
 being cached globally since that can cause issues. It does mean that ALL the nuget packages that this project depends on 
 will get cached here, which is a little redundant, but it is a worthwhile trade-off.
 
+> [!NOTE]
+> Setting `NUGET_PACKAGES` is not supported for this fast inner-loop workflow and will cause problems with local
+> package-cache isolation. It overrides `globalPackagesFolder`, so a shared/global `NUGET_PACKAGES` location bypasses
+> the app's local `packages` folder and causes stale cached bits to be reused (NuGet treats the fixed `3.0.0-dev`
+> version as immutable). In cmd.exe, check with `set NUGET_PACKAGES`; if set, clear it and restart Visual Studio.
+
 ### Update the Project Target Platform (e.g. to x64)
 Open the .sln in Visual Studio again. 
 
@@ -205,4 +211,3 @@ cached versions of the package intact.
 
 Now when you build, Visual Studio will pick up the new local WinUI component package from your local repo and unpack it into the local
 package cache again so you can start using the updated build.
-

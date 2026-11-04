@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Reflection;
 using System.Xaml;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
@@ -11,7 +12,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public XamlType OwnerType { get; }
 
         public DependencyPropertyStep(string name, XamlType valueType, BindPathStep parent, ApiInformation apiInformation)
-            : base(name, valueType, parent, apiInformation)
+            : this(name, valueType, parent, apiInformation, null)
+        {
+        }
+
+        public DependencyPropertyStep(string name, XamlType valueType, BindPathStep parent, ApiInformation apiInformation, PropertyInfo propertyInfo)
+            : base(name, valueType, parent, apiInformation, propertyInfo)
         {
             // Determie OwnerType based on who declares the property
             // (it may be a base class, so can't just take parent.ValueType)
@@ -31,7 +37,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
 
         public DependencyPropertyStep(string name, XamlType valueType, XamlType ownerType, BindPathStep parent, ApiInformation apiInformation)
-            : base(name, valueType, parent, apiInformation)
+            : base(name, valueType, parent, apiInformation, null)
         {
             OwnerType = ownerType;
         }

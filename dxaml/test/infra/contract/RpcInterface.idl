@@ -114,4 +114,6 @@ interface RpcInterface
     HRESULT RpcTerminateProcess([in, string] const WCHAR* processName);
 
     HRESULT RpcSetDpi([in] LUID displayAdapterId, [in] unsigned int DisplayAdapterTargetId, [in] int newDpi, [out, optional] int* oldDpi);
+
+    HRESULT RpcTraceConsumerBeginCountingForProcess([in] unsigned int processId, [in] __int64 startTimestamp);
 }

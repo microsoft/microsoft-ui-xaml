@@ -26,7 +26,7 @@ namespace MultipleViewsTestbed
 
         public MainPage()
         {
-            Window.Current.SizeChanged += Current_SizeChanged;
+            (Application.Current as App).MainWindow.SizeChanged += Current_SizeChanged;
             this.LoadCorrectXamlFile();
         }
 
@@ -38,7 +38,7 @@ namespace MultipleViewsTestbed
         private void LoadCorrectXamlFile()
         {
             // Figure out which file we want, do nothing if we've already chosen that file
-            string correctFilename = (Window.Current.Bounds.Width > Window.Current.Bounds.Height) ? "MainPage.xaml" : "MainPage.Portrait.xaml";
+            string correctFilename = ((Application.Current as App).MainWindow.Bounds.Width > (Application.Current as App).MainWindow.Bounds.Height) ? "MainPage.xaml" : "MainPage.Portrait.xaml";
             if (correctFilename == this.filename)
             {
                 return;

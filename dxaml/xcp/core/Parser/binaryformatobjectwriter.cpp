@@ -1744,9 +1744,15 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // A deferred template can retain its source only in the saved XAML resource URI.
+            auto sourceUri = m_spContext->get_BaseUri();
+            if (!sourceUri)
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                sourceUri = m_spContext->get_XamlResourceUri();
+            }
+            if (sourceUri)
+            {
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(staticResourceKey, currentUri));
@@ -1833,9 +1839,15 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // A deferred template can retain its source only in the saved XAML resource URI.
+            auto sourceUri = m_spContext->get_BaseUri();
+            if (!sourceUri)
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                sourceUri = m_spContext->get_XamlResourceUri();
+            }
+            if (sourceUri)
+            {
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(themeResourceKey, currentUri));

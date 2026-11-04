@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ModernCollectionBasePanel.g.h"
 #include "UIElementCollection.g.h"
 
@@ -338,11 +339,11 @@ void ModernCollectionBasePanel::ContainerManager::UpdateDataIndexForFirstValidEl
 // that it is realized.
 _Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::PlaceInValidElements(_In_ xaml_controls::ElementType type, _In_ INT32 dataIndex, _In_ const ctl::ComPtr<IUIElement>& spElement)
 {
-    TracePlaceElementBegin(dataIndex);
+    XamlTelemetry::PlaceElementBegin(spElement ? spElement.Cast<UIElement>()->GetHandle() : nullptr, dataIndex);
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
-        TracePlaceElementEnd();
+        XamlTelemetry::PlaceElementEnd(spElement ? spElement.Cast<UIElement>()->GetHandle() : nullptr);
     });
 
     ctl::WeakRefPtr weakRef;

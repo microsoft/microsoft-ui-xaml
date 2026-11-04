@@ -451,6 +451,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfoBar", "InfoBar", "{1AD0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoBar", "dev\InfoBar\InfoBar.vcxitems", "{CCC102B7-F5EF-479D-94F1-008D189448B1}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_APITests", "dev\InfoBar\APITests\InfoBar_APITests.shproj", "{7B3C9D1E-4A52-4E8F-9C6D-2F1A8E5B0D37}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_InteractionTests", "dev\InfoBar\InteractionTests\InfoBar_InteractionTests.shproj", "{F470A64E-780E-45AA-ABB7-73A8734E51D7}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_TestUI", "dev\InfoBar\TestUI\InfoBar_TestUI.shproj", "{32DFAF1E-C2EC-4C52-A4D8-B3A3946242B4}"
@@ -908,6 +910,7 @@ Global
 		{D6DF4AB9-FACC-4E51-8C57-6B1F96919365} = {93FAB536-1139-4FD1-B0BF-97C0C6FAB378}
 		{1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{CCC102B7-F5EF-479D-94F1-008D189448B1} = {1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9}
+		{7B3C9D1E-4A52-4E8F-9C6D-2F1A8E5B0D37} = {1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9}
 		{F470A64E-780E-45AA-ABB7-73A8734E51D7} = {1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9}
 		{32DFAF1E-C2EC-4C52-A4D8-B3A3946242B4} = {1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9}
 		{41F0100B-9131-4E80-9F2B-671EEAE4CF32} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
@@ -1156,6 +1159,7 @@ Global
 		dev\AnimatedIcon\AnimatedIcon.vcxitems*{f1c8a5a1-b1b0-4095-8849-e550fcf2ebf6}*SharedItemsImports = 9
 		dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems*{f30fe0d3-2e44-405e-8519-ec3ab098c41f}*SharedItemsImports = 13
 		dev\MapControl\APITests\MapControl_APITests.projitems*{f350d71a-a980-4d63-a38a-8a2035dc4ef2}*SharedItemsImports = 13
+		dev\InfoBar\APITests\InfoBar_APITests.projitems*{7b3c9d1e-4a52-4e8f-9c6d-2f1a8e5b0d37}*SharedItemsImports = 13
 		dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems*{f470a64e-780e-45aa-abb7-73a8734e51d7}*SharedItemsImports = 13
 		dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.projitems*{f55ab8bf-f828-4a2e-bcdf-68f22aed35c3}*SharedItemsImports = 13
 		dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems*{f601284a-00c1-49f9-99b3-70d45585f784}*SharedItemsImports = 13

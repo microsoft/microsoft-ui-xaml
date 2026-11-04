@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+    <CsWinRTComponent>true</CsWinRTComponent>
+    <UseWinUI>true</UseWinUI>
+    <!-- Enabling Single-project MSIX Packaging allows the project to be built using `dotnet build` -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Build C#/WinRT components per architecture so the staged WinRT.Host.dll matches native
+         consumers. -->
+    <Platforms>x86;x64;ARM64;ARM64EC</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
+
+  <!-- Repair C#/WinRT-authored WinMD TypeRef scopes before native tools consume the metadata. -->
+  <Import Project="$(CommonFilesPath)FixCsWinRTWinMDScopes.targets" />
+</Project>
