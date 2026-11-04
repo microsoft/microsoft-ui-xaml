@@ -56,49 +56,12 @@ foreach($procName in $processNamesToStop)
 Write-Host "All processes running after attempting to kill unwanted processes:"
 Get-Process | Format-Table -AutoSize
 
-$redistPlatform = $Platform
-if($Platform -eq "arm64ec")
+$dependencyInstaller = Join-Path $scriptDirectory "Install-TestAppDependencies.ps1"
+if(!(Test-Path -LiteralPath $dependencyInstaller -PathType Leaf))
 {
-    $redistPlatform = "x64"
+    throw "Test dependency installer was not found at '$dependencyInstaller'."
 }
-
-$packagesToInstall = @(
-    "Microsoft.VCLibs.$redistPlatform.Debug.14.00.appx",
-    "Microsoft.VCLibs.$redistPlatform.14.00.appx",
-    "Microsoft.VCLibs.$redistPlatform.Debug.14.00.Desktop.appx",
-    "Microsoft.VCLibs.$redistPlatform.14.00.Desktop.appx",
-    "Microsoft.NET.CoreRuntime.1.1.appx",
-    "Microsoft.NET.CoreRuntime.2.2.appx",
-    "Microsoft.NET.CoreFramework.Debug.2.2.appx",
-    "Microsoft.NET.Native.Framework.2.2.appx",
-    "Microsoft.NET.Native.Framework.Debug.2.2.appx",
-    "Microsoft.NET.Native.Runtime.2.2.appx"
-)
-
-foreach($package in $packagesToInstall)
-{
-    if(Test-Path Test\$package)
-    {
-        Write-Host "Installing $package"
-        Add-AppxPackage Test\$package -ErrorVariable appxerror -ErrorAction SilentlyContinue
-        if($appxerror)
-        {
-            foreach($error in $appxerror)
-            {
-                # In the case where the package does not install becasuse a higher version is already installed
-                # we don't want to print an error message, since that is just noise. Filter out such errors.
-                if(($error.Exception.Message -match "0x80073D06") -or ($error.Exception.Message -match "0x80073CFB"))
-                {
-                    Write-Host "The same or higher version of this package is already installed."
-                }
-                else
-                {
-                    Write-Error $error
-                }
-            }
-        }
-    }
-}
+& $dependencyInstaller -Platform $Platform -PayloadRoot $scriptDirectory
 
 function UninstallApps {
     Param([string[]]$appsToUninstall)
@@ -154,8 +117,26 @@ function Enable-CrashDumpsForProcesses {
     }
 }
 
+function Disable-CrashDumpsForProcesses {
+    Param([string[]]$namesOfProcessesForDumpCollection)
 
-Enable-CrashDumpsForProcesses @("te.exe", "te.processhost.exe")
+    foreach($procName in $namesOfProcessesForDumpCollection )
+    {
+        Write-Host "Disabling local crash dumps for $procName"
+        $deleteCommand = "reg delete `"HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\$procName`" /f >nul 2>&1 & exit /b 0"
+        & $nativeCmdPath /d /c $deleteCommand
+    }
+}
+
+$testHostProcessNames = @("te.exe", "te.processhost.exe")
+if($env:HELIX_DISABLE_CRASH_DUMPS -eq "True")
+{
+    Disable-CrashDumpsForProcesses $testHostProcessNames
+}
+else
+{
+    Enable-CrashDumpsForProcesses $testHostProcessNames
+}
 
 
 if(Test-Path TestPass-OneTimeMachineSetup.ps1)

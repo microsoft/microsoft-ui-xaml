@@ -14,7 +14,12 @@ using namespace WEX::TestExecution;
 using namespace Microsoft::WRL;
 using namespace Microsoft::UI::Xaml::Tests::Common;
 
-wrl::ComPtr<test_infra::Hosting::IWin32Host> Win32Hosting::StartWin32Host(const wchar_t* hostFactoryType, test_infra::Hosting::DpiAwarenessContext dpiAwarenessContext, bool initCore)
+wrl::ComPtr<test_infra::Hosting::IWin32Host> Win32Hosting::StartWin32Host(
+    const wchar_t* hostFactoryType,
+    test_infra::Hosting::DpiAwarenessContext dpiAwarenessContext,
+    bool initCore,
+    bool useSystemCompositionEngine,
+    HSTRING compositionEngineLaunchRequestPath)
 {
     wrl::ComPtr<IInspectable> spInsp;
 
@@ -31,6 +36,14 @@ wrl::ComPtr<test_infra::Hosting::IWin32Host> Win32Hosting::StartWin32Host(const 
             return S_OK;
         });
     LogThrow_IfFailed(spHostFactory->SetExceptionHandler(exceptionHandlerCallback.Get()));
+
+    if (useSystemCompositionEngine)
+    {
+        wrl::ComPtr<test_infra::Hosting::IWin32HostFactorySystemCompositionEngine> systemCompositionEngineHostFactory;
+        LogThrow_IfFailed(spHostFactory.As(&systemCompositionEngineHostFactory));
+        LogThrow_IfFailed(systemCompositionEngineHostFactory->ConfigureSystemCompositionEngine(
+            compositionEngineLaunchRequestPath));
+    }
 
     wrl::ComPtr<wf::IAsyncOperation<IInspectable*>> spAsyncOperation;
 
@@ -56,6 +69,13 @@ wrl::ComPtr<test_infra::Hosting::IWin32Host> Win32Hosting::StartWin32Host(const 
 
     wrl::ComPtr<test_infra::Hosting::IWin32Host> spWin32Host;
     LogThrow_IfFailed(spInsp.As(&spWin32Host));
+
+    if (useSystemCompositionEngine)
+    {
+        LOG_OUTPUT(
+            L"CompositionEngineType.System: %s selected and verified the system composition engine.",
+            hostFactoryType);
+    }
 
     return spWin32Host;
 }

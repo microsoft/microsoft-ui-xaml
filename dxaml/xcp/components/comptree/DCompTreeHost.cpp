@@ -304,6 +304,7 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
     m_spCompositor6 = nullptr;
     m_spCompositorInterop = nullptr;
     m_dcompDevice = nullptr;
+    m_easingFunctionStatics.Reset();
     if (m_pCompositionHelper.IsInitialized())
     {
         ASSERT(shouldDeferClosingInteropCompositor, "Should only still have m_pCompositionHelper if we deferred closing.");

@@ -161,17 +161,24 @@ function Run-Taef
     # Ideally, we would just use '&' or 'Invoke-Expression' here to execute taef. However, powershell unhelpfully modifies the string to add 
     # extra quotes around parts of the arguments which gives the incorrect behavior since the argument string is already exactly as it needs 
     # to be. I was unable to find a way to disable this behavior, so as a workaround we create a .cmd file and invoke that.
-    Out-File -FilePath "run.cmd" -Encoding ascii -InputObject $teCommand
-    if ($isLifetimeStress)
+    Out-File -FilePath "run.cmd" -Encoding ascii -InputObject "@$teCommand"
+    try
     {
-        # Tee te.exe's output to a log (still streamed to the pipeline) so a crash can be attributed to the
-        # in-flight scenario, and capture its exit code as a crash signal.
-        & ./run.cmd 2>&1 | Tee-Object -FilePath $script:lifetimeTeConsoleLog -Append
-        $script:lifetimeTeExitCode = $LASTEXITCODE
+        if ($isLifetimeStress)
+        {
+            # Tee te.exe's output to a log (still streamed to the pipeline) so a crash can be attributed to the
+            # in-flight scenario, and capture its exit code as a crash signal.
+            & ./run.cmd 2>&1 | Tee-Object -FilePath $script:lifetimeTeConsoleLog -Append
+            $script:lifetimeTeExitCode = $LASTEXITCODE
+        }
+        else
+        {
+            & ./run.cmd
+        }
     }
-    else
+    finally
     {
-        & ./run.cmd
+        Remove-Item -LiteralPath ".\run.cmd" -Force
     }
 }
 

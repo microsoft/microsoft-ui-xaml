@@ -83,59 +83,154 @@ Write-Host "Work items to run:"
 $workItemsToRun.Include
 Write-Host ""
 
-if ($workItemsToRun.Count -eq 0)
+$testSliceHasWork = $workItemsToRun.Count -gt 0
+Write-Host "##vso[task.setvariable variable=TestSliceHasWork]$($testSliceHasWork.ToString().ToLowerInvariant())"
+if (-not $testSliceHasWork)
 {
-    Write-Host "No work items matched for this agent. Skipping test execution."
-    exit 0
+    Write-Host "No work items were assigned to this slice. Test result processing will be skipped."
 }
 
-foreach($workItem in $workItemsToRun)
+$systemCompositionEngineLaunchRequest = $null
+$systemCompositionEngineLaunchRequestDirectory = $null
+
+function Move-CrashDumpsToUploadRoot
 {
-    $command = $workItem.Command
-    $precommand = $workItem.PreCommands
-    $workItemName = $workItem.Include
-    $resultsFileName = ".\testResults-$workItemName.xml"
-    $workItemUploadRoot = Join-Path $uploadRoot $workItemName
-    mkdir $workItemUploadRoot
-
-    $consoleLogOutputFile = Join-Path $workItemUploadRoot "console.log"
-
-    $env:HELIX_CORRELATION_PAYLOAD = $TestPayloadDir
-    $env:HELIX_WORKITEM_UPLOAD_ROOT = $workItemUploadRoot
-    $env:rerunPassesRequiredToAvoidFailure = $RerunPassesRequiredToAvoidFailure
-    $env:HELIX_DUMP_FOLDER = $dumpsDir
-
-    Write-Host "Running $workItemName work item"
-
-    # Due to the presence of quotes, symbols, etc. we cannot directly invoke $command from Powershell. So instead we write it to
-    # a .cmd file and invoke that.
-    $fullCommand = "$precommand`n$command"
-    Write-Host $fullCommand
-    Out-File -FilePath "temp-runworkitem.cmd" -Encoding ascii -InputObject $fullCommand
-    & ./temp-runworkitem.cmd | Tee-Object -file $consoleLogOutputFile
-
-    if(!$SkipCopyTestResultsXml)
+    # Prioritize lifetime-stress dumps and keep enough slots that unrelated
+    # dumps in the shared folder do not crowd them out.
+    $allDumps = @(Get-ChildItem -Path $dumpsDir -Filter *.dmp)
+    $lifetimeDumps = @(
+        $allDumps |
+            Where-Object { $_.Name -like 'LifetimeStress-*' }
+    )
+    $otherDumps = @(
+        $allDumps |
+            Where-Object { $_.Name -notlike 'LifetimeStress-*' }
+    )
+    $files = @($lifetimeDumps + $otherDumps) | Select-Object -First 10
+    foreach($file in $files)
     {
-        if (!(Test-Path ".\testResults.xml"))
+        Move-Item $file.FullName $uploadRoot -Force
+    }
+}
+
+try
+{
+    if (-not [string]::IsNullOrEmpty($env:COMPOSITION_ENGINE_LAF_TOKEN))
+    {
+        try
         {
-            # We expect the work item to produce a 'testResults.xml' file. If it didn't, something bad happened.
-            Throw "Expected testResults.xml to be found. Something unexpected happened."
+            if ($workItemsToRun.Count -gt 0)
+            {
+                $repositoryRoot = [IO.Path]::GetFullPath(
+                    (Join-Path $PSScriptRoot "..\..\.."))
+                $systemCompositionEngineLaunchRequestDirectory = Join-Path `
+                    $TestPayloadDir `
+                    "Test\.winui-composition-engine"
+                $setLaunchRequestScript = Join-Path `
+                    $repositoryRoot `
+                    "build\PipelineScripts\Set-SystemCompositionEngineLaunchRequest.ps1"
+                $launchRequestParameters = @{
+                    LaunchRequestDirectory =
+                        $systemCompositionEngineLaunchRequestDirectory
+                    NativeManifestPath = Join-Path `
+                        $repositoryRoot `
+                        "dxaml\test\packages\appx\appxmanifest.native.current.xml"
+                    ManagedManifestPath = Join-Path `
+                        $repositoryRoot `
+                        "dxaml\test\packages\appx\appxmanifest.managed.current.xml"
+                }
+                $systemCompositionEngineLaunchRequest =
+                    & $setLaunchRequestScript @launchRequestParameters
+                if ($null -eq $systemCompositionEngineLaunchRequest)
+                {
+                    Throw "The system composition engine launch request was not created."
+                }
+            }
         }
-    
-        Move-Item .\testResults.xml $resultsFileName
+        finally
+        {
+            Remove-Item `
+                -LiteralPath Env:\COMPOSITION_ENGINE_LAF_TOKEN `
+                -ErrorAction SilentlyContinue
+        }
     }
 
-    Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
-}
+    foreach($workItem in $workItemsToRun)
+    {
+        $command = $workItem.Command
+        $precommand = $workItem.PreCommands
+        $workItemName = $workItem.Include
+        $resultsFileName = ".\testResults-$workItemName.xml"
+        $workItemUploadRoot = Join-Path $uploadRoot $workItemName
+        mkdir $workItemUploadRoot
 
-# Upload dumps from this slice, prioritizing lifetime-stress dumps (renamed LifetimeStress-*) and raising the
-# cap so they aren't crowded out by unrelated dumps sharing the folder.
-$maxDumpsToUpload = 10
-$allDumps = @(Get-ChildItem -Path $dumpsDir -Filter *.dmp)
-$lifetimeDumps = @($allDumps | Where-Object { $_.Name -like 'LifetimeStress-*' })
-$otherDumps = @($allDumps | Where-Object { $_.Name -notlike 'LifetimeStress-*' })
-$files = @($lifetimeDumps + $otherDumps) | Select-Object -First $maxDumpsToUpload
-foreach($file in $files)
+        $consoleLogOutputFile = Join-Path $workItemUploadRoot "console.log"
+
+        $env:HELIX_CORRELATION_PAYLOAD = $TestPayloadDir
+        $env:HELIX_WORKITEM_UPLOAD_ROOT = $workItemUploadRoot
+        $env:rerunPassesRequiredToAvoidFailure = $RerunPassesRequiredToAvoidFailure
+        $env:HELIX_DUMP_FOLDER = $dumpsDir
+
+        Write-Host "Running $workItemName work item"
+
+        # Due to the presence of quotes, symbols, etc. we cannot directly invoke $command from Powershell. So instead we write it to
+        # a .cmd file and invoke that.
+        $fullCommand = "@echo off`n$precommand`n$command"
+        Write-Host $fullCommand
+        Out-File -FilePath "temp-runworkitem.cmd" -Encoding ascii -InputObject $fullCommand
+        try
+        {
+            & ./temp-runworkitem.cmd | Tee-Object -file $consoleLogOutputFile
+        }
+        finally
+        {
+            Remove-Item -LiteralPath ".\temp-runworkitem.cmd" -Force
+        }
+
+        if(!$SkipCopyTestResultsXml)
+        {
+            if (!(Test-Path ".\testResults.xml"))
+            {
+                # We expect the work item to produce a 'testResults.xml' file. If it didn't, something bad happened.
+                Throw "Expected testResults.xml to be found. Something unexpected happened."
+            }
+
+            Move-Item .\testResults.xml $resultsFileName
+        }
+
+        Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
+    }
+}
+finally
 {
-    Move-Item $file.FullName $uploadRoot -Force
+    Remove-Item `
+        -LiteralPath Env:\COMPOSITION_ENGINE_LAF_TOKEN `
+        -ErrorAction SilentlyContinue
+    try
+    {
+        Move-CrashDumpsToUploadRoot
+    }
+    finally
+    {
+        try
+        {
+            if ($null -ne $systemCompositionEngineLaunchRequest)
+            {
+                $systemCompositionEngineLaunchRequest.Dispose()
+            }
+        }
+        finally
+        {
+            if (-not [string]::IsNullOrEmpty(
+                    $systemCompositionEngineLaunchRequestDirectory) -and
+                (Test-Path `
+                    -LiteralPath $systemCompositionEngineLaunchRequestDirectory))
+            {
+                Remove-Item `
+                    -LiteralPath $systemCompositionEngineLaunchRequestDirectory `
+                    -Recurse `
+                    -Force
+            }
+        }
+    }
 }

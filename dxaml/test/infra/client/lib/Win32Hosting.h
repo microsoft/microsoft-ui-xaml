@@ -10,6 +10,8 @@ namespace Win32Hosting
     wrl::ComPtr<test_infra::Hosting::IWin32Host> StartWin32Host(
         const wchar_t* factory,
         test_infra::Hosting::DpiAwarenessContext dpiAwarenessContext,
-        bool initCore);
+        bool initCore,
+        bool useSystemCompositionEngine,
+        HSTRING compositionEngineLaunchRequestPath);
     wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherQueueFromWin32XamlContentRoot(wrl::ComPtr<test_infra::Hosting::IWin32Host> win32Host);
 }
