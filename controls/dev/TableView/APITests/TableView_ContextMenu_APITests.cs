@@ -581,6 +581,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "A row menu requested in the same turn as a cell focus on that drilled-in row leaves the row at row level, so closing the menu restores focus to the row (GH #12442).")]
+        public void RowRequestAfterSameTurnCellFocusKeepsRowLevel()
+        {
+            var f = LoadFixture();
+            RunOnUIThread.Execute(() => GetCellPeer(f.Table, f.P(4), NameCol).SetFocus());
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsFalse(RowOf(f, 4).IsTabStop, "Precondition: row 4 is at cell level."));
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(CellOf(f, 4, OfficeCol).Focus(FocusState.Keyboard), "Precondition: the Office cell takes focus.");
+                GetRowPeer(RowOf(f, 4)).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), f.P(4), "UIA on row 4's peer");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(RowOf(f, 4).IsTabStop, "Row 4 must be at row level while its row menu is open.");
+                Verify.IsFalse(CellOf(f, 4, OfficeCol).IsTabStop, "Row 4's cells must be out of the tab order.");
+            });
+
+            CloseMenus(f);
+            RunOnUIThread.Execute(() => Verify.AreSame(RowOf(f, 4), FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                $"Closing the menu must restore focus to row 4; was {Describe(FocusManager.GetFocusedElement(f.Table.XamlRoot) as DependencyObject)}."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "A row menu opened from a cell request focuses that cell and leaves the selection unchanged.")]
         public void RowMenuFromCellRequestFocusesCell()
         {

@@ -2683,11 +2683,8 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
 
-        // Only while focus is still on the row: otherwise a menu would restore focus to an unfocusable cell.
-        if (focusStillOnRow)
-        {
-            SetCellCursorActiveInternal(false);
-        }
+        // Even if focus has moved on: this row focus is newer than any cell focus already handled.
+        SetCellCursorActiveInternal(false);
         return;
     }
 
