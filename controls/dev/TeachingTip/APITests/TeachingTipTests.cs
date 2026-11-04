@@ -3223,9 +3223,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(popupOpen, "Precondition: the reopened tip is still open");
             Verify.IsFalse(idle, $"The reopened tip should still be opening (its 6s animation is running), not idle (idle={idle})");
 
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The reopened tip should finish opening");
+            // Poll without IdleSynchronizer: in a long run it can give up while the slowed animation is still running.
+            Verify.IsTrue(PollUIWithoutIdleWait(() => TeachingTipTestHooks.GetIsIdle(tip) && TeachingTipTestHooks.GetPopup(tip).IsOpen),
+                "The reopened tip should finish opening");
             RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
+            PollUIWithoutIdleWait(() => TeachingTipTestHooks.GetIsIdle(tip) && !TeachingTipTestHooks.GetPopup(tip).IsOpen);
         }
 
         // Scenario (issue #8095 review, Copilot): an OPEN tip targets a static Button; the Button is removed, and the app's
