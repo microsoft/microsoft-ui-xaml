@@ -21,8 +21,8 @@
       <BufferSize Value="1024" />
       <Buffers Value="128" />
     </EventCollector>
-    <!-- DxgKrnl writes from the kernel, so only to a session in nonpaged memory: a small one of its own. -->
-    <EventCollector Id="EC_Gpu" Name="WinUIProfilerGpu">
+    <!-- DxgKrnl and Win32k write from the kernel, so only to a session in nonpaged memory: a small one for them. -->
+    <EventCollector Id="EC_NonPaged" Name="WinUIProfilerNonPaged">
       <BufferSize Value="64" />
       <Buffers Value="32" />
     </EventCollector>
@@ -31,7 +31,7 @@
         <Keyword Value="ProcessThread" />
       </Keywords>
     </SystemProvider>
-    <!-- The XAML providers and the GPU memory events, as in the README's providers.txt. -->
+    <!-- The XAML providers, the GPU memory events and the window focus events, as in the README's providers.txt. -->
     <EventProvider Id="EP_Xaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5" />
     <EventProvider Id="EP_XamlDiagnostics" Name="59E7A714-73A4-4147-B47E-0957048C75C4" Level="5" />
     <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5" />
@@ -40,6 +40,11 @@
     <EventProvider Id="EP_DxgKrnl" Name="802EC45A-1E99-4B83-9920-87C98277BA9D" Level="5" NonPagedMemory="true">
       <Keywords>
         <Keyword Value="0x4" />
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="EP_Win32k" Name="8C416C79-D49B-4F01-A467-E56D3AA8234C" Level="4" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0x2000" />
       </Keywords>
     </EventProvider>
     <!-- Windows' launch events: Microsoft.Windows.AppLifeCycle.UI, Microsoft.Windows.ApplicationModel.DesktopAppx,
@@ -69,9 +74,10 @@
             <EventProviderId Value="EP_Store" />
           </EventProviders>
         </EventCollectorId>
-        <EventCollectorId Value="EC_Gpu">
+        <EventCollectorId Value="EC_NonPaged">
           <EventProviders>
             <EventProviderId Value="EP_DxgKrnl" />
+            <EventProviderId Value="EP_Win32k" />
           </EventProviders>
         </EventCollectorId>
       </Collectors>
