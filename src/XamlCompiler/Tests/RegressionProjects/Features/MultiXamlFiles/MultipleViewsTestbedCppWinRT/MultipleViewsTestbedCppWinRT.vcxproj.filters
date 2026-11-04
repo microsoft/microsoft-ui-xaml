@@ -6,21 +6,26 @@
   <ItemGroup>
     <Page Include="MainPage.xaml" />
     <Page Include="MainPage.Portrait.xaml" />
+    <Page Include="Namespace.CustomControl.xaml" />
+    <Page Include="Namespace.CustomControl.Portrait.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainPage.idl" />
+    <Midl Include="Namespace.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="MainPage.cpp" />
+    <ClCompile Include="Namespace.CustomControl.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="MainPage.h" />
+    <ClInclude Include="Namespace.CustomControl.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">

@@ -29,7 +29,7 @@ public:
     // repeater -> wrapper -> selector -> template -> pool -> repeater through plain C++
     // references the reference tracker cannot walk, so nothing is collected and the selector's
     // own destructor never runs. Dropping the pools breaks the one edge we own.
-    void Detach();
+    void Detach() noexcept;
 
 private:
     winrt::DataTemplate ResolveTemplateFromMarkup(std::wstring_view markup);

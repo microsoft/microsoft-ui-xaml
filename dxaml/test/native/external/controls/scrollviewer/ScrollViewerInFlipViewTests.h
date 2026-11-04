@@ -23,7 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(UnparentFlipViewDuringTapSelectionChange1)
             TEST_METHOD_PROPERTY(L"Description", L"Temporarily removes the FlipView control from the visual tree during a FlipViewItem selection change triggered by a next-button tap. FlipView.SelectedIndex is immediately changed after re-entry.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(UnparentFlipViewDuringTapSelectionChange2)
@@ -43,12 +43,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(UnparentFlipViewDuringFlickSelectionChange1)
             TEST_METHOD_PROPERTY(L"Description", L"Temporarily removes the FlipView control from the visual tree during a FlipViewItem selection change triggered by a flick. FlipView.SelectedIndex is immediately changed after re-entry.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // XamlObjects events can be fired after its parent Island has been Disposed
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(UnparentFlipViewDuringFlickSelectionChange2)
             TEST_METHOD_PROPERTY(L"Description", L"Temporarily removes the FlipView control from the visual tree during a FlipViewItem selection change triggered by a flick.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // XamlObjects events can be fired after its parent Island has been Disposed
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     private:

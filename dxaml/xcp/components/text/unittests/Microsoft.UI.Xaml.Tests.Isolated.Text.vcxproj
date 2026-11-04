@@ -16,13 +16,16 @@
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
             $(XcpPath)\components\text\inc;
+            $(XcpPath)\core\text\inc;
         </ProjectIncludeDirectories>
     </PropertyGroup>
 
     <ItemGroup>
         <ClInclude Include="TextHighlightMergeUnitTests.h"/>
+        <ClInclude Include="TextBoxHelpersUnitTests.h"/>
 
         <ClCompile Include="TextHighlightMergeUnitTests.cpp"/>
+        <ClCompile Include="TextBoxHelpersUnitTests.cpp"/>
     </ItemGroup>
 
     <ItemGroup>

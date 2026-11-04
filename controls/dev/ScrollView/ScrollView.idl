@@ -138,6 +138,12 @@ unsealed runtimeclass ScrollView : Microsoft.UI.Xaml.Controls.Control
     [MUX_PREVIEW]
     event Windows.Foundation.TypedEventHandler<ScrollView, ScrollingZoomStartingEventArgs> ZoomStarting;
 
+    [MUX_PREVIEW]
+    {
+        [MUX_DEFAULT_VALUE("ScrollView::s_defaultCanContentRenderOutsideBounds")]
+        Boolean CanContentRenderOutsideBounds { get; set; };
+    }
+
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ScrollPresenterProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HorizontalScrollBarVisibilityProperty { get; };
@@ -160,6 +166,11 @@ unsealed runtimeclass ScrollView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
+
+    [MUX_PREVIEW]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty CanContentRenderOutsideBoundsProperty { get; };
+    }
 }
 
 }

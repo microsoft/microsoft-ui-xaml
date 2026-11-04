@@ -1,0 +1,40 @@
+Source = TableViewSource.From(Entries);    // created once; never rebuilt
+InitializeComponent();
+
+PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+PropTable.Density = TableViewDensity.Compact;
+
+public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
+
+public TableViewSource Source { get; }
+
+// Refills the one collection; the source re-projects it under the current filter and grouping.
+private void ShowFile(FileInfo file)
+{
+    _currentFile = file;
+    Entries.Clear();
+    foreach (var entry in ReadProperties(file))
+    {
+        Entries.Add(entry);
+    }
+}
+
+private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+{
+    switch ((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag)
+    {
+        case "dates":
+            Source.Filter(item => item is FilePropertyEntry { IsDate: true });
+            break;
+        case "version":
+            Source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+            break;
+        case "none":
+            Source.Filter(_ => false);
+            break;
+        default:
+            Source.ClearFilter();
+            break;
+    }
+}

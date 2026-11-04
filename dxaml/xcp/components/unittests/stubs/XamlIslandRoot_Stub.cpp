@@ -25,6 +25,16 @@ ixp::IContentIsland * CXamlIslandRoot::GetContentIsland()
     return nullptr;
 }
 
+_Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIsland()
+{
+    return E_NOTIMPL;
+}
+
+_Check_return_ HRESULT CXamlIslandRoot::RebuildContentIsland()
+{
+    return E_NOTIMPL;
+}
+
 CUIElement* CXamlIslandRoot::GetPublicRootVisual()
 {
     return nullptr;

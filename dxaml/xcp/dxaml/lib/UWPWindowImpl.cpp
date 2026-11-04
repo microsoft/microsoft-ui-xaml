@@ -343,6 +343,23 @@ _Check_return_ HRESULT UWPWindowImpl::get_DispatcherImpl(_Outptr_result_maybenul
     RRETURN(S_OK);
 }
 
+_Check_return_ HRESULT UWPWindowImpl::get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue)
+{
+    if (nullptr == ppValue) { IFC_RETURN(E_INVALIDARG); }
+    *ppValue = nullptr;
+
+    // Same lookup as before this getter moved here. DXamlCore::ReleaseWindow clears m_pDXamlCoreNoRef on the UI
+    // thread before the core is deleted; an off-thread caller can still race that, but apps can only reach this
+    // window through Window.Current outside classic desktop (see WindowFactory::get_CurrentImpl).
+    if (DXamlCore* xamlCore = m_pDXamlCoreNoRef)
+    {
+        *ppValue = xamlCore->GetDispatcherQueueNoRef();
+        AddRefInterface(*ppValue);
+    }
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT UWPWindowImpl::get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor)
 {
     IFCPTR_RETURN(compositor);

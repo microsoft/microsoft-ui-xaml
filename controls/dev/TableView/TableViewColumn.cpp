@@ -5,9 +5,55 @@
 #include "common.h"
 #include "TableViewColumn.h"
 #include "TableView.h"
+#include "TableViewRow.h"
+#include "TVDiag.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <limits>
+
+namespace
+{
+    std::atomic<uint32_t> s_nextAutomationIdentity{ 1 };
+
+    bool TryFocusEditor(winrt::FrameworkElement const& editor)
+    {
+        if (editor.Focus(winrt::FocusState::Programmatic))
+        {
+            return true;
+        }
+        if (auto const target = winrt::FocusManager::FindFirstFocusableElement(editor))
+        {
+            if (auto const control = target.try_as<winrt::Control>())
+            {
+                return control.Focus(winrt::FocusState::Programmatic);
+            }
+            if (auto const element = target.try_as<winrt::UIElement>())
+            {
+                return element.Focus(winrt::FocusState::Programmatic);
+            }
+        }
+        return false;
+    }
+
+    // Realizing and focusing a CellEditingTemplate's content runs the app's code, so a throw there leaves tagged as the
+    // app's; the rest of the editing hooks is TableView's own code.
+    template <class Call>
+    auto RunEditorContent(bool appContent, Call&& call)
+    {
+        try
+        {
+            return call();
+        }
+        catch (...)
+        {
+            if (appContent) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Factory); }
+            throw;
+        }
+    }
+
+}
 
 TableViewColumn::TableViewColumn()
 {
@@ -72,21 +118,55 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
         return nullptr;
     }
 
+    // A CellEditingTemplate's content is the app's (see GenerateEditingElementCore); TableView's own editor is not.
+    bool const appContent = CellEditingTemplate() != nullptr;
+
     // Focus so typing goes straight into the editor; otherwise the row keeps focus and the user has
     // to click the editor they just opened. The editing root is not necessarily focusable - a
     // template column produces a ContentPresenter - so fall back to its first focusable descendant.
-    if (!editingElement.Focus(winrt::FocusState::Programmatic))
+    auto const root = editingElement.XamlRoot();
+    auto const initialFocus = root ? winrt::FocusManager::GetFocusedElement(root) : nullptr;
+    if (!RunEditorContent(appContent, [&] { return TryFocusEditor(editingElement); }))
     {
-        if (auto const focusable = winrt::FocusManager::FindFirstFocusableElement(editingElement))
+        if (root && winrt::FocusManager::GetFocusedElement(root) != initialFocus)
         {
-            if (auto const focusableElement = focusable.try_as<winrt::Control>())
+            return nullptr;
+        }
+        auto const owner = GetOwningTableView();
+        auto const editingParent = winrt::VisualTreeHelper::GetParent(editingElement);
+        winrt::TableViewRow row{ nullptr };
+        for (auto parent = editingParent; parent;
+            parent = winrt::VisualTreeHelper::GetParent(parent))
+        {
+            if (auto const candidate = parent.try_as<winrt::TableViewRow>())
             {
-                focusableElement.Focus(winrt::FocusState::Programmatic);
+                row = candidate;
+                break;
             }
-            else if (auto const focusableUi = focusable.try_as<winrt::UIElement>())
-            {
-                focusableUi.Focus(winrt::FocusState::Programmatic);
-            }
+        }
+        auto const item = row ? row.DataContext() : nullptr;
+
+        // The editing ContentPresenter may not have instantiated its DataTemplate.
+        // Realize it before returning from F2 so the first keystroke has a target.
+        RunEditorContent(appContent, [&] { editingElement.UpdateLayout(); });
+
+        // Layout can run application code and recycle the row or end the edit.
+        if (owner && (GetOwningTableView() != owner ||
+            winrt::get_self<TableView>(owner)->CurrentEditingElement() != editingElement ||
+            !editingParent || winrt::VisualTreeHelper::GetParent(editingElement) != editingParent ||
+            !row || winrt::get_self<TableViewRow>(row)->GetOwningTableView() != owner ||
+            !TableView::SameInspectableIdentity(row.DataContext(), item)))
+        {
+            return nullptr;
+        }
+        if (root && winrt::FocusManager::GetFocusedElement(root) != initialFocus)
+        {
+            // A Loaded/focus handler chose another target; preserve that choice.
+            return nullptr;
+        }
+        if (!RunEditorContent(appContent, [&] { return TryFocusEditor(editingElement); }))
+        {
+            TVDiag::LogRetailF(L"[TableView] The realized cell editor has no available keyboard focus target.");
         }
     }
 
@@ -222,6 +302,15 @@ winrt::TableView TableViewColumn::GetOwningTableView()
     return m_owningTableView.get();
 }
 
+uint32_t TableViewColumn::AutomationIdentity()
+{
+    if (m_automationIdentity == 0)
+    {
+        m_automationIdentity = s_nextAutomationIdentity.fetch_add(1);
+    }
+    return m_automationIdentity;
+}
+
 void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     const auto property = args.Property();
@@ -230,6 +319,12 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         property == s_MinWidthProperty ||
         property == s_MaxWidthProperty)
     {
+        // Only an app-driven assignment replaces the authored width; a user resize does not.
+        if (property == s_WidthProperty && !m_inUserResize)
+        {
+            m_authoredWidth = ValueHelper<winrt::GridLength>::CastOrUnbox(args.NewValue());
+        }
+
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
@@ -248,8 +343,9 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     }
     else if (property == s_CellEditingTemplateProperty)
     {
-        // Realized editors were generated from the previous template.
-        NotifyCellContentChanged();
+        // Realized editors were generated from the previous template. An editor does not change
+        // what the cell displays, so the Auto width keeps its history.
+        NotifyCellContentChanged(false /* resetAutoWidth */);
     }
     else if (property == s_HeaderTemplateProperty ||
              property == s_HeaderTemplateSelectorProperty ||
@@ -267,6 +363,13 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         if (auto owner = GetOwningTableView())
         {
             winrt::get_self<TableView>(owner)->OnColumnHeaderToolTipChanged(*this);
+        }
+    }
+    else if (property == s_HeaderStyleProperty)
+    {
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->QueueRebuildHeaders();
         }
     }
     else if (property == s_FrozenEdgeProperty)
@@ -349,11 +452,11 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
 // column would then have no way to invalidate its cells without editing this file. This mirrors
 // WPF, where DataGridColumn owns the notification and each derived column routes its own property
 // callbacks into it.
-void TableViewColumn::NotifyCellContentChanged()
+void TableViewColumn::NotifyCellContentChanged(bool resetAutoWidth)
 {
     if (auto owner = GetOwningTableView())
     {
-        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this);
+        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, resetAutoWidth);
     }
 }
 
@@ -366,8 +469,9 @@ void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data:
 {
     m_cellToolTipBinding.set(value);
 
-    // Realized cells carry the previous binding. The only invalidation this feature needs.
-    NotifyCellContentChanged();
+    // Realized cells carry the previous binding. A tooltip does not change what the cell displays,
+    // so the Auto width keeps its history.
+    NotifyCellContentChanged(false /* resetAutoWidth */);
 }
 
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
@@ -404,14 +508,16 @@ void TableViewColumn::SetResolvedActualWidthInternal(double width)
     }
 }
 
-void TableViewColumn::SetDesiredWidthInternal(double desiredWidth)
+void TableViewColumn::SetDesiredWidthInternal(double rowsDesiredWidth, double headerDesiredWidth)
 {
-    m_desiredWidth = std::max(0.0, desiredWidth);
+    m_rowsDesiredWidth = std::max(0.0, rowsDesiredWidth);
+    m_headerDesiredWidth = std::max(0.0, headerDesiredWidth);
 }
 
 void TableViewColumn::ResetDesiredWidthInternal()
 {
-    m_desiredWidth = 0.0;
+    m_rowsDesiredWidth = 0.0;
+    m_headerDesiredWidth = 0.0;
 }
 
 void TableViewColumn::UpdateActualWidth()
@@ -421,12 +527,13 @@ void TableViewColumn::UpdateActualWidth()
     const auto width = Width();
     const double widthPixels =
         width.GridUnitType == winrt::GridUnitType::Pixel
-            ? width.Value
+            ? NonNegativeFiniteOrDefault(width.Value)
             : c_widthDefault.Value;
 
-    // Keep std::clamp well-defined even when MinWidth exceeds MaxWidth.
-    const double lo = MinWidth();
-    const double hi = std::max(lo, MaxWidth());
+    // Reject malformed widths and bounds the same way layout does, so provisional ActualWidth and
+    // resolved layout widths cannot drift.
+    const double lo = NonNegativeFiniteOrZero(MinWidth());
+    const double hi = MaxWidthForColumn(*this, lo);
     const double clamped = std::clamp(widthPixels, lo, hi);
 
     // ActualWidth uses the SetValue-via-key read-only DP convention.
@@ -435,4 +542,3 @@ void TableViewColumn::UpdateActualWidth()
         SetValue(s_ActualWidthProperty, winrt::box_value(clamped));
     }
 }
-

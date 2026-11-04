@@ -1,0 +1,4 @@
+LIBRARY "WinUIProfiler.Tap.dll"
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE

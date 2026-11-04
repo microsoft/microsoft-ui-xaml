@@ -132,6 +132,10 @@ private:
         const winrt::ScrollView& scrollView,
         const winrt::ScrollingAnchorRequestedEventArgs& args);
 
+    bool IsValidScrollAnchor(
+        const winrt::ScrollView& scrollView,
+        const winrt::UIElement& element) const;
+
     void OnScrollViewBringingIntoView(
         const winrt::ScrollView& scrollView,
         const winrt::ScrollingBringingIntoViewEventArgs& args);

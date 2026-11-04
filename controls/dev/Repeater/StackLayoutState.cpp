@@ -16,7 +16,7 @@ void StackLayoutState::InitializeForContext(
     m_flowAlgorithm.InitializeForContext(context, callbacks);
     if (m_estimationBuffer.size() == 0)
     {
-        m_estimationBuffer.resize(BufferSize, 0.0);
+        m_estimationBuffer.resize(BufferSize, c_unmeasuredSize);
     }
 
     context.LayoutStateCore(*this);
@@ -30,7 +30,8 @@ void StackLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutCon
 void StackLayoutState::OnElementMeasured(int elementIndex, double majorSize, double minorSize)
 {
     const int estimationBufferIndex = elementIndex % m_estimationBuffer.size();
-    const bool alreadyMeasured = m_estimationBuffer[estimationBufferIndex] != 0;
+    const double bufferedSize = m_estimationBuffer[estimationBufferIndex];
+    const bool alreadyMeasured = bufferedSize != c_unmeasuredSize;
     const double lastElementSize = m_lastElementSize;
 
     if (!alreadyMeasured)
@@ -38,7 +39,7 @@ void StackLayoutState::OnElementMeasured(int elementIndex, double majorSize, dou
         m_totalElementsMeasured++;
     }
 
-    m_totalElementSize -= m_estimationBuffer[estimationBufferIndex];
+    m_totalElementSize -= alreadyMeasured ? bufferedSize : 0.0;
     m_totalElementSize += majorSize;
     m_lastElementSize = majorSize;
     m_estimationBuffer[estimationBufferIndex] = majorSize;
@@ -66,5 +67,5 @@ void StackLayoutState::OnElementSizesReset()
     m_totalElementSize = 0.0;
     m_lastElementSize = 0.0;
     m_estimationBuffer.clear();
-    m_estimationBuffer.resize(BufferSize, 0.0);
+    m_estimationBuffer.resize(BufferSize, c_unmeasuredSize);
 }

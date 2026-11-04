@@ -632,7 +632,10 @@ SplitView::SetupOuterDismissLayer() noexcept
     {
         ctl::ComPtr<Grid> grid;
         IFC_RETURN(ctl::make<Grid>(&grid));
-        IFC_RETURN(grid.As(&m_dismissHostElement));
+
+        ctl::ComPtr<xaml_controls::IGrid> dismissHost;
+        IFC_RETURN(grid.As(&dismissHost));
+        SetPtrValue(m_dismissHostElement, dismissHost.Get());
 
         IFC_RETURN(m_dismissLayerPointerPressedEventHandler.AttachEventHandler(
             grid.Get(),
@@ -645,7 +648,10 @@ SplitView::SetupOuterDismissLayer() noexcept
         ctl::ComPtr<Popup> popup;
         IFC_RETURN(ctl::make(&popup));
         IFC_RETURN(popup->put_Child(m_dismissHostElement.Cast<Grid>()));
-        IFC_RETURN(popup.As(&m_outerDismissLayerPopup));
+
+        ctl::ComPtr<xaml_primitives::IPopup> popupAsIPopup;
+        IFC_RETURN(popup.As(&popupAsIPopup));
+        SetPtrValue(m_outerDismissLayerPopup, popupAsIPopup.Get());
     }
 
     static_cast<CPopup*>(m_outerDismissLayerPopup.Cast<DirectUI::Popup>()->GetHandle())->SetAssociatedIsland(VisualTree::GetXamlIslandRootForElement(GetHandle()));
@@ -660,7 +666,9 @@ SplitView::SetupOuterDismissLayer() noexcept
         }
         else
         {
-            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 6, &m_topDismissElement));
+            ctl::ComPtr<xaml_shapes::IPath> topPath;
+            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 6, &topPath));
+            SetPtrValue(m_topDismissElement, topPath.Get());
         }
 
         wf::Point points[] = { { 0.f, 0.f },{ windowBounds.Width, 0.f },{ windowBounds.Width, topRightCorner.Y }, topRightCorner, topLeftCorner,{ 0.f, topLeftCorner.Y } };
@@ -679,7 +687,9 @@ SplitView::SetupOuterDismissLayer() noexcept
         }
         else
         {
-            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 6, &m_bottomDismissElement));
+            ctl::ComPtr<xaml_shapes::IPath> bottomPath;
+            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 6, &bottomPath));
+            SetPtrValue(m_bottomDismissElement, bottomPath.Get());
         }
 
         wf::Point points[] = { { 0.f, bottomLeftCorner.Y }, bottomLeftCorner, bottomRightCorner,{ windowBounds.Width, bottomRightCorner.Y },{ windowBounds.Width, windowBounds.Height },{ 0.f, windowBounds.Height } };
@@ -698,7 +708,9 @@ SplitView::SetupOuterDismissLayer() noexcept
         }
         else
         {
-            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 4, &m_leftDismissElement));
+            ctl::ComPtr<xaml_shapes::IPath> leftPath;
+            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 4, &leftPath));
+            SetPtrValue(m_leftDismissElement, leftPath.Get());
         }
 
         wf::Point points[] = { { 0.f, topLeftCorner.Y }, topLeftCorner, bottomLeftCorner,{ 0.f, bottomLeftCorner.Y } };
@@ -717,7 +729,9 @@ SplitView::SetupOuterDismissLayer() noexcept
         }
         else
         {
-            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 4, &m_rightDismissElement));
+            ctl::ComPtr<xaml_shapes::IPath> rightPath;
+            IFC_RETURN(CreatePolygonalPath(m_dismissHostElement.Get(), 4, &rightPath));
+            SetPtrValue(m_rightDismissElement, rightPath.Get());
         }
 
         wf::Point points[] = { topRightCorner,{ windowBounds.Width, topRightCorner.Y },{ windowBounds.Width, bottomRightCorner.Y }, bottomRightCorner };

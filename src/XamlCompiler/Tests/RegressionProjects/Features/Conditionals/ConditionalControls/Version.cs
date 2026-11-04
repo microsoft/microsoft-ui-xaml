@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System;
 
-namespace ConditionalControls
+namespace ConditionalControlsV2
 {
     public sealed class V1Type
     {
