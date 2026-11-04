@@ -581,6 +581,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsGreaterThan(widthAfter, bounds.Width + 20.0, "After the first sort a gripper drag must widen the column.");
             }
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the resize cursor shows when the pointer slides onto the gripper while the header tooltip is open, and holds while that tooltip closes (GH #12436).")]
+        public void ResizeCursorShowsWhenSlidingOntoGripperFromOpenHeaderToolTip()
+        {
+            const string column = "Name";
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), column);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found.", column));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                var bounds = header.BoundingRectangle;
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int textX = bounds.Left + (bounds.Width / 3);
+                int y = bounds.Top + (bounds.Height / 2);
+
+                InputHelper.MoveMouse(new Point(10, 10));
+                Wait.ForIdle();
+                InputHelper.MoveMouse(new Point(textX, y));
+                if (!WaitForHeaderToolTip(open: true))
+                {
+                    Verify.Fail("Precondition: resting on the header text must open the header tooltip.");
+                    return;
+                }
+
+                const int steps = 6;
+                for (int i = 1; i <= steps; i++)
+                {
+                    InputHelper.MoveMouse(new Point(textX + ((gripperX - textX) * i / steps), y));
+                }
+                Wait.ForIdle();
+                if (!VerifyCursorBecomes(sizeWE, "Sliding onto the gripper from an open header tooltip must show the west-east size cursor.", requiredMatches: 5))
+                {
+                    return;
+                }
+
+                Verify.IsTrue(WaitForHeaderToolTip(open: false), "The header tooltip must close while the pointer is on the gripper.");
+                Wait.ForIdle();
+                VerifyCursorBecomes(sizeWE, "The west-east size cursor must hold after the header tooltip closes.", requiredMatches: 5);
+            }
+        }
+
+        private static bool WaitForHeaderToolTip(bool open)
+        {
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(4);
+            while (true)
+            {
+                bool isOpen = TableViewToolTipsInteractionTests.FindOpenToolTip(open ? "waiting for the header tooltip" : "waiting for the header tooltip to close") != null;
+                if (isOpen == open)
+                {
+                    return true;
+                }
+                if (DateTime.UtcNow >= deadline)
+                {
+                    return false;
+                }
+                Wait.ForMilliseconds(200);
+            }
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies Escape during a pointer resize releases the gripper's mouse capture, so the pointer stops showing the resize cursor away from the gripper.")]
         public void PointerResizeEscapeReleasesCapture()
