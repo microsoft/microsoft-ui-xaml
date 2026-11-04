@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "XamlTelemetry.h"
 #include "MetadataAPI.h"
 #include "Triggers.h"
@@ -7469,12 +7471,20 @@ _Check_return_ HRESULT CUIElement::EnsureHandOffVisual(
         {
             ctl::ComPtr<WUComp::ILayerVisual> layerHandOffVisual;
             IFC_RETURN(GetDCompTreeHost()->GetCompositor2()->CreateLayerVisual(&layerHandOffVisual));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual);
+            }
             IFCFAILFAST(layerHandOffVisual.As(&spHandOffVisual));
         }
         else
         {
             ctl::ComPtr<ixp::IContainerVisual> handOffVisual;
             IFC_RETURN(GetDCompTreeHost()->GetCompositor()->CreateContainerVisual(handOffVisual.ReleaseAndGetAddressOf()));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            }
             IFCFAILFAST(handOffVisual.As(&spHandOffVisual));
 
         }
