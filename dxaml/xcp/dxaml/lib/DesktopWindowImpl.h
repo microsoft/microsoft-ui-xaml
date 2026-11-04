@@ -60,7 +60,7 @@ namespace DirectUI
         _Check_return_ HRESULT SetTitleBarImpl(_In_ xaml::IUIElement* pTitleBar) final;
         _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) final;
 
-        // Restored client-size constraints (in DIPs), applied via OverlappedPresenter.
+        // Client-area size constraints (in DIPs), applied via OverlappedPresenter.
         _Check_return_ HRESULT get_MinWidthImpl(_Out_ DOUBLE* pValue) override;
         _Check_return_ HRESULT put_MinWidthImpl(_In_ DOUBLE value) override;
         _Check_return_ HRESULT get_MinHeightImpl(_Out_ DOUBLE* pValue) override;
@@ -173,7 +173,7 @@ namespace DirectUI
         
         // Applies the requested client size now, or defers it (pending) until we can honor it.
         _Check_return_ HRESULT ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height);
-        
+
         // Reads the Win32 restore size (rcNormalPosition) while maximized/minimized. Sets the out flag
         // only in that case; otherwise the caller falls back to another source.
         _Check_return_ HRESULT TryGetWin32RestoredClientSizeInDips(_Out_ bool* pUseRestoredClientSize, _Out_ wf::Size* pValue);
@@ -211,11 +211,12 @@ namespace DirectUI
         _Check_return_ HRESULT RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** ppEventSource);
         void SetFocusToContentIsland();
 
-        // Min/max size helpers.
+        // Size constraint helpers.
+        enum class SizeConstraint { All, MinWidth, MinHeight, MaxWidth, MaxHeight };
         static _Check_return_ HRESULT ValidateMinConstraint(double value);
         static _Check_return_ HRESULT ValidateMaxConstraint(double value);
         _Check_return_ HRESULT TryGetOverlappedPresenter(_Outptr_result_maybenull_ ixp::IOverlappedPresenter3** ppPresenter);
-        _Check_return_ HRESULT ApplySizeConstraintsToPresenterIfOverlapped();
+        _Check_return_ HRESULT ApplySizeConstraintsToPresenterIfOverlapped(SizeConstraint constraint = SizeConstraint::All);
         _Check_return_ HRESULT ClearOwnedConstraintsOnPresenterIfOverlapped();
 
         // ------------------------------------
@@ -273,6 +274,7 @@ namespace DirectUI
         {
             wf::Size client;
             wf::Size chrome;
+            bool extendsContentIntoTitleBar = false;
         };
         std::optional<TrackedRestoredSize> m_trackedRestoredSize;
 
@@ -300,16 +302,18 @@ namespace DirectUI
         wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite = nullptr;
         ctl::ComPtr<ixp::IAppWindowStatics> m_appWindowStatics;
 
-        // Restored client-size constraints, requested by the app in DIPs.
+        // Client-area size constraints requested on Window, in DIPs.
         //
-        // Empty means the app never set that property, so we leave the matching presenter constraint alone
-        // (the app or system may manage it directly). Once set, we own that presenter constraint and keep it
-        // in sync, clearing it back to null when the app resets to the "no constraint" default (0 for a
-        // minimum, +Infinity for a maximum).
+        // An empty optional means WinUI leaves the corresponding presenter size constraint alone.
+        // A non-default value makes WinUI manage that size constraint. When the app sets a size constraint
+        //  to the default (0 for a minimum, +Infinity for a maximum) WinUI clears the presenter size constraint once,
+        // then resets the optional.
+        // If presenter other than OverlappedPresenter is active, keep the default value until the size constraint can be cleared.
         //
-        // Once set via Window, the app must not poke the matching Preferred Min/Max on the AppWindow's
-        // OverlappedPresenter directly - Window is the source of truth and re-applies its value on the next
-        // presenter swap or DPI change, overwriting whatever the app set.
+        // While WinUI manages a size constraint, the app should not set the corresponding PreferredMinimum/Maximum
+        // property directly on OverlappedPresenter because WinUI will overwrite it.
+        // WinUI reapplies its saved value after a presenter,
+        // DPI, or title-bar change, replacing any value set directly on the presenter.
         std::optional<double> m_minWidth;
         std::optional<double> m_minHeight;
         std::optional<double> m_maxWidth;
