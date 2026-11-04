@@ -14,6 +14,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using MUXTestInfra.Shared.Infra;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
@@ -116,6 +117,87 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a UIA Collapse on an already-collapsed group header raises no StructureChanged, while the first Collapse does.")]
+        public void GroupHeaderRepeatedCollapseRaisesNoStructureChanged()
+        {
+            // Events are only observable from an out-of-proc client (see TableViewTests.VerifyStructureChangedEventsReachAUiaClient).
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null)
+                {
+                    Verify.Fail("The grouped TableView was not found.");
+                    return;
+                }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null)
+                {
+                    Verify.Fail("No TableViewGroupHeader peer was found under the rows host of the grouped table.");
+                    return;
+                }
+
+                var expandCollapse = new ExpandCollapseImplementation(groupHeader);
+                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Precondition: group 0 starts expanded.");
+
+                // Group StructureChanged is raised on the TableView's own peer, so element scope on the table.
+                using (var waiter = new StructureChangedEventWaiter(tableView, Scope.Element))
+                {
+                    expandCollapse.Collapse();
+                    Wait.ForIdle();
+                    Verify.IsTrue(waiter.TryWait(TimeSpan.FromSeconds(5)), "Positive control: the first Collapse must raise StructureChanged.");
+                    Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState, "The first Collapse must collapse the group.");
+
+                    // Drain any trailing events from the first Collapse so they cannot be blamed on the second.
+                    waiter.Reset();
+                    Wait.ForIdle();
+                    waiter.TryWait(TimeSpan.FromMilliseconds(500));
+                    waiter.Reset();
+
+                    expandCollapse.Collapse();
+                    Wait.ForIdle();
+                    Verify.IsFalse(waiter.TryWait(TimeSpan.FromSeconds(2)), "Collapsing an already-collapsed group changes nothing and must not raise StructureChanged.");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies pinning and unpinning a column raises a Transform.CanResize property-changed event on its header, so a UIA client's cached value stays current.")]
+        public void ColumnPinChangeRaisesCanResizePropertyChanged()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject score = GetHeader(BasicTable, "Score");
+                var togglePin = FindElement.ById<Button>(ToggleScorePinButton);
+                if (score == null || togglePin == null)
+                {
+                    Verify.Fail("The Score header and/or ToggleScorePinButton were not found on the test page.");
+                    return;
+                }
+
+                UIProperty canResize = UIProperty.Get("Transform.CanResize");
+                Verify.IsTrue(Convert.ToBoolean(score.GetProperty(canResize)), "Precondition: Score starts resizable.");
+
+                using (var waiter = new PropertyChangedEventWaiter(score, Scope.Element, canResize))
+                {
+                    togglePin.InvokeAndWait();
+                    Wait.ForIdle();
+                    Verify.IsTrue(waiter.TryWait(TimeSpan.FromSeconds(5)), "Pinning must raise a CanResize property-changed event.");
+                }
+                Verify.IsFalse(Convert.ToBoolean(score.GetProperty(canResize)), "A pinned column must report CanResize=false.");
+
+                using (var waiter = new PropertyChangedEventWaiter(score, Scope.Element, canResize))
+                {
+                    togglePin.InvokeAndWait();
+                    Wait.ForIdle();
+                    Verify.IsTrue(waiter.TryWait(TimeSpan.FromSeconds(5)), "Unpinning must raise a CanResize property-changed event.");
+                }
+                Verify.IsTrue(Convert.ToBoolean(score.GetProperty(canResize)), "An unpinned column must report CanResize=true.");
+            }
+        }
+
         #endregion
 
         #region Automation peer geometry
@@ -203,6 +285,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsLessThanOrEqual(Math.Abs(after.Height - before.Height), 1, "Scrolling must not change the table's height.");
                 Verify.IsLessThanOrEqual(after.Bottom, nextBounds.Top + 1,
                     "The scrolled table's bounding rectangle must still end above the element laid out after it.");
+            }
+        }
+
+        #endregion
+
+        #region Group expansion structure events
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing and re-expanding a group in a flat grouped table each raise StructureChanged to a UIA client, and a no-op expand does not.")]
+        public void GroupExpansionRaisesStructureChangedForEachRealChange()
+        {
+            // Contract: RaiseGroupStructureChanged fires when, and only when, a group's expansion actually
+            //   changed. RowMetadataProvider::SetGroupExpandedCore reports "changed", not the resulting state.
+            //   Before hierarchy it returned the resulting state, so a collapse (state false) never raised and
+            //   a client kept the collapsed rows in its cached tree.
+            // Failure means: a screen reader keeps reading rows a collapse removed, or re-reads a tree that a
+            //   no-op expand never changed.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null)
+                {
+                    return;
+                }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null)
+                {
+                    Verify.Fail("No TableViewGroupHeader peer was found under the rows host of the grouped table.");
+                    return;
+                }
+
+                var expandCollapse = new ExpandCollapseImplementation(groupHeader);
+                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Precondition: the first group starts expanded.");
+
+                using (var waiter = new StructureChangedEventWaiter(tableView, Scope.Element))
+                {
+                    expandCollapse.Collapse();
+                    Wait.ForIdle();
+                    bool collapseRaised = waiter.TryWait(TimeSpan.FromSeconds(5));
+
+                    waiter.Reset();
+                    expandCollapse.Expand();
+                    Wait.ForIdle();
+                    bool expandRaised = waiter.TryWait(TimeSpan.FromSeconds(5));
+
+                    waiter.Reset();
+                    expandCollapse.Expand();
+                    Wait.ForIdle();
+                    bool noOpRaised = waiter.TryWait(TimeSpan.FromSeconds(2));
+
+                    Log.Comment("StructureChanged observed: collapse={0} expand={1} no-op expand={2}.",
+                        collapseRaised, expandRaised, noOpRaised);
+
+                    Verify.IsTrue(collapseRaised, "Collapsing a group must raise StructureChanged.");
+                    Verify.IsTrue(expandRaised, "Re-expanding a group must raise StructureChanged.");
+                    Verify.IsFalse(noOpRaised, "Expanding an already-expanded group changes nothing and must not raise StructureChanged.");
+                }
             }
         }
 

@@ -328,6 +328,7 @@ ERROR_INCORRECT_PANEL_FOR_SERIALIZATION "List UI serialization is only supported
 ERROR_ITEMSPANELROOT_NOT_READY "ItemsPanelRoot is null."
 ERROR_DEFERRAL_COMPLETED "Deferral already completed."
 ERROR_ITEMCOLLECTION_REENTRANCY "Cannot complete a collection modification while another modification is in progress."
+ERROR_PROPERTY_REQUIRES_INTERFACE "The value of '%s' must be null or implement %s." // %s is a property name, %s is the required interface or list of alternative interfaces. {Locked}
 ERROR_LISTVIEWBASE_GROUPHEADERCONTAINER_ALREADY_IN_USE "The selected group header container is already in use."
 
 ERROR_SOFTWAREBITMAPSOURCE_INVALID_FORMAT "SoftwareBitmapSource::SetBitmapAsync only supports SoftwareBitmap with positive width/height, bgra8 pixel format and pre-multiplied or no alpha."

@@ -147,6 +147,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => CheckLeaks(objects));
         }
 
+        [TestMethod]
+        public void VerifyReleaseQueueDuringBackgroundGC()
+        {
+            Microsoft.UI.Dispatching.DispatcherQueue dispatcher = null;
+            RunOnUIThread.Execute(() => dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+            ReleaseQueueTestHelper.RunBackgroundGCAsync(dispatcher).GetAwaiter().GetResult();
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static WeakReference CreateAndCloseSelfHandlingWindow()
         {

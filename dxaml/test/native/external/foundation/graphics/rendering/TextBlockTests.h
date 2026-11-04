@@ -86,7 +86,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(PlateauScaleTestWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Test fast path rendering with high dpi.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

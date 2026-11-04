@@ -9,8 +9,11 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <limits>
+#include <new>
 #include <numeric>
 #include <unordered_map>
+#include <unordered_set>
 #include "winnls.h"
 
 namespace ShapingHelpers
@@ -471,23 +474,15 @@ namespace ShapingHelpers
             return true;
         case winrt::Windows::Foundation::PropertyType::Single:
         {
-            const auto value = propertyValue.GetSingle();
-            uint32_t bits = 0;
-            static_assert(sizeof(bits) == sizeof(value));
-            std::memcpy(&bits, &value, sizeof(bits));
             wchar_t buffer[16];
-            swprintf_s(buffer, L"f32:%08X", bits);
+            swprintf_s(buffer, L"f32:%08X", CanonicalFloatBits(propertyValue.GetSingle()));
             key = winrt::hstring{ buffer };
             return true;
         }
         case winrt::Windows::Foundation::PropertyType::Double:
         {
-            const auto value = propertyValue.GetDouble();
-            uint64_t bits = 0;
-            static_assert(sizeof(bits) == sizeof(value));
-            std::memcpy(&bits, &value, sizeof(bits));
             wchar_t buffer[24];
-            swprintf_s(buffer, L"f64:%016llX", static_cast<unsigned long long>(bits));
+            swprintf_s(buffer, L"f64:%016llX", static_cast<unsigned long long>(CanonicalDoubleBits(propertyValue.GetDouble())));
             key = winrt::hstring{ buffer };
             return true;
         }
@@ -658,17 +653,47 @@ namespace ShapingHelpers
         return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
     }
 
+    [[noreturn]] void RethrowAsCallerError(uint32_t kind)
+    {
+        try { throw; }
+        catch (CallerError const&) { throw; }
+        catch (CallerOutOfMemory const&) { throw; }
+        catch (winrt::hresult_error const& error) { throw CallerError(error, kind); }
+        catch (std::bad_alloc const&) { throw CallerOutOfMemory(kind); }
+    }
+
+    uint32_t CurrentCallerErrorKind() noexcept
+    {
+        try { throw; }
+        catch (CallerError const& error) { return error.Kind(); }
+        catch (CallerOutOfMemory const& error) { return error.Kind(); }
+        catch (...) { return 0; }
+    }
+
+    void SwallowedFaults::Note() noexcept
+    {
+        if (count == 0)
+        {
+            try { throw; }
+            catch (winrt::hresult_error const& error) { firstError = error.code(); }
+            catch (std::bad_alloc const&) { firstError = E_OUTOFMEMORY; }
+            catch (...) { firstError = E_FAIL; }
+        }
+        if (count != (std::numeric_limits<uint32_t>::max)()) { ++count; }
+    }
+
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
-        bool throwIfUnsupported)
+        bool throwIfUnsupported,
+        CollectionOwner owner)
     {
         // Single entry point for callers holding a raw source. The classification and the walk both
         // live on CollectionAccessor so there is exactly one interface ladder in the stack.
-        return CollectionAccessor{ source }.Enumerate(throwIfUnsupported);
+        return CollectionAccessor{ source, owner }.Enumerate(throwIfUnsupported);
     }
 
-    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source) :
-        m_source(source)
+    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source, CollectionOwner owner) :
+        m_source(source), m_callerOwned(owner == CollectionOwner::Caller)
     {
         if (!source)
         {
@@ -713,6 +738,7 @@ namespace ShapingHelpers
     }
 
     uint32_t CollectionAccessor::Count() const
+    try
     {
         if (m_vector)
         {
@@ -728,8 +754,15 @@ namespace ShapingHelpers
         }
         return 0;
     }
+    catch (...)
+    {
+        // Only the collection runs here, so any failure, out-of-memory included, is its own.
+        if (m_callerOwned) { RethrowAsCallerError(c_callerDataFault); }
+        throw;
+    }
 
     winrt::IInspectable CollectionAccessor::GetAtUnchecked(uint32_t index) const
+    try
     {
         if (m_vector)
         {
@@ -740,6 +773,11 @@ namespace ShapingHelpers
             return m_vectorView.GetAt(index);
         }
         return m_bindableVector.GetAt(index);
+    }
+    catch (...)
+    {
+        if (m_callerOwned) { RethrowAsCallerError(c_callerDataFault); }
+        throw;
     }
 
     bool CollectionAccessor::TryGetAt(uint32_t index, winrt::IInspectable& item) const
@@ -755,6 +793,7 @@ namespace ShapingHelpers
     }
 
     std::vector<winrt::IInspectable> CollectionAccessor::Enumerate(bool throwIfUnsupported) const
+    try
     {
         std::vector<winrt::IInspectable> result;
         if (!m_source)
@@ -825,10 +864,18 @@ namespace ShapingHelpers
 
         return result;
     }
+    catch (...)
+    {
+        // This also grows its own vector, so an out-of-memory here may be shaping's. A caller's indexed read that
+        // ran out of memory is tagged already (Count, GetAtUnchecked).
+        if (m_callerOwned && winrt::to_hresult() != E_OUTOFMEMORY) { RethrowAsCallerError(c_callerDataFault); }
+        throw;
+    }
 
     void ApplyPredicateFilter(
         std::vector<winrt::IInspectable>& items,
-        std::function<bool(winrt::IInspectable const& item)> const& predicate)
+        std::function<bool(winrt::IInspectable const& item)> const& predicate,
+        SwallowedFaults* contained)
     {
         if (!predicate)
         {
@@ -846,6 +893,7 @@ namespace ShapingHelpers
             }
             catch (...)
             {
+                if (contained) { contained->Note(); }
                 keep = false;
             }
 
@@ -1024,6 +1072,7 @@ namespace ShapingHelpers
         }
         catch (...)
         {
+            m_swallowedFaults.Note();
             return 0;
         }
     }
@@ -1120,8 +1169,13 @@ namespace ShapingHelpers
 
     void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
     {
+        InsertRanked(m_ranks.size(), item, rank);
+    }
+
+    void CustomSortRankAdapter::InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank)
+    {
         void* const identity = IdentityOf(item);
-        m_ranks.push_back({ item, rank, identity });
+        m_ranks.insert(m_ranks.begin() + position, RankEntry{ item, rank, identity });
         if (identity)
         {
             m_rankByIdentity[identity] = rank;
@@ -1140,6 +1194,67 @@ namespace ShapingHelpers
         {
             m_rerankAllPending = true;
         }
+    }
+
+    void CustomSortRankAdapter::Forget(winrt::IInspectable const& item)
+    {
+        if (m_comparerActive || !item)
+        {
+            return;
+        }
+
+        void* const identity = IdentityOf(item);
+        auto const isItem = [&](winrt::IInspectable const& candidate, void* candidateIdentity)
+        {
+            return candidate == item || (identity && candidateIdentity == identity);
+        };
+        m_ranks.erase(
+            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry) { return isItem(entry.Item, entry.Identity); }),
+            m_ranks.end());
+        m_evicted.erase(
+            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return isItem(evicted, IdentityOf(evicted)); }),
+            m_evicted.end());
+        if (identity)
+        {
+            m_rankByIdentity.erase(identity);
+        }
+    }
+
+    void CustomSortRankAdapter::RetainOnly(std::vector<winrt::IInspectable> const& liveRows)
+    {
+        if (m_comparerActive || (m_ranks.empty() && m_evicted.empty()))
+        {
+            return;
+        }
+
+        std::unordered_set<void*> live;
+        live.reserve(liveRows.size());
+        for (auto const& row : liveRows)
+        {
+            if (void* const identity = row ? IdentityOf(row) : nullptr)
+            {
+                live.insert(identity);
+            }
+        }
+        auto const isLive = [&](void* identity) { return identity && live.find(identity) != live.end(); };
+
+        m_ranks.erase(
+            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
+            {
+                if (isLive(entry.Identity))
+                {
+                    return false;
+                }
+                if (entry.Identity)
+                {
+                    m_rankByIdentity.erase(entry.Identity);
+                }
+                return true;
+            }),
+            m_ranks.end());
+        m_evicted.erase(
+            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return !isLive(IdentityOf(evicted)); }),
+            m_evicted.end());
     }
 
     void CustomSortRankAdapter::Rank(
@@ -1250,45 +1365,54 @@ namespace ShapingHelpers
         int32_t& rank,
         bool& tied)
     {
-        // Find where the item belongs among the existing ranks and insert it there, shifting the
-        // ranks above it.
+        // m_ranks is ordered by rank, so a binary search finds the slot in O(log n) comparer calls;
+        // this can run inside the app's PropertyChanged setter. Find the first entry not below item.
         rank = 0;
         tied = false;
-        for (size_t i = 0; i < m_ranks.size(); ++i)
+        size_t low = 0;
+        size_t high = m_ranks.size();
+        bool highIsEqual = false;
+        while (low < high)
         {
-            auto const entryItem = m_ranks[i].Item;
-            auto const entryRank = m_ranks[i].Rank;
+            const size_t mid = low + (high - low) / 2;
+            // Copied: the comparer is app code and must not see a reference into m_ranks.
+            auto const entryItem = m_ranks[mid].Item;
             const int32_t comparison = SafeCompare(entryItem, item);
             if (m_generation != generation)
             {
                 return false;
             }
-            if (comparison == 0)
-            {
-                rank = entryRank;
-                tied = true;
-                AddRanked(item, rank);
-                return true;
-            }
             if (comparison < 0)
             {
-                rank = std::max(rank, entryRank + 1);
+                low = mid + 1;
             }
-        }
-
-        for (auto& entry : m_ranks)
-        {
-            if (entry.Rank >= rank)
+            else
             {
-                ++entry.Rank;
-                if (entry.Identity)
-                {
-                    m_rankByIdentity[entry.Identity] = entry.Rank;
-                }
+                high = mid;
+                highIsEqual = comparison == 0;
             }
         }
 
-        AddRanked(item, rank);
+        if (low < m_ranks.size() && highIsEqual)
+        {
+            rank = m_ranks[low].Rank;
+            tied = true;
+            InsertRanked(low, item, rank);
+            return true;
+        }
+
+        rank = low > 0 ? m_ranks[low - 1].Rank + 1 : 0;
+        for (size_t i = low; i < m_ranks.size(); ++i)
+        {
+            auto& entry = m_ranks[i];
+            ++entry.Rank;
+            if (entry.Identity)
+            {
+                m_rankByIdentity[entry.Identity] = entry.Rank;
+            }
+        }
+
+        InsertRanked(low, item, rank);
         return true;
     }
 
@@ -1404,7 +1528,8 @@ namespace ShapingHelpers
 
     bool CustomSortRankAdapter::ShouldRerankAll() const noexcept
     {
-        // Re-placing costs about n comparer calls per item, a full re-rank about n log n.
+        // Re-placing costs about log n comparer calls plus an O(n) rank shift per item; a full
+        // re-rank about n log n.
         size_t log2Count = 0;
         for (size_t remaining = m_ranks.size(); remaining > 0; remaining >>= 1)
         {

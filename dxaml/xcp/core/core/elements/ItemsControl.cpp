@@ -375,7 +375,7 @@ _Check_return_ HRESULT CItemsControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
     CItemsPresenter* pItemsPresenter = NULL;
     CREATEPARAMETERS cp(GetContext());
 
-    IFC( CFrameworkElement::ApplyTemplate(fAddedVisuals) );
+    IFC( CControl::ApplyTemplate(fAddedVisuals) );
     if (!GetFirstChildNoAddRef())
     {
         // When the spec issue 29744 is ready bring the checking for

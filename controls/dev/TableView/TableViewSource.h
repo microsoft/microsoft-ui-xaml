@@ -6,10 +6,13 @@
 #include "pch.h"
 #include "common.h"
 
+#include <functional>
 #include <memory>
+#include <optional>
 
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
+#include "TableViewTipTypes.h"
 
 class ShapedItemsSource;
 
@@ -92,6 +95,15 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    // What the app declared on this source, not the projection in effect (unlike IsGrouped), read without calling
+    // app code (TableView_Instance).
+    bool HasFilter() const;
+    bool HasGroupBy() const;
+    bool HasParentBy() const;
+    // Rows before the filter (every node for a tree), and data rows after it, without group headers and whatever is
+    // expanded. Neither reads app code.
+    uint32_t SourceRowCount() const;
+    uint32_t DataRowCount() const;
     // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
     // node expansion. Header rows never match.
     bool ContainsShapedItem(winrt::IInspectable const& item) const;
@@ -105,13 +117,34 @@ public:
     // sits below the control in the shaping stack. For the same reason the owner INSTALLS the two
     // handlers below rather than being called back into by name - the same shape as the handlers
     // this class installs on its own engine.
-    void SetOwningTableView(winrt::IInspectable const& owner);
+    //
+    // Returns false, and leaves the existing owner bound, when a different live TableView owns it.
+    bool SetOwningTableView(winrt::IInspectable const& owner);
+    // Detaches `owner`; a no-op when another TableView owns this source.
+    void ReleaseOwningTableView(winrt::IInspectable const& owner);
+    // True when a TableView other than `candidate` owns this source.
+    bool IsOwnedByOther(winrt::IInspectable const& candidate) const
+    {
+        auto const owner = m_owningTableView.get();
+        return owner && owner != candidate;
+    }
+    // A refused TableView waits here. On release, waiters run in order until one claims the
+    // source; each waiter that runs is dropped. Keyed by the waiter's identity, one entry each.
+    void AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler);
+    void RemoveOwnerReleasedHandler(winrt::IInspectable const& waiter);
     // Raised after a rebuild changed the projected shape (grouped <-> flat), which swaps the
     // ItemsSourceView and row-metadata provider the owner cached.
     void SetProjectionChangedHandler(std::function<void()> handler) { m_projectionChanged = std::move(handler); }
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
+    using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t, bool failed,
+        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind,
+        TableViewTip::ContainedFaults)>;
+    void SetShapingTipHandlers(
+        winrt::IInspectable const& owner,
+        std::function<uint64_t(TableViewTip::Operation, bool)> begin,
+        ShapingTipCompleted complete);
     // The owner holds live restores while its cell editor is open and resumes them when it
     // closes (see ShapedItemsSource::SetLiveShapingHold).
     void SetLiveShapingHold(std::function<bool()> isHeld);
@@ -119,8 +152,22 @@ public:
     // Lets the owner refresh a custom comparer's ranks as items change (see
     // ShapedItemsSource::SetLiveItemChangedHook).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
+    // Lets the owner drop comparer ranks for rows that left the source (see
+    // ShapedItemsSource::SetRowsReleasedHook).
+    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook);
+    // Lets the owner learn that live shaping reacted to an item change (see
+    // ShapedItemsSource::SetLiveItemReshapeHandler).
+    void SetLiveItemReshapeHandler(std::function<void()> handler);
+    // False when sorting would fail because the rows include a null item or one object twice.
+    bool CanApplySort() const;
 
 private:
+    struct ShapingTip;
+    struct ShapingTipHandlers
+    {
+        std::function<uint64_t(TableViewTip::Operation, bool)> begin;
+        ShapingTipCompleted complete;
+    };
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
@@ -141,6 +188,16 @@ private:
     // source that has been swapped out cannot drive its former owner.
     std::function<void()> m_projectionChanged{};
     std::function<void(bool)> m_shapingChanged{};
+    std::shared_ptr<ShapingTipHandlers> m_shapingTipHandlers;
+    ShapingTip* m_shapingTip{};
+    uint64_t m_ownerGeneration{};
+    uint32_t m_notificationDepth{};
+    struct OwnerReleasedWaiter
+    {
+        winrt::weak_ref<winrt::IInspectable> Waiter;
+        std::function<void()> Handler;
+    };
+    std::vector<OwnerReleasedWaiter> m_ownerReleasedWaiters{};
     // tracker_ref so the GC can walk this strong reference into the (possibly managed) projected
     // rows and collect any cycle; also swaps to null safely during finalization.
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };

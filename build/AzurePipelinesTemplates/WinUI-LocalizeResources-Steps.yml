@@ -45,6 +45,7 @@ steps:
         controls\dev\InfoBar\Strings\en-us\Resources.resw
         controls\dev\InkToolbar\Strings\en-us\Resources.resw
         controls\dev\ItemContainer\Strings\en-us\Resources.resw
+        controls\dev\MapControl\Strings\en-us\Resources.resw
         controls\dev\NavigationView\Strings\en-us\Resources.resw
         controls\dev\NumberBox\Strings\en-us\Resources.resw
         controls\dev\PagerControl\Strings\en-us\Resources.resw
@@ -97,6 +98,25 @@ steps:
       publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
       packagesToPush: '${{ parameters.nupkgDir }}\Microsoft.Internal.WinUILocalizationResources.${{ parameters.packageVersion }}.nupkg'
       packageParentPath: '${{ parameters.nupkgDir }}'
+
+  - task: NuGetToolInstaller@1
+    displayName: 'Ensure NuGet is available for shine-oss publishing'
+
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate to shine-oss feed'
+    inputs:
+      azureDevOpsServiceConnection: ShineOSS-AzureDevOps-Push
+      feedUrl: https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json
+
+  - task: CmdLine@2
+    displayName: 'NuGet-Localization-Resources push to shine-oss WinUI-Dependencies feed'
+    inputs:
+      script: >-
+        nuget.exe push "${{ parameters.nupkgDir }}\Microsoft.Internal.WinUILocalizationResources.${{ parameters.packageVersion }}.nupkg"
+        -Source "https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json"
+        -ApiKey AzureArtifacts
+        -NonInteractive
+        -SkipDuplicate
 
   # Check for changes and create a new branch if required
   - powershell: |

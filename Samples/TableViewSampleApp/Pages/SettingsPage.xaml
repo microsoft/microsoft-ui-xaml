@@ -5,7 +5,7 @@
             Note: the Tabular POC used CommunityToolkit's toolkit:SettingsCard /
             SettingsExpander. That package is not referenced by this gallery (and the
             build owns the csproj), so the SettingsCard look is reproduced below with
-            the sample's own TableHostBorderStyle + a FontIcon / Header / Description /
+            the sample's own CardBorderStyle + a FontIcon / Header / Description /
             control grid. Same visual rhythm, no new dependency.
         -->
         <x:Double x:Key="SettingsCardSpacing">4</x:Double>
@@ -27,7 +27,7 @@
 
                 <!-- Appearance -->
                 <TextBlock Text="Appearance" Style="{StaticResource SectionHeaderTextStyle}" Margin="1,24,0,6" AutomationProperties.HeadingLevel="Level2"/>
-                <Border Style="{StaticResource TableHostBorderStyle}" Padding="16,12">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="16,12">
                     <Grid ColumnSpacing="16" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -65,7 +65,7 @@
                            Style="{StaticResource SectionHeaderTextStyle}" Margin="1,24,0,6"
                            TextWrapping="Wrap"
                            AutomationProperties.HeadingLevel="Level2"/>
-                <Border Style="{StaticResource TableHostBorderStyle}" Padding="16,12">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="16,12">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Real contrast themes — not the app's Light / Dark"
                                    Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -91,7 +91,7 @@
                 <TextBlock Text="Storage" Style="{StaticResource SectionHeaderTextStyle}" Margin="1,24,0,6" AutomationProperties.HeadingLevel="Level2"/>
                 <Border x:Name="StorageCard"
                         AutomationProperties.AutomationId="StorageCard"
-                        Style="{StaticResource TableHostBorderStyle}"
+                        Style="{StaticResource CardBorderStyle}"
                         Padding="16,12">
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>

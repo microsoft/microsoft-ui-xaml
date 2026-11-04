@@ -7,6 +7,7 @@
 //      containers which are being visible or focused
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "WrapGrid.g.h"
 #include <math.h>
 #include "ScrollContentPresenter.g.h"
@@ -273,7 +274,7 @@ IFACEMETHODIMP WrapGrid::MeasureOverride(
     wf::Size availableSize,
     _Out_ wf::Size* returnValue)
 {
-    TraceVirtualizationMeasureBegin();
+    XamlTelemetry::VirtualizationMeasureBegin(GetHandle());
 
     HRESULT hr = S_OK;
     OrientedSize itemSize;
@@ -337,7 +338,7 @@ IFACEMETHODIMP WrapGrid::MeasureOverride(
     }
 
 Cleanup:
-    TraceVirtualizationMeasureEnd();
+    XamlTelemetry::VirtualizationMeasureEnd(GetHandle());
     RRETURN(hr);
 }
 

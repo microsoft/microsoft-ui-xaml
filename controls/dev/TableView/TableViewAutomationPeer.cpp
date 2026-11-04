@@ -157,6 +157,18 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     return clipped;
 }
 
+void TableViewAutomationPeer::ShowContextMenuCore()
+{
+    // The base raises ContextRequested on the TableView itself, which shows its own
+    // ContextFlyout before the template-root suppression hook can see it.
+    if (auto const impl = GetImpl(); impl && impl->AreContextMenusSuppressed())
+    {
+        return;
+    }
+
+    __super::ShowContextMenuCore();
+}
+
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.
@@ -385,9 +397,9 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
 
 bool TableViewAutomationPeer::CanSelectMultiple()
 {
-    // Single selection only in this release. Multiple must derive this from SelectionMode, and
-    // GetSelection below must return every selected row rather than at most one.
-    return false;
+    // GetSelection below must return every selected row once this can be true.
+    auto const impl = GetImpl();
+    return impl && impl->CanSelectMultipleRows();
 }
 
 bool TableViewAutomationPeer::IsSelectionRequired()
@@ -401,8 +413,10 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
     std::vector<winrt::IRawElementProviderSimple> headers;
     std::vector<ColumnHeaderPeerCacheEntry> liveCache;
 
-    // Key off visible logical Columns() so headers enumerate before templates realize.
-    if (auto const tableView = Owner().try_as<winrt::TableView>())
+    // Key off visible logical Columns() so headers enumerate before templates realize. Hidden column
+    // headers report none, matching each cell's GetColumnHeaderItems.
+    if (auto const tableView = Owner().try_as<winrt::TableView>();
+        tableView && winrt::get_self<TableView>(tableView)->AreColumnHeadersShownInternal())
     {
         if (auto const columns = tableView.Columns())
         {

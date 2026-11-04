@@ -46,8 +46,6 @@ public sealed partial class PerformancePage : SamplePageBase
         PerfTable.ItemsSource = _source;
         CaptureBaseline();
 
-        // No re-selection fallback: its deferred row lookup would add noise to the measurement.
-        Shaping.RestoreSelection = false;
         Shaping.TimeCall = Timed;   // GroupBy, ClearGroupBy, Expand all and Collapse all are timed like every run
         InitializeSample(Status, Shaping.Attach(PerfTable, _source));
     }
@@ -105,7 +103,6 @@ public sealed partial class PerformancePage : SamplePageBase
 
     private string ColumnSetLabel => _templateColumns ? "template columns" : "text columns";
 
-    // <snippet>
     // ---- Timed runs ---------------------------------------------------------------------
 
     // Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
@@ -127,7 +124,6 @@ public sealed partial class PerformancePage : SamplePageBase
         GC.WaitForPendingFinalizers();
         GC.Collect();
     }
-    // </snippet>
 
     private bool BeginRun()
     {
@@ -146,6 +142,16 @@ public sealed partial class PerformancePage : SamplePageBase
     private async void OnLoad100kClick(object sender, RoutedEventArgs e) => await LoadAsync(100_000, Load100kText);
 
     // <snippet>
+    // Build the rows off the UI thread, then bind them once: one collection, one source, one assignment.
+    // Under GroupBy, adding rows one by one regroups every row: ClearGroupBy, add, then GroupBy once.
+    private void BindRows(List<Person> rows)
+    {
+        _people = new ObservableCollection<Person>(rows);
+        _source = TableViewSource.From(_people);
+        PerfTable.ItemsSource = _source;
+    }
+    // </snippet>
+
     private async Task LoadAsync(int count, TextBlock result)
     {
         if (!BeginRun())
@@ -155,14 +161,8 @@ public sealed partial class PerformancePage : SamplePageBase
 
         try
         {
-            // DO: build the rows off the UI thread and off the clock, then bind them once.
             var rows = await Task.Run(() => PersonData.Many(count));
-            var ms = Timed(() =>
-            {
-                _people = new ObservableCollection<Person>(rows);
-                _source = TableViewSource.From(_people);
-                PerfTable.ItemsSource = _source;
-            });
+            var ms = Timed(() => BindRows(rows));
 
             result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
 
@@ -180,7 +180,6 @@ public sealed partial class PerformancePage : SamplePageBase
             _isRunning = false;
         }
     }
-    // </snippet>
 
     private void OnSortClick(object sender, RoutedEventArgs e)
     {
@@ -245,7 +244,6 @@ public sealed partial class PerformancePage : SamplePageBase
         }
     }
 
-    // <snippet>
     private async void OnPerItemAddClick(object sender, RoutedEventArgs e)
     {
         if (!BeginRun())
@@ -287,10 +285,10 @@ public sealed partial class PerformancePage : SamplePageBase
     private async Task RunPerItemAddShapedAsync(IReadOnlyList<Person> rows)
     {
         var key = Shaping.SelectedKey;
-        var shapingText = Shaping.AppliedText; // snippet:skip
+        var shapingText = Shaping.AppliedText;
         var grouped = IsGrouped;
         var relation = IsHierarchical ? Shaping.Relation : null;
-        var verbs = grouped && relation is not null ? "GroupBy and ParentBy" : grouped ? "GroupBy" : "ParentBy"; // snippet:skip
+        var verbs = grouped && relation is not null ? "GroupBy and ParentBy" : grouped ? "GroupBy" : "ParentBy";
         var source = _source;
         var people = _people;
         Shaping.SetBusy(true);
@@ -394,7 +392,6 @@ public sealed partial class PerformancePage : SamplePageBase
 
     protected override void OnShapingAction(ShapingActionEventArgs e) =>
         e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", e.ElapsedMilliseconds);
-    // </snippet>
 
     private void CaptureBaseline()
     {

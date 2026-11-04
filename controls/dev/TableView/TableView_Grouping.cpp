@@ -249,6 +249,13 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
         ? BulkExpansionAxis::Groups
         : BulkExpansionAxis::Rows;
 
+    // One group or node is use; a subtree is a bulk request, like ExpandAllGroups.
+    if (!subtree && !identity.empty())
+    {
+        TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation,
+            axis == BulkExpansionAxis::Groups ? TableViewTelemetry::Feature::Grouping : TableViewTelemetry::Feature::Hierarchy);
+    }
+
     QueueGroupExpansionByIdentity(identity, desired, axis, subtree);
 }
 
@@ -377,7 +384,10 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
         return {};
     }
 
-    // Walk out from the focused element to its header or data-row container, if it is inside one.
+    // Walk out from the focused element to its header container, if it is inside one. Data-row
+    // focus is captured only for a hierarchical source, where a row's chevron is the expansion
+    // target; in a flat grouped table, row focus is left alone.
+    const bool captureRows = m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
     for (winrt::DependencyObject node = focused; node; node = winrt::VisualTreeHelper::GetParent(node))
     {
@@ -388,6 +398,10 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
         }
         else if (auto const row = node.try_as<winrt::TableViewRow>())
         {
+            if (!captureRows)
+            {
+                break;
+            }
             container = row;
         }
 
@@ -489,36 +503,54 @@ void TableView::ApplyGroupExpansionByIdentity(
     }
 
     bool changed = false;
-    try
+    // Local strong ref: a handler may re-declare the shape and replace the provider mid-call. Edit-ending handlers
+    // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
+    // queued edit reshapes.
+    auto const provider = m_tableViewSourceRowMetadata;
+    if (provider && generation == m_rowMetadataGeneration)
     {
-        // Local strong ref: a handler may re-declare the shape and replace the provider mid-call.
-        auto const provider = m_tableViewSourceRowMetadata;
-        if (subtree)
+        // While actions are tracked, every request is, so a failure writes TableView_Error. A request that changes one
+        // group or tree node also runs a TiP test. A subtree is a bulk request, like ExpandAllGroups, and a request
+        // that changes nothing runs none: each arrow on a group header is requested by the header and again by
+        // TryHandleGroupHeaderExpandCollapseKey. The lookup runs only while actions are tracked.
+        auto const withTest = TracksTipActions() && !subtree && provider->WouldChangeExpansion(identity, desired);
+        ActionTip tip{ *this, axis == BulkExpansionAxis::Groups ?
+                TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+            TableViewTip::Stage::Expansion, true, withTest };
+        try
         {
-            provider->ExpandSubtree(identity);
-            changed = true;
-        }
-        else if (desired.has_value())
-        {
-            // Idempotent set: applying the state we already have is a no-op in the provider.
-            if (*desired)
+            if (subtree)
             {
-                provider->Expand(identity);
+                provider->ExpandSubtree(identity);
+                changed = true;
+            }
+            else if (desired.has_value())
+            {
+                // Idempotent set: applying the state we already have is a no-op, and reports no change.
+                changed = *desired
+                    ? provider->Expand(identity)
+                    : provider->Collapse(identity);
             }
             else
             {
-                provider->Collapse(identity);
+                changed = provider->Toggle(identity);
             }
-            changed = true;
+
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (changed) { tip.Complete(); }
+            // No change shown yet. A tested request expected one; an untested one closes without a TiP result.
+            else { tip.Ignore(TableViewTip::IgnoreReason::DeferredOrUnproven); }
         }
-        else
+        catch (...)
         {
-            changed = provider->Toggle(identity);
+            // Best-effort: the grouping source or its state can change during cleanup. Expansion reads only the
+            // projection TableView built, so a failure is TableView's unless the source was replaced or the exception
+            // is tagged as the app's.
+            auto const fault = TableViewTip::CurrentFault();
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (fault.appFault != TableViewTip::AppFaultKind::None) { tip.ApplicationFault(fault.appFault, fault.error); }
+            else { tip.Fail(fault.error); }
         }
-    }
-    catch (...)
-    {
-        // Best-effort: the grouping source or its state can change during cleanup.
     }
 
     DrainCoalescedEditReshape();
@@ -528,8 +560,14 @@ void TableView::ApplyGroupExpansionByIdentity(
     if (changed)
     {
         QueueGroupExpansionRowRefresh();
-        // The toggled row keeps its index, so it is never re-prepared; restamp it here.
+        // The toggled row keeps its index, so it is never re-prepared; restamp it here. In a tree,
+        // rows below the splice may still report pre-reconcile indices, so restamp again once the
+        // repeater has reconciled. Flat grouped rows carry no tree state, so one pass is enough.
         RefreshRealizedRowHierarchyState();
+        if (m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource())
+        {
+            QueueRefreshRealizedRowHierarchyState();
+        }
         RaiseGroupStructureChanged();
     }
 
@@ -556,7 +594,14 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
     // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
     // header container during the next layout pass; focusing now would land on a container layout
     // is about to recycle, dropping focus a second time. A one-shot LayoutUpdated fires once the
-    // tree has settled, mirroring FocusRow's deferred-focus pattern.
+    // tree has settled.
+    ArmContainerFocusRestore(identity, focusState, fromPointerGesture, s_containerFocusRestoreAttempts);
+}
+
+// Re-armed while the header is still unarranged after the relayout; the last attempt focuses anyway.
+void TableView::ArmContainerFocusRestore(
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft)
+{
     if (m_pendingGroupFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
@@ -565,7 +610,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 
     auto weakThis = get_weak();
     m_pendingGroupFocusLayoutToken = LayoutUpdated(
-        [weakThis, identity, focusState, fromPointerGesture](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, identity, focusState, fromPointerGesture, attemptsLeft](winrt::IInspectable const&, winrt::IInspectable const&)
         {
             auto strongThis = weakThis.get();
             if (!strongThis)
@@ -590,7 +635,11 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
                     return;
                 }
 
-                strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture);
+                const bool finalAttempt = attemptsLeft <= 1;
+                if (!strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture, finalAttempt))
+                {
+                    strongThis->ArmContainerFocusRestore(identity, focusState, fromPointerGesture, attemptsLeft - 1);
+                }
             }
             catch (...)
             {
@@ -599,23 +648,25 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
         });
 }
 
-void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture)
+// Returns false only when a non-final attempt found the group header not yet arranged.
+bool TableView::FocusContainerByIdentity(
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, bool finalAttempt)
 {
     if (identity.empty() || !m_tableViewSourceRowMetadata)
     {
-        return;
+        return true;
     }
 
     int32_t index = -1;
     if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) || index < 0)
     {
-        return;
+        return true;
     }
 
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
     {
-        return;
+        return true;
     }
 
     // The metadata provider and repeater own separate views that can absorb reshapes at different
@@ -624,7 +675,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
     auto const sourceView = repeater.ItemsSourceView();
     if (!sourceView || index >= sourceView.Count())
     {
-        return;
+        return true;
     }
 
     // Data row: a splice keeps focus in place; restore only if the Reset recycled the container.
@@ -640,7 +691,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
                 {
                     if (repeater.GetElementIndex(row) == index)
                     {
-                        return;
+                        return true;
                     }
                     break;
                 }
@@ -648,27 +699,48 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
         }
 
         FocusRow(index);
-        return;
+        return true;
     }
 
     auto element = repeater.GetOrCreateElement(index);
     if (!element)
     {
-        return;
+        return true;
     }
 
     // Only a group header is a valid target: after a re-sort or source swap the identity's index
     // could now name a data row, and focusing that with a header's intent would be wrong.
     if (!element.try_as<winrt::TableViewGroupHeader>())
     {
-        return;
+        return true;
     }
 
-    if (!fromPointerGesture)
+    if (!IsRowElementArranged(element))
     {
-        if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+        // The layout can re-project the source; the header must still be this group's, at index.
+        auto const expectedItem = GetRowsSourceItemAt(index);
+        int32_t revalidatedIndex = -1;
+        const bool sameHeader = ArrangeAndRevalidate(element, index, expectedItem) &&
+            m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, revalidatedIndex) &&
+            revalidatedIndex == index &&
+            element.try_as<winrt::TableViewGroupHeader>();
+        if (!sameHeader)
         {
-            frameworkElement.StartBringIntoView();
+            if (!finalAttempt)
+            {
+                return false;
+            }
+            if (!fromPointerGesture && expectedItem)
+            {
+                BeginPendingBodyFocus(index, m_currentCellColumn, false /* cellLevel */, std::nullopt, expectedItem);
+                m_pendingReshapeFocusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Keyboard : focusState;
+            }
+            return true;
+        }
+        if (!IsRowElementArranged(element) && !finalAttempt)
+        {
+            return false;
         }
     }
 
@@ -676,6 +748,16 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
     {
         control.Focus(focusState);
     }
+
+    // The body scrolls itself to the header; finish through the attempt loop if the header still
+    // sits at an estimated position outside the viewport.
+    if (!fromPointerGesture && !IsRowElementInViewport(element))
+    {
+        BringRowElementIntoView(element, std::nullopt);
+        BeginPendingBodyFocus(index, m_currentCellColumn, false /* cellLevel */, std::nullopt);
+        m_pendingReshapeFocusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Keyboard : focusState;
+    }
+    return true;
 }
 
 void TableView::ExpandAllGroups()
@@ -730,6 +812,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending)
@@ -748,24 +831,28 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     bool changed = false;
     try
     {
-        // Local strong ref, as in ApplyGroupExpansionByIdentity.
+        // Local strong ref, as in ApplyGroupExpansionByIdentity; edit-ending handlers may have
+        // replaced or cleared the source.
         auto const provider = m_tableViewSourceRowMetadata;
-        switch (axis)
+        if (provider && generation == m_rowMetadataGeneration)
         {
-        case BulkExpansionAxis::Groups:
-            expand
-                ? provider->ExpandAllGroups()
-                : provider->CollapseAllGroups();
-            break;
+            switch (axis)
+            {
+            case BulkExpansionAxis::Groups:
+                expand
+                    ? provider->ExpandAllGroups()
+                    : provider->CollapseAllGroups();
+                break;
 
-        case BulkExpansionAxis::Rows:
-            expand
-                ? provider->ExpandAllRows()
-                : provider->CollapseAllRows();
-            break;
+            case BulkExpansionAxis::Rows:
+                expand
+                    ? provider->ExpandAllRows()
+                    : provider->CollapseAllRows();
+                break;
+            }
+
+            changed = true;
         }
-
-        changed = true;
     }
     catch (...)
     {
@@ -777,7 +864,9 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     if (changed)
     {
         QueueGroupExpansionRowRefresh();
+        // Sync for rows that kept their index; queued for rows whose index the splice shifted.
         RefreshRealizedRowHierarchyState();
+        QueueRefreshRealizedRowHierarchyState();
 
         // Both axes: under a grouped tree, row expansion changes group contents.
         RaiseGroupStructureChanged();
@@ -809,6 +898,11 @@ void TableView::RefreshRealizedRowHierarchyState()
 void TableView::RaiseGroupStructureChanged()
 {
     QueueTerminalGridLineRefresh();
+
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
+    {
+        return;
+    }
 
     if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewAutomationPeer>())
     {
@@ -982,6 +1076,11 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     if (!groupRow)
     {
         groupRow = header.DataContext();
+        if (groupRow && groupRow.try_as<winrt::TableViewGroupInfo>())
+        {
+            // Already prepared once: DataContext is the projection set below, not the entry.
+            groupRow = headerImpl->GroupEntryInternal();
+        }
     }
 
     if (auto const entry = TryGetGroupedEntry(groupRow))
@@ -1067,6 +1166,15 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     header.IsExpandable(isExpandable);
     header.IsExpanded(isExpanded);
 
+    // Expose the projection as the header's DataContext, as a data row exposes its item, so
+    // bindings in a group header Style and in its ContextFlyout (the flyout takes its target's
+    // DataContext) see TableViewGroupInfo rather than the internal projection entry.
+    headerImpl->SetGroupEntryInternal(groupRow);
+    if (auto const info = header.Content(); header.DataContext() != info)
+    {
+        header.DataContext(info);
+    }
+
     if (sameGroup && previousState != newState)
     {
         headerImpl->RaiseExpandCollapseStateChanged(previousState, newState);
@@ -1144,6 +1252,7 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     // ref costs nothing to keep and stays correct.
     winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
     header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
+    winrt::get_self<TableViewGroupHeader>(header)->SetGroupEntryInternal(nullptr);
 }
 
 void TableView::UpdateGroupHeaderWidth(winrt::TableViewGroupHeader const& header)

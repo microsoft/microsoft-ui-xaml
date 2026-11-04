@@ -90,14 +90,17 @@ configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`
   unchanged is ignored.
 - **When it reshapes.** A change that moves the snapshot posts one reshape to the source's
   dispatcher; further changes in the same turn coalesce into it. A change raised on another thread
-  is marshaled to the source's thread first. The reshape re-applies the whole pipeline: filter,
+  is marshaled to the source's thread first; if that post is refused, the change is picked up by
+  the next live change on the source's thread. The reshape re-applies the whole pipeline: filter,
   sort, group and parent relation.
 - **Edits.** While a cell edit is in progress the reshape is held, and it runs once the edit
   closes, so live data never ends the user's edit.
 - **Turning it on** subscribes every item and posts one catch-up reshape, because edits made while
   it was off were not tracked. Turning it off revokes every subscription.
 - **Cost.** One subscription and one snapshot per item, kept in step with collection changes, plus
-  one snapshot capture per changed item while no reshape is pending.
+  one snapshot capture per changed item while no reshape is pending. Each reshape is a full refresh:
+  it re-reads every item and recaptures every snapshot (O(n) in the source size), however few items
+  changed.
 
 ## 3. Key semantics
 
@@ -117,7 +120,9 @@ rebuild (`MakeNodeKey`, built on `ShapingHelpers::ValueKey::ToObjectLookupKey`):
 
 The value form keeps a type tag, so mixed types do not match: an `Int32` key never matches an
 `Int64` parent key, and an enum never matches an enum of another type or a plain integer. This is
-documented, not coerced.
+documented, not coerced. Floating-point keys (`Single`, `Double`, and the components of `Point`,
+`Size` and `Rect`) compare as numbers: `-0` equals `+0`, and every NaN equals every other NaN of the
+same type.
 
 An enum declared in app code that is not a WinRT type (a plain C# `enum`) is not boxed as an
 `IPropertyValue`; it reaches the control as an opaque object and is therefore compared by reference
@@ -125,6 +130,8 @@ identity, which a fresh box never satisfies. Apps convert such keys to their int
 
 Every key object is held for the whole index build. An object key's lookup form is its address, and
 a released temporary's address could otherwise be reused by the next selector result and alias it.
+Object keys are also held for as long as the built structure is current, because the node key
+outlives the build as expansion intent and selection identity (§5).
 
 ### 3.2 Roots, orphans, and invalid data
 
@@ -238,6 +245,9 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 - It survives **reparenting**. A node the user expanded stays expanded when it moves.
 - It is also the row identity for the metadata provider (`GetIdentity`), so selection re-anchors on
   it too.
+- Selection follows the presented row. When a collapse hides the selected row, the selection is
+  cleared rather than held for the hidden row, and neither expanding again nor a later reshape
+  restores it. Collapsing a group behaves the same way.
 
 ### 5.2 Baseline, bulk verbs, and redeclaration
 
@@ -472,8 +482,8 @@ press is left unhandled for the row. A press on a leaf's gutter is also left unh
 selects the row.
 
 **Template contract.** `PART_RowExpanderGutter` and `PART_RowExpanderIcon` are optional, but a
-template declares them together with the `HierarchyStates`, `ExpandabilityStates` and
-`ExpansionStates` groups or not at all: the groups are entered on every row (flat and grouped
+template declares them together with the `RowHierarchyStates`, `RowExpandabilityStates` and
+`RowExpansionStates` groups or not at all: the groups are entered on every row (flat and grouped
 tables included) and the default template's states resolve `PART_RowExpanderIcon` by name, so
 groups without the part fail at state application, while neither is fine. Code null-checks the
 gutter, so omitting it loses only the pointer gesture and visible chevron (keyboard and the
@@ -590,6 +600,16 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
 - **Load on demand** (Kendo/DevExtreme remote "has children"): needs a way to show a chevron with no
   children present yet; depends on the child-provider seam above.
 - **Filter modes** other than with-ancestors.
+- **Per-row programmatic expansion.** v1 has no app-callable expand or collapse for a single row;
+  `TableViewRow.IsExpanded` is read-only and the only app verbs are `ExpandAllRows` /
+  `CollapseAllRows`. Users toggle individual rows by chevron, keyboard and UI Automation. Restoring
+  saved expansion, expanding to a search hit, or expanding to the selection needs a keyed verb on
+  `TableView` (for example `ExpandRow(item)` / `CollapseRow(item)`), which the adapter already
+  supports internally (`SetNodeExpanded`, `ExpandSubtree`). Out of scope for v1, additive post-v1.
+- **Matching ancestors under a filter.** Auto-expand (§4.2) applies to context rows only. A row that
+  matches keeps its own expansion state, so a match below a collapsed matching ancestor is reached
+  by expanding that ancestor. Expanding every ancestor of a match would also expand the whole tree
+  under a broad filter; a filter mode (above) is the place to offer that.
 - **Observing key property changes without live shaping** (without `IsLiveShaping`, an in-place
   reparent waits for the next reshape or collection change; §6).
 - Also not covered: declarative aggregation, nested grouping, cascading selection, drag-reparent,

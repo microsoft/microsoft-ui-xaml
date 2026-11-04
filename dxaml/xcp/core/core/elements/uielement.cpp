@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "MetadataAPI.h"
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
 #include "XamlTraceLogging.h"
 #ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
 #include "WucVisualTreeProfiler.h"
 #endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
@@ -80,6 +80,7 @@ using namespace Theming;
 // here to avoid pulling the allocator's private headers into the core.
 _Check_return_ UINT64 XcpDebugGetAllocationSize(_In_opt_ const void *pAddress) noexcept;
 #endif
+#endif // XAMLPROFILER_ENABLED
 // Computes the DXaml-peer InstanceHandle for a core object so the XAML Profiler can bridge a
 // tree node back to the live element (e.g. to highlight it in the target app). This is the same
 // value XAML Diagnostics / the WinUISnoop tap use as an InstanceHandle (see HandleMap::GetHandle):
@@ -109,6 +110,38 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
         return handle;
     }
     return 0;
+}
+
+XamlTelemetry::Identity XamlTelemetry::GetIdentity(
+    _In_opt_ CDependencyObject* object,
+    _In_opt_ CDependencyObject* relatedUIElement)
+{
+    Identity identity;
+    if (object == nullptr)
+    {
+        return identity;
+    }
+
+    if (auto uiElement = do_pointer_cast<CUIElement>(object))
+    {
+        identity.uiElement = reinterpret_cast<uint64_t>(uiElement);
+    }
+    else
+    {
+        identity.objectPointer = reinterpret_cast<uint64_t>(object);
+        auto owner = do_pointer_cast<CUIElement>(relatedUIElement);
+        identity.uiElement = reinterpret_cast<uint64_t>(owner);
+    }
+    return identity;
+}
+
+#ifdef XAMLPROFILER_ENABLED
+XamlElementTracing::Identity XamlElementTracing::GetIdentity(
+    _In_opt_ CDependencyObject* object,
+    _In_opt_ CDependencyObject* relatedUIElement)
+{
+    const auto identity = XamlTelemetry::GetIdentity(object, relatedUIElement);
+    return { identity.uiElement, identity.objectPointer };
 }
 
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
@@ -1330,15 +1363,6 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
             sourceUri.GetBuffer(),
             sourceLine,
             sourceColumn);
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -1951,15 +1975,6 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
             static_cast<bool>(params.fIsLive));
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -13373,7 +13388,11 @@ CUIElement::BoundsTestEntry(
 {
     HitTestParams myParams(hitTestParams);
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::HitTestBegin(this);
+#else
     TraceHitTestBegin();
+#endif
 
     // TODO: HitTest: Consider leaving layout stale and only updating layout during Tick
     IFC_RETURN(UpdateLayout());
@@ -13383,13 +13402,27 @@ CUIElement::BoundsTestEntry(
 
     IFC_RETURN(BoundsTestInternal(target, pCallback, &hitTestParams, canHitDisabledElements, canHitInvisibleElements, nullptr /* pResult */));
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::HitTestEnd(this);
+#else
     TraceHitTestEnd();
+#endif
 
     // TODO: HitTest: put the stats on CCoreServices or something
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlElementTracing::IsEnabled())
+    {
+        XamlElementTracing::OuterBoundsStats(this, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
+        XamlElementTracing::InnerBoundsStats(this, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
+        XamlElementTracing::ContentBoundsStats(this, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
+        XamlElementTracing::ChildBoundsStats(this, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
+    }
+#else
     TraceOuterBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
     TraceInnerBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
     TraceContentBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
     TraceChildBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
+#endif
 
     return S_OK;
 }

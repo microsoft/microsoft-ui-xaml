@@ -27,6 +27,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Hosts the element as test content and runs a synchronous layout pass. Call on the UI thread.
         protected void LoadContent(UIElement element)
         {
+            // Primitives (SortIndicator, ResizeGripper) hosted without a TableView still need the
+            // control resources, or the first test in a fresh host fails template lookup.
+            EnsureTabularControlsResources();
             Content = element;
             Content.UpdateLayout();
         }

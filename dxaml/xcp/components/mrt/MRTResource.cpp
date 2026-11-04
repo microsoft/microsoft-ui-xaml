@@ -11,6 +11,7 @@
 #include "FilePathResource.h"
 #include "MRTKnownQualifierNames.h"
 #include "MRTResource.h"
+#include "ResourceMemory.h"
 
 // Creates a CMRTResource for the given resource URI and MRT resource candidate.
 _Check_return_ HRESULT
@@ -50,17 +51,19 @@ CMRTResource::~CMRTResource()
 // that matches the type, and Load() is delegating to the sub-object.
 _Check_return_ HRESULT CMRTResource::Load(_Outptr_ IPALMemory** ppMemory)
 {
+    *ppMemory = nullptr;
+
     switch (m_kind)
     {
         case mwar::ResourceCandidateKind::ResourceCandidateKind_EmbeddedData:
-            // For embedded data type resources, we must load via a stream.
+        {
             IFC_RETURN(EnsureEmbeddedDataResource());
-            IFC_RETURN(GetPALMemoryServices()->CreatePALMemoryFromBuffer(
-                m_embeddedDataBufferSize,
-                m_embeddedDataBuffer,
-                false /* OwnsBuffer */,
-                ppMemory));
+            IFCPTR_RETURN(m_embeddedDataBuffer);
+
+            *ppMemory = make_xref<CResourceMemory>(
+                m_embeddedDataBuffer, m_embeddedDataBufferSize, this).detach();
             break;
+        }
         case mwar::ResourceCandidateKind::ResourceCandidateKind_FilePath:
             // For path type resources, map the file into memory.
             IFC_RETURN(EnsureFilePathResource());
@@ -231,4 +234,3 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
 
     return S_OK;
 }
-

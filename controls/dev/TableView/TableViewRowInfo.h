@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 
 #include <winrt/Windows.Foundation.h>
 
@@ -44,10 +45,12 @@ struct ITableViewRowMetadataProvider
     // identity is derived; consumers that needed it were each scanning every row and calling
     // GetIdentity until one matched.
     virtual bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) = 0;
-    virtual void Expand(winrt::hstring const& key) = 0;
-    virtual void Collapse(winrt::hstring const& key) = 0;
-    // True when the state changed (collapse included), not the resulting state.
+    // All three return true when the state changed (collapse included), not the resulting state.
+    virtual bool Expand(winrt::hstring const& key) = 0;
+    virtual bool Collapse(winrt::hstring const& key) = 0;
     virtual bool Toggle(winrt::hstring const& key) = 0;
+    // Whether Expand (desired true), Collapse (false) or Toggle (empty) would change the state; true when unsure.
+    virtual bool WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept = 0;
 
     // One verb per axis: expanding group headers must not materialize the whole tree.
     virtual void ExpandAllGroups() = 0;

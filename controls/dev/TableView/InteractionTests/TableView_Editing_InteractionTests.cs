@@ -163,6 +163,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a keyboard-only user can choose the edit column: Tab into the body, Right into the cells, F2 edits the focused cell.")]
+        public void KeyboardOnlyF2EditsChosenColumn()
+        {
+            // No pointer input, so only cell-level keyboard navigation can choose the column; else F2 edits Name.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var selectionMode = FindElement.ById<ComboBox>(SelectionModeComboBox);
+                if (selectionMode == null) { Verify.Fail("SelectionModeComboBox was not found."); return; }
+                selectionMode.SetFocus();
+                Wait.ForIdle();
+
+                Verify.AreEqual(string.Empty, ReadEditReport(), "Precondition: no edit should have been reported before the test acts.");
+
+                Log.Comment("Tab through the header band into the body.");
+                for (int attempt = 0; attempt < 4 && FindFocusedBodyElement(GetRowsHost(BasicTable)) == null; attempt++)
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+                }
+
+                UIObject focusedRow = FindFocusedRow(GetRowsHost(BasicTable));
+                if (focusedRow == null) { Verify.Fail("Precondition: Tab never put focus on a body row."); return; }
+
+                Log.Comment("Right drills into the first cell, Right again moves to the Age cell, then F2.");
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+
+                int rowIndex, cellIndex;
+                FindFocusedCell(BasicTable, out rowIndex, out cellIndex);
+                Verify.AreEqual(AgeColumn, cellIndex, "Precondition: Right, Right from the row must focus the Age cell.");
+
+                KeyboardHelper.PressKey(Key.F2);
+                Wait.ForIdle();
+
+                Verify.AreEqual("Age;", ReadEditReport(),
+                    "F2 must edit the cell the keyboard focused, not fall back to the first editable column.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a column with a CellEditingTemplate opens that template's content as its editor.")]
         public void TemplateColumnEditorUsesCellEditingTemplateContent()
         {

@@ -7,13 +7,17 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewToolTipHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.properties.cpp"
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
+#include <cmath>
+#include <cwctype>
 #include <limits>
+#include <string_view>
 
 namespace
 {
@@ -77,22 +81,20 @@ hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
         }
     }
 
-    if (auto const headerString = TryGetColumnHeaderString(m_column.get()))
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(m_column.get()))
     {
         return *headerString;
     }
 
-    // Read template content, never re-enter this header's own peer.
-    if (auto const header = GetHeaderElement().try_as<winrt::Panel>())
+    // Only the content region names the header, never the grid line, glyph or gripper.
+    if (auto const header = GetHeaderElement().try_as<winrt::TableViewColumnHeader>())
     {
         uint32_t remaining = 64;
-        for (auto const& child : header.Children())
+        if (auto const name = GetCellContentName(
+                winrt::get_self<TableViewColumnHeader>(header)->GetContentPresenterInternal(), true, 8, remaining);
+            !name.empty())
         {
-            if (auto const name = GetCellContentName(child.try_as<winrt::FrameworkElement>(), true, 8, remaining);
-                !name.empty())
-            {
-                return name;
-            }
+            return name;
         }
     }
 
@@ -180,7 +182,19 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         return toolTipText;
     }
 
-    return StringUtil::FormatString(format, toolTipText.c_str(), sortText.c_str());
+    // The format supplies its own separator; a tooltip written as a sentence would otherwise read "..".
+    std::wstring_view trimmedToolTip{ toolTipText };
+    while (!trimmedToolTip.empty() &&
+        (trimmedToolTip.back() == L'.' || trimmedToolTip.back() == L'\u3002' || std::iswspace(trimmedToolTip.back())))
+    {
+        trimmedToolTip.remove_suffix(1);
+    }
+    if (trimmedToolTip.empty())
+    {
+        return sortText;
+    }
+
+    return StringUtil::FormatString(format, std::wstring{ trimmedToolTip }.c_str(), sortText.c_str());
 }
 
 winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)
@@ -190,21 +204,30 @@ winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::P
         return *this;
     }
 
+    if (patternInterface == winrt::PatternInterface::Transform && IsResizableColumn())
+    {
+        return *this;
+    }
+
     return __super::GetPatternCore(patternInterface);
 }
 
 bool TableViewColumnHeaderAutomationPeer::IsEnabledCore()
 {
-    // Grid is not a Control, so its base peer does not report inherited disabled state.
     auto const table = m_table.get();
     if (!table || !table.IsEnabled())
     {
         return false;
     }
 
-    // A template control (for example the header ScrollViewer) can be disabled
-    // independently of the table. Its coerced state applies to this header too.
-    auto ancestor = winrt::VisualTreeHelper::GetParent(Owner());
+    // The header's own state, and that of any template control around it (for example the header
+    // ScrollViewer), can be disabled independently of the table.
+    auto const header = GetHeaderElement();
+    if (auto const headerControl = header.try_as<winrt::Control>(); headerControl && !headerControl.IsEnabled())
+    {
+        return false;
+    }
+    auto ancestor = winrt::VisualTreeHelper::GetParent(header ? header : Owner());
     while (ancestor && ancestor != table)
     {
         if (auto const control = ancestor.try_as<winrt::Control>(); control && !control.IsEnabled())
@@ -236,6 +259,89 @@ void TableViewColumnHeaderAutomationPeer::Invoke()
     }
 
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
+bool TableViewColumnHeaderAutomationPeer::CanMove()
+{
+    return false;
+}
+
+bool TableViewColumnHeaderAutomationPeer::CanResize()
+{
+    if (!IsResizableColumn())
+    {
+        return false;
+    }
+
+    auto const owner = m_table.get();
+    return owner && winrt::get_self<TableView>(owner)->CanResizeColumnFromAutomation(m_column.get());
+}
+
+bool TableViewColumnHeaderAutomationPeer::CanRotate()
+{
+    return false;
+}
+
+void TableViewColumnHeaderAutomationPeer::Move(double, double)
+{
+    throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+}
+
+void TableViewColumnHeaderAutomationPeer::Resize(double width, double)
+{
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+    if (!std::isfinite(width) || width < 0.0)
+    {
+        throw winrt::hresult_invalid_argument();
+    }
+    if (!CanResize())
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+
+    // Height is ignored: a column header only resizes along the column axis.
+    auto const column = m_column.get();
+    auto const owner = m_table.get();
+    if (!column || !owner)
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+    }
+
+    // UIA sizes are physical pixels, like BoundingRectangle; column widths are DIPs in the table's
+    // own frame, below any scale applied above it.
+    if (auto const xamlRoot = owner.XamlRoot())
+    {
+        double scale = xamlRoot.RasterizationScale();
+        try
+        {
+            const auto unit = owner.TransformToVisual(nullptr).TransformBounds({ 0.0f, 0.0f, 1.0f, 0.0f });
+            if (unit.Width > 0.0f)
+            {
+                scale *= unit.Width;
+            }
+        }
+        catch (...)
+        {
+            // Not in the live tree; the display scale alone is the best answer.
+        }
+        if (scale > 0.0)
+        {
+            width /= scale;
+        }
+    }
+
+    if (!winrt::get_self<TableView>(owner)->TryResizeColumnFromAutomation(column, width))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+}
+
+void TableViewColumnHeaderAutomationPeer::Rotate(double)
+{
+    throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
 }
 
 winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> TableViewColumnHeaderAutomationPeer::GetChildrenCore()
@@ -273,6 +379,29 @@ bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
     return IsTableViewOwned() ? true : __super::IsOffscreenCore();
 }
 
+void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
+{
+    if (!IsTableViewOwned())
+    {
+        __super::ShowContextMenuCore();
+        return;
+    }
+
+    auto const column = m_column.get();
+    if (!column || !IsVisibleColumn(column))
+    {
+        return;
+    }
+
+    if (auto const header = GetHeaderElement())
+    {
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header))
+        {
+            peer.ShowContextMenu();
+        }
+    }
+}
+
 bool TableViewColumnHeaderAutomationPeer::IsTableViewOwned()
 {
     return Owner().try_as<winrt::TableView>() != nullptr;
@@ -288,6 +417,19 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 
     auto const owner = m_table.get();
     return owner && owner.IsLoaded() && owner.CanUserSortColumns();
+}
+
+// The static opt-in only; whether the gripper is usable right now is CanResize's job.
+bool TableViewColumnHeaderAutomationPeer::IsResizableColumn()
+{
+    auto const column = m_column.get();
+    if (!column || !column.CanResize() || !IsVisibleColumn(column))
+    {
+        return false;
+    }
+
+    auto const owner = m_table.get();
+    return owner && owner.CanUserResizeColumns();
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()

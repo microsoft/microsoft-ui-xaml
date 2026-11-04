@@ -479,24 +479,22 @@ bool RowMetadataProvider::SetGroupExpandedCore(winrt::IInspectable const& group,
     return adapter->IsGroupExpanded(group) != before;
 }
 
-void RowMetadataProvider::Expand(winrt::hstring const& key)
+bool RowMetadataProvider::Expand(winrt::hstring const& key)
 {
     if (IsNodeExpansionKey(key))
     {
-        SetNodeExpandedCore(key, true);
-        return;
+        return SetNodeExpandedCore(key, true);
     }
-    SetGroupExpandedCore(ResolveGroupFromKey(key), true);
+    return SetGroupExpandedCore(ResolveGroupFromKey(key), true);
 }
 
-void RowMetadataProvider::Collapse(winrt::hstring const& key)
+bool RowMetadataProvider::Collapse(winrt::hstring const& key)
 {
     if (IsNodeExpansionKey(key))
     {
-        SetNodeExpandedCore(key, false);
-        return;
+        return SetNodeExpandedCore(key, false);
     }
-    SetGroupExpandedCore(ResolveGroupFromKey(key), false);
+    return SetGroupExpandedCore(ResolveGroupFromKey(key), false);
 }
 
 bool RowMetadataProvider::Toggle(winrt::hstring const& key)
@@ -506,6 +504,29 @@ bool RowMetadataProvider::Toggle(winrt::hstring const& key)
         return SetNodeExpandedCore(key, std::nullopt);
     }
     return SetGroupExpandedCore(ResolveGroupFromKey(key), std::nullopt);
+}
+
+// The guards of SetGroupExpandedCore and HierarchicalSourceAdapter::SetNodeExpanded: a group that resolves, or a
+// presented node with children, in another state than the one requested.
+bool RowMetadataProvider::WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept
+{
+    try
+    {
+        if (IsNodeExpansionKey(key))
+        {
+            int32_t index = -1;
+            auto const* const row = m_hierarchicalAdapter->TryGetIndexForNodeKey(key, index)
+                ? m_hierarchicalAdapter->TryGetNodeRow(index) : nullptr;
+            return row && row->HasChildren && (!desired || row->IsExpanded != *desired);
+        }
+
+        auto const group = ResolveGroupFromKey(key);
+        return group && m_groupedAdapter && (!desired || m_groupedAdapter->IsGroupExpanded(group) != *desired);
+    }
+    catch (...)
+    {
+        return true;
+    }
 }
 
 // Under GroupedHierarchical both "group:" and "node:" keys arrive here; route on the key

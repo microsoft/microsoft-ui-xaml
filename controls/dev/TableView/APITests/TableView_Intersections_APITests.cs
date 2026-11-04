@@ -613,6 +613,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateAutomationTable();
+                // Alias over Role, so a cell's name shows which column it belongs to.
+                tableView.Columns.RemoveAt(2);
+                tableView.Columns.Add(MakeTextColumn("Alias", "Role"));
                 LoadContent(tableView);
             });
 
@@ -662,8 +665,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var rowPeer = GetRowPeer(GetProjectedRow(tableView, 0));
                 Verify.AreEqual(2, rowPeer.GetChildren()?.Count ?? 0, "The row peer must expose one cell per visible column.");
-                Verify.AreEqual("Alias, Asha", GetCellPeer(rowPeer, 0).GetName(), "The first cell must belong to the moved column.");
-                Verify.AreEqual("Name, Asha", GetCellPeer(rowPeer, 1).GetName(), "The second cell must belong to the Name column.");
+                for (int i = 0; i < 2; i++)
+                {
+                    var gridItem = GetCellPeer(rowPeer, i).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                    Verify.AreEqual(i, gridItem?.Column ?? -1, $"Cell peer {i} must report visible column {i}.");
+                }
+                Verify.AreEqual("Designer", GetCellPeer(rowPeer, 0).GetName(), "The first cell must belong to the moved column.");
+                Verify.AreEqual("Asha", GetCellPeer(rowPeer, 1).GetName(), "The second cell must belong to the Name column.");
             });
         }
 
