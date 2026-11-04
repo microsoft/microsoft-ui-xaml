@@ -198,7 +198,7 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
     }
 
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         TraceSurfaceInit(compositionSurfaceFormat);
     }
@@ -261,7 +261,7 @@ DCompSurface::InitializeSurface(
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
         }
@@ -296,7 +296,7 @@ DCompSurface::InitializeSurface(
 
         UpdateMemoryFootprint(TRUE);
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
         }
@@ -1371,7 +1371,7 @@ DCompSurface::GetTextureSizeInBytes() const
 
 void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
 {
-    if (!XamlProfilerTracing::IsEnabled())
+    if (!XamlProfilerTracing::IsProfilerEnabled())
     {
         return;
     }

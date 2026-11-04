@@ -14,14 +14,14 @@ namespace GraphicsResourceDiagnosticsTests
     bool DiagnosticsTests::Setup()
     {
         (void)XamlProfilerLogging::Provider();
-        m_wasProfilingEnabled = XamlProfilerTracing::IsAllocationProfilingEnabled();
-        XamlProfilerTracing::EnableAllocationProfiling(true);
+        m_wasProfilingEnabled = XamlProfilerTracing::IsProfilerEnabled();
+        XamlProfilerTracing::SetProfilerEnabled(true);
         return true;
     }
 
     bool DiagnosticsTests::Cleanup()
     {
-        XamlProfilerTracing::EnableAllocationProfiling(m_wasProfilingEnabled);
+        XamlProfilerTracing::SetProfilerEnabled(m_wasProfilingEnabled);
         return true;
     }
 
@@ -81,7 +81,7 @@ namespace GraphicsResourceDiagnosticsTests
         XamlResourceSnapshot before{};
         VERIFY_SUCCEEDED(ResourceDiagnostics::GetResourceSnapShot(&before));
         RenderingResourceDiagnostics::LogResourceCreated(ResourceKind::SpriteVisual);
-        XamlProfilerTracing::EnableAllocationProfiling(false);
+        XamlProfilerTracing::SetProfilerEnabled(false);
         VERIFY_IS_FALSE(RenderingResourceDiagnostics::LogResourceCreated(ResourceKind::SpriteVisual));
 
         XamlResourceSnapshot disabled{};
@@ -93,7 +93,7 @@ namespace GraphicsResourceDiagnosticsTests
             VERIFY_ARE_EQUAL(UINT64{0}, resource.LiveCount);
         }
 
-        XamlProfilerTracing::EnableAllocationProfiling(true);
+        XamlProfilerTracing::SetProfilerEnabled(true);
         XamlResourceSnapshot reenabled{};
         VERIFY_SUCCEEDED(ResourceDiagnostics::GetResourceSnapShot(&reenabled));
         const auto visualIndex = static_cast<UINT32>(ResourceKind::SpriteVisual);

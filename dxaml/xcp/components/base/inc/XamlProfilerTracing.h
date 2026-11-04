@@ -54,8 +54,9 @@ class XamlProfilerTracing final : public TelemetryBase
 
 public:
 
-    static void EnableAllocationProfiling(bool enabled) noexcept;
-    static bool IsAllocationProfilingEnabled() noexcept;
+    // Shared cached ETW state; querying must not initialize the provider on allocation paths.
+    static void SetProfilerEnabled(bool enabled) noexcept;
+    static bool IsProfilerEnabled() noexcept;
 
     DEFINE_TRACELOGGING_EVENT_PARAM2(PeerAssociated,
         uint64_t, ElementId,
@@ -238,13 +239,13 @@ inline void NTAPI XamlProfilerLogging::Callback(
 {
     if (control == EVENT_CONTROL_CODE_ENABLE_PROVIDER || control == EVENT_CONTROL_CODE_DISABLE_PROVIDER)
     {
-        XamlProfilerTracing::EnableAllocationProfiling(control == EVENT_CONTROL_CODE_ENABLE_PROVIDER);
+        XamlProfilerTracing::SetProfilerEnabled(control == EVENT_CONTROL_CODE_ENABLE_PROVIDER);
     }
 }
 
 inline XamlProfilerLogging::~XamlProfilerLogging()
 {
-    XamlProfilerTracing::EnableAllocationProfiling(false);
+    XamlProfilerTracing::SetProfilerEnabled(false);
 }
 
 #ifdef XAMLPROFILER_ENABLED

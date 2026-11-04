@@ -58,7 +58,7 @@ namespace RenderingResourceDiagnostics
 
     bool IsEnabled() noexcept
     {
-        return XamlProfilerTracing::IsAllocationProfilingEnabled();
+        return XamlProfilerTracing::IsProfilerEnabled();
     }
 
     bool LogResourceCreated(ResourceKind kind) noexcept

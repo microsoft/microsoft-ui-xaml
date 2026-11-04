@@ -550,7 +550,7 @@ _Check_return_ HRESULT CPopup::Open()
         IFC_RETURN(hr);
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::PopupOpened(
                 reinterpret_cast<uint64_t>(this),
@@ -785,7 +785,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         IFC_RETURN(pPopupRoot->RemoveChild(m_pChild));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::PopupClosed(
                 reinterpret_cast<uint64_t>(this),
