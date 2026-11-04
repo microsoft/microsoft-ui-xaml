@@ -234,7 +234,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollGroupIntoViewAndDeleteGroupBeforeLayoutRuns()
         {
             ListView lv = null;

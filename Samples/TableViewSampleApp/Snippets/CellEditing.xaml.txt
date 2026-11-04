@@ -1,0 +1,49 @@
+<!-- Display cell of the Department column. -->
+<DataTemplate x:Key="DepartmentTextTemplate" x:DataType="models:Person">
+    <TextBlock Text="{x:Bind Department, Mode=OneWay}" Margin="12,0,8,0"
+               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+</DataTemplate>
+
+<!-- Classic {Binding} with UpdateSourceTrigger=Explicit: the control commits through the
+     binding expression, which x:Bind does not expose, so Esc leaves the model untouched. -->
+<DataTemplate x:Key="DepartmentEditingTemplate">
+    <ComboBox SelectedItem="{Binding Department, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
+              AutomationProperties.Name="Department"
+              HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4,0">
+        <x:String>Design</x:String>
+        <x:String>Engineering</x:String>
+        <x:String>Finance</x:String>
+        <x:String>HR</x:String>
+        <x:String>Marketing</x:String>
+        <x:String>Operations</x:String>
+        <x:String>Product</x:String>
+        <x:String>Sales</x:String>
+    </ComboBox>
+</DataTemplate>
+
+<!-- Opened by the page only when TableView rejects a commit (see OnCommitSettled). -->
+<InfoBar
+    x:Name="ValidationInfoBar"
+    Severity="Error"
+    Title="Edit rejected"
+    IsClosable="False"
+    IsOpen="False"/>
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="Editable people"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="False"
+    CellEditEnding="OnCellEditEnding">
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="First name" Width="160" Binding="{Binding FirstName}"/>
+    <tv:TableViewTextColumn Header="Last name" Width="160" Binding="{Binding LastName}"/>
+    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}"/>
+    <tv:TableViewTemplateColumn
+        Header="Department"
+        Width="150"
+        CellTemplate="{StaticResource DepartmentTextTemplate}"
+        CellEditingTemplate="{StaticResource DepartmentEditingTemplate}"
+        SortMemberPath="Department"/>
+</tv:TableView>

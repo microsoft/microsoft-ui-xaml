@@ -1,0 +1,5 @@
+// TableView virtualizes by default. Build the whole list, then assign it once: adding rows
+// one at a time to a bound collection raises one change notification per row.
+_people = new ObservableCollection<Person>(PersonData.Many(count));
+_source = TableViewSource.From(_people);
+PeopleTable.ItemsSource = _source;

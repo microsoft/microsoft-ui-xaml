@@ -1,0 +1,12 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.
+public ObservableCollection<Person> People { get; } = RtlPersonData.Mixed();
+
+public TableViewSource Source { get; }
+
+private void OnRtlToggled(object sender, RoutedEventArgs e)
+{
+    PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+}

@@ -20,6 +20,10 @@
         </StackPanel>
         <!-- Custom title bar  end block -->
         <TextBlock Text="WinUICppDesktopSampleApp" FontSize="20" Margin="2"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="GamepadKeyRouting:" VerticalAlignment="Center" Margin="2"/>
+            <TextBlock x:Name="textBlockGamepadKeyRouting" AutomationProperties.Name="textBlockGamepadKeyRouting" VerticalAlignment="Center" Margin="2"/>
+        </StackPanel>
         <ContentDialog x:Name="contentDialogWindowChromeTest"
             PrimaryButtonText="Accept" IsPrimaryButtonEnabled="False"
             CloseButtonText="Cancel">
@@ -207,6 +211,21 @@
                             <WebView2 x:Name="myWebView2" AutomationProperties.Name="myWebView2" Width="640" Height="480" AllowDrop="True"/>
                         </StackPanel>
 
+                    </StackPanel>
+                </TabViewItem>
+
+                <!-- InkCanvas in a native app. A native app destroys its XAML tree at shutdown (a .NET app leaves it
+                     to the GC), so this tab also covers destroying a canvas that was never loaded. -->
+                <TabViewItem x:Name="tviInking" AutomationProperties.Name="tviInking" Header="Inking">
+                    <TabViewItem.IconSource>
+                        <SymbolIconSource Symbol="Edit"/>
+                    </TabViewItem.IconSource>
+
+                    <StackPanel x:Name="stackPanelInking" AutomationProperties.Name="stackPanelInking">
+                        <TextBlock x:Name="textBlockInking" AutomationProperties.Name="textBlockInking" MinWidth="150" Margin="2"/>
+                        <Border BorderBrush="Gray" BorderThickness="1" Background="White" Width="400" Height="250" HorizontalAlignment="Left" Margin="2">
+                            <InkCanvas x:Name="inkCanvas" AutomationProperties.Name="inkCanvas" Loaded="InkCanvas_Loaded"/>
+                        </Border>
                     </StackPanel>
                 </TabViewItem>
 

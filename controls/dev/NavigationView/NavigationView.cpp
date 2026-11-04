@@ -273,6 +273,10 @@ void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspec
     {
         SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
     }
+    else
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Visible);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -692,6 +696,7 @@ void NavigationView::OnApplyTemplate()
     m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
 
     m_appliedTemplate = true;
+    m_templateAppliedOnce = true;
 
     // Do initial setup
     UpdatePaneDisplayMode();
@@ -716,7 +721,6 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
         {
             return menuItemsSource;
         }
-        UpdateSelectionForMenuItems();
         return MenuItems().as<winrt::IInspectable>();
     }();
 
@@ -742,6 +746,17 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
     {
         UpdateTopNavRepeatersItemSource(nullptr);
         UpdateLeftRepeaterItemSource(m_menuItemsSource);
+    }
+
+    if (!MenuItemsSource())
+    {
+        UpdateSelectionForMenuItems();
+    }
+
+    // Owners select preselected descendants, and root items in both menus take precedence over them.
+    if (m_footerItemsSource)
+    {
+        NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
     }
 }
 
@@ -821,7 +836,6 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
         {
             return menuItemsSource;
         }
-        UpdateSelectionForMenuItems();
         return FooterMenuItems().as<winrt::IInspectable>();
     }();
 
@@ -847,6 +861,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
             m_footerItemsSource = nullptr;
         }
 
+        const bool footerItemsSourceCreated = !m_footerItemsSource;
         if (!m_footerItemsSource)
         {
             m_footerItemsSource = winrt::ItemsSourceView(itemsSource);
@@ -873,6 +888,15 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
         }
 
         m_selectionModelSource.SetAt(1, dataSource);
+        if (!FooterMenuItemsSource())
+        {
+            UpdateSelectionForMenuItems();
+        }
+        if (footerItemsSourceCreated && m_menuItemsSource)
+        {
+            NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
+        }
+        NavigationViewItemBase::SetNavigationViewParentForItems(m_footerItemsSource, *this);
     }
 
     if (IsTopNavigationView())
@@ -933,6 +957,11 @@ void NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged(const win
 
 void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+    if (!m_appliedTemplate)
+    {
+        return;
+    }
+
     if (auto const nvi = sender.try_as<winrt::NavigationViewItem>())
     {
         // Check whether the container that triggered this call back is the selected container
@@ -942,7 +971,10 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
         if (isSelectedInContainer && !isContainerSelectedInModel)
         {
             auto indexPath = GetIndexPathForContainer(nvi);
-            UpdateSelectionModelSelection(indexPath);
+            if (indexPath.GetSize() > 1)
+            {
+                UpdateSelectionModelSelection(indexPath);
+            }
         }
         else if (!isSelectedInContainer && isContainerSelectedInModel)
         {
@@ -953,6 +985,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             {
                 if (indexPath.CompareTo(indexPathFromModel) ==  0)
                 {
+                    UpdateIsChildSelected(indexPathFromModel, nullptr);
                     m_selectionModel.DeselectAt(indexPath);
                 }
                 else if (!IsPaneOpen() && indexPath.GetSize() == 0)
@@ -1053,9 +1086,10 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         UpdateSelectionModelSelection(ip);
     }
 
-    // Item was invoked but already selected, so raise event here.
+    // Selection did not change, so consume the pending invocation before raising the event directly.
     if (selectedItem == SelectedItem())
     {
+        m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvokedForNavigationViewItem(nvi);
     }
 
@@ -1145,10 +1179,6 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
 
     winrt::DependencyObject child = nvib;
     auto parent = winrt::VisualTreeHelper::GetParent(child);
-    if (!parent)
-    {
-        return IndexPath::CreateFromIndices(path);
-    }
 
     // Search through VisualTree for a root itemsrepeater
     while (parent && !IsRootItemsRepeater(parent) && !IsRootGridOfFlyout(parent))
@@ -1162,6 +1192,23 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
         }
         child = parent;
         parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+
+    if (!parent)
+    {
+        // Explicit menu items can belong to this NavigationView without a visual parent.
+        for (int block = 0; block < static_cast<int>(m_selectionModelSource.Size()); block++)
+        {
+            if (auto const source = m_selectionModelSource.GetAt(block))
+            {
+                auto const rootPath = IndexPath::CreateFromIndices(std::vector<int>{ block });
+                if (auto const itemPath = SearchEntireTreeForIndexPath(source, nvib, rootPath))
+                {
+                    return itemPath;
+                }
+            }
+        }
+        return IndexPath::CreateFromIndices(std::vector<int>{});
     }
 
     // If the item is in a flyout, then we need to final index of its parent
@@ -1418,10 +1465,18 @@ void NavigationView::UpdateOpenPaneLength(double width)
 {
     if (!IsTopNavigationView() && m_rootSplitView)
     {
-        m_OpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const auto newOpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const bool openPaneLengthChanged = m_OpenPaneLength != newOpenPaneLength;
+        m_OpenPaneLength = newOpenPaneLength;
 
         const auto templateSettings = GetTemplateSettings();
         templateSettings->OpenPaneLength(m_OpenPaneLength);
+
+        // With a PaneTitle, UpdatePaneToggleSize stretches TogglePaneButton to m_OpenPaneLength.
+        if (openPaneLengthChanged)
+        {
+            UpdatePaneToggleSize();
+        }
     }
 }
 
@@ -1828,8 +1883,17 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
 
+    const bool paneToggleButtonWidthChanged = templateSettings->PaneToggleButtonWidth() != newButtonWidths;
+
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
     templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
+
+    // UpdatePaneToggleSize copies PaneToggleButtonWidth into TogglePaneButton.Width. It can run before this
+    // template setting is first initialized (still 0), so re-apply it when the width changes.
+    if (paneToggleButtonWidthChanged)
+    {
+        UpdatePaneToggleSize();
+    }
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -2100,8 +2164,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 areElementsAtSameDepth = prevPosPoint.X == nextPosPoint.X;
             }
 
-            winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-            winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            // Creating the batch must not request the NavigationView's non-strict handoff visual.
+            winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             if (!areElementsAtSameDepth)
             {
@@ -2443,7 +2507,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // If this item has an associated container, we'll raise the SelectionChanged event on it immediately.
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
-            AnimateSelectionChanged(nvi);
+            // An unrealized descendant shows the indicator on its lowest visible ancestor.
+            auto const selectedIndex = m_selectionModel.SelectedIndex();
+            const bool isUnrealizedDescendant = !winrt::VisualTreeHelper::GetParent(nvi) && selectedIndex && selectedIndex.GetSize() > 2 && m_selectionModel.SelectedItem() == nextItem;
+            AnimateSelectionChanged(isUnrealizedDescendant ? FindLowestLevelContainerToDisplaySelectionIndicator() : nvi);
             RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
         }
@@ -2497,6 +2564,11 @@ void NavigationView::CompletePendingSelectionChange()
 
 void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem)
 {
+    if (!m_appliedTemplate)
+    {
+        return;
+    }
+
     winrt::IndexPath indexPath{ nullptr };
 
     if (auto container = NavigationViewItemBaseOrSettingsContentFromData(selectedItem))
@@ -2545,6 +2617,17 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
 {
     // Update the isChildSelected property for every container on the IndexPath (with the exception of the actual container pointed to by the indexpath)
     auto container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
+    if (!container)
+    {
+        if (auto const source = m_selectionModelSource.GetAt(ip.GetAt(0)))
+        {
+            auto const items = winrt::ItemsSourceView(source);
+            if (ip.GetAt(1) < items.Count())
+            {
+                container = items.GetAt(ip.GetAt(1)).try_as<winrt::UIElement>();
+            }
+        }
+    }
     // first index is fo mainmenu or footer
     // second is index of item in mainmenu or footer
     // next in menuitem children
@@ -2554,14 +2637,30 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
         if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
         {
             nvi.IsChildSelected(isChildSelected);
-            if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+            if (index < ip.GetSize() - 1)
             {
-                if (index < ip.GetSize() - 1)
+                container = nullptr;
+                if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
                 {
                     container = nextIR.TryGetElement(ip.GetAt(index));
-                    index++;
-                    continue;
                 }
+                if (!container)
+                {
+                    if (auto const children = GetChildren(nvi))
+                    {
+                        auto items = children.try_as<winrt::ItemsSourceView>();
+                        if (!items)
+                        {
+                            items = winrt::ItemsSourceView(children);
+                        }
+                        if (ip.GetAt(index) < items.Count())
+                        {
+                            container = items.GetAt(ip.GetAt(index)).try_as<winrt::UIElement>();
+                        }
+                    }
+                }
+                index++;
+                continue;
             }
         }
         container = nullptr;
@@ -3346,11 +3445,11 @@ winrt::SplitView NavigationView::GetSplitView()
     return m_rootSplitView.get();
 }
 
-void NavigationView::TopNavigationViewItemContentChanged()
+void NavigationView::TopNavigationViewItemContentChanged(bool forceInvalidateWidthCache)
 {
     if (m_appliedTemplate)
     {
-        if (!MenuItemsSource())
+        if (forceInvalidateWidthCache || !MenuItemsSource())
         {
             m_topDataProvider.InvalidWidthCache();
         }
@@ -3450,6 +3549,11 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 
 void NavigationView::OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    // Owners can only select preselected descendants once the template is applied, which also propagates ownership.
+    if (m_appliedTemplate)
+    {
+        NavigationViewItemBase::SetNavigationViewParentForItems(m_menuItemsSource, *this);
+    }
     if (!IsTopNavigationView())
     {
         UpdatePaneLayout();
@@ -4172,6 +4276,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         property == s_ExpandedModeThresholdWidthProperty)
     {
         UpdateAdaptiveLayout(ActualWidth());
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_AlwaysShowHeaderProperty || property == s_HeaderProperty)
     {
@@ -4231,7 +4336,12 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // m_wasForceClosed is set to true because ToggleButton is clicked and Pane is closed.
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
-        m_wasForceClosed = false;
+        // Before the template is first applied, the flag can only have come from the app setting IsPaneOpen=false
+        // (e.g. in XAML ahead of PaneDisplayMode), so keep it to honor that initial state. Re-templating still resets it.
+        if (m_templateAppliedOnce)
+        {
+            m_wasForceClosed = false;
+        }
 
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
@@ -4239,6 +4349,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualState();
         UpdatePaneButtonsWidths();
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -4677,7 +4788,8 @@ void NavigationView::UpdatePaneToggleSize()
 
             if (auto toggleButton = m_paneToggleButton.get())
             {
-                toggleButton.Width(togglePaneButtonWidth);
+                // OpenPaneLength can be smaller than the back/close button, and Width rejects negative values.
+                toggleButton.Width(std::max(0.0, togglePaneButtonWidth));
             }
         }
     }
@@ -4743,6 +4855,13 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
                 leftPaddingForBackOrCloseButton += paneHeaderPaddingForCloseButton;
             }
         }
+    }
+
+    if (useLeftPaddingForBackOrCloseButton && leftPaddingForBackOrCloseButton == 0.0)
+    {
+        // NavigationViewMinimalHeaderMargin has a negative left value that pulls the header back into the
+        // first button slot. Keep that slot reserved when no buttons are shown, so the header isn't clipped.
+        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
     }
 
     if (auto contentLeftPadding = m_contentLeftPadding.get())
@@ -4834,20 +4953,25 @@ void NavigationView::UpdateSelectionForMenuItems()
         // firstly check Menu items
         if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
-            foundFirstSelected = UpdateSelectedItemFromMenuItems(menuItems);
+            foundFirstSelected = UpdateSelectedItemFromMenuItems(winrt::ItemsSourceView(menuItems));
         }
 
         // then do same for footer items and tell wenever selected item alreadyfound in MenuItems
         if (auto footerItems = FooterMenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
-            UpdateSelectedItemFromMenuItems(footerItems, foundFirstSelected);
+            UpdateSelectedItemFromMenuItems(winrt::ItemsSourceView(footerItems), foundFirstSelected);
         }
     }
 }
 
-bool NavigationView::UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected)
+bool NavigationView::UpdateSelectedItemFromMenuItems(const winrt::ItemsSourceView& menuItems, bool foundFirstSelected)
 {
-    for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
+    if (!m_appliedTemplate)
+    {
+        return foundFirstSelected;
+    }
+
+    for (int i = 0; i < menuItems.Count(); i++)
     {
         if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
         {
@@ -4863,7 +4987,7 @@ bool NavigationView::UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<
                     SelectedItem(item);
                     foundFirstSelected = true;
                 }
-                else
+                else if (item != SelectedItem())
                 {
                     item.IsSelected(false);
                 }
@@ -5317,6 +5441,30 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
         }
     }
 
+    return nullptr;
+}
+
+winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::IInspectable& items, const winrt::IInspectable& data, const winrt::IndexPath& ip)
+{
+    auto const menuItems = NavigationViewItemBase::GetMenuItems(items);
+    for (int i = 0; i < static_cast<int>(menuItems.size()); i++)
+    {
+        auto const& item = menuItems[i];
+        if (item == data)
+        {
+            return winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i);
+        }
+        if (auto const nvi = item.try_as<winrt::NavigationViewItem>())
+        {
+            if (auto const children = GetChildren(nvi))
+            {
+                if (auto const childPath = SearchEntireTreeForIndexPath(children, data, winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i)))
+                {
+                    return childPath;
+                }
+            }
+        }
+    }
     return nullptr;
 }
 
@@ -5794,6 +5942,33 @@ void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& co
 bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
 {
     return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
+}
+
+// Returns true if the item lives in the left pane's PaneFooter or PaneCustomContent (and is not nested inside another item).
+bool NavigationView::IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib)
+{
+    auto const footerContentBorder = m_leftNavFooterContentBorder.get();
+    auto const paneCustomContentBorder = m_leftNavPaneCustomContentBorder.get();
+    if (!footerContentBorder && !paneCustomContentBorder)
+    {
+        return false;
+    }
+
+    winrt::NavigationView const navView = *this;
+    auto parent = winrt::VisualTreeHelper::GetParent(nvib);
+    while (parent)
+    {
+        if (parent == footerContentBorder || parent == paneCustomContentBorder)
+        {
+            return true;
+        }
+        if (parent == navView || parent.try_as<winrt::NavigationViewItemBase>())
+        {
+            return false;
+        }
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+    return false;
 }
 
 bool NavigationView::IsVisible(const winrt::DependencyObject& obj)
