@@ -37,6 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Project references can resolve the unmerged core WinMD; project the complete public API. -->
+    <CsWinRTInputs Include="$(PublicMergedWinMDDir)\Microsoft.UI.Xaml.winmd" />
     <CsWinRTInputs Include="$(PkgMicrosoft_Internal_WinUIDetails)\lib\uap10.0\Microsoft.UI.Text.winmd" />
     <CsWinRTInputs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd" />
   </ItemGroup>

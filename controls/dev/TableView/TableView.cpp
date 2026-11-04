@@ -387,6 +387,12 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
+    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
+    {
+        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
+            visibility == winrt::TableViewGridLinesVisibility::All;
+    }
+
     double TerminalEdgeTolerance(const winrt::FrameworkElement& element) noexcept
     {
         double scale = 1.0;
@@ -1352,6 +1358,16 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
     QueueTerminalGridLineRefresh();
 }
 
+void TableView::OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.OldValue() == args.NewValue())
+    {
+        return;
+    }
+
+    ApplyGridLinesToHeader();
+}
+
 void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1373,9 +1389,14 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
     RefreshRowBackgroundsOnRealizedRows();
 }
 
-// Header lines are always drawn; only the last separator yields to the outer border.
 void TableView::ApplyGridLinesToHeader()
 {
+    const auto visibility = HeaderGridLinesVisibility();
+    winrt::VisualStateManager::GoToState(*this,
+        WantsHorizontalLines(visibility) ? L"HeaderHorizontalGridLinesVisible" : L"HeaderHorizontalGridLinesHidden",
+        false);
+    const bool showVertical = WantsVerticalLines(visibility);
+
     auto host = m_headerHost.get();
     if (!host)
     {
@@ -1419,7 +1440,7 @@ void TableView::ApplyGridLinesToHeader()
             if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
                 gridLine.Visibility(
-                    !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
+                    showVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
                         ? winrt::Visibility::Visible
                         : winrt::Visibility::Collapsed);
             }

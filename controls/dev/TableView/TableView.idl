@@ -337,6 +337,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
+    TableViewGridLinesVisibility HeaderGridLinesVisibility { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserResizeColumns { get; set; };
 
@@ -402,6 +406,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };

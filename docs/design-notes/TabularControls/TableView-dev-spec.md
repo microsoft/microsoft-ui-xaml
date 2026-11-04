@@ -290,7 +290,9 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | v1 knob | Effect |
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
-| `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
+| `BandedTableViewStyle` | Named style from `TabularControlsResources`: sets only `AlternatingRowBackground` to `TabularSurfaceRowBackgroundAlternatingBrush` (Subtle/Tertiary in Light/Dark, window background in High Contrast). Gridlines and header styling remain independent. |
+| `GridLinesVisibility` | Body gridlines, independent of header lines. |
+| `HeaderGridLinesVisibility` | Header dividers (`Vertical`) and bottom rule (`Horizontal`), using the same All / Horizontal / None / Vertical enum as the body. Defaults to All. The table template's `HeaderGridLineStates` hide the bottom rule's brush without changing layout; header-cell `PART_GridLine` visibility controls the dividers and preserves trailing-edge suppression. |
 | `BorderBrush`, `BorderThickness` | Outer frame. Transparent in Light/Dark; system-color in High Contrast. The default 1px inset is retained for stable layout and opt-in visible borders. |
 | `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |

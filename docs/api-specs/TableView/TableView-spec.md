@@ -143,15 +143,16 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls the body gridlines. Independently, `HeaderGridLinesVisibility` controls the column-header lines using the same `TableViewGridLinesVisibility` enum: `All` shows both strokes, `Vertical` shows only the dividers between headers, `Horizontal` shows only the rule beneath the header, and `None` hides both. Both properties default to `All`. Hiding header strokes preserves header layout and does not disable sorting or resizing.
 
-> **Migrating from earlier previews:** `HeaderGridLinesVisibility` was removed. `GridLinesVisibility` affects only the body lines; to hide the header separators and the rule under the header, override `TabularSurfaceHeaderSeparatorBrush` with `Transparent`.
+Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
 
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
     GridLinesVisibility="Horizontal"
+    HeaderGridLinesVisibility="Horizontal"
     Density="Compact"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
@@ -168,8 +169,27 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 
 PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+PeopleTable.HeaderGridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
+
+### Banded rows
+
+`TabularControlsResources` exposes `BandedTableViewStyle`, an opt-in alternating-backplate variant:
+
+```xml
+<tabular:TableView Style="{StaticResource BandedTableViewStyle}" />
+```
+
+It sets only `AlternatingRowBackground`, leaving the default template, header styling, density, and
+gridline visibility unchanged. Every second row uses `TabularSurfaceRowBackgroundAlternatingBrush`,
+matching `SubtleFillColorTertiary` in Light/Dark. In High Contrast it uses `SystemColorWindowColor`,
+preserving the window-text/window-background pairing rather than introducing a decorative stripe.
+Hover, pressed, selected, and disabled backplates retain their existing state brushes.
+
+The default table remains unbanded. Set `RowBackground` or `AlternatingRowBackground` directly, override
+the banding brush, or derive a style `BasedOn="{StaticResource BandedTableViewStyle}"` to customize it.
+The variant can be combined with `StrongTableViewColumnHeaderStyle`.
 
 ### Theme customization
 
@@ -458,6 +478,8 @@ Template parts:
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
 
+The table template's `HeaderGridLineStates` group contains `HeaderHorizontalGridLinesVisible` and `HeaderHorizontalGridLinesHidden`. The hidden state clears `PART_HeaderRow.BorderBrush` without changing its thickness; the visible state restores the template's themed brush. Custom templates should implement these states to support the horizontal part of `HeaderGridLinesVisibility`.
+
 Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
 ### Example Usage
@@ -486,6 +508,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
+| `HeaderGridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Independently controls dividers between column headers (`Vertical`) and the rule beneath the header (`Horizontal`). |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
@@ -678,7 +701,7 @@ Template parts. All are optional; a missing part disables only its feature:
 |---|---|---|
 | `PART_Background` | `Border` | Decorative fill, separate from content and resize hit targets. Rounded only at exposed top corners; all corners adjoining header gridlines remain square. |
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
-| `PART_GridLine` | `Border` | Vertical separator. Always shown, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_GridLine` | `Border` | Vertical separator. Shown when the table's `HeaderGridLinesVisibility` includes vertical lines, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 
@@ -905,7 +928,7 @@ Flags enum mirroring the `None`/`Column` slots of WPF `DataGridHeadersVisibility
 
 ### TableViewGridLinesVisibility
 
-Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisibility`.
+Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used independently by `GridLinesVisibility` (body) and `HeaderGridLinesVisibility` (header).
 
 | Value | Numeric value | Description |
 |---|---:|---|
@@ -1220,6 +1243,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility HeaderGridLinesVisibility;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
@@ -1259,6 +1283,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };

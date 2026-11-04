@@ -36,6 +36,9 @@ public:
     void GroupHeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate GroupHeaderTemplate();
 
+    void HeaderGridLinesVisibility(winrt::TableViewGridLinesVisibility const& value);
+    winrt::TableViewGridLinesVisibility HeaderGridLinesVisibility();
+
     void HeadersVisibility(winrt::TableViewHeadersVisibility const& value);
     winrt::TableViewHeadersVisibility HeadersVisibility();
 
@@ -66,6 +69,7 @@ public:
     static winrt::DependencyProperty EmptyTemplateProperty() { return s_EmptyTemplateProperty; }
     static winrt::DependencyProperty GridLinesVisibilityProperty() { return s_GridLinesVisibilityProperty; }
     static winrt::DependencyProperty GroupHeaderTemplateProperty() { return s_GroupHeaderTemplateProperty; }
+    static winrt::DependencyProperty HeaderGridLinesVisibilityProperty() { return s_HeaderGridLinesVisibilityProperty; }
     static winrt::DependencyProperty HeadersVisibilityProperty() { return s_HeadersVisibilityProperty; }
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
@@ -83,6 +87,7 @@ public:
     static GlobalDependencyProperty s_EmptyTemplateProperty;
     static GlobalDependencyProperty s_GridLinesVisibilityProperty;
     static GlobalDependencyProperty s_GroupHeaderTemplateProperty;
+    static GlobalDependencyProperty s_HeaderGridLinesVisibilityProperty;
     static GlobalDependencyProperty s_HeadersVisibilityProperty;
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
@@ -144,6 +149,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnGroupHeaderTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderGridLinesVisibilityPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

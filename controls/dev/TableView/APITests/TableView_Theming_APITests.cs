@@ -466,7 +466,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyHeaderGridLinesShowWhateverTheBodyGridLines()
+        public void VerifyHeaderGridLinesVisibilityIsIndependentOfBodyGridLines()
         {
             var separatorColor = Color.FromArgb(0xFF, 0x12, 0x9E, 0x5A);
             var cases = new[]
@@ -493,59 +493,135 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var body in cases)
                 {
-                    RunOnUIThread.Execute(() =>
+                    foreach (var header in cases)
                     {
-                        tableView.GridLinesVisibility = body;
-                        Content.UpdateLayout();
-                    });
-
-                    IdleSynchronizer.Wait();
-
-                    RunOnUIThread.Execute(() =>
-                    {
-                        var context = $"body {body}";
-                        bool bodyVertical = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Vertical;
-                        bool bodyHorizontal = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Horizontal;
-
-                        var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
-                        if (separator == null)
+                        RunOnUIThread.Execute(() =>
                         {
-                            Verify.Fail("Every header cell must contain its separator.");
-                            return;
-                        }
+                            tableView.GridLinesVisibility = body;
+                            tableView.HeaderGridLinesVisibility = header;
+                            Content.UpdateLayout();
+                        });
 
-                        Verify.AreEqual(Visibility.Visible, separator.Visibility,
-                            $"The non-terminal header separator is always shown ({context}).");
-                        Verify.AreEqual(VerticalAlignment.Stretch, separator.VerticalAlignment, "Header separators are full height.");
-                        Verify.AreEqual(separatorColor, (separator.Background as SolidColorBrush)?.Color ?? default,
-                            "Header separators paint TabularSurfaceHeaderSeparatorBrush.");
+                        IdleSynchronizer.Wait();
 
-                        var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
-                        Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
-                        if (headerRow != null)
+                        RunOnUIThread.Execute(() =>
                         {
-                            Verify.IsTrue(headerRow.BorderThickness.Bottom > 0.0, $"The header bottom rule is always shown ({context}).");
-                            Verify.AreEqual(separatorColor, (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default,
-                                "The header bottom rule paints TabularSurfaceHeaderSeparatorBrush.");
-                        }
+                            var context = $"body {body}, header {header}";
+                            bool bodyVertical = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Vertical;
+                            bool bodyHorizontal = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Horizontal;
+                            bool headerVertical = header == TableViewGridLinesVisibility.All || header == TableViewGridLinesVisibility.Vertical;
+                            bool headerHorizontal = header == TableViewGridLinesVisibility.All || header == TableViewGridLinesVisibility.Horizontal;
 
-                        var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
-                        if (row == null)
-                        {
-                            Verify.Fail("The TableView should realize at least one row.");
-                            return;
-                        }
+                            var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
+                            if (separator == null)
+                            {
+                                Verify.Fail("Every header cell must contain its separator.");
+                                return;
+                            }
 
-                        Verify.AreEqual(bodyHorizontal, row.BorderThickness.Bottom > 0.0,
-                            $"Row dividers must follow GridLinesVisibility ({context}).");
-                        Verify.AreEqual(bodyVertical, GetRowCell(row, 0).BorderThickness.Right > 0.0,
-                            $"Body column separators must follow GridLinesVisibility ({context}).");
-                    });
+                            Verify.AreEqual(headerVertical ? Visibility.Visible : Visibility.Collapsed, separator.Visibility,
+                                $"Header column separators must follow HeaderGridLinesVisibility ({context}).");
+                            Verify.AreEqual(VerticalAlignment.Stretch, separator.VerticalAlignment, "Header separators are full height.");
+                            Verify.AreEqual(separatorColor, (separator.Background as SolidColorBrush)?.Color ?? default,
+                                "Header separators paint TabularSurfaceHeaderSeparatorBrush.");
+
+                            var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                            Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                            if (headerRow != null)
+                            {
+                                Verify.AreEqual(new Thickness(0, 0, 0, 1), headerRow.BorderThickness,
+                                    $"Hiding the header bottom rule must preserve its layout inset ({context}).");
+                                if (headerHorizontal)
+                                {
+                                    Verify.AreEqual(separatorColor, (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default,
+                                        $"The visible header bottom rule paints TabularSurfaceHeaderSeparatorBrush ({context}).");
+                                }
+                                else
+                                {
+                                    Verify.IsNull(headerRow.BorderBrush, $"The header bottom rule must be hidden ({context}).");
+                                }
+                            }
+
+                            var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                            if (row == null)
+                            {
+                                Verify.Fail("The TableView should realize at least one row.");
+                                return;
+                            }
+
+                            Verify.AreEqual(bodyHorizontal, row.BorderThickness.Bottom > 0.0,
+                                $"Row dividers must follow GridLinesVisibility ({context}).");
+                            Verify.AreEqual(bodyVertical, GetRowCell(row, 0).BorderThickness.Right > 0.0,
+                                $"Body column separators must follow GridLinesVisibility ({context}).");
+                        });
+                    }
                 }
             }
             finally
             {
                 RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceHeaderSeparatorBrush"));
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHeaderGridLinesVisibilitySurvivesTemplateAndColumnChanges()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateThemingTable();
+                tableView.HeaderGridLinesVisibility = TableViewGridLinesVisibility.None;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.RequestedTheme = theme;
+                    tableView.FlowDirection = theme == ElementTheme.Dark ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+                    tableView.Columns[0].Visibility = Visibility.Collapsed;
+                    var template = tableView.Template;
+                    tableView.Template = null;
+                    tableView.Template = template;
+                    tableView.ApplyTemplate();
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    Verify.IsNotNull(headerRow);
+                    Verify.IsNull(headerRow.BorderBrush, "A pre-template None value must survive retemplating and theme changes.");
+                    foreach (var columnHeader in FindVisualChildrenByType<TableViewColumnHeader>(tableView))
+                    {
+                        var separator = columnHeader.FindVisualChildByName("PART_GridLine") as Border;
+                        Verify.IsNotNull(separator);
+                        Verify.AreEqual(Visibility.Collapsed, separator.Visibility,
+                            "Rebuilt headers must retain the table's None setting, including in RTL.");
+                    }
+
+                    tableView.ClearValue(TableView.HeaderGridLinesVisibilityProperty);
+                    tableView.Columns[0].Visibility = Visibility.Visible;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.HeaderGridLinesVisibility,
+                        "Clearing the property must restore the default All value.");
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
+                    Verify.IsNotNull(headerRow.BorderBrush, "Showing horizontal gridlines must restore the live themed brush.");
+                    Verify.AreEqual(Visibility.Visible, separator.Visibility, "Showing vertical gridlines must restore rebuilt separators.");
+                    Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.GridLinesVisibility,
+                        "Header changes must leave body gridlines unchanged.");
+                    tableView.HeaderGridLinesVisibility = TableViewGridLinesVisibility.None;
+                });
             }
         }
 
@@ -3510,6 +3586,114 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #endregion
 
         #region 13.6 Row banding under an element theme
+
+        [TestMethod]
+        public void VerifyBandedTableStyleBrushesMatchSubtleTertiaryAndHighContrast()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+                foreach (var themeName in new[] { "Light", "Default" })
+                {
+                    Verify.AreEqual(RequireThemeColor(themeName, "SubtleFillColorTertiary"),
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundAlternatingBrush").Color,
+                        $"{themeName}: banding must match Figma's Subtle/Tertiary token.");
+                }
+                Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundAlternatingBrush").Color,
+                    "High Contrast banding must preserve the window-text/window-background pairing.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBandedTableStylePreservesTemplateAndFollowsTheme()
+        {
+            TableView bandedTable = null;
+            TableView defaultTable = null;
+            StackPanel host = null;
+            TabularControlsResources resources = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                resources = new TabularControlsResources();
+                var style = resources["BandedTableViewStyle"] as Style;
+                Verify.IsNotNull(style, "TabularControlsResources must expose the named banded variant.");
+                Verify.AreEqual(typeof(TableView), style.TargetType);
+                Verify.AreEqual(1, style.Setters.Count, "Banding must not change unrelated table settings.");
+                bandedTable = CreateThemingTable();
+                bandedTable.Style = style;
+                bandedTable.GridLinesVisibility = TableViewGridLinesVisibility.Vertical;
+                bandedTable.ColumnHeaderStyle = (Style)resources["StrongTableViewColumnHeaderStyle"];
+                defaultTable = CreateThemingTable();
+                host = new StackPanel { RequestedTheme = ElementTheme.Light };
+                host.Children.Add(defaultTable);
+                host.Children.Add(bandedTable);
+                LoadContent(host);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                RunOnUIThread.Execute(() => host.RequestedTheme = theme);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => host.UpdateLayout());
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var themeName = theme == ElementTheme.Dark ? "Default" : "Light";
+                    var expected = RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundAlternatingBrush").Color;
+                    var oddRow = GetProjectedRow(bandedTable, 1);
+                    Verify.IsNotNull(oddRow);
+                    Verify.AreEqual(theme, oddRow.ActualTheme);
+                    var band = oddRow.Background as SolidColorBrush;
+                    Verify.IsNotNull(band);
+                    Verify.AreEqual(expected, band.Color, "Every second row must paint the element theme's banding brush.");
+                    Verify.IsNull(GetProjectedRow(bandedTable, 0).ReadLocalValue(Control.BackgroundProperty) as Brush,
+                        "The named style must not add a base backplate to even rows.");
+                    Verify.IsNull(defaultTable.AlternatingRowBackground, "The default table must remain unbanded.");
+                    Verify.IsNull(GetProjectedRow(defaultTable, 1).ReadLocalValue(Control.BackgroundProperty) as Brush,
+                        "The named style must not affect other table instances.");
+                    Verify.IsNotNull(bandedTable.Template, "The named style must retain the default template.");
+                    Verify.AreEqual(TableViewGridLinesVisibility.Vertical, bandedTable.GridLinesVisibility,
+                        "Gridline visibility must remain independent.");
+                    Verify.AreEqual((ushort)600, GetHeaderPresenter(bandedTable, 0).FontWeight.Weight,
+                        "Banding must compose with the Strong header style.");
+                });
+
+                foreach (var state in new[] { "PointerOver", "Pressed", "Selected", "SelectedPointerOver", "SelectedPressed", "Disabled", "Normal" })
+                {
+                    RunOnUIThread.Execute(() =>
+                        Verify.IsTrue(VisualStateManager.GoToState(GetProjectedRow(bandedTable, 1), state, false)));
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var themeName = theme == ElementTheme.Dark ? "Default" : "Light";
+                        var key = state == "Normal"
+                            ? "TabularSurfaceRowBackgroundAlternatingBrush"
+                            : $"TabularSurfaceRowBackground{state}Brush";
+                        var backplate = GetProjectedRow(bandedTable, 1).FindVisualChildByName("PART_RootBorder") as Border;
+                        Verify.IsNotNull(backplate);
+                        var fill = backplate.Background as SolidColorBrush;
+                        Verify.IsNotNull(fill);
+                        Verify.AreEqual(RequireBrush(resources, themeName, key).Color, fill.Color,
+                            $"{theme}/{state}: interaction fills must override banding, and Normal must restore it.");
+                    });
+                }
+            }
+
+            RunOnUIThread.Execute(() => bandedTable.Style = null);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(bandedTable.AlternatingRowBackground, "Removing the style must restore the unbanded default.");
+                Verify.IsNull(GetProjectedRow(bandedTable, 1).ReadLocalValue(Control.BackgroundProperty) as Brush,
+                    "Removing the style must clear the realized row's banding.");
+                Verify.IsNotNull(bandedTable.Template, "Removing the variant must retain the default template.");
+            });
+        }
 
         // The subtree runs opposite to the app theme so an Application-theme resolution is detectable.
         [TestMethod]

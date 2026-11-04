@@ -73,6 +73,10 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <Style x:Key="BandedTableViewStyle" TargetType="tabular:TableView">
+        <Setter Property="AlternatingRowBackground" Value="{ThemeResource TabularSurfaceRowBackgroundAlternatingBrush}" />
+    </Style>
+
     <Style x:Key="StrongTableViewColumnHeaderStyle" TargetType="tabular:TableViewColumnHeader">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />

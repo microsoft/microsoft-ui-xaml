@@ -40,6 +40,16 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="HeaderGridLineStates">
+                                <VisualState x:Name="HeaderHorizontalGridLinesVisible" />
+                                <VisualState x:Name="HeaderHorizontalGridLinesHidden">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_HeaderRow.BorderBrush" Value="{x:Null}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
