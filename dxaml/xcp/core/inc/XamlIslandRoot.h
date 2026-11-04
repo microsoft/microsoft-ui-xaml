@@ -48,6 +48,10 @@ public:
     //  IFrameworkApplicationPrivate::CreateIslandRoot():
     _Check_return_ HRESULT Initialize();
 
+    // Release/RebuildContentIsland are used in tests when rebuilding all Composition resources.
+    _Check_return_ HRESULT ReleaseContentIsland();
+    _Check_return_ HRESULT RebuildContentIsland();
+
     KnownTypeIndex GetTypeIndex() const override
     {
         return DependencyObjectTraits<CXamlIslandRoot>::Index;
@@ -95,6 +99,7 @@ public:
         _In_opt_ CContentPresenter *pRootContentPresenter);
 
     CUIElement* GetPublicRootVisual();
+    CUIElement* GetRootScrollViewerOrPublicRoot();
 
     _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
     _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
@@ -118,7 +123,7 @@ public:
     bool HasFocus() const;
 
     wrl::ComPtr<ixp::IVisual> GetRootVisual() { return m_rootVisual; }
-    void SetRootVisual(_In_ ixp::IVisual* visual) { m_rootVisual = visual;}
+    void SetRootVisual(_In_opt_ ixp::IVisual* visual) { m_rootVisual = visual;}
 
     wrl::ComPtr<ixp::IInputPointerSource> GetInputPointerSource() const { return m_inputPointerSource; }
 
@@ -265,6 +270,8 @@ private:
     bool HasContent() const { XAML_FAIL_FAST(); return true; }
 
     _Check_return_ HRESULT InitializeCommon();
+    _Check_return_ HRESULT InitializeContentIsland();
+    _Check_return_ HRESULT ReleaseContentIslandResources();
     void InitializeOwnerHWNDForWindowedPopups(_In_ IUnknown* host);
     void InitInputObjects(_In_ ixp::IContentIsland* const contentIsland);
     void SubscribeToInputKeyboardSourceEvents();
@@ -385,4 +392,3 @@ private:
 
     _Check_return_ HRESULT EnsurePartnerPointerPointStatics();
 };
-

@@ -12,6 +12,7 @@
     <WilPackageName>Microsoft.Windows.ImplementationLibrary</WilPackageName>
     <MicrosoftCsWinRtPackageName>Microsoft.Windows.CsWinRT</MicrosoftCsWinRtPackageName>
     <LocalizedMUIFilesPackageName>Microsoft.Internal.WinUILocalizationResources</LocalizedMUIFilesPackageName>
+    <WinUITestResourcesPackageName>Microsoft.Internal.WinUITestResources</WinUITestResourcesPackageName>
     <!-- Determine the configured versions based upon the architecture specific nuget packages -->
     <PackagesPlatformConfigFile>$(MSBuildThisFileDirectory)..\packages.$(Platform).config</PackagesPlatformConfigFile>
     <PackagesPlatformConfigFile Condition="!Exists('$(PackagesPlatformConfigFile)')">$(MSBuildThisFileDirectory)..\packages.x86.config</PackagesPlatformConfigFile>
@@ -28,6 +29,7 @@
     <PackagesConfigFile>$(MSBuildThisFileDirectory)..\packages.config</PackagesConfigFile>
     <PackagesConfigContents>$([System.IO.File]::ReadAllText("$(PackagesConfigFile)"))</PackagesConfigContents>
     <LocalizedMUIFilesPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Internal.WinUILocalizationResources.*?version="(.*?)"').Groups[1].Value)</LocalizedMUIFilesPackageVersion>
+    <WinUITestResourcesPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Internal.WinUITestResources.*?version="(.*?)"').Groups[1].Value)</WinUITestResourcesPackageVersion>
     <MicrosoftWindowsSDKContractsVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.Contracts.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKContractsVersion>
     <MicrosoftWindowsSDKCppVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.cpp.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKCppVersion>
     <TaefNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Taef.*?version="(.*?)"').Groups[1].Value)</TaefNugetPackageVersion>
@@ -40,17 +42,17 @@
     <MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.BuildTools.MSIX".*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion>
     <MSBuildCachePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.MSBuildCache.*?version="(.*?)"').Groups[1].Value)</MSBuildCachePackageVersion>
     <MicrosoftCsWinRTVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.CsWinRT.*?version="(.*?)"').Groups[1].Value)</MicrosoftCsWinRTVersion>
-    <!-- Determine the configured versions based upon the Vesion.Details.xml file. -->
-    <VersionDetailsFile>$(MSBuildThisFileDirectory)Version.Details.xml</VersionDetailsFile>
-    <VersionDetailsFileContents>$([System.IO.File]::ReadAllText("$(VersionDetailsFile)"))</VersionDetailsFileContents>
-    <FoundationTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(ProjectReunionFoundationTransportPackageName)".*?Version="(.*?)"').Groups[1].Value)</FoundationTransportPackageVersion>
-    <FrameworkUdkPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.FrameworkUdk.*?Version="(.*?)"').Groups[1].Value)</FrameworkUdkPackageVersion>
-    <IxpTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(LiftedIXPTransportPackageName).*?Version="(.*?)"').Groups[1].Value)</IxpTransportPackageVersion>
-    <BasePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(BasePackageName)".*?Version="(.*?)"').Groups[1].Value)</BasePackageVersion>
-    <WinUIDetailsNugetVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.WinUIDetails.*?Version="(.*?)"').Groups[1].Value)</WinUIDetailsNugetVersion>
+    <!-- Internal component versions, first carried over from the deleted eng\Version.Details.xml.
+         ValueOrDefault => $(WindowsAppSDKVersionPinned) in the mono-build, else the literal
+         fallback (update manually). -->
+    <FoundationTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</FrameworkUdkPackageVersion>
+    <IxpTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</IxpTransportPackageVersion>
+    <BasePackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</BasePackageVersion>
+    <WinUIDetailsNugetVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.4-dev.experimental1D'))</WinUIDetailsNugetVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
-    <FoundationPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(FoundationPackageName)".*?Version="(.*?)"').Groups[1].Value)</FoundationPackageVersion>
-    <IXPPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(LiftedIXPPackageName)".*?Version="(.*?)"').Groups[1].Value)</IXPPackageVersion>
+    <FoundationPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</FoundationPackageVersion>
+    <IXPPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</IXPPackageVersion>
     <!-- ====================================================================================== -->
     <!-- OSS builds currently pin to last-known-good versions. -->
     <FoundationTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationTransportPackageVersion>
@@ -62,6 +64,20 @@
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationPackageVersion>
     <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IXPPackageVersion>
     <!-- ====================================================================================== -->
+    <!-- A mono-build checkout can stage its authoritative package-version file above this repository. -->
+    <WindowsAppSDKPackageVersionProps>$([MSBuild]::GetPathOfFileAbove('WindowsAppSDK.PackageVersion.props', '$(MSBuildThisFileDirectory)..\'))</WindowsAppSDKPackageVersionProps>
+  </PropertyGroup>
+  <Import Project="$(WindowsAppSDKPackageVersionProps)" Condition="'$(WindowsAppSDKPackageVersionProps)' != ''" />
+  <PropertyGroup Condition="'$(WindowsAppSDKPackageVersionProps)' != ''">
+    <FoundationTransportPackageVersion>$(MicrosoftWindowsAppSDKFoundationTransportPackagePackageVersion)</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$(MicrosoftFrameworkUdkPackageVersion)</FrameworkUdkPackageVersion>
+    <IxpTransportPackageVersion>$(MicrosoftProjectReunionInteractiveExperiencesTransportPackagePackageVersion)</IxpTransportPackageVersion>
+    <BasePackageVersion>$(MicrosoftWindowsAppSDKBasePackagePackageVersion)</BasePackageVersion>
+    <WinUIDetailsNugetVersion>$(MicrosoftInternalWinUIDetailsPackageVersion)</WinUIDetailsNugetVersion>
+    <FoundationPackageVersion>$(MicrosoftWindowsAppSDKFoundationPackagePackageVersion)</FoundationPackageVersion>
+    <IXPPackageVersion>$(MicrosoftWindowsAppSDKInteractiveExperiencesPackagePackageVersion)</IXPPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
     <!-- The package version identifies the targeted package version based on the configured packages. -->
@@ -113,6 +129,7 @@
   <Target Name="ValidatePackageVersionRetrieval" BeforeTargets="Build;CoreCompile;Midl;ResolveAssemblyReferences">
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="Build Versions returned from package configurations" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Internal.WinUILocalizationResources=$(LocalizedMUIFilesPackageVersion)" />
+    <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Internal.WinUITestResources=$(WinUITestResourcesPackageVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.SDK.Contracts=$(MicrosoftWindowsSDKContractsVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Taef=$(TaefNugetPackageVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Internal.WinUIDetails=$(WinUIDetailsNugetVersion)" />
@@ -127,6 +144,7 @@
     <Error Condition="'$(FoundationTransportPackageVersion)' == ''" Text="Unable to determine version for package $(ProjectReunionFoundationTransportPackageName)" />
     <Error Condition="'$(IxpTransportPackageVersion)' == ''" Text="Unable to determine version for package $(LiftedIXPTransportPackageName)" />
     <Error Condition="'$(LocalizedMUIFilesPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUILocalizationResources" />
+    <Error Condition="'$(WinUITestResourcesPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUITestResources" />
     <Error Condition="'$(MicrosoftWindowsSDKContractsVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.Contracts" />
     <Error Condition="'$(TaefNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Taef" />
     <Error Condition="'$(WinUIDetailsNugetVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUIDetails" />

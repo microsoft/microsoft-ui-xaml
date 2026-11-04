@@ -20,7 +20,7 @@ namespace winrt::StaticLibInRuntimeComponent::implementation
         int32_t Dummy();
         void Dummy(int32_t value);
 
-        void ClickHandler(::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ClickHandler(::winrt::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
     };
 }
 

@@ -33,6 +33,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanSetAndGetProperties)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully set/get the PathIcon properties.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ChildAfterLayoutIsGrid)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the PathIcon child is a Grid after layout.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(PathIconSubclassCanReplaceGridContent)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a PathIcon subclass can replace the content of its child Grid.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

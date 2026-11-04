@@ -67,7 +67,7 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="141" SizeY="25" BorderMode="Hard" OffsetX="14" OffsetY="15" OffsetZ="0">
+                        <wucSpriteVisual SizeX="143" SizeY="27" BorderMode="Hard" OffsetX="13" OffsetY="14" OffsetZ="0">
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />
@@ -180,7 +180,7 @@
                                     </ExpressionAnimation>
                                   </TransformMatrix>
                                   <Visual Tag="ContentVisual">
-                                    <wucSpriteVisual SizeX="219" SizeY="21" BorderMode="Hard" OffsetX="32" OffsetY="41" OffsetZ="0">
+                                    <wucSpriteVisual SizeX="221" SizeY="23" BorderMode="Hard" OffsetX="31" OffsetY="40" OffsetZ="0">
                                       <MaskBrush>
                                         <Source>
                                           <ColorBrush Color="rgb {0.5451, 0, 0}" />

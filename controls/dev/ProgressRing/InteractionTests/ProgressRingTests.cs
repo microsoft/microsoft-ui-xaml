@@ -34,6 +34,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
@@ -228,6 +229,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: make the ring determinate, then through the test page inputs set Minimum/Maximum to 10/15, then
+        //           Maximum 5, then Minimum 15, then 0.1/1.1 and press Change Value; values are read through UIA
+        //           RangeValue.
+        // Expected: Minimum 10 and Maximum 15 (both changed); a Maximum below Minimum becomes Minimum; a Minimum above
+        //           Value raises Value and Maximum to it; with the decimal range Change Value still changes Value.
+        // A failure means: range changes would not reach UIA, or the ring's Maximum/Value coercion would break.
         [TestMethod]
         public void UpdateMinMaxTest()
         {
@@ -255,8 +262,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double newMinimumInputText = progressRing.Minimum;
                 double newMaximumInputText = progressRing.Maximum;
 
-                Verify.AreNotSame(oldMinimumInputText, newMinimumInputText, "Minimum updated");
-                Verify.AreNotSame(oldMaximumInputText, newMaximumInputText, "Maximum updated");
+                Verify.AreEqual(10.0, newMinimumInputText, "Minimum updated");
+                Verify.AreEqual(15.0, newMaximumInputText, "Maximum updated");
+                Verify.AreNotEqual(oldMinimumInputText, newMinimumInputText, "Minimum changed from its previous value");
+                Verify.AreNotEqual(oldMaximumInputText, newMaximumInputText, "Maximum changed from its previous value");
 
                 // Below edge cases are handled by Rangebase
 

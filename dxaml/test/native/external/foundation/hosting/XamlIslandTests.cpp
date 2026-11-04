@@ -22,6 +22,10 @@
 
 #include <AutomationClient/AutomationClientManager.h>
 #include <shlwapi.h>
+#include <UIAutomation.h>
+#include <detours.h>
+#include <intrin.h>
+#include <utility>
 
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Composition;
@@ -51,6 +55,88 @@ namespace Microsoft::UI::Xaml::Tests::Foundation::Hosting {
 #include "ApplicationWithMuxc.h"
 #include "ApplicationLikeFileExplorer.h"
 #include "XamlIslandTestHelper.h"
+
+namespace
+{
+    auto g_realUiaLookupId = &::UiaLookupId;
+    thread_local std::function<void()> g_onXamlIsControlElementLookup;
+
+    bool IsCalledFromMicrosoftUIXaml(void* returnAddress)
+    {
+        HMODULE caller{};
+        return ::GetModuleHandleExW(
+                GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                static_cast<LPCWSTR>(returnAddress),
+                &caller) &&
+            caller == ::GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
+    }
+
+    int WINAPI UiaLookupIdDetour(AutomationIdentifierType type, const GUID* guid)
+    {
+        const int id = g_realUiaLookupId(type, guid);
+
+        // CUIAWindow::InitIds is the only Microsoft.UI.Xaml caller of this lookup.
+        if (g_onXamlIsControlElementLookup &&
+            type == AutomationIdentifierType_Property &&
+            IsEqualGUID(*guid, IsControlElement_Property_GUID) &&
+            IsCalledFromMicrosoftUIXaml(_ReturnAddress()))
+        {
+            // Disarm before invoking, since closing the island can reenter UIA.
+            std::exchange(g_onXamlIsControlElementLookup, nullptr)();
+        }
+
+        return id;
+    }
+
+    // The detour is process-wide; tests using it must run with method isolation.
+    class UiaLookupIdDetourScope
+    {
+    public:
+        UiaLookupIdDetourScope()
+        {
+            VERIFY_ARE_EQUAL(NO_ERROR, Update(true /* attach */));
+        }
+
+        ~UiaLookupIdDetourScope()
+        {
+            g_onXamlIsControlElementLookup = nullptr;
+            const LONG result = Update(false /* attach */);
+            if (result != NO_ERROR)
+            {
+                LOG_OUTPUT(L"Failed to remove the UiaLookupId detour: %d", result);
+            }
+        }
+
+        UiaLookupIdDetourScope(const UiaLookupIdDetourScope&) = delete;
+        UiaLookupIdDetourScope& operator=(const UiaLookupIdDetourScope&) = delete;
+
+    private:
+        static LONG Update(bool attach)
+        {
+            LONG result = DetourTransactionBegin();
+            if (result != NO_ERROR)
+            {
+                return result;
+            }
+
+            result = DetourUpdateThread(::GetCurrentThread());
+            if (result == NO_ERROR)
+            {
+                auto target = reinterpret_cast<PVOID*>(&g_realUiaLookupId);
+                auto detour = reinterpret_cast<PVOID>(UiaLookupIdDetour);
+                result = attach ? DetourAttach(target, detour) : DetourDetach(target, detour);
+            }
+
+            if (result != NO_ERROR)
+            {
+                DetourTransactionAbort();
+                return result;
+            }
+
+            return DetourTransactionCommit();
+        }
+    };
+}
 
 ref class XamlIslandTests_Application sealed : Microsoft::UI::Xaml::Application
 {
@@ -442,7 +528,15 @@ void XamlIslandTests::WindowsXamlManagerKeptAlive()
         IUnknown* rawUnk3 {reinterpret_cast<IUnknown*>(wxm3)};
         VERIFY_ARE_EQUAL(rawUnk1, rawUnk3);
 
+        Platform::WeakReference weakWxm(wxm3);
+        wxm2 = nullptr;
+        wxm3 = nullptr;
+
+        VERIFY_IS_NOT_NULL(weakWxm.Resolve<WindowsXamlManager>());
+
         dqc->ShutdownQueue();
+
+        VERIFY_IS_NULL(weakWxm.Resolve<WindowsXamlManager>());
     });
 
     WaitForSingleObjectWithTimeout(uiThread);
@@ -868,7 +962,9 @@ void XamlIslandTests::IslandStressWorker(IslandSceneKind sceneKind)
     app = nullptr;
     dqcOuter->ShutdownQueue();
 
-    VERIFY_IS_TRUE(XamlIslandTests_ApplicationWithMuxc::DidDestructorRun());
+    // Third-party components may have registered custom DPs that need to stay valid in order to restart WinUI after
+    // shutdown, so MUX no longer cleans up metadata after shutdown. That means the Application object stays alive
+    // for the duration of the process.
 }
 
 void XamlIslandTests::IslandsOnDifferentThreadsStress()
@@ -1649,6 +1745,97 @@ void XamlIslandTests::FailFastWhenMessagesNotPumpedAfterClosing()
     WaitForSingleObjectWithTimeout(uiThread);
 }
 
+void XamlIslandTests::GetDispatcherQueueFromThreadpoolAfterCoreShutdown()
+{
+    // Verifies that reading Window.DispatcherQueue from a thread-pool worker, on a closed Window that has outlived its
+    // thread's XAML core, returns the window's (now shut down) DispatcherQueue without touching the deleted core.
+
+    // Keep an Application alive on the test thread so Microsoft.UI.Xaml.dll stays loaded after the UI thread exits.
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+
+    wrl::ComPtr<ABI::Microsoft::UI::Xaml::IWindow> survivingWindow;
+    DispatcherQueue^ uiThreadQueue; // The Window holds its queue weakly; keep it alive for the final check.
+    const auto identityOf = [](Platform::Object^ object) { return reinterpret_cast<uintptr_t>(CastHatTo<IUnknown>(object).Get()); };
+
+    // On a UI thread, show and close a Window while keeping a reference to it, then shut down that thread's
+    // DispatcherQueue, which deletes its XAML core.
+    auto uiThread = RunOnNewThread([&]() {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_SINGLETHREADED));
+        {
+            auto dqc { DispatcherQueueController::CreateOnCurrentThread() };
+            WindowsXamlManager^ wxm = WindowsXamlManager::InitializeForCurrentThread();
+            uiThreadQueue = dqc->DispatcherQueue;
+
+            Window^ window = ref new Window();
+            CopyObjectTo(window, survivingWindow.ReleaseAndGetAddressOf());
+            VERIFY_IS_NOT_NULL(window->DispatcherQueue);
+            VERIFY_ARE_EQUAL(identityOf(uiThreadQueue), identityOf(window->DispatcherQueue));
+
+            bool closedRaised = false;
+            window->Closed += ref new ::Windows::Foundation::TypedEventHandler<Platform::Object^, WindowEventArgs^>(
+                [&closedRaised](Platform::Object^, WindowEventArgs^) { closedRaised = true; });
+
+            window->Activate();
+            DrainMessageQueue();
+
+            LOG_OUTPUT(L"Closing the Window while keeping a reference to it.");
+            window->Close();
+            DrainMessageQueue();
+            VERIFY_IS_TRUE(closedRaised);
+            VERIFY_IS_NOT_NULL(window->DispatcherQueue);
+            VERIFY_ARE_EQUAL(identityOf(uiThreadQueue), identityOf(window->DispatcherQueue));
+            window = nullptr;
+
+            LOG_OUTPUT(L"Shutting down the UI thread's DispatcherQueue, which deletes its XAML core.");
+            dqc->ShutdownQueue();
+
+            // WindowsXamlManager is cleared only after the core is deinitialized, so this confirms the core is gone.
+            VERIFY_IS_NULL(WindowsXamlManager::GetForCurrentThread());
+        }
+        ::RoUninitialize();
+    });
+    WaitForSingleObjectWithTimeout(uiThread);
+
+    VERIFY_IS_NOT_NULL(survivingWindow.Get());
+
+    struct WorkerContext
+    {
+        ABI::Microsoft::UI::Xaml::IWindow* window;
+        HRESULT roInitializeHr = E_UNEXPECTED;
+        HRESULT hr = E_UNEXPECTED;
+        wrl::ComPtr<ABI::Microsoft::UI::Dispatching::IDispatcherQueue> queue;
+    } context { survivingWindow.Get() };
+
+    LOG_OUTPUT(L"Reading Window.DispatcherQueue from an MTA thread-pool worker after core shutdown.");
+    PTP_WORK work = ::CreateThreadpoolWork(
+        [](PTP_CALLBACK_INSTANCE, void* pv, PTP_WORK) {
+            auto* ctx = static_cast<WorkerContext*>(pv);
+            ctx->roInitializeHr = ::RoInitialize(RO_INIT_MULTITHREADED);
+            if (SUCCEEDED(ctx->roInitializeHr))
+            {
+                ctx->hr = ctx->window->get_DispatcherQueue(ctx->queue.ReleaseAndGetAddressOf());
+                ::RoUninitialize();
+            }
+        },
+        &context,
+        nullptr);
+    VERIFY_IS_NOT_NULL(work);
+    ::SubmitThreadpoolWork(work);
+    ::WaitForThreadpoolWorkCallbacks(work, FALSE);
+    ::CloseThreadpoolWork(work);
+    VERIFY_SUCCEEDED(context.roInitializeHr);
+
+    // The getter returns the window's own DispatcherQueue, which has shut down and so rejects new work.
+    LOG_OUTPUT(L"Window.DispatcherQueue returned hr=0x%08x without crashing.", context.hr);
+    VERIFY_SUCCEEDED(context.hr);
+    VERIFY_IS_NOT_NULL(context.queue.Get());
+
+    DispatcherQueue^ queue = safe_cast<DispatcherQueue^>(ToObject(context.queue.Get()));
+    VERIFY_ARE_EQUAL(identityOf(uiThreadQueue), identityOf(queue));
+    VERIFY_IS_FALSE(queue->TryEnqueue(ref new DispatcherQueueHandler([]() {})));
+}
+
 
 void XamlIslandTests::IslandWithMuxcDoesntPoisonThread()
 {
@@ -1994,6 +2181,7 @@ public:
         LOG_OUTPUT(L"    > SystemBackdrop::OnTargetConnected called.");
         m_connectedCount++;
         m_previousConnectedTarget = connectedTarget;
+        m_previousConnectedXamlRoot = xamlRoot;
     }
 
     void OnTargetDisconnected(ICompositionSupportsSystemBackdrop^ disconnectedTarget) override
@@ -2005,6 +2193,7 @@ public:
 
     int GetConnectedCount() { return m_connectedCount; }
     ICompositionSupportsSystemBackdrop^ GetPreviousConnectedTarget() { return m_previousConnectedTarget; }
+    XamlRoot^ GetPreviousConnectedXamlRoot() { return m_previousConnectedXamlRoot; }
 
     int GetDisconnectedCount() { return m_disconnectedCount; }
     ICompositionSupportsSystemBackdrop^ GetPreviousDisconnectedTarget() { return m_previousDisconnectedTarget; }
@@ -2012,6 +2201,7 @@ public:
 private:
     int m_connectedCount {0};
     ICompositionSupportsSystemBackdrop^ m_previousConnectedTarget;
+    XamlRoot^ m_previousConnectedXamlRoot;
 
     int m_disconnectedCount {0};
     ICompositionSupportsSystemBackdrop^ m_previousDisconnectedTarget;
@@ -2065,6 +2255,45 @@ void XamlIslandTests::IslandSystemBackdrop()
 
         dqc->ShutdownQueue();
 
+        return 0;
+    });
+
+    WaitForSingleObjectWithTimeout(uiThread);
+}
+
+void XamlIslandTests::IslandSystemBackdropBeforeContent()
+{
+    VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
+
+    auto uiThread = RunOnNewThread([]()
+    {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
+        auto dqc = DispatcherQueueController::CreateOnCurrentThread();
+        auto xi = ref new XamlIsland();
+        auto customBackdrop = ref new CustomBackdrop_TrackOnConnected();
+        auto target = safe_cast<ICompositionSupportsSystemBackdrop^>(xi);
+
+        VERIFY_IS_NULL(xi->Content);
+        LOG_OUTPUT(L"  > Setting SystemBackdrop before island content.");
+        xi->SystemBackdrop = customBackdrop;
+
+        VERIFY_IS_NULL(xi->Content);
+        VERIFY_ARE_EQUAL(1, customBackdrop->GetConnectedCount());
+        VERIFY_ARE_EQUAL(target, customBackdrop->GetPreviousConnectedTarget());
+        VERIFY_IS_NOT_NULL(customBackdrop->GetPreviousConnectedXamlRoot());
+        VERIFY_ARE_EQUAL(0, customBackdrop->GetDisconnectedCount());
+
+        LOG_OUTPUT(L"  > Setting island content after SystemBackdrop.");
+        xi->Content = ref new Grid();
+        VERIFY_ARE_EQUAL(customBackdrop->GetPreviousConnectedXamlRoot(), xi->Content->XamlRoot);
+        VERIFY_ARE_EQUAL(1, customBackdrop->GetConnectedCount());
+        VERIFY_ARE_EQUAL(0, customBackdrop->GetDisconnectedCount());
+
+        xi->SystemBackdrop = nullptr;
+        VERIFY_ARE_EQUAL(1, customBackdrop->GetDisconnectedCount());
+        VERIFY_ARE_EQUAL(target, customBackdrop->GetPreviousDisconnectedTarget());
+
+        dqc->ShutdownQueue();
         return 0;
     });
 
@@ -3549,6 +3778,62 @@ void XamlIslandTests::ValidateUiaAfterVisualTreeReset()
     LowBudgetWaitForIdle(ih);
 }
 
+void XamlIslandTests::ValidateIslandCloseDuringUiaInitialization()
+{
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+    testHelper.StartAndPrepNewUIThreadWithWindow();
+
+    testHelper.RunOnIslandUIThread([&]()
+    {
+        auto dwxs = CreateDesktopWindowXamlSource(testHelper.m_topLevelHwnd, L"UIA initialization");
+
+        wrl::ComPtr<ABI::Windows::Foundation::IClosable> closable;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(dwxs)->QueryInterface(IID_PPV_ARGS(&closable)));
+        auto closeIsland = wil::scope_exit([&] { (void)closable->Close(); });
+
+        HWND islandHwnd{};
+        VERIFY_SUCCEEDED(ABI::Microsoft::UI::GetWindowFromWindowId(
+            ABI::Microsoft::UI::WindowId{ dwxs->SiteBridge->WindowId.Value },
+            &islandHwnd));
+        VERIFY_IS_NOT_NULL(islandHwnd);
+
+        wrl::ComPtr<IUIAutomation> automation;
+        VERIFY_SUCCEEDED(::CoCreateInstance(CLSID_CUIAutomation8, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&automation)));
+
+        bool closeInjected = false;
+        HRESULT closeResult = E_PENDING;
+        UiaLookupIdDetourScope detour;
+
+        g_onXamlIsControlElementLookup = [&]
+        {
+            closeInjected = true;
+            LOG_OUTPUT(L"Closing the island before UiaLookupId returns to CUIAWindow::InitIds.");
+            // A synchronous close is not deferred by the PauseNewDispatch in InitIds.
+            closeResult = closable->Close();
+        };
+
+        // Like a focus-driven accessibility query, a same-thread UIA query makes the island create its
+        // UIA window lazily through ContentIsland.AutomationProviderRequested.
+        wrl::ComPtr<IUIAutomationElement> root;
+        HRESULT queryResult = automation->ElementFromHandle(islandHwnd, &root);
+        if (SUCCEEDED(queryResult) && !closeInjected)
+        {
+            wrl::ComPtr<IUIAutomationCondition> trueCondition;
+            wrl::ComPtr<IUIAutomationElement> child;
+            queryResult = automation->CreateTrueCondition(&trueCondition);
+            if (SUCCEEDED(queryResult))
+            {
+                queryResult = root->FindFirst(TreeScope_Children, trueCondition.Get(), &child);
+            }
+        }
+        LOG_OUTPUT(L"UIA query returned 0x%08x.", queryResult);
+
+        VERIFY_IS_TRUE(closeInjected, L"The provider request must reach CUIAWindow::InitIds.");
+        VERIFY_SUCCEEDED(closeResult);
+    });
+}
+
 void XamlIslandTests::ValidateUiaConcurrentWithIslandClose()
 {
     // Regression test: a re-entrant UIA call (bounding-rect / property fetch)
@@ -3801,6 +4086,207 @@ void XamlIslandTests::ValidateDispatcherShutdownModeInDesktopApp()
     WaitForSingleObjectWithTimeout(uiThread);
 }
 
+struct ApplicationBehaviorState
+{
+    Application^ application = nullptr;
+    ResourceDictionary^ resources = nullptr;
+    DebugSettings^ debugSettings = nullptr;
+    FocusVisualKind focusVisualKind{};
+    ApplicationHighContrastAdjustment highContrastAdjustment{};
+    ApplicationTheme requestedTheme{};
+    bool enableFrameRateCounter{};
+    bool failFastOnErrors{};
+};
+
+void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& state)
+{
+    VERIFY_IS_NULL(Application::Current);
+
+    // Calling Exit when WinUI is already shut down is a no-op
+    state.application->Exit();
+
+    //
+    // WinUI's Application object is a combination of things that are process-wide, independent of any UI
+    // thread (like Xaml metadata, HighContrastAdjustment getter, FocusVisualKind, DebugSettings object,
+    // and FailFastOnErrors), and things that are tied to a UI thread (everything else). Confirm that the
+    // parts independent of the UI thread still work after shutdown, and the UI-thread-dependent stuff
+    // returns RPC_E_WRONG_THREAD.
+    //
+
+    VERIFY_ARE_EQUAL(state.highContrastAdjustment, state.application->HighContrastAdjustment);
+    VERIFY_ARE_EQUAL(state.focusVisualKind, state.application->FocusVisualKind);
+    VERIFY_IS_TRUE(state.debugSettings == state.application->DebugSettings);
+    VERIFY_ARE_EQUAL(state.failFastOnErrors, state.debugSettings->FailFastOnErrors);
+
+    auto appXamlUri = ref new Uri(L"ms-appx:///App.xaml");
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        Application::LoadComponent(state.application, appXamlUri),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.application->Resources),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.application->DispatcherShutdownMode),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.application->RequestedTheme),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        state.application->RequestedTheme = state.requestedTheme,
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    const auto newHighContrastAdjustment =
+        state.highContrastAdjustment == ApplicationHighContrastAdjustment::Auto
+        ? ApplicationHighContrastAdjustment::None
+        : ApplicationHighContrastAdjustment::Auto;
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        state.application->HighContrastAdjustment = newHighContrastAdjustment,
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.debugSettings->EnableFrameRateCounter),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+}
+
+void VerifyApplicationBehaviorAfterStartup(ApplicationBehaviorState& state)
+{
+    auto restartedApplication = Application::Current;
+    VERIFY_IS_NOT_NULL(restartedApplication);
+    if (restartedApplication == nullptr)
+    {
+        return;
+    }
+
+    VERIFY_IS_TRUE(state.application == restartedApplication);
+
+    auto restartedResources = restartedApplication->Resources;
+    VERIFY_IS_NOT_NULL(restartedResources);
+    VERIFY_IS_TRUE(state.resources != restartedResources);
+    state.resources = restartedResources;
+
+    VERIFY_IS_TRUE(state.debugSettings == restartedApplication->DebugSettings);
+
+    state.enableFrameRateCounter = !state.enableFrameRateCounter;
+    state.debugSettings->EnableFrameRateCounter = state.enableFrameRateCounter;
+    VERIFY_ARE_EQUAL(state.enableFrameRateCounter, state.debugSettings->EnableFrameRateCounter);
+}
+
+void XamlIslandTests::ApplicationBehaviorAtCoreShutdown()
+{
+    auto uiThread = RunOnNewThread([]()
+    {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_SINGLETHREADED));
+
+        ApplicationBehaviorState state;
+
+        VERIFY_IS_NULL(Application::Current);
+
+        Application::Start(ref new ApplicationInitializationCallback(
+            [&](ApplicationInitializationCallbackParams^)
+            {
+                state.application = ref new Application();
+
+                auto dispatcherQueue = DispatcherQueue::GetForCurrentThread();
+                VERIFY_IS_NOT_NULL(dispatcherQueue);
+                if (dispatcherQueue == nullptr)
+                {
+                    ::PostQuitMessage(0);
+                    return;
+                }
+
+                const bool queued = dispatcherQueue->TryEnqueue(ref new DispatcherQueueHandler([&]
+                {
+                    auto currentApplication = Application::Current;
+                    VERIFY_IS_NOT_NULL(currentApplication);
+                    if (currentApplication == nullptr)
+                    {
+                        ::PostQuitMessage(0);
+                        return;
+                    }
+
+                    // Queue teardown after asserts
+                    currentApplication->Exit();
+                    VERIFY_IS_TRUE(state.application == currentApplication);
+
+                    state.resources = state.application->Resources;
+                    VERIFY_IS_NOT_NULL(state.resources);
+                    state.debugSettings = state.application->DebugSettings;
+                    VERIFY_IS_NOT_NULL(state.debugSettings);
+
+                    static_cast<void>(state.application->DispatcherShutdownMode);
+                    state.focusVisualKind = state.application->FocusVisualKind;
+                    state.highContrastAdjustment = state.application->HighContrastAdjustment;
+                    state.requestedTheme = state.application->RequestedTheme;
+
+                    state.enableFrameRateCounter = state.debugSettings->EnableFrameRateCounter;
+                    state.failFastOnErrors = state.debugSettings->FailFastOnErrors;
+                }));
+                VERIFY_IS_TRUE(queued);
+                if (!queued)
+                {
+                    ::PostQuitMessage(0);
+                }
+            }));
+
+        VerifyApplicationBehaviorAtCoreShutdown(state);
+
+        Application::Start(ref new ApplicationInitializationCallback(
+            [&](ApplicationInitializationCallbackParams^)
+            {
+                auto dispatcherQueue = DispatcherQueue::GetForCurrentThread();
+                VERIFY_IS_NOT_NULL(dispatcherQueue);
+                if (dispatcherQueue == nullptr)
+                {
+                    ::PostQuitMessage(0);
+                    return;
+                }
+
+                const bool queued = dispatcherQueue->TryEnqueue(ref new DispatcherQueueHandler([&]
+                {
+                    auto restartedApplication = Application::Current;
+                    VERIFY_IS_NOT_NULL(restartedApplication);
+                    if (restartedApplication == nullptr)
+                    {
+                        ::PostQuitMessage(0);
+                        return;
+                    }
+
+                    // Queue teardown after asserts
+                    restartedApplication->Exit();
+
+                    VerifyApplicationBehaviorAfterStartup(state);
+                }));
+                VERIFY_IS_TRUE(queued);
+                if (!queued)
+                {
+                    ::PostQuitMessage(0);
+                }
+            }));
+
+        VerifyApplicationBehaviorAtCoreShutdown(state);
+
+        auto dispatcherQueueController = DispatcherQueueController::CreateOnCurrentThread();
+        auto windowsXamlManager = WindowsXamlManager::InitializeForCurrentThread();
+        VERIFY_IS_NOT_NULL(windowsXamlManager);
+
+        VerifyApplicationBehaviorAfterStartup(state);
+
+        dispatcherQueueController->ShutdownQueue();
+        VerifyApplicationBehaviorAtCoreShutdown(state);
+
+        CloseObject(windowsXamlManager);
+    });
+    WaitForSingleObjectWithTimeout(uiThread);
+}
+
 void XamlIslandTests::ValidateCallbackErrorPropagatesInDesktopApp()
 {
     // Regression test for Bug 39852717: When the app's ApplicationInitializationCallback
@@ -3984,7 +4470,7 @@ void XamlIslandTests::ValidateUiaFindAllWithWindowedPopup()
     ::Sleep(500);
 
     LowBudgetWaitForIdle(ih1);
-    
+
     RunOnIslandUIThread(ih1, [&]()
     {
         popup->IsOpen = true;
@@ -4026,10 +4512,10 @@ void XamlIslandTests::ValidateUiaFindAllWithWindowedPopup()
         };
 
         visitElement(L"Root", windowElement.Get());
-        
+
         wrl::ComPtr<IUIAutomationCondition> trueCondition;
         LogThrow_IfFailed(automation->CreateTrueCondition(&trueCondition));
-        
+
         wrl::ComPtr<IUIAutomationElementArray> children;
         LogThrow_IfFailed(windowElement->FindAll(TreeScope_Descendants, trueCondition.Get(), &children));
 
@@ -4066,7 +4552,7 @@ void XamlIslandTests::ValidateNavigationView()
     XamlIslandTestHelper testHelper(this);
     testHelper.StartAppOnCurrentThread();
 
-    IUnknown* unk {nullptr};    
+    IUnknown* unk {nullptr};
 
     LOG_OUTPUT(L"Create MyNavView...");
     {
@@ -4077,10 +4563,10 @@ void XamlIslandTests::ValidateNavigationView()
         unk->AddRef();
         unk->AddRef();
         unk->AddRef();
-        
+
         navView->SelectedItem = 1;
     }
-    
+
     int refcount = GetRefCount(unk);
     VERIFY_ARE_EQUAL(3, refcount);
 
@@ -4355,7 +4841,7 @@ void XamlIslandTests::PopupsWorkInHwndlessIslands()
                                     <Flyout x:Name="WindowlessFlyout">
                                         <TextBlock Text="Flyout content" />
                                     </Flyout>
-                                </Button.Flyout>    
+                                </Button.Flyout>
                             </Button>
                             <Button x:Name="WindowedFlyoutButton" Content="Click to open windowed flyout">
                                 <Button.Flyout>
@@ -4364,7 +4850,7 @@ void XamlIslandTests::PopupsWorkInHwndlessIslands()
                                         <MenuFlyoutItem Text="Item 2" />
                                         <MenuFlyoutItem Text="Item 3" />
                                     </MenuFlyout>
-                                </Button.Flyout>    
+                                </Button.Flyout>
                             </Button>
                         </StackPanel>
                     </Grid>)"));

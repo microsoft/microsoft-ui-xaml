@@ -38,6 +38,9 @@
 #include <DependencyObject.h>
 #include "deferral\inc\CustomWriterRuntimeContext.h"
 #include <FxCallbacks.h>
+#include <FlyoutBase.h>
+#include <Popup.h>
+#include <algorithm>
 
 namespace Diagnostics {
     std::shared_ptr<ResourceGraph> GetResourceGraph()
@@ -367,6 +370,35 @@ namespace Resources {
         return S_OK;
     }
 
+    CDependencyObject* ResourceResolver::GetParentForResourceLookup(
+        _In_ CDependencyObject* element,
+        _Inout_ ResourceParentLookupContext& context)
+    {
+        auto parent = element->IsUIElement()
+            ? element->GetParentFollowPopups()
+            : element->GetParentInternal(false /* publicParentOnly */);
+
+        if (!parent)
+        {
+            if (auto popup = do_pointer_cast<CPopup>(element))
+            {
+                if (auto flyout = popup->GetAssociatedFlyoutNoRef())
+                {
+                    // An attached flyout keeps its declaration scope as its mentor.
+                    // Shared flyouts can be attached inside their own content, so do not revisit a popup.
+                    auto& visitedPopups = context.m_vector;
+                    if (std::find(visitedPopups.begin(), visitedPopups.end(), popup) == visitedPopups.end())
+                    {
+                        visitedPopups.push_back(popup);
+                        parent = flyout->GetMentor();
+                    }
+                }
+            }
+        }
+
+        return parent;
+    }
+
     // Resolves a theme resource for a live-tree element without any XamlDiagnostics coupling. Walks the
     // element and its ancestors (NOT via Diagnostics::GetParentForElementStateChanged, which manufactures
     // and leaks RuntimeObjects for parentless elements), collecting each element's resource dictionaries,
@@ -381,15 +413,10 @@ namespace Resources {
         // element itself (rather than its parent) means keys declared in the element's own Resources are
         // in scope, matching the XAML scoping model for a {ThemeResource} set on the element.
         //
-        // The ancestor walk mirrors ScopedResources::TraverseVisualTreeResources (the walk the live
-        // re-resolution path runs through UpdateThemeReference): use GetParentFollowPopups() for
-        // UIElements so that content hosted inside an open Popup continues up through the Popup's
-        // declaration scope in markup, rather than jumping to the PopupRoot/root visual and missing
-        // resources scoped on the <Popup>'s lexical ancestors. Falling back to GetParentInternal(false)
-        // for non-UIElement nodes (e.g. a ResourceDictionary) keeps their ancestors in scope too. Keeping
-        // this consistent with the live walk means the eager value computed at install time matches the
-        // value the binding will resolve to once it re-resolves live.
+        // Share the ancestry walk with live theme re-resolution, including the declaration scope of
+        // flyouts, so installing a binding and refreshing it use the same resources.
         AmbientValuesVector vecAmbientValues;
+        ResourceParentLookupContext parentLookupContext;
         for (CDependencyObject* current = element; current; )
         {
             CFrameworkElement* currentFE = do_pointer_cast<CFrameworkElement>(current);
@@ -401,18 +428,7 @@ namespace Resources {
                 vecAmbientValues.m_vector.push_back(xref_ptr<CDependencyObject>(resources));
             }
 
-            if (currentFE)
-            {
-                current = currentFE->GetParentFollowPopups();
-            }
-            else if (CUIElement* currentUIE = do_pointer_cast<CUIElement>(current))
-            {
-                current = currentUIE->GetParentFollowPopups();
-            }
-            else
-            {
-                current = current->GetParentInternal(false /* publicParentOnly */);
-            }
+            current = GetParentForResourceLookup(current, parentLookupContext);
         }
 
         IFC_RETURN(ResolveFromAmbientDictionaries(

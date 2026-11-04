@@ -39,6 +39,18 @@ IFACEMETHODIMP ctl::ComObjectBase::QueryInterfaceBase(REFIID iid, void **ppValue
 }
 
 
+HRESULT ctl::ComObjectBase::GetRuntimeClassNameBase(_Out_ HSTRING* pClassName)
+{
+    if (m_pControllingUnknown)
+    {
+        return m_pControllingUnknown->GetRuntimeClassName(pClassName);
+    }
+    else
+    {
+        return NonDelegatingGetRuntimeClassName(pClassName);
+    }
+}
+
 HRESULT ctl::ComObjectBase::CreateInstanceBase(_In_ ComBase* pNewInstance, bool fNoInit)
 {
     if (!fNoInit)

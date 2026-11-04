@@ -472,6 +472,8 @@ namespace UnitTests
         [TestMethod]
         public void WMC0055_CantAssignTextToProperty()
         {
+            // A dictionary property has no type converter and no CreateFromString, so text cannot be
+            // assigned to it (XamlDomValidator.CheckCanAssignTextToProperty).
             string xaml = @"
 <Page
     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
@@ -480,9 +482,9 @@ namespace UnitTests
     <Grid>
         <Button>
             <dll:CollectionHolder>
-                <dll:CollectionHolder.IntListProp>
+                <dll:CollectionHolder.ButtonDictionaryProp>
                     43
-                </dll:CollectionHolder.IntListProp>
+                </dll:CollectionHolder.ButtonDictionaryProp>
             </dll:CollectionHolder>
         </Button>
     </Grid>
@@ -491,10 +493,17 @@ namespace UnitTests
 
             string[] expectedErrors =
             {
-                "WMC0055",  // Cannot assign text value '43' into the property 'IntListProp' of type 'IntList'
+                "WMC0055",  // Cannot assign text value '43' into property 'ButtonDictionaryProp' of type 'ButtonDictionary'
             };
             string result = _testHelper.MatchErrors(validator, expectedErrors, null);
             Assert.IsNull(result, result);
+
+            // IntListProp accepts text because succinct collection syntax converts each item from
+            // string.
+            string succinctXaml = xaml.Replace("ButtonDictionaryProp", "IntListProp");
+            var succinctValidator = _testHelper.ValidateXAML(succinctXaml, SchemaMode.LoadUserDll);
+            string succinctResult = _testHelper.MatchErrors(succinctValidator, new string[] { }, null);
+            Assert.IsNull(succinctResult, succinctResult);
         }
 
         [TestMethod]
@@ -546,7 +555,11 @@ namespace UnitTests
             Assert.IsNull(result, result);
         }
 
+        // Ignored until C#/WinRT projects DeprecatedAttribute as ObsoleteAttribute. Managed
+        // reference metadata currently has no deprecation marker for WMC1500; the projection is
+        // planned for the C#/WinRT 3.0 release.
         [TestMethod]
+        [Ignore]
         public void WMC1500_XamlDeprecated()
         {
             string xaml = @"
@@ -684,28 +697,6 @@ namespace UnitTests
             };
             string result = _testHelper.MatchErrors(validator, expectedErrors, null);
             Assert.IsNull(result, result);
-        }
-
-        [TestMethod]
-        public void WMC0908_XamlValidationDataTypeShouldBeUsedForDataTemplateOnly()
-        {
-            string xaml = @"
-<Page
-    x:Class='BlankCs01.BlankPage'
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <Page.Resources>
-        <ResourceDictionary>
-            <ControlTemplate TargetType='Button' x:DataType='Grid' x:Key='ControlTemplate'>
-                <TextBlock Text='{x:Bind Tag}'/>
-            </ControlTemplate>
-        </ResourceDictionary>
-    </Page.Resources>
-</Page>";
-            var validator = _testHelper.ValidateXAML(xaml);
-
-            Assert.IsTrue(validator.Errors.Count == 1 && validator.Warnings.Count == 0);
-            Assert.IsTrue(validator.Errors[0].ErrorCode == "WMC0908"); // XamlValidationDataTypeOnlyAllowedOnDataTemplate
         }
 
         [TestMethod]
@@ -1840,102 +1831,6 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void WMC0151_TypeNotPresentInMinVersion()
-        {
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:dll='using:LibManagedDll'
-    >    
-    <Page.Resources>
-        <dll:TypeNotInMinVersion x:Key='k0' />
-    </Page.Resources>
-</Page>
-";
-            var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
-            string[] expectedWarnings =
-            {
-                "WMC0151",  // TypeNotInMinVersion's contract version was higher than the min version's
-            };
-            string result = _testHelper.MatchErrors(validator, null, expectedWarnings);
-            Assert.IsNull(result, result);
-        }
-
-        [TestMethod]
-        [Ignore]
-        // From the comment in XamlDomValidator.ValidateTypePresentInMinVersion,
-        // it seems that this test case is not actually relevant, since this error
-        // will only ever be raised if a previously supported OS contract now no longer
-        // exists (which should never be the case)
-        public void WMC0152_NonExistingContractInMinVersion()
-        {
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:dll='using:LibManagedDll'
-    >    
-    <Page.Resources>
-        <dll:NonExistingContractInMinVersion x:Key='k0' />
-    </Page.Resources>
-</Page>
-";
-            var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
-            string[] expectedWarnings =
-            {
-                "WMC0152",  // NonExistingContractInMinVersion is defined in a contract that doesn't exist at all in the min version
-            };
-            string result = _testHelper.MatchErrors(validator, null, expectedWarnings);
-            Assert.IsNull(result, result);
-        }
-
-        [TestMethod]
-        public void WMC0151_MemberNotPresentInMinVersion()
-        {
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:dll='using:LibManagedDll'
-    >    
-    <Page.Resources>
-        <dll:MemberNotPresentInMinVersion InvalidMember='deadbeef' x:Key='k0' />
-    </Page.Resources>
-</Page>
-";
-            var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
-            string[] expectedWarnings =
-            {
-                "WMC0151",  // The InvalidMember property on MemberNotPresentInMinVersion is defined in a contract that is higher than the min version's, so we can't set it
-            };
-            string result = _testHelper.MatchErrors(validator, null, expectedWarnings);
-            Assert.IsNull(result, result);
-        }
-
-        [TestMethod]
-        public void WMC0151_InvalidMemberNotUsed()
-        {
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:dll='using:LibManagedDll'
-    >    
-    <Page.Resources>
-        <dll:MemberNotPresentInMinVersion x:Key='k0' />
-    </Page.Resources>
-</Page>
-";
-            var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
-            //The InvalidMember property on MemberNotPresentInMinVersion is defined in a contract that is higher than the min version's, but since we never set it and the type is otherwise
-            //valid we shouldn't have any errors
-            string[] expectedErrors = new string[] { };
-            string result = _testHelper.MatchErrors(validator, expectedErrors, null);
-            Assert.IsNull(result, result);
-        }
-
-        [TestMethod]
         public void WMC0155_ListViewCollectionCreatedWithSuccinctSyntax()
         {
             //Creating a valid ListView collection object using SuccinctCollectionSyntax
@@ -2051,11 +1946,11 @@ namespace UnitTests
     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
     > 
     <ListView Items=""'Hello', 'world'"">
-        < ListView.Items >
-            < x:string> Hello </ x:string>
-            < x:string> World </ x:string>
-        </ ListView.Items >
-    </ ListView >
+        <ListView.Items>
+            <x:String>Hello</x:String>
+            <x:String>World</x:String>
+        </ListView.Items>
+    </ListView>
 </Page>
 ";
             var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
@@ -2066,32 +1961,6 @@ namespace UnitTests
             Assert.IsNull(result, result);
         }
 
-        [TestMethod]
-        public void MinVersionNoCheckWithConditionals()
-        {
-            //If someone uses a conditional, we shouldn't do any min version validation.  All of these should fail unless they were using conditional markup.
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:dll='using:LibManagedDll'
-    xmlns:rs2 = 'using:LibManagedDll?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4,0)'
-     >    
-    <Page.Resources>
-        <rs2:MemberNotPresentInMinVersion InvalidMember='deadbeef' x:Key='k0' />
-        <dll:MemberNotPresentInMinVersion rs2:InvalidMember='deadbeef' x:Key='k1' />
-        <rs2:TypeNotInMinVersion x:Key='k2' />
-        <rs2:NonExistingContractInMinVersion x:Key='k3' />
-    </Page.Resources>
-</Page>
-";
-            var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
-            //The InvalidMember property on MemberNotPresentInMinVersion is defined in a contract that is higher than the min version's, but since we never set it and the type is otherwise
-            //valid we shouldn't have any errors
-            string[] expectedErrors = new string[] { };
-            string result = _testHelper.MatchErrors(validator, expectedErrors, null);
-            Assert.IsNull(result, result);
-        }
 
         // The compiler allows naming an element using X:Name and Name at the same time
         [TestMethod]

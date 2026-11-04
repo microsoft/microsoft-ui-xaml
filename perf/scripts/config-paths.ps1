@@ -9,7 +9,6 @@ if ( $env:BUILD_ARTIFACTSTAGINGDIRECTORY )
     $scriptsPath     = "$perfRootPath\scripts"
     $infraPath       = "$perfRootPath\infra"
     $profilesPath    = "$perfRootPath\profiles"
-    $visPath         = "$perfRootPath\vis"
     $certsPath       = "$perfRootPath\scripts"
     $configFilePath  = "$profilesPath\config-pipeline.json"
 }
@@ -28,7 +27,6 @@ elseif ( $env:BinRoot )
     $scriptsPath     = "$perfRootPath\scripts"
     $infraPath       = "$env:RepoRoot\packages\microsoft.internal.performance.infra.$infraVersion\content"
     $profilesPath    = "$perfRootPath\profiles"
-    $visPath         = "$perfRootPath\vis"
     $configFilePath  = "$profilesPath\config-user.json"
     $certsPath       = Resolve-Path "$perfRootPath\..\build"
     $env:perfAppsDir = [System.Environment]::ExpandEnvironmentVariables( "%BinRoot%\%_BuildArch%%_BuildType%\Test\perf\apps" )
@@ -44,7 +42,6 @@ else
     $scriptsPath     = "$perfRootPath\scripts"
     $infraPath       = "$perfRootPath\infra"
     $profilesPath    = "$perfRootPath\profiles"
-    $visPath         = "$perfRootPath\vis"
     $configFilePath  = "$profilesPath\config-user.json"
     $certsPath       = "$perfRootPath\scripts"
     $env:perfAppsDir = "$perfRootPath\apps"
@@ -58,7 +55,6 @@ function Dump-PathConfiguration ()
     Log-Debug "infraPath       = $infraPath"
     Log-Debug "scriptsPath     = $scriptsPath"
     Log-Debug "profilesPath    = $profilesPath"
-    Log-Debug "visPath         = $visPath"
     Log-Debug "configFilePath  = $configFilePath"
     Log-Debug "certsPath       = $certsPath"
     Log-Debug "%perfAppsDir%   = $env:perfAppsDir"

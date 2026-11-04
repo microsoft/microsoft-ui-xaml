@@ -3173,4 +3173,3 @@ _Check_return_ HRESULT AutoSuggestBox::OnInkingFunctionButtonClicked(
 
     return S_OK;
 }
-

@@ -62,7 +62,7 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="34" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="11" OffsetZ="0">
+                        <wucSpriteVisual SizeX="36" SizeY="12" BorderMode="Hard" OffsetX="12" OffsetY="10" OffsetZ="0">
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />
@@ -161,7 +161,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="157" SizeY="13" BorderMode="Hard" OffsetX="81" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="159" SizeY="15" BorderMode="Hard" OffsetX="80" OffsetY="4" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -171,7 +171,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="160" SizeY="13" BorderMode="Hard" OffsetX="182" OffsetY="23" OffsetZ="0">
+                      <wucSpriteVisual SizeX="162" SizeY="15" BorderMode="Hard" OffsetX="181" OffsetY="22" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -181,7 +181,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="281" SizeY="13" BorderMode="Hard" OffsetX="61" OffsetY="42" OffsetZ="0">
+                      <wucSpriteVisual SizeX="283" SizeY="15" BorderMode="Hard" OffsetX="60" OffsetY="41" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
