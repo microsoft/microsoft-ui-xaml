@@ -12,7 +12,7 @@ namespace WinUIProfiler.Engine.Storage;
 // ProcessStartMilliseconds is when the process was created, in milliseconds from the start of the recording; negative
 // when it was created earlier (attach, or a recorded trace, whose recording starts at the process's first stored event),
 // null when unknown (a recorded trace without the kernel's process start event for it). LauncherProcessId is the process
-// that created it, when known (SessionStart); the stored events of that process have its ID.
+// that launched it, when known (SessionStart); the stored events of that process have its ID.
 public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string Source, string? EtlPath,
     SessionCoverage Coverage, DateTime StartedUtc, DateTime? EndedUtc, string? EndReason, long StoredEvents,
     long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,

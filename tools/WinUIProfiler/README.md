@@ -349,7 +349,7 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that created it, when known: the profiler when it launched the app, or for a trace, the parent the kernel's event for the process's creation names |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
@@ -811,24 +811,50 @@ PowerShell gives an EventSource's:
 ### Launcher milestones
 
 A milestone with `"from": "launcher"` is marked by an event of the target's
-launcher, the process that created it, such as File Explorer, PowerShell, or
-the profiler for a launch from the app. The default configuration has three,
-from Windows' launch events: **User click** (`AppLaunch_UserClick`), which the
-shell writes for a user's click that launches an app, but not for a launch by
-UI Automation, **Activation requested**
-(`TryActivateDesktopAppXApplication/Start`), when a packaged desktop app is
-activated, and **ShellExecute** (`ShellExecuteExW/Start`). The times are from
-the earliest of them before the process's creation, so the timeline starts
-where the launch did; the summary says which, and names the launcher.
+launcher, the process that launched it: the profiler for a launch from the
+app, or in a trace, the process that created it, such as File Explorer or
+PowerShell. The default configuration has three, from Windows' launch events:
+**User click** (`AppLaunch_UserClick`), which the shell writes for a user's
+click that launches an app, but not for a launch by UI Automation,
+**Activation requested** (`TryActivateDesktopAppXApplication/Start`), when a
+packaged desktop app is activated, and **ShellExecute**
+(`ShellExecuteExW/Start`). The times are from the earliest of them before the
+process's creation, so the timeline starts where the launch did; the summary
+says which, and names the launcher.
 
 - The session knows the launcher for a launch from the app, the profiler, and
   for a trace with the kernel's process events, from the event for the
   process's creation, which names its parent. An attach, or a trace without
-  those events, has no launcher milestones.
-- A launcher can launch other apps, so its event nearest the process's
-  creation, within 10 seconds of it, marks the milestone. In a trace, only its
-  events nearer the creation than its creation of any other process count, so
-  each app a script launches gets its own.
+  those events, has no launcher milestones, and doesn't list them as not
+  reached.
+- A launcher can launch other apps, so only its events within 10 seconds of
+  the process's creation count, and the one nearest the creation marks the
+  milestone. A start event after the creation started something else, such as
+  the profiler's `ShellExecuteExW/Start` when **Edit markers** opens the
+  configuration, and doesn't count.
+- In a trace, only the launcher's events that are part of the launch count, so
+  each app a script launches gets its own:
+  - An event with an activity ID, as the start and stop events of
+    `ShellExecuteExW` and `TryActivateDesktopAppXApplication` have, counts
+    when the launcher created the process during the activity, and no other
+    process after it before the activity's stop event. Such a call starts up
+    to hundreds of milliseconds before the creation, so its start can be
+    nearer the launcher's previous creation; and a call that created no
+    process, as when the launch's process is created by another process,
+    doesn't count for a process the launcher creates later.
+  - An event without an activity ID counts as an event of the activity its
+    thread was in: that of the thread's latest event with an activity ID,
+    when the trace has the activity's start event and the activity hadn't
+    stopped before it. `ShellExecuteExW` writes `AppLaunch_UserClick` without
+    one on a thread of its own, as for PowerShell's
+    `Start-Process ms-settings:`, a call that creates no process itself, so
+    that click doesn't count for a process PowerShell creates later.
+  - A start event of no activity, or whose stop event the trace doesn't have,
+    counts when the process was the first the launcher created after it.
+  - Any other event counts when it is nearer the creation than the launcher's
+    creation of any other process.
+  - The launcher is the process with its ID from its start until its end, so
+    the events of another process with the same ID don't count.
 - File Explorer opening an app's executable writes no `ShellExecuteExW/Start`,
   and writes `AppLaunch_UserClick` after it creates the process, 34 ms after in
   the trace measured, so the times of such a launch are from the creation, and

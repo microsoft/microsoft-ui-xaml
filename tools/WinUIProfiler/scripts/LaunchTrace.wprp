@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   WinUI Profiler's WPR profile for a trace of an app's launch: the XAML providers, the kernel's process events, which
-  give the process's creation and the process that launched it, and the providers of the default marker configuration
+  give the process's creation and the process that created it, and the providers of the default marker configuration
   (WinUIProfiler.Core\Launch\markers.json). From an elevated prompt:
 
     wpr -start scripts\LaunchTrace.wprp -filemode
@@ -21,6 +21,11 @@
       <BufferSize Value="1024" />
       <Buffers Value="128" />
     </EventCollector>
+    <!-- DxgKrnl writes from the kernel, so only to a session in nonpaged memory: a small one of its own. -->
+    <EventCollector Id="EC_Gpu" Name="WinUIProfilerGpu">
+      <BufferSize Value="64" />
+      <Buffers Value="32" />
+    </EventCollector>
     <SystemProvider Id="SP_Process">
       <Keywords>
         <Keyword Value="ProcessThread" />
@@ -32,7 +37,7 @@
     <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5" />
     <EventProvider Id="EP_MuxXaml" Name="2DC72F6E-E4D1-5F58-3245-09A4243799DD" Level="5" />
     <EventProvider Id="EP_MuxControls" Name="21E0AE07-56A7-55B5-12F9-011E6BC08CCA" Level="5" />
-    <EventProvider Id="EP_DxgKrnl" Name="802EC45A-1E99-4B83-9920-87C98277BA9D" Level="5">
+    <EventProvider Id="EP_DxgKrnl" Name="802EC45A-1E99-4B83-9920-87C98277BA9D" Level="5" NonPagedMemory="true">
       <Keywords>
         <Keyword Value="0x4" />
       </Keywords>
@@ -57,12 +62,16 @@
             <EventProviderId Value="EP_XamlProfiler" />
             <EventProviderId Value="EP_MuxXaml" />
             <EventProviderId Value="EP_MuxControls" />
-            <EventProviderId Value="EP_DxgKrnl" />
             <EventProviderId Value="EP_AppLifeCycleUI" />
             <EventProviderId Value="EP_DesktopAppx" />
             <EventProviderId Value="EP_ShellExecute" />
             <EventProviderId Value="EP_AppLifeCycle" />
             <EventProviderId Value="EP_Store" />
+          </EventProviders>
+        </EventCollectorId>
+        <EventCollectorId Value="EC_Gpu">
+          <EventProviders>
+            <EventProviderId Value="EP_DxgKrnl" />
           </EventProviders>
         </EventCollectorId>
       </Collectors>

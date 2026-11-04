@@ -59,8 +59,8 @@ internal static class CliApplication
           and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), the kernel's
           GPU memory usage and budget events (DxgKrnl) and its window focus events (Win32k), the
           marker providers' events of the process, and the launcher providers' events of the
-          process that launched it, near its creation, marked (launcher). A trace needs --pid; a
-          session file holds one process.
+          process that launched it that are part of its launch, which the commands mark as the
+          launcher's. A trace needs --pid; a session file holds one process.
 
           --markers names the marker configuration file: the marker providers read from a trace,
           and the launch milestones; the command stops when it is not valid. Without it,
@@ -297,14 +297,19 @@ internal static class CliApplication
             return new(0, info.LostByEtw ?? 0, TimeSpan.Zero);
         }
 
-        double first = double.MaxValue, last = 0;
+        // The session's duration is its process's: its launcher's events can be earlier than the process's first.
+        double first = double.MaxValue, last = double.MinValue;
         var delivered = SessionFile.Read(options.InputPath, profilerEvent =>
         {
-            first = Math.Min(first, profilerEvent.RelativeMilliseconds);
-            last = Math.Max(last, profilerEvent.RelativeMilliseconds);
+            if (profilerEvent.ProcessId == info.ProcessId)
+            {
+                first = Math.Min(first, profilerEvent.RelativeMilliseconds);
+                last = Math.Max(last, profilerEvent.RelativeMilliseconds);
+            }
+
             sink(profilerEvent);
         }, cancellationToken);
-        return new(delivered, info.LostByEtw ?? 0, TimeSpan.FromMilliseconds(delivered == 0 ? 0 : last - first));
+        return new(delivered, info.LostByEtw ?? 0, TimeSpan.FromMilliseconds(first > last ? 0 : last - first));
     }
 
     private static int Processes(Options options, TextWriter output, CancellationToken cancellationToken)
