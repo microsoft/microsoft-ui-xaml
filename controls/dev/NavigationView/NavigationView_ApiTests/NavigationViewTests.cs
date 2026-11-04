@@ -1520,6 +1520,512 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        private const string ChildrenMenuFlyoutBackgroundKey = "NavigationViewItemChildrenMenuFlyoutBackground";
+        private const string OverflowMenuBackgroundKey = "TopNavigationViewOverflowMenuBackground";
+
+        private static readonly NavigationViewPaneDisplayMode[] ChildrenFlyoutModes =
+            new[] { NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Top };
+
+        private static NavigationView CreateNavigationViewWithParentItem(NavigationViewPaneDisplayMode mode, out NavigationViewItem parent)
+        {
+            var navView = new NavigationView
+            {
+                PaneDisplayMode = mode,
+                IsPaneOpen = false,
+                IsSettingsVisible = false,
+                Width = 800,
+                Height = 600,
+                Content = new Grid { Height = 400 }
+            };
+            parent = new NavigationViewItem { Content = "Parent", Icon = new SymbolIcon(Symbol.Home) };
+            parent.MenuItems.Add(new NavigationViewItem { Content = "Child 1" });
+            parent.MenuItems.Add(new NavigationViewItem { Content = "Child 2" });
+            navView.MenuItems.Add(parent);
+            return navView;
+        }
+
+        private static Flyout GetChildrenFlyout(NavigationViewItem parent)
+        {
+            var itemRoot = (Grid)VisualTreeUtils.FindVisualChildByName(parent, "NVIRootGrid");
+            return (Flyout)Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase.GetAttachedFlyout(itemRoot);
+        }
+
+        private static FlyoutPresenter GetOpenFlyoutPresenter(Flyout flyout, string scenario)
+        {
+            Verify.IsTrue(flyout.IsOpen, scenario + ": the flyout should be open.");
+            var presenter = ((DependencyObject)flyout.Content).FindVisualParentByType<FlyoutPresenter>();
+            Verify.IsNotNull(presenter, scenario + ": the flyout content should be hosted in a FlyoutPresenter.");
+            return presenter;
+        }
+
+        private static string DescribeBrush(Brush brush)
+        {
+            switch (brush)
+            {
+                case null: return "null";
+                case SolidColorBrush solid: return "SolidColorBrush " + solid.Color;
+                case AcrylicBrush acrylic: return "AcrylicBrush tint " + acrylic.TintColor + " fallback " + acrylic.FallbackColor;
+                default: return brush.GetType().Name;
+            }
+        }
+
+        private static ContentPresenter GetFlyoutContentHost(Flyout flyout)
+        {
+            return ((DependencyObject)flyout.Content).FindVisualParentByType<ContentPresenter>();
+        }
+
+        // The presenter template paints FlyoutPresenter.Background through the ContentPresenter that hosts the content.
+        // Requiring the same instance there proves the brush is the only background layer (nothing stacked on top/under).
+        private static Brush GetPaintedFlyoutBackground(Flyout flyout, string scenario)
+        {
+            var presenter = GetOpenFlyoutPresenter(flyout, scenario);
+            var host = GetFlyoutContentHost(flyout);
+            Log.Comment(scenario + ": FlyoutPresenter.Background = " + DescribeBrush(presenter.Background) + ", content host Background = " + DescribeBrush(host.Background));
+            Verify.IsTrue(ReferenceEquals(presenter.Background, host.Background),
+                scenario + ": FlyoutPresenter.Background should be the only background layer of the flyout.");
+            return presenter.Background;
+        }
+
+        private static void VerifyFlyoutBackgroundColor(Flyout flyout, global::Windows.UI.Color expected, string scenario)
+        {
+            var background = GetPaintedFlyoutBackground(flyout, scenario);
+            Verify.IsTrue(background is SolidColorBrush solid && solid.Color == expected,
+                scenario + ": the flyout background should be the app-provided " + expected + " brush, but was " + DescribeBrush(background));
+        }
+
+        private static void VerifyFlyoutBackgroundIs(Flyout flyout, Brush expected, string scenario)
+        {
+            var background = GetPaintedFlyoutBackground(flyout, scenario);
+            Verify.IsTrue(ReferenceEquals(expected, background),
+                scenario + ": the flyout background should be the app-provided " + DescribeBrush(expected) + " instance, but was " + DescribeBrush(background));
+        }
+
+        // Verifies that the flyout shows FlyoutPresenterBackground from the presenter's default style, i.e. NavigationView
+        // didn't put a local value on the presenter. Returns FlyoutPresenter.Background.
+        private static Brush VerifyFlyoutShowsPresenterBackground(Flyout flyout, string scenario)
+        {
+            var background = GetPaintedFlyoutBackground(flyout, scenario);
+            var presenter = GetOpenFlyoutPresenter(flyout, scenario);
+            Verify.AreEqual(DependencyProperty.UnsetValue, presenter.ReadLocalValue(Control.BackgroundProperty),
+                scenario + ": FlyoutPresenter.Background should come from its style, not a local value.");
+            return background;
+        }
+
+        private static void VerifyPresenterBackgroundIsVisibleColor(Flyout flyout, global::Windows.UI.Color expected, string scenario)
+        {
+            var background = VerifyFlyoutShowsPresenterBackground(flyout, scenario);
+            Verify.IsTrue(background is SolidColorBrush solid && solid.Color == expected,
+                scenario + ": FlyoutPresenter.Background should be the app-provided " + expected + " brush, but was " + DescribeBrush(background));
+        }
+
+        private static void VerifyBrushesEquivalent(Brush expected, Brush actual, string scenario)
+        {
+            Log.Comment(scenario + ": expected " + DescribeBrush(expected) + ", actual " + DescribeBrush(actual) +
+                ", same instance: " + ReferenceEquals(expected, actual));
+            Verify.IsNotNull(expected, scenario + ": expected brush");
+            Verify.IsNotNull(actual, scenario + ": actual brush");
+            Verify.AreEqual(expected.GetType(), actual.GetType(), scenario + ": brush type");
+            if (expected is SolidColorBrush expectedSolid)
+            {
+                Verify.AreEqual(expectedSolid.Color, ((SolidColorBrush)actual).Color, scenario + ": Color");
+            }
+            else if (expected is AcrylicBrush expectedAcrylic)
+            {
+                var actualAcrylic = (AcrylicBrush)actual;
+                Verify.AreEqual(expectedAcrylic.TintColor, actualAcrylic.TintColor, scenario + ": TintColor");
+                Verify.AreEqual(expectedAcrylic.TintOpacity, actualAcrylic.TintOpacity, scenario + ": TintOpacity");
+                Verify.AreEqual(expectedAcrylic.FallbackColor, actualAcrylic.FallbackColor, scenario + ": FallbackColor");
+            }
+            else
+            {
+                Verify.IsTrue(ReferenceEquals(expected, actual), scenario + ": same brush instance");
+            }
+        }
+
+        private void OpenChildrenFlyout(NavigationViewItem parent)
+        {
+            RunOnUIThread.Execute(() => parent.IsExpanded = true);
+            IdleSynchronizer.Wait();
+        }
+
+        private void CloseChildrenFlyout(NavigationViewItem parent)
+        {
+            RunOnUIThread.Execute(() => parent.IsExpanded = false);
+            IdleSynchronizer.Wait();
+        }
+
+        private NavigationView CreateTopNavigationViewWithOverflow(Action<NavigationView> configure = null)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    Width = 300,
+                    Height = 400,
+                    Content = new Grid { Height = 300 }
+                };
+                for (int i = 0; i < 8; i++)
+                {
+                    navView.MenuItems.Add(new NavigationViewItem { Content = "Menu item " + i });
+                }
+                configure?.Invoke(navView);
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
+        private Flyout OpenOverflowFlyout(NavigationView navView)
+        {
+            Flyout flyout = null;
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                var overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                flyout = (Flyout)overflowButton.Flyout;
+                flyout.ShowAt(overflowButton);
+            });
+            IdleSynchronizer.Wait();
+            return flyout;
+        }
+
+        [TestMethod]
+        public void VerifyChildrenMenuFlyoutBackgroundCanBeOverriddenOnNavigationView()
+        {
+            foreach (var mode in ChildrenFlyoutModes)
+            {
+                NavigationViewItem parent = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    var navView = CreateNavigationViewWithParentItem(mode, out parent);
+                    navView.Resources[ChildrenMenuFlyoutBackgroundKey] = new SolidColorBrush(Colors.Red);
+                    Content = navView;
+                });
+                IdleSynchronizer.Wait();
+                OpenChildrenFlyout(parent);
+
+                RunOnUIThread.Execute(() => VerifyFlyoutBackgroundColor(GetChildrenFlyout(parent), Colors.Red, mode + " NavigationView.Resources"));
+                CloseChildrenFlyout(parent);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyChildrenMenuFlyoutBackgroundCanBeOverriddenInApplicationResources()
+        {
+            ResourceDictionary appResources = null;
+            RunOnUIThread.Execute(() =>
+            {
+                appResources = Application.Current.Resources;
+                appResources[ChildrenMenuFlyoutBackgroundKey] = new SolidColorBrush(Colors.Red);
+            });
+            try
+            {
+                foreach (var mode in ChildrenFlyoutModes)
+                {
+                    NavigationViewItem parent = null;
+                    RunOnUIThread.Execute(() => Content = CreateNavigationViewWithParentItem(mode, out parent));
+                    IdleSynchronizer.Wait();
+                    OpenChildrenFlyout(parent);
+
+                    RunOnUIThread.Execute(() => VerifyFlyoutBackgroundColor(GetChildrenFlyout(parent), Colors.Red, mode + " Application.Resources"));
+                    CloseChildrenFlyout(parent);
+                }
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                    appResources.Remove(ChildrenMenuFlyoutBackgroundKey);
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyChildrenMenuFlyoutBackgroundFollowsThemeDictionaryOverride()
+        {
+            foreach (var mode in ChildrenFlyoutModes)
+            {
+                Grid root = null;
+                NavigationViewItem parent = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    // An ancestor (page-level) override, keyed per theme.
+                    root = (Grid)XamlReader.Load(@"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key='Light'>
+                    <SolidColorBrush x:Key='NavigationViewItemChildrenMenuFlyoutBackground' Color='Red'/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key='Dark'>
+                    <SolidColorBrush x:Key='NavigationViewItemChildrenMenuFlyoutBackground' Color='Blue'/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+</Grid>");
+                    root.RequestedTheme = ElementTheme.Light;
+                    root.Children.Add(CreateNavigationViewWithParentItem(mode, out parent));
+                    Content = root;
+                });
+                IdleSynchronizer.Wait();
+
+                OpenChildrenFlyout(parent);
+                RunOnUIThread.Execute(() => VerifyFlyoutBackgroundColor(GetChildrenFlyout(parent), Colors.Red, mode + " Light"));
+                CloseChildrenFlyout(parent);
+
+                RunOnUIThread.Execute(() => root.RequestedTheme = ElementTheme.Dark);
+                IdleSynchronizer.Wait();
+                OpenChildrenFlyout(parent);
+                RunOnUIThread.Execute(() => VerifyFlyoutBackgroundColor(GetChildrenFlyout(parent), Colors.Blue, mode + " Dark (reopened)"));
+                CloseChildrenFlyout(parent);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyChildrenMenuFlyoutBackgroundUpdatesOnThemeChangeWhileOpen()
+        {
+            foreach (var mode in ChildrenFlyoutModes)
+            {
+                Grid root = null;
+                NavigationViewItem parent = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    root = (Grid)XamlReader.Load(@"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key='Light'>
+                    <SolidColorBrush x:Key='NavigationViewItemChildrenMenuFlyoutBackground' Color='Red'/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key='Dark'>
+                    <SolidColorBrush x:Key='NavigationViewItemChildrenMenuFlyoutBackground' Color='Blue'/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+</Grid>");
+                    root.RequestedTheme = ElementTheme.Light;
+                    root.Children.Add(CreateNavigationViewWithParentItem(mode, out parent));
+                    Content = root;
+                });
+                IdleSynchronizer.Wait();
+
+                OpenChildrenFlyout(parent);
+                foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
+                {
+                    RunOnUIThread.Execute(() => root.RequestedTheme = theme);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() => VerifyFlyoutBackgroundColor(GetChildrenFlyout(parent),
+                        theme == ElementTheme.Light ? Colors.Red : Colors.Blue, mode + " " + theme + " (switched while open)"));
+                }
+                CloseChildrenFlyout(parent);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFlyoutBackgroundKeysReplaceTheDefaultSurface()
+        {
+            // Translucent and acrylic overrides must replace FlyoutPresenterBackground, not be layered on top of it.
+            var brushFactories = new Func<Brush>[]
+            {
+                () => new SolidColorBrush(global::Windows.UI.Color.FromArgb(0x80, 0xFF, 0x00, 0x00)),
+                () => new AcrylicBrush { TintColor = Colors.Green, TintOpacity = 0.3, FallbackColor = Colors.Green },
+            };
+            foreach (var createBrush in brushFactories)
+            {
+                foreach (var mode in ChildrenFlyoutModes)
+                {
+                    NavigationViewItem parent = null;
+                    Brush brush = null;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        brush = createBrush();
+                        var navView = CreateNavigationViewWithParentItem(mode, out parent);
+                        navView.Resources[ChildrenMenuFlyoutBackgroundKey] = brush;
+                        Content = navView;
+                    });
+                    IdleSynchronizer.Wait();
+                    OpenChildrenFlyout(parent);
+                    RunOnUIThread.Execute(() => VerifyFlyoutBackgroundIs(GetChildrenFlyout(parent), brush, mode + " children flyout " + DescribeBrush(brush)));
+                    CloseChildrenFlyout(parent);
+                }
+
+                Brush overflowBrush = null;
+                RunOnUIThread.Execute(() => overflowBrush = createBrush());
+                var topNavView = CreateTopNavigationViewWithOverflow(nv => nv.Resources[OverflowMenuBackgroundKey] = overflowBrush);
+                var overflowFlyout = OpenOverflowFlyout(topNavView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyFlyoutBackgroundIs(overflowFlyout, overflowBrush, "Top overflow " + DescribeBrush(overflowBrush));
+                    overflowFlyout.Hide();
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyChildrenMenuFlyoutBackgroundRevertsWhenOverrideNoLongerApplies()
+        {
+            foreach (var mode in ChildrenFlyoutModes)
+            {
+                Grid root = null;
+                NavigationViewItem parent = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    // Only the Light theme is customized; Dark falls back to the default (not customized).
+                    root = (Grid)XamlReader.Load(@"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key='Light'>
+                    <SolidColorBrush x:Key='NavigationViewItemChildrenMenuFlyoutBackground' Color='Red'/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key='Dark'/>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+</Grid>");
+                    root.RequestedTheme = ElementTheme.Light;
+                    root.Children.Add(CreateNavigationViewWithParentItem(mode, out parent));
+                    Content = root;
+                });
+                IdleSynchronizer.Wait();
+
+                OpenChildrenFlyout(parent);
+                RunOnUIThread.Execute(() => VerifyFlyoutBackgroundColor(GetChildrenFlyout(parent), Colors.Red, mode + " Light"));
+
+                RunOnUIThread.Execute(() => root.RequestedTheme = ElementTheme.Dark);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var background = VerifyFlyoutShowsPresenterBackground(GetChildrenFlyout(parent), mode + " Dark (switched while open)");
+                    Verify.IsTrue(background is AcrylicBrush, mode + " Dark: expected the default FlyoutPresenterBackground, got " + DescribeBrush(background));
+                });
+                CloseChildrenFlyout(parent);
+
+                OpenChildrenFlyout(parent);
+                RunOnUIThread.Execute(() => VerifyFlyoutShowsPresenterBackground(GetChildrenFlyout(parent), mode + " Dark (reopened)"));
+                CloseChildrenFlyout(parent);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewOverflowMenuBackgroundCanBeOverriddenOnNavigationView()
+        {
+            var navView = CreateTopNavigationViewWithOverflow(nv => nv.Resources[OverflowMenuBackgroundKey] = new SolidColorBrush(Colors.Red));
+            var overflowFlyout = OpenOverflowFlyout(navView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFlyoutBackgroundColor(overflowFlyout, Colors.Red, "Top overflow NavigationView.Resources");
+                overflowFlyout.Hide();
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewFlyoutBackgroundsDefaultToFlyoutPresenterBackground()
+        {
+            // Negative control: without any override, both flyouts keep the standard flyout surface.
+            foreach (var mode in ChildrenFlyoutModes)
+            {
+                NavigationViewItem parent = null;
+                RunOnUIThread.Execute(() => Content = CreateNavigationViewWithParentItem(mode, out parent));
+                IdleSynchronizer.Wait();
+                OpenChildrenFlyout(parent);
+                RunOnUIThread.Execute(() =>
+                {
+                    var background = VerifyFlyoutShowsPresenterBackground(GetChildrenFlyout(parent), mode + " default");
+                    VerifyBrushesEquivalent((Brush)Application.Current.Resources["FlyoutPresenterBackground"], background, mode + " children flyout default");
+                });
+                CloseChildrenFlyout(parent);
+            }
+
+            var topNavView = CreateTopNavigationViewWithOverflow();
+            var overflowFlyout = OpenOverflowFlyout(topNavView);
+            RunOnUIThread.Execute(() =>
+            {
+                var background = VerifyFlyoutShowsPresenterBackground(overflowFlyout, "Top overflow default");
+                VerifyBrushesEquivalent((Brush)Application.Current.Resources["FlyoutPresenterBackground"], background, "Top overflow default");
+                overflowFlyout.Hide();
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void VerifyFlyoutPresenterBackgroundOverrideStillAppliesToNavigationViewFlyouts()
+        {
+            // Compatibility: before the dedicated keys existed, overriding the generic FlyoutPresenterBackground key
+            // (scoped to the NavigationView or app-wide) already recolored both flyouts. That must keep working.
+            ResourceDictionary appResources = null;
+            RunOnUIThread.Execute(() => appResources = Application.Current.Resources);
+            foreach (var scope in new[] { "NavigationView.Resources", "Application.Resources" })
+            {
+                try
+                {
+                    if (scope == "Application.Resources")
+                    {
+                        RunOnUIThread.Execute(() => appResources["FlyoutPresenterBackground"] = new SolidColorBrush(Colors.Green));
+                    }
+
+                    foreach (var mode in ChildrenFlyoutModes)
+                    {
+                        NavigationViewItem parent = null;
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var navView = CreateNavigationViewWithParentItem(mode, out parent);
+                            if (scope == "NavigationView.Resources")
+                            {
+                                navView.Resources["FlyoutPresenterBackground"] = new SolidColorBrush(Colors.Green);
+                            }
+                            Content = navView;
+                        });
+                        IdleSynchronizer.Wait();
+                        OpenChildrenFlyout(parent);
+                        RunOnUIThread.Execute(() => VerifyPresenterBackgroundIsVisibleColor(GetChildrenFlyout(parent), Colors.Green, mode + " children flyout, FlyoutPresenterBackground in " + scope));
+                        CloseChildrenFlyout(parent);
+                    }
+
+                    var topNavView = CreateTopNavigationViewWithOverflow(navView =>
+                    {
+                        if (scope == "NavigationView.Resources")
+                        {
+                            navView.Resources["FlyoutPresenterBackground"] = new SolidColorBrush(Colors.Green);
+                        }
+                    });
+                    var overflowFlyout = OpenOverflowFlyout(topNavView);
+                    RunOnUIThread.Execute(() =>
+                    {
+                        VerifyPresenterBackgroundIsVisibleColor(overflowFlyout, Colors.Green, "Top overflow, FlyoutPresenterBackground in " + scope);
+                        overflowFlyout.Hide();
+                    });
+                    IdleSynchronizer.Wait();
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Content = null;
+                        if (scope == "Application.Resources")
+                        {
+                            appResources.Remove("FlyoutPresenterBackground");
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+                }
+            }
+        }
         [TestMethod]
         public void VerifySelectionWithOpacityTransition()
         {
