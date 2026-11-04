@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/microsoft/microsoft-ui-xaml/tools/WinUIProfiler/harness/automation.schema.json",
+  "title": "WinUI Profiler portable UI automation scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [ "schemaVersion", "name", "steps" ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "automationId": { "type": "string" },
+        "name": { "type": "string" },
+        "className": { "type": "string" },
+        "controlType": {
+          "enum": [
+            "Button", "Calendar", "CheckBox", "ComboBox", "Custom", "DataGrid",
+            "DataItem", "Document", "Edit", "Group", "Header", "HeaderItem",
+            "Hyperlink", "Image", "List", "ListItem", "Menu", "MenuBar",
+            "MenuItem", "Pane", "ProgressBar", "RadioButton", "ScrollBar",
+            "Separator", "Slider", "Spinner", "SplitButton", "StatusBar",
+            "Tab", "TabItem", "Table", "Text", "Thumb", "TitleBar",
+            "ToolBar", "ToolTip", "Tree", "TreeItem", "Window"
+          ]
+        },
+        "match": { "enum": [ "exact", "contains", "startsWith" ], "default": "exact" },
+        "index": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "action" ],
+      "properties": {
+        "action": {
+          "enum": [
+            "waitForWindow", "waitForElement", "invoke", "click", "setText",
+            "sendKeys", "select", "toggle", "wait", "assertExists", "assertNotExists"
+          ]
+        },
+        "selector": { "$ref": "#/$defs/selector" },
+        "text": { "type": "string" },
+        "keys": { "type": "string" },
+        "milliseconds": { "type": "integer", "minimum": 0, "maximum": 300000 },
+        "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 300 },
+        "expectedToggleState": { "enum": [ "on", "off", "indeterminate" ] }
+      }
+    }
+  }
+}

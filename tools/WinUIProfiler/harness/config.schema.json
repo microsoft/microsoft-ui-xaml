@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/microsoft/microsoft-ui-xaml/tools/WinUIProfiler/harness/config.schema.json",
+  "title": "WinUI Profiler harness configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "name",
+    "harness",
+    "repositories",
+    "target",
+    "agents",
+    "application",
+    "profiler",
+    "profiling",
+    "automation",
+    "optimization"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 2 },
+    "name": { "type": "string", "minLength": 1 },
+    "harness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "artifactsRoot" ],
+      "properties": {
+        "artifactsRoot": { "type": "string", "minLength": 1 }
+      }
+    },
+    "repositories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "app", "profiler" ],
+      "properties": {
+        "app": { "$ref": "#/$defs/repository" },
+        "profiler": { "$ref": "#/$defs/repository" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "kind", "stageRoot", "vmId", "guestMachineGuid", "guestComputerName", "checkpointName" ],
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "hyperv" } } }, "then": { "required": [ "hyperv" ] } },
+        { "if": { "properties": { "kind": { "const": "ixp" } } }, "then": { "required": [ "ixp" ] } }
+      ],
+      "properties": {
+        "kind": { "enum": [ "hyperv", "ixp" ] },
+        "stageRoot": { "type": "string", "pattern": "^[A-Za-z]:\\\\WinUIProfilerHarness(?:-[A-Za-z0-9_-]+)?$" },
+        "vmId": { "$ref": "#/$defs/identifier" },
+        "guestMachineGuid": { "$ref": "#/$defs/identifier" },
+        "guestComputerName": { "type": "string", "minLength": 1 },
+        "checkpointName": { "type": "string", "minLength": 1 },
+        "hyperv": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [ "name", "userNameEnvironmentVariable", "passwordEnvironmentVariable" ],
+          "properties": {
+            "name": { "type": "string" },
+            "userNameEnvironmentVariable": { "type": "string" },
+            "passwordEnvironmentVariable": { "type": "string" }
+          }
+        },
+        "ixp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [ "name", "branch" ],
+          "properties": {
+            "name": { "type": "string" },
+            "ensureCreated": { "const": false },
+            "branch": { "type": "string" },
+            "connectionMode": {
+              "type": "string",
+              "const": "psremote",
+              "default": "psremote"
+            },
+            "minimumOsBuild": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "default" ],
+      "properties": {
+        "default": { "enum": [ "agency", "github" ] }
+      }
+    },
+    "application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "launch", "buildCommands", "deployCommands", "resetScript" ],
+      "properties": {
+        "resetScript": { "type": "string", "minLength": 1 },
+        "buildCommands": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/command" }
+        },
+        "deployCommands": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hyperv": { "type": "array", "items": { "$ref": "#/$defs/command" } },
+            "ixp": { "type": "array", "items": { "$ref": "#/$defs/command" } }
+          }
+        },
+        "payloadPath": { "type": "string" },
+        "targetInstallScripts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hyperv": { "type": "string" },
+            "ixp": { "type": "string" }
+          }
+        },
+        "launch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [ "kind", "target" ],
+          "properties": {
+            "kind": { "enum": [ "packaged", "unpackaged", "attach" ] },
+            "target": { "type": "string", "minLength": 1 },
+            "arguments": { "type": "string" },
+            "workingDirectory": { "type": [ "string", "null" ] }
+          }
+        }
+      }
+    },
+    "profiler": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "configuration": { "enum": [ "Debug", "Release" ] },
+        "platform": { "enum": [ "x64", "ARM64" ] },
+        "buildTimeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 2147483 }
+      }
+    },
+    "profiling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "firstFrameTimeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 600 },
+        "scenarioTimeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+        "settleMilliseconds": { "type": "integer", "minimum": 0, "maximum": 300000 },
+        "frameBudgetMilliseconds": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "automation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "scenarioPath" ],
+      "properties": {
+        "scenarioPath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "optimization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "maxAttempts", "primaryMetric", "direction", "minimumImprovementPercent" ],
+      "properties": {
+        "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "samplesPerVersion": { "type": "integer", "minimum": 3, "maximum": 10, "default": 3 },
+        "primaryMetric": { "type": "string", "minLength": 1 },
+        "direction": { "enum": [ "lower", "higher" ] },
+        "minimumImprovementPercent": { "type": "number", "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+      "not": { "const": "00000000-0000-0000-0000-000000000000" }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "path", "remoteUrl", "branch" ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "remoteUrl": { "type": "string", "minLength": 1 },
+        "branch": {
+          "type": "string",
+          "pattern": "^user/[A-Za-z0-9_.-]+/profiler_harness$"
+        },
+        "baseRef": { "type": "string" },
+        "allowDirty": { "type": "boolean" }
+      }
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "file", "scope" ],
+      "properties": {
+        "scope": { "const": "guest" },
+        "file": { "type": "string", "minLength": 1 },
+        "arguments": { "type": "array", "items": { "type": "string" } },
+        "workingDirectory": { "type": "string" },
+        "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 2147483 },
+        "environment": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

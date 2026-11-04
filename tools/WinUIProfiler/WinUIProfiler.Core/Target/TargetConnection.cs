@@ -172,6 +172,15 @@ public sealed class TargetConnection : IAsyncDisposable
         deadline.CancelAfter(TimeSpan.FromSeconds(45));
         var token = deadline.Token;
         token.ThrowIfCancellationRequested();
+        if (options.Kind == TargetLaunchKind.Packaged)
+        {
+            Report("Preparing", $"Closing existing instances of {options.Target}.");
+            var terminated = TargetLauncher.TerminateRunningPackagedProcesses(options.Target, TimeSpan.FromSeconds(10));
+            if (terminated > 0)
+            {
+                Report("Preparing", $"Closed {terminated} existing packaged process(es).");
+            }
+        }
         Report("Launching", options.Target);
         var launchExecutables = GetLaunchExecutables(options);
         if (launchExecutables.Count > 0)

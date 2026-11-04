@@ -11,6 +11,9 @@ namespace WinUIProfiler.Engine.Target;
 [SupportedOSPlatform("windows")]
 public static class TargetLauncher
 {
+    private const uint ErrorInsufficientBuffer = 122;
+    private const uint AppmodelErrorNoApplication = 15703;
+
     public static Process LaunchUnpackaged(string executable, string arguments, string? workingDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(executable);
@@ -43,17 +46,8 @@ public static class TargetLauncher
 
     public static Process LaunchPackaged(string applicationId, string arguments)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(applicationId);
+        ValidateApplicationId(applicationId);
         ArgumentNullException.ThrowIfNull(arguments);
-        var separator = applicationId.IndexOf('!');
-        if (applicationId.Length > 128 ||
-separator < 1 ||
-separator == applicationId.Length - 1 ||
-            applicationId.LastIndexOf('!') != separator ||
-applicationId.Any(char.IsWhiteSpace))
-        {
-            throw new ArgumentException("Enter a packaged application AUMID: PackageFamilyName!ApplicationId.", nameof(applicationId));
-        }
 
         var type = Type.GetTypeFromCLSID(new("45BA127D-10A8-46EA-8AB7-56EA9078943C"), throwOnError: true)!;
         var activation = (IApplicationActivationManager)(Activator.CreateInstance(type) ??
@@ -69,21 +63,7 @@ applicationId.Any(char.IsWhiteSpace))
             var process = Process.GetProcessById(checked((int)pid));
             try
             {
-                uint length = 0;
-                var result = GetApplicationUserModelId(process.SafeHandle, ref length, null);
-                if (result != 122 || length is < 2 or > 129)
-                {
-                    throw new Win32Exception(checked((int)result), "Cannot verify the activated application identity.");
-                }
-
-                var value = new StringBuilder(checked((int)length));
-                result = GetApplicationUserModelId(process.SafeHandle, ref length, value);
-                if (result != 0)
-                {
-                    throw new Win32Exception(checked((int)result), "Cannot read the activated application identity.");
-                }
-
-                if (!string.Equals(value.ToString(), applicationId, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(ReadApplicationUserModelId(process), applicationId, StringComparison.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException("Activation returned a different application; it is not a verified target.");
                 }
@@ -104,17 +84,78 @@ applicationId.Any(char.IsWhiteSpace))
         }
     }
 
+    // Packaged applications can redirect a second activation to an already-running instance. A profiler launch must
+    // start a new process so ETW and first-frame evidence belong to the process returned by activation.
+    public static int TerminateRunningPackagedProcesses(string applicationId, TimeSpan timeout)
+    {
+        ValidateApplicationId(applicationId);
+        if (timeout <= TimeSpan.Zero || timeout > TimeSpan.FromMinutes(1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
+
+        var executableNames = GetPackagedExecutableNames(applicationId)
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+        var elapsed = Stopwatch.StartNew();
+        var terminated = 0;
+        foreach (var executableName in executableNames)
+        {
+            foreach (var process in Process.GetProcessesByName(executableName))
+            {
+                using (process)
+                {
+                    string? runningApplicationId;
+                    try
+                    {
+                        runningApplicationId = ReadApplicationUserModelId(process);
+                    }
+                    catch (InvalidOperationException) when (HasExited(process))
+                    {
+                        continue;
+                    }
+                    catch (Win32Exception error) when (error.NativeErrorCode == 6 && HasExited(process))
+                    {
+                        continue;
+                    }
+
+                    if (!string.Equals(runningApplicationId, applicationId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                    catch (InvalidOperationException) when (HasExited(process))
+                    {
+                        continue;
+                    }
+
+                    var remaining = timeout - elapsed.Elapsed;
+                    if (remaining <= TimeSpan.Zero ||
+                        !process.WaitForExit(checked((int)Math.Min(int.MaxValue, Math.Ceiling(remaining.TotalMilliseconds)))))
+                    {
+                        throw new TimeoutException(
+                            $"Packaged process {process.Id} did not exit within {timeout.TotalSeconds:F0} seconds.");
+                    }
+                    terminated++;
+                }
+            }
+        }
+
+        return terminated;
+    }
+
     // The executable file names that activating this AUMID can start, read from the manifests of the family's
     // packages registered for the current user (the registration activation uses). Empty when the application
     // declares no executable, for example a hosted app.
     public static IReadOnlyList<string> GetPackagedExecutableNames(string applicationId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(applicationId);
+        ValidateApplicationId(applicationId);
         var separator = applicationId.IndexOf('!');
-        if (separator < 1 || separator == applicationId.Length - 1)
-        {
-            throw new ArgumentException("Enter a packaged application AUMID: PackageFamilyName!ApplicationId.", nameof(applicationId));
-        }
 
         var appId = applicationId[(separator + 1)..];
         var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -136,6 +177,56 @@ applicationId.Any(char.IsWhiteSpace))
         }
 
         return [.. names];
+    }
+
+    private static void ValidateApplicationId(string applicationId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(applicationId);
+        var separator = applicationId.IndexOf('!');
+        if (applicationId.Length > 128 ||
+            separator < 1 ||
+            separator == applicationId.Length - 1 ||
+            applicationId.LastIndexOf('!') != separator ||
+            applicationId.Any(char.IsWhiteSpace))
+        {
+            throw new ArgumentException(
+                "Enter a packaged application AUMID: PackageFamilyName!ApplicationId.",
+                nameof(applicationId));
+        }
+    }
+
+    private static string? ReadApplicationUserModelId(Process process)
+    {
+        uint length = 0;
+        var result = GetApplicationUserModelId(process.SafeHandle, ref length, null);
+        if (result == AppmodelErrorNoApplication)
+        {
+            return null;
+        }
+        if (result != ErrorInsufficientBuffer || length is < 2 or > 129)
+        {
+            throw new Win32Exception(checked((int)result), "Cannot verify the application identity.");
+        }
+
+        var value = new StringBuilder(checked((int)length));
+        result = GetApplicationUserModelId(process.SafeHandle, ref length, value);
+        if (result != 0)
+        {
+            throw new Win32Exception(checked((int)result), "Cannot read the application identity.");
+        }
+        return value.ToString();
+    }
+
+    private static bool HasExited(Process process)
+    {
+        try
+        {
+            return process.HasExited;
+        }
+        catch (InvalidOperationException)
+        {
+            return true;
+        }
     }
 
     private static string[] GetPackageFullNames(string packageFamilyName)
