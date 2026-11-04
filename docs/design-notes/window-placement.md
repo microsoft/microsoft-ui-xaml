@@ -8,7 +8,7 @@ easily configure the WinUI window so that it opens where the user left it.
 This feature is built on [PlacementEx](../../external/inc/PlacementEx/RememberingWindowPositions.md), a C++
 header library to support this scenario.  We expect to update PlacementEx occasionally if there are new changes,
 there's no roadmap for that yet.  Note that PlacementEx uses an API that's on Win11 but not Win10 (ApplyWindowAction),
-so be sure to test changes in this area downlevel.
+so it uses a different codepath for Win10. The app might observe slight differences between Win10/Win11.
 
 ## Staging plan
 

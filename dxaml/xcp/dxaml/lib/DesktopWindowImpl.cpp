@@ -554,7 +554,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyInitialWindowPlacement()
     // 1. Custom placement (phase 2).
     // 2. Cascade from a matching visible window (phase 2).
     // 3. Saved placement.
-    const bool placementApplied = TryApplySavedWindowPlacement();
+    TryApplySavedWindowPlacement();
     if (m_bIsClosed)
     {
         return S_OK;
@@ -563,29 +563,21 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyInitialWindowPlacement()
     // WinUI has finished trying to apply saved placement. Callbacks can now resize the window,
     // even if native activation has not finished.
     m_placementState = PlacementState::InitialPlacementAttempted;
-    if (placementApplied)
-    {
-        // Apply Width/Height requests made by the app's SizeChanged handler while applying saved placement.
-        IFC_RETURN(ApplyPendingClientSizeIfNeeded());
-
-        return S_OK;
-    }
-
-    // 4. Requested Width/Height.
+    // 4. Requested Width/Height, including requests made by SizeChanged handlers while applying saved placement.
     IFC_RETURN(ApplyPendingClientSizeIfNeeded());
 
     // 5. Existing/OS defaults when no source supplied placement or size.
     return S_OK;
 }
 
-bool DesktopWindowImpl::TryApplySavedWindowPlacement()
+void DesktopWindowImpl::TryApplySavedWindowPlacement()
 {
     // For now we only support applying saved window placement during Window.Activate()
     ASSERT(m_placementState == PlacementState::ApplyingInitialPlacement);
 
     if (!HasOverlappedPresenter())
     {
-        return false;
+        return;
     }
 
     // Saved placement overrides Width/Height set before activation.
@@ -622,7 +614,12 @@ bool DesktopWindowImpl::TryApplySavedWindowPlacement()
     }
 
     const bool loadedAndApplied = (result & PlacementResult::LoadedAndApplied) != PlacementResult::None;
-    if (!loadedAndApplied && !m_bIsClosed)
+    if (m_bIsClosed)
+    {
+        return;
+    }
+
+    if (!loadedAndApplied)
     {
         if (!m_pendingClientWidthDips)
         {
@@ -632,40 +629,39 @@ bool DesktopWindowImpl::TryApplySavedWindowPlacement()
         {
             m_pendingClientHeightDips = height;
         }
+
+        return;
     }
 
-    if (loadedAndApplied && !m_bIsClosed)
+    // Saved placement can maximize the window without sending the resize notification that
+    // updates our cached restored (unmaximized) size. Update the cache now so Width and Height
+    // stay correct if the app switches to FullScreen or CompactOverlay.
+    //
+    // TODO (#12512): These values could be stale, if for example, during the TryLoadAndApply operation above,
+    // the app ran code in a SizeChanged or WM_SIZE handler that switched to FullScreen mode.  This would make
+    // the Width/Height getters return stale values.
+    bool hasWin32RestoreSize = false;
+    wf::Size restoredClientSize{};
+    const HRESULT restoredClientSizeResult =
+        TryGetWin32RestoredClientSizeInDips(&hasWin32RestoreSize, &restoredClientSize);
+    if (SUCCEEDED(restoredClientSizeResult) && hasWin32RestoreSize)
     {
-        // Saved placement can maximize the window without sending the resize notification that
-        // updates our cached unmaximized size. Update the cache now so Width and Height
-        // stay correct if the app switches to FullScreen or CompactOverlay.
-        //
-        // TODO (#12512): These values could be stale, if for example, during the TryLoadAndApply operation above,
-        // the app ran code in a SizeChanged or WM_SIZE handler that switched to FullScreen mode.  This would make
-        // the Width/Height getters return stale values.
-        bool useRestoredClientSize = false;
-        wf::Size restoredClientSize{};
         SIZE chromePx{};
-        if (SUCCEEDED(TryGetWin32RestoredClientSizeInDips(&useRestoredClientSize, &restoredClientSize)) &&
-            useRestoredClientSize &&
-            SUCCEEDED(GetSavedRestoreChromeSizeInPixels(&chromePx)))
+        const HRESULT chromeSizeResult = GetSavedRestoreChromeSizeInPixels(&chromePx);
+        if (SUCCEEDED(chromeSizeResult))
         {
             // The window is maximized/minimized. Use Windows' saved normal bounds, not its live size.
             const float scale = GetWindowScale();
             SetTrackedRestoredSize(restoredClientSize,
                 wf::Size{ static_cast<float>(chromePx.cx) / scale, static_cast<float>(chromePx.cy) / scale });
-        }
-        else
-        {
-            // Measure the live client area and title bar/borders if the window is normal.
-            // This helper deliberately ignores maximized/minimized windows.
-            TrackLastRestoredClientSize();
+
+            return;
         }
     }
 
-    // An app callback while applying saved placement can close the window. Treat that as handled
-    // so callers do not try to resize the closed window.
-    return loadedAndApplied || m_bIsClosed;
+    // Measure the live client area and title bar/borders if the window is normal.
+    // This helper deliberately ignores maximized/minimized windows.
+    TrackLastRestoredClientSize();
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::SaveWindowPlacement()
@@ -1263,6 +1259,8 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyRestoredClientSizeInDips(std::opt
     return S_OK;
 }
 
+// Tries to get the normal client size in DIPs, but ONLY for a maximized/minimized window.
+// Check pUseRestoredClientSize even on success; false means the caller must use another size source.
 _Check_return_ HRESULT DesktopWindowImpl::TryGetWin32RestoredClientSizeInDips(_Out_ bool* pUseRestoredClientSize, _Out_ wf::Size* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
@@ -1325,6 +1323,8 @@ _Check_return_ HRESULT DesktopWindowImpl::TryGetWin32RestoredClientSizeInDips(_O
     return S_OK;
 }
 
+// Gets the window's normal-state non-client size (title bar, borders, and any menu bar), in pixels.
+// Reuses the cached normal-state measurement, or estimates it from window styles if none is cached.
 _Check_return_ HRESULT DesktopWindowImpl::GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize)
 {
     ASSERT(AreNewWindowingApisEnabled());

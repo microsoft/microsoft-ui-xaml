@@ -138,7 +138,7 @@ namespace DirectUI
 
     private:
         _Check_return_ HRESULT ApplyInitialWindowPlacement();
-        bool TryApplySavedWindowPlacement();
+        void TryApplySavedWindowPlacement();
         bool HasOverlappedPresenter();
         void RefreshWindowPlacementEligibility();
         _Check_return_ HRESULT SaveWindowPlacement();

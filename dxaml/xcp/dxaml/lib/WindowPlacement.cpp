@@ -68,7 +68,7 @@ namespace
     // Computes a fixed-length key for the given placement id.
     // We use this key instead of the placement id string because the APIs we call are case-insensitive
     // and we want placement id to be case-sensitive.
-    void GetPlacementKey(HSTRING id, wchar_t (&key)[19])
+    void GetPlacementKey(HSTRING id, _Out_writes_z_(19) wchar_t (&key)[19])
     {
         // WARNING: This key algorithm and its constants are part of the existing placement format
         // and must not change. Changing them would make existing saved records unreachable.
@@ -113,8 +113,8 @@ namespace
     HRESULT ReadPlacement(
         IInspectable* boxed,
         HSTRING placementId,
-        PlacementEx& placement,
-        WindowPlacement::PlacementResult& result)
+        _Inout_ PlacementEx& placement,
+        _Inout_ WindowPlacement::PlacementResult& result)
     {
         wrl::ComPtr<wf::IPropertyValue> value;
         IFC_RETURN(boxed->QueryInterface(IID_PPV_ARGS(&value)));
@@ -133,6 +133,7 @@ namespace
 
         UINT32 placementIdLength = 0;
         const WCHAR* placementIdStr = WindowsGetStringRawBuffer(placementId, &placementIdLength);
+
         // Check the byte count before comparing the full id. The hash only selects a slot;
         // the exact UTF-16 comparison prevents restoring a colliding id's placement.
         IFCEXPECTRC_RETURN(record.version == c_recordVersion, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
@@ -152,6 +153,7 @@ namespace
 
         const WCHAR* nameEnd = wmemchr(record.deviceName, L'\0', ARRAYSIZE(record.deviceName));
         IFCEXPECTRC_RETURN(nameEnd, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+
         // Require unused characters after the display name's terminating null to be zero,
         // matching the format produced by Save.
         for (auto ch = nameEnd; ch != std::end(record.deviceName); ++ch)
@@ -192,7 +194,9 @@ namespace
             placement.arrangeRect = record.snapRect;
         }
 
+        static_assert(sizeof(placement.deviceName) == sizeof(record.deviceName), "Device name size mismatch");
         memcpy(placement.deviceName, record.deviceName, sizeof(record.deviceName));
+
         // savedAt is metadata only. virtualDesktopId is reserved and is not restored yet.
 
         IFCEXPECTRC_RETURN(placement.IsValid(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
@@ -223,14 +227,14 @@ namespace
     }
 }
 
-HRESULT WindowPlacement::GetId(HSTRING* value)
+HRESULT WindowPlacement::GetId(_Out_ HSTRING* value)
 {
     IFC_RETURN(m_id.CopyTo(value));
 
     return S_OK;
 }
 
-HRESULT WindowPlacement::SetId(HSTRING value)
+HRESULT WindowPlacement::SetId(_In_opt_ HSTRING value)
 {
     IFCEXPECTRC_RETURN(WindowsGetStringLen(value) <= MAX_PATH, E_INVALIDARG);
     IFC_RETURN(m_id.Set(value));
