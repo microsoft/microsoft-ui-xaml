@@ -513,6 +513,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Tab into the body must return to the still-visible group header that last had focus.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab from outside the table does not resume a group header remembered from a replaced ItemsSource with the same group keys (GH #12447).")]
+        public void VerifyTabFromOutsideForgetsGroupHeaderOfAReplacedSource()
+        {
+            TableView tableView = null;
+            Button before = null;
+            int headerIndex = -1;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // One row per group, so headers and rows alternate.
+                var source = TableViewSource.From(MakeManyItems(200));
+                source.GroupBy(o => ((Person)o).Role);
+                tableView = CreateTableViewWithColumns(source, height: 400, columns: new[]
+                {
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)),
+                });
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                before = new Button { Content = "Before" };
+                var panel = new StackPanel();
+                panel.Children.Add(before);
+                panel.Children.Add(tableView);
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(5) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: element 5 is a realized data row.");
+                Verify.IsTrue(row.Focus(FocusState.Keyboard), "Precondition: row 5 takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Up,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Up from row 5 must move focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var groupHeader = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewGroupHeader;
+                Verify.IsNotNull(groupHeader, "Precondition: Up from row 5 lands on its group header.");
+                headerIndex = GetRowsRepeater(tableView).GetElementIndex(groupHeader);
+                Verify.IsGreaterThan(headerIndex, 0, "Precondition: the remembered header is not the viewport edge.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: the button before the table takes focus."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Same group keys, so matching by key alone would find the remembered header again.
+                var replacement = TableViewSource.From(new ObservableCollection<Person>(MakeManyItems(200)));
+                replacement.GroupBy(o => ((Person)o).Role);
+                tableView.ItemsSource = replacement;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(before, FocusManager.GetFocusedElement(tableView.XamlRoot), "Precondition: the button keeps focus.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the button must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as UIElement;
+                var index = focused == null ? -1 : GetRowsRepeater(tableView).GetElementIndex(focused);
+                Log.Comment($"Focused {focused?.GetType().Name} at index {index}.");
+                Verify.IsTrue(focused is TableViewGroupHeader, "Tab into the body must land on a group header.");
+                Verify.AreEqual(0, index, "Tab into the new source must land on the viewport edge.");
+                Verify.AreNotEqual(headerIndex, index, "A group header remembered from the replaced source must not be resumed.");
+            });
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies Tab from outside a grouped table with no header band, which XAML aims at a group header, resumes the last focused row or cell (GH #12447).")]
         [TestProperty("data:Level", "{Row, Cell}")]
