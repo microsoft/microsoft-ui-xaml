@@ -78,6 +78,16 @@ hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
+Run the event compatibility regression checks from this directory:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
+```
+
+These check object timelines across new TraceLogging and legacy manifest events,
+and verify that migrated performance regions distinguish Start/Stop without
+also matching legacy manifest events.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
 target PID, creation time, runtime path and latest hello. Errors and timeouts
@@ -207,9 +217,10 @@ Each event becomes a `ProfilerEvent` (`Events\ProfilerEvent.cs`).
 | Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 
-The TraceLogging events with element IDs and all Microsoft-Windows-XAML-Profiler
-events are only in builds with `XamlProfilerEnabled`. The GPU memory events come
-from Windows, whatever the build. They carry the values
+Projection-layer activities, peer association and surface initialization use
+runtime ETW enablement in all build configurations. Remaining element and
+composition instrumentation still requires `XamlProfilerEnabled`. The GPU memory
+events come from Windows, whatever the build. They carry the values
 `IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
 reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
 when the usage or budget changes, and writes the current values when the
@@ -347,11 +358,14 @@ then `Seq`.
 
 While saving events, the writer also indexes the UI elements they mention
 (`Storage\ObjectIndex.cs`), in the same transaction, so trimming removes old
-mentions with their events. Only the TraceLogging events of
-Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, and
-none of them creates or destroys an object, so an element's lifetime in the
-file is from the first to the last of them that mentions it. Manifest events
-use the same field names for other objects too: `BeginStoryboard`'s
+mentions with their events. The TraceLogging events of
+Microsoft-Windows-XAML and Microsoft-Windows-XAML-Profiler are indexed, along
+with older traces' `VirtualizationIsEnabledByLayout` manifest observation
+when it has the version-1 element-data layout. New traces emit this observation
+only as TraceLogging. None
+creates or destroys an object, so an element's lifetime in the file is from
+the first to the last event that mentions it. Other manifest events are not
+indexed because they use the same field names for other objects too: `BeginStoryboard`'s
 `ElementId` is the storyboard, and the `ParentId` of
 Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
 
