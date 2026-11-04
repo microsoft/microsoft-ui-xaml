@@ -540,17 +540,18 @@ AutomaticDragHelper::HandlePointerCaptureLostEventArgs(
                 return S_OK;
             }
 
-            if (m_isHoldingCompleted)
+            if (m_isHoldingCompleted || !m_shouldAddInputHandlers)
             {
-                // DirectManipulation takes over a held contact before DraggingStarted; keep the
-                // hold for it, as on main.
+                // Keep the candidate, as on main: DirectManipulation takes over a held contact
+                // before DraggingStarted, and an owner that forwards input itself
+                // (ListViewBaseItem) still forwards Holding after its capture changes.
                 IFC_RETURN(UnregisterEvents());
                 return S_OK;
             }
         }
 
-        // Detection has ended (canceled, or the owner lost the contact before it was held):
-        // drop the candidate so it cannot block other pointers' presses.
+        // Detection has ended (canceled, or a self-subscribed owner lost the contact before it
+        // was held): drop the candidate so it cannot block other pointers' presses.
         m_spPointerPoint = nullptr;
         m_spPointer = nullptr;
         m_isHoldingCompleted = false;
