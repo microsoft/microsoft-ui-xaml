@@ -24,7 +24,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         public List<KeyValuePair<string, Color>> ColorPropertyCalls { get; } = new List<KeyValuePair<string, Color>>();
 
-        public IReadOnlyDictionary<string, double> Markers => _markers;
+        // Runs app code whenever the markers are read, like a source that computes them on demand.
+        public Action MarkersRead { get; set; }
+
+        public IReadOnlyDictionary<string, double> Markers
+        {
+            get
+            {
+                MarkersRead?.Invoke();
+                return _markers;
+            }
+        }
 
         public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {
