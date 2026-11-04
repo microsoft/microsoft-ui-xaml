@@ -515,6 +515,7 @@ void NavigationView::OnApplyTemplate()
         topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
+    m_overflowFlyoutBackgroundHelper.Attach(nullptr);
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
     {
         m_topNavOverflowButton.set(topNavOverflowButton);
@@ -535,6 +536,7 @@ void NavigationView::OnApplyTemplate()
         {
             flyoutBase.ShouldConstrainToRootBounds(false);
             m_flyoutClosingRevoker = flyoutBase.Closing(winrt::auto_revoke, { this, &NavigationView::OnFlyoutClosing });
+            m_overflowFlyoutBackgroundHelper.Attach(flyoutBase);
         }
     }
 

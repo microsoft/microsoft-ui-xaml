@@ -5,6 +5,8 @@
       <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
       <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
+      <SolidColorBrush x:Key="NavigationViewItemChildrenMenuFlyoutBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="TopNavigationViewOverflowMenuBackground" Color="Transparent" />
       <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
       <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -71,6 +73,8 @@
       <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
       <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
+      <SolidColorBrush x:Key="NavigationViewItemChildrenMenuFlyoutBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="TopNavigationViewOverflowMenuBackground" Color="Transparent" />
       <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
       <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -137,6 +141,8 @@
       <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
       <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
       <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <SolidColorBrush x:Key="NavigationViewItemChildrenMenuFlyoutBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="TopNavigationViewOverflowMenuBackground" Color="Transparent" />
       <SolidColorBrush x:Key="NavigationViewContentBackground" Color="{ThemeResource SystemColorWindowColor}" />
       <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
       <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />

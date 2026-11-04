@@ -103,6 +103,11 @@ void NavigationViewItem::OnApplyTemplate()
         {
             m_flyoutClosingRevoker = flyoutBase.Closing(winrt::auto_revoke, { this, &NavigationViewItem::OnFlyoutClosing });
         }
+        m_childrenFlyoutBackgroundHelper.Attach(winrt::FlyoutBase::GetAttachedFlyout(rootGrid));
+    }
+    else
+    {
+        m_childrenFlyoutBackgroundHelper.Attach(nullptr);
     }
 
     HookInputEvents(controlProtected);

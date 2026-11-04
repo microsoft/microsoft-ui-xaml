@@ -163,6 +163,7 @@ private:
 
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
     NavigationViewItemHelper<NavigationViewItem> m_helper{ this };
+    NavigationViewFlyoutBackgroundHelper m_childrenFlyoutBackgroundHelper{ this };
     tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{ this };
     tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{ this };
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
