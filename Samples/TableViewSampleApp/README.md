@@ -1,8 +1,8 @@
 # TableView sample
 
 A small WinUI 3 desktop app that exercises the live public API of the
-`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
-sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
+`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The navigation pane groups focused pages for
+quick-start usage, full-app scenarios, basics, columns, rows and cells, and power-user behavior.
 
 `TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL,
 but its API is published through the WindowsAppSDK NuGet package: type information reaches the
@@ -21,25 +21,46 @@ special, exactly like the [ChartApp](../ChartApp) samples.
 
 ## Build
 
-From the repo root:
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so this sample can
+only build against a **locally packed** component. Building the project on its own resolves the
+package from the feed and fails with `CS0234: The type or namespace name 'Tabular' does not exist`.
+
+The supported flow packs the component and passes the matching version for you:
 
 ```
-.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-The sample resolves `Microsoft.WindowsAppSDK.WinUI` at `$(WinUIVersion)`. To run against a locally
-built control, pack the component and point the build at that version:
+To iterate on just this app, pack once and point the build at that version:
 
 ```
 .\pack.component.cmd /version 3.0.0-mylocal
 .\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
 ```
 
+Re-run `pack.component.cmd` after every control change — NuGet caches by version, so reuse the
+version only if you also clear `packages\microsoft.windowsappsdk.winui\`, and prefer a fresh version
+string when in doubt.
+
 ## Run
 
 ```
 BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
 ```
+
+Supported launch arguments:
+
+- `--page=<tag>` opens a navigation page directly. Tags are the values in
+  `MainWindow.xaml` / `MainWindow.xaml.cs`, for example `Showcase`, `Selection`,
+  `GridLinesVisibility`, `Settings`, or `About`.
+- `--show-dev-info` shows the developer status bar with the loaded Tabular controls assembly path,
+  size, and timestamp. This is intended for local/UIA verification, not end-user docs.
+
+The app also contains an opt-in UIA verification log harness for local automation. It is compiled
+only when `TableViewSampleEnableVerificationLogs=true` is passed to MSBuild, and then activated with
+`--verify-groups` or `--verify-selection`. Normal public sample builds do not write log files next
+to the executable.
 
 ## Using TableView in your own app
 
@@ -70,22 +91,71 @@ visible on purpose.
 
 ## What it demonstrates
 
-- Column `Width` (Auto / Pixel / Star), `MinWidth`, `MaxWidth`
-- Add / remove / hide columns
-- `HeadersVisibility`
-- `GridLinesVisibility`
-- `Density` (Compact / Standard / Comfortable)
-- `RowBackground` / `AlternatingRowBackground`
-- `FrozenEdge`
-- `IsReadOnly`
-- `HeaderTemplate`
-- `EmptyTemplate`
-- `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
+- A basic showcase table plus Task Manager, File Explorer, and File properties scenarios
+- Selection, sorting, filtering, keyboard navigation, and accessibility behavior
+- Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
+  lifecycle (add, remove, reorder at runtime), plus header visibility
+- Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
+  text wrapping, row height, cell editing (with `INotifyDataErrorInfo` validation that keeps a rejected
+  edit open), empty state, density, and grouped rows
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list of people, by manager or by mentor,
+  composed with filter, sort and grouping, and `IsLiveShaping` reshaping the tree when a row's property changes.
+  The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
+  GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
+  pages whose rows have no parent relation show those modes disabled with the reason
+- Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
+- `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
+  sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
+  a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
+  that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a
+  page names exists: a warning locally, an error in CI.
 
-## Known issue
+The pages are code-behind on purpose (no view models): each one demonstrates TableView API calls,
+not app architecture.
 
-Using an `EmptyTemplate` that contains a `FontIcon` can crash at startup while the empty state is
-first shown. Prefer text or shape content in the `EmptyTemplate` until this is resolved.
+## Context menus
+
+The **Context menus** page (`ContextMenus`) demonstrates per-column cell/header
+flyouts and row fallback with the shared people data: a **Name** cell menu whose
+items bind to the row item, a shared row menu (**Copy row**, **Move to next
+department**, **Remove from list**) set through an implicit `TableViewRow` style,
+per-column header menus that hide columns, a group header menu set through an
+implicit `TableViewGroupHeader` style, and the table's own `ContextFlyout` as the
+final fallback. The rail switches the cell, row and header menus off.
+
+The row menu varies per row kind: its `Opening` handler reads `MenuFlyout.Target`
+(the row, also for a cell request) and keeps the items tagged for that kind, so
+under Hierarchy shaping managers (expandable rows) also get **Email team**.
+**Deactivate** / **Reactivate** bind `Visibility` to the person's `IsActive`.
+
+There is no row menu property: rows get their menu from their own `ContextFlyout`,
+set through an implicit `TableViewRow` style or a row template; a menu's `Opening`
+handler can vary its items per row through `MenuFlyout.Target`. Column cell menus
+take precedence over it; the native `TableView.ContextFlyout` is the final
+fallback. A column header uses its
+`HeaderContextFlyout`, otherwise native fallback. Group headers use their own
+`ContextFlyout` (its items see the `TableViewGroupInfo`), otherwise native fallback. Setting a menu property to null (or removing the row style) removes that
+candidate.
+
+Keyboard requests (Shift+F10, Menu key) follow the focus level: with focus on a
+cell, that cell's menu opens; with focus on the row itself (press Left from the
+first cell), the row menu opens even if the remembered current column has a cell
+menu. UI Automation `ShowContextMenu` on a row peer likewise opens the row menu.
+
+A `ContextFlyout` you set inside a cell or header (`CellTemplate`,
+`HeaderTemplate`, or an implicit style) wins over the column properties, for
+mouse, keyboard (Shift+F10, Menu key) and UI Automation alike. It covers the
+whole cell or header, padding included.
+
+On text controls only a `ContextFlyout` set on the element itself counts: their
+built-in copy/select flyouts and flyouts set through a style are skipped.
+
+Context requests move body focus without changing selection. Headers do not move
+body focus.
+Menus are not stamped on realized cells; each menu inherits the requested row's
+item as its `DataContext` while open. A target invalidated while focus moves is
+not retargeted: custom display is suppressed. A body request with no applicable
+custom candidate still permits native fallback if focus invalidates its target.
 
 ## More detail
 

@@ -1,0 +1,28 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
+
+public TableViewSource Source { get; }
+
+private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
+{
+    PeopleTable.GridLinesVisibility = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag switch
+    {
+        "None" => TableViewGridLinesVisibility.None,
+        "Horizontal" => TableViewGridLinesVisibility.Horizontal,
+        "Vertical" => TableViewGridLinesVisibility.Vertical,
+        _ => TableViewGridLinesVisibility.All,
+    };
+}
+
+private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
+{
+    var custom = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "custom";
+    PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
+}
+
+private void SetColumnSeparatorsHidden(bool hidden)
+{
+    PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
+}

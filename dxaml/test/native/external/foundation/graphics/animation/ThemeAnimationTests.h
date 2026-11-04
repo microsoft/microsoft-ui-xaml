@@ -60,7 +60,7 @@ public:
     BEGIN_TEST_METHOD(PointerDownThemeAnimationWithTransformGroup)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DComp verification fails because a PrependVisual's TransformMatrix
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                                                         // is different
     END_TEST_METHOD()
 
@@ -131,19 +131,19 @@ public:
 
     BEGIN_TEST_METHOD(DrillInThemeAnimation)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(DrillOutThemeAnimation)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(FadeOutThemeAnimationNoDurationWUCFull)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
 private:

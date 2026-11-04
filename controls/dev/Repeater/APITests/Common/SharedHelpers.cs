@@ -50,5 +50,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
         {
             return scrollOrientation == ScrollOrientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
         }
+
+        // Returns the runtime class name reported by the native object (IInspectable.GetRuntimeClassName), not the
+        // name of the .NET projection type.
+        public static string GetNativeRuntimeClassName(object instance)
+        {
+            var objRef = ((global::WinRT.IWinRTObject)instance).NativeObject;
+            return global::WinRT.IInspectable.FromAbi(objRef.ThisPtr).GetRuntimeClassName(false);
+        }
     }
 }

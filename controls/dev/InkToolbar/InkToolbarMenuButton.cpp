@@ -13,6 +13,7 @@
 #include "InkToolbarMenuButtonAutomationPeer.h"
 #include "InkToolbar.h"
 #include "InkToolbarTrace.h"
+#include "InkToolbarFlyoutHelper.h"
 
 InkToolbarMenuButton::InkToolbarMenuButton()
 {
@@ -22,16 +23,9 @@ InkToolbarMenuButton::InkToolbarMenuButton()
     auto flyout = winrt::Flyout{};
     flyout.ShouldConstrainToRootBounds(false);
 
-    if (auto resources = Resources())
-    {
-        if (resources.HasKey(winrt::box_value(L"InkToolbarFlyoutStyle")))
-        {
-            if (auto style = resources.Lookup(winrt::box_value(L"InkToolbarFlyoutStyle")).try_as<winrt::Style>())
-            {
-                flyout.FlyoutPresenterStyle(style);
-            }
-        }
-    }
+    // The keyed InkToolbarFlyoutStyle in generic.xaml is not reachable from the button's resources, so
+    // apply the equivalent (zero-padding) presenter style in code to match WinUI 2 flyout padding.
+    ApplyInkToolbarFlyoutStyle(flyout);
 
     winrt::FlyoutBase::SetAttachedFlyout(*this, flyout);
 }
@@ -167,17 +161,31 @@ bool InkToolbarMenuButton::HasL3()
 
 bool InkToolbarMenuButton::IsL3Open()
 {
-    // Container-side open tracking is restored when InkToolbar_Partial is ported; report closed here.
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        return winrt::get_self<InkToolbar>(toolbar)->IsL3Open(*this);
+    }
     return false;
 }
 
 void InkToolbarMenuButton::OpenL3()
 {
+    // Route through the toolbar so the stencil L3 content is built and the open flyout is tracked.
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        winrt::get_self<InkToolbar>(toolbar)->OpenL3(*this);
+        return;
+    }
     winrt::FlyoutBase::ShowAttachedFlyout(*this);
 }
 
 void InkToolbarMenuButton::CloseL3()
 {
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        winrt::get_self<InkToolbar>(toolbar)->CloseL3(*this);
+        return;
+    }
     if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
     {
         flyout.Hide();
