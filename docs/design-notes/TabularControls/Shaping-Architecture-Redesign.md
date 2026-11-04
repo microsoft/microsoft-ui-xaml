@@ -72,7 +72,7 @@ table serves as both the shared identity store and the cached full set that shap
 |---|---|---|---|
 | 1 | Public verb API | `TableViewSource2.idl` | Declared |
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
-| 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
+| 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h/.cpp` | Implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h`, `Engine/FenwickTree.h`, `Engine/GroupExpansion.h` | Declared, not implemented |
@@ -139,6 +139,7 @@ classDiagram
         +Count() uint32
         +TryGetAt(index, item) bool
         +Enumerate(throwIfUnsupported) vector~IInspectable~
+        +Enumerate(source, throwIfUnsupported)$ vector~IInspectable~
         +AsNotifyCollectionChanged(useSafeGet) INotifyCollectionChanged
         +AsObservableVector(useSafeGet) IObservableVector~IInspectable~
         +AsBindableObservableVector(useSafeGet) IBindableObservableVector
@@ -977,6 +978,18 @@ trace cycles through the collection. There is one accessor per root source and o
   only one notification interface is ever subscribed.
 - Rejected: only the source `tracker_ref`, querying the interface on each use: 1 handle, but a QI
   on every `Count`, `TryGetAt` and subscribe.
+
+**One-shot enumeration (decided).** `static Enumerate(source, throwIfUnsupported)` reads a
+collection once without building an accessor. It resolves the read interface with the same
+precedence (private static `ResolveRead`), keeps the same `Iterable` CLR retry, and raises the same
+errors, through a body shared with the member `Enumerate()` (private static `EnumerateResolved`).
+It holds nothing, so it registers no tracker handles. Use it for a collection that is read and not
+kept or observed. Only collections that stay subscribed get an accessor.
+
+- Rejected: a temporary accessor per read (`CollectionAccessor2{ owner, collection }.Enumerate()`):
+  each one sets two tracker handles and destroys them again. The owner keeps its handles in a linear
+  list (an O(N) find on set, about 3×O(N) on destroy), so reading many collections this way is
+  O(n²).
 
 ## 4. Source tracking: `SourceRecord` and `SourceTable`
 
@@ -3313,7 +3326,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       subscriptions via `SetLiveShaping`, and the `SourceChanged` + `ItemChanged` callbacks).
 - [ ] **1.4 Implement Phase 1 `.cpp` files**:
   - `CollectionAccessor2.cpp`: kind resolution (constructor), `Count`, `TryGetAt`, `Enumerate`
-    (with the `Iterable` CLR retry), `GetAtUnchecked`, the typed `As*` getters.
+    (member and static one-shot form, with the `Iterable` CLR retry), `ResolveRead`,
+    `EnumerateResolved`, the typed `As*` getters.
   - `SourceRecord.cpp`: canonical `IUnknown` QI, lazy hex `Identity()`, `~SourceRecord()` token revoke.
   - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
     upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_diverged` recovery), the `Refresh()` match
@@ -3579,7 +3593,7 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - `Refresh` and `IsLiveShaping` are declared in the IDL and the header, with no `.cpp` stubs yet (Phase 1.4).
 - `m_shapingManager` is never created yet (the constructor does not allocate it), and
   `Shaping/ShapingManager.h` has no `.cpp` (Phase 1.4 / Phase 5).
-- `Source/SourceRecord.h`, `Source/SourceTable.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
+- `Source/SourceRecord.h` and `Source/SourceTable.h` have no `.cpp` files yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
 - `Engine/ShapedTree.h` (`GroupNode`, `IShapedRowsListener`, `ShapedTree`),
   `Engine/ShapeState.h` (`ShapedNode`, `ShapeState`), `Engine/FenwickTree.h` and `Engine/GroupExpansion.h` are
