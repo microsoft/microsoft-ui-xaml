@@ -3057,6 +3057,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => source.IsChecked = false);
             WaitForTipState(tip, isOpen: false);
         }
+        // Scenario (issue #8095 review, Sol S3/S4, page navigation right after a tip opens): the expand animation is slowed to 2s so the tip is still opening (not
+        //           idle) when its target is removed for good.
+        //           Run 1 (S4): IsOpen=true and the target removal happen in the same UI step.
+        //           Run 2 (S3): while the tip is opening, the app sets IsOpen=false (rejected and reverted, because the tip
+        //                       is busy) in the same UI step as the target removal.
+        // Expected: the tip ends up closed: IsOpen false, popup closed, idle.
+        // A failure means: the busy-state revert of IsOpen looked like an app reopen and abandoned the unload close (S3), or
+        //           the forced close during the expand animation was reverted to IsOpen=true with the popup closed (S4).
+        // Skipped (with a warning) when system animations are off: the tip is idle as soon as it opens.
+        [TestMethod]
+        public void TargetRemovedWhileTipIsOpeningClosesTheTip()
+        {
+            if (AnimationsAreDisabled())
+            {
+                Log.Warning("Test is disabled when animations are turned off: the tip becomes idle as soon as it opens.");
+                return;
+            }
+            VerifyTargetRemovedWhileOpening(appClosesWhileOpening: false);
+            VerifyTargetRemovedWhileOpening(appClosesWhileOpening: true);
+        }
+
+        private void VerifyTargetRemovedWhileOpening(bool appClosesWhileOpening)
+        {
+            string what = appClosesWhileOpening ? "app sets IsOpen=false while opening, target removed" : "opened and target removed in one step";
+            TeachingTip tip = null;
+            StackPanel host = null;
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new StackPanel();
+                target = new Button() { Content = "Target" };
+                host.Children.Add(target);
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                var root = new StackPanel();
+                root.Children.Add(host);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(2));
+            });
+            IdleSynchronizer.Wait();
+
+            if (appClosesWhileOpening)
+            {
+                RunOnUIThread.Execute(() => tip.IsOpen = true);
+                bool opening = false;
+                var stopwatch = Stopwatch.StartNew();
+                while (!opening && stopwatch.ElapsedMilliseconds < 5000)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var popup = TeachingTipTestHooks.GetPopup(tip);
+                        opening = popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
+                        if (opening)
+                        {
+                            tip.IsOpen = false;
+                            host.Children.Remove(target);
+                        }
+                    });
+                    if (!opening)
+                    {
+                        Thread.Sleep(20);
+                    }
+                }
+                Verify.IsTrue(opening, "Precondition: the tip was observed while opening: " + what);
+            }
+            else
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    tip.IsOpen = true;
+                    host.Children.Remove(target);
+                });
+            }
+
+            bool settled = WaitForTipState(tip, isOpen: false);
+            bool tipOpen = true, popupOpen = true, idle = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var popup = TeachingTipTestHooks.GetPopup(tip);
+                tipOpen = tip.IsOpen;
+                popupOpen = popup != null && popup.IsOpen;
+                idle = TeachingTipTestHooks.GetIsIdle(tip);
+            });
+            Verify.IsTrue(settled, $"The tip should end closed: {what} (tip.IsOpen={tipOpen}, popup.IsOpen={popupOpen}, idle={idle})");
+            RunOnUIThread.Execute(() => tip.IsOpen = false);
+            WaitForTipState(tip, isOpen: false);
+        }
+
         // Scenario (issue #8095 review, Copilot): an OPEN tip targets a static Button; the Button is removed, and the app's
         //           Unloaded handler on it (registered after the tip's) retargets the tip to an already loaded element that
         //           an ItemsRepeater generated for a string item, all before the next Rendering tick.
