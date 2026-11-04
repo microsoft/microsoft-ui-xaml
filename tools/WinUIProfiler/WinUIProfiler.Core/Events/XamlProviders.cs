@@ -17,7 +17,9 @@ public enum XamlProvider
     // Microsoft.UI.Xaml.Controls, the controls' telemetry events.
     MicrosoftUIXamlControls,
     // The kernel's GPU memory usage and budget for the process (Microsoft-Windows-DxgKrnl).
-    DxgKrnl
+    DxgKrnl,
+    // Window focus changes in the process (Microsoft-Windows-Win32k).
+    Win32k
 }
 
 public static class XamlProviders
@@ -28,8 +30,9 @@ public static class XamlProviders
     public static readonly Guid MicrosoftUIXaml = new("2dc72f6e-e4d1-5f58-3245-09a4243799dd");
     public static readonly Guid MicrosoftUIXamlControls = new("21e0ae07-56a7-55b5-12f9-011e6bc08cca");
     public static readonly Guid DxgKrnl = new("802ec45a-1e99-4b83-9920-87c98277ba9d");
+    public static readonly Guid Win32k = new("8c416c79-d49b-4f01-a467-e56d3aa8234c");
 
-    // The XAML providers, whose events are all read. DxgKrnl events are matched by ID in XamlEventSubscription.
+    // The XAML providers, whose events are all read. DxgKrnl and Win32k events are matched by ID in XamlEventSubscription.
     private static readonly Dictionary<Guid, XamlProvider> XamlProviderIds = new()
     {
         [Xaml] = XamlProvider.Xaml,

@@ -260,35 +260,64 @@
   <data name="OpenSessionFile.Content" xml:space="preserve"><value>Open session file...</value></data>
   <data name="FramesReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
   <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file.</value></data>
-  <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} frames</value></data>
-  <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} frames | older events were trimmed</value></data>
+  <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} ticks</value></data>
+  <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} ticks | older events were trimmed</value></data>
   <data name="LaunchItemFormat" xml:space="preserve"><value>frame {0:N0} at {1:N1} ms</value></data>
   <data name="LaunchFromProcessFormat" xml:space="preserve"><value>Drawn frames after the process started: {0}</value></data>
   <data name="LaunchFromRecordingFormat" xml:space="preserve"><value>Drawn frames after the recording started: {0}</value></data>
+  <data name="FramesShowLabel.Text" xml:space="preserve"><value>Show</value></data>
+  <data name="FramesShow.AutomationProperties.Name" xml:space="preserve"><value>Show</value></data>
+  <data name="FramesShowAll.Content" xml:space="preserve"><value>All ticks</value></data>
+  <data name="FramesShowInteresting.Content" xml:space="preserve"><value>Regions of interest</value></data>
+  <data name="FramesShowInteresting.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The regions of interest, with the tick each one ends with. A region starts at a navigation, XAML initialization, a flyout, menu or content dialog, or a window focus change. It ends at the end of the thread's next tick.</value></data>
+  <data name="FramesShowSlow.Content" xml:space="preserve"><value>Slow ticks (over 16.7 ms)</value></data>
+  <data name="LegendRegion.Text" xml:space="preserve"><value>Region of interest</value></data>
+  <data name="LegendRegionTick.Text" xml:space="preserve"><value>Tick in a region</value></data>
+  <data name="LegendNonTick.Text" xml:space="preserve"><value>Interesting, not a tick</value></data>
+  <data name="LegendSlow.Text" xml:space="preserve"><value>Over 16.7 ms</value></data>
   <data name="FramesHeaderNumber.Text" xml:space="preserve"><value>Frame</value></data>
-  <data name="FramesHeaderDrawnAt.Text" xml:space="preserve"><value>Drawn at (ms)</value></data>
-  <data name="FramesHeaderDraw.Text" xml:space="preserve"><value>Draw (ms)</value></data>
+  <data name="FramesHeaderStart.Text" xml:space="preserve"><value>Start (ms)</value></data>
+  <data name="FramesHeaderTick.Text" xml:space="preserve"><value>Tick (ms)</value></data>
+  <data name="FramesHeaderDrew.Text" xml:space="preserve"><value>Drew</value></data>
   <data name="FramesHeaderXaml.Text" xml:space="preserve"><value>XAML</value></data>
   <data name="FramesHeaderComposition.Text" xml:space="preserve"><value>Composition</value></data>
   <data name="FramesHeaderOther.Text" xml:space="preserve"><value>Other</value></data>
-  <data name="FrameList.AutomationProperties.Name" xml:space="preserve"><value>Frames</value></data>
-  <data name="FramesHeaderNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame number on the UI thread. * marks the latest frame, which may still be in progress.</value></data>
-  <data name="FramesHeaderDrawnAt.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the frame was drawn, from the start of the recording.</value></data>
-  <data name="FramesHeaderDraw.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How long the drawing tick took. A warning icon marks more than 16.7 ms.</value></data>
+  <data name="FrameList.AutomationProperties.Name" xml:space="preserve"><value>Ticks</value></data>
+  <data name="FramesHeaderNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Each row is one tick of a UI thread, with its frame number. The number goes up after a tick that draws, so the ticks before it that drew nothing have the same number. A tick's events include the events since the thread's previous tick.</value></data>
+  <data name="FramesHeaderStart.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the tick started, from the start of the recording. A dash marks a tick that started before the recording.</value></data>
+  <data name="FramesHeaderTick.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How long the tick took. A warning icon marks more than 16.7 ms.</value></data>
+  <data name="FramesHeaderDrew.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>A check mark shows that the tick drew a frame. The thread's latest tick has none until its next tick starts.</value></data>
   <data name="FramesHeaderXaml.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about XAML objects: the tree, templates, visual states and loading.</value></data>
   <data name="FramesHeaderComposition.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about composition nodes, visuals and surfaces.</value></data>
   <data name="FramesHeaderOther.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Everything else: layout, rendering and scheduling.</value></data>
-  <data name="SelectFramePrompt" xml:space="preserve"><value>Select a frame to see its events.</value></data>
+  <data name="SelectFramePrompt" xml:space="preserve"><value>Select a tick, a region or an interesting row to see its events.</value></data>
   <data name="SelectEventPrompt" xml:space="preserve"><value>Select an event to see its fields.</value></data>
-  <data name="FrameTitleFormat" xml:space="preserve"><value>Frame {0:N0} | thread {1} | {2} tick(s), the first at {3:N1} ms | drawn at {4:N1} ms | {5:N1} ms in ticks</value></data>
+  <data name="FrameTitleFormat" xml:space="preserve"><value>Frame {0:N0} | thread {1} | {2} ms to {3} ms | tick {4} ms | {5}</value></data>
+  <data name="TickDrew" xml:space="preserve"><value>drew a frame</value></data>
+  <data name="TickDidNotDraw" xml:space="preserve"><value>drew nothing</value></data>
+  <data name="TickLatest" xml:space="preserve"><value>the thread's latest tick</value></data>
+  <data name="RegionTextFormat" xml:space="preserve"><value>{0} · {1:N1}–{2:N1} ms · {3:N1} ms</value></data>
+  <data name="InterestingTextFormat" xml:space="preserve"><value>{0} · thread {1} · {2:N1}–{3:N1} ms · {4:N1} ms</value></data>
+  <data name="RegionRowsHeader.Text" xml:space="preserve"><value>Interesting rows in this region</value></data>
+  <data name="InterestingHeaderStart.Text" xml:space="preserve"><value>Start (ms)</value></data>
+  <data name="InterestingHeaderStart.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the row started, from the start of the recording.</value></data>
+  <data name="InterestingHeaderDuration.Text" xml:space="preserve"><value>Duration (ms)</value></data>
+  <data name="InterestingHeaderDuration.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Wall-clock time from start to stop.</value></data>
+  <data name="InterestingHeaderFrame.Text" xml:space="preserve"><value>Frame</value></data>
+  <data name="InterestingHeaderFrame.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame number of a tick.</value></data>
+  <data name="InterestingHeaderType.Text" xml:space="preserve"><value>Type</value></data>
+  <data name="InterestingHeaderType.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The kind of row: Frame (one tick), UpdateLayout, an operation's name, Frame::Navigating, Frame::Navigated or Hwnd Focus.</value></data>
+  <data name="InterestingEmpty" xml:space="preserve"><value>No regions of interest. A region starts at a navigation, XAML initialization, a flyout, menu or content dialog, or a window focus change.</value></data>
+  <data name="SlowEmpty" xml:space="preserve"><value>No tick took more than 16.7 ms.</value></data>
+  <data name="InterestingTitleFormat" xml:space="preserve"><value>{0} | thread {1} | {2:N1} ms to {3:N1} ms | {4:N1} ms</value></data>
   <data name="Buckets.AutomationProperties.Name" xml:space="preserve"><value>Event group</value></data>
   <data name="BucketAll.Text" xml:space="preserve"><value>All</value></data>
   <data name="BucketXaml.Text" xml:space="preserve"><value>XAML</value></data>
   <data name="BucketComposition.Text" xml:space="preserve"><value>Composition</value></data>
   <data name="BucketOther.Text" xml:space="preserve"><value>Other</value></data>
   <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>Filter by name, text, or value (42 or 0x1A2B)</value></data>
-  <data name="FilterBox.AutomationProperties.Name" xml:space="preserve"><value>Filter the frame's events</value></data>
-  <data name="EventList.AutomationProperties.Name" xml:space="preserve"><value>Events of the selected frame</value></data>
+  <data name="FilterBox.AutomationProperties.Name" xml:space="preserve"><value>Filter the selected row's events</value></data>
+  <data name="EventList.AutomationProperties.Name" xml:space="preserve"><value>Events of the selected row</value></data>
   <data name="PreviousEvents.Content" xml:space="preserve"><value>Previous</value></data>
   <data name="NextEvents.Content" xml:space="preserve"><value>Next</value></data>
   <data name="PositionNoEvents" xml:space="preserve"><value>No events</value></data>

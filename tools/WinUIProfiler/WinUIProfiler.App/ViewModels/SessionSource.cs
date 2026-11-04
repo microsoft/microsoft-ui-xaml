@@ -37,6 +37,14 @@ public sealed class SessionSource
         Set(path, false);
     }
 
+    // A new connection or trace replaces the file shown, even one the user opened, before its own file exists.
+    public void BeginRecording()
+    {
+        recordingPath = null;
+        following = true;
+        Set(null, false);
+    }
+
     private void Set(string? path, bool live)
     {
         if (path == Path && live == Live)
