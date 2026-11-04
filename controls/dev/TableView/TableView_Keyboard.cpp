@@ -2145,11 +2145,54 @@ void TableView::RevealFocusedBodyElement(winrt::UIElement const& element)
     }
 }
 
+// GetOrCreateElement makes its element the repeater's layout anchor, and only the repeater's own
+// bring-into-view handling releases it (no public API cancels it). Raise a request for the repeater
+// through one of its children, and swallow it once the repeater has seen it, so nothing scrolls.
+void TableView::ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor)
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || winrt::VisualTreeHelper::GetChildrenCount(repeater) == 0)
+    {
+        return;
+    }
+
+    auto target = anchor;
+    if (!target || winrt::VisualTreeHelper::GetParent(target) != repeater)
+    {
+        target = winrt::VisualTreeHelper::GetChild(repeater, 0).try_as<winrt::UIElement>();
+    }
+    if (!target)
+    {
+        return;
+    }
+
+    std::erase_if(m_anchorReleaseTargets, [](auto const& pending) { return !pending.get(); });
+    m_anchorReleaseTargets.push_back(winrt::make_weak(target));
+    winrt::BringIntoViewOptions options;
+    options.AnimationDesired(false);
+    options.TargetRect(winrt::Rect{});
+    target.StartBringIntoView(options);
+}
+
 // XAML pads a keyboard-focus bring-into-view by 20 DIPs (or the focus visual margin), so focusing a
 // row that is already fully in view would still nudge the body, e.g. a first PageDown would scroll.
 // Drop only the vertical padding; the horizontal request still reveals a focused cell.
 void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args)
 {
+    // Routed asynchronously, so matched by its target and empty rect.
+    if (args.TargetRect().Width == 0.0f && args.TargetRect().Height == 0.0f)
+    {
+        auto const releaseTarget = args.TargetElement();
+        if (auto const it = std::find_if(m_anchorReleaseTargets.begin(), m_anchorReleaseTargets.end(),
+                [&releaseTarget](auto const& pending) { return pending.get() == releaseTarget; });
+            it != m_anchorReleaseTargets.end())
+        {
+            m_anchorReleaseTargets.erase(it);
+            args.Handled(true);
+            return;
+        }
+    }
+
     auto const repeater = m_rowsRepeater.get();
     auto const target = args.TargetElement().try_as<winrt::FrameworkElement>();
     if (!repeater || !target)

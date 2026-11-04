@@ -351,6 +351,8 @@ public:
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
+    // Releases the rows repeater's layout anchor, made by GetOrCreateElement(anchor's index), without scrolling.
+    void ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor);
 
     // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
     // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
@@ -1252,6 +1254,8 @@ private:
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
+    // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
+    std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
 
     winrt::event_token m_rowElementPreparedToken{};
