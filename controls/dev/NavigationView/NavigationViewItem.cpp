@@ -49,6 +49,11 @@ NavigationViewItem::NavigationViewItem()
     Loaded({ this, &NavigationViewItem::OnLoaded });
 }
 
+NavigationViewItem::~NavigationViewItem()
+{
+    RevokeAnimatedIconTemplateStateReapplied();
+}
+
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
     UpdateVisualState(false /*useTransition*/);
@@ -604,34 +609,30 @@ void NavigationViewItem::HookAnimatedIconEvents(winrt::IInspectable const& oldIc
     m_animatedIconStateChangedRevoker.revoke();
     m_animatedIconSourceChangedRevoker.revoke();
     m_animatedIconLoadedRevoker.revoke();
+    RevokeAnimatedIconTemplateStateReapplied();
 
     auto const icon = Icon();
     auto const animatedIcon = icon.try_as<winrt::AnimatedIcon>();
 
-    auto const lastWrittenAnimatedIcon = m_lastWrittenAnimatedIcon.get();
-    auto const lastWrittenAnimatedIconState = m_lastWrittenAnimatedIconState;
-    m_lastWrittenAnimatedIcon = nullptr;
-    m_lastWrittenAnimatedIconState = {};
-
-    // Don't leave a selected state that this item wrote behind on an icon it no longer uses. Only restore it if the
-    // icon still holds exactly what we wrote: anything else was set by the app or by another item.
+    // Don't leave a selected state behind on an icon this item no longer uses. Only states that came from the
+    // template's side are restored (the template itself never propagates a selected state, so this is one the
+    // hosting item mapped); a state the app set is left alone, and so is an icon another item now hosts.
     if (auto const oldAnimatedIcon = oldIcon.try_as<winrt::AnimatedIcon>())
     {
+        auto const oldState = winrt::AnimatedIcon::GetState(oldAnimatedIcon);
+        auto const oldHost = GetHostingItem(oldAnimatedIcon);
         if (oldAnimatedIcon != animatedIcon &&
-            oldAnimatedIcon == lastWrittenAnimatedIcon &&
-            winrt::AnimatedIcon::GetState(oldAnimatedIcon) == lastWrittenAnimatedIconState)
+            IsSelectedAnimatedIconState(oldState) &&
+            winrt::get_self<AnimatedIcon>(oldAnimatedIcon)->IsStateFromTemplate() &&
+            (!oldHost || oldHost == static_cast<winrt::NavigationViewItem>(*this)))
         {
-            auto const unselectedState = MapAnimatedIconState(oldAnimatedIcon, lastWrittenAnimatedIconState, false /* isSelected */);
-            if (unselectedState != lastWrittenAnimatedIconState)
-            {
-                winrt::AnimatedIcon::SetState(oldAnimatedIcon, unselectedState);
+            winrt::get_self<AnimatedIcon>(oldAnimatedIcon)->SetStateFromTemplate(MapAnimatedIconState(oldAnimatedIcon, oldState, false /* isSelected */));
 
-                // The old icon's State callbacks can replace Icon again. That nested change has already hooked the
-                // latest icon, so don't replace its handlers with handlers for this stale one.
-                if (Icon() != icon)
-                {
-                    return;
-                }
+            // The old icon's State callbacks can replace Icon again. That nested change has already hooked the
+            // latest icon, so don't replace its handlers with handlers for this stale one.
+            if (Icon() != icon)
+            {
+                return;
             }
         }
     }
@@ -643,7 +644,28 @@ void NavigationViewItem::HookAnimatedIconEvents(winrt::IInspectable const& oldIc
         // A previously used icon already has a State, so when it is (re)attached to this item's template, AnimatedIcon
         // doesn't copy the template's state and nothing changes. Re-map once it is actually hosted here.
         m_animatedIconLoadedRevoker = animatedIcon.Loaded(winrt::auto_revoke, { this, &NavigationViewItem::OnAnimatedIconLoaded });
+        // When the template sets the value the app had set, the State doesn't change, but it is the template's again.
+        auto const weakThis = winrt::make_weak(static_cast<winrt::NavigationViewItem>(*this));
+        auto const weakIcon = winrt::make_weak(animatedIcon);
+        m_templateStateReappliedToken = winrt::get_self<AnimatedIcon>(animatedIcon)->TemplateStateReapplied([weakThis, weakIcon]()
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                winrt::get_self<NavigationViewItem>(strongThis)->UpdateAnimatedIconState(weakIcon.get());
+            }
+        });
+        m_templateStateReappliedIcon = weakIcon;
     }
+}
+
+void NavigationViewItem::RevokeAnimatedIconTemplateStateReapplied()
+{
+    if (auto const icon = m_templateStateReappliedIcon.get())
+    {
+        winrt::get_self<AnimatedIcon>(icon)->TemplateStateReapplied(m_templateStateReappliedToken);
+    }
+    m_templateStateReappliedIcon = nullptr;
+    m_templateStateReappliedToken = {};
 }
 
 void NavigationViewItem::OnAnimatedIconLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
@@ -653,21 +675,9 @@ void NavigationViewItem::OnAnimatedIconLoaded(const winrt::IInspectable& sender,
 
 void NavigationViewItem::OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    auto const animatedIcon = sender.try_as<winrt::AnimatedIcon>();
-
-    // Once something else changes the State this item wrote, the value is no longer ours to restore on detach,
-    // even if it is later set back to the same value.
-    if (args == winrt::AnimatedIcon::StateProperty() &&
-        animatedIcon && animatedIcon == m_lastWrittenAnimatedIcon.get() &&
-        winrt::AnimatedIcon::GetState(animatedIcon) != m_lastWrittenAnimatedIconState)
-    {
-        m_lastWrittenAnimatedIcon = nullptr;
-        m_lastWrittenAnimatedIconState = {};
-    }
-
     // A Source that becomes selection-aware (e.g. a legacy icon re-sourced, or a Source supplied later) may still
     // hold a pointer state the template no longer propagates, so take the host's state as on load.
-    UpdateAnimatedIconState(animatedIcon, args == winrt::AnimatedIcon::SourceProperty() /* syncWithHost */);
+    UpdateAnimatedIconState(sender.try_as<winrt::AnimatedIcon>(), args == winrt::AnimatedIcon::SourceProperty() /* syncWithHost */);
 }
 
 void NavigationViewItem::UpdateAnimatedIconState()
@@ -684,44 +694,55 @@ void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& anim
         return;
     }
 
-    auto const currentState = winrt::AnimatedIcon::GetState(animatedIcon);
-
-    // Only remap values that came from this item or its template. The template never propagates a selected state, so
-    // one this item didn't write was set by the app (e.g. to show a SelectsOnInvoked="False" item as toggled on) and
-    // is kept, as it is without this mapping.
-    const bool isOwnState = animatedIcon == m_lastWrittenAnimatedIcon.get() && currentState == m_lastWrittenAnimatedIconState;
-    if (!isOwnState && IsSelectedAnimatedIconState(currentState))
+    // Only map states that came from the template (copied by AnimatedIcon from its ancestor) or from this mapping.
+    // A state the app set, including one an app handler sets while we write, is kept, as it is without this mapping.
+    auto const iconImpl = winrt::get_self<AnimatedIcon>(animatedIcon);
+    if (!iconImpl->IsStateFromTemplate())
     {
         return;
     }
 
-    auto const hostState = GetPropagatedAnimatedIconState(animatedIcon);
+    auto const currentState = winrt::AnimatedIcon::GetState(animatedIcon);
+    auto const source = animatedIcon.Source();
+    const bool isSelected = IsSelected();
+
     auto state = currentState;
-    if (syncWithHost && !hostState.empty() && IsTemplateDrivenAnimatedIconState(currentState) && IsSelectionAwareAnimatedIcon(animatedIcon))
+    if (syncWithHost && IsTemplateDrivenAnimatedIconState(currentState) && IsSelectionAwareAnimatedIcon(animatedIcon))
     {
         // AnimatedIcon only copies its host's state on load when it has none, so an icon moved from another item still
         // carries that item's pointer state. Take the state this template propagates instead (from the same ancestor
-        // AnimatedIcon listens to). App-defined states are kept, and so is any state on an icon without selected
-        // markers, which this item never maps: like AnimatedIcon::OnLoaded, keep its existing value.
-        state = hostState;
+        // AnimatedIcon listens to). Icons without selected markers keep their value, like AnimatedIcon::OnLoaded does.
+        auto const hostState = GetPropagatedAnimatedIconState(animatedIcon);
+        if (!hostState.empty())
+        {
+            state = hostState;
+        }
     }
-    else if (!isOwnState && currentState != hostState)
+
+    auto const newState = MapAnimatedIconState(animatedIcon, state, isSelected);
+
+    // Reading the Source's markers runs app code, which can change the icon, its Source, its State or this item. The
+    // change notifications for those have already brought the icon up to date, so don't overwrite it with stale input.
+    if (newState == currentState ||
+        winrt::AnimatedIcon::GetState(animatedIcon) != currentState ||
+        !iconImpl->IsStateFromTemplate() ||
+        animatedIcon.Source() != source ||
+        IsSelected() != isSelected ||
+        !IsHostingAnimatedIcon(animatedIcon))
     {
-        // Not what the template propagates (e.g. the app set PointerOver on a non-hovered item): leave it alone.
         return;
     }
 
-    auto const newState = MapAnimatedIconState(animatedIcon, state, IsSelected());
-    if (newState != currentState)
-    {
-        m_lastWrittenAnimatedIcon = winrt::make_weak(animatedIcon);
-        m_lastWrittenAnimatedIconState = newState;
-        // Re-enters through OnAnimatedIconPropertyChanged, which then finds nothing left to change.
-        winrt::AnimatedIcon::SetState(animatedIcon, newState);
-    }
+    // Re-enters through OnAnimatedIconPropertyChanged, which then finds nothing left to change.
+    iconImpl->SetStateFromTemplate(newState);
 }
 
 bool NavigationViewItem::IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon)
+{
+    return GetHostingItem(animatedIcon) == static_cast<winrt::NavigationViewItem>(*this);
+}
+
+winrt::NavigationViewItem NavigationViewItem::GetHostingItem(winrt::AnimatedIcon const& animatedIcon)
 {
     // The nearest NavigationViewItem above the icon is the one whose template hosts it.
     auto parent = winrt::VisualTreeHelper::GetParent(animatedIcon);
@@ -729,11 +750,11 @@ bool NavigationViewItem::IsHostingAnimatedIcon(winrt::AnimatedIcon const& animat
     {
         if (auto const item = parent.try_as<winrt::NavigationViewItem>())
         {
-            return item == static_cast<winrt::NavigationViewItem>(*this);
+            return item;
         }
         parent = winrt::VisualTreeHelper::GetParent(parent);
     }
-    return false;
+    return nullptr;
 }
 
 bool NavigationViewItem::IsTemplateDrivenAnimatedIconState(winrt::hstring const& stateString)
