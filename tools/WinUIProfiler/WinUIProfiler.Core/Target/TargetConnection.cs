@@ -325,7 +325,10 @@ History);
             }
             else
             {
-                etw.StartReading(process.Id, events.Post);
+                // When the session saw the process start, the process's start event is time zero, as in a trace that
+                // recorded it.
+                etw.StartReading(process.Id, events.Post,
+                    etwFromProcessStart && recorder is { } recording ? recording.SetProcessStart : null);
             }
 
             pipeline = events;
@@ -343,7 +346,8 @@ History);
         }
     }
 
-    // One file per connection; time zero of the recording is when ETW started listening.
+    // One file per connection. Time zero of the recording is the process's start event when ETW saw the process
+    // start, as for a trace that recorded the event; otherwise when ETW started listening.
     private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
     {
         if (directory is null)
@@ -357,7 +361,8 @@ History);
             return SessionWriter.Create(path, new(process.Id, process.ProcessName,
                 creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null, Stopwatch.Frequency,
                 etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
-                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection));
+                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
+                AwaitsProcessStart: etwFromProcessStart && etw?.ProcessStartEnabled == true));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

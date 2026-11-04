@@ -17,7 +17,8 @@ internal static class SessionSchema
             ProcessName TEXT,
             ProcessCreatedUtc TEXT,
             QpcFrequency INTEGER,      -- for a recorded trace, derived from the events
-            StartQpc INTEGER,          -- time zero of the recording; for a recorded trace, its first event
+            StartQpc INTEGER,          -- time zero: ProcessStartQpc when set; otherwise when a live recording started, or a trace's first event of the process
+            ProcessStartQpc INTEGER,   -- the process's start event (Microsoft-Windows-Kernel-Process), when the recording saw it
             StartedUtc TEXT NOT NULL,
             StartedQpc INTEGER,        -- QPC read with StartedUtc, to place UTC times such as ProcessCreatedUtc on the QPC clock (live)
             Source TEXT NOT NULL,      -- Live or Trace

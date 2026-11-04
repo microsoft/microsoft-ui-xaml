@@ -11,7 +11,8 @@ namespace WinUIProfiler.Engine.Ingestion;
 // are decoded with the manifest Windows registers for their provider: system XAML's for Microsoft-Windows-XAML and
 // Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for DxgKrnl. An event that manifest
 // does not describe is not delivered. WinUI's FrameInfo is the one shared event whose fields differ, so it is decoded
-// here.
+// here. When asked, it also reports the timestamp of the process's start event (Microsoft-Windows-Kernel-Process),
+// which live sessions and traces both use as time zero.
 internal static class XamlEventSubscription
 {
     // WINEVENT_CHANNEL_TRACELOGGING (winmeta.h). Manifest events on the same providers use other channels.
@@ -22,26 +23,45 @@ internal static class XamlEventSubscription
     private const int VidMmProcessBudgetChange = 366;
     private const int VidMmProcessUsageChange = 367;
 
+    // Microsoft-Windows-Kernel-Process ProcessStart. The creating process writes it; its ProcessID field names the new
+    // process.
+    private const int ProcessStart = 1;
+
     // Microsoft-Windows-XAML FrameInfo, version 0. WinUI writes one 4-byte Boolean, Value, which is whether the frame
     // drew (TraceFrameInfo in xcpcore.cpp). System XAML's manifest describes four UInt32 fields instead.
     private const int FrameInfo = 64;
 
-    internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink)
+    // With a process ID, processStarted gets the QPC timestamp of each start event of a process with that ID. A trace
+    // is read in timestamp order, so it gets the process's start before the process's first event is delivered.
+    internal static void Subscribe(TraceEventDispatcher source, int? processId, Action<ProfilerEvent> sink,
+        Action<long>? processStarted = null)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        Match(source, processId, (data, provider, owner) => sink(Capture(data, provider, owner)));
+        Match(source, processId, (data, provider, owner) => sink(Capture(data, provider, owner)), processStarted);
     }
 
     // Calls match for each event Subscribe delivers, with its provider and the process it belongs to, without copying
     // it. TraceEvent reuses the event object after the call.
-    internal static void Match(TraceEventDispatcher source, int? processId, Action<TraceEvent, XamlProvider, int> match)
+    internal static void Match(TraceEventDispatcher source, int? processId, Action<TraceEvent, XamlProvider, int> match,
+        Action<long>? processStarted = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(match);
 
-        IgnoreOtherProviders(source);
+        var started = processId is null ? null : processStarted;
+        IgnoreOtherProviders(source, readsProcessStart: started is not null);
         source.Dynamic.All += data =>
         {
+            if (data.ProviderGuid == XamlProviders.KernelProcess)
+            {
+                if (started is not null && (int)data.ID == ProcessStart && PayloadProcessId(data) == processId)
+                {
+                    started(TimestampQpc(data));
+                }
+
+                return;
+            }
+
             if (data.ProviderGuid == XamlProviders.DxgKrnl)
             {
                 // The System process writes some of a process's rows, such as those written when it exits, so the
@@ -80,7 +100,8 @@ internal static class XamlEventSubscription
     //   provider is that GUID and whose ID is that sum.
     // - AllEvents still sees the events of a template that does nothing; TraceReplay and ListProcesses count on it.
     // If either of the first two changes, each type goes to TDH as it did without this handler.
-    private static void IgnoreOtherProviders(TraceEventDispatcher source)
+    // With readsProcessStart, Microsoft-Windows-Kernel-Process's process start event goes to TDH too.
+    private static void IgnoreOtherProviders(TraceEventDispatcher source, bool readsProcessStart)
     {
         var services = (ITraceParserServices)source;
         var ignored = new HashSet<(Guid, ushort)>();
@@ -91,7 +112,8 @@ internal static class XamlEventSubscription
             {
                 var classic = unknown.IsClassicProvider;
                 var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
-                if (provider == XamlProviders.DxgKrnl || XamlProviders.TryGet(provider, out _))
+                if (provider == XamlProviders.DxgKrnl || XamlProviders.TryGet(provider, out _) ||
+                    (readsProcessStart && !classic && provider == XamlProviders.KernelProcess && (int)unknown.ID == ProcessStart))
                 {
                     return false;
                 }
@@ -130,7 +152,8 @@ internal static class XamlEventSubscription
     {
         try
         {
-            var index = data.PayloadIndex("ProcessId");
+            // Without case: DxgKrnl and Microsoft-Windows-Kernel-Process spell the field differently.
+            var index = Array.FindIndex(data.PayloadNames, name => name.Equals("ProcessId", StringComparison.OrdinalIgnoreCase));
             return index < 0 ? null : data.PayloadValue(index) switch
             {
                 int value => value,
@@ -146,11 +169,13 @@ internal static class XamlEventSubscription
         }
     }
 
+#pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
+    private static long TimestampQpc(TraceEvent data) => data.TimeStampQPC;
+#pragma warning restore CS0618
+
     internal static ProfilerEvent Capture(TraceEvent data, XamlProvider provider, int processId)
     {
-#pragma warning disable CS0618 // The raw QPC timestamp is the clock shared by live sessions and .etl files.
-        var timestampQpc = data.TimeStampQPC;
-#pragma warning restore CS0618
+        var timestampQpc = TimestampQpc(data);
         return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider,
             (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider));
     }
