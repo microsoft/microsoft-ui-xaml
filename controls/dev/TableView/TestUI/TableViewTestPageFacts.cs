@@ -228,6 +228,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         // Reset undoes both.
         internal const string GroupContextMenuTableButton = "GroupContextMenuTable";
         internal const string MirrorContextMenuTableButton = "MirrorContextMenuTable";
+        internal const string CancelEditorMenuCloseButton = "CancelEditorMenuClose";
 
         internal const string CellMenu = "CellMenu";
         internal const string HeaderMenu = "HeaderMenu";
@@ -281,7 +282,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         }
 
         // Read-only TextBox for the last menu opened, as "key=value;...": menu, open, opens, item, target,
-        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>), editing, selected.
+        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>),
+        // editorMenuOpen/editorMenuClosings, editing, selected.
         internal const string ContextMenuReadout = "ContextMenuReadout";
 
         internal const string MenuField = "menu";
@@ -290,6 +292,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ItemField = "item";
         internal const string TargetField = "target";
         internal const string FocusField = "focus";
+        internal const string EditorMenuOpenField = "editorMenuOpen";
+        internal const string EditorMenuClosingsField = "editorMenuClosings";
 
         internal static string CellFocus(int id, int column) => "cell:" + ContextMenuName(id) + "/" + column;
         internal static string RowFocus(int id) => "row:" + ContextMenuName(id);

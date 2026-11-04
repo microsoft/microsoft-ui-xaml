@@ -488,6 +488,10 @@
                             AutomationProperties.Name="MirrorContextMenuTable"
                             AutomationProperties.AutomationId="MirrorContextMenuTable"
                             Click="OnMirrorContextMenuTableClick" />
+                    <Button Content="Cancel first editor menu close"
+                            AutomationProperties.Name="CancelEditorMenuClose"
+                            AutomationProperties.AutomationId="CancelEditorMenuClose"
+                            Click="OnCancelEditorMenuCloseClick" />
                 </StackPanel>
 
                 <!-- Format documented on TableViewTestPageFacts.ContextMenuReadout. -->
@@ -525,7 +529,8 @@
                     <controls:TableViewTemplateColumn Header="City" Width="160">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
-                                <Grid Background="Transparent" ContextFlyout="{StaticResource TemplateMenu}">
+                                <Grid Background="Transparent" ContextFlyout="{StaticResource TemplateMenu}"
+                                      Loaded="OnContextMenuTemplateLoaded">
                                     <TextBlock Text="{x:Bind City, Mode=OneWay}" VerticalAlignment="Center" />
                                 </Grid>
                             </DataTemplate>

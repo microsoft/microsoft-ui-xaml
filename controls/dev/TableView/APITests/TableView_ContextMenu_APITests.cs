@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "With no cell or row menu the native TableView.ContextFlyout opens.")]
+        [TestProperty("Description", "With no cell or row menu the TableView.ContextFlyout opens at the requested cell.")]
         public void TableMenuUsedWhenNoCellOrRowMenu()
         {
             var f = LoadFixture(configure: x => x.Table.Resources.Remove(typeof(TableViewRow)));
@@ -67,6 +67,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RequestOnCell(f, 3, OfficeCol);
 
             VerifyOpened(f, "TableMenu", () => f.Table, expectedItem: null, "UIA on row 3 / Office, no row style menu");
+            VerifyMenuPlacedAtTarget(f, () => CellOf(f, 3, OfficeCol));
             CloseMenus(f);
         }
 
@@ -328,6 +329,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RequestOnHeader(f, OfficeCol);
 
             VerifyOpened(f, "TableMenu", () => f.Table, expectedItem: null, "UIA on the Office header");
+            VerifyMenuPlacedAtTarget(f, () => HeaderOf(f, OfficeCol));
             CloseMenus(f);
         }
 
@@ -684,6 +686,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyNoMenuOpened(f, "UIA on the TableView while row 3 / Name is editing");
         }
 
+        [TestMethod]
+        public void NativeRowMenuSuppressedAfterVetoedCommit()
+        {
+            VerifyNativeOwnerMenuSuppressedAfterVetoedCommit(grouped: false);
+        }
+
+        [TestMethod]
+        public void NativeGroupHeaderMenuSuppressedAfterVetoedCommit()
+        {
+            VerifyNativeOwnerMenuSuppressedAfterVetoedCommit(grouped: true);
+        }
+
+        [TestMethod]
+        public void SharedRowMenuRemainsAvailableOutsideTableWhileEditing()
+        {
+            Button other = null;
+            var f = LoadEditableFixture(configure: x =>
+            {
+                other = new Button { Content = "Other owner", ContextFlyout = x.RowMenu };
+                x.Root.Child = new StackPanel { Children = { x.Table, other } };
+            });
+            bool veto = true;
+            RunOnUIThread.Execute(() =>
+            {
+                f.Table.CellEditEnding += (s, e) => e.Cancel = veto;
+                var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(provider);
+                Verify.Throws<Exception>(() => provider.SetValue("Uncommitted"));
+            });
+
+            RequestOnElement(() => other);
+
+            VerifyOpened(f, "RowMenu", () => other, expectedItem: null, "a shared flyout on an unrelated control");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(f.Table.IsEditing, "An unrelated menu must not discard the vetoed edit.");
+                veto = false;
+                f.Table.CancelEdit();
+            });
+            CloseMenus(f);
+        }
+
+        private void VerifyNativeOwnerMenuSuppressedAfterVetoedCommit(bool grouped)
+        {
+            var f = LoadEditableFixture(grouped: grouped);
+            bool veto = true;
+            FlyoutBase menu = null;
+            int opened = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                f.Table.CellEditEnding += (s, e) => e.Cancel = veto;
+                var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(provider);
+                Verify.Throws<Exception>(() => provider.SetValue("Uncommitted"));
+                Verify.IsTrue(f.Table.IsEditing, "Precondition: the vetoed commit leaves an edit open.");
+
+                FrameworkElement owner = grouped ? (FrameworkElement)GetGroupHeader(f.Table, 0) : RowOf(f, 6);
+                menu = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Native menu" } } };
+                menu.Opened += (s, e) => opened++;
+                menu.Closing += (s, e) => e.Cancel = true;
+                owner.ContextFlyout = menu;
+                Verify.IsTrue(owner.Focus(FocusState.Programmatic), "Precondition: focus leaves the editor.");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                FrameworkElement owner = grouped ? (FrameworkElement)GetGroupHeader(f.Table, 0) : RowOf(f, 6);
+                // Bypass the custom peer's guard: keyboard requests originate directly on the owner.
+                new FrameworkElementAutomationPeer(owner).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(menu.IsOpen, "An owner-originated native request must not open a menu while editing.");
+                Verify.AreEqual(0, opened, "Suppression must cancel opening before the popup becomes visible.");
+                Verify.IsTrue(f.Table.IsEditing, "Suppressing the menu must preserve the uncommitted edit.");
+                veto = false;
+                f.Table.CancelEdit();
+            });
+            CloseMenus(f);
+        }
+
         private ContextMenuFixture LoadEditableFixture(bool grouped = false, Action<ContextMenuFixture> configure = null) => LoadFixture(grouped: grouped, configure: x =>
         {
             x.Table.IsReadOnly = false;
@@ -809,6 +893,80 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CloseMenus(f);
         }
 
+        [TestMethod]
+        public void RowPeerResolvesTemplateMenusBeforeRowMenu()
+        {
+            var f = LoadFixture(configure: x =>
+                x.Table.Resources[typeof(TableViewRow)] = (Style)XamlReader.Load(RowTemplateStyleXaml));
+            FrameworkElement root = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RowOf(f, 3);
+                row.ContextFlyout = f.RowMenu;
+                root = TrackNamedMenu(f, row, "TemplateRoot", "RowTemplateMenu");
+            });
+
+            RequestOnRow(f, 3);
+
+            VerifyOpened(f, "RowTemplateMenu", () => root, f.P(3), "UIA on the row rather than a cell");
+            CloseMenus(f);
+
+            FrameworkElement host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = FindNamed(RowOf(f, 3), "PART_CellsHost");
+                host.ContextFlyout = f.Recorder.Create("CellsHostMenu");
+            });
+            RequestOnRow(f, 3);
+            VerifyOpened(f, "CellsHostMenu", () => host, f.P(3), "cells-host menu before template-root and row menus");
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void OpenGroupMenuKeepsOriginalGroupAfterHeaderRecycling()
+        {
+            var f = LoadFixture(grouped: true, itemCount: 200);
+            TableViewGroupHeader header = null;
+            TableViewGroupInfo original = null;
+            object originalKey = null;
+            MenuFlyout menu = null;
+            RunOnUIThread.Execute(() =>
+            {
+                header = GetGroupHeader(f.Table, 0);
+                original = (TableViewGroupInfo)header.Content;
+                originalKey = original.Key;
+                menu = f.Recorder.Create("GroupMenu");
+                header.ContextFlyout = menu;
+                GetGroupHeaderPeer(f.Table, 0).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreSame(original, menu.Items[0].DataContext,
+                "Precondition: the open menu holds the original group projection."));
+
+            bool recycled = false;
+            for (double offset = 2000; offset <= 12000 && !recycled; offset += 2000)
+            {
+                ScrollBodyTo(f.Table, ScrollAxis.Vertical, offset);
+                RunOnUIThread.Execute(() =>
+                {
+                    var current = header.Content as TableViewGroupInfo;
+                    recycled = current != null && !Equals(current.Key, originalKey);
+                });
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(recycled, "Precondition: the original header must be reused for another group.");
+                Verify.AreEqual(originalKey, original.Key, "A retained projection must never change group identity.");
+                if (menu.IsOpen)
+                {
+                    Verify.AreSame(original, menu.Items[0].DataContext,
+                        "Commands in an open menu must still receive the originally requested group.");
+                }
+            });
+            CloseMenus(f);
+        }
+
         // ---- G. Robustness ------------------------------------------------------------------
 
         [TestMethod]
@@ -889,6 +1047,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
                     $"No menu may open from the pooled {name} peer. Opened: {f.Recorder.Describe()}"));
             }
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void PooledGroupHeaderPeerShowContextMenuOpensNoMenu()
+        {
+            var f = LoadFixture(grouped: true);
+            AutomationPeer peer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetGroupHeader(f.Table, 0);
+                header.ContextFlyout = f.Recorder.Create("GroupMenu");
+                peer = GetGroupHeaderPeer(f.Table, 0);
+                f.Items.Clear();
+            });
+            SettleLayout(f.Table);
+            RunOnUIThread.Execute(() => Verify.Throws<Exception>(() => peer.ShowContextMenu()));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
+                "A recycled group-header peer must not open either its menu or the table fallback."));
             CloseMenus(f);
         }
 
@@ -1329,6 +1507,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreSame(expectedItem, entry.ItemsSee, $"Menu items' DataContext ({context}): saw {entry.ItemsSee}.");
                 }
+            });
+        }
+
+        internal static void VerifyMenuPlacedAtTarget(ContextMenuFixture f, Func<FrameworkElement> getTarget)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                var presenter = VisualTreeHelper.GetOpenPopupsForXamlRoot(f.Table.XamlRoot)
+                    .Select(p => p.Child)
+                    .OfType<MenuFlyoutPresenter>()
+                    .Single();
+                var cellBounds = target.TransformToVisual(null).TransformBounds(
+                    new global::Windows.Foundation.Rect(0, 0, target.ActualWidth, target.ActualHeight));
+                var menuBounds = presenter.TransformToVisual(null).TransformBounds(
+                    new global::Windows.Foundation.Rect(0, 0, presenter.ActualWidth, presenter.ActualHeight));
+                const double tolerance = 16;
+                Verify.IsTrue(Math.Abs(menuBounds.Left - cellBounds.Left) <= tolerance ||
+                    Math.Abs(menuBounds.Right - cellBounds.Right) <= tolerance,
+                    "The table fallback must align horizontally with the requested cell.");
+                Verify.IsTrue(Math.Abs(menuBounds.Top - cellBounds.Bottom) <= tolerance ||
+                    Math.Abs(menuBounds.Bottom - cellBounds.Top) <= tolerance,
+                    "The table fallback must open beside the requested cell, not the whole table.");
             });
         }
     }
