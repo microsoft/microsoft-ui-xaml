@@ -110,6 +110,7 @@
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
+#include <XamlProfilerTracing.h>
 #include "XamlOptionalChanges.g.h"
 
 #include "DXamlCoreTipTests.h"
@@ -449,6 +450,9 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     CCoreServices* pCore = NULL;
     SuspendingEventHandler* pSuspendingEventHandler = NULL;
     wf::IEventHandler<IInspectable*>* pResumingEventHandler = NULL;
+
+    // Register before graphics creation, even when tree profiling is compiled out.
+    (void)XamlProfilerLogging::Provider();
 
     #if DBG
     WaitForDebuggerIfNeeded();
