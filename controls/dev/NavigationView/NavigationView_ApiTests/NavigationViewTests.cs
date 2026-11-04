@@ -432,6 +432,210 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return true;
         }
 
+        private const string BackButtonStylesFromAppScopeXaml = @"
+            <StackPanel
+                xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                <Button x:Name='normalButton' Style='{StaticResource NavigationBackButtonNormalStyle}' />
+                <Button x:Name='smallButton' Style='{StaticResource NavigationBackButtonSmallStyle}' />
+            </StackPanel>";
+
+        private FrameworkElement LoadIntoContent(string xaml)
+        {
+            FrameworkElement root = null;
+            RunOnUIThread.Execute(() =>
+            {
+                root = (FrameworkElement)XamlReader.Load(xaml);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return root;
+        }
+
+        private static FrameworkElement GetBackButtonGlyph(Button button)
+        {
+            // The close button is collapsed in Left mode, so its template isn't applied by layout.
+            button.ApplyTemplate();
+            var glyph = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(button, "Content");
+            Verify.IsNotNull(glyph, button.Name + " has a template part named 'Content'");
+            return glyph;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "NavigationBackButtonNormalStyle used from app XAML gets the controls style, not the stale framework copy (#9536).")]
+        public void VerifyNavigationBackButtonNormalStyleFromAppScopeUsesControlsStyle()
+        {
+            VerifyNavigationBackButtonNormalStyleFromAppScopeHelper();
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false}")]
+        [TestProperty("Description", "Same as VerifyNavigationBackButtonNormalStyleFromAppScopeUsesControlsStyle, with the non-optimized (OldStyles) resources.")]
+        public void VerifyNavigationBackButtonNormalStyleFromAppScopeUsesControlsStyle_OldStyles()
+        {
+            VerifyNavigationBackButtonNormalStyleFromAppScopeHelper();
+        }
+
+        private void VerifyNavigationBackButtonNormalStyleFromAppScopeHelper()
+        {
+            var root = LoadIntoContent(BackButtonStylesFromAppScopeXaml);
+            RunOnUIThread.Execute(() =>
+            {
+                var normalButton = (Button)root.FindName("normalButton");
+                var glyph = GetBackButtonGlyph(normalButton);
+                Verify.IsTrue(glyph is AnimatedIcon, "NavigationBackButtonNormalStyle draws its glyph with an AnimatedIcon, actual: " + glyph.GetType().Name);
+                Verify.AreEqual(new Thickness(4, 2, 4, 2), normalButton.Margin, "NavigationBackButtonNormalStyle Margin");
+                Verify.AreNotEqual(new CornerRadius(0), normalButton.CornerRadius, "NavigationBackButtonNormalStyle has rounded corners");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "NavigationBackButtonSmallStyle used from app XAML doesn't draw a bigger glyph than NavigationBackButtonNormalStyle (#8636).")]
+        public void VerifyNavigationBackButtonSmallStyleFromAppScopeIsNotBiggerThanNormal()
+        {
+            VerifyNavigationBackButtonSmallStyleFromAppScopeHelper();
+        }
+
+        [TestMethod]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false}")]
+        [TestProperty("Description", "Same as VerifyNavigationBackButtonSmallStyleFromAppScopeIsNotBiggerThanNormal, with the non-optimized (OldStyles) resources.")]
+        public void VerifyNavigationBackButtonSmallStyleFromAppScopeIsNotBiggerThanNormal_OldStyles()
+        {
+            VerifyNavigationBackButtonSmallStyleFromAppScopeHelper();
+        }
+
+        private void VerifyNavigationBackButtonSmallStyleFromAppScopeHelper()
+        {
+            var root = LoadIntoContent(BackButtonStylesFromAppScopeXaml);
+            RunOnUIThread.Execute(() =>
+            {
+                var normalButton = (Button)root.FindName("normalButton");
+                var smallButton = (Button)root.FindName("smallButton");
+                var normalGlyph = GetBackButtonGlyph(normalButton);
+                var smallGlyph = GetBackButtonGlyph(smallButton);
+                Log.Comment($"Normal glyph {normalGlyph.GetType().Name} {normalGlyph.ActualWidth}x{normalGlyph.ActualHeight}, FontSize {normalButton.FontSize}; " +
+                    $"Small glyph {smallGlyph.GetType().Name} {smallGlyph.ActualWidth}x{smallGlyph.ActualHeight}, FontSize {smallButton.FontSize}");
+
+                Verify.IsLessThanOrEqual(smallGlyph.ActualWidth, normalGlyph.ActualWidth, "Small back button glyph width <= Normal back button glyph width");
+                Verify.AreEqual(normalButton.FontSize, smallButton.FontSize, "Small and Normal back button FontSize");
+                Verify.IsTrue(smallGlyph is AnimatedIcon, "NavigationBackButtonSmallStyle draws its glyph with an AnimatedIcon, actual: " + smallGlyph.GetType().Name);
+                Verify.AreEqual(new Thickness(4, 2, 0, 2), smallButton.Margin, "NavigationBackButtonSmallStyle Margin");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A NavigationView template defined in app XAML that references NavigationBackButtonNormalStyle gets the same back/close button style as the default template (#10973).")]
+        public void VerifyNavigationViewTemplateFromAppScopeUsesControlsBackButtonStyle()
+        {
+            var root = LoadIntoContent(@"
+                <StackPanel
+                    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    <controls:NavigationView x:Name='defaultNavView' IsBackButtonVisible='Visible' PaneDisplayMode='Left' Width='400' Height='200' />
+                    <controls:NavigationView x:Name='appTemplatedNavView' IsBackButtonVisible='Visible' PaneDisplayMode='Left' Width='400' Height='200'>
+                        <controls:NavigationView.Style>
+                            <Style TargetType='controls:NavigationView'>
+                                <Setter Property='Template'>
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType='controls:NavigationView'>
+                                            <Grid>
+                                                <StackPanel HorizontalAlignment='Left' VerticalAlignment='Top'>
+                                                    <Button x:Name='NavigationViewBackButton' Style='{StaticResource NavigationBackButtonNormalStyle}' />
+                                                    <Button x:Name='NavigationViewCloseButton' Style='{StaticResource NavigationBackButtonNormalStyle}' />
+                                                </StackPanel>
+                                                <SplitView x:Name='RootSplitView' DisplayMode='Inline'
+                                                    IsPaneOpen='{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsPaneOpen, Mode=TwoWay}' />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </controls:NavigationView.Style>
+                    </controls:NavigationView>
+                </StackPanel>");
+
+            RunOnUIThread.Execute(() =>
+            {
+                var defaultNavView = (NavigationView)root.FindName("defaultNavView");
+                var appTemplatedNavView = (NavigationView)root.FindName("appTemplatedNavView");
+
+                var defaultBackButton = (Button)VisualTreeUtils.FindVisualChildByName(defaultNavView, "NavigationViewBackButton");
+                Verify.IsNotNull(defaultBackButton, "Default template back button");
+                Verify.IsTrue(GetBackButtonGlyph(defaultBackButton) is AnimatedIcon, "Default template back button draws an AnimatedIcon");
+
+                foreach (var partName in new[] { "NavigationViewBackButton", "NavigationViewCloseButton" })
+                {
+                    var button = (Button)VisualTreeUtils.FindVisualChildByName(appTemplatedNavView, partName);
+                    Verify.IsNotNull(button, "App template " + partName);
+                    var glyph = GetBackButtonGlyph(button);
+                    Verify.IsTrue(glyph is AnimatedIcon, "App template " + partName + " draws its glyph with an AnimatedIcon, actual: " + glyph.GetType().Name);
+                    Verify.AreEqual(defaultBackButton.Margin, button.Margin, "App template " + partName + " Margin matches the default template");
+                    Verify.AreEqual(defaultBackButton.CornerRadius, button.CornerRadius, "App template " + partName + " CornerRadius matches the default template");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Negative control: page and Application resources that define NavigationBackButtonNormalStyle still win over the built-in style.")]
+        public void VerifyAppOverridesOfNavigationBackButtonStyleStillWin()
+        {
+            var root = LoadIntoContent(@"
+                <StackPanel
+                    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                    <StackPanel.Resources>
+                        <Style x:Key='NavigationBackButtonNormalStyle' TargetType='Button'>
+                            <Setter Property='Tag' Value='PageOverride' />
+                        </Style>
+                    </StackPanel.Resources>
+                    <Button x:Name='pageButton' Style='{StaticResource NavigationBackButtonNormalStyle}' />
+                </StackPanel>");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PageOverride", ((Button)root.FindName("pageButton")).Tag, "Page resource override wins");
+            });
+
+            const string appKey = "NavigationBackButtonSmallStyle";
+            RunOnUIThread.Execute(() =>
+            {
+                var appOverride = new Style(typeof(Button));
+                appOverride.Setters.Add(new Setter(FrameworkElement.TagProperty, "AppOverride"));
+                Application.Current.Resources[appKey] = appOverride;
+            });
+            try
+            {
+                root = LoadIntoContent(BackButtonStylesFromAppScopeXaml);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("AppOverride", ((Button)root.FindName("smallButton")).Tag, "Application.Resources override wins");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.Resources.Remove(appKey));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Negative control: PaneToggleButtonStyle (already in XamlControlsResources) resolves to the controls style from app XAML.")]
+        public void VerifyPaneToggleButtonStyleFromAppScopeUsesControlsStyle()
+        {
+            var root = LoadIntoContent(@"
+                <StackPanel
+                    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                    <Button x:Name='toggleButton' Style='{StaticResource PaneToggleButtonStyle}' />
+                </StackPanel>");
+            RunOnUIThread.Execute(() =>
+            {
+                var icon = VisualTreeUtils.FindVisualChildByName((Button)root.FindName("toggleButton"), "Icon");
+                Verify.IsNotNull(icon, "PaneToggleButtonStyle template part 'Icon'");
+                Verify.IsTrue(icon is AnimatedIcon, "PaneToggleButtonStyle draws an AnimatedIcon, actual: " + icon.GetType().Name);
+            });
+        }
+
         [TestMethod]
         public void VerifyPaneDisplayModeAndDisplayModeMapping()
         {
