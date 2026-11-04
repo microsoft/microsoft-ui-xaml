@@ -118,6 +118,7 @@ namespace MUXControlsTestApp
     {
         private readonly ObservableCollection<TableViewTestPerson> _basicItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
+        private readonly ObservableCollection<TableViewTestPerson> _cellControlsItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
         private TableViewSource _groupedSource;
         private int _addedColumnCount;
@@ -148,6 +149,11 @@ namespace MUXControlsTestApp
                 _scrollingItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
             }
 
+            for (int i = 0; i < Facts.CellControlsItemCount; i++)
+            {
+                _cellControlsItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
+            }
+
             for (int i = 0; i < Facts.GroupedItemCount; i++)
             {
                 _groupedItems.Add(new TableViewTestPerson(i, Facts.GroupedName(i), Facts.GroupedAge(i), Facts.CityOf(i)));
@@ -167,6 +173,7 @@ namespace MUXControlsTestApp
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
+            CellControlsTableView.ItemsSource = _cellControlsItems;
             GroupedTableView.ItemsSource = _groupedSource;
 
             // Reports the column each edit opens on. Appends rather than overwrites so a test can tell a
@@ -870,23 +877,71 @@ namespace MUXControlsTestApp
         // direct click cannot do while the control holds pointer capture.
         private void OnDelayedUnloadClick(object sender, RoutedEventArgs e)
         {
-            var unloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-            unloadTimer.Tick += (s, args) =>
+            RunAfterDelay(() =>
             {
-                unloadTimer.Stop();
                 BasicTableHost.Children.Remove(BasicTableView);
                 StatusTextBlock.Text = "Unloaded";
-
-                var reloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-                reloadTimer.Tick += (s2, args2) =>
+                RunAfterDelay(() =>
                 {
-                    reloadTimer.Stop();
                     BasicTableHost.Children.Add(BasicTableView);
                     StatusTextBlock.Text = "Reloaded";
-                };
-                reloadTimer.Start();
+                });
+            });
+        }
+
+        private static void RunAfterDelay(Action action)
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+            timer.Tick += (s, args) =>
+            {
+                timer.Stop();
+                action();
             };
-            unloadTimer.Start();
+            timer.Start();
+        }
+
+        private void OnDelayedGripperCaptureLossClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                foreach (var gripper in FindDescendants<Microsoft.UI.Private.Controls.ResizeGripper>(BasicTableView))
+                {
+                    gripper.ReleasePointerCaptures();
+                }
+                StatusTextBlock.Text = "Gripper capture released";
+            });
+        }
+
+        private void OnDelayedDisableClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                BasicTableView.IsEnabled = false;
+                StatusTextBlock.Text = "Disabled";
+                RunAfterDelay(() =>
+                {
+                    BasicTableView.IsEnabled = true;
+                    StatusTextBlock.Text = "Enabled";
+                });
+            });
+        }
+
+        private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
+        {
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is T typed)
+                {
+                    yield return typed;
+                }
+
+                foreach (var nested in FindDescendants<T>(child))
+                {
+                    yield return nested;
+                }
+            }
         }
 
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
@@ -924,6 +979,15 @@ namespace MUXControlsTestApp
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
         private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
+        private void OnGoToCellControlsClick(object sender, RoutedEventArgs e) => ShowTableHost(CellControlsTableHost);
+
+        private void OnToggleCellControlsHeadersClick(object sender, RoutedEventArgs e)
+        {
+            CellControlsTableView.HeadersVisibility = CellControlsTableView.HeadersVisibility == TableViewHeadersVisibility.None
+                ? TableViewHeadersVisibility.Column
+                : TableViewHeadersVisibility.None;
+        }
+
         private void ShowTableHost(FrameworkElement host)
         {
             BasicTableHost.Visibility = Visibility.Collapsed;
@@ -933,6 +997,7 @@ namespace MUXControlsTestApp
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
             ContextMenuTableHost.Visibility = Visibility.Collapsed;
+            CellControlsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 
@@ -985,6 +1050,21 @@ namespace MUXControlsTestApp
             if (BasicTableView.Columns.Count > 0)
             {
                 BasicTableView.Columns.RemoveAt(BasicTableView.Columns.Count - 1);
+            }
+        }
+
+        // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
+        {
+            if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))
+            {
+                ScoreColumn.MinWidth = ScoreColumn.ActualWidth;
+                ScoreColumn.MaxWidth = ScoreColumn.ActualWidth;
+            }
+            else
+            {
+                ScoreColumn.ClearValue(TableViewColumn.MaxWidthProperty);
+                ScoreColumn.ClearValue(TableViewColumn.MinWidthProperty);
             }
         }
 

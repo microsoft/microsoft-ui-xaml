@@ -427,11 +427,13 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
             using (var borderContextRequested = new EventTester<Border, ContextRequestedEventArgs>(border, "ContextRequested", contextRequestedHandler))
             using (var rootContextRequested = EventTester<Grid, ContextRequestedEventArgs>.FromRoutedEvent(root, "ContextRequested", (t, u) => { } /*No action required*/))
             {
-                TestServices.InputHelper.ClickMouseButton(MouseButton.Right, border);
+                TestServices.InputHelper.MouseButtonDown(border, 0, 0, MouseButton.Right);
                 TestServices.WindowHelper.WaitForIdle();
+                TestServices.InputHelper.MouseButtonUp(border, 0, 0, MouseButton.Right);
 
                 borderContextRequested.Wait();
                 rootContextRequested.Wait();
+                TestServices.WindowHelper.WaitForIdle();
                 UIExecutor.Execute(() =>
                 {
                     Verify.IsTrue(rootContextRequested.HasFired);

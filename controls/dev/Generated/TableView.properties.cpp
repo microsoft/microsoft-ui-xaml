@@ -16,6 +16,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 GlobalDependencyProperty TableViewProperties::s_AlternatingRowBackgroundProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_CanUserResizeColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_CanUserSortColumnsProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_ColumnHeaderStyleProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_DensityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr };
@@ -73,6 +74,17 @@ void TableViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnCanUserSortColumnsPropertyChanged));
+    }
+    if (!s_ColumnHeaderStyleProperty)
+    {
+        s_ColumnHeaderStyleProperty =
+            InitializeDependencyProperty(
+                L"ColumnHeaderStyle",
+                winrt::name_of<winrt::Style>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Style>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnColumnHeaderStylePropertyChanged));
     }
     if (!s_ColumnsProperty)
     {
@@ -213,6 +225,7 @@ void TableViewProperties::ClearProperties()
     s_AlternatingRowBackgroundProperty = nullptr;
     s_CanUserResizeColumnsProperty = nullptr;
     s_CanUserSortColumnsProperty = nullptr;
+    s_ColumnHeaderStyleProperty = nullptr;
     s_ColumnsProperty = nullptr;
     s_DensityProperty = nullptr;
     s_EmptyTemplateProperty = nullptr;
@@ -249,6 +262,14 @@ void TableViewProperties::OnCanUserSortColumnsPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnCanUserSortColumnsPropertyChanged(args);
+}
+
+void TableViewProperties::OnColumnHeaderStylePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnColumnHeaderStylePropertyChanged(args);
 }
 
 void TableViewProperties::OnColumnsPropertyChanged(
@@ -368,6 +389,19 @@ void TableViewProperties::CanUserSortColumns(bool value)
 bool TableViewProperties::CanUserSortColumns()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_CanUserSortColumnsProperty));
+}
+
+void TableViewProperties::ColumnHeaderStyle(winrt::Style const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_ColumnHeaderStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Style TableViewProperties::ColumnHeaderStyle()
+{
+    return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_ColumnHeaderStyleProperty));
 }
 
 void TableViewProperties::Columns(winrt::IVector<winrt::TableViewColumn> const& value)

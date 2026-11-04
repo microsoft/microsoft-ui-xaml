@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ItemsControl.g.h"
 #include "ItemsControlAutomationPeer.g.h"
 #include "ItemCollection.g.h"
@@ -245,7 +246,11 @@ _Check_return_
 
     if (pNewValue != nullptr && !spSource)
     {
-        IFC_RETURN(E_INVALIDARG);
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG,
+            ERROR_PROPERTY_REQUIRES_INTERFACE,
+            XSTRING_PTR_EPHEMERAL(L"ItemsControl.ItemsSource"),
+            L"IBindableIterable or IIterable<IInspectable>"));
     }
 
     ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spItems;
@@ -1812,7 +1817,8 @@ ItemsControl::PrepareItemContainer(
     _In_ xaml::IDependencyObject* pContainer,
     _In_ IInspectable* pItem)
 {
-    TracePrepareContainerBegin();
+    XamlTelemetry::PrepareContainerBegin(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
+
     HRESULT hr = S_OK;
     ctl::ComPtr<IGroupItem> spGroupItem;
 
@@ -1842,7 +1848,7 @@ ItemsControl::PrepareItemContainer(
     }
 
 Cleanup:
-    TracePrepareContainerEnd();
+    XamlTelemetry::PrepareContainerEnd(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
     RRETURN(hr);
 }
 

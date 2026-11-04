@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewToolTipHelpers.h"
@@ -344,6 +345,13 @@ void TableView::OnColumnsVectorChanged(
         // re-resolve to pick up the new fixed total and star share.
         InvalidateMeasure();
     }
+
+    // A column that left may be added to another TableView before the queued rebuild runs. Last,
+    // because releasing runs app code that can change Columns again.
+    if (change != winrt::CollectionChange::ItemInserted)
+    {
+        ReleaseHeaderCells(m_headerHost.get(), HeaderRelease::DetachedColumns);
+    }
 }
 
 void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
@@ -496,6 +504,17 @@ void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
     // grow-only accumulator -- a global reset would shrink UNRELATED Auto columns to only the
     // currently-realized rows. Resetting even when the column is currently Pixel/Star preserves the
     // "switched back to Auto" stale-width safeguard for that one column.
+    // An old UIElement Header is the app's again now, as with ContentControl.Content, not after the
+    // rebuild. Any other content stays until the rebuild, so the header does not go blank meanwhile.
+    auto const headerHost = m_headerHost.get();
+    if (auto const headerCell = TableViewCellsPanel::CellForColumn(headerHost, column).try_as<winrt::TableViewColumnHeader>())
+    {
+        if (headerCell.Content().try_as<winrt::UIElement>()
+            && !winrt::get_self<TableViewColumnHeader>(headerCell)->OwnsContentInternal())
+        {
+            ReleaseHeaderCells(headerHost, HeaderRelease::Column, column);
+        }
+    }
     QueueRebuildHeaders();
     if (column)
     {

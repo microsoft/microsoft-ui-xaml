@@ -98,14 +98,7 @@ namespace ctl
 
         IFACEMETHODIMP GetRuntimeClassName(_Out_ HSTRING *pClassName) final
         {
-            if (m_pControllingUnknown)
-            {
-                return m_pControllingUnknown->GetRuntimeClassName(pClassName);
-            }
-            else
-            {
-                return TBASE::GetRuntimeClassNameImpl(pClassName);
-            }
+            return GetRuntimeClassNameBase(pClassName);
         }
 
         IFACEMETHODIMP GetTrustLevel(_Out_ TrustLevel *trustLvl) final

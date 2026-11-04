@@ -99,9 +99,9 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Opt-in cell editing (`IsReadOnly = false` on the control; per-column `IsReadOnly`). — **cell editing**
 - Editors supplied by the column: `TableViewTextColumn` produces a `TextBox`; `TableViewTemplateColumn` uses `CellEditingTemplate`. — **cell editing**
 - Gestures: double-click / double-tap and `F2` begin an edit; `Enter` commits; `Esc` cancels; moving focus off the cell commits. — **cell editing**
-- Programmatic API: `BeginEdit`, `CommitEdit`, `CancelEdit`, `IsEditing`, `CurrentItem`/`CurrentColumn`/`SetCurrentCell`. — **cell editing**
-- Vetoable lifecycle events `BeginningEdit`, `CellEditEnding`, `RowEditEnding`, plus `EditEnded`; the two `*EditEnding` args expose `GetDeferral()` so a handler can validate or save asynchronously without blocking the UI thread. — **cell editing**
-- Rollback: `ITableViewEditableItem` on the data item when the app wants to own the transaction; otherwise the control snapshots the edited value and restores it on cancel. — **cell editing**
+- Programmatic API: `CommitEdit()` and `CancelEdit()` close the open cell edit and return `false` when it stays open (veto or failed validation); read-only `IsEditing` reports whether a cell editor is open. Editing **starts only from user gestures**: there is no public `BeginEdit` and no public current-cell surface (`CurrentItem` / `CurrentColumn` / `SetCurrentCell`) in this release. — **cell editing** · programmatic begin + current cell *deferred* (land together when a scenario such as a context menu or view-model command needs them)
+- Vetoable lifecycle events `BeginningEdit` and `CellEditEnding`. Both are synchronous: a handler sets `Cancel` before it returns, and there is no `GetDeferral()`. `CellEditEnding` reports the outcome through `EditAction` and is raised for every close, so there is no separate post-close event. — **cell editing** · `RowEditEnding`, `EditEnded` and async deferrals *deferred*
+- Rollback: the built-in text editor uses `UpdateSourceTrigger=Explicit`, so a cancelled edit never reaches the data item; application editing templates must buffer the same way. — **cell editing** · item-owned transactions (`ITableViewEditableItem`, the WinRT counterpart of `IEditableObject`) *deferred* with row editing
 - Validation: `INotifyDataErrorInfo` on the data item, scoped to the property the column edits, blocks a commit. — **cell editing**
 - Multi-cell row transactions (`CancelEdit(Row)` rolling back siblings already committed). — *deferred*
 - Editing a11y announcements (live-region/UIA notification on begin/commit/cancel). — *deferred, needs localized strings*
@@ -112,7 +112,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Column virtualization intentionally omitted (typical ~5–50 columns).
 
 ### Styling & theming
-- Light / Dark / High Contrast theme tokens + inline fallbacks (`#29FFFFFF` dark gridline). — **PR2** (full self-themed Theme-XBF emission deferred)
+- Light / Dark / High Contrast theme tokens + inline fallbacks (`DividerStrokeColorDefault` gridlines, `CardStrokeColorDefault` outer border). — **PR2** (full self-themed Theme-XBF emission deferred)
 - Cell-level styling: custom cells via `TableViewTemplateColumn` + built-in text-cell defaults (left, vertically centered). A public per-column alignment/weight API — **deferred (PR3+)**.
 
 ### Tooltips

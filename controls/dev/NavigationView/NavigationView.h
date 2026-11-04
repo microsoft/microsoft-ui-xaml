@@ -75,7 +75,7 @@ public:
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
-    void TopNavigationViewItemContentChanged();
+    void TopNavigationViewItemContentChanged(bool forceInvalidateWidthCache = false);
 
     void CoerceToGreaterThanZero(double& value);
 
@@ -97,15 +97,19 @@ public:
 
     // Selection handling functions
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
+    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    bool UpdateSelectedItemFromMenuItems(const winrt::ItemsSourceView& menuItems, bool foundFirstSelected = false);
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
+
+    // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
+    bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
 
 private:
 
     void OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     // Selection handling functions
-    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
@@ -126,6 +130,7 @@ private:
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data, bool isFooterRepeater);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
+    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::IInspectable& items, const winrt::IInspectable& data, const winrt::IndexPath& ip);
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
@@ -252,7 +257,6 @@ private:
     void UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items);
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
-    bool UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
     bool m_InitialNonForcedModeUpdate{ true };
 
     void UpdateRepeaterItemsSource(bool forceSelectionModelUpdate);
@@ -481,6 +485,8 @@ private:
     NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
+    // Unlike m_appliedTemplate, this is never reset, so it tells first-time setup apart from re-templating.
+    bool m_templateAppliedOnce{ false };
 
     // Identifies whenever a call is the result of OnApplyTemplate
     bool m_fromOnApplyTemplate{ false };
@@ -526,4 +532,3 @@ private:
 
     double m_OpenPaneLength{ 320.0 };
 };
-

@@ -77,6 +77,25 @@ bool TableView::HasRowsSource() const
 
 // ----- SelectionModel plumbing -----
 
+template <typename Call>
+void TableView::CallSelectionModel(Call&& call)
+{
+    m_selectionModelAppFault = {};
+    ++m_selectionModelCallDepth;
+    auto const depth = wil::scope_exit([this]() noexcept { --m_selectionModelCallDepth; });
+    try
+    {
+        std::forward<Call>(call)();
+        // A hop whose exception SelectionModel swallowed must not keep the app's error object alive.
+        m_selectionModelAppFault = {};
+    }
+    catch (...)
+    {
+        TableViewTip::RestoreAppFault(std::exchange(m_selectionModelAppFault, {}));
+        throw;
+    }
+}
+
 void TableView::EnsureSelectionModel()
 {
     if (m_selectionModel)
@@ -118,7 +137,7 @@ void TableView::UpdateSelectionModelSource()
     // Source has no identity short-circuit: assigning the same source again clears the selection.
     if (m_selectionModel.Source() != rowsSource)
     {
-        m_selectionModel.Source(rowsSource);
+        CallSelectionModel([&]() { m_selectionModel.Source(rowsSource); });
     }
 }
 
@@ -281,54 +300,63 @@ void TableView::ApplySelection(int32_t index, bool measureTip)
     const auto version = m_selectionVersion;
     const auto sourceGeneration = m_rowMetadataGeneration;
     ActionTip tip{ *this, TableViewTip::Operation::Selection, TableViewTip::Stage::Selection, accepted };
-    if (index < 0 && !m_selectionModel)
+    try
     {
-        // Nothing selected and no model yet - nothing to clear, but publish so the projections
-        // start out agreeing with the model.
-        m_stickySelectedItem.set(nullptr);
-        m_stickySelectedIdentity.clear();
-        PushSelectionProperties();
-        return;
-    }
-
-    EnsureSelectionModel();
-
-    if (index < 0)
-    {
-        m_selectionModel.ClearSelection();
-    }
-    else
-    {
-        m_selectionModel.Select(index);
-    }
-
-    // Capture the intentional selection by object identity. This is the single selection writer, so
-    // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
-    // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
-    // runs under the restore flag, keeping it for the identity restore.
-    m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
-    m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
-
-    // The model raises SelectionChanged only when the selection actually moved; publish here too so
-    // a rejected write still leaves the DPs agreeing with the model.
-    PushSelectionProperties();
-    if (accepted)
-    {
-        if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
-            m_lastPublishedIndex == index)
+        if (index < 0 && !m_selectionModel)
         {
-            tip.Complete();
+            // Nothing selected and no model yet - nothing to clear, but publish so the projections
+            // start out agreeing with the model.
+            m_stickySelectedItem.set(nullptr);
+            m_stickySelectedIdentity.clear();
+            PushSelectionProperties();
+            return;
+        }
+
+        EnsureSelectionModel();
+
+        if (index < 0)
+        {
+            CallSelectionModel([&]() { m_selectionModel.ClearSelection(); });
         }
         else
         {
-            tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+            CallSelectionModel([&]() { m_selectionModel.Select(index); });
         }
+
+        // Capture the intentional selection by object identity. This is the single selection writer, so
+        // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
+        // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
+        // runs under the restore flag, keeping it for the identity restore.
+        m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
+        m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
+
+        // The model raises SelectionChanged only when the selection actually moved; publish here too so
+        // a rejected write still leaves the DPs agreeing with the model.
+        PushSelectionProperties();
+        if (accepted)
+        {
+            if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
+                m_lastPublishedIndex == index)
+            {
+                tip.Complete();
+            }
+            else
+            {
+                tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+            }
+        }
+    }
+    catch (...)
+    {
+        tip.Escaping(TableViewTip::CurrentFault());
+        throw;
     }
 }
 
 void TableView::OnSelectionModelSelectionChanged(
     const winrt::SelectionModel& /*sender*/,
     const winrt::SelectionModelSelectionChangedEventArgs& /*args*/)
+try
 {
     const int32_t newIndex = SelectedIndexInternal();
     auto const newItem = SelectedItemInternal();
@@ -387,6 +415,13 @@ void TableView::OnSelectionModelSelectionChanged(
     RaiseSelectionAutomationEvents(deselectedRow, deselectedItem, selectedRow, selectedItem);
     RaiseSelectionChanged(newItem);
 }
+catch (...)
+{
+    // SelectionModel called this through the ABI, which drops the exception's tag; CallSelectionModel restores it.
+    // Outside such a call nothing would consume it.
+    if (m_selectionModelCallDepth) { m_selectionModelAppFault = TableViewTip::CurrentAppFaultHop(); }
+    throw;
+}
 
 void TableView::PushSelectionProperties()
 {
@@ -397,14 +432,22 @@ void TableView::PushSelectionProperties()
     const int32_t index = SelectedIndexInternal();
     auto const item = SelectedItemForIndex(index);
 
-    if (SelectedIndex() != index)
+    // Only app property observers and bindings run from these writes; a throw from them is the app's.
+    try
     {
-        SelectedIndex(index);
-    }
+        if (SelectedIndex() != index)
+        {
+            SelectedIndex(index);
+        }
 
-    if (!SameInspectableIdentity(SelectedItem(), item))
+        if (!SameInspectableIdentity(SelectedItem(), item))
+        {
+            SelectedItem(item);
+        }
+    }
+    catch (...)
     {
-        SelectedItem(item);
+        TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback);
     }
 }
 
@@ -460,9 +503,8 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
 
-    AppCalloutTip callout{ *this, TableViewTip::Stage::Selection, TableViewTip::AppFaultKind::Callback };
     try { m_selectionChangedEventSource(*this, args); }
-    catch (...) { callout.Fault(winrt::to_hresult()); throw; }
+    catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 }
 
 void TableView::RaiseSelectionAutomationEvents(

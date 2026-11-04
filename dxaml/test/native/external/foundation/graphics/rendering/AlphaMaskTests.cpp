@@ -278,6 +278,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AlphaMaskTests::RenderTransforms()
     {
+        // If this test runs in a loop in WPF mode, something causes a few pixels of the text alpha-mask
+        // surfaces to differ by one grayscale value. This difference changes the text alpha-mask CRCs.
+        // Reinitialize Xaml so each invocation starts with the same rendering state.
+        TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->InitializeXaml();
+
         VerificationSettings verificationSettings;
         VerifyAlphaMasksInFile(
             GetRenderingPath() + L"AlphaMaskRenderTransforms.xaml",

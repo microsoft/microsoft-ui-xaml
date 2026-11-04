@@ -4,7 +4,7 @@
     <Visual />
     <Visual />
     <Visual Tag="PrependVisual">
-      <Visual Tag="PrimaryVisual" SizeX="320" SizeY="240">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
         <Visual Tag="ContentVisual">
           <wucSpriteVisual SizeX="200" SizeY="50.4" BorderMode="Soft">
             <MaskBrush>

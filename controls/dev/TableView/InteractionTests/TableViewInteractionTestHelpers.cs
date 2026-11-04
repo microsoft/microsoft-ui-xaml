@@ -721,6 +721,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return value;
         }
 
+        internal static bool WaitForStatusText(string expected, int timeoutMs = 10000)
+        {
+            var status = FindElement.ById<TextBlock>(StatusText);
+            string value = null;
+            DateTime deadline = DateTime.Now.AddMilliseconds(timeoutMs);
+            while (status != null)
+            {
+                value = status.DocumentText;
+                if (value == expected || DateTime.Now >= deadline)
+                {
+                    break;
+                }
+                Wait.ForMilliseconds(100);
+            }
+
+            Log.Comment("Status = '{0}' (expected '{1}').", value, expected);
+            return value == expected;
+        }
+
         internal static string ReadEditReport() => ReadPageReadout(EditColumnReport);
 
         internal static string ReadEditorProbe() => ReadPageReadout(EditorProbe);

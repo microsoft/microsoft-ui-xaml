@@ -7,6 +7,8 @@
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewGroupHeader.h"
+#include "TableViewCell.h"
+#include "TableViewColumnHeader.h"
 
 #include <algorithm>
 #include <cmath>
@@ -144,6 +146,34 @@ void TableView::RequestColumnWidthResolve()
     InvalidateMeasure();
 }
 
+bool TableView::HasVisibleAutoColumn()
+{
+    if (auto const columns = Columns())
+    {
+        for (auto const& column : columns)
+        {
+            if (column &&
+                column.Visibility() == winrt::Visibility::Visible &&
+                column.Width().GridUnitType == winrt::GridUnitType::Auto &&
+                winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// A newly prepared row's first measure raises no width-change signal, so Auto columns need this
+// table pass to pick its cells up.
+void TableView::InvalidateMeasureForRowRealizationChange()
+{
+    if (HasVisibleAutoColumn())
+    {
+        InvalidateMeasure();
+    }
+}
+
 // Reset the monotonic Auto desired widths. The next table measure pass remeasures the template
 // subtree, pulls header + realized-row measured widths, and resolves once from those caches.
 void TableView::ResetColumnDesiredWidths()
@@ -206,23 +236,29 @@ void TableView::ResolveColumnWidths()
     std::vector<winrt::TableViewColumn> starColumns;
 
     // Collect the currently realized, BOUND rows ONCE (a single repeater walk) and reuse the list for
-    // every Auto column below, instead of re-walking the visual tree (GetChild + try_as per row) once
-    // per Auto column.
+    // every Auto column below. Lazy, so tables without an Auto column skip the walk entirely.
     std::vector<winrt::TableViewRow> realizedRows;
-    if (auto repeater = m_rowsRepeater.get())
+    bool realizedRowsCollected = false;
+    auto ensureRealizedRows = [this, &realizedRows, &realizedRowsCollected]()
     {
-        ForEachRealizedRow([&realizedRows, &repeater](winrt::TableViewRow const& row)
+        if (realizedRowsCollected)
         {
-            // Skip pooled/recycled rows: ItemsRepeater keeps them parented in the pool, but they carry
-            // stale measured widths (GetElementIndex < 0). Consuming them would re-pin Auto columns at
-            // the previous width after ItemsSource shrinks, making ResetColumnDesiredWidths a no-op
-            // (grow-only keeps the max). Only genuinely bound rows contribute to Auto sizing.
-            if (repeater.GetElementIndex(row) >= 0)
+            return;
+        }
+        realizedRowsCollected = true;
+        if (auto repeater = m_rowsRepeater.get())
+        {
+            ForEachRealizedRow([&realizedRows, &repeater](winrt::TableViewRow const& row)
             {
-                realizedRows.push_back(row);
-            }
-        });
-    }
+                // Skip pooled rows (GetElementIndex < 0): their stale widths would re-pin Auto
+                // columns after ItemsSource shrinks.
+                if (repeater.GetElementIndex(row) >= 0)
+                {
+                    realizedRows.push_back(row);
+                }
+            });
+        }
+    };
 
     for (auto const& column : columns)
     {
@@ -261,6 +297,7 @@ void TableView::ResolveColumnWidths()
             }
 
             double rowsMeasured = 0.0;
+            ensureRealizedRows();
             for (auto const& row : realizedRows)
             {
                 // Ask the row for its cell's measured width instead of reaching into its panel.
@@ -632,7 +669,30 @@ void TableView::RefreshResizeGripperAvailability()
             continue;
         }
 
-        gripper.Visibility(IsColumnResizePinned(column) ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+        auto const visibility = IsColumnResizePinned(column) ? winrt::Visibility::Collapsed : winrt::Visibility::Visible;
+        if (gripper.Visibility() == visibility)
+        {
+            continue;
+        }
+
+        // Only a peer a client already holds is notified; FromElement would create one.
+        auto const header = headerCell.try_as<winrt::TableViewColumnHeader>();
+        auto const headerPeer = header && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
+            ? winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal() : nullptr;
+        // The pin state is already updated, so the old value comes from the visibility being replaced.
+        const bool couldResize = gripper.Visibility() == winrt::Visibility::Visible && IsColumnResizeAllowed(column);
+        gripper.Visibility(visibility);
+
+        if (headerPeer)
+        {
+            if (const bool canResize = CanResizeColumnFromAutomation(column); canResize != couldResize)
+            {
+                headerPeer.RaisePropertyChangedEvent(
+                    winrt::TransformPatternIdentifiers::CanResizeProperty(),
+                    winrt::box_value(couldResize),
+                    winrt::box_value(canResize));
+            }
+        }
     }
 }
 

@@ -11,9 +11,8 @@
 
     <Page.Resources>
         <!-- snippet -->
-        <!-- The glyph is decorative (Raw); the name carries the row. No Image bound to a path:
-             x:Bind of an empty string to Image.Source throws inside Bindings_Update and blanks
-             the whole template. -->
+        <!-- The glyph is decorative (Raw); the name carries the row. No Image bound to a path: x:Bind of
+             an empty string to Image.Source throws and blanks the whole template. -->
         <DataTemplate x:Key="ProcessNameTemplate" x:DataType="models:ProcessItem">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
                 <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
@@ -113,19 +112,15 @@
                     AutomationProperties.Name="Processes"
                     ItemsSource="{x:Bind Source}"
                     SelectionMode="Single"
-                    Sorted="OnProcessTableSorted"
-                    SelectionChanged="OnSelectionChanged"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
-                    <!-- A data cell is announced by its value ("3.2%"); the screen reader adds
-                         the column name from the header. SortMemberPath names the raw value
-                         behind each template. -->
-                    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
-                    <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
-                    <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent" HeaderToolTip="CPU use per core. Opens sorted highest first"/>
-                    <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB" HeaderToolTip="Working set. Opens sorted highest first"/>
-                    <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps" HeaderToolTip="Disk throughput. Opens sorted highest first"/>
-                    <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps" HeaderToolTip="Network throughput. Opens sorted highest first"/>
+                    <!-- SortMemberPath names the raw value behind each template; a cell is announced by its value. -->
+                    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
+                    <tv:TableViewTemplateColumn Header="Status" Width="130" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
+                    <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="100" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent" HeaderToolTip="CPU use per core. Opens sorted highest first"/>
+                    <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="100" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB" HeaderToolTip="Working set. Opens sorted highest first"/>
+                    <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="100" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps" HeaderToolTip="Disk throughput. Opens sorted highest first"/>
+                    <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="100" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps" HeaderToolTip="Network throughput. Opens sorted highest first"/>
                 </tv:TableView>
                 <!-- /snippet -->
             </Grid>

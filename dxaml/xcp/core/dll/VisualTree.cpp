@@ -434,7 +434,11 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
         goto Cleanup;
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PutRootVisualBegin(pRoot);
+#else
     TracePutRootVisualBegin();
+#endif
 
     // If the public root visual changes, we need to remove and re-add the existing roots so that
     // they use the new public visual as namescope owner if needed, but we don't want to release them.
@@ -520,7 +524,11 @@ Cleanup:
         RECORDFAILURE(ResetRoots(nullptr));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PutRootVisualEnd(pRoot);
+#else
     TracePutRootVisualEnd();
+#endif
 
     return hr;
 }

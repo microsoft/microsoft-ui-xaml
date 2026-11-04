@@ -580,6 +580,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Space and Enter on the focused last group header of a scrolled grouped table toggle it without jumping the viewport away from it.")]
+        public void GroupHeaderKeyboardToggleAtBottomKeepsViewport()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(GroupedPagingPivotItem)) { Verify.Fail(GoToButton(GroupedPagingPivotItem) + " was not found."); return; }
+
+                UIObject table = GetTable(GroupedPagingTable);
+                if (table == null) { return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized group headers and rows."); return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+
+                int lastHeader = (GroupedPagingItemCount - 1) * 2;
+                Verify.AreEqual(lastHeader, FlattenedIndexOfGroupedPagingFocus(table), "Precondition: End then Up focuses the last group header.");
+
+                bool expanded = true;
+                foreach (Key key in new[] { Key.Space, Key.Space, Key.Enter, Key.Enter })
+                {
+                    expanded = !expanded;
+                    UIObject before = FindFocusedRow(GetRowsHost(table));
+                    if (before == null) { Verify.Fail("Precondition: a body container holds focus."); return; }
+                    var beforeBounds = before.BoundingRectangle;
+
+                    KeyboardHelper.PressKey(key);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(lastHeader, FlattenedIndexOfGroupedPagingFocus(table), "Focus must stay on the toggled header after " + key + ".");
+                    UIObject after = FindFocusedRow(GetRowsHost(table));
+                    if (after == null) { Verify.Fail("Focus must stay in the body after " + key + "."); return; }
+                    Verify.AreEqual(expanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                        new ExpandCollapseImplementation(after).ExpandCollapseState, key + " must toggle the group.");
+                    var afterBounds = after.BoundingRectangle;
+                    Log.Comment("{0}: header bounds {1} -> {2}, table {3}.", key, beforeBounds, afterBounds, table.BoundingRectangle);
+
+                    Verify.IsTrue(IsFullyInGroupedPagingViewport(table, afterBounds),
+                        string.Format("The toggled header must stay fully in view after {0}: bounds {1}, table {2}.", key, afterBounds, table.BoundingRectangle));
+                    // Collapsing at the end of the extent moves the header down by at most its group's row.
+                    Verify.IsLessThanOrEqual(Math.Abs(afterBounds.Top - beforeBounds.Top), beforeBounds.Height + 1,
+                        string.Format("The viewport must not jump after {0}: header top {1} -> {2}.", key, beforeBounds.Top, afterBounds.Top));
+                }
+            }
+        }
+
         // The flattened index of the focused GroupedPagingTableView container (header 2n, row 2n+1), or -1.
         private static int FlattenedIndexOfGroupedPagingFocus(UIObject table)
         {
@@ -1397,13 +1448,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (IDL:156-158).")]
+        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanSort).")]
         public void HeaderClickDoesNotSortColumnWithCanSortFalse()
         {
-            // TableView.idl:156-158 states the gate as a fact about the CLICK: "Per-column opt-out for the
-            // click-to-sort UX. Default true. When false the header click handler ignores this column;
-            // programmatic SortByColumn still works." No API test can assert that sentence - API 7 can only
-            // cover the programmatic half - so the route test is the only place the opt-out is checked.
+            // The only check of the click half of CanSort; API tests cover SortByColumn/ToggleSortDirection.
             //
             // The ReadOnlyCity column of BasicTableView is authored CanSort="False"; Age is CanSort="True".
             // Clicking Age afterwards is a NEGATIVE CONTROL and is the point of the test: without it, a click
@@ -2373,6 +2421,149 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
                 VerifyFocusedCell(BasicTable, 0, 1, "Down from the Age header must return to the first row's Age cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Up from the first row of a table whose cells host controls moves to the header band, not into a cell control (#12441).")]
+        public void UpFromFirstRowWithCellControlsMovesToHeaderNotIntoCellControl()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Precondition: row 1 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(table).Children[0].HasKeyboardFocus, "Precondition: Up from row 1 lands on row 0 at row level.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Row-level Up from the first row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                UIObject header = FindFocusedHeader(CellControlsTable);
+                Verify.IsNotNull(header, "Up from the first row must move focus to the header band, not into a cell control.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(table));
+                Verify.IsNotNull(bodyFocus, "Down from a header must return to the first row.");
+                if (bodyFocus != null)
+                {
+                    Verify.AreEqual(GetRowsHost(table).Children[0].RuntimeId, bodyFocus.RuntimeId, "Down from a header must land on the FIRST row.");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Down walks every row of a table whose cells host controls and stops on the last row, never focusing a cell control.")]
+        public void DownThroughRowsWithCellControlsStaysOnRowContainers()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                // One extra Down at the end: the last row is a boundary and must keep focus.
+                for (int step = 1; step <= CellControlsItemCount; step++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    int expectedRow = Math.Min(step, CellControlsItemCount - 1);
+                    UIObject focused = UIObject.Focused;
+                    string name = focused == null ? string.Empty : focused.Name;
+                    Log.Comment("Down #{0}: focus on {1} '{2}'.", step, focused == null ? "<none>" : focused.ControlType.ToString(), name);
+                    Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem,
+                        "Row-level Down must keep focus on a row container, not a cell control (step " + step + ").");
+                    Verify.IsTrue(global::System.Text.RegularExpressions.Regex.IsMatch(name, @"\b" + ScrollingName(expectedRow) + @"\b"),
+                        "Down #" + step + " must focus row " + expectedRow + ".");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With column headers hidden, row-level Up on the first row of a table whose cells host controls keeps focus on that row.")]
+        public void UpFromFirstRowWithCellControlsAndHiddenHeadersStaysOnRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                var toggleHeaders = FindElement.ById<Button>(ToggleCellControlsHeadersButton);
+                if (toggleHeaders == null) { Verify.Fail(ToggleCellControlsHeadersButton + " was not found."); return; }
+                toggleHeaders.InvokeAndWait();
+                Wait.ForIdle();
+
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Up from the first row with headers hidden landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus,
+                    "With no header band, Up from the first row must keep focus on that row, not move into a cell control.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Down and Up step over a disabled row of a table whose cells host controls to the next enabled row container.")]
+        public void DownAndUpSkipDisabledRowWithCellControls()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                var disable = FindElement.ById<Button>(DisableFocusedRowButton);
+                if (disable == null) { Verify.Fail(DisableFocusedRowButton + " was not found."); return; }
+                disable.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsFalse(GetRowsHost(FindElement.ById(CellControlsTable)).Children[1].IsEnabled, "Precondition: row 1 should be disabled.");
+
+                GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Down over the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem && focused.IsEnabled,
+                    "Row-level Down over a disabled row must focus an enabled row container, not a cell control.");
+                Verify.IsTrue(focused != null && global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\b" + ScrollingName(2) + @"\b"),
+                    "Row-level Down from row 0 must step over disabled row 1 to row 2.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                focused = UIObject.Focused;
+                Log.Comment("Up over the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem &&
+                    global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\b" + ScrollingName(0) + @"\b"),
+                    "Row-level Up from row 2 must step over disabled row 1 to row 0.");
             }
         }
 
