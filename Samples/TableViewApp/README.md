@@ -20,12 +20,50 @@ seed — the control resolves its own default style and theme resources from the
 
 `TabularControlsResources` is Tabular's own theme-resource dictionary, the exact analogue of
 `XamlControlsResources` for MUXC, and merging it is a normal part of consuming the control set
-rather than a workaround. It is required: `TableView`'s column-header style resolves
-`SortIndicatorForeground` from it, and `SortIndicator` ships in the Tabular DLL rather than in MUXC
-(`controls/Tabular.ProjectImports.targets` is the only importer of `SortIndicator.vcxitems`).
-Without the merge the app throws `XamlParseException 0x802B000A` — "Cannot find a Resource with the
-Name/Key SortIndicatorForeground" — during the first layout pass, which surfaces as a
-`0xC000027B` stowed exception a few seconds after launch.
+rather than a workaround. For the standard defaults, merge it in `App.xaml` after
+`XamlControlsResources` and before application overrides:
+
+```xml
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+Applications can instead supply equivalent resources or a complete custom style/template; no
+particular dictionary object is enforced. Compilation and construction can succeed before a
+required resource lookup fails during initial layout/style realization. The exception message
+remains unchanged: it reports the missing key and parser line/position. The parse failure retains
+HRESULT `0x802B000A`; an unhandled failure can surface as a `0xC000027B` stowed exception.
+
+If a `TableView` is constructed before a `TabularControlsResources` instance has successfully
+completed construction on the same XAML UI thread, the Tabular DLL logs informational setup guidance
+to an attached debugger, at most once for the lifetime of that thread. Construction without an
+attached debugger does not consume the hint. This is advisory, not proof that resources are missing
+or registered. Equivalent resources, custom templates and later registration remain valid. A
+previously constructed dictionary on that thread suppresses the hint even if it was never merged
+or has since been removed.
+
+For the referencing markup path in resource-lookup tracing, enable tracing early in the application
+constructor, before `InitializeComponent`:
+
+```csharp
+this.DebugSettings.IsXamlResourceReferenceTracingEnabled = true;
+InitializeComponent();
+```
+
+The trace can include the consuming document path for deferred templates. It is separate from the
+exception and does not identify where the resource must be defined; application, theme, merged or
+local dictionaries may supply it.
+
+If defaults are already configured, check the key, overrides and matching Tabular DLL/PRI. A missing
+required `DefaultStyleResourceUri` is a deployment/resource-map issue; merging a dictionary cannot
+restore an unavailable package resource. These diagnostics do not register resources automatically
+or change the existing unhandled-error/fail-fast policy.
 
 Each app instantiates `TableView` **twice on purpose**:
 
@@ -36,35 +74,46 @@ Those are separate paths and either can fail alone, so a conformance check wants
 
 ## Build and run
 
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so these apps only
+compile against a locally packed component — `Build.cmd samples` packs it and passes the matching
+version:
+
 ```
-.\initrun.ps1 msb /restore Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /p:Platform=x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-To test a locally built control, pack the component and override the version:
+Building one project on its own resolves the package from the feed instead and fails with
+`CS0234: The type or namespace name 'Tabular' does not exist`. To iterate on a single app, pack once
+and override the version:
 
 ```
 .\pack.component.cmd /version 3.0.0-mylocal
-... /p:WinUIVersion=3.0.0-mylocal
+.\initrun.ps1 msb /restore Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
 ```
+
+NuGet caches by version, so re-pack under a fresh version string after changing the control.
 
 The unpackaged apps run straight from their output directory. The packaged apps produce a loose
 layout; register it with `Add-AppxPackage -Register <outdir>\AppxManifest.xml` and launch from Start.
 
-## Why the C# and C++ apps bind differently
+## The C# and C++ apps bind identically
 
-The C# apps use `TableViewTextColumn.Binding` with a classic `{Binding}` against a plain `Person`
-class. The C++ apps use `TableViewTemplateColumn.CellTemplate` with `x:Bind` against a `Person`
-runtimeclass declared in `MainWindow.idl`.
+All four apps use the same markup and the same code-behind shape: `TableViewTextColumn.Binding`
+with a classic `{Binding}`. Keeping the matrix identical is the point — a difference between the
+cells would make it unclear whether a rendering difference came from the language, the packaging,
+or the control.
 
-That difference is a **C++/WinRT data-binding rule, not a control limitation**. Classic `{Binding}`
-resolves properties through reflection in .NET, but C++/WinRT has no reflection: it needs an
-`IXamlType`, which the XAML compiler emits only for types it encounters **in markup**, or an
-explicit `ICustomPropertyProvider` implementation. A data type constructed purely from code has
-neither, so `{Binding}` silently resolves nothing and every cell renders empty while headers, rows,
-grid lines and theming all look perfectly correct.
+Classic `{Binding}` resolves properties through reflection in .NET, but C++/WinRT has no
+reflection: it needs an `IXamlType`, which the XAML compiler emits only for types it encounters
+**in markup**, or an `ICustomPropertyProvider` implementation. A `Person` built purely from code
+has neither, so `{Binding}` would silently resolve nothing — every cell renders empty while
+headers, rows, grid lines and theming all look perfectly correct.
 
-`x:Bind` compiles the property access at build time, needs no runtime type information, and is the
-right default for a C++/WinRT consumer.
+`[bindable]` on the `Person` runtimeclass in `MainWindow.idl` is what closes that gap: it makes
+C++/WinRT generate the `ICustomPropertyProvider` implementation, so the same `{Binding}` markup
+works in both languages. If a C++ consumer prefers compile-time binding, `x:Bind` inside a
+`TableViewTemplateColumn.CellTemplate` remains a valid alternative that needs no attribute.
 
 ## Preview-API warnings are left visible here
 

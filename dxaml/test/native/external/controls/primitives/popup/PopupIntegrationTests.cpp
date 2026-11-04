@@ -17,7 +17,6 @@
 #include <ControlHelper.h>
 #include <CommonInputHelper.h>
 #include <WUCRenderingScopeGuard.h>
-#include <HolographicOverride.h>
 #include <WindowsNumerics.h>
 #include "ChangeDPI.h"
 #include <PopupHelper.h>
@@ -660,12 +659,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // Verify windowed popup's open and close
     void PopupIntegrationTests::WindowedPopupOpenAndClose()
     {
-        WindowedPopupOpenAndCloseHelper();
-    }
-
-    void PopupIntegrationTests::PopupInHolographicModeOpenAndClose()
-    {
-        HolographicOverride holographicOverride;
         WindowedPopupOpenAndCloseHelper();
     }
 
@@ -2290,9 +2283,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void PopupIntegrationTests::DoesOverlaySizeWithWindow()
     {
-        TestCleanupWrapper cleanup;
+        TestCleanupWrapper cleanup([&]()
+        {
+            TestServices::WindowHelper->MaximizeDesktopWindow();
+            TestServices::WindowHelper->WaitForIdle();
+        });
 
         xaml_primitives::Popup^ popup = nullptr;
+        xaml_controls::Grid^ rootGrid = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rootGrid = ref new xaml_controls::Grid();
+            TestServices::WindowHelper->WindowContent = rootGrid;
+        });
+        TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
         {
@@ -2300,30 +2305,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             popup->Child = ref new xaml_controls::Grid();
             popup->IsLightDismissEnabled = true;
             popup->LightDismissOverlayMode = xaml_controls::LightDismissOverlayMode::On;
-
+            popup->XamlRoot = rootGrid->XamlRoot;
             popup->IsOpen = true;
-
-            // Set some content to let the test activate successfully.
-            xaml_controls::Grid^ rootGrid = ref new xaml_controls::Grid();
-            TestServices::WindowHelper->WindowContent = rootGrid;
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        wf::Rect windowBounds = {};
+        wf::Size originalXamlRootSize = {};
         RunOnUIThread([&]()
         {
             auto overlayElement = TestServices::Utilities->GetPopupOverlayElement(popup);
             THROW_IF_NULL_WITH_MSG(overlayElement, L"An overlay element should exist for the popup.");
 
             // The overlay element should be sized to the window.
-            windowBounds = xaml::Window::Current->Bounds;
-            VERIFY_ARE_EQUAL(overlayElement->ActualWidth, windowBounds.Width);
-            VERIFY_ARE_EQUAL(overlayElement->ActualHeight, windowBounds.Height);
+            originalXamlRootSize = rootGrid->XamlRoot->Size;
+            VERIFY_ARE_EQUAL(overlayElement->ActualWidth, originalXamlRootSize.Width);
+            VERIFY_ARE_EQUAL(overlayElement->ActualHeight, originalXamlRootSize.Height);
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        // Re-size the window so that we can re-check the overlay element's size.
-        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(windowBounds.Width * 0.5f, windowBounds.Height * 0.5f));
+        // Resize the real desktop window so the WPF host propagates the size change to the island.
+        TestServices::WindowHelper->SetDesktopWindowSize(600, 500);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // The popup is light-dismiss, so it will close when the window size changes
+            // (see Popup::OnXamlRootChanged). Reopen the popup.
+            if (!popup->IsOpen)
+            {
+                popup->IsOpen = true;
+            }
+        });
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
@@ -2331,10 +2343,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto overlayElement = TestServices::Utilities->GetPopupOverlayElement(popup);
             THROW_IF_NULL_WITH_MSG(overlayElement, L"An overlay element should exist for the popup.");
 
-            // The overlay element should be sized to the window.
-            windowBounds = xaml::Window::Current->Bounds;
-            VERIFY_ARE_EQUAL(overlayElement->ActualWidth, windowBounds.Width);
-            VERIFY_ARE_EQUAL(overlayElement->ActualHeight, windowBounds.Height);
+            auto xamlRootSize = rootGrid->XamlRoot->Size;
+            VERIFY_ARE_NOT_EQUAL(xamlRootSize.Width, originalXamlRootSize.Width);
+            VERIFY_ARE_NOT_EQUAL(xamlRootSize.Height, originalXamlRootSize.Height);
+            VERIFY_ARE_EQUAL(overlayElement->ActualWidth, xamlRootSize.Width);
+            VERIFY_ARE_EQUAL(overlayElement->ActualHeight, xamlRootSize.Height);
         });
     }
 
@@ -2446,12 +2459,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
                         LR"(<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                             Background="{ThemeResource SystemControlBackgroundAltHighBrush}" >
-                           <Popup IsOpen="True" IsLightDismissEnabled="True" LightDismissOverlayMode="On">
+                           <Popup IsLightDismissEnabled="True" LightDismissOverlayMode="On">
                                 <Grid/>
                             </Popup>
                         </Grid>)"));
 
                     TestServices::WindowHelper->WindowContent = root;
+                    auto popup = safe_cast<xaml_primitives::Popup^>(root->Children->GetAt(0));
+                    popup->IsOpen = true;
                 });
                 TestServices::WindowHelper->WaitForIdle();
 

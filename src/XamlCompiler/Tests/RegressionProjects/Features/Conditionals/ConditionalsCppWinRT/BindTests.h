@@ -46,8 +46,8 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Click_V2(::Windows::Foundation::IInspectable const& sender, wux::RoutedEventArgs const& e);
-        void Click_V3(::Windows::Foundation::IInspectable const& sender, wux::RoutedEventArgs const& e);
+        void Click_V2(::winrt::Windows::Foundation::IInspectable const& sender, wux::RoutedEventArgs const& e);
+        void Click_V3(::winrt::Windows::Foundation::IInspectable const& sender, wux::RoutedEventArgs const& e);
 
         // Inherited via INotifyPropertyChanged
 

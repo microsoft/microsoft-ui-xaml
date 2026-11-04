@@ -33,6 +33,7 @@ namespace DirectUI
 
         _Check_return_ xaml_hosting::IXamlIslandRoot* GetXamlIslandRootNoRef();
         void PrepareToClose() { m_xamlIsland->PrepareToClose(); }
+        _Check_return_ HRESULT UpdateContentIsland(bool initialize);
 
     private:
         _Check_return_ HRESULT InitializeImpl(_In_ mu::WindowId parentWnd);
@@ -80,6 +81,7 @@ namespace DirectUI
         _Check_return_ HRESULT OnFocusControllerLosingFocus(_In_ IInspectable* sender, _In_ IInspectable* args);
 
         _Check_return_ HRESULT ReleaseFocusController();
+        _Check_return_ HRESULT InitializeFocusController();
 
     private:
 
@@ -103,4 +105,3 @@ namespace DirectUI
         EventRegistrationToken m_bridgeClosedToken {};
     };
 }
-

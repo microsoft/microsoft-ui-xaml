@@ -150,6 +150,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the chrome animation commands' lifetime is handled correctly in case the ListViewItemPresenter instance uses a selection indicator.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifySelectionIndicatorAfterPopupReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Selects an item in a popup-hosted ItemsPresenter, then reopens, hovers and presses the selected item.")
+            TEST_METHOD_PROPERTY(L"RegressionBug", L"https://github.com/microsoft/microsoft-ui-xaml/issues/10756")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyLVIPWorksWithVSM)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ListViewItemPresenter goes to visual states declared in the template.")
         END_TEST_METHOD()     
@@ -188,14 +194,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateListViewItemFocusPropertyThemeChange)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the ListViewItem's FocusVisual* properties respond to theme changes.")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateGridViewItemFocusPropertyThemeChange)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the GridViewItem's FocusVisual* properties respond to theme changes.")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 

@@ -32,6 +32,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyTextBoxAccessKeyPrecedence)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies scoped AutoSuggestBox AccessKey propagation and precedence.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextBoxAccessKeyScopeCycleDoesNotRecurse)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies an AccessKeyScopeOwner cycle through the editable TextBox does not recurse.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyAccessKeyNotForwardedToNonAutoSuggestBoxTextBox)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies the shared TextBoxAutomationPeer does not forward access keys for a TextBox outside an AutoSuggestBox.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyDefaultAutomationName)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies the default automation name for AutoSuggestBox.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
@@ -42,7 +57,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
     private:
-        xaml_controls::AutoSuggestBox^ SetupTest(Platform::String^ headerText, Platform::String^ automationName, Platform::String^ automationId);
+        xaml_controls::AutoSuggestBox^ SetupTest(
+            Platform::String^ headerText,
+            Platform::String^ automationName,
+            Platform::String^ automationId,
+            Platform::String^ accessKey);
 
     };
 

@@ -12,6 +12,7 @@
 #include <SafeEventRegistration.h>
 #include <ThemeHelper.h>
 #include <CustomTypeMetadataProvider.h>
+#include <string>
 
 using namespace Platform;
 using namespace ::Windows::Foundation;
@@ -88,6 +89,98 @@ namespace
             }
 
             VERIFY_IS_TRUE(expectedMessage == actualMessage || expectedMessage2 == actualMessage);
+        });
+    }
+
+    void VerifyXamlResourceReferenceTraceDeferredTemplateHelper(Platform::String^ templateKey, Platform::String^ missingKey)
+    {
+        const std::wstring key(missingKey->Data());
+        std::wstring actualTrace;
+        unsigned traceCount = 0;
+        DebugSettings^ settings = nullptr;
+        bool originalTracing = false;
+        bool haveOriginalTracing = false;
+        bool forceTracingSet = false;
+        auto registration = CreateSafeEventRegistration(DebugSettings, XamlResourceReferenceFailed);
+
+        TestCleanupWrapper cleanup([&]
+        {
+            RunOnUIThread([&]
+            {
+                if (registration.IsAttached())
+                {
+                    registration.Detach();
+                }
+                if (haveOriginalTracing)
+                {
+                    settings->IsXamlResourceReferenceTracingEnabled = originalTracing;
+                }
+            });
+            if (forceTracingSet)
+            {
+                TestServices::Utilities->SetForceDebugSettingsTracingEvents(FALSE);
+            }
+            TestServices::WindowHelper->WaitForIdle();
+        });
+
+        TestServices::Utilities->SetForceDebugSettingsTracingEvents(TRUE);
+        forceTracingSet = true;
+        RunOnUIThread([&]
+        {
+            settings = Application::Current->DebugSettings;
+            originalTracing = settings->IsXamlResourceReferenceTracingEnabled;
+            haveOriginalTracing = true;
+            settings->IsXamlResourceReferenceTracingEnabled = true;
+            registration.Attach(settings,
+                ref new TypedEventHandler<DebugSettings^, XamlResourceReferenceFailedEventArgs^>(
+                    [&](DebugSettings^, XamlResourceReferenceFailedEventArgs^ args)
+                    {
+                        if (args->Message != nullptr)
+                        {
+                            const std::wstring message(args->Message->Data());
+                            if (message.find(key) != std::wstring::npos)
+                            {
+                                if (++traceCount == 1)
+                                {
+                                    actualTrace = message;
+                                }
+                            }
+                        }
+                    }));
+
+            auto page = ref new Page();
+            Application::LoadComponent(page,
+                ref new Uri(L"ms-appx:///ResourceReferenceTraceDeferredTemplates.xaml"),
+                Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation::Nested);
+            auto dataTemplate = safe_cast<DataTemplate^>(page->Resources->Lookup(templateKey));
+            VERIFY_ARE_EQUAL(0u, traceCount, L"Loading the compiled template factory must not resolve its missing reference.");
+
+            bool threw = false;
+            HRESULT hr = S_OK;
+            std::wstring errorMessage;
+            try
+            {
+                dataTemplate->LoadContent();
+            }
+            catch (Platform::Exception^ error)
+            {
+                threw = true;
+                hr = static_cast<HRESULT>(error->HResult);
+                if (error->Message != nullptr)
+                {
+                    errorMessage = error->Message->Data();
+                }
+            }
+
+            VERIFY_IS_TRUE(threw, L"Deferred expansion must fail on the missing resource.");
+            VERIFY_ARE_EQUAL(static_cast<HRESULT>(0x802B000A), hr, L"Deferred source tracing must preserve the parser HRESULT.");
+            VERIFY_IS_TRUE(errorMessage.find(key) != std::wstring::npos, L"The original resource key, including format tokens, must survive.");
+            VERIFY_ARE_EQUAL(1u, traceCount, L"Exactly one trace for this template's unique missing key is required.");
+            const std::wstring prefix =
+                L"/ResourceReferenceTraceDeferredTemplates.xaml\n"
+                L"Beginning search for resource with key '" + key + L"'.\n";
+            VERIFY_IS_TRUE(actualTrace.compare(0, prefix.size(), prefix) == 0,
+                L"The trace must start with the saved source path, then the original key.");
         });
     }
 }
@@ -5987,6 +6080,16 @@ namespace Microsoft { namespace UI { namespace Xaml {
             });
 
             TestServices::WindowHelper->WaitForIdle();
+        }
+
+        void ResourceDictionaryBasicTests::VerifyXamlResourceReferenceTraceDeferredTemplateStaticResource()
+        {
+            VerifyXamlResourceReferenceTraceDeferredTemplateHelper(L"StaticMiss", L"MissingStaticResource_%0_%1");
+        }
+
+        void ResourceDictionaryBasicTests::VerifyXamlResourceReferenceTraceDeferredTemplateThemeResource()
+        {
+            VerifyXamlResourceReferenceTraceDeferredTemplateHelper(L"ThemeMiss", L"MissingThemeResource_%0_%1");
         }
 
         void ResourceDictionaryBasicTests::VerifyXamlResourceReferenceTraceSimpleStaticResource()

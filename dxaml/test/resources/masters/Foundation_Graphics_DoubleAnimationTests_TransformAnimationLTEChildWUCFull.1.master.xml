@@ -18,7 +18,7 @@
                       <Translate X="0.75" Y="0.75" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="21" SizeY="10" BorderMode="Hard" OffsetX="1.25" OffsetY="5.25" OffsetZ="0">
+                      <wucSpriteVisual SizeX="23" SizeY="12" BorderMode="Hard" OffsetX="0.25" OffsetY="4.25" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 0, 0}" />

@@ -1,0 +1,28 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// BlankPage.h++WinRT
+// Declaration of the BlankPage class.
+//
+// The file extension is deliberately non-standard: this project exists to prove that the
+// XAML compiler honours a code-behind file whose extension is not .h/.cpp.
+//
+
+#pragma once
+
+#include "BlankPage.g.h"
+
+namespace winrt::NonStandardCppWinRT::implementation
+{
+    struct BlankPage : BlankPageT<BlankPage>
+    {
+        BlankPage();
+    };
+}
+
+namespace winrt::NonStandardCppWinRT::factory_implementation
+{
+    struct BlankPage : BlankPageT<BlankPage, implementation::BlankPage>
+    {
+    };
+}

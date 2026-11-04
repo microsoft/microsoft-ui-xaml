@@ -1,0 +1,22 @@
+Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+public ObservableCollection<SupportTicket> Tickets { get; } = TicketData.Queue();
+
+public TableViewSource Source { get; }
+
+private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
+{
+    TicketsTable.HeadersVisibility = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "None"
+        ? TableViewHeadersVisibility.None
+        : TableViewHeadersVisibility.Column;
+}
+
+private void OnSortByDueClick(object sender, RoutedEventArgs e)
+{
+    // The header click does the same thing; SortByColumn is the only way while it is hidden.
+    var direction = DueColumn.SortDirection == SortDirection.Ascending
+        ? SortDirection.Descending
+        : SortDirection.Ascending;
+    TicketsTable.SortByColumn(DueColumn, direction);
+}

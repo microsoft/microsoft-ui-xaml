@@ -23,6 +23,10 @@ namespace ctl
 
     public:
         virtual HRESULT QueryInterfaceImplBase(_In_ REFIID iid, _Outptr_ void** ppObject) = 0;
+
+        // Keep this non-inline to share runtime-class-name routing across ComObject instantiations and reduce DLL size.
+        __declspec(noinline) HRESULT GetRuntimeClassNameBase(_Out_ HSTRING* pClassName);
+
         __declspec(noinline) static HRESULT CreateInstanceBase(_In_ ComBase* pObject, bool fNoInit = false);
 
     protected:

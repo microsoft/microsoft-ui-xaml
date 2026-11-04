@@ -28,6 +28,11 @@ public:
         return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPencilButtonName);
     }
 
+    winrt::hstring GetFlyoutName() override
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPencilFlyoutName);
+    }
+
     // UWP InkToolbarPencilButton::CreateInkDrawingAttributes: pencil-specific attributes.
     winrt::InkDrawingAttributes CreateInkDrawingAttributes() override
     {
