@@ -46,6 +46,12 @@
 
 using namespace DirectUI;
 
+#if DBG
+// Cumulative successful deferred setter realizations, including scalars and resource references.
+// Count each owned setter once; BasedOn forwarding and already-realized lookups do not increment it.
+alignas(8) volatile LONG64 g_styleValuesRealized = 0;
+#endif
+
 OptimizedStyle::OptimizedStyle(_In_ CStyle* const style)
     : m_style(style)
     , m_isSealed(false)
@@ -524,6 +530,10 @@ _Check_return_ HRESULT OptimizedStyle::EnsureValueRealized(_In_ size_t index)
     m_peggedStates.set(index, pegged);
     m_realizedStates.set(index, true);
 
+#if DBG
+    InterlockedIncrement64(&g_styleValuesRealized);
+#endif
+
     return S_OK;
 }
 
@@ -811,7 +821,18 @@ _Check_return_ HRESULT OptimizedStyle::NotifySetterApplied(_In_ unsigned int set
         // Unrealized values have no peer to protect. Property evaluation will realize them when needed.
         if (m_runtimeData && !m_realizedStates[setterIndex])
         {
-            return S_OK;
+#if DBG
+            const auto notificationMode = OptionalChangeState::GetNotifySetterAppliedMode();
+            if (notificationMode == OptionalChangeState::NotifySetterAppliedMode::AlwaysNotifyAndRealize ||
+                notificationMode == OptionalChangeState::NotifySetterAppliedMode::SkipNotifyAndRealize)
+            {
+                IFC_RETURN(EnsureValueRealized(setterIndex));
+            }
+            else
+#endif
+            {
+                return S_OK;
+            }
         }
 
         if (!m_peggedStates[setterIndex])

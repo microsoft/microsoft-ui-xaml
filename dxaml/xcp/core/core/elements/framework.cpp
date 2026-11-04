@@ -852,7 +852,15 @@ CFrameworkElement::OnStyleChanged(
             // Preserve conditional notification unless unconditional notification is opted into.
             // IsPropertySetByStyle conflates BuiltInStyle and Style, so it can also identify an
             // effective default-style setter as overridden (for example, with duplicate setters).
-            const bool canSkipNotify = !OptionalChangeState::IsNotifySetterAppliedEnabled() &&
+            bool useConditionalNotification = !OptionalChangeState::IsNotifySetterAppliedEnabled();
+#if DBG
+            const auto notificationMode = OptionalChangeState::GetNotifySetterAppliedMode();
+            if (notificationMode != OptionalChangeState::NotifySetterAppliedMode::Default)
+            {
+                useConditionalNotification = notificationMode == OptionalChangeState::NotifySetterAppliedMode::SkipNotifyAndRealize;
+            }
+#endif
+            const bool canSkipNotify = useConditionalNotification &&
                 OptionalChangeState::IsOptimizeApplyStylesEnabled() &&
                 baseValueSource != BaseValueSourceUnknown &&
                 baseValueSource < BaseValueSourceStyle &&
