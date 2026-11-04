@@ -4118,6 +4118,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyClearingSelectedItemChainWhenIsChildSelectedCallbackRedirectsNewSelection()
+        {
+            // Review finding F5: selecting a root item clears the previous child's ancestors; when the top ancestor's
+            // callback redirects to another root item, the deeper ancestors must still be cleared.
+            var leafC = NewCategory("Leaf C");
+            var middle = NewCategory("Middle", leafC, NewCategory("Leaf D"));
+            var root = NewCategory("Root", middle);
+            var other = NewCategory("Other");
+            var otherRedirect = NewCategory("Other 2");
+            var navView = SetupDataBoundNavigationView(new ObservableCollection<Category> { root, other, otherRedirect });
+            NavigationViewItem rootContainer = null;
+            NavigationViewItem middleContainer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                rootContainer = (NavigationViewItem)navView.ContainerFromMenuItem(root);
+                rootContainer.IsExpanded = true;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                middleContainer = (NavigationViewItem)navView.ContainerFromMenuItem(middle);
+                Verify.IsNotNull(middleContainer);
+                navView.SelectedItem = leafC;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(rootContainer.IsChildSelected, "Precondition: root IsChildSelected");
+                Verify.IsTrue(middleContainer.IsChildSelected, "Precondition: middle IsChildSelected");
+
+                bool redirected = false;
+                rootContainer.RegisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, (sender, dp) =>
+                {
+                    if (!redirected && !rootContainer.IsChildSelected)
+                    {
+                        redirected = true;
+                        navView.SelectedItem = otherRedirect;
+                    }
+                });
+
+                navView.SelectedItem = other;
+                Verify.IsTrue(redirected, "The IsChildSelected callback should have run while selecting Other.");
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(otherRedirect, navView.SelectedItem, "The callback's selection should win.");
+                Verify.IsFalse(rootContainer.IsChildSelected, "Root IsChildSelected should be cleared.");
+                Verify.IsFalse(middleContainer.IsChildSelected, "Middle IsChildSelected should be cleared.");
+            });
+        }
+
+        [TestMethod]
         public void VerifyClearingSelectedItemBySelectingItemOutsideMenuClearsDataBoundChildSelection()
         {
             // Review finding F4: the issue's app also sets SelectedItem to objects that aren't in the menu.

@@ -2635,12 +2635,26 @@ void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 // Returns false if app code changed SelectedItem from an IsChildSelected callback; the rest of the update is then stale.
 bool NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP)
 {
+    const auto selectionChangeGeneration = m_selectionChangeGeneration;
     if (prevIP && prevIP.GetSize() > 0)
     {
-        if (!UpdateIsChildSelectedForIndexPath(prevIP, false /*isChildSelected*/))
+        // Always finish clearing: a nested selection only clears the path the SelectionModel held when it ran,
+        // which may already be nextIP.
+        UpdateIsChildSelectedForIndexPath(prevIP, false /*isChildSelected*/);
+    }
+
+    if (selectionChangeGeneration != m_selectionChangeGeneration)
+    {
+        // Clearing prevIP may have reset ancestors that the nested selection had just marked, so mark them again.
+        // A top-level path has no ancestors to mark.
+        if (auto const currentIndexPath = m_selectionModel.SelectedIndex())
         {
-            return false;
+            if (currentIndexPath.GetSize() > 2)
+            {
+                UpdateIsChildSelectedForIndexPath(currentIndexPath, true /*isChildSelected*/);
+            }
         }
+        return false;
     }
 
     if (nextIP && nextIP.GetSize() > 0)
@@ -2650,6 +2664,7 @@ bool NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const
     return true;
 }
 
+// When marking ancestors, stops (returns false) as soon as app code changes SelectedItem from an IsChildSelected callback.
 bool NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected)
 {
     const auto selectionChangeGeneration = m_selectionChangeGeneration;
@@ -2675,7 +2690,7 @@ bool NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
         if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
         {
             nvi.IsChildSelected(isChildSelected);
-            if (selectionChangeGeneration != m_selectionChangeGeneration)
+            if (isChildSelected && selectionChangeGeneration != m_selectionChangeGeneration)
             {
                 return false;
             }
