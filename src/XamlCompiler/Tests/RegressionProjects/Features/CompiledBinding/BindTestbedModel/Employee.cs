@@ -13,12 +13,7 @@ using Microsoft.UI.Xaml;
 using Windows.UI.Popups;
 using Windows.UI;
 
-#if USING_CSWINRT
 using System.ComponentModel;
-#else
-using Microsoft.UI.Xaml.Data;
-#endif
-
 
 namespace BindTestbedModel
 {

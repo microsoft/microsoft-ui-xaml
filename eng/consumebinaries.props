@@ -19,14 +19,4 @@
         <PlatformToolset>v142</PlatformToolset>
     </PropertyGroup>
 
-    <PropertyGroup>
-         <!-- Our obj/bin paths get long enough to the point they break signtool.exe in the SDK ( APPX1204 file not found errors).
-              Trim some of the extraneous common path to a more managable one.
-         -->
-        <OutDir>$(OutDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</OutDir>        
-        <IntDir>$(IntDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntDir>
-        <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</BaseIntermediateOutputPath>
-        <IntermediateOutputPath>$(IntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntermediateOutputPath>
-    </PropertyGroup>
-
 </Project>

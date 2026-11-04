@@ -244,7 +244,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
 
         [TestMethod]
         [TestProperty("Description", "Validates FullWindow Button on Media Player Element with MediaTransport Control.")]
-        [TestProperty("Hosting:Mode", "UAP")] // FullWindow mode is not yet supported in WPF hosting mode
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public void FullWindowButtonTest()
@@ -492,7 +492,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         [TestMethod]
         [TestProperty("Description", "Validates BackButton Test on FullWindow in Media Player Element with MediaTransport Control.")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public void BackButtonTest()
         {

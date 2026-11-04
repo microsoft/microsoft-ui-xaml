@@ -27,7 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CatchesSolidColorBrushWithXName)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that we correctly fire a notification when a solid color brush in a resource dictionary has an x:Name.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

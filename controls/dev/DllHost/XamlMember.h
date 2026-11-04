@@ -9,7 +9,7 @@ class XamlMember :
 public:
     XamlMember(
         wstring_view const& memberName,
-        const winrt::IXamlType& type,
+        wstring_view const& typeName,
         std::function<winrt::IInspectable(const winrt::IInspectable&)> getter,
         std::function<void(const winrt::IInspectable&, const winrt::IInspectable&)> setter,
         bool isDependencyProperty,
@@ -28,7 +28,12 @@ public:
 
 private:
 
+    // Resolved on first use, not at construction: two types can reference each other (InkPresenter
+    // <-> InkStrokeInput), and resolving here would recurse before either is cached.
+    winrt::IXamlType ResolveType();
+
     hstring m_memberName{};
+    hstring m_typeName{};
     winrt::IXamlType m_type{};
     bool m_isDependencyProperty{};
     bool m_isAttachable{};

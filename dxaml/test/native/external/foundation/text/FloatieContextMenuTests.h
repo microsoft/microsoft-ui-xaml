@@ -76,17 +76,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(PasswordBoxKeyInputContextMenuOpeningEventWhenFloatieEnabled)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify PasswordBox.ContextMenuOpening event is fired and handled when floatie is enabled for key input")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TextBlockKeyInputContextMenuOpeningEventWhenFloatieEnabled)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify TextBlock.ContextMenuOpening event is fired and handled when floatie is enabled for key input")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RichTextBlockKeyInputContextMenuOpeningEventWhenFloatieEnabled)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify RichTextBlock.ContextMenuOpening event is fired and handled when floatie is enabled for key input")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TextBoxMouseInputContextMenuOpeningEventWhenFloatieEnabled)

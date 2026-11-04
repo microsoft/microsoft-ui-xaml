@@ -41,7 +41,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 return HasEventAssignments || HasBoundEventAssignments || HasBindAssignments
                     || HasFieldDefinition || IsBoundNamedTemplateElement || IsBindingRoot || 
-                    IsUsedByOtherScopes || (Type.IsDerivedFromFrameworkTemplate() && BindUniverse.NeededForOuterScopeElement);
+                    IsUsedByOtherScopes || (Type.IsDerivedFromFrameworkTemplate() && BindUniverse.NeededForOuterScopeElement) ||
+                    (BindUniverse.LoadRootElement == this && BindUniverse.ElementsWithBoundLoadAssignments.Any());
             }
         }
 

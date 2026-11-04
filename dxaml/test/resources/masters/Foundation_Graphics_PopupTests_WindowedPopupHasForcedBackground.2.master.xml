@@ -6,17 +6,8 @@
       <Visual />
       <Visual Tag="PrependVisual">
         <Visual VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="300">
-          <TransformMatrix>
-            <Scale ScaleX="2" ScaleY="2" />
-          </TransformMatrix>
           <Visual Tag="ContentVisual">
-            <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
-              <ColorBrush Color="#ff000000" />
-            </wucSpriteVisual>
             <Visual TransformParentVisualId="1" Tag="PrependVisual">
-              <WindowBackgroundTreatment>
-                <EffectBrush />
-              </WindowBackgroundTreatment>
               <Visual Tag="PrimaryVisual">
                 <Visual Tag="ContentVisual">
                   <Visual Tag="PrependVisual">
@@ -40,24 +31,28 @@
       </Visual>
     </Visual>
   </CompositionTarget>
-  <CompositionTarget>
-    <Visual>
-      <RawMatrixTransform Matrix="1112_2122 dxdy {2, 0, 0, 2, 0, 0}" />
-      <WindowBackgroundTreatment>
-        <EffectBrush />
-      </WindowBackgroundTreatment>
-      <Visual Tag="PrependVisual">
-        <Visual Tag="PrimaryVisual">
-          <Visual Tag="ContentVisual">
-            <Visual Tag="PrependVisual">
-              <Visual Tag="PrimaryVisual" SizeX="302" SizeY="300">
-                <Visual Tag="ContentVisual">
-                  <wucSpriteVisual SizeX="302" SizeY="300" BorderMode="Soft">
-                    <ColorBrush Color="Argb {0, 1, 1, 1}" />
-                  </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="12" SizeY="10" BorderMode="Soft">
-                    <ColorBrush Color="rgb {1, 0, 0}" />
-                  </wucSpriteVisual>
+  <CompositionTarget HwndLeft="-20" HwndTop="19" HwndWidth="644" HwndHeight="640">
+    <Visual Tag="WindowedPopup_ContentIslandRootVisual">
+      <TransformMatrix>
+        <Row1 M11="2" M12="0" M13="0" M14="0" />
+        <Row2 M21="0" M22="2" M13="0" M14="0" />
+        <Row3 M31="0" M32="0" M33="1" M34="0" />
+        <Row4 M41="20" M42="4" M43="0" M44="1" />
+      </TransformMatrix>
+      <Visual Tag="WindowedPopup_AnimationRootVisual">
+        <Visual Tag="PrependVisual">
+          <Visual Tag="PrimaryVisual">
+            <Visual Tag="ContentVisual">
+              <Visual Tag="PrependVisual">
+                <Visual Tag="PrimaryVisual" SizeX="302" SizeY="300">
+                  <Visual Tag="ContentVisual">
+                    <wucSpriteVisual SizeX="302" SizeY="300" BorderMode="Soft">
+                      <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                    </wucSpriteVisual>
+                    <wucSpriteVisual SizeX="12" SizeY="10" BorderMode="Soft">
+                      <ColorBrush Color="rgb {1, 0, 0}" />
+                    </wucSpriteVisual>
+                  </Visual>
                 </Visual>
               </Visual>
             </Visual>

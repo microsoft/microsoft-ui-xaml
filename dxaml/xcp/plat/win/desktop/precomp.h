@@ -199,3 +199,5 @@
 #include <XamlBehaviorMode.h>
 
 #include "MUX-ETWEvents.h"
+
+#include "XamlProfilerTracing.h"
