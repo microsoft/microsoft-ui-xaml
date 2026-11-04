@@ -182,7 +182,8 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
                     m_rows.GetMany(0, items);
                 }
                 RebuildFlatItemPropertyChangedTracking(items);
-                m_shapeInputsMayBeStale = restorePending;
+                // As for a flat projection, a queued worker edit may still be unapplied.
+                m_shapeInputsMayBeStale = true;
             }
             catch (...)
             {
