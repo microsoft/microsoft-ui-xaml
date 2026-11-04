@@ -153,7 +153,6 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
     }
     else
     {
-        const bool restorePending = m_liveShapingDirty || m_liveShapingChangeDropped->load();
         ClearLiveShapingSubscriptions();
 
         // Sort-key tracking owns staleness again. The projection is current (live shaping kept it
@@ -161,8 +160,10 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
         if (m_kind == ProjectionKind::Flat && m_shapingState.HasProjection)
         {
             RebuildFlatItemPropertyChangedTracking(FlatItemsToTrack());
-            // A dropped restore leaves an edit unapplied; let the next change re-filter.
-            m_filterMembershipMayBeStale = restorePending;
+            // A pending restore, or a worker edit still queued for the live handler (which now
+            // ignores it), leaves an edit unapplied; let the next change re-filter and re-check order.
+            m_filterMembershipMayBeStale = true;
+            m_sortDirtyOverflow = HasActiveSort();
         }
     }
 }
@@ -554,6 +555,8 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     }
     catch (...)
     {
+        // The source has changed but the retained state may not have: never apply the next change in place against it.
+        m_validatedSourceStamp = ~uint64_t{ 0 };
         // Post (not run) any request deferred behind the failed pass; the caller gets this error.
         PostPendingRefresh();
         throw;
@@ -1019,7 +1022,7 @@ bool ShapedItemsSource::IsFilterMembershipCurrent() const
 
     if (IsLiveShapingEnabled())
     {
-        return !m_liveShapingDirty && !m_liveShapingChangeDropped->load();
+        return !m_liveShapingDirty && !m_liveShapingChangeDropped->load() && !m_liveShapingMissesItemEdits;
     }
 
     return m_flatItemPropertyChangedTrackingActive &&
@@ -1344,7 +1347,13 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
             return false;
         }
 
-        if (filtered && !m_pipeline.PassesFilter(item))
+        const bool passes = !filtered || m_pipeline.PassesFilter(item);
+        // The predicate is app code and may have rebuilt the projection.
+        if (!isPlanCurrent())
+        {
+            return false;
+        }
+        if (!passes)
         {
             insertion = { item, {}, 0, sourceIndex, false, 0 };
             return true;
@@ -1391,7 +1400,7 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
             }
 
             // Non-INPC rows may be stale unseen; at least verify the landing neighbourhood is ordered.
-            if (m_flatItemsMayChangeSortWithoutNotification &&
+            if ((m_flatItemsMayChangeSortWithoutNotification || (IsLiveShapingEnabled() && m_liveShapingMissesItemEdits)) &&
                 ((placement.Index > 0 && m_pipeline.CompareItemToRow(rowAt(placement.Index - 1), item) > 0) ||
                     (placement.Index < remainingCount && m_pipeline.CompareItemToRow(item, rowAt(placement.Index)) > 0)))
             {
@@ -1479,6 +1488,11 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
         if (m_flatItemPropertyChangedTrackingActive)
         {
             TrackFlatItemPropertyChanged(insertion.Item);
+            // The PropertyChanged add accessor is app code; a rebuild there already holds the item.
+            if (generation != m_projectionGeneration)
+            {
+                return false;
+            }
         }
         if (insertion.InProjection)
         {
@@ -1524,8 +1538,16 @@ bool ShapedItemsSource::TryApplyIncrementalFlatShapedChange(winrt::Microsoft::UI
             RowChange removal;
             RowChange insertion;
             if (!oldItems || !newItems || oldItems.Size() != 1 || newItems.Size() != 1 ||
-                args.OldStartingIndex() != args.NewStartingIndex() ||
-                !planRemove(oldItems.GetAt(0), args.OldStartingIndex(), removal) ||
+                args.OldStartingIndex() != args.NewStartingIndex())
+            {
+                return false;
+            }
+            // Re-setting an item to itself must keep its row (and selection); a rebuild re-anchors it.
+            if (RowIdentity::GetObjectAddress(oldItems.GetAt(0)) == RowIdentity::GetObjectAddress(newItems.GetAt(0)))
+            {
+                return false;
+            }
+            if (!planRemove(oldItems.GetAt(0), args.OldStartingIndex(), removal) ||
                 !planInsert(newItems.GetAt(0), args.NewStartingIndex(), &removal, insertion))
             {
                 return false;
@@ -2952,6 +2974,7 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
     // even for edits without PropertyChanged. Arrivals are covered by the source change stamp.
     bool edgeMoved = false;
     bool const checkEdges = m_parentKeySelector && m_hierarchyStructure;
+    m_liveShapingMissesItemEdits = false;
 
     for (auto const& item : items)
     {
@@ -2962,7 +2985,10 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
 
         auto const key = LiveShapingKeyFor(item);
         live.insert(key);
-        m_liveShaping->Subscribe(item);
+        if (!m_liveShaping->Subscribe(item))
+        {
+            m_liveShapingMissesItemEdits = true;
+        }
         auto const& snapshot = snapshots[key] = CaptureLiveShapeSnapshot(item);
 
         if (checkEdges && !edgeMoved)
@@ -2995,7 +3021,10 @@ void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& it
         return;
     }
 
-    m_liveShaping->Subscribe(item);
+    if (!m_liveShaping->Subscribe(item))
+    {
+        m_liveShapingMissesItemEdits = true;
+    }
     m_liveShapeSnapshots[LiveShapingKeyFor(item)] = CaptureLiveShapeSnapshot(item);
 
     // A re-inserted item may still hold a rank from before it was edited while out of the source.
@@ -3083,6 +3112,7 @@ void ShapedItemsSource::ClearLiveShapingSubscriptions()
     // returns, and a later re-enable starts from a fresh restore.
     m_liveShapingDirty = false;
     m_liveShapingHeld = false;
+    m_liveShapingMissesItemEdits = false;
     m_liveShapingChangeDropped->store(false);
 }
 

@@ -492,6 +492,8 @@ private:
     // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it if still dirty.
     // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
     bool m_liveShapingHeld{ false };
+    // Some live item has no INotifyPropertyChanged, so its edits go unseen until the next refresh.
+    bool m_liveShapingMissesItemEdits{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
     std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
     std::function<void()> m_liveItemReshape{};
