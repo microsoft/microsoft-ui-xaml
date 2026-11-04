@@ -235,6 +235,13 @@ public static class SessionFile
     public static IReadOnlyList<SessionFrame> ReadFrames(string path, long? frameId = null) =>
         QueryFrames(path, frameId, null).Frames;
 
+    public static IReadOnlyList<SessionFrame> ReadFramesBetween(string path, long startQpc, long endQpc)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(startQpc);
+        ArgumentOutOfRangeException.ThrowIfLessThan(endQpc, startQpc);
+        return QueryFrames(path, null, null, startQpc, endQpc).Frames;
+    }
+
     // The frames that changed after a read that saw events up to a Seq (null for all frames), in the order they were
     // first seen, and the Seq to pass next time. Trimming is not a change; it changes CompleteFromSeq instead.
     public static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) ReadChangedFrames(string path, long? afterSeq) =>
@@ -243,7 +250,8 @@ public static class SessionFile
     // A frame's ticks and events only change with an event attributed to it, and whether it drew changes when a later
     // frame appears on its thread. So the frames that changed after a Seq are, on each thread with events after it, the
     // frames from the one below the lowest of those on.
-    private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) QueryFrames(string path, long? frameId, long? afterSeq)
+    private static (IReadOnlyList<SessionFrame> Frames, long? LastSeq) QueryFrames(string path, long? frameId, long? afterSeq,
+        long? afterQpc = null, long? beforeQpc = null)
     {
         using var connection = Open(path);
         using var transaction = connection.BeginTransaction(deferred: true);
@@ -265,11 +273,14 @@ public static class SessionFile
             FROM Frames f
                 JOIN FrameEvents r ON r.FrameId = f.FrameId
                 JOIN Latest t ON t.ThreadId = f.ThreadId
-            WHERE ($id IS NULL OR f.FrameId = $id) AND ($after IS NULL OR f.FrameId IN (
+            WHERE ($id IS NULL OR f.FrameId = $id)
+                AND ($start IS NULL OR f.LastTickStartQpc >= $start)
+                AND ($end IS NULL OR f.EndQpc <= $end)
+                AND ($after IS NULL OR f.FrameId IN (
                 SELECT p.FrameId FROM Frames p JOIN Since s ON s.ThreadId = p.ThreadId AND p.FrameNumber >= s.FrameNumber))
             GROUP BY f.FrameId
             ORDER BY f.FrameId
-            """, ("$id", frameId), ("$after", afterSeq));
+            """, ("$id", frameId), ("$after", afterSeq), ("$start", afterQpc), ("$end", beforeQpc));
         var frames = new List<SessionFrame>();
         using (var reader = command.ExecuteReader())
         {

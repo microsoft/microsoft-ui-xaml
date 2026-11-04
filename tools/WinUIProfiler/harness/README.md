@@ -33,7 +33,7 @@ The standalone wizard defaults to **checklist-only**. It does not load the harne
 & .\tools\WinUIProfiler\harness\scripts\Initialize-IxpVm.ps1 -Provision
 ```
 
-The wizard walks through elevation/Hyper-V, switch selection, RAM/CPU/disk capacity, separately approved IXP dependency initialization/defaults, authorized media or cached-media fallback, and new VM/storage names. It requires at least 4 GB guest RAM, 4 GB remaining free host RAM, and 160 GB free storage. `yes`, `YES`, `y`, and `Y` approve prerequisite prompts; final `CREATE <VM name>` authorization remains exact.
+The wizard walks through elevation/Hyper-V, switch selection, RAM/CPU/disk capacity, separately approved IXP dependency initialization/defaults, authorized media or cached-media fallback, and new VM/storage names. It requires at least 4 GB guest RAM, 4 GB remaining free host RAM, and 160 GB free storage. `yes`, `YES`, `y`, and `Y` approve prerequisite prompts and the final VM creation prompt. The VM name and creation parameters remain visible; blank or unrecognized responses cancel.
 
 Creation uses no force replacement, unattended setup, automatic start, TShell, kernel debugging, CD keys, or optional-feature requests. Inspect IXPTools' own summary and abort on unwanted installs or replacement. Saved/default IXP tools may still affect native provisioning; empty tool arrays are not a verified isolation guarantee. Offline fallback may still access the network.
 
@@ -100,9 +100,13 @@ Review selectors before capture. The DSL can automate third-party apps exposing 
 
 Optimization rebuilds the baseline in the guest, captures 3-10 reset samples per version (default 3), and analyzes all baseline directories. `session-evidence.json` exposes recorded frames and object event spans for nonediting agents; first/last observed events are not proof of allocation/destruction or complete lifetime. Snapshot correlation links, original SQLite files, and loss/error information remain available.
 
-Candidate edits happen in guest worktrees, not host worktrees. Binary, empty, and duplicate patches are rejected. At most five distinct candidates are validated; unusable proposals have a separate cap of three times the attempt limit. Every paired baseline/candidate sample must meet the configured threshold with valid frame/ETW evidence. This conservative gate is not a claim of statistical significance.
+Recordings are finalized before metrics, evidence, and final loss/error counters are read. Scenario frames are selected by their final drawing tick within the recorded QPC scenario/settle window, not by whether a frame ID existed before the scenario. The capture driver explicitly requests a fresh packaged launch, limited to matching processes owned by the activating user in the same logon session; normal profiler connections do not terminate existing instances or process trees.
+
+Candidate edits happen in guest worktrees, not host worktrees. The clean configured baseline branch and commit are pinned before building, recorded in `baseline-source.json`, and rechecked before capture/candidate creation and after editing/validation. Each candidate starts from that exact commit, not mutable `HEAD`. Binary, empty, and duplicate patches are rejected. At most five distinct candidates are validated; unusable proposals have a separate cap of three times the attempt limit. Every paired baseline/candidate sample must meet the configured threshold with valid frame/ETW evidence. This conservative gate is not a claim of statistical significance.
 
 On consistent improvement, write `successful-attempt.json`, the patch, analysis, and a manual-review decision, then stop. Otherwise stop at the attempt/proposal limit. Build, deployment, timeout, or capture failures halt immediately, preserve evidence, and require manual intervention. Guest command stdout/stderr are logged separately, and a timed-out command's PowerShell process is stopped by its specific PID; descendant processes can remain. There is no automatic host `git apply`, candidate cleanup, baseline reinstall, or checkpoint restore. Guest tasks/worktrees and remaining guest processes require manual inspection.
+
+Interactive capture tasks have an independent scheduler execution limit. A capture timeout explicitly stops only that run's named task, retaining its definition and logs; inability to confirm the stop is reported as an error requiring manual VM inspection.
 
 Host `.artifacts` contains logs, request/result JSON, SQLite data, snapshots, reports, and inert source patches. Guest ZIP entries are validated before extraction and restricted to evidence types; binaries/scripts/packages and path traversal are refused. Host DLLs are not deployment destinations.
 
@@ -113,3 +117,12 @@ Store scripts are guest-guarded before signing, SDK installation, policy/trust c
 ## Validation boundary
 
 `Tests\Harness.Tests.ps1` refuses execution outside a guest with approved distinct host/guest identity environment variables. The suite includes package-signing/build-tool cases and must run only in an explicitly authorized disposable VM. Do not remove its guard to run it on the devbox. VM execution validation, profiler/driver builds, and agent CLI permission/authentication compatibility must be completed before treating this harness as ready.
+
+After manual guest setup/authorization, set the two identity environment variables to the approved values **inside the guest**, then run from the guest repository root:
+
+```powershell
+# Guest only; the suite also builds/runs the guarded C# driver regressions.
+& .\tools\WinUIProfiler\harness\Tests\Harness.Tests.ps1
+```
+
+The regression sources cover scenario validation, app restart opt-in and owner/session scoping, finalized frame-range queries, wait budgets, text focus, dry-run isolation, baseline drift, signing-tool architecture, and capture-task timeout handling. They do not replace end-to-end VM readiness/capture validation.

@@ -56,7 +56,12 @@ function Get-SignToolPath {
         throw "Windows SDK tools were not found at '$kitsRoot'."
     }
 
-    $architecture = if ($Platform -eq "ARM64") { "arm64" } else { "x64" }
+    $architecture = switch ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture) {
+        ([Runtime.InteropServices.Architecture]::X64) { "x64" }
+        ([Runtime.InteropServices.Architecture]::Arm64) { "arm64" }
+        ([Runtime.InteropServices.Architecture]::X86) { "x86" }
+        default { throw "Unsupported signing host architecture." }
+    }
     $signTool = Get-ChildItem -LiteralPath $kitsRoot -Filter "signtool.exe" -File -Recurse |
         Where-Object { $_.Directory.Name -eq $architecture } |
         Sort-Object FullName -Descending |

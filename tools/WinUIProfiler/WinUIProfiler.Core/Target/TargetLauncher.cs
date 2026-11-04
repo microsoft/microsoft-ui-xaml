@@ -2,9 +2,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.Principal;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.Win32.SafeHandles;
 
 namespace WinUIProfiler.Engine.Target;
 
@@ -84,8 +86,7 @@ public static class TargetLauncher
         }
     }
 
-    // Packaged applications can redirect a second activation to an already-running instance. A profiler launch must
-    // start a new process so ETW and first-frame evidence belong to the process returned by activation.
+    // Used only by explicit fresh launches; ordinary profiler connections must not terminate existing instances.
     public static int TerminateRunningPackagedProcesses(string applicationId, TimeSpan timeout)
     {
         ValidateApplicationId(applicationId);
@@ -100,6 +101,10 @@ public static class TargetLauncher
             .Distinct(StringComparer.OrdinalIgnoreCase);
         var elapsed = Stopwatch.StartNew();
         var terminated = 0;
+        using var activatingProcess = Process.GetCurrentProcess();
+        using var activatingIdentity = WindowsIdentity.GetCurrent();
+        var activatingUser = activatingIdentity.User ??
+            throw new InvalidOperationException("Cannot determine the activating user's identity.");
         foreach (var executableName in executableNames)
         {
             foreach (var process in Process.GetProcessesByName(executableName))
@@ -109,6 +114,10 @@ public static class TargetLauncher
                     string? runningApplicationId;
                     try
                     {
+                        if (!IsCurrentUserProcess(process, activatingProcess.SessionId, activatingUser))
+                        {
+                            continue;
+                        }
                         runningApplicationId = ReadApplicationUserModelId(process);
                     }
                     catch (InvalidOperationException) when (HasExited(process))
@@ -119,6 +128,11 @@ public static class TargetLauncher
                     {
                         continue;
                     }
+                    catch (Win32Exception error) when (error.NativeErrorCode == 5)
+                    {
+                        Trace.TraceWarning($"Skipping inaccessible packaged-process candidate {process.Id}: {error.Message}");
+                        continue;
+                    }
 
                     if (!string.Equals(runningApplicationId, applicationId, StringComparison.OrdinalIgnoreCase))
                     {
@@ -127,7 +141,7 @@ public static class TargetLauncher
 
                     try
                     {
-                        process.Kill(entireProcessTree: true);
+                        process.Kill();
                     }
                     catch (InvalidOperationException) when (HasExited(process))
                     {
@@ -147,6 +161,23 @@ public static class TargetLauncher
         }
 
         return terminated;
+    }
+
+    private static bool IsCurrentUserProcess(Process process, int sessionId, SecurityIdentifier user)
+    {
+        if (process.SessionId != sessionId)
+        {
+            return false;
+        }
+        if (!OpenProcessToken(process.SafeHandle, 0x0008, out var token))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "Cannot verify the process owner.");
+        }
+        using (token)
+        using (var identity = new WindowsIdentity(token.DangerousGetHandle()))
+        {
+            return user.Equals(identity.User);
+        }
     }
 
     // The executable file names that activating this AUMID can start, read from the manifests of the family's
@@ -288,6 +319,11 @@ out uint processId);
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern uint GetApplicationUserModelId(Microsoft.Win32.SafeHandles.SafeProcessHandle process,
         ref uint length, StringBuilder? applicationId);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool OpenProcessToken(SafeProcessHandle process, uint desiredAccess, out SafeAccessTokenHandle token);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

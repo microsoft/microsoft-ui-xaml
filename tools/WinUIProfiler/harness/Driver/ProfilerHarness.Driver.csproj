@@ -9,7 +9,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="ProfilerHarness.Driver.Tests" />
     <ProjectReference Include="..\..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
   </ItemGroup>
 </Project>
-

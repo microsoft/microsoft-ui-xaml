@@ -24,7 +24,8 @@ string PayloadDirectory,
 bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
 long? ExpectedCreationTimeFileTime = null,
-    string? SessionDirectory = null);
+    string? SessionDirectory = null,
+    bool RestartPackagedApp = false);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -104,6 +105,10 @@ public sealed class TargetConnection : IAsyncDisposable
         Require.Enum(options.Kind);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.Target);
         ArgumentNullException.ThrowIfNull(options.Arguments);
+        if (options.RestartPackagedApp && options.Kind != TargetLaunchKind.Packaged)
+        {
+            throw new ArgumentException("Restarting an existing instance requires a packaged launch.");
+        }
         if (!options.TrustLocalBinaries)
         {
             throw new UnauthorizedAccessException("Explicitly trust the local injector and TAP before connecting.");
@@ -172,7 +177,7 @@ public sealed class TargetConnection : IAsyncDisposable
         deadline.CancelAfter(TimeSpan.FromSeconds(45));
         var token = deadline.Token;
         token.ThrowIfCancellationRequested();
-        if (options.Kind == TargetLaunchKind.Packaged)
+        if (options.RestartPackagedApp)
         {
             Report("Preparing", $"Closing existing instances of {options.Target}.");
             var terminated = TargetLauncher.TerminateRunningPackagedProcesses(options.Target, TimeSpan.FromSeconds(10));

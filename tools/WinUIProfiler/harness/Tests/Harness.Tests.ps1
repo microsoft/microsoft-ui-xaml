@@ -76,7 +76,7 @@ Invoke-Test "all PowerShell files parse" {
     }
 }
 
-Invoke-Test "IXP prerequisite confirmations accept yes and y regardless of case" {
+Invoke-Test "IXP prerequisite and final creation confirmations accept yes and y regardless of case" {
     $tokens = $null
     $errors = $null
     $path = Join-Path $harnessRoot "scripts\Initialize-IxpVm.ps1"
@@ -88,20 +88,36 @@ Invoke-Test "IXP prerequisite confirmations accept yes and y regardless of case"
     }, $true)
     Assert-True ($null -ne $confirmation) "IXP prerequisite confirmation function was not found."
 
+    $statements = @($ast.EndBlock.Statements)
+    $creation = @($statements | Where-Object {
+        $_ -is [Management.Automation.Language.PipelineAst] -and
+        $_.PipelineElements.Count -eq 1 -and
+        $_.PipelineElements[0] -is [Management.Automation.Language.CommandAst] -and
+        $_.PipelineElements[0].GetCommandName() -eq "New-TestMachine"
+    })
+    Assert-Equal $creation.Count 1 "Expected one top-level VM creation command."
+    $creationIndex = [array]::IndexOf($statements, $creation[0])
+    Assert-True ($creationIndex -gt 0) "VM creation must have a preceding confirmation."
+    $finalConfirmation = $statements[$creationIndex - 1]
+
     & {
-        param($definition)
+        param($definition, $creationConfirmation)
         . ([scriptblock]::Create($definition.Extent.Text))
+        $creationPrompt = [scriptblock]::Create($creationConfirmation.Extent.Text)
+        $name = "ConfirmationTestVm"
         function Read-Host {
             param([string]$Prompt)
             return $response
         }
         foreach ($response in @("yes", "YES", "y", "Y")) {
             Confirm-Step "Approve this prerequisite?"
+            & $creationPrompt
         }
         foreach ($response in @("", "no", "n", "yesterday", "yes please")) {
             Assert-Throws { Confirm-Step "Approve this prerequisite?" } "*Provisioning stopped by the user*"
+            Assert-Throws { & $creationPrompt } "*Provisioning stopped by the user*"
         }
-    } $confirmation
+    } $confirmation $finalConfirmation
 }
 
 Invoke-Test "local execution and host processes are rejected before side effects" {
@@ -152,8 +168,8 @@ Invoke-Test "schema 1 and host command scopes cannot authorize execution" {
 Invoke-Test "example configuration validates" {
     $configuration = Read-ProfilerHarnessConfiguration $configPath
     Assert-Equal $configuration.name "store-hyperv" "Unexpected example name."
-    Assert-Equal $configuration.repositories.app.branch "user/akanpatel/profiler_harness" "Unexpected app branch."
-    Assert-Equal $configuration.repositories.profiler.branch "user/akanpatel2206/profiler_harness" "Unexpected profiler branch."
+    Assert-Equal $configuration.repositories.app.branch "user/your-alias/profiler_harness" "Unexpected app branch."
+    Assert-Equal $configuration.repositories.profiler.branch "user/your-alias/profiler_harness" "Unexpected profiler branch."
 }
 
 Invoke-Test "schema rejects provisioning options and host Agency sources" {
@@ -480,6 +496,193 @@ Invoke-Test "both Store scenarios validate" {
     }
 }
 
+Invoke-Test "scenario validation rejects invalid action fields and selectors before capture" {
+    foreach ($step in @(
+        '{"action":"setText","selector":{"name":"Search"}}',
+        '{"action":"sendKeys"}',
+        '{"action":"sendKeys","keys":" "}',
+        '{"action":"click","selector":{"controlType":"Unsupported"}}',
+        '{"action":"click","selector":{"match":"exact"}}',
+        '{"action":"click","selector":{"name":"Search","index":-1}}',
+        '{"action":"click","selector":{"name":"Search","match":"invalid"}}',
+        '{"action":"wait","milliseconds":1,"timeoutSeconds":301}',
+        '{"action":"wait","milliseconds":1.5}',
+        '{"action":"toggle","selector":{"name":"Setting"},"expectedToggleState":"invalid"}'
+    )) {
+        $scenario = ('{"schemaVersion":1,"name":"invalid","steps":[' + $step + ']}') | ConvertFrom-Json
+        Assert-Throws { Test-AutomationScenario $scenario } "*scenario*"
+    }
+    $scenario = '{"schemaVersion":1,"name":"valid","steps":[{"action":"setText","selector":{"name":"Search"},"text":""},{"action":"sendKeys","keys":"{ENTER}"}]}' |
+        ConvertFrom-Json
+    Test-AutomationScenario $scenario | Out-Null
+}
+
+Invoke-Test "Store signing selects the executing OS architecture, not the package architecture" {
+    $tokens = $null
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile(
+        (Join-Path $harnessRoot "scripts\Prepare-StorePayload.ps1"), [ref]$tokens, [ref]$errors)
+    Assert-True ($errors.Count -eq 0) "Store payload script does not parse."
+    $definition = $ast.Find({
+        param($node)
+        $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq "Get-SignToolPath"
+    }, $true)
+    & {
+        param($Definition)
+        . ([scriptblock]::Create($Definition.Extent.Text))
+        function Test-Path { param($LiteralPath, [string]$PathType) return $true }
+        function Get-ChildItem {
+            param($LiteralPath, $Filter, [switch]$File, [switch]$Recurse)
+            foreach ($architecture in @("x86", "x64", "arm64")) {
+                [pscustomobject]@{
+                    Directory = [pscustomobject]@{ Name = $architecture }
+                    FullName = "C:\SDK\$architecture\signtool.exe"
+                }
+            }
+        }
+        $expected = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+        foreach ($Platform in @("x64", "ARM64")) {
+            Assert-Equal (Get-SignToolPath) "C:\SDK\$expected\signtool.exe" "Signing followed the target package architecture."
+        }
+    } $definition
+}
+
+Invoke-Test "dry-run capture never invokes guest execution or transfer helpers" {
+    $configuration = Read-ProfilerHarnessConfiguration $configPath
+    & $module {
+        param($Configuration, $ScenarioPath)
+        function Copy-HarnessDirectoryToTarget { throw "Unexpected guest upload." }
+        function Copy-HarnessDirectoryFromTarget { throw "Unexpected guest download." }
+        function Invoke-HarnessTargetPowerShell { throw "Unexpected guest command." }
+        function Invoke-HyperVCapture { throw "Unexpected guest task." }
+        $context = New-HarnessContext $Configuration $true "github"
+        $result = Invoke-HarnessCapture $context $ScenarioPath
+        if ([IO.Path]::GetFileName($result) -ne "capture-result.json") {
+            throw "Dry-run did not return the planned result path."
+        }
+    } $configuration $safeScenarioPath
+}
+
+Invoke-Test "optimization refuses a changed guest baseline branch, HEAD, or source" {
+    $testRoot = Join-Path $harnessRoot ".artifacts\tests\baseline-$([Guid]::NewGuid().ToString('N'))"
+    $repo = Join-Path $testRoot "app"
+    try {
+        [IO.Directory]::CreateDirectory($repo) | Out-Null
+        & git -c core.hooksPath=NUL init --initial-branch user/test/profiler_harness $repo | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "Test repository initialization failed." }
+        & git -C $repo -c core.hooksPath=NUL -c user.name=HarnessTest -c user.email=harness-test@localhost `
+            commit --allow-empty -m "baseline" | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "Test baseline commit failed." }
+        & $module {
+            param($Repo, $TestRoot)
+            function Invoke-HarnessTargetPowerShell {
+                param($Context, $Script, $TimeoutSeconds)
+                $output = & ([scriptblock]::Create($Script)) | Out-String
+                return [pscustomobject]@{ exitCode = 0; stdout = $output; stderr = "" }
+            }
+            $context = [pscustomobject]@{
+                GuestAppRepo = $Repo
+                Config = [pscustomobject]@{
+                    target = [pscustomobject]@{ kind = "hyperv"; stageRoot = $TestRoot }
+                    repositories = [pscustomobject]@{ app = [pscustomobject]@{ branch = "user/test/profiler_harness" } }
+                }
+            }
+            $head = Assert-HarnessGuestBaseline $context
+            Assert-HarnessGuestBaseline $context $head | Out-Null
+            try {
+                Assert-HarnessGuestBaseline $context ("0" * 40) | Out-Null
+                throw "A changed HEAD was accepted."
+            }
+            catch {
+                if ($_.Exception.Message -notlike "*baseline HEAD changed*") { throw }
+            }
+            [IO.File]::WriteAllText((Join-Path $Repo "untracked.cs"), "changed source")
+            try {
+                Assert-HarnessGuestBaseline $context $head | Out-Null
+                throw "Uncommitted source was accepted."
+            }
+            catch {
+                if ($_.Exception.Message -notlike "*baseline is not clean*") { throw }
+            }
+            Remove-Item -LiteralPath (Join-Path $Repo "untracked.cs")
+            $context.Config.repositories.app.branch = "user/other/profiler_harness"
+            try {
+                Assert-HarnessGuestBaseline $context $head | Out-Null
+                throw "A different branch was accepted."
+            }
+            catch {
+                if ($_.Exception.Message -notlike "*baseline branch changed*") { throw }
+            }
+        } $repo $testRoot
+    }
+    finally {
+        if (Test-Path -LiteralPath $testRoot) { Remove-Item -LiteralPath $testRoot -Recurse -Force }
+    }
+}
+
+Invoke-Test "timed-out captures stop only their own task and retain evidence" {
+    & $module {
+        $state = [pscustomobject]@{ taskName = $null; stopped = @(); settings = $null; removedSession = $false; failStop = $false }
+        function Get-HyperVCredential { param($Context) return [pscustomobject]@{ UserName = "HarnessTest" } }
+        function New-HarnessTargetSession { param($Context) return "TestSession" }
+        function Remove-PSSession { param($Session) $state.removedSession = $true }
+        function Invoke-Command {
+            param($Session, $ScriptBlock, $ArgumentList, $ErrorAction)
+            & $ScriptBlock @ArgumentList
+        }
+        function Test-Path { param($LiteralPath) return $false }
+        function New-ScheduledTaskAction { param($Execute, $Argument) return "TestAction" }
+        function New-ScheduledTaskPrincipal { param($UserId, $LogonType, $RunLevel) return "TestPrincipal" }
+        function New-ScheduledTaskSettingsSet {
+            [CmdletBinding()]
+            param([TimeSpan]$ExecutionTimeLimit, [switch]$DisallowHardTerminate)
+            return [pscustomobject]@{ ExecutionTimeLimit = $ExecutionTimeLimit; AllowHardTerminate = -not $DisallowHardTerminate.IsPresent }
+        }
+        function Register-ScheduledTask {
+            param($TaskName, $Action, $Principal, $Settings, [switch]$Force)
+            $state.taskName = $TaskName
+            $state.settings = $Settings
+        }
+        function Start-ScheduledTask { param($TaskName) }
+        function Stop-ScheduledTask {
+            param($TaskName, $ErrorAction)
+            $state.stopped += $TaskName
+            if ($state.failStop) { throw "Test stop failure." }
+        }
+        function Get-ScheduledTask { param($TaskName, $ErrorAction) return [pscustomobject]@{ State = "Ready" } }
+        function Unregister-ScheduledTask { throw "The timed-out task definition must be retained." }
+        $context = [pscustomobject]@{
+            DryRun = $false
+            Config = [pscustomobject]@{ target = [pscustomobject]@{ kind = "hyperv"; stageRoot = "C:\WinUIProfilerHarness" } }
+        }
+        $errorMessage = $null
+        try {
+            Invoke-HyperVCapture $context "C:\WinUIProfilerHarness\driver.exe" `
+                "C:\WinUIProfilerHarness\request.json" "C:\WinUIProfilerHarness\result.json" 1
+        }
+        catch { $errorMessage = $_.Exception.Message }
+        if ($errorMessage -notlike "*task was stopped*evidence were retained*") { throw "Unexpected timeout: $errorMessage" }
+        if ($state.stopped.Count -ne 1 -or $state.stopped[0] -ne $state.taskName -or
+            $state.taskName -notmatch '^ProfilerHarness-[0-9a-f]{32}$') { throw "The timeout stopped the wrong task." }
+        if ($state.settings.ExecutionTimeLimit.TotalSeconds -ne 1 -or -not $state.settings.AllowHardTerminate) {
+            throw "The scheduled task has no independent hard execution limit."
+        }
+        if (-not $state.removedSession) { throw "The capture session was not released." }
+        $state.failStop = $true
+        $state.removedSession = $false
+        $errorMessage = $null
+        try {
+            Invoke-HyperVCapture $context "C:\WinUIProfilerHarness\driver.exe" `
+                "C:\WinUIProfilerHarness\request.json" "C:\WinUIProfilerHarness\result.json" 1
+        }
+        catch { $errorMessage = $_.Exception.Message }
+        if ($errorMessage -notlike "*Stopping the task failed*inspect the VM manually*Test stop failure*") {
+            throw "A failed task stop was not surfaced: $errorMessage"
+        }
+        if (-not $state.removedSession) { throw "The failed-stop capture session was not released." }
+    }
+}
+
 Invoke-Test "empty private snapshots cannot establish readiness" {
     $testRoot = Join-Path $harnessRoot ".artifacts\tests\empty-snapshot-$([Guid]::NewGuid().ToString('N'))"
     $resultPath = Join-Path $testRoot "capture-result.json"
@@ -622,6 +825,11 @@ Invoke-Test "duplicate patches are rejected" {
     finally {
         Remove-Item -LiteralPath $patch -Force -ErrorAction SilentlyContinue
     }
+}
+
+Invoke-Test "driver regression executable" {
+    & dotnet run --project (Join-Path $PSScriptRoot "Driver.Tests.csproj") --configuration Release
+    if ($LASTEXITCODE -ne 0) { throw "Driver regression tests failed with exit code $LASTEXITCODE." }
 }
 
 Write-Output "PASS: $script:passed harness tests"

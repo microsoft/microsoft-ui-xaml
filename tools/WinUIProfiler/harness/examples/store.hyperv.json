@@ -7,16 +7,16 @@
   },
   "repositories": {
     "app": {
-      "path": "Q:\\Repo\\SFC.Client.SFUI",
-      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Universal%20Store/_git/SFC.Client.SFUI",
-      "branch": "user/akanpatel/profiler_harness",
+      "path": "C:\\Repos\\YourApp",
+      "remoteUrl": "https://github.com/YOUR-ORG/YOUR-APP.git",
+      "branch": "user/your-alias/profiler_harness",
       "baseRef": "HEAD",
       "allowDirty": false
     },
     "profiler": {
-      "path": "Q:\\Repo\\microsoft-ui-xaml",
+      "path": "C:\\Repos\\microsoft-ui-xaml",
       "remoteUrl": "https://github.com/microsoft/microsoft-ui-xaml.git",
-      "branch": "user/akanpatel2206/profiler_harness",
+      "branch": "user/your-alias/profiler_harness",
       "baseRef": "main",
       "allowDirty": true
     }

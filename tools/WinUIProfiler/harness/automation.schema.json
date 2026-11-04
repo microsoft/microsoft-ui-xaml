@@ -8,7 +8,7 @@
   "properties": {
     "$schema": { "type": "string" },
     "schemaVersion": { "const": 1 },
-    "name": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "pattern": "\\S" },
     "description": { "type": "string" },
     "steps": {
       "type": "array",
@@ -22,6 +22,12 @@
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
+      "anyOf": [
+        { "required": [ "automationId" ] },
+        { "required": [ "name" ] },
+        { "required": [ "className" ] },
+        { "required": [ "controlType" ] }
+      ],
       "properties": {
         "automationId": { "type": "string" },
         "name": { "type": "string" },
@@ -54,11 +60,35 @@
         },
         "selector": { "$ref": "#/$defs/selector" },
         "text": { "type": "string" },
-        "keys": { "type": "string" },
+        "keys": { "type": "string", "pattern": "\\S" },
         "milliseconds": { "type": "integer", "minimum": 0, "maximum": 300000 },
         "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 300 },
         "expectedToggleState": { "enum": [ "on", "off", "indeterminate" ] }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "action": { "const": "wait" } } },
+          "then": { "required": [ "milliseconds" ] }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [ "waitForWindow", "waitForElement", "invoke", "click", "setText", "select", "toggle", "assertExists", "assertNotExists" ]
+              }
+            }
+          },
+          "then": { "required": [ "selector" ] }
+        },
+        {
+          "if": { "properties": { "action": { "const": "setText" } } },
+          "then": { "required": [ "text" ] }
+        },
+        {
+          "if": { "properties": { "action": { "const": "sendKeys" } } },
+          "then": { "required": [ "keys" ] }
+        }
+      ]
     }
   }
 }

@@ -184,9 +184,7 @@ $parameters = @{
 Write-Host "8. Proposed creation parameters:"
 $parameters | ConvertTo-Json -Depth 4 | Out-Host
 Write-Host "Review IXPTools' own final summary too. Abort if it proposes deleting a device or unwanted changes."
-if ((Read-Host "Type CREATE $name to create this stopped VM") -cne "CREATE $name") {
-    throw "VM creation was not approved."
-}
+Confirm-Step "Create stopped VM $name with the parameters above?"
 # Keep IXPTools' own creation confirmation; never force replacement of an existing device.
 New-TestMachine @parameters
 

@@ -46,7 +46,7 @@
       "timeoutSeconds": 30
     },
     {
-      "action": "assertExists",
+      "action": "waitForElement",
       "selector": {
         "name": "Get",
         "controlType": "Button",

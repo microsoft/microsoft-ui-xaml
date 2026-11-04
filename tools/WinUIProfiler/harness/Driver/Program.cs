@@ -48,11 +48,14 @@ internal static class Program
         var requestPath = Path.GetFullPath(args[2]);
         var request = await ReadJsonAsync<CaptureRequest>(requestPath).ConfigureAwait(false);
         request.Validate();
+        var scenario = await ReadJsonAsync<AutomationScenario>(request.ScenarioPath).ConfigureAwait(false);
+        scenario.Validate();
         Directory.CreateDirectory(Path.GetDirectoryName(request.ResultPath)!);
 
         CaptureResult result;
         TargetConnection? connection = null;
         Exception? disposalError = null;
+        var disposalAttempted = false;
         var stopwatch = Stopwatch.StartNew();
         try
         {
@@ -66,7 +69,8 @@ internal static class Program
                     request.Launch.WorkingDirectory,
                     request.PayloadDirectory,
                     TrustLocalBinaries: true,
-                    SessionDirectory: request.SessionDirectory),
+                    SessionDirectory: request.SessionDirectory,
+                    RestartPackagedApp: request.Launch.Kind == "packaged"),
                 progress,
                 CancellationToken.None).ConfigureAwait(false);
 
@@ -77,15 +81,11 @@ internal static class Program
                 TimeSpan.FromSeconds(request.FirstFrameTimeoutSeconds),
                 CancellationToken.None).ConfigureAwait(false);
 
-            var baselineFrames = SessionFile.ReadFrames(recordingPath)
-                .Select(frame => frame.FrameId)
-                .ToHashSet();
             WriteProgress("snapshot-before", request.SnapshotDirectory);
             var before = await connection.TakeSnapshotAsync(request.SnapshotDirectory).ConfigureAwait(false);
 
-            var scenario = await ReadJsonAsync<AutomationScenario>(request.ScenarioPath).ConfigureAwait(false);
-            scenario.Validate();
             WriteProgress("scenario", scenario.Name);
+            var scenarioStartQpc = Stopwatch.GetTimestamp();
             var stepResults = await UiAutomationRunner.RunAsync(
                 processId,
                 scenario,
@@ -95,12 +95,15 @@ internal static class Program
             {
                 await Task.Delay(request.SettleMilliseconds).ConfigureAwait(false);
             }
+            var scenarioEndQpc = Stopwatch.GetTimestamp();
 
             WriteProgress("snapshot-after", request.SnapshotDirectory);
             var after = await connection.TakeSnapshotAsync(request.SnapshotDirectory).ConfigureAwait(false);
+            disposalAttempted = true;
+            await connection.DisposeAsync().ConfigureAwait(false);
             var allFrames = SessionFile.ReadFrames(recordingPath);
-            var scenarioFrames = allFrames
-                .Where(frame => frame.Drawn && !baselineFrames.Contains(frame.FrameId))
+            var scenarioFrames = SessionFile.ReadFramesBetween(recordingPath, scenarioStartQpc, scenarioEndQpc)
+                .Where(frame => frame.Drawn)
                 .ToArray();
             var metrics = CaptureMetrics.From(scenarioFrames, request.FrameBudgetMilliseconds, before, after);
             await WriteJsonAsync(
@@ -108,6 +111,7 @@ internal static class Program
                 new
                 {
                     Session = SessionFile.ReadInfo(recordingPath),
+                    ScenarioWindow = new { StartQpc = scenarioStartQpc, EndQpc = scenarioEndQpc, QpcFrequency = Stopwatch.Frequency },
                     Frames = allFrames,
                     Objects = SessionFile.ReadObjects(recordingPath),
                     ObjectSpanMeaning = "First/last stored events, not proof of allocation/destruction or complete object lifetime."
@@ -157,7 +161,7 @@ internal static class Program
         }
         finally
         {
-            if (connection is not null)
+            if (connection is not null && !disposalAttempted)
             {
                 try
                 {
@@ -170,6 +174,21 @@ internal static class Program
             }
         }
 
+        if (connection is not null)
+        {
+            var etw = connection.Etw;
+            result = result with
+            {
+                CaptureValidity = new(
+                    EtwAvailable: etw is not null,
+                    LostEvents: etw?.LostEvents ?? 0,
+                    DroppedEvents: etw?.DroppedEvents ?? 0,
+                    EtwError: connection.EtwError,
+                    RecordingError: connection.RecordingError),
+                ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds,
+                CompletedUtc = DateTimeOffset.UtcNow
+            };
+        }
         if (disposalError is not null)
         {
             result = result with
@@ -515,6 +534,10 @@ internal static class UiAutomationRunner
             var step = scenario.Steps[index];
             var stepWatch = Stopwatch.StartNew();
             ExecuteStep(processId, step, scenarioTimeout - deadline.Elapsed);
+            if (deadline.Elapsed >= scenarioTimeout)
+            {
+                throw new TimeoutException($"Scenario '{scenario.Name}' exceeded {scenarioTimeout.TotalSeconds:F0} seconds.");
+            }
             results.Add(new(index, step.Action, stepWatch.Elapsed.TotalMilliseconds, "succeeded"));
         }
         return results;
@@ -531,6 +554,10 @@ internal static class UiAutomationRunner
         switch (step.Action)
         {
             case "wait":
+                if (TimeSpan.FromMilliseconds(step.Milliseconds!.Value) > remaining)
+                {
+                    throw new TimeoutException("The wait exceeds the remaining scenario budget.");
+                }
                 Thread.Sleep(step.Milliseconds!.Value);
                 return;
             case "waitForWindow":
@@ -704,6 +731,7 @@ internal static class UiAutomationRunner
 
     private static void SetText(AutomationElement element, string text)
     {
+        element.SetFocus();
         if (element.TryGetCurrentPattern(ValuePattern.Pattern, out var value) &&
             !((ValuePattern)value).Current.IsReadOnly)
         {
@@ -711,7 +739,6 @@ internal static class UiAutomationRunner
             return;
         }
 
-        element.SetFocus();
         SendKeys.SendWait("^a");
         System.Windows.Clipboard.SetText(text);
         SendKeys.SendWait("^v");

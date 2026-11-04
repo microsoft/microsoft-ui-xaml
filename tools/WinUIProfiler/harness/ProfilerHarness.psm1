@@ -1014,6 +1014,8 @@ if (-not (Test-Path -LiteralPath '.git')) {
     git init --initial-branch '$branch'
     if (`$LASTEXITCODE -ne 0) { throw 'Guest repository initialization failed.' }
 }
+`$currentBranch = git -c core.hooksPath=NUL symbolic-ref --short HEAD
+if (`$LASTEXITCODE -ne 0 -or `$currentBranch -cne '$branch') { throw 'Guest source branch does not match the configured topic branch.' }
 git -c core.hooksPath=NUL add --all
 if (`$LASTEXITCODE -ne 0) { throw 'Guest source staging failed.' }
 git -c core.hooksPath=NUL -c user.name=ProfilerHarness -c user.email=profiler-harness@localhost commit --allow-empty -m 'Harness source snapshot' -m 'Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>'
@@ -1241,33 +1243,14 @@ function Test-AutomationScenario {
     [CmdletBinding()]
     param([Parameter(Mandatory)]$Scenario)
 
-    if ([int](Get-RequiredProperty $Scenario "schemaVersion" "scenario") -ne 1) {
-        throw "Only automation scenario schemaVersion 1 is supported."
+    try {
+        $valid = Test-Json -Json ($Scenario | ConvertTo-Json -Depth 100) `
+            -SchemaFile (Join-Path $script:HarnessRoot "automation.schema.json") -ErrorAction Stop
     }
-    Get-RequiredProperty $Scenario "name" "scenario" | Out-Null
-    $steps = @(Get-RequiredProperty $Scenario "steps" "scenario")
-    if ($steps.Count -lt 1 -or $steps.Count -gt 200) {
-        throw "scenario.steps must contain between 1 and 200 steps."
+    catch {
+        throw [IO.InvalidDataException]::new("Invalid automation scenario: $($_.Exception.Message)", $_.Exception)
     }
-    $actions = @(
-        "waitForWindow", "waitForElement", "invoke", "click", "setText", "sendKeys",
-        "select", "toggle", "wait", "assertExists", "assertNotExists"
-    )
-    for ($i = 0; $i -lt $steps.Count; $i++) {
-        $action = [string](Get-RequiredProperty $steps[$i] "action" "scenario.steps[$i]")
-        if ($action -notin $actions) {
-            throw "scenario.steps[$i].action '$action' is not supported."
-        }
-        if ($action -eq "wait") {
-            $milliseconds = [int](Get-RequiredProperty $steps[$i] "milliseconds" "scenario.steps[$i]")
-            if ($milliseconds -lt 0 -or $milliseconds -gt 300000) {
-                throw "scenario.steps[$i].milliseconds must be between 0 and 300000."
-            }
-        }
-        elseif ($action -ne "sendKeys" -or $null -ne (Get-OptionalProperty $steps[$i] "selector")) {
-            Get-RequiredProperty $steps[$i] "selector" "scenario.steps[$i]" | Out-Null
-        }
-    }
+    if (-not $valid) { throw "Invalid automation scenario." }
     return $true
 }
 
@@ -1503,7 +1486,7 @@ function Invoke-HyperVCapture {
         $userName = $credential.UserName
         $argument = "capture --request `"$RequestPath`""
         Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
-            param($Name, $Executable, $Arguments, $UserName, $Request, $Result)
+            param($Name, $Executable, $Arguments, $UserName, $Request, $Result, $Timeout)
             foreach ($path in @($Executable, $Request, $Result)) {
                 for ($item = $path; $item; $item = Split-Path -Parent $item) {
                     if ((Test-Path -LiteralPath $item) -and
@@ -1514,16 +1497,32 @@ function Invoke-HyperVCapture {
             }
             $action = New-ScheduledTaskAction -Execute $Executable -Argument $Arguments
             $principal = New-ScheduledTaskPrincipal -UserId $UserName -LogonType Interactive -RunLevel Highest
-            Register-ScheduledTask -TaskName $Name -Action $action -Principal $principal -Force | Out-Null
+            $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::FromSeconds($Timeout)) -DisallowHardTerminate:$false
+            Register-ScheduledTask -TaskName $Name -Action $action -Principal $principal -Settings $settings -Force | Out-Null
             Start-ScheduledTask -TaskName $Name
-        } -ArgumentList $taskName, $Driver, $argument, $userName, $RequestPath, $ResultPath
+        } -ArgumentList $taskName, $Driver, $argument, $userName, $RequestPath, $ResultPath, $TimeoutSeconds
         $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
         do {
             $exists = Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock { param($Path) Test-Path -LiteralPath $Path } -ArgumentList $ResultPath
             if ($exists) { return }
             Start-Sleep -Seconds 2
         } while ([DateTime]::UtcNow -lt $deadline)
-        throw "Interactive capture task '$taskName' did not produce '$ResultPath' within $TimeoutSeconds seconds. Ensure the VM user is logged on."
+        $message = "Interactive capture task '$taskName' did not produce '$ResultPath' within $TimeoutSeconds seconds."
+        try {
+            Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
+                param($Name)
+                Stop-ScheduledTask -TaskName $Name -ErrorAction Stop
+                for ($index = 0; $index -lt 5; $index++) {
+                    if ((Get-ScheduledTask -TaskName $Name -ErrorAction Stop).State -ne "Running") { return }
+                    Start-Sleep -Seconds 1
+                }
+                throw "The capture task is still running after the stop request."
+            } -ArgumentList $taskName
+        }
+        catch {
+            throw [TimeoutException]::new("$message Stopping the task failed; inspect the VM manually. $($_.Exception.Message)", $_.Exception)
+        }
+        throw [TimeoutException]::new("$message The task was stopped; its definition and evidence were retained for manual inspection.")
     }
     finally {
         Remove-PSSession $session
@@ -1622,6 +1621,8 @@ function Invoke-HarnessCapture {
     Copy-Item -LiteralPath $scenarioFullPath -Destination (Join-Path $requestStaging "scenario.json")
     New-CaptureRequest $Context $deployment $targetScenario (Join-Path $requestStaging "capture-request.json") `
         $targetResult $targetSession $targetSnapshots | Out-Null
+    $localResult = Join-Path $captureRoot "capture-result.json"
+    if ($Context.DryRun) { return $localResult }
     Copy-HarnessDirectoryToTarget $Context $requestStaging $targetCaptureRoot "$Name-request"
     $resetScript = Expand-HarnessTokens ([string]$Context.Config.application.resetScript) (Get-HarnessGuestTokens $Context)
     Invoke-HarnessTargetPowerShell $Context $resetScript 300 | Out-Null
@@ -1637,7 +1638,6 @@ function Invoke-HarnessCapture {
     }
 
     Copy-HarnessDirectoryFromTarget $Context $targetCaptureRoot $captureRoot $Name
-    $localResult = Join-Path $captureRoot "capture-result.json"
     return Resolve-HarnessCaptureResult $localResult $Context.DryRun $executionFailure
 }
 
@@ -1751,10 +1751,37 @@ function Invoke-HarnessCaptureSeries {
     }
 }
 
+function Assert-HarnessGuestBaseline {
+    param(
+        [Parameter(Mandatory)]$Context,
+        [ValidatePattern('^$|^[0-9a-f]{40}([0-9a-f]{24})?$')][string]$ExpectedCommit = ""
+    )
+
+    Assert-HarnessVmTarget $Context
+    $repo = $Context.GuestAppRepo
+    Assert-HarnessGuestPath $Context $repo
+    $branch = [string]$Context.Config.repositories.app.branch
+    $result = Invoke-HarnessTargetPowerShell $Context @"
+`$branch = git -C '$repo' -c core.hooksPath=NUL symbolic-ref --short HEAD
+if (`$LASTEXITCODE -ne 0 -or `$branch -cne '$branch') { throw 'The guest baseline branch changed; stop for manual inspection.' }
+`$head = git -C '$repo' -c core.hooksPath=NUL rev-parse --verify HEAD
+if (`$LASTEXITCODE -ne 0) { throw 'Cannot read the guest baseline HEAD.' }
+if ('$ExpectedCommit' -and `$head -cne '$ExpectedCommit') { throw 'The guest baseline HEAD changed; stop for manual inspection.' }
+`$status = git -C '$repo' -c core.hooksPath=NUL status --porcelain --untracked-files=normal
+if (`$LASTEXITCODE -ne 0) { throw 'Cannot read the guest baseline status.' }
+if (`$status) { throw 'The guest baseline is not clean; stop for manual inspection.' }
+Write-Output `$head
+"@ 60
+    $head = $result.stdout.Trim()
+    if ($head -notmatch '^[0-9a-f]{40}([0-9a-f]{24})?$') { throw "The guest baseline HEAD is invalid." }
+    return $head
+}
+
 function New-HarnessAttemptWorktree {
     param(
         [Parameter(Mandatory)]$Context,
-        [Parameter(Mandatory)][int]$Attempt
+        [Parameter(Mandatory)][int]$Attempt,
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}([0-9a-f]{24})?$')][string]$BaseCommit
     )
 
     Assert-HarnessVmTarget $Context
@@ -1763,7 +1790,7 @@ function New-HarnessAttemptWorktree {
     $path = Join-Path $root "$($Context.RunId)-$Attempt"
     Invoke-HarnessTargetPowerShell $Context @"
 New-Item -ItemType Directory -Force -Path '$root' | Out-Null
-git -C '$repo' -c core.hooksPath=NUL worktree add --detach '$path' HEAD
+git -C '$repo' -c core.hooksPath=NUL worktree add --detach '$path' '$BaseCommit'
 if (`$LASTEXITCODE -ne 0) { throw 'Guest attempt worktree creation failed.' }
 "@ 300 | Out-Null
     return [pscustomobject]@{ path = $path }
@@ -1830,11 +1857,19 @@ function Invoke-ProfileAndApplyChanges {
     $maxAttempts = [int](Get-OptionalProperty $optimization "maxAttempts" 5)
     $maxProposalRounds = $maxAttempts * 3
     Initialize-HarnessRepository $Context.Config.repositories.app "app" $Context
-    Invoke-AppBuildDeploy $Context
+    Initialize-HarnessGuestRepository $Context "app"
+    $baselineHead = if (-not $Context.DryRun) { Assert-HarnessGuestBaseline $Context }
+    Invoke-AppBuildDeploy $Context -SkipSourceStaging
+    if (-not $Context.DryRun) { Assert-HarnessGuestBaseline $Context $baselineHead | Out-Null }
     $baselinePaths = @(Invoke-HarnessCaptureSeries $Context $ScenarioPath "baseline")
     if ($Context.DryRun) {
         return
     }
+    Assert-HarnessGuestBaseline $Context $baselineHead | Out-Null
+    Write-HarnessJson (Join-Path $Context.RunDirectory "baseline-source.json") ([pscustomobject]@{
+        branch = $Context.Config.repositories.app.branch
+        commit = $baselineHead
+    })
     $baselinePath = $baselinePaths[0]
     $baseline = @($baselinePaths | ForEach-Object { Read-HarnessJson $_ })
     if (@($baseline | Where-Object { -not (Test-HarnessCaptureValidity $_) }).Count -gt 0) {
@@ -1848,7 +1883,8 @@ function Invoke-ProfileAndApplyChanges {
 
     while ($attempt -lt $maxAttempts -and $proposalRound -lt $maxProposalRounds) {
         $proposalRound++
-        $worktree = New-HarnessAttemptWorktree $Context $proposalRound
+        Assert-HarnessGuestBaseline $Context $baselineHead | Out-Null
+        $worktree = New-HarnessAttemptWorktree $Context $proposalRound $baselineHead
         $attemptContext = $null
         try {
             $history = if ($attemptRecords.Count -eq 0) { "None." } else {
@@ -1911,11 +1947,13 @@ if (`$LASTEXITCODE -ne 0) { throw 'Guest diff extraction failed.' }
             }
 
             $attempt++
+            Assert-HarnessGuestBaseline $Context $baselineHead | Out-Null
             $attemptContext = New-HarnessContext $Context.Config $Context.DryRun $Engine
             $attemptContext.GuestAppRepo = $worktree.path
             try {
                 Invoke-AppBuildDeploy $attemptContext -SkipSourceStaging
                 $candidatePaths = @(Invoke-HarnessCaptureSeries $attemptContext $ScenarioPath "candidate-$attempt")
+                Assert-HarnessGuestBaseline $Context $baselineHead | Out-Null
                 $candidate = @($candidatePaths | ForEach-Object { Read-HarnessJson $_ })
                 $evaluation = Test-HarnessRepeatedImprovement $baseline $candidate $optimization
                 if (@($evaluation.comparisons | Where-Object { -not $_.captureValid }).Count -gt 0) {
@@ -1951,6 +1989,7 @@ if (`$LASTEXITCODE -ne 0) { throw 'Guest diff extraction failed.' }
             $attemptRecords.Add($record)
             Write-HarnessJson (Join-Path $Context.RunDirectory "attempts.json") $attemptRecords
             if ($record.status -eq "verified-improvement") {
+                Assert-HarnessGuestBaseline $Context $baselineHead | Out-Null
                 Write-HarnessJson (Join-Path $Context.RunDirectory "successful-attempt.json") $record
                 Write-HarnessJson (Join-Path $Context.RunDirectory "manual-intervention-required.json") ([pscustomobject]@{
                     reason = "Candidate improved consistently across repeated captures. Review the patch manually; it has NOT been applied on the devbox."
