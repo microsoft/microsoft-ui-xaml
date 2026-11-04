@@ -16,6 +16,7 @@ using WEX.TestExecution.Markup;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewRowTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewRecyclingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -71,6 +72,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsTrue(markers.All(text => text.StartsWith(NewMarker)),
                     $"Every realized header must carry the current template. Saw: {Describe(markers)}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a default group header reused for another group shows that group's key and count text.")]
+        public void VerifyRecycledDefaultGroupHeaderShowsItsNewGroupText()
+        {
+            TableView tableView = null;
+            var firstKeys = new Dictionary<TableViewGroupHeader, object>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var header in ProjectedGroupHeaders(tableView))
+                {
+                    firstKeys[header] = (header.Content as TableViewGroupInfo)?.Key;
+                }
+                Verify.IsGreaterThan(firstKeys.Count, 0, "Precondition: group headers must realize before scrolling.");
+            });
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headers = ProjectedGroupHeaders(tableView);
+                Verify.IsTrue(headers.Any(header => firstKeys.TryGetValue(header, out var key) && !Equals(key, (header.Content as TableViewGroupInfo)?.Key)),
+                    "Precondition: at least one header container must now host a different group.");
+
+                foreach (var header in headers)
+                {
+                    var info = header.Content as TableViewGroupInfo;
+                    VerifyDefaultGroupHeaderText(header, info?.KeyText, $"header for '{info?.Key}' after recycling");
+                }
             });
         }
 
