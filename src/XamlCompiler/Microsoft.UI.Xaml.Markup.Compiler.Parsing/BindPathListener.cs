@@ -129,17 +129,28 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
             BindPathStep step;
             if (null != attachableProperty && attachableProperty.IsNameValid)
             {
-                step = new AttachedPropertyStep(propertyName, attachableProperty.Type, type, parent, apiInformation);
+                step = new AttachedPropertyStep(
+                    propertyName,
+                    attachableProperty.Type,
+                    type,
+                    parent,
+                    apiInformation,
+                    attachableProperty.IsReadOnly);
             }
             else
             {
-                XamlType valueType = GetDirectPropertyOrFieldType(type, propertyName);
+                XamlType valueType = GetDirectPropertyOrFieldType(type, propertyName, out MemberInfo memberInfo);
                 if (valueType != null)
                 {
                     BindPathStep castStep = bindUniverse.EnsureUniquePathStep(new CastStep(type, parent, apiInformation));
-                    PropertyStep propStep = new PropertyStep(propertyName, valueType, castStep, apiInformation);
-
-                    step = propStep;
+                    if (memberInfo is PropertyInfo propertyInfo)
+                    {
+                        step = new PropertyStep(propertyName, valueType, castStep, apiInformation, propertyInfo);
+                    }
+                    else
+                    {
+                        step = new FieldStep(propertyName, valueType, castStep, apiInformation, (FieldInfo)memberInfo);
+                    }
                 }
                 else
                 {
@@ -354,23 +365,27 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
             return bindUniverse.EnsureUniquePathStep(new FunctionStep(method, parameters, apiInformation));
         }
 
-        private XamlType GetDirectPropertyOrFieldType(XamlType sourceType, string propertyName)
+        private XamlType GetDirectPropertyOrFieldType(XamlType sourceType, string propertyName, out MemberInfo memberInfo)
         {
+            memberInfo = null;
             XamlMember property = sourceType.GetMember(propertyName);
             if (property != null && property.IsNameValid && property.UnderlyingMember.MemberType == System.Reflection.MemberTypes.Property)
             {
+                memberInfo = property.UnderlyingMember;
                 return property.Type;
             }
 
             PropertyInfo propertyInfo = sourceType.UnderlyingType.GetProperty(propertyName);
             if (propertyInfo != null)
             {
+                memberInfo = propertyInfo;
                 return sourceType.SchemaContext.GetXamlType(propertyInfo.PropertyType);
             }
 
             FieldInfo fieldInfo = sourceType.UnderlyingType.GetField(propertyName);
             if (fieldInfo != null)
             {
+                memberInfo = fieldInfo;
                 return sourceType.SchemaContext.GetXamlType(fieldInfo.FieldType);
             }
 
@@ -488,7 +503,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
 
                         if (isDP)
                         {
-                            return new DependencyPropertyStep(name, valueType, parentStep, apiInformation);
+                            return new DependencyPropertyStep(name, valueType, parentStep, apiInformation, propertyInfo);
                         }
                         else
                         {
@@ -501,13 +516,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
                             {
                                 throw new ParseException(ErrorMessages.ExpectingStaticProperty, name, type.Name);
                             }
-                            return new PropertyStep(name, valueType, parentStep, apiInformation);
+                            return new PropertyStep(name, valueType, parentStep, apiInformation, propertyInfo);
                         }
                     }
                 case MemberTypes.Field:
                     {
                         XamlType valueType = type.SchemaContext.GetXamlType(((FieldInfo)memberInfos[0]).FieldType);
-                        return new FieldStep(name, valueType, parentStep, apiInformation);
+                        return new FieldStep(name, valueType, parentStep, apiInformation, (FieldInfo)memberInfos[0]);
                     }
                 case MemberTypes.Method:
                     {

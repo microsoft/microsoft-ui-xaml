@@ -12,6 +12,7 @@ TabularControlsResources::TabularControlsResources()
     // what it does, though.
     MUXControlsFactory::EnsureInitialized();
     UpdateSource();
+    s_hasBeenCreated = true;
 }
 
 void TabularControlsResources::UpdateSource()

@@ -33,21 +33,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(BasicsWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates a StickyHeader ListView and validates the DComp tree with DManip-on-DComp enabled")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ScrollIntoViewWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Pans a StickyHeader ListView and validates the DComp tree with DManip-on-DComp enabled")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TapAStickyWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Pans a StickyHeader ListView with DManip-on-DComp enabled then taps on a Sticky Header")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

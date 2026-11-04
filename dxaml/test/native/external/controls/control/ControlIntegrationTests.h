@@ -39,9 +39,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanSetNestedPopupControlTemplate)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that nested popup templates work.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Has template with Popup IsOpen="true".  This doesn't work in islands
-                                                            // because the Xaml runtime doesn't have a PopupRoot yet to
-                                                            // host the open popup.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoNotPropragateMeasureDirtyDownWhenReassignSamePropertyValue)

@@ -16,7 +16,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private string[] xamlLines;
         private List<XamlCompileError> errors = new List<XamlCompileError>();
 
-        private static char[] Whitespace = { ' ', '\r', '\n', '\t' };
+        private static char[] ElementNameDelimiters = { ' ', '\r', '\n', '\t', '/', '>' };
         private static char[] QuoteCharacters = { '"', '\'' };
 
         public List<XamlCompileError> Errors
@@ -207,17 +207,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 int startColumn = connectionIdElement.LineNumberInfo.StartLinePosition - 1;
 
                 string line = this.xamlLines[startLine];
-                int insertionPoint = line.IndexOfAny(XamlConnectionIdRewriter.Whitespace, startColumn);
+                int insertionPoint = line.IndexOfAny(XamlConnectionIdRewriter.ElementNameDelimiters, startColumn);
                 string connectionIdString = string.Format(CultureInfo.InvariantCulture, " {0}:ConnectionId='{1}'", "x", connectionIdElement.ConnectionId);
                 string newLine = null;
-                if (insertionPoint == -1)
-                {
-                    insertionPoint = line.IndexOf(">");
-                    if (insertionPoint != -1 && line[insertionPoint - 1] == '\\')
-                    {
-                        insertionPoint -= 1;
-                    }
-                }
                 if (insertionPoint != -1)
                 {
                     newLine = line.Substring(0, insertionPoint) + connectionIdString + line.Substring(insertionPoint);

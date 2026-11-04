@@ -1,0 +1,26 @@
+<!-- MaxWidth: the row area measures at infinite width, so uncapped text lays out as one wide line. -->
+<DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
+    <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
+        <TextBlock
+            Text="The underlying collection is untouched. Clear the filter to bring every row back."
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            TextAlignment="Center"
+            HorizontalAlignment="Center"/>
+    </StackPanel>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="FilterTable"
+    AutomationProperties.Name="Filtered people"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    EmptyTemplate="{StaticResource FilterEmptyTemplate}">
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <!-- A template column sorts by SortMemberPath, the value behind the template. -->
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Role" Width="200" CellTemplate="{StaticResource RoleTextBoxTemplate}" SortMemberPath="Role"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+</tv:TableView>

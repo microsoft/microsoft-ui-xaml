@@ -426,6 +426,17 @@
            to MergedWinMD.vcxproj so this path exists by the time this target runs. -->
       <MUXCXamlConsumeWinmd>$(PublicMergedWinMDDir)\Microsoft.UI.Xaml.winmd</MUXCXamlConsumeWinmd>
     </PropertyGroup>
+    <!-- Theme resources use Windows.UI.Text types (e.g. FontWeight). @(ReferencePath) does not reach this
+         compile, so name the SDK metadata the main controls dll resolves them from: the downlevel contract
+         winmds (eng\lightup.targets) or, under XamlLightup, the SDK's union metadata. -->
+    <ItemGroup>
+      <_TabularXamlSdkWinmd Condition="'$(XamlLightup)'!='true'" Include="$(SDKReferencesPath)\Windows.Foundation.FoundationContract.winmd;$(SDKReferencesPath)\Windows.Foundation.UniversalApiContract.winmd" />
+      <_TabularXamlSdkWinmd Condition="'$(XamlLightup)'=='true'" Include="$(ProjectSDKMetadataPath)\Windows.winmd" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(_TabularXamlSdkWinmd.FullPath)')" Text="Tabular XAML compile: SDK metadata '%(_TabularXamlSdkWinmd.FullPath)' was not found." />
+    <PropertyGroup>
+      <MUXCXamlConsumeWinmd>$(MUXCXamlConsumeWinmd);@(_TabularXamlSdkWinmd)</MUXCXamlConsumeWinmd>
+    </PropertyGroup>
     <!-- $(MUXCXamlConsumeWinmd) already carries merged core dxaml types (Control, Brush, UIElement, ...).
          Drop the private unmerged copy so XamlCompiler doesn't resolve the same type twice. -->
     <ItemGroup>
