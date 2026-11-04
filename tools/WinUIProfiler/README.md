@@ -55,8 +55,9 @@ GPU memory events for it, to a session file. It can also read them from a
 recorded trace (`.etl`) into a session file. The Frames tab shows its frames,
 and the Objects tab its UI elements and composition visuals.
 There is no heap capture or instrumented-product
-dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
-not replace the target's loaded runtime.
+dependency in the app yet. The profiler UI uses its pinned SDK runtime. It
+replaces the target's WinUI runtime only when it launches the target with
+private WinUI DLLs (see "Profile an app with private WinUI DLLs").
 
 ## Build and run
 
@@ -74,7 +75,9 @@ $output = (Get-Content .\WinUIProfiler.App\obj\ProfilerAppOutput.x64.Release.txt
 
 Use `-Platform ARM64` to cross-build an ARM64 application; `-Architecture` is an
 alias for `-Platform`. Both target-architecture TAP/injector pairs are built,
-hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
+hash-verified and staged in `ConnectionPayloads`, and both private WinUI
+launchers in `NativeLauncher`. The first build downloads Microsoft Detours for
+the launcher with git (see `WinUIProfiler.Launcher\README.md`). The host's native metric DLL
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
@@ -94,8 +97,80 @@ target PID, creation time, runtime path and latest hello. Errors and timeouts
 remain visible; connecting to a non-WinUI process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
-silently elevated. Select **Recorded trace (.etl)** to read a recorded trace
-instead (see "Recorded, from a trace file" below).
+silently elevated. A target whose UI thread is too busy to take the TAP request
+within about a second, as in a slow startup, makes the injector return
+`0x80070490`; Connect then retries until its 45-second deadline. Select
+**Recorded trace (.etl)** to read a recorded trace instead (see "Recorded, from
+a trace file" below).
+
+## Profile an app with private WinUI DLLs
+
+`scripts\Profile-App.ps1` profiles a WinUI 3 app that loads private builds of
+`Microsoft.UI.Xaml.dll` and `Microsoft.UI.Xaml.Controls.dll`, such as your own
+build of this repo, instead of its own. Run it from this directory with
+PowerShell 7.4 or later:
+
+```powershell
+.\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe
+.\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -Aumid 'Microsoft.WinUI3ControlsGallery_8wekyb3d8bbwe!App'
+```
+
+Use `-ExePath`, with optional `-Arguments`, for an unpackaged app, and `-Aumid`
+for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
+
+1. Builds the profiler with `Build-App.ps1` (Release, for this machine's
+   architecture) when this checkout has no build. `-Build` rebuilds it;
+   `-ProfilerPath` uses another `WinUIProfiler.App.exe`.
+2. Asks for administrator rights with a UAC prompt, because reading ETW live
+   and creating the links below need them. The app runs without them.
+3. Checks that the DLLs are MUX and MUXC builds for the app's architecture,
+   x64 or ARM64, that the app is not running and that it has no `.local`
+   redirection.
+4. Finds the WinUI runtime the app loads now: in its folder, its package or its
+   package's framework dependencies. An unpackaged app that uses the Windows
+   App SDK framework package needs `-MuxResourceDirectory` with that folder.
+5. Stages a runtime folder,
+   `%LOCALAPPDATA%\WinUIProfiler\PrivateRuntime\<run>\runtime`: copies of the
+   two DLLs and symbolic links to the original runtime's other files and
+   language folders. When the private MUX expects different MUI resource files
+   than the original runtime has, the copy is associated with the original's
+   with the Windows SDK's `muirct.exe`, and a signed DLL is refused.
+6. Opens WinUI Profiler, which launches the app with `ProfilerLauncher.exe`
+   (see `WinUIProfiler.Launcher\README.md`) so that it loads the private DLLs,
+   and connects from process start. The connection fails if the app loaded
+   another `Microsoft.UI.Xaml.dll`. Each Connect launches the app again with
+   the same DLLs.
+7. Waits for you to close the profiler. Then it closes the app if it is
+   running, deletes the staged runtime (the links, not the files they point
+   to), and prints each launch's process ID, the private DLLs it loaded and the
+   session files saved. `<run>\launch\<n>` keeps each launch's `launch.json`
+   and `redirect.jsonl`.
+
+It exits with 0 when the app ran with the private DLLs and the staged runtime
+was deleted, 4 when the UAC prompt was declined and 1 otherwise. A runtime
+that cannot be deleted, for example because the app is still running, is kept
+and reported.
+
+The private DLLs must match the app's Windows App SDK version: the launcher
+replaces the two DLLs, not the rest of the runtime. UWP (AppContainer) apps are
+not supported.
+
+The script starts the profiler with these options, which can also be used
+directly:
+
+| Option | Meaning |
+| --- | --- |
+| `--launch-exe <path>` or `--launch-aumid <AUMID>` | The app to launch: a full path, or a packaged app. |
+| `--arguments <text>` | The unpackaged app's command line. |
+| `--private-runtime <folder>` | The staged runtime the app loads MUX from. |
+| `--runtime-source <folder>` | The original runtime folder, whose MUX requests are redirected. |
+| `--redirect-controls` | Also load MUXC from the staged runtime. |
+| `--launch-directory <folder>` | Where each launch writes its results, in `<n>` subfolders. |
+| `--trust-local-binaries` | Checks the trust box. |
+| `--connect` | Connects once the window opens. |
+
+`--private-runtime`, `--runtime-source` and `--launch-directory` go together,
+as full paths.
 
 ## Tree snapshots
 
@@ -283,7 +358,8 @@ The app reads ETW with one real-time session per connection
   the same session switches to a process ID filter. Events stay in the
   session's buffers until then, and events from other processes with the same
   executable name are skipped. The target is launched normally, not suspended,
-  so its launch timing is unchanged.
+  so its launch timing is unchanged. With private WinUI DLLs, the launcher
+  creates it suspended to add its helper first, which adds to the launch time.
 - **Attach:** the session filters on the process ID from the start and reads
   from the time of connection.
 

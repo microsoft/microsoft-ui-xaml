@@ -253,6 +253,7 @@
   <data name="TargetSettings.AutomationProperties.Name" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSettingsHeader" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSummaryFormat" xml:space="preserve"><value>Target: {0} {1}</value></data>
+  <data name="TargetSummaryPrivateFormat" xml:space="preserve"><value>Target: {0} {1} | private WinUI from {2}</value></data>
   <data name="TraceSummaryFormat" xml:space="preserve"><value>Trace: {0}</value></data>
   <data name="TraceSummaryProcessFormat" xml:space="preserve"><value>Trace: {0} | PID {1}</value></data>
   <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
