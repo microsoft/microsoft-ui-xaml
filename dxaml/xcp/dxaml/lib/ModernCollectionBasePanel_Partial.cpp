@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ModernCollectionBasePanel.g.h"
 #include "ScrollViewer.g.h"
 #include "GroupStyle.g.h"
@@ -121,7 +122,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Initialize()
     {
         ctl::ComPtr<LayoutDataInfoProvider> spLayoutDataInfoProvider;
         IFC_RETURN(ctl::make(static_cast<IModernCollectionBasePanel*>(this), &spLayoutDataInfoProvider));
-        m_spLayoutDataInfoProvider = spLayoutDataInfoProvider;
+        SetPtrValue(m_spLayoutDataInfoProvider, spLayoutDataInfoProvider);
     }
 
     return S_OK;
@@ -135,13 +136,13 @@ DOUBLE ModernCollectionBasePanel::GetDefaultCacheLength()
 
 _Check_return_ HRESULT ModernCollectionBasePanel::SetLayoutStrategyBase(_In_ const ctl::ComPtr<xaml_controls::ILayoutStrategy>& spLayoutStrategy)
 {
-    m_spLayoutStrategy = spLayoutStrategy;
+    SetPtrValue(m_spLayoutStrategy, spLayoutStrategy);
     return m_spLayoutStrategy->SetLayoutDataInfoProvider(m_spLayoutDataInfoProvider.Get());
 }
 
 _Check_return_ HRESULT ModernCollectionBasePanel::GetLayoutStrategy(_Out_ ctl::ComPtr<xaml_controls::ILayoutStrategy>* pspLayoutStrategy)
 {
-    *pspLayoutStrategy = m_spLayoutStrategy;
+    *pspLayoutStrategy = m_spLayoutStrategy.Get();
     RRETURN(S_OK);
 }
 
@@ -1006,11 +1007,11 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
     _In_ xaml_controls::LayoutReference referenceInformation,
     _In_ BOOLEAN goForward)
 {
-    TraceGenerateItemsBegin();
+    XamlTelemetry::GenerateItemsBegin(GetHandle());
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
-        TraceGenerateItemsEnd();
+        XamlTelemetry::GenerateItemsEnd(GetHandle());
     });
 
     // needed for Sticky Headers

@@ -1,0 +1,87 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+ApplyGroupHeaderTemplate();
+
+public ObservableCollection<Person> People { get; }
+
+public TableViewSource Source { get; }
+
+private void ApplyGroupHeaderTemplate()
+{
+    PeopleTable.GroupHeaderTemplate = (string)((ComboBoxItem)HeaderTemplateSelector.SelectedItem).Tag == "custom"
+        ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
+        : null;
+}
+
+// TableView.Columns is the live column collection: moving an entry moves the column. The first
+// visible column hosts the group indent and the expander chevron.
+private void SetFirstColumn(TableViewColumn first)
+{
+    var columns = PeopleTable.Columns;
+    var from = columns.IndexOf(first);
+    if (from > 0)
+    {
+        columns.RemoveAt(from);
+        columns.Insert(0, first);
+    }
+}
+
+// From Controls\ShapingOptions.xaml.cs
+// The key selector receives the ROW and the identity selector the KEY. GroupBy takes a delegate,
+// so call it again after a row's grouped-on value changes.
+private static void GroupRows(TableViewSource source, Func<object?, object> groupKeyOf) =>
+    source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+
+// From Controls\ShapingOptions.xaml.cs
+// Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+// the tree rows, so Grouped hierarchy calls both.
+private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.ExpandAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.ExpandAllRows();
+    }
+}
+
+private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
+{
+    if (grouped)
+    {
+        table.CollapseAllGroups();
+    }
+
+    if (hierarchical)
+    {
+        table.CollapseAllRows();
+    }
+}
+
+// From Helpers\SampleShaping.cs
+// Bucket label for a null or blank group key.
+public const string NoneKey = "(none)";
+
+// From Helpers\SampleShaping.cs
+// GroupBy identity selector: it receives the group key (never the row) and must not return an
+// empty string, because TableViewSource fails fast on an empty identity.
+public static string GroupIdentity(object? groupKey) =>
+    groupKey?.ToString() is { Length: > 0 } s ? s : NoneKey;
+
+// From Models\Person.cs
+// The Name column binds FullName, so it needs a setter to be editable: the first word becomes
+// FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+public string FullName
+{
+    get => $"{_firstName} {_lastName}".Trim();
+    set
+    {
+        var name = (value ?? string.Empty).Trim();
+        var split = name.IndexOfAny(new[] { ' ', '\t' });
+        FirstName = split < 0 ? name : name[..split];
+        LastName = split < 0 ? string.Empty : name[(split + 1)..].Trim();
+    }
+}

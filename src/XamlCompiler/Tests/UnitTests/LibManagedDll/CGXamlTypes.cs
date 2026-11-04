@@ -10,6 +10,24 @@ using Microsoft.UI.Xaml.Data;
 
 namespace LibManagedDll
 {
+    public class TemplateDictionary : ResourceDictionary
+    {
+    }
+
+    public class LoadableTemplateControl : Microsoft.UI.Xaml.Controls.Control, System.ComponentModel.INotifyPropertyChanged
+    {
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+        public bool IsVisible { get; private set; }
+        public string Greeting => "Hello world";
+
+        public void SetVisible(bool value)
+        {
+            IsVisible = value;
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(IsVisible)));
+        }
+    }
+
     public class MyDataClass
     {
         public String MyProperty { get; set; }
@@ -48,8 +66,24 @@ namespace LibManagedDll
     public class MyFieldClass
     {
         public String MyProperty { get; set; }
+    }
+
+    [Obsolete]
+    [Windows.Foundation.Metadata.CreateFromString(MethodName = "LibManagedDll.ObsoleteClass.FromString")]
+    public class ObsoleteClass : FrameworkElement
+    {
+        [Obsolete]
+        public string ObsoleteProperty { get; set; }
+
+        public static ObsoleteClass FromString(string value) => new ObsoleteClass();
 
         public String MyStringField;
+    }
+
+    public class ObsoleteClassHolder : FrameworkElement
+    {
+        [Obsolete]
+        public ObsoleteClass ObsoleteProperty { get; set; }
     }
 
     public class MyEventClass

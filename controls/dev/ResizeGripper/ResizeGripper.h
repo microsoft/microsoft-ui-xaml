@@ -5,10 +5,11 @@
 // the hit-testable surface; the consumer positions it, handles DragStarted / DragDelta /
 // DragCompleted, and decides what the reported drag distance means. Mirrors Thumb.
 //
-// The gesture itself is owned here: pointer input arrives as manipulation events, so capture,
-// touch and pen contacts, and multi-pointer arbitration come from the framework's gesture
-// recognizer rather than from each host. BeginDrag / TryDrag / EndDrag stay callable so a host
-// can drive the same gesture from its own keyboard handling.
+// The gesture itself is owned here: pointer input arrives as manipulation events, so touch and pen
+// contacts and multi-pointer arbitration come from the framework's gesture recognizer rather than
+// from each host. The gripper captures the mouse only, so the resize cursor holds off the gripper;
+// touch and pen stay uncaptured so an ancestor ScrollViewer can still pan. BeginDrag / TryDrag /
+// EndDrag stay callable so a host can drive the same gesture from its own keyboard handling.
 
 #pragma once
 
@@ -41,6 +42,8 @@ public:
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
     void OnPointerPressed(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnManipulationStarting(winrt::ManipulationStartingRoutedEventArgs const& args);
     void OnManipulationStarted(winrt::ManipulationStartedRoutedEventArgs const& args);
@@ -60,9 +63,19 @@ private:
     double EffectiveKeyboardIncrement();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void AttachCancelKeyHandler();
+    void DetachCancelKeyHandler();
+    void ReleaseCapturedPointer() noexcept;
+    void OnCancelKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     double m_lastRaisedDelta{ 0.0 };
     bool m_isPointerOver{ false };
+    // The mouse pointer this gripper captured; null when it holds no capture.
+    winrt::Pointer m_capturedPointer{ nullptr };
+    uint32_t m_capturedPointerId{ 0 };
+    bool m_isCapturedPointerReleased{ false };
     bool m_templateApplied{ false };
-    bool m_containerIsRightToLeft{ false };
+    // Boxed handler passed to AddHandler and its target; null when not dragging.
+    winrt::IInspectable m_cancelKeyHandler{ nullptr };
+    winrt::weak_ref<winrt::UIElement> m_cancelKeyRoot{ nullptr };
 };

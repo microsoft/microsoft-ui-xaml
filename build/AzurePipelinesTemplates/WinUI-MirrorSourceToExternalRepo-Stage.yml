@@ -263,7 +263,8 @@ stages:
           $(targetRepositorySubdirectoryArg)
 
     - ${{ if eq(parameters.publishPublicSymbols, true) }}:
-      - template: ${{variables['System.DefaultWorkingDirectory']}}\AzurePipelinesTemplates\WindowsAppSDK-PublishSymbol-Steps.yml@WindowsAppSDKConfig
+      - template: WinUI-PublishSymbol-Wrapper.yml
         parameters:
-          SearchPattern: '$(ob_outputDirectory)\PublicSymbols\**\*.pdb'
-          IsOfficial: true
+          InnerParams:
+            SearchPattern: '$(ob_outputDirectory)\PublicSymbols\**\*.pdb'
+            IsOfficial: true

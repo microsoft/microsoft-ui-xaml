@@ -17,7 +17,7 @@
                   <Properties>
                     <Property Name="AccessKey" Value="h" />
                     <Property Name="FocusState" Value="1" />
-                    <Property Name="Foreground" Value="#FF5B2EC5" />
+                    <Property Name="Foreground" Value="#FFA6D8FF" />
                     <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
                     <Property Name="KeyTipPlacementMode" Value="4" />
                     <Property Name="TextDecorations" Value="1" />
@@ -46,7 +46,7 @@
           <Property Name="HorizontalOffset" Value="177.61" />
           <Property Name="IsHitTestVisible" Value="False" />
           <Property Name="IsOpen" Value="True" />
-          <Property Name="VerticalOffset" Value="0" />
+          <Property Name="VerticalOffset" Value="-2.93" />
         </Properties>
       </Element>
       <PopupElement.Child>

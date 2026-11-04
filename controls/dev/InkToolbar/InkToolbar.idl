@@ -11,23 +11,6 @@ namespace MU_XC_NAMESPACE
     };
 
     [MUX_PREVIEW]
-    enum InkToolbarEraserFlyoutItemKind
-    {
-        StrokeEraser,
-        PrecisionSmallEraser,
-        PrecisionLargeEraser,
-        ClearAll,
-    };
-
-    [MUX_PREVIEW]
-    enum InkToolbarEraserKind
-    {
-        Stroke,
-        PrecisionSmall,
-        PrecisionLarge,
-    };
-
-    [MUX_PREVIEW]
     enum InkToolbarFlyoutItemKind
     {
         Simple,
@@ -78,13 +61,6 @@ namespace MU_XC_NAMESPACE
 
 
     [MUX_PREVIEW]
-    runtimeclass InkToolbarEraserFlyoutItemClickedEventArgs
-    {
-        Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemKind EraserFlyoutItemKind{ get; };
-        Boolean Handled{ set; get; };
-    };
-
-    [MUX_PREVIEW]
     runtimeclass InkToolbarIsStencilButtonCheckedChangedEventArgs
     {
         Microsoft.UI.Xaml.Controls.InkToolbarStencilButton StencilButton{ get; };
@@ -119,11 +95,10 @@ namespace MU_XC_NAMESPACE
         Microsoft.UI.Xaml.Controls.InkToolbarButtonFlyoutPlacement ButtonFlyoutPlacement;
         [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
-        Object TargetInkPresenter;
+        Microsoft.UI.Xaml.Controls.InkPresenter TargetInkPresenter;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> ActiveToolChanged;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> InkDrawingAttributesChanged;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> EraseAllClicked;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemClickedEventArgs> EraserFlyoutItemClicked;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Microsoft.UI.Xaml.Controls.InkToolbarIsStencilButtonCheckedChangedEventArgs> IsStencilButtonCheckedChanged;
         Microsoft.UI.Xaml.Controls.InkToolbarToolButton GetToolButton(Microsoft.UI.Xaml.Controls.InkToolbarTool tool);
         Microsoft.UI.Xaml.Controls.InkToolbarToggleButton GetToggleButton(Microsoft.UI.Xaml.Controls.InkToolbarToggle tool);
@@ -215,7 +190,6 @@ namespace MU_XC_NAMESPACE
         Microsoft.UI.Xaml.Controls.InkToolbarTool ToolKind{ get; };
         Boolean IsExtensionGlyphShown;
         static Microsoft.UI.Xaml.DependencyProperty IsExtensionGlyphShownProperty{ get; };
-        Microsoft.UI.Xaml.Controls.InkToolbarToggle ToggleKind{ get; };
     };
 
     [MUX_PREVIEW]
@@ -250,15 +224,9 @@ namespace MU_XC_NAMESPACE
         : Microsoft.UI.Xaml.Controls.InkToolbarToolButton
     {
         [method_name("CreateInstance")] InkToolbarEraserButton();
-        Microsoft.UI.Xaml.Controls.InkToolbarEraserKind SelectedEraser;
         [MUX_DEFAULT_VALUE("true")]
         Boolean IsClearAllVisible;
-        Boolean IsStrokeEraserVisible;
-        Boolean ArePrecisionErasersVisible;
         static Microsoft.UI.Xaml.DependencyProperty IsClearAllVisibleProperty{ get; };
-        static Microsoft.UI.Xaml.DependencyProperty SelectedEraserProperty{ get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsStrokeEraserVisibleProperty{ get; };
-        static Microsoft.UI.Xaml.DependencyProperty ArePrecisionErasersVisibleProperty{ get; };
      };
 
     [MUX_PREVIEW]
