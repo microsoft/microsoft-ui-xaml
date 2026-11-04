@@ -589,6 +589,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        // Not injectable on the test VMs: no PointerCaptureLost reached the item for the mouse when the
+        // synthetic pen press replaced it (CaptureLostDisableCount stayed 0, item enabled at the pen press),
+        // so the application never disabled the item. Kept for manual runs with real mouse + pen.
+        [TestProperty("Ignore", "True")]
         public void NavigationViewItemDisabledByCaptureLostRejectsPenPress()
 
         {
