@@ -42,8 +42,10 @@ public:
 
     // Updates the weak owner ref, column subscription, and realized cells. Both return true when the
     // cell rebuild also refreshed the row chrome (grid lines and row background).
-    bool SetOwningTableViewInternal(winrt::TableView const& owner);
-    bool EnsureOwningTableViewInternal(winrt::TableView const& owner);
+    // rebuildCells=false skips the rebuild (recycle-out keeps the realized cells for the restamp).
+    bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
+    // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
+    bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
@@ -149,6 +151,7 @@ public:
 
 private:
     void ResetCellAutomationNames();
+    void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
     bool HasCellAutomationPeers() const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
@@ -234,6 +237,7 @@ private:
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N
     // full RebuildCells per row). Recycle / owner / DataContext paths still rebuild synchronously.
     void QueueRebuildCells();
+    void InvalidateCellsCurrent();
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
@@ -292,6 +296,13 @@ private:
     bool m_isRebuildingCells{ false };
 
     bool m_rebuildCellsQueued{ false };
+
+    // One-shot: set by the DataContext rebuild, consumed by the next ElementPrepared, cleared by any other rebuild.
+    bool m_cellsRebuiltForDataContext{ false };
+    // Cells were cleared or a rebuild was dropped/queued while the DataContext rebuild ran.
+    bool m_cellsInvalidated{ false };
+    // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
+    bool m_inRecyclePool{ false };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };

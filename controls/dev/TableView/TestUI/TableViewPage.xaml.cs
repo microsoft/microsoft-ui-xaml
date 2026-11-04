@@ -1149,6 +1149,34 @@ namespace MUXControlsTestApp
         }
 
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
+        {
+            NameColumn.CanResize = !NameColumn.CanResize;
+        }
+
+        // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.
+        private void OnSetAgeAutoScoreStarClick(object sender, RoutedEventArgs e)
+        {
+            AgeColumn.Width = GridLength.Auto;
+            ScoreColumn.Width = new GridLength(1, GridUnitType.Star);
+            TemplateColumn.Width = new GridLength(1, GridUnitType.Star);
+            StatusTextBlock.Text = "Auto and Star set";
+        }
+
+        // "<Header>=<GridUnitType>:<Width.Value>:<ActualWidth>" per column, joined by ';'.
+        private void OnReportBasicColumnWidthsClick(object sender, RoutedEventArgs e)
+        {
+            StatusTextBlock.Text = string.Join(";", BasicTableView.Columns.Select(column =>
+                string.Format(global::System.Globalization.CultureInfo.InvariantCulture, "{0}={1}:{2:0.##}:{3:0.##}",
+                    column.Header, column.Width.GridUnitType, column.Width.Value, column.ActualWidth)));
+        }
+
+        private void OnScaleBasicTableVerticallyClick(object sender, RoutedEventArgs e)
+        {
+            BasicTableHost.RenderTransform = new ScaleTransform { ScaleY = 0.25 };
+            StatusTextBlock.Text = "Scaled vertically";
+        }
+
         private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
         {
             if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))
