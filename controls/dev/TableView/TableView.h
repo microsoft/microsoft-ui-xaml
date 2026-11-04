@@ -1541,9 +1541,11 @@ private:
     int32_t m_currentCellColumn{ 0 };
     int32_t m_currentCellRow{ -1 };
     // Body entry target besides m_currentCellRow: the remembered cell's column (-1 at row level),
-    // or the group entry of a focused group header (then m_currentCellRow is -1).
+    // or the identity of a focused group header (then m_currentCellRow is -1). The identity is a
+    // value-based string that survives reshapes; it applies only to the source it was taken from.
     int32_t m_rememberedEntryColumn{ -1 };
-    tracker_ref<winrt::IInspectable> m_rememberedGroupEntry{ this };
+    winrt::hstring m_rememberedGroupIdentity{};
+    winrt::weak_ref<winrt::TableViewSource> m_rememberedGroupSource{ nullptr };
 
     // Distinguishes column 0 from "no column chosen yet" so first header entry does not relocate.
     bool m_columnCursorEstablished{ false };

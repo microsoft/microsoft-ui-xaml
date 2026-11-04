@@ -2337,14 +2337,21 @@ winrt::UIElement TableView::FindRememberedEntryElementInternal()
     }
 
     winrt::Control remembered{ nullptr };
-    if (auto const groupEntry = m_rememberedGroupEntry.get())
+    if (!m_rememberedGroupIdentity.empty())
     {
+        auto const rememberedSource = m_rememberedGroupSource.get();
+        if (!rememberedSource || rememberedSource != m_activeSource.get())
+        {
+            // A different source; its groups are not the remembered one.
+            m_rememberedGroupIdentity = {};
+            return nullptr;
+        }
+
         const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
         for (int32_t i = 0; i < childCount && !remembered; ++i)
         {
             auto const header = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewGroupHeader>();
-            if (header && repeater.GetElementIndex(header) >= 0 &&
-                SameInspectableIdentity(winrt::get_self<TableViewGroupHeader>(header)->GroupEntryInternal(), groupEntry))
+            if (header && TryGetContainerIdentity(header) == m_rememberedGroupIdentity)
             {
                 remembered = header;
             }
@@ -2411,7 +2418,9 @@ void TableView::RememberGroupHeaderEntry(winrt::TableViewGroupHeader const& head
         return;
     }
 
-    m_rememberedGroupEntry.set(winrt::get_self<TableViewGroupHeader>(header)->GroupEntryInternal());
+    m_rememberedGroupIdentity = TryGetContainerIdentity(header);
+    auto const activeSource = m_activeSource.get();
+    m_rememberedGroupSource = activeSource ? winrt::make_weak(activeSource) : winrt::weak_ref<winrt::TableViewSource>{ nullptr };
     m_currentCellRow = -1;
     m_rememberedEntryColumn = -1;
 }
@@ -2851,7 +2860,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
         {
             m_currentCellRow = rowIndex;
             m_rememberedEntryColumn = -1;
-            m_rememberedGroupEntry.set(nullptr);
+            m_rememberedGroupIdentity = {};
             winrt::IInspectable item{ nullptr };
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
@@ -2871,7 +2880,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
     {
         m_currentCellRow = rowIndex;
         m_rememberedEntryColumn = columnIndex;
-        m_rememberedGroupEntry.set(nullptr);
+        m_rememberedGroupIdentity = {};
     }
 
     ArmCellLevelRowInternal(row);
