@@ -61,6 +61,7 @@ public sealed partial class MainWindow : Window
         ObjectsPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
         ObjectsPanel.Source = session;
+        LaunchPanel.Source = session;
         FramesPanel.ObjectRequested += (_, mention) =>
         {
             Tabs.SelectedItem = ObjectsTab;
@@ -566,7 +567,8 @@ Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
 Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
-SessionsDirectory);
+SessionsDirectory,
+LaunchPanel.LoadConfig().Providers);
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy)
@@ -605,7 +607,7 @@ SessionsDirectory);
         session.BeginRecording();
         try
         {
-            await model.OpenTraceAsync(path, process, SessionsDirectory);
+            await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
         catch (Exception error)
         {

@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Processing;
@@ -24,7 +25,8 @@ string PayloadDirectory,
 bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
 long? ExpectedCreationTimeFileTime = null,
-    string? SessionDirectory = null);
+    string? SessionDirectory = null,
+    IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -174,9 +176,10 @@ public sealed class TargetConnection : IAsyncDisposable
         token.ThrowIfCancellationRequested();
         Report("Launching", options.Target);
         var launchExecutables = GetLaunchExecutables(options);
+        var markers = options.MarkerProviders ?? [];
         if (launchExecutables.Count > 0)
         {
-            PrepareEtw(launchExecutables);
+            PrepareEtw(launchExecutables, markers);
         }
 
         target = options.Kind switch
@@ -192,7 +195,7 @@ public sealed class TargetConnection : IAsyncDisposable
             throw new InvalidOperationException("The selected PID was reused. Refresh the process list and select again.");
         }
 
-        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory);
+        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory, markers);
         var payloads = ConnectionPayloadCatalog.Resolve(options.PayloadDirectory, InjectorResolver.GetArchitecture(Scope.Process));
         Report("Waiting for XAML", $"PID {target.Id}; waiting for the WinUI diagnostics endpoint.");
         string? runtime = null;
@@ -273,13 +276,13 @@ History);
         }
     }
 
-    private void PrepareEtw(IReadOnlyList<string> launchExecutables)
+    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<MarkerProviderSettings> markers)
     {
         try
         {
             etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
             etwListeningSinceQpc = Stopwatch.GetTimestamp();
-            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables);
+            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, markers);
         }
         catch (Exception error)
         {
@@ -288,7 +291,7 @@ History);
     }
 
     private void StartEtw(Process process, long? creationTimeFileTime, IReadOnlyList<string> launchExecutables,
-        string? sessionDirectory)
+        string? sessionDirectory, IReadOnlyList<MarkerProviderSettings> markers)
     {
         if (etwStartError is not null)
         {
@@ -321,11 +324,12 @@ History);
             if (etw is null)
             {
                 etwListeningSinceQpc = Stopwatch.GetTimestamp();
-                etw = LiveEtwSource.Start(process.Id, events.Post);
+                etw = LiveEtwSource.Start(process.Id, markers, events.Post);
             }
             else
             {
-                etw.StartReading(process.Id, events.Post);
+                // The profiler launched the process, so its launcher providers' events are the launch's too.
+                etw.StartReading(process.Id, etwFromProcessStart ? Environment.ProcessId : null, events.Post);
             }
 
             pipeline = events;
@@ -343,7 +347,8 @@ History);
         }
     }
 
-    // One file per connection; time zero of the recording is when ETW started listening.
+    // One file per connection; time zero of the recording is when ETW started listening. For a launch, the profiler is the
+    // launcher.
     private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
     {
         if (directory is null)
@@ -357,7 +362,9 @@ History);
             return SessionWriter.Create(path, new(process.Id, process.ProcessName,
                 creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null, Stopwatch.Frequency,
                 etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
-                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection));
+                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
+                LauncherProcessId: etwFromProcessStart ? Environment.ProcessId : null,
+                LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

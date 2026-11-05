@@ -25,7 +25,7 @@ public enum TraceReplayState
 
 // ReadMilliseconds is the trace time of the last event read, of any process, and DurationMilliseconds the trace's length
 // (0 when its header has none), so Progress is how much of the file has been read. OutOfOrderEvents counts the process's
-// events whose timestamp is earlier than the event before them; they keep the file's order.
+// events whose timestamp is earlier than the process's event before them; they keep the file's order.
 public sealed record TraceReplayStatus(TraceReplayState State, long XamlEvents, long ProfilerEvents, long GpuMemoryEvents,
     int LostEvents, long OutOfOrderEvents, double ReadMilliseconds, double DurationMilliseconds)
 {
@@ -49,6 +49,7 @@ public sealed class TraceReplay : IAsyncDisposable
     private readonly TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Timer changed;
     private readonly double durationMilliseconds;
+    private readonly LaunchWatcher launch;
 
     // Used only on the reader thread.
     private long lastQpc = long.MinValue;
@@ -60,7 +61,8 @@ public sealed class TraceReplay : IAsyncDisposable
     private double readMilliseconds;
     private volatile Exception? failure;
 
-    private TraceReplay(string etlPath, int processId, string? processName, ETWTraceEventSource source, SessionWriter writer)
+    private TraceReplay(string etlPath, int processId, string? processName, ETWTraceEventSource source, SessionWriter writer,
+        IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         EtlPath = etlPath;
         ProcessId = processId;
@@ -77,7 +79,15 @@ public sealed class TraceReplay : IAsyncDisposable
         try
         {
             source.AllEvents += OnAnyEvent;
-            XamlEventSubscription.Match(source, processId, OnEvent);
+            // Times the launch timeline from the process's creation, and reads the events its launcher wrote.
+            launch = new(source, processId, start =>
+            {
+                if (!halted)
+                {
+                    writer.SetProcessStart(start);
+                }
+            }, PostLauncherEvent);
+            XamlEventSubscription.Match(source, processId, markers, OnEvent, OnOtherProcessEvent);
             changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
             new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
         }
@@ -119,9 +129,10 @@ public sealed class TraceReplay : IAsyncDisposable
     public string? RecordingError => writer.Failure is { } error ? $"Recording stopped: {error.Message}" : null;
 
     // Reads processId's events from the trace at etlPath into a new session file in sessionDirectory, named like a live
-    // session's file after processName, or after the trace when the name is not known.
+    // session's file after processName, or after the trace when the name is not known. Markers are the marker providers
+    // whose events are read too.
     public static TraceReplay Start(string etlPath, int processId, string? processName, string sessionDirectory,
-        long limitBytes = SessionWriter.DefaultLimitBytes)
+        long limitBytes = SessionWriter.DefaultLimitBytes, IReadOnlyCollection<MarkerProviderSettings>? markers = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(etlPath);
         ArgumentException.ThrowIfNullOrEmpty(sessionDirectory);
@@ -142,7 +153,7 @@ public sealed class TraceReplay : IAsyncDisposable
         {
             writer = SessionWriter.Create(SessionPath(sessionDirectory, processName ?? Path.GetFileNameWithoutExtension(path), processId),
                 new(processId, processName, null, frequency, null, SessionCoverage.Trace, path), limitBytes);
-            return new(path, processId, processName, source, writer);
+            return new(path, processId, processName, source, writer, markers ?? []);
         }
         catch
         {
@@ -210,6 +221,12 @@ public sealed class TraceReplay : IAsyncDisposable
                 failure ??= error;
             }
 
+            if (!halted)
+            {
+                // The launcher's events that waited for whether they are part of the launch.
+                launch.Complete();
+            }
+
             // The trace was read to its end unless Stop, damage or a failure ended the reading.
             readAll = failure is null && !halted;
             Volatile.Write(ref lostEvents, source.EventsLost);
@@ -239,7 +256,7 @@ public sealed class TraceReplay : IAsyncDisposable
         }
     }
 
-    private void OnEvent(TraceEvent data, XamlProvider provider, int processId)
+    private void OnEvent(TraceEvent data, XamlProvider provider, MarkerProvider? marker, int processId)
     {
         if (halted)
         {
@@ -248,23 +265,67 @@ public sealed class TraceReplay : IAsyncDisposable
 
         try
         {
-            var profilerEvent = XamlEventSubscription.Capture(data, provider, processId);
+            var profilerEvent = XamlEventSubscription.Capture(data, provider, marker, processId);
             if (profilerEvent.TimestampQpc < lastQpc)
             {
                 Interlocked.Increment(ref outOfOrderEvents);
             }
 
             lastQpc = profilerEvent.TimestampQpc;
-            // Waits while the pipeline is full, also after Stop: the events already queued are processed before the
-            // file is closed anyway. An event that could not be processed or stored ends the reading.
-            if (writer.Failure is not null || !pipeline.PostBlocking(profilerEvent))
+            Post(profilerEvent);
+            // Not an event another process wrote about it, such as the System process's GPU memory event.
+            if (data.ProcessID == ProcessId)
             {
-                Halt();
+                launch.ProcessEvent(data.TimeStampRelativeMSec);
             }
         }
         catch (Exception error)
         {
             failure ??= error;
+            Halt();
+        }
+    }
+
+    // An event of a launcher provider from another process: LaunchWatcher delivers it if it's the launcher's and part of
+    // the launch.
+    private void OnOtherProcessEvent(TraceEvent data, MarkerProvider marker)
+    {
+        if (halted)
+        {
+            return;
+        }
+
+        try
+        {
+            launch.OtherProcessEvent(data, marker);
+        }
+        catch (Exception error)
+        {
+            failure ??= error;
+            Halt();
+        }
+    }
+
+    // LaunchWatcher delivers the launcher's events also from the kernel's process events and Complete.
+    private void PostLauncherEvent(ProfilerEvent profilerEvent)
+    {
+        try
+        {
+            Post(profilerEvent);
+        }
+        catch (Exception error)
+        {
+            failure ??= error;
+            Halt();
+        }
+    }
+
+    // Waits while the pipeline is full, also after Stop: the events already queued are processed before the file is
+    // closed anyway. An event that could not be processed or stored ends the reading.
+    private void Post(ProfilerEvent profilerEvent)
+    {
+        if (!halted && (writer.Failure is not null || !pipeline.PostBlocking(profilerEvent)))
+        {
             Halt();
         }
     }

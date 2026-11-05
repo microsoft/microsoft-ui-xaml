@@ -52,9 +52,11 @@ Native compile-time size assertions protect the x64 and ARM64 layouts.
 This is the executable/connection/metrics baseline, not the full profiler.
 While connected, the app saves the target's XAML ETW events, and the kernel's
 GPU memory and window focus events for it, to a session file. It can also read
-them from a recorded trace (`.etl`) into a session file. The Frames tab shows
-its UI-thread ticks and the regions of interest in them, and the Objects tab
-its UI elements and composition visuals.
+them from a recorded trace (`.etl`) into a session file. The Launch tab shows
+the launch's milestones, including an app's own (see
+[Launch timeline](#launch-timeline)), the Frames tab its UI-thread ticks and
+the regions of interest in them, and the Objects tab its UI elements and
+composition visuals.
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime; it does
 not replace the target's loaded runtime.
@@ -79,7 +81,7 @@ hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
-Run the event compatibility regression checks from this directory:
+Run the event compatibility and snapshot resource regression checks from this directory:
 
 ```powershell
 dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
@@ -87,7 +89,9 @@ dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
 
 These check object timelines across new TraceLogging and legacy manifest events,
 and verify that migrated performance regions distinguish Start/Stop without
-also matching legacy manifest events.
+also matching legacy manifest events. Snapshot checks cover allocator deltas,
+named graphics resources, untracked versus observed lifetimes, four-group
+classification, missing captures and full-range 64-bit graphics comparisons.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -102,9 +106,15 @@ instead (see "Recorded, from a trace file" below).
 
 Each capture also calls the target's private `IXamlDiagnosticsPrivate::GetResourceSnapShot`
 once, before tree enumeration, and saves the result and its QPC interval in the
-snapshot JSON (schema 4, `resourceSnapshot`). The resource view currently shows
-the five allocator/GC metrics and any populated graphics counter slots, identified
-by their fixed array index rather than a generated string name. Comparison shows **Before**, **After**, and
+snapshot JSON (schema 4, `resourceSnapshot`). The **Resource allocations** view shows
+four collapsible groups: **Allocation statistics**, **Composition objects**,
+**D2D objects**, and **WinUI wrappers**. Each allocator metric or populated graphics
+type occupies one row. Composition and raw D2D objects show only creation totals,
+with a group-level note that destruction and live counts are not tracked. Native
+WinUI wrappers show observed creation, destruction and live counts, not the lifetime
+of underlying graphics objects or GPU allocations. Unknown slots appear separately
+with their numeric labels and raw counters, without assigning an invented category.
+The same groups in comparisons show **Before**, **After**, and
 signed **Delta (After - Before)** values, in counts or bytes; resource-only changes
 are included even when the trees are unchanged. Deltas preserve the full 64-bit
 counter range, including decreases. All five allocator/GC metrics use signed 64-bit
@@ -129,8 +139,11 @@ be unbalanced. Disabled or unrepresentable allocator metrics are returned as `-1
 retained internal totals are not presented as measured zeros when tracking stops.
 `AllocatedMemory` is the independent managed-runtime GC heuristic and returns `-1`
 when managed-memory tracking is disabled. Resource and tree intervals are not atomic.
-Graphics counters are still unimplemented;
-all-zero placeholder slots are omitted, not reported as measured zeros.
+Graphics counters require a target runtime containing rendering resource diagnostics
+and an enabled profiler provider. Totals accumulate across enabled profiling periods
+and exclude earlier creations; they are not scoped to the captured tree nodes.
+All-zero slots are omitted: an empty graphics section can mean unsupported or disabled
+tracking, or no observed creations, not that no graphics resources exist.
 
 As soon as a connection succeeds after the genuine TAP hello, the app
 automatically captures and saves an **Initial snapshot** as the first snapshot
@@ -226,6 +239,13 @@ Microsoft-Windows-XAML-Profiler instrumentation are also compiled in all builds;
 event emission is controlled by runtime ETW enablement.
 The GPU memory events come
 from Windows, whatever the build. They carry the values
+The providers of the marker configuration, such as an app's own, are read too,
+for the same process only: see [Launch timeline](#launch-timeline).
+
+Projection-layer activities, peer association and surface initialization use
+runtime ETW enablement in all build configurations. Remaining element and
+composition instrumentation still requires `XamlProfilerEnabled`. The GPU memory
+events come from Windows, whatever the build. They carry the values
 `IDXGIAdapter3::QueryVideoMemoryInfo` returns, which earlier builds also
 reported in the profiler's `GpuMemorySnapshot` event. The kernel writes them
 when the usage or budget changes, and writes the current values when the
@@ -339,8 +359,8 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock |
-| `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names |
+| `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
 | `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
@@ -484,7 +504,8 @@ The writer also records which UI-thread tick each event belongs to
   surface events; `Other` for everything else (layout, rendering, scheduling).
   They go by the TraceLogging events' names, so manifest events about the same
   work, such as `ApplyTemplate/Start` or Microsoft-Windows-XAML-Diagnostics'
-  `ElementAdded`, are `Other`.
+  `ElementAdded`, are `Other`. So are marker providers' events, whatever their
+  names.
 
 ### Frames tab
 
@@ -524,9 +545,10 @@ are in `App.xaml`. They give way to the list's hover and selection colors.
   thread's events from the region's start to its end, with the same buckets,
   filter and pages. Selecting a gray row shows its thread's events from its
   start to its stop.
-- For a launch recorded from process start, the tab gives when the first ten
-  ticks that drew on the first UI thread ended, from the process's creation;
-  otherwise from the start of the recording. A trimmed file no longer has them.
+- For a launch recorded from process start, or a trace that has the process's
+  creation, the tab gives when the first ten ticks that drew on the first UI
+  thread ended, from the process's creation; otherwise from the start of the
+  recording. A trimmed file no longer has them.
 - `WinUIProfiler.Cli frames` prints the ticks, `frames --list` the tab's list
   (`--show interesting` or `slow` as the Show filter), and `interesting` the
   interesting rows (`--region <id>` for one region). `--json` prints the views'
@@ -585,9 +607,10 @@ object's WinRT addresses (its `IUnknown` and its XAML diagnostics handle).
 `PeerAssociated`, `ElementEnteredTree`, `ChildAdded` and `ChildInserted` carry
 both an element's address and its WinRT object's, so
 `SessionFile.FindSnapshotElement` maps a snapshot node to the element that was
-at that address when the snapshot was taken. That needs the recording to have
-seen the element being created or added to the tree: a session attached to a
-running app finds only the elements added since.
+at that address when the snapshot was taken (a marker provider's events of
+those names aren't used). That needs the recording to have seen the element
+being created or added to the tree: a session attached to a running app finds
+only the elements added since.
 
 A Composition node's address is its `IVisual` pointer, which the visual events
 carry too, so `SessionFile.FindSnapshotVisual` finds the visual at that
@@ -635,6 +658,8 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli interesting session.sqlite              # the regions of interest and the interesting rows in them, with what started each region
 & $cli frames session.sqlite --list --show interesting   # the Frames tab's list, as Show = Regions of interest keeps it, with region IDs
 & $cli interesting session.sqlite --region <id> --json   # one region and its rows, as JSON
+& $cli launch xaml.etl --pid <pid> [--markers markers.json]   # the launch timeline, as in the Launch tab
+& $cli launch session.sqlite                   # the same, from a session file
 ```
 
 The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
@@ -647,7 +672,7 @@ trace** reads the selected process's events into a new session file, named
 after the process, or after the trace when the process has no name. The events
 go through the same pipeline and processors as a live session's, so the file
 holds the same events, UI elements, visuals and ticks as one `record` writes
-from the trace, and the Frames and Objects tabs follow it as it grows.
+from the trace, and the Launch, Frames and Objects tabs follow it as it grows.
 
 - A reader thread reads the file in its order and posts the process's events to
   the processing thread's queue, which holds as many events as a live
@@ -681,6 +706,227 @@ from the trace, and the Frames and Objects tabs follow it as it grows.
   about a second, and reading the app's 101,281 events less than two.
 - A trace has no running process, so there are no live metrics or tree
   snapshots for it.
+
+## Launch timeline
+
+The Launch tab (`Views\LaunchView.xaml`) shows when the target reached each
+milestone of its launch: the built-in ones, the process's creation and the
+first frame drawn, and those of the marker configuration, such as the first
+event an app writes when it is ready to use, or one its launcher writes as it
+starts the app (see [Launcher milestones](#launcher-milestones)). It reads the
+session file the Frames and Objects tabs show, once a second while it is
+recorded, so it follows a launch from the app as it happens. The CLI's `launch`
+command prints the same timeline for a trace or a session file.
+`Launch\LaunchTimeline.cs` finds the milestones.
+
+- Times are in milliseconds from the earliest launcher milestone before the
+  process's creation, if there is one, or else from the creation, which the
+  session knows for a launch from the app, an attach, and a trace with the
+  kernel's process events, as a WPR trace has; the summary says which.
+  Otherwise, as in a trace recorded with the `logman` commands above, they are
+  from the start of the recording, the process's first event in the trace,
+  and the tab says so.
+- The milestones are in time order. Each shows its time, the time since the
+  milestone before, a bar from the milestone before to it on a scale that ends
+  at the last milestone, the event that marked it, "(launcher)" for a launcher
+  milestone, its thread, and how many events marked it; its time is the first
+  one's, or for a launcher milestone, the one nearest the process's creation.
+  The milestones not reached are listed below them.
+- The first frame drawn is when the first tick that drew on the first UI thread
+  ended, the first of the ticks the Frames tab gives for a launch.
+- Attached to a running process, the recording starts after the launch: the
+  tab says when, from the process's creation, and the milestones before it,
+  and the first frame drawn, are missing.
+- When the session file has deleted its oldest events to stay within its size
+  limit before the tab read them, as when **Reload** reads a long recording
+  again, milestones among them may be missing or show a later event, and the
+  tab says so. The first frame drawn is then not reached unless the tab found
+  it before, as the Frames tab shows no launch frames for such a file.
+
+### Marker configuration
+
+The marker configuration is a JSON file, which can have comments and trailing
+commas: the providers to record along with the XAML providers, and the
+milestones. The profiler uses `%LOCALAPPDATA%\WinUIProfiler\markers.json` when
+it exists, and otherwise the default, `Launch\markers.json`: Windows' launch
+events (see [Launcher milestones](#launcher-milestones)), the process's
+creation, the first UI thread frame (`Microsoft.UI.Xaml`'s
+`FirstUiThreadFrameEnd`), the first frame drawn, Windows' measures of when the
+app's UI responded and was complete, which some apps log, such as Paint, and
+the Microsoft Store's launch scenarios. **Edit markers** in the Launch tab
+creates the file from the default the first time and opens it; once it is
+saved, **Reload** reads it again and shows its milestones. When the file is
+not valid, the tab says why and uses the default, so a mistake in it never
+stops a connection. The CLI does the same, with a warning; it reads another
+file with `--markers`, and stops with exit code 3 when that file is not valid.
+
+The configuration's providers are recorded for the same process as the XAML
+providers, live at their level and keywords, and from a trace as the trace has
+them; those a launcher milestone names are recorded for the launcher too.
+Their events are saved to the session file. A provider added to the
+configuration is recorded from the next connection or trace read; a milestone
+added for a provider already recorded shows at once.
+
+An app marks a milestone by writing an event, such as with an `EventSource` in
+C#:
+
+```csharp
+private static readonly EventSource Markers = new("Contoso.App");
+
+// When the app is ready to use:
+Markers.Write("ReadyToInteract");
+```
+
+and a configuration that names it:
+
+```json
+{
+  "version": 1,
+  "providers": [
+    { "name": "Contoso.App" }
+  ],
+  "milestones": [
+    { "builtin": "ProcessCreated" },
+    { "builtin": "FirstFrameDrawn" },
+    { "provider": "Contoso.App", "event": "ReadyToInteract", "label": "Ready to interact" }
+  ]
+}
+```
+
+The file has `version` 1, `providers` (optional) and `milestones`. A provider
+has:
+
+| Property | Meaning |
+| --- | --- |
+| `name` | Required. Without `guid`, the provider's GUID is the one EventSource and TraceLogging derive from its name |
+| `guid` | The GUID of a provider whose GUID is not derived from its name |
+| `level` | From 1 (critical) to 5 (verbose, the default), or a provider's own higher level |
+| `keywords` | A number, or a string such as `"0x400000000000"`; all by default |
+
+The XAML providers, Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k,
+which the profiler always records, can't be in `providers`; milestones name
+them without listing them. A milestone has:
+
+| Property | Meaning |
+| --- | --- |
+| `builtin` | `ProcessCreated` or `FirstFrameDrawn`, labelled "Process created" and "First frame drawn" unless it has a `label` |
+| `provider`, `event` | Instead of `builtin`: the first event of this name from this provider marks the milestone. The provider is one in `providers`, or one the profiler always records, such as `Microsoft.UI.Xaml` |
+| `where` | Field values the event needs, such as `{ "Items": 200 }`. A number matches a numeric field with that value; a string, `true` or `false` matches the field's value as text, case-insensitively |
+| `label` | The milestone's name |
+| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, as the Store's `PerfMetrics` events name each launch scenario in `scenario` |
+| `process` | An executable name, with or without `.exe`: the milestone is only for that app, and for a session whose process name is not known |
+| `from` | `app`, the default, or `launcher`: an event of the process that launched the app marks the milestone (see [Launcher milestones](#launcher-milestones)). Its provider is one in `providers`; a built-in milestone has no `from` |
+
+Provider, event and field names match case-insensitively. Property names are
+case-sensitive, and an unknown one is an error. An EventSource method named
+`XxxStart` or `XxxStop` writes the event `Xxx/Start` or `Xxx/Stop`, and `Write`
+the event it names.
+
+A trace has an app's events only if its provider was recorded: add its GUID to
+`providers.txt` (see [Recorded, from a trace file](#recorded-from-a-trace-file)).
+PowerShell gives an EventSource's:
+`[System.Diagnostics.Tracing.EventSource]::new('Contoso.App').Guid`.
+
+### Launcher milestones
+
+A milestone with `"from": "launcher"` is marked by an event of the target's
+launcher, the process that launched it: the profiler for a launch from the
+app, or in a trace, the process that created it, such as File Explorer or
+PowerShell. The default configuration has three, from Windows' launch events:
+**User click** (`AppLaunch_UserClick`), which the shell writes for a user's
+click that launches an app, but not for a launch by UI Automation,
+**Activation requested** (`TryActivateDesktopAppXApplication/Start`), when a
+packaged desktop app is activated, and **ShellExecute**
+(`ShellExecuteExW/Start`). The times are from the earliest of them before the
+process's creation, so the timeline starts where the launch did; the summary
+says which, and names the launcher.
+
+- The session knows the launcher for a launch from the app, the profiler, and
+  for a trace with the kernel's process events, from the event for the
+  process's creation, which names its parent. An attach, or a trace without
+  those events, has no launcher milestones, and doesn't list them as not
+  reached.
+- A launcher can launch other apps, so only its events within 10 seconds of
+  the process's creation count, and the one nearest the creation marks the
+  milestone. A start event after the creation started something else, such as
+  the profiler's `ShellExecuteExW/Start` when **Edit markers** opens the
+  configuration, and doesn't count.
+- In a trace, only the launcher's events that are part of the launch count, so
+  each app a script launches gets its own:
+  - An event with an activity ID, as the start and stop events of
+    `ShellExecuteExW` and `TryActivateDesktopAppXApplication` have, counts
+    when the launcher created the process during the activity, whose stop
+    event is at most 10 seconds after the creation, and the thread of the
+    activity's start event created the process; or else no thread created it
+    while running another of the launcher's activities, but one did create
+    each other process the launcher created during the activity. So when a
+    script's launches overlap, each app gets its own; but when the trace
+    doesn't say which threads created them, an activity during which the
+    launcher created more than one process counts for none of them. The
+    thread that created a process is the parent of its first thread, from the
+    kernel's thread events, when it is a thread of the process's parent. Such
+    a call starts up to hundreds of milliseconds before the creation, so its
+    start can be nearer the launcher's previous creation; it can create the
+    process on another of its threads; and a call that created no process, as
+    when the launch's process is created by another process, doesn't count
+    for a process the launcher creates later.
+  - An event without an activity ID counts as an event of the activity its
+    thread was in: that of the thread's latest event with an activity ID,
+    when the activity's start event is one of the launcher's events within 10
+    seconds of the creation and the activity hadn't stopped before it.
+    `ShellExecuteExW` writes `AppLaunch_UserClick` without one on a thread of
+    its own, as for PowerShell's `Start-Process ms-settings:`, a call that
+    creates no process itself, so that click doesn't count for a process
+    PowerShell creates later.
+  - A start event of no activity, or whose stop event is more than 10 seconds
+    after the creation or not in the trace, counts when the process was the
+    first the launcher created after it.
+  - Any other event counts when it is nearer the creation than the launcher's
+    creation of any other process.
+  - The launcher is the process with its ID from its start until its end, so
+    the events of another process with the same ID don't count.
+- File Explorer opening an app's executable writes no `ShellExecuteExW/Start`,
+  and writes `AppLaunch_UserClick` after it creates the process, 34 ms after in
+  the trace measured, so the times of such a launch are from the creation, and
+  User click comes after it.
+- The launcher's events are saved to the session file, but the Frames and
+  Objects tabs show only the target's.
+- For a launch from the app, the profiler activates a packaged app itself, so
+  the launch has **Activation requested** and **ShellExecute**, but creates an
+  unpackaged app's process directly, which writes neither.
+- A UWP app's process is created by a Windows service, svchost.exe, rather
+  than by the process that launched it, so its launcher is that service.
+
+A trace has the launcher milestones only if it has, in one file, the kernel's
+process events and the configuration's providers, and tells overlapping
+launches apart with the kernel's thread events. The `logman` commands of
+[Recorded, from a trace file](#recorded-from-a-trace-file) don't record the
+kernel's process and thread events. WPR can record them in one file with the
+providers: use a profile with the kernel's process and thread events, the
+providers in `providers.txt`, and the configuration's providers, such as an
+app's own. Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k write from
+the kernel, so only to a session in nonpaged memory, which WPR uses only for a
+provider with `NonPagedMemory="true"`: give them that, in a small collector of
+their own, or their GPU memory and window focus events are lost. The default
+configuration's providers are:
+
+| Provider | GUID |
+| --- | --- |
+| Microsoft.Windows.AppLifeCycle.UI | `ee97cdc4-b095-5c70-6e37-a541eb74c2b5` |
+| Microsoft.Windows.ApplicationModel.DesktopAppx | `5526aed1-f6e5-5896-cbf0-27d9f59b6be7` |
+| Microsoft.Windows.ShellExecute | `382b5e24-181e-417f-a8d6-2155f749e724` |
+| Microsoft.Windows.AppLifeCycle | `ef00584a-2655-462c-bc24-e7de630e7fbf` |
+| Microsoft-Windows-Store | `9c2a37f3-e5fd-5cae-bcd1-43dafeee1ff0` |
+
+Then, with the profile in `launch.wprp` and `$cli` as above:
+
+```powershell
+wpr -start launch.wprp -filemode               # from an elevated prompt, before the launch
+# ... launch the app ...
+wpr -stop launch.etl
+& $cli processes launch.etl                    # to find the app's PID
+& $cli launch launch.etl --pid <pid>
+```
 
 ## Limitations
 

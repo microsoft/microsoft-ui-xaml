@@ -19,7 +19,8 @@ internal static class SessionSchema
             ProcessName TEXT,
             ProcessCreatedUtc TEXT,
             QpcFrequency INTEGER,      -- for a recorded trace, derived from the events
-            StartQpc INTEGER,          -- time zero of the recording; for a recorded trace, its first event
+            StartQpc INTEGER,          -- time zero of the recording; for a recorded trace, the target's first event (the
+                                       -- launcher's events can be earlier)
             StartedUtc TEXT NOT NULL,
             StartedQpc INTEGER,        -- QPC read with StartedUtc, to place UTC times such as ProcessCreatedUtc on the QPC clock (live)
             Source TEXT NOT NULL,      -- Live or Trace
@@ -31,15 +32,22 @@ internal static class SessionSchema
             EndedUtc TEXT,
             EndReason TEXT,
             LostByEtw INTEGER,
-            DroppedByProfiler INTEGER);
+            DroppedByProfiler INTEGER,
+            ProcessStartQpc INTEGER,   -- a recorded trace's process creation, from the kernel's process start event, if recorded
+            LauncherProcessId INTEGER, -- the process that launched the target, when known: the profiler for a launch from
+                                       -- the app, or for a recorded trace the parent the kernel's process start event names
+            LauncherName TEXT);        -- its executable name without .exe, when known
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
-            Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl
+            Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl; Marker for a marker provider
             Name TEXT NOT NULL,
             Opcode INTEGER NOT NULL,
             FieldNames TEXT NOT NULL,  -- comma-separated names; the Nth names the Nth value in Events.Payload
             FieldTypes TEXT NOT NULL,  -- comma-separated .NET type names (FieldType), one per value
-            TraceLogging INTEGER NOT NULL); -- 1 for a TraceLogging event, 0 for a manifest event
+            TraceLogging INTEGER NOT NULL, -- 1 for a TraceLogging event, 0 for a manifest event
+            ProviderName TEXT NOT NULL, -- the ETW provider's name, such as Microsoft.UI.Xaml, or a marker provider's
+            ProviderId TEXT NOT NULL,  -- the ETW provider's GUID
+            Launcher INTEGER NOT NULL); -- 1 for a marker event of the launcher (SessionInfo.LauncherProcessId), 0 for the target's
         CREATE TABLE Events (
             Seq INTEGER PRIMARY KEY,   -- arrival order: 1, 2, 3...
             Qpc INTEGER NOT NULL,
@@ -306,15 +314,18 @@ internal static class SessionSchema
         ORDER BY ListIndex;
         CREATE VIEW LaunchSummary AS
         -- The first 10 ticks that drew on the first UI thread (the thread of the first tick), and when each ended: from process
-        -- start when the recording saw it (Coverage ProcessStart), otherwise from the start of the recording. Empty for a trimmed
-        -- file (CompleteFromSeq set), which no longer has them.
+        -- start when the recording saw it (Coverage ProcessStart, or a recorded trace with the kernel's process start event),
+        -- otherwise from the start of the recording. Empty for a trimmed file (CompleteFromSeq set), which no longer has them.
         WITH
         TickList AS MATERIALIZED (SELECT * FROM Ticks),
-        -- When the process started, in ms from the start of the recording: StartedQpc was read with StartedUtc, so the
-        -- creation time (100 ns ticks, parsed from the ISO 8601 text) maps onto the QPC clock.
+        -- When the process started, in ms from the start of the recording. A recorded trace has it on the events' clock
+        -- (ProcessStartQpc). For a launch, StartedQpc was read with StartedUtc, so the creation time (100 ns ticks, parsed
+        -- from the ISO 8601 text) maps onto the QPC clock. A connection to a running process did not see it start.
         Info AS (
             SELECT s.CompleteFromSeq,
-                CASE WHEN s.Coverage = 'ProcessStart' AND s.StartedQpc IS NOT NULL AND s.ProcessCreatedUtc IS NOT NULL THEN
+                CASE WHEN s.Coverage = 'Connection' THEN NULL
+                WHEN s.ProcessStartQpc IS NOT NULL THEN (s.ProcessStartQpc - s.StartQpc) * 1000.0 / s.QpcFrequency
+                WHEN s.StartedQpc IS NOT NULL AND s.ProcessCreatedUtc IS NOT NULL THEN
                     (s.StartedQpc - s.StartQpc) * 1000.0 / s.QpcFrequency - (
                         (CAST(strftime('%s', substr(s.StartedUtc, 1, 19)) AS INTEGER) * 10000000 + CASE WHEN instr(s.StartedUtc, '.') > 0
                             THEN CAST(substr(rtrim(substr(s.StartedUtc, instr(s.StartedUtc, '.') + 1), 'Z') || '0000000', 1, 7) AS INTEGER) ELSE 0 END)
