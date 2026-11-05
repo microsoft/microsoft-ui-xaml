@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "ExceptionContextLab (Package)": {
-      "commandName": "MsixPackage"
-    }
-  }
-}
