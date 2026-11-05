@@ -152,6 +152,8 @@ try
     const long reused = 0xe000;
     const long entered = 0xf000;
     const long untyped = 0x10000;
+    const long renderedThenNamed = 0x13000;
+    const long heldThenNamed = 0x14000;
     using (var writer = SessionWriter.Create(typePath, new(1, "TypeRecoveryTests", null, 1_000_000, 0, SessionCoverage.Trace)))
     {
         ProfilerEvent TypeEvent(string name, params EventField[] fields) =>
@@ -177,6 +179,18 @@ try
         writer.Process(11, TypeEvent("FrameworkElement_ApplyTemplate",
             new("ObjectPointer", entered), new("ClassName", "CustomControl"), new("Name", "Ignored")));
         writer.Process(12, TypeEvent("ChildAdded", new("ParentId", 0L), new("ChildId", untyped)));
+        writer.Process(13, TypeEvent("RenderWalk_RenderElement",
+            new("ElementPointer", renderedThenNamed), new("ClassName", "RenderType")));
+        writer.Process(14, TypeEvent("FrameworkElement_ApplyTemplate",
+            new("ObjectPointer", renderedThenNamed), new("ClassName", "TemplateType"), new("Name", "Recovered")));
+        writer.Process(15, TypeEvent("EventManager_RaiseLoadedEvent",
+            new("ObjectPointer", renderedThenNamed), new("ClassName", "LoadedType"), new("Name", "Ignored")));
+        writer.Process(16, TypeEvent("DependencyObject_Enter",
+            new("ObjectPointer", heldThenNamed), new("Type", "AuthoritativeType"), new("Name", "")));
+        writer.Process(17, TypeEvent("FrameworkElement_ApplyTemplate",
+            new("ObjectPointer", heldThenNamed), new("ClassName", "TemplateType"), new("Name", "RecoveredHeld")));
+        writer.Process(18, TypeEvent("EventManager_RaiseLoadedEvent",
+            new("ObjectPointer", heldThenNamed), new("ClassName", "LoadedType"), new("Name", "Ignored")));
         writer.Close("End of type recovery test");
         if (writer.Failure is { } failure)
         {
@@ -204,12 +218,23 @@ try
     Console.WriteLine("Passed: existing template/render metadata fills missing element types without inventing unknown types.");
     Console.WriteLine("Passed: fallback metadata preserves enter types and pointer-reuse lifetime detection.");
 
+    if (typedObjects.Single(item => item.Address == renderedThenNamed) is not { Type: "RenderType", Name: "Recovered" } ||
+        typedObjects.Single(item => item.Address == heldThenNamed) is not { Type: "AuthoritativeType", Name: "RecoveredHeld" })
+    {
+        throw new InvalidOperationException("Fallback metadata must fill missing tracked and held names without replacing types or existing names.");
+    }
+
+    Console.WriteLine("Passed: fallback metadata fills missing tracked and held names without replacing types or existing names.");
+
     var regions = new RegionsLoader().Load(Path.Combine(AppContext.BaseDirectory, "XAML.regions.complete.with.startup.xml"));
     string[] activities =
     [
         "VirtualizationMeasure", "VirtualizationCleanup", "VirtualizationAdd", "GenerateContainer",
         "MeasureChild", "PrepareContainer", "UpdateLogicalScrollData", "SetupCCC", "GenerateItems",
-        "GenerateMCContainer", "PlaceElement", "GetElementCount"
+        "GenerateMCContainer", "PlaceElement", "GetElementCount",
+        "PutRootVisual", "Layout", "Measure", "Arrange", "FireLayoutUpdated", "FireSizeChanged",
+        "IndividualSizeChanged", "CancelTransitions", "ProcessLayoutForTransition",
+        "XYFocusEntered", "GetBuiltInStyle", "HitTest"
     ];
     foreach (var activity in activities)
     {
@@ -249,6 +274,57 @@ try
         {
             throw new InvalidOperationException($"{activity} must not produce duplicate regions in new or legacy traces.");
         }
+
+        if (current.Start.ExactTaskName)
+        {
+            var bareStart = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventName = activity, Opcode = 1 };
+            var bareStop = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventName = activity, Opcode = 2 };
+            var otherStart = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventName = activity + "Extra/Start", Opcode = 1 };
+            var otherStop = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventName = activity + "Extra/Stop", Opcode = 2 };
+            if (!current.Start.Matches(bareStart) || !current.Stop.Matches(bareStop) ||
+                current.Start.Matches(otherStart) || current.Stop.Matches(otherStop))
+            {
+                throw new InvalidOperationException($"{activity} must match its exact task with or without the opcode suffix.");
+            }
+        }
+    }
+
+    var layout = regions.Single(region => region.Name == "Layout" && region.Start?.Opcode == 1);
+    var measure = regions.Single(region => region.Name == "Measure" && region.Start?.Opcode == 1);
+    foreach (var otherTask in new[] { "FireLayoutUpdated", "ProcessLayoutForTransition", "VirtualizationMeasure", "MeasureElement" })
+    {
+        foreach (var opcode in new[] { 1, 2 })
+        {
+            var other = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventName = otherTask, Opcode = opcode };
+            if (layout.Start!.Matches(other) || layout.Stop!.Matches(other) ||
+                measure.Start!.Matches(other) || measure.Stop!.Matches(other))
+            {
+                throw new InvalidOperationException("Layout and Measure must not match other tasks containing their names.");
+            }
+        }
+    }
+
+    var startup = regions.Where(region => region.Name == "Start-To-Layout").ToList();
+    var initialize = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventId = 31 };
+    var layoutStop = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventName = "Layout/Stop", Opcode = 2 };
+    var legacyLayoutStop = new TelemetryEvent { ProviderGuid = XamlProviders.Xaml, EventId = 42, EventName = "Layout/Stop", Opcode = 2 };
+    if (startup.Count != 2 || startup.Any(region => region.Start?.Matches(initialize) != true) ||
+        startup.Count(region => region.Stop?.Matches(layoutStop) == true) != 1 ||
+        startup.Count(region => region.Stop?.Matches(legacyLayoutStop) == true) != 1 ||
+        startup.Any(region => region.Stop?.Matches(new TelemetryEvent
+        {
+            ProviderGuid = XamlProviders.Xaml, EventName = "FireLayoutUpdated/Stop", Opcode = 2
+        }) == true))
+    {
+        throw new InvalidOperationException("Start-To-Layout must stop on the exact new Layout task or legacy event 42 without duplicates.");
+    }
+
+    if (!new EventMatcher(XamlProviders.Xaml, EventName: "Layout").Matches(new TelemetryEvent
+        {
+            ProviderGuid = XamlProviders.Xaml, EventName = "FireLayoutUpdated"
+        }))
+    {
+        throw new InvalidOperationException("Existing selectors must retain substring matching unless exact task matching is requested.");
     }
 
     try
@@ -267,7 +343,9 @@ try
     {
     }
 
-    Console.WriteLine("Passed: all 12 migrated regions distinguish Start/Stop without duplicating legacy manifest regions.");
+    Console.WriteLine($"Passed: all {activities.Length} migrated regions distinguish Start/Stop without duplicating legacy manifest regions.");
+    Console.WriteLine("Passed: exact task selectors avoid Layout/Measure collisions and preserve legacy substring matching.");
+    Console.WriteLine("Passed: Start-To-Layout supports current and legacy stops without duplicate matches.");
     Console.WriteLine("Passed: invalid region opcodes are rejected.");
 }
 finally

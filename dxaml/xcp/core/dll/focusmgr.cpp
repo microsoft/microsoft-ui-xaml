@@ -1849,7 +1849,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     bool shouldBringIntoView = false;
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
-    XamlTelemetry::UpdateFocusBegin(movement.GetTarget());
+    TraceUpdateFocusBegin();
 
     DirectUI::InputDeviceType lastInputDeviceType = DirectUI::InputDeviceType::None;
 
@@ -2146,8 +2146,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     }
 
 Cleanup:
-    // Begin records the requested target; End records the target after synchronous focus handlers.
-    XamlTelemetry::UpdateFocusEnd(pNewFocus);
+    TraceUpdateFocusEnd((UINT64)pNewFocus);
     ReleaseInterface(pOldFocusedElement);
 
     // Before RS2, UpdateFocus did not propagate errors. As a result, we want to limit the number of failure

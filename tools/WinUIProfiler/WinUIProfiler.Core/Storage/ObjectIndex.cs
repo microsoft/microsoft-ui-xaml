@@ -472,6 +472,11 @@ internal sealed class ObjectIndex : IDisposable
         {
             if (!fromEnter && element.Type is not null)
             {
+                if (element.Name is null && name is not null)
+                {
+                    element.Name = name;
+                    Update(element);
+                }
                 return;
             }
 
@@ -506,6 +511,10 @@ internal sealed class ObjectIndex : IDisposable
                 entry.Type = type;
                 entry.Name = name ?? entry.Name;
                 entry.HasEnterType |= fromEnter;
+            }
+            else if (entry.Name is null)
+            {
+                entry.Name = name;
             }
 
             return;

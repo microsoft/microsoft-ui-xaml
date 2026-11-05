@@ -424,11 +424,12 @@ void HWCompTreeNodeWinRT::InsertWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
     GetVisualCollectionFromWUCSpineVisual(parentVisual, childCollection.ReleaseAndGetAddressOf());
     // LTEs can render one UIElement in multiple places, which causes us to insert the same WUC hand off visual in multiple
     // places in the tree. DComp will return E_INVALIDARG in this case, which we'll ignore. The subsequent inserts will no-op.
-    IFCFAILFAST_ALLOW_INVALIDARG(childCollection->InsertAtBottom(childVisual));
+    const HRESULT insertHR = childCollection->InsertAtBottom(childVisual);
+    IFCFAILFAST_ALLOW_INVALIDARG(insertHR);
 
     // Notify the XAML Profiler of this intra-comp-node spine edge so an out-of-process
     // consumer can reconstruct the full WUC visual tree (prepend -> primary -> content, etc).
-    if (XamlProfilerTracing::IsEnabled())
+    if (SUCCEEDED(insertHR) && XamlProfilerTracing::IsEnabled())
     {
         XamlProfilerTracing::NotifyChildInserted(parentVisual, childVisual);
     }
@@ -3331,7 +3332,8 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
         if (currentHandInVisual != nullptr)
         {
             // Note: This will put the hand in visual on top of all the children as well.
-            hr = childCollection->InsertAtTop(currentHandInVisual);
+            const HRESULT insertHR = childCollection->InsertAtTop(currentHandInVisual);
+            hr = insertHR;
 
             // It's possible the new hand-in has been disposed by the app, and we're finding out now when the app is using it to replace the previous one.
             // For simplicity, ignore RO_E_CLOSED and allow UIElement + compnode to manage it as a valid hand-in. The overhead here is minimal since disposal released the DComp resources.
@@ -3345,7 +3347,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             // LTEs can render one UIElement in multiple places, which causes us to insert the same WUC hand in visual in multiple
             // places in the tree. DComp will return E_INVALIDARG in this case, which we'll ignore.
             IFCFAILFAST_ALLOW_INVALIDARG(hr);
-            if (XamlProfilerTracing::IsEnabled())
+            if (SUCCEEDED(insertHR) && XamlProfilerTracing::IsEnabled())
             {
                 XamlProfilerTracing::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get());
             }
@@ -3596,9 +3598,10 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
     xref_ptr<WUComp::IVisualCollection> childCollection;
     GetVisualCollectionFromWUCSpineVisual(GetBottomMostVisual(), childCollection.ReleaseAndGetAddressOf());
 
+    HRESULT insertHR = S_OK;
     if (wucPreviousSibling == nullptr)
     {
-        HRESULT insertHR = childCollection->InsertAtBottom(wucChild.Get());
+        insertHR = childCollection->InsertAtBottom(wucChild.Get());
 
         //
         // LTEs target elements and render their target elements at another place in the tree. Multiple LTEs can target
@@ -3630,11 +3633,12 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
     }
     else
     {
-        IFCFAILFAST(childCollection->InsertAbove(wucChild.Get(), wucPreviousSibling));
+        insertHR = childCollection->InsertAbove(wucChild.Get(), wucPreviousSibling);
+        IFCFAILFAST(insertHR);
     }
 
     // Notify the XAML Profiler of this inter-comp-node edge.
-    if (XamlProfilerTracing::IsEnabled())
+    if (SUCCEEDED(insertHR) && XamlProfilerTracing::IsEnabled())
     {
         XamlProfilerTracing::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get());
     }

@@ -180,9 +180,6 @@ public:
     DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition, WINEVENT_LEVEL_VERBOSE, AnimationKeyword);
 
     // Focus (CFocusManager): the subject can be a UI element or a non-UI Hyperlink.
-    // UpdateFocus Begin carries the requested target and End carries pNewFocus; they can
-    // differ after redirection. End also runs on cancellation/error, not just successful focus.
-    DEFINE_ELEMENT_ACTIVITY(UpdateFocus, WINEVENT_LEVEL_INFO, InputKeyword);
     DEFINE_ELEMENT_ACTIVITY(XYFocusEntered, WINEVENT_LEVEL_INFO, InputKeyword);
     // XYFocusEntered adds the retail Begin's focus-direction string on the Begin edge.
     static void XYFocusEnteredBegin(CDependencyObject* object, PCWSTR Direction)

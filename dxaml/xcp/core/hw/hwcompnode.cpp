@@ -713,6 +713,12 @@ HWCompTreeNode::RemoveChild(
             }
 
             IFC_RETURN(RemoveChildInternal(pChild));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                XamlProfilerTracing::CompNodeChildRemoved(
+                    reinterpret_cast<uint64_t>(this),
+                    reinterpret_cast<uint64_t>(pChild));
+            }
             ReleaseInterface(pChild);
 
             IFC_RETURN(m_children.erase(index));
