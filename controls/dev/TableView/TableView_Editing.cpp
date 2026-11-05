@@ -1340,6 +1340,10 @@ bool TableView::BeginEdit()
 
 bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
+    // Any newer edit request retires a Tab move still waiting for its row.
+    m_beginEditAfterBodyFocusItem.set(nullptr);
+    m_beginEditAfterBodyFocusColumn.set(nullptr);
+
     if (IsReadOnly() || !item || !column || column.IsReadOnly() || !IsColumnInColumns(*this, column))
     {
         return false;
