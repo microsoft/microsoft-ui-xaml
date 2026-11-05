@@ -26,9 +26,11 @@ public enum SessionCoverage
 // readers time events with this machine's frequency. A null StartQpc makes the target's first event time zero.
 // LauncherProcessId is the process that launched the target, when known, as the profiler for a launch from the app,
 // though Windows may create a packaged app's process: the events of another process the session receives are that
-// process's (MarkerProviderSettings.Launcher).
+// process's (MarkerProviderSettings.Launcher). MarkerConfig is the text of the marker configuration whose providers the
+// session records, which the file saves, so its launch timeline has the same milestones wherever it is read.
 public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? ProcessCreatedUtc, long? QpcFrequency,
-    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null, int? LauncherProcessId = null, string? LauncherName = null);
+    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null, int? LauncherProcessId = null, string? LauncherName = null,
+    string? MarkerConfig = null);
 
 // For a recorded trace: when the target process was created, on the events' clock, and its executable name without .exe,
 // from the kernel's process start event, and the process that created it, its launcher, which the event names.
@@ -175,9 +177,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 var startedUtc = DateTime.UtcNow;
                 Sql.Execute(connection, """
                     INSERT INTO SessionInfo (SessionId, ProcessId, ProcessName, ProcessCreatedUtc, QpcFrequency, StartQpc,
-                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes, LauncherProcessId, LauncherName)
+                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes, LauncherProcessId, LauncherName,
+                        MarkerConfig)
                     VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $startedQpc, $source, $etl, $coverage, $limit,
-                        $launcher, $launcherName)
+                        $launcher, $launcherName, $markers)
                     """, transaction,
                     ("$id", Guid.NewGuid().ToString()), ("$pid", start.ProcessId), ("$name", start.ProcessName),
                     ("$created", start.ProcessCreatedUtc?.ToString("O", CultureInfo.InvariantCulture)),
@@ -186,7 +189,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     ("$startedQpc", start.EtlPath is null ? startedQpc : null),
                     ("$source", start.EtlPath is null ? "Live" : "Trace"), ("$etl", start.EtlPath),
                     ("$coverage", start.Coverage.ToString()), ("$limit", limitBytes),
-                    ("$launcher", start.LauncherProcessId), ("$launcherName", start.LauncherName));
+                    ("$launcher", start.LauncherProcessId), ("$launcherName", start.LauncherName),
+                    ("$markers", start.MarkerConfig));
                 transaction.Commit();
             }
 

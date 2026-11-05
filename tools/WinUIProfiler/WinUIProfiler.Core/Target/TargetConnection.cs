@@ -17,6 +17,8 @@ public enum TargetLaunchKind
 {
     Unpackaged, Packaged, Attach
 }
+// MarkerProviders are the marker configuration's providers, which the connection records, and MarkerConfig its text, which
+// the session file saves (SessionStart.MarkerConfig).
 public sealed record TargetConnectionOptions(TargetLaunchKind Kind,
 string Target,
 string Arguments,
@@ -26,7 +28,8 @@ bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
 long? ExpectedCreationTimeFileTime = null,
     string? SessionDirectory = null,
-    IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null);
+    IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null,
+    string? MarkerConfig = null);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -195,7 +198,8 @@ public sealed class TargetConnection : IAsyncDisposable
             throw new InvalidOperationException("The selected PID was reused. Refresh the process list and select again.");
         }
 
-        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory, markers);
+        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory, markers,
+            options.MarkerConfig);
         var payloads = ConnectionPayloadCatalog.Resolve(options.PayloadDirectory, InjectorResolver.GetArchitecture(Scope.Process));
         Report("Waiting for XAML", $"PID {target.Id}; waiting for the WinUI diagnostics endpoint.");
         string? runtime = null;
@@ -291,7 +295,7 @@ History);
     }
 
     private void StartEtw(Process process, long? creationTimeFileTime, IReadOnlyList<string> launchExecutables,
-        string? sessionDirectory, IReadOnlyList<MarkerProviderSettings> markers)
+        string? sessionDirectory, IReadOnlyList<MarkerProviderSettings> markers, string? markerConfig)
     {
         if (etwStartError is not null)
         {
@@ -319,7 +323,7 @@ History);
                 }
             }
 
-            recorder = CreateRecorder(sessionDirectory, process, creationTimeFileTime);
+            recorder = CreateRecorder(sessionDirectory, process, creationTimeFileTime, markerConfig);
             events = new EventPipeline(recorder is null ? [counter] : [counter, recorder]);
             if (etw is null)
             {
@@ -348,8 +352,8 @@ History);
     }
 
     // One file per connection; time zero of the recording is when ETW started listening. For a launch, the profiler is the
-    // launcher.
-    private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
+    // launcher. The file saves the marker configuration the connection records the providers of.
+    private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime, string? markerConfig)
     {
         if (directory is null)
         {
@@ -364,7 +368,8 @@ History);
                 etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
                 etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
                 LauncherProcessId: etwFromProcessStart ? Environment.ProcessId : null,
-                LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null));
+                LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null,
+                MarkerConfig: markerConfig));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

@@ -559,6 +559,7 @@ public sealed partial class MainWindow : Window
                 throw new ArgumentException(Text("InvalidEndpoint"));
             }
 
+            var markers = LaunchPanel.LoadConfig();
             var options = new TargetConnectionOptions(Kind,
 TargetText.Text.Trim(),
 ArgumentsText.Text,
@@ -568,7 +569,8 @@ Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
 SessionsDirectory,
-LaunchPanel.LoadConfig().Providers);
+markers.Providers,
+markers.Text);
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy)
@@ -607,7 +609,7 @@ LaunchPanel.LoadConfig().Providers);
         session.BeginRecording();
         try
         {
-            await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
+            await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig());
         }
         catch (Exception error)
         {

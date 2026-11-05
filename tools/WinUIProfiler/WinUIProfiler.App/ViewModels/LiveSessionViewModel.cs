@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
+using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Target;
@@ -127,10 +127,10 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     }
 
     // Reads process's events, those of the marker providers, and those of the launcher providers of the process that
-    // created it, from the trace at etlPath into a new session file in sessionDirectory. Completes once the reading has
-    // started; State then follows it to TraceFinished, TraceStopped or TraceFailed.
-    public Task OpenTraceAsync(string etlPath, TraceProcess process, string sessionDirectory,
-        IReadOnlyCollection<MarkerProviderSettings> markers)
+    // created it, from the trace at etlPath into a new session file in sessionDirectory, which saves the marker
+    // configuration. Completes once the reading has started; State then follows it to TraceFinished, TraceStopped or
+    // TraceFailed.
+    public Task OpenTraceAsync(string etlPath, TraceProcess process, string sessionDirectory, MarkerConfig markers)
     {
         if (!CanConnect)
         {
@@ -141,8 +141,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         return connecting;
     }
 
-    private async Task OpenTraceCoreAsync(string etlPath, TraceProcess process, string sessionDirectory,
-        IReadOnlyCollection<MarkerProviderSettings> markers)
+    private async Task OpenTraceCoreAsync(string etlPath, TraceProcess process, string sessionDirectory, MarkerConfig markers)
     {
         IsBusy = true;
         state = "TraceOpening";
@@ -160,7 +159,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         try
         {
             var started = await Task.Run(() => TraceReplay.Start(etlPath, process.ProcessId, process.Name, sessionDirectory,
-                SessionWriter.DefaultLimitBytes, markers));
+                SessionWriter.DefaultLimitBytes, markers.Providers, markers.Text));
             replay = started;
             started.Changed += Replay_Changed;
             _ = CompleteReplayAsync(started);

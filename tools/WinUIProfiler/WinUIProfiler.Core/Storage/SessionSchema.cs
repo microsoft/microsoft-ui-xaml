@@ -36,7 +36,9 @@ internal static class SessionSchema
             ProcessStartQpc INTEGER,   -- a recorded trace's process creation, from the kernel's process start event, if recorded
             LauncherProcessId INTEGER, -- the process that launched the target, when known: the profiler for a launch from
                                        -- the app, or for a recorded trace the parent the kernel's process start event names
-            LauncherName TEXT);        -- its executable name without .exe, when known
+            LauncherName TEXT,         -- its executable name without .exe, when known
+            MarkerConfig TEXT);        -- the marker configuration the session was recorded with, as JSON text: the
+                                       -- providers recorded and the launch timeline's milestones (see the README)
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
             Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl; Marker for a marker provider

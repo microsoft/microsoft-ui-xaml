@@ -130,9 +130,10 @@ public sealed class TraceReplay : IAsyncDisposable
 
     // Reads processId's events from the trace at etlPath into a new session file in sessionDirectory, named like a live
     // session's file after processName, or after the trace when the name is not known. Markers are the marker providers
-    // whose events are read too.
+    // whose events are read too, and markerConfig the text of their marker configuration, which the file saves.
     public static TraceReplay Start(string etlPath, int processId, string? processName, string sessionDirectory,
-        long limitBytes = SessionWriter.DefaultLimitBytes, IReadOnlyCollection<MarkerProviderSettings>? markers = null)
+        long limitBytes = SessionWriter.DefaultLimitBytes, IReadOnlyCollection<MarkerProviderSettings>? markers = null,
+        string? markerConfig = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(etlPath);
         ArgumentException.ThrowIfNullOrEmpty(sessionDirectory);
@@ -152,7 +153,8 @@ public sealed class TraceReplay : IAsyncDisposable
         try
         {
             writer = SessionWriter.Create(SessionPath(sessionDirectory, processName ?? Path.GetFileNameWithoutExtension(path), processId),
-                new(processId, processName, null, frequency, null, SessionCoverage.Trace, path), limitBytes);
+                new(processId, processName, null, frequency, null, SessionCoverage.Trace, path, MarkerConfig: markerConfig),
+                limitBytes);
             return new(path, processId, processName, source, writer, markers ?? []);
         }
         catch

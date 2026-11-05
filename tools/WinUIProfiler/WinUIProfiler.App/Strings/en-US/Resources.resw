@@ -340,10 +340,12 @@
   <data name="EditMarkers.Content" xml:space="preserve"><value>Edit markers</value></data>
   <data name="EditMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Open your marker configuration, %LOCALAPPDATA%\WinUIProfiler\markers.json, which is created from the default the first time. Add your app's provider and milestones, save the file, and select Reload.</value></data>
   <data name="ReloadMarkers.Content" xml:space="preserve"><value>Reload</value></data>
-  <data name="ReloadMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the marker configuration again and show its milestones. A provider it adds is recorded from the next connection or trace reading.</value></data>
+  <data name="ReloadMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read your marker configuration again and show the session file's milestones with it, instead of the configuration saved in the file. A provider it adds is recorded from the next connection or trace reading.</value></data>
   <data name="MarkersFileFormat" xml:space="preserve"><value>Milestones from {0}</value></data>
   <data name="MarkersDefault" xml:space="preserve"><value>Milestones from the default marker configuration. Select Edit markers to add your app's own.</value></data>
-  <data name="MarkersInvalidTitle" xml:space="preserve"><value>The marker configuration is not valid, so the default is used</value></data>
+  <data name="MarkersSaved" xml:space="preserve"><value>Milestones from the marker configuration saved in the session file, which it was recorded with. Select Reload to use yours instead.</value></data>
+  <data name="MarkersInvalidTitle" xml:space="preserve"><value>Your marker configuration is not valid, so the default is used</value></data>
+  <data name="MarkersSavedInvalidTitle" xml:space="preserve"><value>The marker configuration saved in the session file is not valid, so it is not used</value></data>
   <data name="MarkersEditFailedTitle" xml:space="preserve"><value>Could not open the marker configuration</value></data>
   <data name="LaunchReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
   <data name="LaunchNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file in the Frames tab.</value></data>

@@ -349,7 +349,7 @@ so events are still only dropped at the queue.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names. `MarkerConfig` is the text of the marker configuration the session was recorded with, whose milestones the Launch tab and `launch` show (see [Marker configuration](#marker-configuration)) |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
@@ -640,7 +640,7 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli frames session.sqlite --list --show interesting   # the Frames tab's list, as Show = Regions of interest keeps it, with region IDs
 & $cli interesting session.sqlite --region <id> --json   # one region and its rows, as JSON
 & $cli launch xaml.etl --pid <pid> [--markers markers.json]   # the launch timeline, as in the Launch tab
-& $cli launch session.sqlite                   # the same, from a session file
+& $cli launch session.sqlite                   # the same, from a session file, with the marker configuration saved in it
 ```
 
 The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
@@ -747,6 +747,17 @@ them; those a launcher milestone names are recorded for the launcher too.
 Their events are saved to the session file. A provider added to the
 configuration is recorded from the next connection or trace read; a milestone
 added for a provider already recorded shows at once.
+
+The session file saves the configuration too, as its text
+(`SessionInfo.MarkerConfig`), so a recording shows the same timeline on any
+PC, and the CLI, or an agent with only the file, can build it. The Launch tab
+shows a session file with the milestones of the configuration saved in it, and
+says so; **Reload** and **Edit markers** show it with the user's or the default
+instead. The CLI's `launch` uses the saved configuration too, unless
+`--markers` names a file. A file written before the configuration was saved
+has none, so the user's or the default is used. They are also used when the
+saved one is not valid, as one from a later version of the profiler may not
+be; the tab, or the CLI with a warning, says why.
 
 An app marks a milestone by writing an event, such as with an `EventSource` in
 C#:

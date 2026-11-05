@@ -63,9 +63,11 @@ internal static class CliApplication
           launcher's. A trace needs --pid; a session file holds one process.
 
           --markers names the marker configuration file: the marker providers read from a trace,
-          and the launch milestones; the command stops when it is not valid. Without it,
-          %LOCALAPPDATA%\WinUIProfiler\markers.json is used when it exists and is valid (otherwise a
-          warning says why), or else the default configuration. See "Launch timeline" in the README.
+          and the launch milestones; the command stops when it is not valid. Without it, launch
+          uses the configuration saved in a session file, which record and the app save, when it
+          has a valid one. Otherwise %LOCALAPPDATA%\WinUIProfiler\markers.json is used when it exists
+          and is valid, or else the default configuration; a warning says why a configuration saved
+          or found is not used. See "Launch timeline" in the README.
         """;
 
     // Markers is the marker configuration, read for the commands that need it.
@@ -99,7 +101,7 @@ internal static class CliApplication
             // written, so a configuration error leaves none behind.
             if (options.Command == "launch" || !options.IsSessionFile)
             {
-                options = options with { Markers = LoadMarkers(options.MarkersPath, error) };
+                options = options with { Markers = LoadMarkers(options, error) };
             }
 
             return options.Command switch
@@ -435,11 +437,11 @@ internal static class CliApplication
     private static int Record(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
     {
         // The trace's clock frequency is stored before any event, as the app stores it, so the file's times never depend
-        // on how long the process ran.
+        // on how long the process ran. The file saves the marker configuration, as the app's do.
         var writer = SessionWriter.Create(options.OutputPath!,
             new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
-                SessionCoverage.Trace, options.InputPath), options.LimitBytes);
-        var (events, launcherEvents) = RecordTrace(options, options.Markers!.Providers, writer, cancellationToken);
+                SessionCoverage.Trace, options.InputPath, MarkerConfig: options.Markers!.Text), options.LimitBytes);
+        var (events, launcherEvents) = RecordTrace(options, options.Markers.Providers, writer, cancellationToken);
         if (writer.Failure is { } failure)
         {
             error.WriteLine($"Writing '{writer.Path}' failed: {failure.Message}");
@@ -503,7 +505,7 @@ internal static class CliApplication
         {
             var writer = SessionWriter.Create(path,
                 new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
-                    SessionCoverage.Trace, options.InputPath), long.MaxValue);
+                    SessionCoverage.Trace, options.InputPath, MarkerConfig: config.Text), long.MaxValue);
             var (events, _) = RecordTrace(options, config.Providers, writer, cancellationToken);
             if (writer.Failure is { } failure)
             {
@@ -558,7 +560,8 @@ internal static class CliApplication
             output.WriteLine($"Launched by {session.LauncherName ?? "a process"} (process {launcher}).");
         }
 
-        output.WriteLine($"Marker configuration: {config.FilePath ?? "the default"}.");
+        output.WriteLine("Marker configuration: " +
+            (config.SessionPath is not null ? "the one saved in the session file" : config.FilePath ?? "the default") + ".");
         output.WriteLine();
         if (timeline.Milestones.Count + timeline.NotReached.Count == 0)
         {
@@ -601,13 +604,29 @@ internal static class CliApplication
         }
     }
 
-    // The configuration a path names, which must be valid. Without one, the user's, unless it is not valid: then, as in the
-    // app, a warning says why and the default is used, so a mistake in it never stops a command.
-    private static MarkerConfig LoadMarkers(string? path, TextWriter error)
+    // The configuration --markers names, which must be valid. Without it, the one saved in a session file, which it was
+    // recorded with, and otherwise the user's; as in the app, a warning says why one of them is not valid, and the next is
+    // used, ending with the default, so a mistake in either never stops a command.
+    private static MarkerConfig LoadMarkers(Options options, TextWriter error)
     {
-        if (path is not null)
+        if (options.MarkersPath is { } path)
         {
             return MarkerConfig.Load(path);
+        }
+
+        if (options.IsSessionFile)
+        {
+            try
+            {
+                if (MarkerConfig.FromSessionFile(options.InputPath) is { } saved)
+                {
+                    return saved;
+                }
+            }
+            catch (MarkerConfigException exception)
+            {
+                error.WriteLine($"Not using the session file's marker configuration: {exception.Message}");
+            }
         }
 
         try

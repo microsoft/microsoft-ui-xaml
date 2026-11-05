@@ -76,6 +76,20 @@ public static class SessionFile
         return ReadSession(connection, null).Info;
     }
 
+    // The text of the marker configuration the session was recorded with (SessionStart.MarkerConfig); null when the file
+    // has none, as one written before it was saved.
+    public static string? ReadMarkerConfig(string path)
+    {
+        using var connection = Open(path);
+        if (!HasColumn(connection, null, "SessionInfo", "MarkerConfig"))
+        {
+            return null;
+        }
+
+        using var command = Command(connection, null, "SELECT MarkerConfig FROM SessionInfo");
+        return command.ExecuteScalar() as string;
+    }
+
     // Delivers the stored events in Seq order. RelativeMilliseconds is measured from the start of the recording.
     public static long Read(string path, Action<ProfilerEvent> sink, CancellationToken cancellationToken = default)
     {

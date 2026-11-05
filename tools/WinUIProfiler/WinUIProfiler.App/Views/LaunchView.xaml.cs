@@ -14,8 +14,8 @@ using WinUIProfiler.Engine.Launch;
 namespace WinUIProfiler.App.Views;
 
 // The Launch tab: the launch timeline of the session file the other tabs show, with the milestones of the marker
-// configuration. It reads the file, not the live pipeline, so it follows a session being recorded and shows a saved one
-// the same way.
+// configuration saved in it, which it was recorded with, so it shows the same timeline on any PC. It reads the file, not
+// the live pipeline, so it follows a session being recorded and shows a saved one the same way.
 public sealed partial class LaunchView : UserControl
 {
     // The waterfall's width in the item template, and its narrowest bar, so a milestone right after the one before shows.
@@ -26,7 +26,13 @@ public sealed partial class LaunchView : UserControl
     private readonly DispatcherQueueTimer refreshTimer;
     private SessionSource? source;
     private string? path;
+    // The user's configuration, or the default: new connections record it, and Reload shows the file with it.
     private MarkerConfig config = MarkerConfig.Default;
+    // Why the user's configuration is not valid, when it is not.
+    private Exception? configError;
+    // Why the configuration saved in the file shown is not valid, when it is not, so config is used instead.
+    private MarkerConfigException? savedConfigError;
+    // Null for a file shown with the configuration saved in it until the first read, which reads it, completes.
     private LaunchTimelineReader? reader;
     // Counts the files shown, so a read of an earlier one, or of this one with an earlier configuration, is dropped.
     private int shown;
@@ -68,36 +74,37 @@ public sealed partial class LaunchView : UserControl
 
     // Reads the marker configuration again: the user's file when it exists, otherwise the default, which is also used when
     // the user's file is not valid, with the error shown, so a mistake in it never stops a connection. Returns it, so a new
-    // connection records its providers; the timeline shown stays until the connection's file is shown, with it.
+    // connection records its providers and saves it; the timeline shown stays until the connection's file is shown, with
+    // the configuration saved in it.
     public MarkerConfig LoadConfig()
     {
         try
         {
             config = MarkerConfig.Load();
-            ConfigError.IsOpen = false;
+            configError = null;
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             config = MarkerConfig.Default;
-            ShowConfigError("MarkersInvalidTitle", error);
+            configError = error;
         }
 
-        SetLine(ConfigSummary, config.FilePath is { } file ? Format("MarkersFileFormat", file) : Text("MarkersDefault"));
+        ShowConfig();
         return config;
     }
 
-    // Reads the marker configuration again and shows the file's timeline with it.
+    // Reads the marker configuration again and shows the file's timeline with it, instead of the one saved in the file.
     private void Reload()
     {
         LoadConfig();
-        Show(path);
+        Show(path, savedConfig: false);
     }
 
     private void Source_Changed(object? sender, EventArgs args)
     {
         if (source!.Path != path)
         {
-            Show(source.Path);
+            Show(source.Path, savedConfig: true);
         }
 
         if (source.Live)
@@ -118,17 +125,21 @@ public sealed partial class LaunchView : UserControl
     private string Text(string key) => strings.GetString(key);
     private string Format(string key, params object?[] values) => string.Format(CultureInfo.CurrentCulture, Text(key), values);
 
-    private void Show(string? sessionPath)
+    // With savedConfig, the file's timeline has the milestones of the configuration saved in it, when it has a valid one,
+    // which the first read reads off the UI thread; otherwise, those of config.
+    private void Show(string? sessionPath, bool savedConfig)
     {
         path = sessionPath;
         shown++;
         timelineRead?.Cancel();
-        reader = path is null ? null : new LaunchTimelineReader(path, config);
+        reader = path is null || savedConfig ? null : new LaunchTimelineReader(path, config);
+        savedConfigError = null;
         Milestones.Clear();
         ReadError.IsOpen = false;
         NotesBar.IsOpen = false;
         NotReachedText.Text = "";
         SetLine(LaunchSummary, path is null ? Text("LaunchNoFile") : Path.GetFileName(path));
+        ShowConfig();
         _ = RefreshAsync();
     }
 
@@ -140,20 +151,30 @@ public sealed partial class LaunchView : UserControl
             return;
         }
 
-        if (reader is not { } current)
+        if (path is not { } file)
         {
             return;
         }
 
         reading = true;
         var generation = shown;
+        var current = reader;
+        var fallback = config;
         using var cancellation = new CancellationTokenSource();
         timelineRead = cancellation;
         try
         {
-            var timeline = await Task.Run(() => current.Read(cancellation.Token), cancellation.Token);
+            var (timeline, used, savedError) = await Task.Run(() => Read(file, current, fallback, cancellation.Token),
+                cancellation.Token);
             if (generation == shown)
             {
+                if (reader is null)
+                {
+                    reader = used;
+                    savedConfigError = savedError;
+                    ShowConfig();
+                }
+
                 ShowTimeline(timeline);
                 ReadError.IsOpen = false;
             }
@@ -178,6 +199,54 @@ public sealed partial class LaunchView : UserControl
                 readAgain = false;
                 _ = RefreshAsync();
             }
+        }
+    }
+
+    // Reads the file's timeline with current, or, for a file shown with the configuration saved in it, with that one, or
+    // fallback when the file has none or it is not valid; returns the reader, to read the file with from then on.
+    private static (LaunchTimeline Timeline, LaunchTimelineReader Reader, MarkerConfigException? SavedError) Read(string file,
+        LaunchTimelineReader? current, MarkerConfig fallback, CancellationToken cancellationToken)
+    {
+        MarkerConfigException? savedError = null;
+        if (current is null)
+        {
+            MarkerConfig? saved = null;
+            try
+            {
+                saved = MarkerConfig.FromSessionFile(file);
+            }
+            catch (MarkerConfigException error)
+            {
+                savedError = error;
+            }
+
+            current = new LaunchTimelineReader(file, saved ?? fallback);
+        }
+
+        return (current.Read(cancellationToken), current, savedError);
+    }
+
+    // Says which marker configuration's milestones the timeline has, and shows why one is not used when it is not valid.
+    private void ShowConfig()
+    {
+        SetLine(ConfigSummary, (reader?.Config ?? (path is null ? config : null)) switch
+        {
+            null => "",
+            { SessionPath: not null } => Text("MarkersSaved"),
+            { FilePath: { } file } => Format("MarkersFileFormat", file),
+            _ => Text("MarkersDefault")
+        });
+        if (savedConfigError is not null)
+        {
+            ShowConfigError("MarkersSavedInvalidTitle", savedConfigError);
+        }
+        else if (configError is not null)
+        {
+            ShowConfigError("MarkersInvalidTitle", configError);
+        }
+        else
+        {
+            ConfigError.IsOpen = false;
         }
     }
 

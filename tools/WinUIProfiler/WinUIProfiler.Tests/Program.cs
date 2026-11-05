@@ -362,6 +362,68 @@ finally
     }
 }
 
+// A session file saves the marker configuration it was recorded with, as written, so its launch timeline has the same
+// milestones wherever it is read. A file written before it was saved has none, and a saved one that is not valid, as a
+// later profiler's may not be for this one, is reported with the file.
+var savedPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-SavedMarkers-{Guid.NewGuid():N}.sqlite");
+try
+{
+    const string saved = """
+        // Contoso's milestones.
+        {
+          "version": 1,
+          "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
+          "milestones": [{ "builtin": "ProcessCreated" }, { "label": "Ready", "provider": "Contoso.Launch", "event": "Ready" },],
+        }
+        """;
+    using (SessionWriter.Create(savedPath, new(300, "Contoso", null, 10_000_000, null, SessionCoverage.Trace, MarkerConfig: saved)))
+    {
+    }
+
+    void Change(string sql)
+    {
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={savedPath};Pooling=False");
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.ExecuteNonQuery();
+    }
+
+    var config = MarkerConfig.FromSessionFile(savedPath);
+    if (config is null || config.Text != saved || config.SessionPath != Path.GetFullPath(savedPath) || config.FilePath is not null ||
+        string.Join(", ", config.Milestones.Select(milestone => milestone.Label)) != "Process created, Ready" ||
+        config.Providers is not [{ Provider.Name: "Contoso.Launch" }])
+    {
+        throw new InvalidOperationException("A session file must save the marker configuration it was recorded with, as written.");
+    }
+
+    Change("""UPDATE SessionInfo SET MarkerConfig = '{ "version": 2, "milestones": [] }'""");
+    try
+    {
+        MarkerConfig.FromSessionFile(savedPath);
+        throw new InvalidOperationException("A saved marker configuration that is not valid must be reported.");
+    }
+    catch (MarkerConfigException error) when (error.Message.Contains(Path.GetFullPath(savedPath), StringComparison.Ordinal))
+    {
+    }
+
+    Change("ALTER TABLE SessionInfo DROP COLUMN MarkerConfig");
+    if (MarkerConfig.FromSessionFile(savedPath) is not null)
+    {
+        throw new InvalidOperationException("A session file written before the marker configuration was saved has none.");
+    }
+
+    Console.WriteLine("Passed: a session file saves the marker configuration it was recorded with, as written.");
+    Console.WriteLine("Passed: a session file written before then has none, and a saved one not valid is reported with the file.");
+}
+finally
+{
+    foreach (var file in new[] { savedPath, savedPath + "-wal", savedPath + "-shm" })
+    {
+        File.Delete(file);
+    }
+}
+
 // A launcher, process 100, whose activities A and B, on its threads 1 and 2, overlap and each launch an app, 201 or 202.
 // The parent of a process's first thread is the thread that created it, so each app's launch has the events of the
 // activity whose thread created its process, or that no other activity's thread did.

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.Diagnostics.Tracing.Session;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Engine.Launch;
 
@@ -100,7 +101,7 @@ public sealed record MilestoneDefinition(string? Label, BuiltInMilestone? BuiltI
 // The marker configuration: the providers the profiler records along with the XAML providers, for the target process and,
 // when a launcher milestone names one, for the process that launched it, and the launch timeline's milestones. A JSON
 // file, which can have comments and trailing commas; Launch\markers.json is the default and the README's "Launch
-// timeline" describes it.
+// timeline" describes it. A session file saves the configuration it was recorded with (FromSessionFile).
 public sealed class MarkerConfig
 {
     public const int Version = 1;
@@ -110,15 +111,24 @@ public sealed class MarkerConfig
     private static readonly Lazy<string> DefaultContent = new(ReadDefault);
     private static readonly Lazy<MarkerConfig> DefaultConfig = new(() => Parse(DefaultContent.Value));
 
-    private MarkerConfig(string? filePath, IReadOnlyList<MarkerProviderSettings> providers, IReadOnlyList<MilestoneDefinition> milestones)
+    private MarkerConfig(string text, string? filePath, string? sessionPath, IReadOnlyList<MarkerProviderSettings> providers,
+        IReadOnlyList<MilestoneDefinition> milestones)
     {
+        Text = text;
         FilePath = filePath;
+        SessionPath = sessionPath;
         Providers = providers;
         Milestones = milestones;
     }
 
-    // The file the configuration was read from; null for the default.
+    // The file the configuration was read from; null for the default, and for one saved in a session file.
     public string? FilePath { get; }
+
+    // The session file the configuration was saved in, for one read from it (FromSessionFile).
+    public string? SessionPath { get; }
+
+    // The JSON text the configuration was read from, which a session file recorded with it saves (SessionStart.MarkerConfig).
+    public string Text { get; }
 
     // Never a XAML provider, DxgKrnl or Win32k, which the profiler always records.
     public IReadOnlyList<MarkerProviderSettings> Providers { get; }
@@ -181,10 +191,25 @@ public sealed class MarkerConfig
     }
 
     // Path is the file the text is from, which errors name; null for the default.
-    public static MarkerConfig Parse(string text, string? path = null)
+    public static MarkerConfig Parse(string text, string? path = null) =>
+        Parse(text, path, null, path ?? "The default marker configuration");
+
+    // The configuration saved in the session file at path, which the session was recorded with; null when the file has
+    // none, as one written before it was saved. Throws MarkerConfigException when it is not valid, as a later profiler's
+    // may not be for this one.
+    public static MarkerConfig? FromSessionFile(string path)
+    {
+        path = Path.GetFullPath(path);
+        return SessionFile.ReadMarkerConfig(path) is { } text
+            ? Parse(text, null, path, $"The marker configuration saved in '{path}'")
+            : null;
+    }
+
+    // Source names the text in errors.
+    private static MarkerConfig Parse(string text, string? filePath, string? sessionPath, string source)
     {
         ArgumentNullException.ThrowIfNull(text);
-        var reader = new Reader(path);
+        var reader = new Reader(source);
         try
         {
             using var document = JsonDocument.Parse(text, new JsonDocumentOptions
@@ -192,11 +217,12 @@ public sealed class MarkerConfig
                 CommentHandling = JsonCommentHandling.Skip,
                 AllowTrailingCommas = true
             });
-            return reader.Read(document.RootElement);
+            var (providers, milestones) = reader.Read(document.RootElement);
+            return new(text, filePath, sessionPath, providers, milestones);
         }
         catch (JsonException error)
         {
-            throw new MarkerConfigException($"{reader.Source}: not valid JSON: {error.Message}", error);
+            throw new MarkerConfigException($"{source}: not valid JSON: {error.Message}", error);
         }
     }
 
@@ -211,13 +237,13 @@ public sealed class MarkerConfig
         return reader.ReadToEnd();
     }
 
-    private sealed class Reader(string? path)
+    private sealed class Reader(string source)
     {
         private const string Root = "the file";
 
-        public string Source { get; } = path ?? "The default marker configuration";
+        public string Source { get; } = source;
 
-        public MarkerConfig Read(JsonElement root)
+        public (IReadOnlyList<MarkerProviderSettings> Providers, IReadOnlyList<MilestoneDefinition> Milestones) Read(JsonElement root)
         {
             if (root.ValueKind != JsonValueKind.Object)
             {
@@ -252,7 +278,7 @@ public sealed class MarkerConfig
             // Only a launcher milestone's provider is read from the launcher.
             var launcherProviders = milestones.Where(milestone => milestone.From == MilestoneSource.Launcher)
                 .Select(milestone => milestone.Provider!.Id).ToHashSet();
-            return new(path, [.. providers.Select(provider => launcherProviders.Contains(provider.Provider.Id) ? provider with { Launcher = true } : provider)],
+            return ([.. providers.Select(provider => launcherProviders.Contains(provider.Provider.Id) ? provider with { Launcher = true } : provider)],
                 milestones);
         }
 
