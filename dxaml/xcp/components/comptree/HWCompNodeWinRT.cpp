@@ -1186,7 +1186,6 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
 
         // Update the Size as InsetClip is dependent on Size.
         // Note that Size is really only necessary when we have a non-empty prepend clip.
-        // REVIEW:  Would it make more sense to always set Size?
         wfn::Vector2 size;
         size.X = m_pUIElementNoRef->GetActualWidth();
         size.Y = m_pUIElementNoRef->GetActualHeight();
@@ -1214,8 +1213,10 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
     }
     else
     {
-        // We have an empty clip.  Clear out any InsetClip we might have set.
+        // Clear the clip before resetting the size it depends on.
         IFCFAILFAST(m_prependVisual->put_Clip(nullptr));
+        wfn::Vector2 size{};
+        IFCFAILFAST(m_prependVisual->put_Size(size));
     }
 }
 
