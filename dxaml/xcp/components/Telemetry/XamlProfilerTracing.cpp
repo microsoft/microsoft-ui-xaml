@@ -60,12 +60,12 @@ namespace
     }
 }
 
-void XamlProfilerTracing::EnableAllocationProfiling(bool enabled) noexcept
+void XamlProfilerTracing::SetProfilerEnabled(bool enabled) noexcept
 {
     g_profilerEnabled.store(enabled, std::memory_order_relaxed);
 }
 
-bool XamlProfilerTracing::IsAllocationProfilingEnabled() noexcept
+bool XamlProfilerTracing::IsProfilerEnabled() noexcept
 {
     return g_profilerEnabled.load(std::memory_order_relaxed);
 }
@@ -74,7 +74,7 @@ void XamlProfilerTracing::NotifyChildInserted(
     _In_opt_ IUnknown* parentVisual,
     _In_opt_ IUnknown* childVisual)
 {
-    if (!IsEnabled())
+    if (!IsProfilerEnabled())
     {
         return;
     }
@@ -93,7 +93,7 @@ void XamlProfilerTracing::NotifyChildRemoved(
     _In_opt_ IUnknown* parentVisual,
     _In_opt_ IUnknown* childVisual)
 {
-    if (!IsEnabled())
+    if (!IsProfilerEnabled())
     {
         return;
     }
@@ -110,7 +110,7 @@ void XamlProfilerTracing::NotifyChildRemoved(
 
 void XamlProfilerTracing::NotifyChildrenCleared(_In_opt_ IUnknown* parentVisual)
 {
-    if (!IsEnabled())
+    if (!IsProfilerEnabled())
     {
         return;
     }
@@ -128,7 +128,7 @@ void XamlProfilerTracing::NotifyRootSet(
     _In_opt_ IUnknown* visual,
     uint64_t targetId)
 {
-    if (!IsEnabled())
+    if (!IsProfilerEnabled())
     {
         return;
     }
@@ -144,7 +144,7 @@ void XamlProfilerTracing::NotifyRootSet(
 
 void XamlProfilerTracing::NotifyRootCleared(uint64_t targetId)
 {
-    if (IsEnabled())
+    if (IsProfilerEnabled())
     {
         WucVisualRootCleared(targetId);
     }

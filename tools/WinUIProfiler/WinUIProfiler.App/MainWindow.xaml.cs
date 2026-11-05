@@ -576,6 +576,7 @@ SessionsDirectory);
 
                 model.ReportProgress(value);
             }));
+            session.BeginRecording();
             await model.ConnectAsync(options, progress);
             if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
             {
@@ -601,6 +602,7 @@ SessionsDirectory);
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
         Tabs.SelectedItem = FramesTab;
+        session.BeginRecording();
         try
         {
             await model.OpenTraceAsync(path, process, SessionsDirectory);

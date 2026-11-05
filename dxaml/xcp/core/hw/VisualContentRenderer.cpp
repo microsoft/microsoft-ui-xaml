@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "VisualContentRenderer.h"
 #include <LinearGradientBrush.h>
 #include <WUCBrushManager.h>
@@ -77,7 +79,7 @@ VisualContentRenderer::RenderSolidColorRectangle(
     IFCFAILFAST(spContentVisual->put_Brush(wucBrush.Get()));
     IFC_RETURN(LinkVisual(pBrush, nullptr, spVisual.Get()));
 
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
         XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0);
@@ -419,7 +421,7 @@ _Check_return_ HRESULT VisualContentRenderer::RenderPrimitive(
 
     IFC_RETURN(LinkVisual(brush, nullptr, spVisual.Get()));
 
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         const auto getSurfaceId = [](HWTexture* texture) -> uint64_t
         {
@@ -582,6 +584,10 @@ VisualContentRenderer::EnsureSpriteVisual(
     else
     {
         IFC_RETURN(pCompositor->CreateSpriteVisual(&spContentVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
         VERIFYHR(spContentVisual.As(&spVisual));
     }
 
@@ -630,6 +636,10 @@ void VisualContentRenderer::EnsureShapeVisual(
     {
         // Create a ShapeVisual
         IFCFAILFAST(GetCompositor5()->CreateShapeVisual(&shapeVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual);
+        }
         shapeVisual.As(&visual);
     }
 

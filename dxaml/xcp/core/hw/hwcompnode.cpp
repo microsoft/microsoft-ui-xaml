@@ -3,6 +3,8 @@
 
 #include "precomp.h"
 #include "XamlTelemetry.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "palgfx.h"
 
@@ -634,7 +636,7 @@ HWCompTreeNode::InsertChild(
 
     IFC_RETURN(InsertChildInternal(pDCompTreeHost, pChild, pReferenceNode, pElement));
 
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -676,7 +678,7 @@ HWCompTreeNode::InsertChildAtBeginning(
 
     IFC_RETURN(InsertChildAtBeginningInternal(pDCompTreeHost, pChild));
 
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -1061,6 +1063,10 @@ HWCompMediaNode::SetMedia(
         else
         {
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1124,6 +1130,10 @@ _Check_return_ HRESULT HWCompMediaNode::EnsureVisual(_In_opt_ DCompTreeHost* pDC
     {
         ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
     }
     return S_OK;
 }
@@ -1245,6 +1255,10 @@ HWCompSwapChainNode::SetSwapChain(
         else
         {
             IFC_RETURN(compositorNoRef->CreateColorBrush(&colorBrush));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x00000000)));
             IFC_RETURN(colorBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1265,6 +1279,10 @@ HWCompSwapChainNode::SetSwapChain(
         else
         {
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1366,6 +1384,10 @@ _Check_return_ HRESULT HWCompSwapChainNode::EnsureVisual(_In_opt_ DCompTreeHost*
         {
             ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
             IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
         }
     }
     return S_OK;

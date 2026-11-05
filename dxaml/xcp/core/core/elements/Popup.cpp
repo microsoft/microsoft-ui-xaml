@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <DependencyLocator.h>
 #include <D2DUtils.h>
 #include <FrameworkTheming.h>
@@ -545,7 +547,7 @@ _Check_return_ HRESULT CPopup::Open()
         }
         IFC_RETURN(hr);
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::PopupOpened(
                 reinterpret_cast<uint64_t>(this),
@@ -776,7 +778,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         // If the child has KeepVisible requirements, then this will keep it visible via CUIElementCollection.
         IFC_RETURN(pPopupRoot->RemoveChild(m_pChild));
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::PopupClosed(
                 reinterpret_cast<uint64_t>(this),
@@ -1318,6 +1320,10 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 
         wrl::ComPtr<ixp::IContainerVisual> containerVisual;
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
 
@@ -2369,6 +2375,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContainerVisual> windowCV;
         wrl::ComPtr<ixp::IVisual> windowV;
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(windowCV.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(windowCV.As(&windowV));
         m_contentIslandRootVisual = windowV;
         DCompTreeHost::SetTagIfEnabled(m_contentIslandRootVisual.Get(), VisualDebugTags::WindowedPopup_ContentIslandRootVisual);
@@ -2376,6 +2386,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContainerVisual> animationCV;
         wrl::ComPtr<ixp::IVisual> animationV;
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(animationCV.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(animationCV.As(&animationV));
         m_animationRootVisual = animationV;
         DCompTreeHost::SetTagIfEnabled(m_animationRootVisual.Get(), VisualDebugTags::WindowedPopup_AnimationRootVisual);
@@ -2410,6 +2424,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             // either the island bounds or the "undo transform" was not computed correctly.
             wrl::ComPtr<ixp::ICompositionColorBrush> debugColor_cb;
             IFCFAILFAST(compositorNoRef->CreateColorBrush(&debugColor_cb));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFCFAILFAST(debugColor_cb->put_Color(ColorUtils::GetWUColor(0x8800ff00)));
 
             wrl::ComPtr<ixp::ICompositionBrush> debugColor_b;
@@ -2417,6 +2435,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 
             wrl::ComPtr<ixp::ISpriteVisual> debugVisual;
             IFCFAILFAST(compositorNoRef->CreateSpriteVisual(&debugVisual));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
             IFCFAILFAST(debugVisual->put_Brush(debugColor_b.Get()));
             m_windowedPopupDebugVisual.Reset();
             IFCFAILFAST(debugVisual.As(&m_windowedPopupDebugVisual));

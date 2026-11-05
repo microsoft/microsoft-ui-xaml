@@ -50,8 +50,9 @@ class XamlProfilerTracing final : public TelemetryBase
 
 public:
 
-    static void EnableAllocationProfiling(bool enabled) noexcept;
-    static bool IsAllocationProfilingEnabled() noexcept;
+    // Shared cached ETW state; querying must not initialize the provider on allocation paths.
+    static void SetProfilerEnabled(bool enabled) noexcept;
+    static bool IsProfilerEnabled() noexcept;
 
     static void NotifyChildInserted(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
     static void NotifyChildRemoved(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
@@ -77,6 +78,18 @@ public:
         bool,     IncludesGutters,
         bool,     RequestAtlas,
         bool,     IsAlphaMask,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,
+        uint32_t, ResourceKind,
+        PCWSTR,   ResourceName,
+        bool,     HasLifetime,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceDestroyed,
+        uint32_t, ResourceKind,
+        PCWSTR,   ResourceName,
+        bool,     HasLifetime,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     DEFINE_TRACELOGGING_EVENT_PARAM5(ChildAdded,
@@ -209,11 +222,11 @@ inline void NTAPI XamlProfilerLogging::Callback(
 {
     if (control == EVENT_CONTROL_CODE_ENABLE_PROVIDER || control == EVENT_CONTROL_CODE_DISABLE_PROVIDER)
     {
-        XamlProfilerTracing::EnableAllocationProfiling(control == EVENT_CONTROL_CODE_ENABLE_PROVIDER);
+        XamlProfilerTracing::SetProfilerEnabled(control == EVENT_CONTROL_CODE_ENABLE_PROVIDER);
     }
 }
 
 inline XamlProfilerLogging::~XamlProfilerLogging()
 {
-    XamlProfilerTracing::EnableAllocationProfiling(false);
+    XamlProfilerTracing::SetProfilerEnabled(false);
 }

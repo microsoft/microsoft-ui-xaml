@@ -117,6 +117,20 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnDelayedDisableClick" />
+            <!-- Header tooltip reentrancy triggers (UIA Invoke only): app code on the Name header's ToolTip
+                 runs while TableView detaches or re-attaches it. -->
+            <Button Content="Pin Name On Header ToolTip Detach"
+                    AutomationProperties.Name="PinNameOnHeaderToolTipDetachButton"
+                    AutomationProperties.AutomationId="PinNameOnHeaderToolTipDetachButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnPinNameOnHeaderToolTipDetachClick" />
+            <Button Content="Pin Name, Rebuild On Header ToolTip Attach"
+                    AutomationProperties.Name="PinNameRebuildOnHeaderToolTipAttachButton"
+                    AutomationProperties.AutomationId="PinNameRebuildOnHeaderToolTipAttachButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnPinNameRebuildOnHeaderToolTipAttachClick" />
             <Button x:Name="navigateToTouch"
                     Content="Touch Page"
                     AutomationProperties.Name="navigateToTouch"
@@ -129,6 +143,29 @@
                     AutomationProperties.AutomationId="navigateToVirtualization"
                     IsTabStop="False"
                     AllowFocusOnInteraction="False" />
+            <Button Content="Toggle Name CanResize"
+                    AutomationProperties.Name="ToggleNameCanResizeButton"
+                    AutomationProperties.AutomationId="ToggleNameCanResizeButton"
+                    Click="OnToggleNameCanResizeClick" />
+            <!-- Fit-on-double-click setups (UIA Invoke only). -->
+            <Button Content="Age Auto, Score and Template Star"
+                    AutomationProperties.Name="SetAgeAutoScoreStarButton"
+                    AutomationProperties.AutomationId="SetAgeAutoScoreStarButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnSetAgeAutoScoreStarClick" />
+            <Button Content="Report Basic Column Widths"
+                    AutomationProperties.Name="ReportBasicColumnWidthsButton"
+                    AutomationProperties.AutomationId="ReportBasicColumnWidthsButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnReportBasicColumnWidthsClick" />
+            <Button Content="Scale Basic Table Vertically"
+                    AutomationProperties.Name="ScaleBasicTableVerticallyButton"
+                    AutomationProperties.AutomationId="ScaleBasicTableVerticallyButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnScaleBasicTableVerticallyClick" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -145,7 +182,8 @@
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="Name"
+                    <controls:TableViewTextColumn x:Name="NameColumn"
+                                                  Header="Name"
                                                   Width="160"
                                                   MinWidth="60"
                                                   CanSort="True"
@@ -153,7 +191,8 @@
                                                   Binding="{Binding Name}"
                                                   CellToolTipBinding="{Binding Name}"
                                                   HeaderToolTip="The person's name" />
-                    <controls:TableViewTextColumn Header="Age"
+                    <controls:TableViewTextColumn x:Name="AgeColumn"
+                                                  Header="Age"
                                                   Width="100"
                                                   CanSort="True"
                                                   SortMemberPath="Age"
@@ -169,7 +208,7 @@
                                                   CanSort="True"
                                                   SortMemberPath="Score"
                                                   Binding="{Binding Score}" />
-                    <controls:TableViewTemplateColumn Header="Template" Width="200">
+                    <controls:TableViewTemplateColumn x:Name="TemplateColumn" Header="Template" Width="200">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
                                 <TextBlock Text="{x:Bind Name, Mode=OneWay}"

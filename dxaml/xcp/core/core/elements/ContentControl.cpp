@@ -322,7 +322,7 @@ CContentControl::Content(
         // Notify the managed code layer of this change.
         IFC(FxCallbacks::ContentControl_OnContentChanged(pThis, &oldForManaged, &newForManaged, pValueOuter));
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::ContentChanged(
                 reinterpret_cast<uint64_t>(pThis),

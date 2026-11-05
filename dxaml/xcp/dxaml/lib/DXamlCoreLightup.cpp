@@ -8,6 +8,10 @@
 
 // Undefine UAP contract version to enable latest for lightup code 
 #undef WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION
+// Target this Windows version to expose ApplyWindowAction's SDK declarations.
+// PlacementEx still loads the function at run time, so older Windows versions remain supported.
+#undef NTDDI_VERSION
+#define NTDDI_VERSION NTDDI_WIN11_GE
 #include "precomp.h"    // This is a direct (non-PCH) compile
 #include "DXamlCore.h"
 #include <WRLHelper.h>
@@ -15,6 +19,11 @@
 #include "GamepadKeyRoutingLightup.h"
 #include <windows.foundation.metadata.h>
 #include <windows.ui.input.h>
+
+// Compile PlacementEx's ApplyWindowAction path here, where the SDK declarations are available.
+#define WINUI_PLACEMENTEX
+#define WINUI_PLACEMENTEX_LIGHTUP
+#include <PlacementEx\User32Utils.h>
 
 using namespace WRLHelper;
 using namespace DirectUI;

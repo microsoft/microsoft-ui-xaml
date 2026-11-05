@@ -9,7 +9,7 @@
   <Import Project="..\..\dxaml\Xaml.Cpp.props" />
   <!--
     This project just generates the .idl and .h files that match the .winmd files from the
-    Lifted MRT nuget  so that we can consume them. Any project that needs them can just include
+    Foundation package so that we can consume them. Any project that needs them can just include
     the $(LiftedMRTGeneratedIdlPath) or $(LiftedMRTIncludePaths) in the $(ProjectIncludeDirectories)
     and the ProjectReference to this project will be automatically picked up.
   -->
@@ -21,14 +21,17 @@
   <PropertyGroup>
     <GenMRTSemaphoreFile>$(LiftedMRTIncludePaths)\HeadersAndIDLsGenerated.txt</GenMRTSemaphoreFile>
   </PropertyGroup>
-  <Target Name="_GenerateMRTHeadersAndIDLs" AfterTargets="Build" Inputs="@(MRTWinMDs)" Outputs="$(GenMRTSemaphoreFile)">
+  <ItemGroup>
+    <_WinMDsForHeaderGeneration Include="@(MRTWinMDs);@(StorageWinMD)" />
+  </ItemGroup>
+  <Target Name="_GenerateMRTHeadersAndIDLs" AfterTargets="Build" Inputs="@(_WinMDsForHeaderGeneration);$(RepoRoot)\eng\productmetadata.props" Outputs="$(GenMRTSemaphoreFile)">
     <MakeDir Directories="$(LiftedMRTGeneratedIdlPath)" />
-    <Exec Command="$(WindowsSdkToolLocation)\winmdidl.exe /metadata_dir:$(ProjectSDKMetadataPath) /outdir:$(LiftedMRTGeneratedIdlPath) %(MRTWinMDs.Identity)" />
+    <Exec Command="$(WindowsSdkToolLocation)\winmdidl.exe /metadata_dir:$(ProjectSDKMetadataPath) /outdir:$(LiftedMRTGeneratedIdlPath) %(_WinMDsForHeaderGeneration.Identity)" />
     <MakeDir Directories="$(LiftedMRTIncludePaths)" />
     <ItemGroup>
       <_GeneratedIdlFiles Include="$(LiftedMRTGeneratedIdlPath)\*.idl" />
     </ItemGroup>
-    <Exec Command="$(AbiWinRtExePath) -ref $(ProjectSDKMetadataPath)\windows.winmd -out $(LiftedMRTIncludePaths) -in %(MRTWinMDs.Identity) -ns-prefix always" />
+    <Exec Command="$(AbiWinRtExePath) -ref $(ProjectSDKMetadataPath)\windows.winmd -out $(LiftedMRTIncludePaths) -in %(_WinMDsForHeaderGeneration.Identity) -ns-prefix always" />
     <!-- Write the semaphore file to indicate we have generated the headers and idls -->
     <WriteLinesToFile File="$(GenMRTSemaphoreFile)" Lines="Headers and Idls Generated: $([System.DateTime]::Now)" Overwrite="true" Encoding="Unicode" />
     <ItemGroup>
