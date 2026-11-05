@@ -283,10 +283,6 @@ extern void SetReferenceTypeMember_DOModel_BindTestbed_NullableTests(::winrt::Wi
 
 extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_myGridView_BindTestbed_PhasingTests(::winrt::Windows::Foundation::IInspectable const& instance);
 extern void SetReferenceTypeMember_myGridView_BindTestbed_PhasingTests(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value);
-::winrt::Windows::Foundation::IInspectable ActivateType_BindTestbed_subfolder_SubDictionary();
-extern void DictionaryAdd_BindTestbed_subfolder_SubDictionary_Object_Object(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& key, ::winrt::Windows::Foundation::IInspectable const& item);
-
-extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Dummy_BindTestbed_subfolder_SubDictionary(::winrt::Windows::Foundation::IInspectable const& instance);
 ::winrt::Windows::Foundation::IInspectable ActivateType_BindTestbed_Templates();
 extern void DictionaryAdd_BindTestbed_Templates_Object_Object(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& key, ::winrt::Windows::Foundation::IInspectable const& item);
 
@@ -361,6 +357,10 @@ extern void SetValueTypeMember_IntPropNoINPC_BindTestbed_TwoWayTests(::winrt::Wi
 
 extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_DPOnPage_BindTestbed_TwoWayTests(::winrt::Windows::Foundation::IInspectable const& instance);
 extern void SetReferenceTypeMember_DPOnPage_BindTestbed_TwoWayTests(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value);
+::winrt::Windows::Foundation::IInspectable ActivateType_BindTestbed_subfolder_SubDictionary();
+extern void DictionaryAdd_BindTestbed_subfolder_SubDictionary_Object_Object(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& key, ::winrt::Windows::Foundation::IInspectable const& item);
+
+extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Dummy_BindTestbed_subfolder_SubDictionary(::winrt::Windows::Foundation::IInspectable const& instance);
 ::winrt::Windows::Foundation::IInspectable ActivateType_BindTestbed_xPropertiesTest();
 
 extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestStr_BindTestbed_xPropertiesTest(::winrt::Windows::Foundation::IInspectable const& instance);
